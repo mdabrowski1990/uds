@@ -1,0 +1,48 @@
+# basic prospector settings
+
+strictness: veryhigh
+output-format: grouped
+doc-warnings: true
+autodetect: true
+test-warnings: true
+
+# default tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#defaults
+
+pep8:
+  full: true
+  options:
+    max-line-length: 120
+
+pylint:
+  options:
+    max-line-length: 120
+    max-args: 8
+
+pyflakes:
+  disable:
+    - F401
+
+pep257:
+  disable:
+    - D212
+    - D203
+
+mccabe:
+  run: true
+
+  options:
+    max-complexity: 10
+
+
+# additional tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#optional-extras
+
+mypy:
+  run: true
+  options:
+    ignore-missing-imports: true
+
+vulture:
+  run: true
+
+pyroma:
+  run: true
