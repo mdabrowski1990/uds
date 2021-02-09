@@ -1,6 +1,6 @@
 ---
 name: Empty issue
-about: ''
+about: Sky is the limit
 title: ''
 labels: ''
 assignees: ''
