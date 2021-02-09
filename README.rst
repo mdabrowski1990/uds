@@ -18,4 +18,4 @@ Visit: https://uds.readthedocs.io/en/latest/
 Contribution
 ============
 This project is in early development phase. If you are willing to help with the implementation, please contact with
-the author (Maciej Dąbrowski <51504507+mdabrowski1990@users.noreply.github.com>)
+the author (Maciej Dąbrowski <maciek_dabrowski@o2.pl>)
