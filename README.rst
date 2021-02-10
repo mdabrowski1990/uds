@@ -13,9 +13,3 @@ It supports different communication buses on both sides of communication (client
 Documentation
 =============
 Visit: https://uds.readthedocs.io/en/latest/
-
-
-Contribution
-============
-This project is in early development phase. If you are willing to help with the implementation, please contact with
-the author (Maciej Dąbrowski <maciek_dabrowski@o2.pl>)
