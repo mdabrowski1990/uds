@@ -1,4 +1,4 @@
-"""UDS Client side implementation."""
+"""Client implementation for UDS protocol."""
 
 __all__ = ["Client"]
 
@@ -11,8 +11,8 @@ class Client:
     """
     Factory of UDS clients.
 
-    UDS Client sends diagnostic requests and receives diagnostic response. It always initiates communication
-    in each sub-net. Examples of UDS Clients:
+    UDS client sends diagnostic requests and receives diagnostic response. It always initiates communication
+    in each sub-net. Examples of UDS clients:
     - diagnostic tester
     - gateway node that converts diagnostic request from bus A to bus B (e.g. LIN Master node)
     """
@@ -28,31 +28,51 @@ class Client:
         """
         self.__tp_interface = tp_interface
 
-    def send_physical_request(self, request) -> None:  # TODO: annotation
+    def send_request(self,
+                     request,  # TODO: annotation
+                     addressing) -> None:  # TODO: annotation, default value
         """
         Send physically (targets a single ECU) addressed request.
 
         :param request: Diagnostic request to send.
+        :param addressing: Type of addressing to use for the request message transmission.
         """
+        self.__tp_interface.send_request(request=request, addressing=addressing)
 
-    def send_functional_request(self, request) -> None:  # TODO: annotation
+    def get_last_sent_request(self):  # TODO: annotation
         """
-        Send functionally (targets all ECUs) addressed request.
+        Get the last request message that was successfully transmitted by this client.
 
-        :param request: Diagnostic request to send.
-        """
+        WARNING! Returned value might be different than the last request message that was provided to 'send_request'
+            method. This will happen if the last provided message was not transmitted by the tp_interface yet.
 
-    def get_responses_to_last_request(self) -> List:
+        :return: The last transmitted request message or None if no request was ever transmitted by this client.
         """
-        Get list of responses received to the last sent diagnostic request.
+        return self.__tp_interface.get_last_sent_message()
+
+    def get_response_messages(self) -> List:  # TODO: annotation
+        """
+        Get list of responses received to the last diagnostic request scheduled for transmission.
+
+        This method might wait till all response messages are received or response timeout occurs.
 
         :return: List with diagnostic response messages received in the chronological order.
         """
+        return self.__tp_interface.get_response_messages()
 
-    def start_tester_present(self) -> None:  # TODO: consider addressing - physical/functional
-        """Turn on cyclical sending of Tester Present message."""
-        self.__tp_interface.start_tester_present()
+    def start_tester_present(self,
+                             addressing,  # TODO: annotation, default
+                             suppress_response: bool = True) -> None:
+        """
+        Turn on cyclical sending of Tester Present message.
 
-    def stop_tester_present(self) -> None:  # TODO: consider addressing - physical/functional
+        :param addressing: Type of addressing to use for the tester present messages transmission.
+        :param suppress_response: True if responses from recipients to be suppressed, False otherwise.
+            Response messages suppression is realized via setting Suppress Positive Response Message Indication Bit
+            in Tester Present request messages.
+        """
+        self.__tp_interface.start_tester_present(addressing=addressing, suppress_response=suppress_response)
+
+    def stop_tester_present(self) -> None:
         """Turn off cyclical sending of Tester Present message."""
         self.__tp_interface.stop_tester_present()

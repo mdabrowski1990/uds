@@ -8,7 +8,7 @@ of OSI model. Other (bus specific) layers would be supported by extensions (once
 or by the interfaces provided by the user.
 """
 
-__all__ = ["Client", "Server", "ResponseManager"]
+__all__ = ["Client", "Server", "ResponseManager", "ResponseRule"]
 __version__ = "0.0"
 __author__ = "Maciej Dąbrowski"  # TODO: add other other contributors
 # __credits__ = []  TODO: place for sponsors and other stakeholders
@@ -16,4 +16,4 @@ __email__ = "maciek_dabrowski@o2.pl"
 
 
 from .client import Client
-from .server import Server, ResponseManager
+from .server import Server, ResponseManager, ResponseRule
