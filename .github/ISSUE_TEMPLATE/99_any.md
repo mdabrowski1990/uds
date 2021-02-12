@@ -1,6 +1,6 @@
 ---
 name: Empty issue
-about: Sky is the limit
+about: Start with empty draft
 title: ''
 labels: ''
 assignees: ''
