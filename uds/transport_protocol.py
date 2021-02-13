@@ -16,6 +16,8 @@ __all__ = ["AbstractTPInterface"]
 from typing import List
 from abc import ABC, abstractmethod
 
+from .utilities import RepeatedCall
+
 
 class AbstractTPInterface(ABC):
     """Common interface for handling layer 4 of UDS protocol for any bus."""
@@ -74,14 +76,15 @@ class AbstractTPInterface(ABC):
         :param addressing: Type of addressing to use for the response message transmission.
         """
 
-    def get_last_sent_request(self):  # TODO: annotation
+    def get_last_sent_message(self):  # TODO: annotation
         """
-        Get the last request message that was successfully transmitted by this interface.
+        Get the last message that was successfully transmitted by this interface.
 
-        WARNING! Returned value might be different than the last request message that was provided to 'send_request'
+        WARNING! Returned value might be different than the last message that was provided to 'send_request'
             or 'send_response' method. This will happen if the last provided message was not transmitted yet.
 
-        :return: The last transmitted request message or None if no request was ever transmitted by this interface.
+        :return: The last transmitted message (either request or response) or None if no message was ever
+            transmitted by this interface.
         """
 
     @abstractmethod
