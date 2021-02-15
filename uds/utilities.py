@@ -2,19 +2,19 @@
 
 __all__ = ["RepeatedCall"]
 
-from typing import Union, Callable, Iterable
+from typing import Union, Callable, Iterable, Optional
 from threading import Timer
 from warnings import warn
 
 
-class RepeatedCall:
+class RepeatedCall:  # TODO: improve performance and precision (currently there is 2-30ms delay after each call)
     """Class for cyclically calling function in another thread."""
 
     def __init__(self,
                  interval: Union[int, float],
                  function: Callable,
-                 function_args: Iterable,
-                 function_kwargs: dict,
+                 function_args: Optional[Iterable] = None,
+                 function_kwargs: Optional[dict] = None,
                  number_of_calls: Union[int, float] = float("inf")) -> None:
         """
         Configure thread for cyclically calling a function with provided arguments.
@@ -26,11 +26,11 @@ class RepeatedCall:
         :param function_args: Arguments to pass to the function at every call.
         :param function_kwargs: Keyword arguments to pass to the function at every call.
         """
-        self._timer = Timer(interval=interval, function=self._execute)
+        self._timer = None
         self.interval = interval
         self.function = function
-        self.function_args = function_args
-        self.function_kwargs = function_kwargs
+        self.function_args = function_args if function_args else ()
+        self.function_kwargs = function_kwargs if function_kwargs else {}
         self.is_running = False
         self.calls_left = number_of_calls
 
@@ -43,8 +43,7 @@ class RepeatedCall:
         if not self.is_running:
             self.is_running = True
             if delay > 0:
-                self._timer.interval = delay
-                self._timer.start()
+                Timer(interval=delay, function=self._execute).start()
             else:
                 self._execute()
         else:
@@ -63,5 +62,7 @@ class RepeatedCall:
         self.function(*self.function_args, **self.function_kwargs)
         self.calls_left -= 1
         if self.calls_left > 0 and self.is_running:
-            self._timer.interval = self.interval
+            self._timer = Timer(interval=self.interval, function=self._execute)
             self._timer.start()
+        else:
+            self.is_running = False

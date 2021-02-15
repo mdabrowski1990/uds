@@ -17,6 +17,7 @@ from typing import List
 from abc import ABC, abstractmethod
 
 from .utilities import RepeatedCall
+from .message import UdsRequest, UdsResponse, UdsMessage
 
 
 class AbstractTPInterface(ABC):
