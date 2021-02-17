@@ -43,7 +43,8 @@ class RepeatedCall:  # TODO: improve performance and precision (currently there 
         if not self.is_running:
             self.is_running = True
             if delay > 0:
-                Timer(interval=delay, function=self._execute).start()
+                self._timer = Timer(interval=delay, function=self._execute)
+                self._timer.start()
             else:
                 self._execute()
         else:

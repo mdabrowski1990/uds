@@ -16,8 +16,8 @@ __all__ = ["AbstractTPInterface"]
 from typing import List
 from abc import ABC, abstractmethod
 
-from .utilities import RepeatedCall
-from .message import UdsRequest, UdsResponse, UdsMessage
+from uds.utilities import RepeatedCall
+from uds.message import UdsRequest, UdsResponse, UdsMessage
 
 
 class AbstractTPInterface(ABC):
