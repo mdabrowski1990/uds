@@ -1,0 +1,47 @@
+"""Module with UDS response messages implementation."""
+
+__all__ = ["UdsResponse", "UdsResponseType"]
+
+from enum import Enum
+
+from .base_message import UdsMessage
+from .service_identifiers import RequestSID, ResponseSID
+
+
+class UdsResponseType(Enum):
+    """
+    Types of UDS response messages.
+
+    Options:
+    - POSITIVE - response messages
+        WARNING! Positive response messages might be incompatible with messaging database
+    - NEGATIVE - negative response messages in format [0x7F, SID, NRC]
+        Where:
+        SID - Service Identifier of request (identifies request to which it is response)
+        NRC - Negative Response Code (provides reason why responded negatively)
+    - INVALID - response messages that is incompatible with UDS standard
+    """
+
+    POSITIVE = "Positive Response Message"
+    NEGATIVE = "Negative Response Message"
+    INVALID = "Invalid"
+
+
+class UdsResponse(UdsMessage):
+    """
+    Storage for diagnostic responses information.
+
+    UDS response is always sent by server and received by client.
+    """
+
+    def get_response_type(self) -> UdsResponseType:
+        """Get response messages type."""
+        if self.raw_message:
+            if len(self.raw_message) == 3 and self.raw_message[0] == ResponseSID.NegativeResponse and \
+                    RequestSID.is_request_sid(value=self.raw_message[1]):
+                return UdsResponseType.NEGATIVE
+            if ResponseSID.is_response_sid(self.raw_message[0]):
+                # TODO: extend to check compliance with Message format (ISO 14229-1:2020);
+                #  additional param so it can be easily turned off ?
+                return UdsResponseType.POSITIVE
+        return UdsResponseType.INVALID

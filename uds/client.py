@@ -35,18 +35,18 @@ class Client:
         Send physically (targets a single ECU) addressed request.
 
         :param request: Diagnostic request to send.
-        :param addressing: Type of addressing to use for the request message transmission.
+        :param addressing: Type of addressing to use for the request messages transmission.
         """
         self.__tp_interface.send_request(request=request, addressing=addressing)
 
     def get_last_sent_request(self):  # TODO: annotation
         """
-        Get the last request message that was successfully transmitted by this client.
+        Get the last request messages that was successfully transmitted by this client.
 
-        WARNING! Returned value might be different than the last request message that was provided to 'send_request'
-            method. This will happen if the last provided message was not transmitted by the tp_interface yet.
+        WARNING! Returned value might be different than the last request messages that was provided to 'send_request'
+            method. This will happen if the last provided messages was not transmitted by the tp_interface yet.
 
-        :return: The last transmitted request message or None if no request was ever transmitted by this client.
+        :return: The last transmitted request messages or None if no request was ever transmitted by this client.
         """
         return self.__tp_interface.get_last_sent_message()
 
@@ -64,7 +64,7 @@ class Client:
                              addressing,  # TODO: annotation, default
                              suppress_response: bool = True) -> None:
         """
-        Turn on cyclical sending of Tester Present message.
+        Turn on cyclical sending of Tester Present messages.
 
         :param addressing: Type of addressing to use for the tester present messages transmission.
         :param suppress_response: True if responses from recipients to be suppressed, False otherwise.
@@ -74,5 +74,5 @@ class Client:
         self.__tp_interface.start_tester_present(addressing=addressing, suppress_response=suppress_response)
 
     def stop_tester_present(self) -> None:
-        """Turn off cyclical sending of Tester Present message."""
+        """Turn off cyclical sending of Tester Present messages."""
         self.__tp_interface.stop_tester_present()

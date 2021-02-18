@@ -17,12 +17,12 @@ from typing import List
 from abc import ABC, abstractmethod
 
 from uds.utilities import RepeatedCall
-from uds.message import UdsRequest, UdsResponse, UdsMessage
+from uds.messages import UdsRequest, UdsResponse, UdsMessage
 
 
 class AbstractTPInterface(ABC):
     """Common interface for handling layer 4 of UDS protocol for any bus."""
-    # TODO: I expect some common code here (e.g. message segmentation, and queuing N_PDUs)
+    # TODO: I expect some common code here (e.g. messages segmentation, and queuing N_PDUs)
 
     @abstractmethod
     def __init__(self, **kwargs) -> None:  # TODO: params, annotation and docstring
@@ -62,8 +62,8 @@ class AbstractTPInterface(ABC):
 
         WARNING: Available for Client only!
 
-        :param request: Request message to transmit.
-        :param addressing: Type of addressing to use for the request message transmission.
+        :param request: Request messages to transmit.
+        :param addressing: Type of addressing to use for the request messages transmission.
         """
 
     @abstractmethod
@@ -73,18 +73,18 @@ class AbstractTPInterface(ABC):
 
         WARNING: Available for Server only!
 
-        :param response: Response message to transmit.
-        :param addressing: Type of addressing to use for the response message transmission.
+        :param response: Response messages to transmit.
+        :param addressing: Type of addressing to use for the response messages transmission.
         """
 
     def get_last_sent_message(self):  # TODO: annotation
         """
-        Get the last message that was successfully transmitted by this interface.
+        Get the last messages that was successfully transmitted by this interface.
 
-        WARNING! Returned value might be different than the last message that was provided to 'send_request'
-            or 'send_response' method. This will happen if the last provided message was not transmitted yet.
+        WARNING! Returned value might be different than the last messages that was provided to 'send_request'
+            or 'send_response' method. This will happen if the last provided messages was not transmitted yet.
 
-        :return: The last transmitted message (either request or response) or None if no message was ever
+        :return: The last transmitted messages (either request or response) or None if no messages was ever
             transmitted by this interface.
         """
 
@@ -103,7 +103,7 @@ class AbstractTPInterface(ABC):
                              addressing,  # TODO: annotation
                              suppress_response: bool = True) -> None:
         """
-        Turn on cyclical sending of Tester Present message.
+        Turn on cyclical sending of Tester Present messages.
 
         :param addressing: Type of addressing to use for the tester present messages transmission.
         :param suppress_response: True if responses from recipients to be suppressed, False otherwise.
@@ -113,7 +113,7 @@ class AbstractTPInterface(ABC):
 
     def stop_tester_present(self) -> None:
         """
-        Turn off cyclical sending of Tester Present message.
+        Turn off cyclical sending of Tester Present messages.
 
         WARNING: Available for Client only!
         """

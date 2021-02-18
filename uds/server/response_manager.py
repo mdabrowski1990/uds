@@ -8,31 +8,31 @@ class ResponseRule:
 
     def __init__(self) -> None:  # TODO: params, annotation
         """
-        Create a single rule for creating response message to request message.
+        Create a single rule for creating response messages to request messages.
         """
 
     def is_rule_for_this_request(self, request) -> bool:  # TODO: annotation
         """
         Check if this rule is obeys the provided request.
 
-        :param request: Request message to be checked.
+        :param request: Request messages to be checked.
 
         :return: True if this rule obeys this request, False otherwise.
         """
 
     def spawn_response(self, request):  # TODO: annotation
         """
-        Create response message to the provided request according to the rule configuration.
+        Create response messages to the provided request according to the rule configuration.
 
-        :param request: Request message for which response to be generated.
+        :param request: Request messages for which response to be generated.
 
-        :return: Generated response message to the provided request message.
+        :return: Generated response messages to the provided request messages.
         """
 
 
 class ResponseManager:
     """
-    Unit that creates UDS response message to any UDS request according to previously configured set of rules.
+    Unit that creates UDS response messages to any UDS request according to previously configured set of rules.
 
     It is used to generate response messages for UDS server when its simulation is on.
     """
@@ -51,7 +51,7 @@ class ResponseManager:
         """
         Add new rule in given position.
 
-        :param rule: Response message creation rule to add.
+        :param rule: Response messages creation rule to add.
         :param index: Index (position in list) where the rule should be put in the rules queue.
             By default new rules are added in position 0 (the first one to be processed).
         """

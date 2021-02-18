@@ -1,3 +1,0 @@
-# TODO: define more SIDS
-
-NEGATIVE_RESPONSE_MESSAGE_SID = 0x7F
