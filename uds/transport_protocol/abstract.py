@@ -20,7 +20,7 @@ from uds.utilities import RepeatedCall
 from uds.messages import UdsRequest, UdsResponse, UdsMessage
 
 
-class AbstractTPInterface(ABC):
+class AbstractTPInterface(ABC):  # TODO: update according to notes
     """Common interface for handling layer 4 of UDS protocol for any bus."""
     # TODO: I expect some common code here (e.g. messages segmentation, and queuing N_PDUs)
 

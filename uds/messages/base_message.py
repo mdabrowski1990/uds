@@ -5,14 +5,16 @@ __all__ = ["UdsMessage"]
 from typing import List, Optional
 
 from .addressing import AddressingType
+from .pdu import AbstractPDU
 
 TypingRawMessage = List[int]
+PDUs = List[AbstractPDU]
 
 
 class UdsMessage:
     """Common implementation of all UDS messages (requests and responses)."""
 
-    def __init__(self, raw_message: TypingRawMessage, pdu_list=None) -> None:  # TODO: annotation
+    def __init__(self, raw_message: TypingRawMessage, pdu_list: Optional[PDUs] = None) -> None:  # TODO: annotation
         """
         Create storage related to a single UDS messages.
 
@@ -24,7 +26,7 @@ class UdsMessage:
         self.__pdu_list = [] if pdu_list is None else pdu_list
 
     @property
-    def pdu_list(self) -> List:  # TODO: annotation
+    def pdu_list(self) -> PDUs:  # TODO: annotation
         """
         Get PDUs list that were transmitted/received and together make this message.
 
@@ -34,13 +36,13 @@ class UdsMessage:
 
     @property
     def raw_message(self) -> TypingRawMessage:
-        """Getter of 'raw_message' that this object carries."""
+        """Getter of raw message that this object carries."""
         return self.__raw_message
 
     @property
     def addressing(self) -> Optional[AddressingType]:
         """
-        Get of addressing type over which this message were transmitted/received.
+        Get addressing type over which this message was transmitted/received.
 
         :return: Addressing over which the messages was transmitted/received.
             None if messages was not transmitted/received.

@@ -13,7 +13,7 @@ class TestClient:
 
     @pytest.mark.parametrize("tp_interface", ["any", 1])
     def test_init(self, tp_interface):
-        Client.__init__(self=self.mock_client, tp_interface=tp_interface)
+        Client.__init__(self=self.mock_client, interface=tp_interface)
         assert self.mock_client._Client__tp_interface == tp_interface
 
     @pytest.mark.parametrize("uds_request", ["some request", [0x10, 0x01]])

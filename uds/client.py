@@ -7,7 +7,7 @@ from typing import List
 from .transport_protocol import AbstractTPInterface
 
 
-class Client:
+class Client:  # TODO: update according to notes
     """
     Factory of UDS clients.
 
@@ -17,16 +17,20 @@ class Client:
     - gateway node that converts diagnostic request from bus A to bus B (e.g. LIN Master node)
     """
 
-    def __init__(self, tp_interface: AbstractTPInterface) -> None:
+    def __init__(self, interface: AbstractTPInterface, s3_client, p3_client) -> None:
         """
         Configure UDS client.
 
         UDS client will use provided Transport Protocol Interface to send diagnostic requests and receive
         diagnostic responses.
 
-        :param tp_interface: Transport Protocol Interface for handling Layer 4 (and all below) of UDS communication.
+        :param interface: Transport Protocol Interface for handling Layer 4 (and all below) of UDS communication.
+        :param s3_client: TODO
+        :param p3_client: TODO
         """
-        self.__tp_interface = tp_interface
+        self.__interface = interface
+        self.__s3_client = s3_client
+        self.__p3_client = p3_client
 
     def send_request(self,
                      request,  # TODO: annotation
@@ -37,7 +41,7 @@ class Client:
         :param request: Diagnostic request to send.
         :param addressing: Type of addressing to use for the request messages transmission.
         """
-        self.__tp_interface.send_request(request=request, addressing=addressing)
+        self.__interface.send_request(request=request, addressing=addressing)
 
     def get_last_sent_request(self):  # TODO: annotation
         """
@@ -48,7 +52,7 @@ class Client:
 
         :return: The last transmitted request messages or None if no request was ever transmitted by this client.
         """
-        return self.__tp_interface.get_last_sent_message()
+        return self.__interface.get_last_sent_message()
 
     def get_response_messages(self) -> List:  # TODO: annotation
         """
@@ -58,7 +62,7 @@ class Client:
 
         :return: List with diagnostic response messages received in the chronological order.
         """
-        return self.__tp_interface.get_response_messages()
+        return self.__interface.get_response_messages()
 
     def start_tester_present(self,
                              addressing,  # TODO: annotation, default
@@ -71,8 +75,8 @@ class Client:
             Response messages suppression is realized via setting Suppress Positive Response Message Indication Bit
             in Tester Present request messages.
         """
-        self.__tp_interface.start_tester_present(addressing=addressing, suppress_response=suppress_response)
+        self.__interface.start_tester_present(addressing=addressing, suppress_response=suppress_response)
 
     def stop_tester_present(self) -> None:
         """Turn off cyclical sending of Tester Present messages."""
-        self.__tp_interface.stop_tester_present()
+        self.__interface.stop_tester_present()

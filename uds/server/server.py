@@ -6,7 +6,7 @@ from uds.transport_protocol import AbstractTPInterface
 from .response_manager import ResponseManager
 
 
-class Server:
+class Server:  # TODO: update according to notes
     """
     Factory of UDS servers.
 

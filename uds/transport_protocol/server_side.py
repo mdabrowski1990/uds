@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Union
 
 
-class AbstractTPServer(ABC):
+class AbstractTPServer(ABC):  # TODO: update according to notes
     """Abstraction of server side implementation of Transport Protocol"""
 
     def __init__(self,

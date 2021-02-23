@@ -41,7 +41,5 @@ class UdsResponse(UdsMessage):
                     RequestSID.is_request_sid(value=self.raw_message[1]):
                 return UdsResponseType.NEGATIVE
             if ResponseSID.is_response_sid(self.raw_message[0]):
-                # TODO: extend to check compliance with Message format (ISO 14229-1:2020);
-                #  additional param so it can be easily turned off ?
                 return UdsResponseType.POSITIVE
         return UdsResponseType.INVALID
