@@ -2,7 +2,7 @@
 
 __all__ = ["Server", "ResponseManager"]
 
-from uds.transport_protocol import AbstractTPInterface
+from uds.transport_interface import AbstractTIServer
 from .response_manager import ResponseManager
 
 
@@ -15,7 +15,7 @@ class Server:  # TODO: update according to notes
     """
 
     def __init__(self,
-                 tp_interface: AbstractTPInterface,
+                 tp_interface: AbstractTIServer,
                  response_manager: ResponseManager) -> None:
         """
         Configure UDS server simulation.

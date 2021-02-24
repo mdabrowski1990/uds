@@ -1,10 +1,10 @@
-__all__ = ["AbstractTPServer"]
+__all__ = ["AbstractTIServer"]
 
 from abc import ABC, abstractmethod
 from typing import Union
 
 
-class AbstractTPServer(ABC):  # TODO: update according to notes
+class AbstractTIServer(ABC):  # TODO: update according to notes
     """Abstraction of server side implementation of Transport Protocol"""
 
     def __init__(self,

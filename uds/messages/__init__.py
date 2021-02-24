@@ -1,5 +1,6 @@
 """Module with basic UDS messages implementation."""
 
+from .pdu import AbstractPDU
 from .base_message import UdsMessage
 from .response import UdsResponse, UdsResponseType
 from .request import UdsRequest

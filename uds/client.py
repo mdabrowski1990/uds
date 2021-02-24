@@ -4,10 +4,8 @@ __all__ = ["Client"]
 
 from typing import List
 
-from .transport_protocol import AbstractTPInterface
 
-
-class Client:  # TODO: update according to notes
+class Client:  # TODO: update according to the notes
     """
     Factory of UDS clients.
 
@@ -17,14 +15,19 @@ class Client:  # TODO: update according to notes
     - gateway node that converts diagnostic request from bus A to bus B (e.g. LIN Master node)
     """
 
-    def __init__(self, interface: AbstractTPInterface, s3_client, p3_client) -> None:
+    DEFAULT_S3_CLIENT = 2000  # [ms]
+
+    def __init__(self,
+                 interface,  # TODO: annotation
+                 p3_client_phys: int,
+                 p3_client_func: int,
+                 s3_client: int = DEFAULT_S3_CLIENT) -> None:
         """
         Configure UDS client.
 
-        UDS client will use provided Transport Protocol Interface to send diagnostic requests and receive
-        diagnostic responses.
+        UDS client will use provided UDS Interface to send diagnostic requests and receive diagnostic responses.
 
-        :param interface: Transport Protocol Interface for handling Layer 4 (and all below) of UDS communication.
+        :param interface: Transport Interface for handling Layer 4 (and all below) of UDS communication.
         :param s3_client: TODO
         :param p3_client: TODO
         """
