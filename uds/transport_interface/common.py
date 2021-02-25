@@ -20,8 +20,8 @@ from ..messages import AbstractPDU, AddressingType, UdsResponse, UdsRequest
 class AbstractTransportInterface(ABC):
     """Common (for both server and client) interface for handling layer 4 of UDS protocol for any bus."""
 
-    P2_SERVER_MAX = 50  # Maximal value [ms] of P2Server recommended by ISO 14229-2
-    P2EXT_SERVER_MAX = 5000  # Maximal value [ms] of P2*Server recommended by ISO 14229-2
+    p2_server_max: int = 50  # Maximal value [ms] of P2Server recommended by ISO 14229-2
+    p2ext_server_max: int = 5000  # Maximal value [ms] of P2*Server recommended by ISO 14229-2
 
     @abstractmethod
     def send_pdu(self, pdu: AbstractPDU, addressing: AddressingType) -> None:
