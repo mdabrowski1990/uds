@@ -8,14 +8,18 @@ from .addressing import AddressingType
 from .pdu import AbstractPDU
 
 # TODO: since python 3.9 it can be replaced with Union[list[int], tuple[int]]; keep this way for backward compatibility
-TypingRawMessage = Union[List[int], Tuple[int, ...]]
-PDUs = Union[List[AbstractPDU], Tuple[AbstractPDU, ...]]
+# TODO: prospector supports only pylint version 2.5 that has serious problem with Aliases in Python 3.9.
+#  Remove unsubscriptable-object once prospector supports newer versions of pylint.
+TypingRawMessage = Union[List[int], Tuple[int, ...]]  # pylint: disable=unsubscriptable-object
+PDUs = Union[List[AbstractPDU], Tuple[AbstractPDU, ...]]  # pylint: disable=unsubscriptable-object
 
 
 class UdsMessage:
     """Common implementation of all UDS messages (requests and responses)."""
 
-    def __init__(self, raw_message: TypingRawMessage, pdu_sequence: Optional[PDUs] = None) -> None:
+    def __init__(self,
+                 raw_message: TypingRawMessage,
+                 pdu_sequence: Optional[PDUs] = None) -> None:  # pylint: disable=unsubscriptable-object
         """
         Create storage for a single UDS message.
 
@@ -76,7 +80,7 @@ class UdsMessage:
         return self.__raw_message
 
     @property
-    def addressing(self) -> Optional[AddressingType]:
+    def addressing(self) -> Optional[AddressingType]:  # pylint: disable=unsubscriptable-object
         """
         Addressing type over which this message was transmitted.
 
