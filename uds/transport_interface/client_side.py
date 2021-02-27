@@ -24,7 +24,7 @@ class AbstractTIClient(AbstractTransportInterface):
                  delta_p6_response: TimeMilliseconds = 0,
                  **specific_params: Any) -> None:  # noqa: F841
         """
-        Configure Transport layer for Client.
+        Configure common part of Transport layer for Client.
 
         :param p2_client: Value in milliseconds of P2Client to be used by the client.
             ISO 14229-2 explanation of P2Client:
