@@ -1,0 +1,30 @@
+"""Common implementation of UDS PDU (Protocol Data Unit) for all bus types."""
+
+__all__ = ["AbstractPDU"]
+
+from typing import Optional
+from abc import ABC, abstractmethod
+
+from .addressing import AddressingType
+
+
+class AbstractPDU(ABC):
+    """Abstract definition of Protocol Data Unit."""
+
+    @abstractmethod
+    def __init__(self) -> None:  # TODO: update
+        """Create storage related to a single PDU."""
+
+    @property
+    @abstractmethod
+    def addressing(self) -> Optional[AddressingType]:
+        """
+        Get addressing type over which this PDU was transmitted/received.
+
+        :return: Addressing over which the PDU was transmitted/received. None if PDU was not transmitted/received.
+        """
+
+    @property  # noqa
+    @abstractmethod
+    def pdu_type(self):  # TODO: update typing
+        """Getter of this PDU type."""
