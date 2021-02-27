@@ -36,5 +36,3 @@ class TestsUdsResponse:
     def test_get_response_type__invalid(self, request_message):
         self.mock_uds_response.raw_message = request_message
         assert UdsResponse.get_response_type(self=self.mock_uds_response) == UdsResponseType.INVALID
-
-    # TODO: test compliance with message format (ISO 14229-1)
