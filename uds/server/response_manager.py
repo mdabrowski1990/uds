@@ -9,7 +9,7 @@ ResponseManager is meant to:
 __all__ = ["ServerState", "ResponseRule", "ResponseManager"]
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Tuple, Set, Container, Iterable, Dict, List
+from typing import Any, Optional, Tuple, Set, Container, Dict, List, Union
 
 from uds.messages import UdsRequest, UdsResponse, AddressingType
 
@@ -18,8 +18,8 @@ TypingStateNames = Set[TypingStateName]
 TypingStateValue = Any
 TypingStateValues = Container[TypingStateValue]
 TypingStateTransition = Tuple[TypingStateValue, TypingStateValue]
-TypingRequestSIDs = Iterable[int]
-TypingAddressingTypes = Container[AddressingType]
+TypingRequestSIDs = Union[Tuple[int, ...], List[int], Set[int]]
+TypingAddressingTypes = Union[Tuple[AddressingType, ...], List[AddressingType], Set[AddressingType]]
 TypingCurrentStatesValues = Dict[TypingStateName, TypingStateValue]
 
 
@@ -137,6 +137,40 @@ class ResponseRule(ABC):
         :param addressing_types: Addressing Type for which the rule is applicable.
         :param related_request_sids: Service Identifiers for which the rule is applicable.
         """
+        self.__validate_addressing_types(addressing_types=addressing_types)
+        self.__validate_related_request_sids(related_request_sids=related_request_sids)
+        self.__addressing_types = set(addressing_types)
+        self.__related_request_sids = set(related_request_sids)
+
+    @staticmethod
+    def __validate_addressing_types(addressing_types: TypingAddressingTypes) -> None:
+        """
+        Verify addressing types argument.
+
+        :param addressing_types: Addressing types to validate.
+
+        :raise TypeError: Addressing types argument is not Iterable.
+        :raise ValueError: At least one member of addressing types is not AddressingType.
+        """
+        if not isinstance(addressing_types, (set, tuple, list)):
+            raise TypeError("'addressing_types' is not iterable")
+        if not all([isinstance(addressing_type, AddressingType) for addressing_type in addressing_types]):
+            raise ValueError("'addressing_types' does not contain instances of AddressingType only")
+
+    @staticmethod
+    def __validate_related_request_sids(related_request_sids: TypingRequestSIDs) -> None:
+        """
+        Verify related requests SIDs argument.
+
+        :param related_request_sids: Requests SIDs to validate.
+
+        :raise TypeError: Related requests SIDs argument is not Iterable.
+        :raise ValueError: At least one member of related requests sids is not raw byte.
+        """
+        if not isinstance(related_request_sids, (set, tuple, list)):
+            raise TypeError("'related_request_sids' is not iterable")
+        if not all([isinstance(sid, int) and 0x00 <= sid <= 0xFF for sid in related_request_sids]):
+            raise ValueError("'related_request_sids' does not contain raw bytes only")
 
     @abstractmethod
     def is_triggered(self, request: UdsRequest, current_states: TypingCurrentStatesValues) -> bool:
@@ -159,6 +193,16 @@ class ResponseRule(ABC):
 
         :return: Response message that was generated. None if no message to be sent in the response.
         """
+
+    @property
+    def addressing_types(self) -> TypingAddressingTypes:
+        """Addressing types of incoming requests for which this rule is supported."""
+        return self.__addressing_types
+
+    @property
+    def related_request_sids(self) -> TypingRequestSIDs:
+        """Service Identifiers of incoming requests for which this rule is supported."""
+        return self.__related_request_sids
 
 
 TypingRules = List[ResponseRule]

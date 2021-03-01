@@ -38,7 +38,7 @@ class UdsMessage:
         :param raw_message: Raw message value to validate.
 
         :raise TypeError: Raw message is not list or tuple type.
-        :raise ValueError: Any of raw message elements is not raw byte value.
+        :raise ValueError: At least one member of raw message elements is not raw byte value.
         """
         if not isinstance(raw_message, (tuple, list)):
             raise TypeError("'raw_message' is not list or tuple type")

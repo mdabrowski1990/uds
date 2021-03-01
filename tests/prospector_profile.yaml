@@ -36,7 +36,6 @@ pep257:
 
 mccabe:
   run: true
-
   options:
     max-complexity: 10
 
