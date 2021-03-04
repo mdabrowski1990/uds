@@ -1,6 +1,4 @@
 language: python
-env:
-  COVERALLS_REPO_TOKEN : ${{ secrets.COVERALLS_REPO_TOKEN }
 python:
   - "3.7"
   - "3.8"
@@ -11,5 +9,5 @@ install:
   - "pip install coveralls"
 script:
   - "pytest --cov-report term-missing --cov=uds tests"
-  - "coverage run --source=mypkg -m pytest tests/"
+  - "coverage run --source=uds -m pytest tests/"
 after_sucess: coveralls
