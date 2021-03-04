@@ -6,5 +6,8 @@ python:
 install:
   - "pip install -r requirements.txt"
   - "pip install -r tests/requirements_for_tests.txt"
+  - "pip install coveralls"
 script:
   - "pytest --cov-report term-missing --cov=uds tests"
+  - "coverage run --source=mypkg -m pytest tests/"
+after_sucess: coveralls
