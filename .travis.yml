@@ -11,9 +11,5 @@ install:
 script:
   - "pytest --cov-report term-missing --cov=uds tests"
   - "coverage run --source=uds -m pytest tests/"
-
-branches:
-  only:
-   - master
  
 after_sucess: coveralls
