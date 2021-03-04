@@ -1,3 +1,5 @@
+# Configuration of Travis-CI and Coveralls that are used for build verification and coverage assesment.
+
 language: python
 
 python:
