@@ -1,4 +1,6 @@
 language: python
+env:
+  COVERALLS_REPO_TOKEN : ${{ secrets.COVERALLS_REPO_TOKEN }
 python:
   - "3.7"
   - "3.8"
