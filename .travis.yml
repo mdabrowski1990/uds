@@ -1,0 +1,10 @@
+language: python
+python:
+  - "3.7"
+  - "3.8"
+  - "3.9"
+install:
+  - "pip install -r requirements.txt"
+  - "pip install -r tests/requirements_for_tests.txt"
+script:
+  - "pytest --cov-report term-missing --cov=uds tests"
