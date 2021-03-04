@@ -25,6 +25,7 @@ class Server:
                  p2_server_max: TypingTimeMilliseconds = DEFAULT_P2_SERVER_MAX,
                  p2ext_server_max: TypingTimeMilliseconds = DEFAULT_P2EXT_SERVER_MAX) -> None:
         """
+        TODO
 
         :param transport_interface:
         :param response_manager:
@@ -35,12 +36,14 @@ class Server:
 
     def turn_on(self) -> None:
         """
+        TODO
 
         :return:
         """
 
     def turn_off(self) -> None:
         """
+        TODO
 
         :return:
         """
@@ -48,6 +51,7 @@ class Server:
     @property
     def response_manager(self) -> ResponseManager:
         """
+        TODO
 
         :return:
         """
@@ -55,6 +59,7 @@ class Server:
     @response_manager.setter
     def response_manager(self, value_to_set: ResponseManager) -> None:
         """
+        TODO
 
         :param value_to_set:
         :return:
@@ -63,6 +68,7 @@ class Server:
     @property
     def p2_server(self) -> TypingTimeMilliseconds:
         """
+        TODO
 
         :return:
         """
@@ -70,6 +76,7 @@ class Server:
     @p2_server.setter
     def p2_server(self, value_to_set: TypingTimeMilliseconds) -> None:
         """
+        TODO
 
         :param value_to_set:
         :return:
@@ -78,6 +85,7 @@ class Server:
     @property
     def p2_server_max(self) -> TypingTimeMilliseconds:
         """
+        TODO
 
         :return:
         """
@@ -85,6 +93,7 @@ class Server:
     @p2_server_max.setter
     def p2_server_max(self, value_to_set: TypingTimeMilliseconds) -> None:
         """
+        TODO
 
         :param value_to_set:
         :return:
@@ -93,6 +102,7 @@ class Server:
     @property
     def p2ext_server(self) -> TypingTimeMilliseconds:
         """
+        TODO
 
         :return:
         """
@@ -100,6 +110,7 @@ class Server:
     @p2ext_server.setter
     def p2ext_server(self, value_to_set: TypingTimeMilliseconds) -> None:
         """
+        TODO
 
         :param value_to_set:
         :return:
@@ -108,6 +119,7 @@ class Server:
     @property
     def p2ext_server_max(self) -> TypingTimeMilliseconds:
         """
+        TODO
 
         :return:
         """
@@ -115,6 +127,7 @@ class Server:
     @p2ext_server_max.setter
     def p2ext_server_max(self, value_to_set: TypingTimeMilliseconds) -> None:
         """
+        TODO
 
         :param value_to_set:
         :return:
@@ -123,6 +136,7 @@ class Server:
     @property
     def p4_server(self) -> TypingTimeMilliseconds:
         """
+        TODO
 
         :return:
         """
@@ -130,6 +144,7 @@ class Server:
     @p4_server.setter
     def p4_server(self, value_to_set: TypingTimeMilliseconds) -> None:
         """
+        TODO
 
         :param value_to_set:
         :return:
