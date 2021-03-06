@@ -1,8 +1,10 @@
 """Module with data and implementation related to Service Identifiers (SID)."""
 
+__all__ = ["RequestSID", "ResponseSID"]
+
 from aenum import IntEnum, unique, extend_enum
 
-__all__ = ["RequestSID", "ResponseSID"]
+from .types import RawByte
 
 
 @unique
@@ -14,7 +16,7 @@ class RequestSID(IntEnum):
     """
 
     @classmethod
-    def is_request_sid(cls, value: int) -> bool:
+    def is_request_sid(cls, value: RawByte) -> bool:
         """
         Check whether given value is Service Identifier (SID).
 
@@ -71,7 +73,7 @@ class ResponseSID(IntEnum):
     """
 
     @classmethod
-    def is_response_sid(cls, value: int) -> bool:
+    def is_response_sid(cls, value: RawByte) -> bool:
         """
         Check whether given value is Response Service Identifier (RSID).
 

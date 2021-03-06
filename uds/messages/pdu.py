@@ -11,10 +11,6 @@ from .addressing import AddressingType
 class AbstractPDU(ABC):
     """Abstract definition of Protocol Data Unit."""
 
-    @abstractmethod
-    def __init__(self) -> None:  # TODO: update
-        """Create storage related to a single PDU."""
-
     @property
     @abstractmethod
     def addressing(self) -> Optional[AddressingType]:
