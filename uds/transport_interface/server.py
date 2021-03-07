@@ -29,6 +29,9 @@ class TransportInterfaceServer(TransportInterface):
             the response message, another functionally addressed request is received (e.g. TesterPresent).
             Expectations: The transmission of response message shall be continued, because
             :parameter stop_on_request_addressing_types does not contain AddressingType.FUNCTIONAL
+        TODO: check if request SID matter in provided examples (e.g. TesterPresent shall not influence response
+          transmission, but for example ECUReset shall) according to ISO 14229
+          I would expect to have such information in ISO-14229-2.
 
         :param response: Response message to transmit.
         :param addressing: Addressing type to use for the transmission.
