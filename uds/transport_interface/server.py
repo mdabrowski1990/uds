@@ -55,7 +55,7 @@ class TransportInterfaceServer(TransportInterface):
         """
         Wait till incoming request message is received and return it.
 
-        WARNING
+        Warning:
             This method might keep the program in the infinite loop if no request is ever received.
 
         :param addressing: Addressing type to monitor for incoming request message.
