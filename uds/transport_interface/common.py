@@ -13,8 +13,8 @@ class UdsSegmentationError(Exception):
 
     Possible causes:
      - Impossible to segment provided message.
-     - Received PDUs are not complete set of PDUs for a single message.
-     - Received PDUs are related to more than one message.
+     - Provided PDUs are not a complete PDUs set for a single message.
+     - Provided PDUs are related to more than one message.
     """
 
 
@@ -29,7 +29,7 @@ class TransportInterface(ABC):
         :param pdu: Protocol Data Unit to transmit.
         :param addressing: Addressing type to use for the transmission.
 
-        :return: Transmitted PDU updated with data related to transmission.
+        :return: Transmitted PDU updated with data related to its transmission.
         """
 
     @abstractmethod

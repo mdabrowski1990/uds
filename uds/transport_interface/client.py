@@ -9,7 +9,7 @@ from .common import TransportInterface
 
 
 class UdsSequenceError(Exception):
-    """Request message was not sent before attempt to receive response messages."""
+    """Request message was not transmitted before an attempt to receive response messages."""
 
 
 class TransportInterfaceClient(TransportInterface):
@@ -18,12 +18,12 @@ class TransportInterfaceClient(TransportInterface):
     @abstractmethod
     def send_request(self, request: UdsRequest, addressing: AddressingType) -> UdsRequest:  # noqa: F841
         """
-        Transmit one request message.
+        Transmit request message.
 
         :param request: Request message to transmit.
         :param addressing: Addressing type to use for the transmission.
 
-        :return: Transmitted request message updated with data related to transmission.
+        :return: Transmitted request message updated with data related to its transmission.
         """
 
     @abstractmethod
@@ -32,7 +32,7 @@ class TransportInterfaceClient(TransportInterface):
         Get all possible responses to the last sent request message.
 
         WARNING!
-        This method will wait till all possible diagnostic responses are received or one of the timeouts occurs.
+            This method will wait till all possible diagnostic responses are received or one of the timeouts occurs.
 
         :param p2_timeout: Maximal time to wait after the successful transmission of a request message for
             the start of incoming response messages (first PDU).

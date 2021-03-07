@@ -35,7 +35,7 @@ class TransportInterfaceServer(TransportInterface):
         :param stop_on_request_addressing_types: Addressing types of new incoming request messages to stop this
             response message transmission.
 
-        :return: Transmitted response message updated with data related to transmission.
+        :return: Transmitted response message updated with data related to its transmission.
             None if transmission is aborted due to another request message transmission.
         """
 
@@ -47,13 +47,16 @@ class TransportInterfaceServer(TransportInterface):
         :param addressing: Addressing type for which last request message to be returned.
             If None given, then the last request message is returned regardless of addressing type over which received.
 
-        :return: Request message that was last received.
+        :return: Request message that was last received or None if no request message was received.
         """
 
     @abstractmethod
     def receive_request(self, addressing: Optional[AddressingType] = None) -> UdsRequest:
         """
         Wait till incoming request message is received and return it.
+
+        WARNING
+            This method might keep the program in the infinite loop if no request is ever received.
 
         :param addressing: Addressing type to monitor for incoming request message.
             If None given, then return first request message received over any of the addressing types.

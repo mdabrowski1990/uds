@@ -14,7 +14,7 @@ class UdsResponseType(Enum):
 
     Options:
     - POSITIVE - response messages
-        WARNING! Positive response messages might be incompatible with messaging database
+        !WARNING! Note that this status does not reflect compatibility with message format (messaging database).
     - NEGATIVE - negative response messages in format [0x7F, SID, NRC]
         Where:
         SID - Service Identifier of request (identifies request to which it is response)
