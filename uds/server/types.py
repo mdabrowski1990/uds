@@ -1,4 +1,4 @@
-"""Storage for constants used for typing (mainly aliases)."""
+"""Container with all types (and its aliases) used by the module."""
 
 __all__ = ["TypingTimeMilliseconds"]
 
