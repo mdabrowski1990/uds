@@ -9,18 +9,9 @@ ResponseManager is meant to:
 __all__ = ["ServerState", "ResponseRule", "ResponseManager"]
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Tuple, Set, Container, Dict, List, Union
+from typing import Optional
 
-from uds.messages import UdsRequest, UdsResponse, AddressingType
-
-TypingStateName = str
-TypingStateNames = Set[TypingStateName]
-TypingStateValue = Any
-TypingStateValues = Container[TypingStateValue]
-TypingStateTransition = Tuple[TypingStateValue, TypingStateValue]
-TypingRequestSIDs = Union[Tuple[int, ...], List[int], Set[int]]
-TypingAddressingTypes = Union[Tuple[AddressingType, ...], List[AddressingType], Set[AddressingType]]
-TypingCurrentStatesValues = Dict[TypingStateName, TypingStateValue]
+from .types import *
 
 
 class ServerState(ABC):
@@ -33,15 +24,15 @@ class ServerState(ABC):
     Instance of a SubClass is meant to additionally store current value of the state for a single simulated server.
     """
 
-    def __init__(self, state_name: TypingStateName, initial_value: TypingStateValue) -> None:
+    def __init__(self, state_name: StateName, initial_value: StateValue) -> None:
         """
         Define the state.
 
         :param state_name: Name of the state.
         :param initial_value: Initial value that this state is supposed to be in.
         """
-        if not isinstance(state_name, TypingStateName):
-            raise TypeError(f"'state_name' is not {TypingStateName} type")
+        if not isinstance(state_name, StateName):
+            raise TypeError(f"'state_name' is not {StateName} type")
         if initial_value not in self.possible_values:
             raise ValueError(f"'initial_value' is not a member of 'possible_values'; "
                              f"initial_value={repr(initial_value)}; possible_values={repr(self.possible_values)}")
@@ -49,7 +40,7 @@ class ServerState(ABC):
         self.__current_value = initial_value
 
     @property
-    def current_value(self) -> TypingStateValue:
+    def current_value(self) -> StateValue:
         """
         Value that the server is currently in.
 
@@ -61,12 +52,12 @@ class ServerState(ABC):
 
     @property
     @abstractmethod
-    def possible_values(self) -> TypingStateValues:
+    def possible_values(self) -> StateValues:
         """All possible values of this state."""
 
     @property
     @abstractmethod
-    def depends_on(self) -> TypingStateNames:
+    def depends_on(self) -> StateNames:
         """
         Names of all states which change might cause transition of this state as well.
 
@@ -78,7 +69,7 @@ class ServerState(ABC):
         """
 
     @abstractmethod
-    def update_on_request(self, request: UdsRequest) -> Optional[TypingStateTransition]:
+    def update_on_request(self, request: UdsRequest) -> Optional[StateTransition]:
         """
         Access whether adjustment of current value is needed after reception of the diagnostic request.
 
@@ -90,7 +81,7 @@ class ServerState(ABC):
         """
 
     @abstractmethod
-    def update_on_response(self, response: UdsResponse) -> Optional[TypingStateTransition]:
+    def update_on_response(self, response: UdsResponse) -> Optional[StateTransition]:
         """
         Access whether adjustment of current value is needed after transmission of the diagnostic response.
 
@@ -103,9 +94,9 @@ class ServerState(ABC):
 
     @abstractmethod
     def update_on_other_state_transition(self,
-                                         state_name: TypingStateName,
-                                         previous_value: TypingStateValue,
-                                         new_value: TypingStateValue) -> Optional[TypingStateTransition]:
+                                         state_name: StateName,
+                                         previous_value: StateValue,
+                                         new_value: StateValue) -> Optional[StateTransition]:
         """
         Access whether adjustment of current value is needed after transition of another state.
 
@@ -117,7 +108,7 @@ class ServerState(ABC):
         """
 
     @abstractmethod
-    def update_on_idle(self) -> Optional[TypingStateTransition]:
+    def update_on_idle(self) -> Optional[StateTransition]:
         """
         Access whether adjustment of current state is needed after being in idle.
 
@@ -130,7 +121,7 @@ class ServerState(ABC):
 class ResponseRule(ABC):
     """A single rule for creating response message by a server."""
 
-    def __init__(self, addressing_types: TypingAddressingTypes, related_request_sids: TypingRequestSIDs) -> None:
+    def __init__(self, addressing_types: AddressingTypes, related_request_sids: RequestSIDs) -> None:
         """
         Configure the rule.
 
@@ -143,7 +134,7 @@ class ResponseRule(ABC):
         self.__related_request_sids = set(related_request_sids)
 
     @staticmethod
-    def __validate_addressing_types(addressing_types: TypingAddressingTypes) -> None:
+    def __validate_addressing_types(addressing_types: AddressingTypes) -> None:
         """
         Verify addressing types argument.
 
@@ -158,7 +149,7 @@ class ResponseRule(ABC):
             raise ValueError("'addressing_types' does not contain instances of AddressingType only")
 
     @staticmethod
-    def __validate_related_request_sids(related_request_sids: TypingRequestSIDs) -> None:
+    def __validate_related_request_sids(related_request_sids: RequestSIDs) -> None:
         """
         Verify related requests SIDs argument.
 
@@ -173,7 +164,7 @@ class ResponseRule(ABC):
             raise ValueError("'related_request_sids' does not contain raw bytes only")
 
     @abstractmethod
-    def is_triggered(self, request: UdsRequest, current_states: TypingCurrentStatesValues) -> bool:
+    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:
         """
         Check if the rule might be used to generate a response message for the received request.
 
@@ -184,7 +175,7 @@ class ResponseRule(ABC):
         """
 
     @abstractmethod
-    def create_response(self, request: UdsRequest, current_states: TypingCurrentStatesValues) -> Optional[UdsResponse]:
+    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:
         """
         Create response message according to the rule.
 
@@ -195,18 +186,18 @@ class ResponseRule(ABC):
         """
 
     @property
-    def addressing_types(self) -> TypingAddressingTypes:
+    def addressing_types(self) -> AddressingTypes:
         """Addressing types of incoming requests for which this rule is supported."""
         return self.__addressing_types
 
     @property
-    def related_request_sids(self) -> TypingRequestSIDs:
+    def related_request_sids(self) -> RequestSIDs:
         """Service Identifiers of incoming requests for which this rule is supported."""
         return self.__related_request_sids
 
 
-TypingRules = List[ResponseRule]
-TypingStates = Container[ServerState]
+Rules = List[ResponseRule]
+States = Container[ServerState]
 
 
 class ResponseManager:
@@ -219,7 +210,7 @@ class ResponseManager:
 
     __EMERGENCY_RESPONSE_RULES = ()
 
-    def __init__(self, response_rules: TypingRules, server_states: TypingStates) -> None:
+    def __init__(self, response_rules: Rules, server_states: States) -> None:
         """
         Create response manager, define rules it uses and states that it contains.
 
@@ -230,11 +221,11 @@ class ResponseManager:
         """
 
     @property
-    def current_states_values(self) -> TypingCurrentStatesValues:
+    def current_states_values(self) -> CurrentStatesValues:
         """Values for all the states that the simulated server currently is in."""
 
     @property
-    def response_rules(self) -> TypingRules:
+    def response_rules(self) -> Rules:
         """Rules (in priority order) that the manager is currently using."""
 
     def create_response(self, request: UdsRequest) -> Optional[UdsResponse]:

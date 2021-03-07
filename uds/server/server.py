@@ -4,7 +4,8 @@ __all__ = ["Server"]
 
 from typing import Optional, Union
 
-from uds.constants import DEFAULT_P2EXT_SERVER_MAX, DEFAULT_P2_SERVER_MAX, TypingTimeMilliseconds
+from .types import TimeMilliseconds
+from .consts import DEFAULT_P2EXT_SERVER_MAX, DEFAULT_P2_SERVER_MAX
 from .response_manager import ResponseManager
 
 
@@ -19,11 +20,11 @@ class Server:
     def __init__(self,
                  transport_interface,
                  response_manager: ResponseManager,
-                 p4_server: Optional[TypingTimeMilliseconds] = None,
-                 p2_server: Optional[TypingTimeMilliseconds] = None,
-                 p2ext_server: Optional[TypingTimeMilliseconds] = None,
-                 p2_server_max: TypingTimeMilliseconds = DEFAULT_P2_SERVER_MAX,
-                 p2ext_server_max: TypingTimeMilliseconds = DEFAULT_P2EXT_SERVER_MAX) -> None:
+                 p4_server: Optional[TimeMilliseconds] = None,
+                 p2_server: Optional[TimeMilliseconds] = None,
+                 p2ext_server: Optional[TimeMilliseconds] = None,
+                 p2_server_max: TimeMilliseconds = DEFAULT_P2_SERVER_MAX,
+                 p2ext_server_max: TimeMilliseconds = DEFAULT_P2EXT_SERVER_MAX) -> None:
         """
         TODO
 
@@ -66,7 +67,7 @@ class Server:
         """
 
     @property
-    def p2_server(self) -> TypingTimeMilliseconds:
+    def p2_server(self) -> TimeMilliseconds:
         """
         TODO
 
@@ -74,7 +75,7 @@ class Server:
         """
 
     @p2_server.setter
-    def p2_server(self, value_to_set: TypingTimeMilliseconds) -> None:
+    def p2_server(self, value_to_set: TimeMilliseconds) -> None:
         """
         TODO
 
@@ -83,7 +84,7 @@ class Server:
         """
 
     @property
-    def p2_server_max(self) -> TypingTimeMilliseconds:
+    def p2_server_max(self) -> TimeMilliseconds:
         """
         TODO
 
@@ -91,7 +92,7 @@ class Server:
         """
 
     @p2_server_max.setter
-    def p2_server_max(self, value_to_set: TypingTimeMilliseconds) -> None:
+    def p2_server_max(self, value_to_set: TimeMilliseconds) -> None:
         """
         TODO
 
@@ -100,7 +101,7 @@ class Server:
         """
 
     @property
-    def p2ext_server(self) -> TypingTimeMilliseconds:
+    def p2ext_server(self) -> TimeMilliseconds:
         """
         TODO
 
@@ -108,7 +109,7 @@ class Server:
         """
 
     @p2ext_server.setter
-    def p2ext_server(self, value_to_set: TypingTimeMilliseconds) -> None:
+    def p2ext_server(self, value_to_set: TimeMilliseconds) -> None:
         """
         TODO
 
@@ -117,7 +118,7 @@ class Server:
         """
 
     @property
-    def p2ext_server_max(self) -> TypingTimeMilliseconds:
+    def p2ext_server_max(self) -> TimeMilliseconds:
         """
         TODO
 
@@ -125,7 +126,7 @@ class Server:
         """
 
     @p2ext_server_max.setter
-    def p2ext_server_max(self, value_to_set: TypingTimeMilliseconds) -> None:
+    def p2ext_server_max(self, value_to_set: TimeMilliseconds) -> None:
         """
         TODO
 
@@ -134,7 +135,7 @@ class Server:
         """
 
     @property
-    def p4_server(self) -> TypingTimeMilliseconds:
+    def p4_server(self) -> TimeMilliseconds:
         """
         TODO
 
@@ -142,7 +143,7 @@ class Server:
         """
 
     @p4_server.setter
-    def p4_server(self, value_to_set: TypingTimeMilliseconds) -> None:
+    def p4_server(self, value_to_set: TimeMilliseconds) -> None:
         """
         TODO
 
