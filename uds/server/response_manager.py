@@ -10,13 +10,69 @@ __all__ = ["ResponseManager"]
 
 from typing import Optional, List, Container
 
-from .types import CurrentStatesValues, UdsRequest, UdsResponse
+from uds.messages import ResponseSID, AddressingType, UdsRequest, UdsResponse, NRC
+from .types import CurrentStatesValues
 from .server_state import ServerState
 from .response_rule import ResponseRule
 
 
 Rules = List[ResponseRule]
 States = Container[ServerState]
+
+
+class _EmergencyServiceNotSupported(ResponseRule):
+    """Emergency Rule to respond negatively with NRC Service Not Supported."""
+
+    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:
+        """
+        Check if the rule might be used to generate a response message for the received request.
+
+        :param request: Request message that was received.
+        :param current_states: Current values of all server's states.
+
+        :return: True if the rule is applicable in provided situation, False otherwise.
+        """
+        return True
+
+    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:
+        """
+        Create response message according to the rule.
+
+        :param request: Request message for which response to be generated.
+        :param current_states: Current values of all server's states.
+
+        :return: Response message that was generated. None if no message to be sent in the response.
+        """
+        raw_negative_message = [ResponseSID.NegativeResponse.value,
+                                request.raw_message[0],
+                                NRC.ServiceNotSupported.value]
+        return UdsResponse(raw_message=raw_negative_message)
+
+
+class _EmergencyNoResponse(ResponseRule):
+    """Emergency Rule to stay silent and not respond."""
+
+    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:
+        """
+        Check if the rule might be used to generate a response message for the received request.
+
+        :param request: Request message that was received.
+        :param current_states: Current values of all server's states.
+
+        :return: True if the rule is applicable in provided situation, False otherwise.
+        """
+        return True
+
+    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:
+        """
+        Create response message according to the rule.
+
+        :param request: Request message for which response to be generated.
+        :param current_states: Current values of all server's states.
+
+        :return: Response message that was generated. None if no message to be sent in the response.
+        """
+        return None
 
 
 class ResponseManager:
@@ -27,7 +83,11 @@ class ResponseManager:
     contains rules (ordered according to priority) which describes how to create response message in given situation.
     """
 
-    __EMERGENCY_RESPONSE_RULES = ()
+    __EMERGENCY_RESPONSE_RULES = (
+        _EmergencyServiceNotSupported(addressing_types={AddressingType.PHYSICAL}, related_request_sids=range(0, 0x100)),
+        _EmergencyNoResponse(addressing_types={AddressingType.BROADCAST, AddressingType.FUNCTIONAL},
+                             related_request_sids=range(0, 0x100)),
+    )
 
     def __init__(self, response_rules: Rules, server_states: States) -> None:
         """
