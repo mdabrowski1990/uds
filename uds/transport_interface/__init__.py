@@ -6,11 +6,15 @@ Transport Interfaces are meant to handle following UDS protocol layers (accordin
  - Network (3rd)
  - Data (2nd)
  - Physical (1st)
+
+Each bus (e.g. CAN, LIN, Ethernet) that support UDS requires implementation of:
+ - TransportInterfaceClient
+ - TransportInterfaceServer
 """
 
 __all__ = ["UdsSegmentationError", "UdsSequenceError",
-           "TransportInterface", "TransportInterfaceClient", "TransportInterfaceServer"]
+           "TransportInterfaceClient", "TransportInterfaceServer"]
 
-from .common import TransportInterface, UdsSegmentationError
+from .common import UdsSegmentationError
 from .client import TransportInterfaceClient, UdsSequenceError
 from .server import TransportInterfaceServer
