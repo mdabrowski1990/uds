@@ -5,7 +5,7 @@ __all__ = ["TransportInterfaceServer"]
 from abc import abstractmethod
 from typing import Optional
 
-from .types import AddressingType, UdsRequest, UdsResponse
+from .types import AddressingType, AddressingTypes, UdsRequest, UdsResponse
 from .common import TransportInterface
 
 
@@ -14,19 +14,32 @@ class TransportInterfaceServer(TransportInterface):
 
     @abstractmethod
     def send_response(self,
-                      response: UdsResponse,  # noqa: F841
-                      addressing: AddressingType) -> UdsResponse:
+                      response: UdsResponse,
+                      addressing: AddressingType,
+                      stop_on_request_addressing_types: AddressingTypes) -> Optional[UdsResponse]:
         """
         Transmit one response message.
 
+        Examples:
+            - This method was called to response a physically addressed request, but during transmission of
+            the response message, another physically addressed request is received (or at least the first PDU).
+            Expectations: The transmission of response message shall be aborted, because
+            :parameter stop_on_request_addressing_types contains AddressingType.PHYSICAL
+            - This method was called to response a physically addressed request, but during transmission of
+            the response message, another functionally addressed request is received (e.g. TesterPresent).
+            Expectations: The transmission of response message shall be continued, because
+            :parameter stop_on_request_addressing_types does not contain AddressingType.FUNCTIONAL
+
         :param response: Response message to transmit.
         :param addressing: Addressing type to use for the transmission.
-        TODO: add option to stop transmission on request PDU (physical addressing)
-        TODO: add option to stop transmission on request PDU (functional addressing)
+        :param stop_on_request_addressing_types: Addressing types of new incoming request messages to stop this
+            response message transmission.
 
         :return: Transmitted response message updated with data related to transmission.
+            None if transmission is aborted due to another request message transmission.
         """
 
+    @abstractmethod
     def get_received_request(self, addressing: Optional[AddressingType] = None) -> Optional[UdsRequest]:
         """
         Get last received request message.
@@ -37,6 +50,7 @@ class TransportInterfaceServer(TransportInterface):
         :return: Request message that was last received.
         """
 
+    @abstractmethod
     def receive_request(self, addressing: Optional[AddressingType] = None) -> UdsRequest:
         """
         Wait till incoming request message is received and return it.
