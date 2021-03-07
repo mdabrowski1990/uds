@@ -5,13 +5,13 @@ __all__ = ["ResponseRule"]
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from .types import AddressingType, AddressingTypes, RequestSIDs, UdsRequest, UdsResponse, CurrentStatesValues
+from .types import AddressingType, AddressingTypes, RequestSIDRawValues, UdsRequest, UdsResponse, CurrentStatesValues
 
 
 class ResponseRule(ABC):
     """A single rule for creating response message by a server."""
 
-    def __init__(self, addressing_types: AddressingTypes, related_request_sids: RequestSIDs) -> None:
+    def __init__(self, addressing_types: AddressingTypes, related_request_sids: RequestSIDRawValues) -> None:
         """
         Configure the rule.
 
@@ -39,7 +39,7 @@ class ResponseRule(ABC):
             raise ValueError("'addressing_types' does not contain instances of AddressingType only")
 
     @staticmethod
-    def __validate_related_request_sids(related_request_sids: RequestSIDs) -> None:
+    def __validate_related_request_sids(related_request_sids: RequestSIDRawValues) -> None:
         """
         Verify related requests SIDs argument.
 
@@ -81,6 +81,6 @@ class ResponseRule(ABC):
         return self.__addressing_types
 
     @property
-    def related_request_sids(self) -> RequestSIDs:
+    def related_request_sids(self) -> RequestSIDRawValues:
         """Service Identifiers of incoming requests for which this rule is supported."""
         return self.__related_request_sids
