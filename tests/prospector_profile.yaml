@@ -24,8 +24,15 @@ pyflakes:
 
 pep257:
   disable:
-    - D212
     - D203
+    - D212
+    - D407
+    - D413
+# Should I add these? For details visit:
+#  https://stackoverflow.com/questions/66408022/what-is-the-reason-for-d407-error-raised-by-pydocstyle
+#    - D213
+#    - D215
+#    - D408
 
 mccabe:
   run: true

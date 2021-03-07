@@ -2,23 +2,18 @@
 
 __all__ = ["UdsMessage"]
 
-from typing import Optional, Union, List, Tuple
+from typing import Optional
 
 from .addressing import AddressingType
 from .pdu import AbstractPDU
-
-# TODO: since python 3.9 it can be replaced with Union[list[int], tuple[int]]; keep this way for backward compatibility
-# TODO: prospector supports only pylint version 2.5 that has serious problem with Aliases in Python 3.9.
-#  Remove unsubscriptable-object once prospector supports newer versions of pylint.
-TypingRawMessage = Union[List[int], Tuple[int, ...]]  # pylint: disable=unsubscriptable-object
-PDUs = Union[List[AbstractPDU], Tuple[AbstractPDU, ...]]  # pylint: disable=unsubscriptable-object
+from .types import RawMessage, PDUs
 
 
 class UdsMessage:
     """Common implementation of all UDS messages (requests and responses)."""
 
     def __init__(self,
-                 raw_message: TypingRawMessage,
+                 raw_message: RawMessage,
                  pdu_sequence: Optional[PDUs] = None) -> None:  # pylint: disable=unsubscriptable-object
         """
         Create storage for a single UDS message.
@@ -36,7 +31,7 @@ class UdsMessage:
         self.__pdu_sequence = tuple() if pdu_sequence is None else tuple(pdu_sequence)
 
     @staticmethod
-    def __validate_raw_message(raw_message: TypingRawMessage) -> None:
+    def __validate_raw_message(raw_message: RawMessage) -> None:
         """
         Verify raw message argument.
 
@@ -75,7 +70,7 @@ class UdsMessage:
         return self.__pdu_sequence
 
     @property
-    def raw_message(self) -> TypingRawMessage:
+    def raw_message(self) -> RawMessage:
         """Raw message that this message carries."""
         return self.__raw_message
 
