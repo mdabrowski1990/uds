@@ -5,7 +5,7 @@ from uds.messages.base_message import UdsMessage, AbstractPDU
 
 
 class TestUdsMessage:
-    """Tests for 'UdsMessage' class."""
+    """Tests for UdsMessage class."""
 
     def setup(self):
         self.mock_uds_message = Mock(spec=UdsMessage)
