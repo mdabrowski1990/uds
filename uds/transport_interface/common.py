@@ -9,7 +9,7 @@ from .types import AddressingType, PDU, PDUs, UdsMessage
 
 class UdsSegmentationError(Exception):
     """
-    Error related to UDS message segmentation (UDS message -> PDUs) or desegmentation (PDUs -> UDS message).
+    Error related to UDS message segmentation (UDS message -> PDUs) and desegmentation (PDUs -> UDS message).
 
     Possible causes:
      - Impossible to segment provided message.

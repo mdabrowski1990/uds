@@ -18,7 +18,7 @@ class TransportInterfaceServer(TransportInterface):
                       addressing: AddressingType,
                       stop_on_request_addressing_types: AddressingTypes) -> Optional[UdsResponse]:  # noqa: F841
         """
-        Transmit one response message.
+        Transmit response message.
 
         Example use cases
             - This method was called to response a physically addressed request, but during transmission of
