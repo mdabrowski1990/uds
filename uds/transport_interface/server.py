@@ -14,13 +14,13 @@ class TransportInterfaceServer(TransportInterface):
 
     @abstractmethod
     def send_response(self,
-                      response: UdsResponse,
+                      response: UdsResponse,  # noqa: F841
                       addressing: AddressingType,
-                      stop_on_request_addressing_types: AddressingTypes) -> Optional[UdsResponse]:
+                      stop_on_request_addressing_types: AddressingTypes) -> Optional[UdsResponse]:  # noqa: F841
         """
         Transmit one response message.
 
-        Examples:
+        Example use cases
             - This method was called to response a physically addressed request, but during transmission of
             the response message, another physically addressed request is received (or at least the first PDU).
             Expectations: The transmission of response message shall be aborted, because
