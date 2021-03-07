@@ -9,7 +9,7 @@ from .types import AddressingType, PDU, PDUs, UdsMessage
 
 class UdsSegmentationError(Exception):
     """
-    Error related to UDS message segmentation.
+    Error related to UDS message segmentation (UDS message -> PDUs) or desegmentation (PDUs -> UDS message).
 
     Possible causes:
      - Impossible to segment provided message.
@@ -33,19 +33,22 @@ class TransportInterface(ABC):
         """
 
     @abstractmethod
-    def receive_pdus(self) -> PDU:
+    def receive_pdu(self) -> PDU:
         """
         Wait till incoming PDU is received and return it.
 
-        :return: The first PDU that received since the call of this method.
+        Warning:
+            This method might keep the program in the infinite loop if no PDU is ever received.
+
+        :return: The first PDU that to be received after the call of this method.
         """
 
     @abstractmethod
-    def get_received_pdu(self) -> PDUs:
+    def get_received_pdus(self) -> PDUs:
         """
         Get all Protocol Data Units (PDUs) that were silently received by the Transport Interface.
 
-        :return: PDUs that were received and queued since last call of this method.
+        :return: PDUs that were received since last call of this method.
         """
 
     @abstractmethod
