@@ -21,6 +21,6 @@ It supports different communication buses on both sides of communication (client
 
 Documentation
 =============
-- Package documentation - https://uds.readthedocs.io/en/latest/  
+- Package documentation - https://uds.readthedocs.io/en/latest/ or https://mdabrowski1990.github.io/uds/
 - ISO 14229-1:2020 - https://www.iso.org/standard/72439.html
 - ISO 14229-2:2013 - https://www.iso.org/standard/45763.html
