@@ -15,12 +15,30 @@ UDS
    :target: https://uds.readthedocs.io/
    :alt: Documentation
 
-Python package for handling Unified Diagnostic Services (UDS) protocol defined by ISO 14229.
+Python package for handling `Unified Diagnostic Services`__ (UDS_) protocol defined by ISO 14229.
 It supports different communication buses on both sides of communication (client and server).
 
+Current Functionalities
+=============
+- Diagnostic message support
+
+Planned Functionalities
+=============
+- Client (diagnostic tester) simulation
+- Server (on-board ECU) simulation
+- Messaging databases support
+- Automatic messaging database import from Candela File format (CDD)
+- CAN support
+- Ethernet support
+- LIN support
+- Flexray support
+- K-Line support
 
 Documentation
 =============
-- Package documentation - https://uds.readthedocs.io/en/latest/ or https://mdabrowski1990.github.io/uds/
-- ISO 14229-1:2020 - https://www.iso.org/standard/72439.html
-- ISO 14229-2:2013 - https://www.iso.org/standard/45763.html
+- Package documentation is available on `ReadTheDocs <https://uds.readthedocs.io/en/latest/>`_ and `GitHub Pages <https://mdabrowski1990.github.io/uds/>`_
+- `ISO 14229-1:2020 <https://www.iso.org/standard/72439.html/>`_
+- `ISO 14229-2:2013 <https://www.iso.org/standard/45763.html/>`_
+
+.. _UDS: https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
+__ UDS_
