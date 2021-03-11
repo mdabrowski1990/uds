@@ -1,6 +1,7 @@
-# These are supported funding model platforms
-
 github: [mdabrowski1990]
 issuehunt: mdabrowski1990
 liberapay: mdabrowski1990
+otechie: mdabrowski
+#TODO: tidelift - once released on PyPI
+#TODO: community_bridge - unable to add project at https://crowdfunding.lfx.linuxfoundation.org/projects/create/select-repo
 custom: ['https://paypal.me/pools/c/8xzKVUT0ba', 'https://paypal.me/pools/c/8xBlQ11Adr', 'https://paypal.me/pools/c/8xBlUHGPpE', 'https://paypal.me/pools/c/8xBm451jNW']
