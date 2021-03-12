@@ -40,8 +40,18 @@ Planned Functionalities
 Documentation
 =============
 - Package documentation is available on `ReadTheDocs <https://uds.readthedocs.io/en/latest/>`_ and `GitHub Pages <https://mdabrowski1990.github.io/uds/>`_
-- `ISO 14229-1:2020 <https://www.iso.org/standard/72439.html/>`_
-- `ISO 14229-2:2013 <https://www.iso.org/standard/45763.html/>`_
+- UDS protocol:
+   - `ISO 14229-1:2020 <https://www.iso.org/standard/72439.html/>`_
+   - `ISO 14229-2:2013 <https://www.iso.org/standard/45763.html/>`_
+- UDS on CAN:
+   - `ISO 14229-3:2012 <https://www.iso.org/standard/55284.html/>`_
+   - `ISO 15765-2:2016 <https://www.iso.org/standard/66574.html/>`_
+- UDS on LIN:
+   - `ISO 14229-7:2015 <https://www.iso.org/standard/61221.html/>`_
+   - `ISO 17987-2:2016 <https://www.iso.org/standard/61223.html/>`_
+- UDS on Ethertnet:
+   - `ISO 14229-5:2013 <https://www.iso.org/standard/55287.html/>`_
+   - `ISO 13400-2:2019 <https://www.iso.org/standard/74785.html/>`_
 
 .. _UDS: https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
 __ UDS_
