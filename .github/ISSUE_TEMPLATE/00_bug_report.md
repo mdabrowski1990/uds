@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Provide information about (potential) defect that you have found
 title: "[INVESTIGATE]"
 labels: bug
 assignees: ''
