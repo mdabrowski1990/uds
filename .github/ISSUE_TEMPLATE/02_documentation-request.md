@@ -1,6 +1,6 @@
 ---
 name: Documentation request
-about: Suggest how to improve current documentation
+about: Let us know about functionalities that are not described in the documentation
 title: "[INVESTIGATE]"
 labels: documentation
 assignees: ''
