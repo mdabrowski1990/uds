@@ -1,6 +1,6 @@
 ---
-name: Empty issue
-about: Start with empty draft
+name: Other
+about: Anything else? Choose to start with empty draft.
 title: ''
 labels: ''
 assignees: ''
