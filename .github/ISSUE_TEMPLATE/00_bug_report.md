@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Provide information about (potential) defect that you have found
-title: "[INVESTIGATE]"
+title: "[INVESTIGATE] enter short name here"
 labels: bug
 assignees: ''
 
