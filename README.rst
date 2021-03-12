@@ -17,6 +17,10 @@ UDS
    
 .. image:: https://bestpractices.coreinfrastructure.org/projects/4703/badge
    :target: https://bestpractices.coreinfrastructure.org/projects/4703
+   
+.. image:: https://img.shields.io/badge/License-MIT-blue.svg
+   :target: https://lbesson.mit-license.org/
+
 
 Python package for handling `Unified Diagnostic Services`__ (UDS_) protocol defined by ISO 14229.
 It supports different communication buses on both sides of communication (client and server).
