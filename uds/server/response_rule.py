@@ -49,7 +49,7 @@ class ResponseRule(ABC):
         :raise ValueError: At least one member of related requests sids is not raw byte.
         """
         if not isinstance(related_request_sids, (set, tuple, list)):
-            raise TypeError("'related_request_sids' is not iterable")
+            raise TypeError("'related_request_sids' is not set, tuple or list")
         if not all([isinstance(sid, int) and 0x00 <= sid <= 0xFF for sid in related_request_sids]):
             raise ValueError("'related_request_sids' does not contain raw bytes only")
 

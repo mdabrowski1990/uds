@@ -10,7 +10,7 @@ __all__ = ["ResponseManager"]
 
 from typing import Optional, List, Container
 
-from uds.messages import ResponseSID, AddressingType, UdsRequest, UdsResponse, NRC
+from uds.messages import ResponseSID, AddressingType, UdsRequest, UdsResponse, NRC, POSSIBLE_REQUEST_SIDS
 from .types import CurrentStatesValues
 from .server_state import ServerState
 from .response_rule import ResponseRule
@@ -84,9 +84,10 @@ class ResponseManager:
     """
 
     __EMERGENCY_RESPONSE_RULES = (
-        _EmergencyServiceNotSupported(addressing_types={AddressingType.PHYSICAL}, related_request_sids=range(0, 0x100)),
+        _EmergencyServiceNotSupported(addressing_types={AddressingType.PHYSICAL},
+                                      related_request_sids=POSSIBLE_REQUEST_SIDS),
         _EmergencyNoResponse(addressing_types={AddressingType.BROADCAST, AddressingType.FUNCTIONAL},
-                             related_request_sids=range(0, 0x100)),
+                             related_request_sids=POSSIBLE_REQUEST_SIDS),
     )
 
     def __init__(self, response_rules: Rules, server_states: States) -> None:
