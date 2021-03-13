@@ -1,5 +1,5 @@
 import pytest
-from mock import patch, Mock, MagicMock
+from mock import patch
 
 from uds.messages.service_identifiers import RequestSID, ResponseSID
 

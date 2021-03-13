@@ -53,7 +53,7 @@ class UdsMessage:
         :param pdu_sequence: PDUs sequence to validate.
 
         :raise TypeError: PDUs sequence is not list or tuple type.
-        :raise ValueError: Any of PDUs sequence elements is not PDU.
+        :raise ValueError: At least one of PDUs sequence elements is not PDU.
         """
         if not isinstance(pdu_sequence, (tuple, list)):
             raise TypeError("'pdu_sequence' is not list or tuple type")

@@ -1,9 +1,9 @@
 import pytest
-from mock import Mock, patch
+from mock import Mock
 
 from uds.messages import UdsResponse, ResponseSID, NRC, POSSIBLE_REQUEST_SIDS, AddressingType
 from uds.server.response_manager import ResponseManager, _EmergencyServiceNotSupported, _EmergencyNoResponse, \
-    ResponseRule
+    ResponseRule, ServerState
 
 
 class TestEmergencyServiceNotSupported:
@@ -56,10 +56,12 @@ class TestResponseManager:
     """Tests for `ResponseManager` class."""
 
     def setup(self):
-        ...
+        self.mock_response_manager = Mock(spec=ResponseManager)
 
     def teardown(self):
         ...
+
+    # __EMERGENCY_RESPONSE_RULES
 
     def test_emergency_rules_number(self):
         assert len(ResponseManager._ResponseManager__EMERGENCY_RESPONSE_RULES) >= 2
@@ -89,5 +91,60 @@ class TestResponseManager:
         assert physically_addressed_rules_sids == functionally_addressed_rules_sids == broadcast_addressed_rules_sids \
                == POSSIBLE_REQUEST_SIDS
 
-    def test(self):
-        ...
+    # __init__
+
+    @pytest.mark.parametrize("response_rules", [(1, 2), [Mock(spec=ResponseRule)]])
+    @pytest.mark.parametrize("server_states", [("a", "b"), [Mock(spec=ServerState)]])
+    def test_init__params_verification(self, response_rules, server_states):
+        ResponseManager.__init__(self=self.mock_response_manager, response_rules=response_rules,
+                                 server_states=server_states)
+        self.mock_response_manager._ResponseManager__validate_response_rules.assert_called_once_with(response_rules=response_rules)
+        self.mock_response_manager._ResponseManager__validate_server_states.assert_called_once_with(server_states=server_states)
+
+    # __validate_response_rules
+
+    @pytest.mark.parametrize("response_rules", [
+        (Mock(spec=ResponseRule), Mock(spec=ResponseRule), Mock(spec=ResponseRule)),
+        [Mock(spec=ResponseRule)]
+    ])
+    def test_validate_response_rules__valid(self, response_rules):
+        assert ResponseManager._ResponseManager__validate_response_rules(response_rules=response_rules) is None
+
+    @pytest.mark.parametrize("response_rules", [{Mock(spec=ResponseRule)}, None, "abcde", 1, False])
+    def test_validate_response_rules__wrong_type(self, response_rules):
+        with pytest.raises(TypeError):
+            ResponseManager._ResponseManager__validate_response_rules(response_rules=response_rules)
+
+    @pytest.mark.parametrize("response_rules", [
+        (Mock(spec=ResponseRule), Mock(), Mock(spec=ResponseRule)),
+        [Mock(spec=ResponseRule), None],
+        [1],
+    ])
+    def test_validate_response_rules__wrong_value(self, response_rules):
+        with pytest.raises(ValueError):
+            ResponseManager._ResponseManager__validate_response_rules(response_rules=response_rules)
+
+    # __validate_server_states
+    
+    @pytest.mark.parametrize("server_states", [
+        (Mock(spec=ServerState), Mock(spec=ServerState), Mock(spec=ServerState)),
+        [Mock(spec=ServerState), Mock(spec=ServerState)],
+        {Mock(spec=ServerState)}
+    ])
+    def test_validate_server_states__valid(self, server_states):
+        assert ResponseManager._ResponseManager__validate_server_states(server_states=server_states) is None
+
+    @pytest.mark.parametrize("server_states", [None, "abcde", 1, False])
+    def test_validate_server_states__wrong_type(self, server_states):
+        with pytest.raises(TypeError):
+            ResponseManager._ResponseManager__validate_server_states(server_states=server_states)
+
+    @pytest.mark.parametrize("server_states", [
+        (Mock(spec=ServerState), Mock(), Mock(spec=ServerState)),
+        [Mock(spec=ServerState), None],
+        {"not a server state", Mock(spec=ServerState)},
+        [1],
+    ])
+    def test_validate_server_states__wrong_value(self, server_states):
+        with pytest.raises(ValueError):
+            ResponseManager._ResponseManager__validate_server_states(server_states=server_states)

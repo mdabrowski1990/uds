@@ -99,6 +99,38 @@ class ResponseManager:
         :param server_states: States (e.g. DiagnosticSession SecurityAccess) of the server might change during
             the diagnostic communication.
         """
+        self.__validate_response_rules(response_rules=response_rules)
+        self.__validate_server_states(server_states=server_states)
+
+    @staticmethod
+    def __validate_response_rules(response_rules: Rules) -> None:
+        """
+        Verify response rules argument.
+
+        :param response_rules: Response rules to generate response messages to any incoming request.
+
+        :raise TypeError: Response rules argument is not list or tuple type.
+        :raise ValueError: At least one of response rules elements is not response rule.
+        """
+        if not isinstance(response_rules, (tuple, list)):
+            raise TypeError("'response_rules' is not list or tuple type")
+        if not all([isinstance(response_rules, ResponseRule) for response_rules in response_rules]):
+            raise ValueError("'response_rules' does not contain ResponseRule instances only")
+
+    @staticmethod
+    def __validate_server_states(server_states: States) -> None:
+        """
+        Verify server states argument.
+
+        :param server_states: Server state to be stored in the server.
+
+        :raise TypeError: Server states argument is not list, tuple or set type.
+        :raise ValueError: At least one of server states elements is not server state.
+        """
+        if not isinstance(server_states, (tuple, list, set)):
+            raise TypeError("'server_states' is not list, tuple or set type")
+        if not all([isinstance(server_state, ServerState) for server_state in server_states]):
+            raise ValueError("'server_states' does not contain ServerState instances only")
 
     @property
     def current_states_values(self) -> CurrentStatesValues:

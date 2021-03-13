@@ -5,23 +5,25 @@ __all__ = ["AddressingType", "AddressingTypes",
            "StateName", "StateNames", "StateValue", "StateValues", "StateTransition", "CurrentStatesValues",
            "TimeMilliseconds"]
 
-from typing import Any, Union, Tuple, Set, Container, Dict
+from typing import Any, Union, Tuple, Set, Iterable, Dict
 
 from uds.messages import UdsRequest, UdsResponse, AddressingType
 
 
 # General
-TimeMilliseconds = Union[int, float]
+# TODO: prospector supports only pylint version 2.5 that has serious problem with Aliases in Python 3.9.
+#  Remove unsubscriptable-object once prospector supports newer versions of pylint for Python 3.9.
+TimeMilliseconds = Union[int, float]  # pylint: disable=unsubscriptable-object
 
 # UDS Messages related
-AddressingTypes = Container[AddressingType]
+AddressingTypes = Iterable[AddressingType]
 RequestSIDRawValue = int
-RequestSIDRawValues = Container[RequestSIDRawValue]
+RequestSIDRawValues = Iterable[RequestSIDRawValue]
 
 # ServerState related
 StateName = str
 StateNames = Set[StateName]
 StateValue = Any
-StateValues = Container[StateValue]
+StateValues = Iterable[StateValue]
 StateTransition = Tuple[StateValue, StateValue]
 CurrentStatesValues = Dict[StateName, StateValue]
