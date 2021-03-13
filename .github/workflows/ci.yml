@@ -23,12 +23,13 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools
         pip install -r requirements.txt
-        pip install -r tests/requirements_for_tests.txt
+        pip install -r tests/requirements_for_software_tests.txt
+        pip install -r tests/requirements_for_static_code_analysis.txt
 
     - name: Static code analysis [prospector]
       run: |
         prospector --profile tests/prospector_profile.yaml uds
 
-    - name: Unit and integrations tests [pytest]
+    - name: Software tests (unit - SWE.4, integration - SWE.5, qualification - SWE.6) [pytest]
       run: |
-        pytest --cov-report term-missing --cov=uds tests
+        pytest --cov-report term-missing --cov=uds tests/software_tests

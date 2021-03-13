@@ -52,3 +52,6 @@ vulture:
 
 pyroma:
   run: true
+
+bandit:  # there is probably be no use of it (not applicable for this project), but it is run anyways to make sure everything is secure
+  run: true
