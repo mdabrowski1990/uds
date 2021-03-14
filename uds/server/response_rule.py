@@ -55,7 +55,7 @@ class ResponseRule(ABC):
             raise ValueError("'related_request_sids' does not contain raw bytes only")
 
     @abstractmethod
-    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:
+    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:  # noqa: F841
         """
         Check if the rule might be used to generate a response message for the received request.
 
@@ -66,7 +66,7 @@ class ResponseRule(ABC):
         """
 
     @abstractmethod
-    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:
+    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:  # noqa: F841
         """
         Create response message according to the rule.
 

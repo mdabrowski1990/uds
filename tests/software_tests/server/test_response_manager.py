@@ -1,9 +1,9 @@
 import pytest
-from mock import Mock
+from mock import Mock, patch
 
 from uds.messages import UdsResponse, ResponseSID, NRC, POSSIBLE_REQUEST_SIDS, AddressingType
 from uds.server.response_manager import ResponseManager, _EmergencyServiceNotSupported, _EmergencyNoResponse, \
-    ResponseRule, ServerState
+    ResponseRule, ServerState, EmergencyRuleError
 
 
 class TestEmergencyServiceNotSupported:
@@ -55,11 +55,15 @@ class TestEmergencyNoResponse:
 class TestResponseManager:
     """Tests for `ResponseManager` class."""
 
+    SCRIPT_LOCATION = "uds.server.response_manager"
+
     def setup(self):
         self.mock_response_manager = Mock(spec=ResponseManager)
+        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
 
     def teardown(self):
-        ...
+        self._patcher_warn.stop()
 
     # __EMERGENCY_RESPONSE_RULES
 
@@ -108,7 +112,7 @@ class TestResponseManager:
         assert self.mock_response_manager._ResponseManager__response_rules_tuple == ()
         assert self.mock_response_manager._ResponseManager__response_rules_dict == {}
         assert self.mock_response_manager._ResponseManager__server_states == set(server_states)
-        assert self.mock_response_manager.response_rules == response_rules
+        assert self.mock_response_manager.response_rules == tuple(response_rules)
 
     # __validate_response_rules
 
@@ -202,3 +206,132 @@ class TestResponseManager:
         assert self.mock_response_manager._ResponseManager__response_rules_dict == response_rules_dict
         self.mock_response_manager._create_response_rules_dict.assert_called_once_with(response_rules=response_rules)
 
+    # current_states_values
+
+    @pytest.mark.parametrize("server_states", [
+        [Mock(depends_on=[])],
+        [Mock(depends_on={"b"}), Mock(depends_on={"a"})],
+    ])
+    def test_current_states_values__idle_update(self, server_states):
+        self.mock_response_manager._ResponseManager__server_states = server_states
+        current_states = ResponseManager.current_states_values.fget(self=self.mock_response_manager)
+        assert isinstance(current_states, dict)
+        assert all([state.current_value == current_states[state.state_name] for state in server_states])
+
+    @pytest.mark.parametrize("server_states", [
+        [Mock(depends_on=[])],
+        [Mock(depends_on={"b"}), Mock(depends_on={"a"})],
+    ])
+    def test_current_states_values__idle_update(self, server_states):
+        self.mock_response_manager._ResponseManager__server_states = server_states
+        ResponseManager.current_states_values.fget(self=self.mock_response_manager)
+        for state in self.mock_response_manager._ResponseManager__server_states:
+            state.update_on_idle.assert_called_once_with()
+
+    @pytest.mark.parametrize("updated_state", [
+        Mock(state_name="some state", depends_on=[]),
+        Mock(state_name="Session", depends_on={"reset"})
+    ])
+    @pytest.mark.parametrize("transition", [("value before", "value after"), ("Default", "Extended")])
+    def test_current_states_values__transition_update(self, updated_state, transition):
+        updated_state.update_on_idle.return_value = transition
+        depending_state = Mock(depends_on={updated_state.state_name})
+        self.mock_response_manager._ResponseManager__server_states = [depending_state, updated_state]
+        ResponseManager.current_states_values.fget(self=self.mock_response_manager)
+        depending_state.update_on_other_state_transition.assert_called_once_with(
+            state_name=updated_state.state_name,
+            previous_value=transition[0],
+            new_value=transition[1]
+        )
+
+    @pytest.mark.parametrize("updated_state", [
+        Mock(state_name="some state", depends_on=[]),
+        Mock(state_name="Session", depends_on={"reset"})
+    ])
+    @pytest.mark.parametrize("transition", [("value before", "value after"), ("Default", "Extended")])
+    def test_current_states_values__transition_no_update(self, updated_state, transition):
+        updated_state.update_on_idle.return_value = transition
+        not_depending_state = Mock(depends_on=set())
+        self.mock_response_manager._ResponseManager__server_states = [updated_state, not_depending_state]
+        ResponseManager.current_states_values.fget(self=self.mock_response_manager)
+        not_depending_state.update_on_other_state_transition.assert_not_called()
+
+    # create_response
+
+    def test_create_response__invalid_request(self, example_uds_request_raw_data):
+        mock_request = Mock(addressing=None, raw_message=example_uds_request_raw_data)
+        with pytest.raises(ValueError):
+            ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
+
+    @pytest.mark.parametrize("request_addressing", list(AddressingType))
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    def test_create_response__emergency_rule_not_triggered(self, example_uds_request_raw_data, request_addressing,
+                                                             current_states):
+        mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
+        mock_emergency_rule_1 = Mock(is_triggered=Mock(return_value=False))
+        mock_emergency_rule_2 = Mock(is_triggered=Mock(return_value=False))
+        self.mock_response_manager._ResponseManager__response_rules_dict = {}
+        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule_1,
+                                                                                 mock_emergency_rule_2]
+        self.mock_response_manager.current_states_values = current_states
+        with pytest.raises(EmergencyRuleError):
+            ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
+        mock_emergency_rule_1.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
+        mock_emergency_rule_2.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
+        mock_emergency_rule_1.create_response.assert_not_called()
+        mock_emergency_rule_2.create_response.assert_not_called()
+        self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("request_addressing", list(AddressingType))
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    def test_create_response__emergency_rule_due_to_no_rules(self, example_uds_request_raw_data, request_addressing,
+                                                             current_states):
+        mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
+        mock_emergency_rule = Mock(is_triggered=Mock(return_value=True))
+        self.mock_response_manager._ResponseManager__response_rules_dict = {}
+        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule]
+        self.mock_response_manager.current_states_values = current_states
+        response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
+        mock_emergency_rule.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
+        mock_emergency_rule.create_response.assert_called_once_with(request=mock_request, current_states=current_states)
+        assert response == mock_emergency_rule.create_response.return_value
+        self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("request_addressing", list(AddressingType))
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    def test_create_response__emergency_rule_due_to_no_matching_rules(self, example_uds_request_raw_data,
+                                                                      request_addressing, current_states):
+        mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
+        mock_emergency_rule = Mock(is_triggered=Mock(return_value=True))
+        mock_not_matching_rule_1 = Mock(is_triggered=Mock(return_value=False))
+        mock_not_matching_rule_2 = Mock(is_triggered=Mock(return_value=False))
+        self.mock_response_manager._ResponseManager__response_rules_dict = {
+            request_addressing: {example_uds_request_raw_data[0]: [mock_not_matching_rule_1, mock_not_matching_rule_2]}
+        }
+        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule]
+        self.mock_response_manager.current_states_values = current_states
+        response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
+        mock_not_matching_rule_1.is_triggered.assert_called_once_with(request=mock_request,
+                                                                      current_states=current_states)
+        mock_not_matching_rule_2.is_triggered.assert_called_once_with(request=mock_request,
+                                                                      current_states=current_states)
+        assert response == mock_emergency_rule.create_response.return_value
+
+    @pytest.mark.parametrize("request_addressing", list(AddressingType))
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    def test_create_response__user_rule_triggered(self, example_uds_request_raw_data, request_addressing,
+                                                  current_states):
+        mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
+        mock_emergency_rule = Mock(is_triggered=Mock(return_value=True))
+        mock_user_rule_1 = Mock(is_triggered=Mock(return_value=True))
+        mock_user_rule_2 = Mock(is_triggered=Mock(return_value=True))
+        self.mock_response_manager._ResponseManager__response_rules_dict = {
+            request_addressing: {example_uds_request_raw_data[0]: [mock_user_rule_1, mock_user_rule_2]}
+        }
+        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule]
+        self.mock_response_manager.current_states_values = current_states
+        response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
+        mock_user_rule_1.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
+        mock_user_rule_2.is_triggered.assert_not_called()
+        mock_emergency_rule.is_triggered.assert_not_called()
+        assert response == mock_user_rule_1.create_response.return_value

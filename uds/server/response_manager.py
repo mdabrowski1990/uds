@@ -8,6 +8,7 @@ ResponseManager is meant to:
 
 __all__ = ["ResponseManager"]
 
+from warnings import warn
 from typing import Union, Optional, List, Tuple, Set, Dict
 
 from uds.messages import ResponseSID, AddressingType, UdsRequest, UdsResponse, NRC, POSSIBLE_REQUEST_SIDS
@@ -24,10 +25,18 @@ ServerStatesSet = Set[ServerState]
 ServerStatesSequence = Union[List[ServerState], Tuple[ServerState, ...], ServerStatesSet]
 
 
+class EmergencyRuleUsed(Warning):
+    """Warning triggered by accessing any of Emergency Rules."""
+
+
+class EmergencyRuleError(Exception):
+    """Error related to Emergency Rules."""
+
+
 class _EmergencyServiceNotSupported(ResponseRule):
     """Emergency Rule to respond negatively with NRC Service Not Supported."""
 
-    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:
+    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:  # noqa: F841
         """
         Check if the rule might be used to generate a response message for the received request.
 
@@ -38,7 +47,7 @@ class _EmergencyServiceNotSupported(ResponseRule):
         """
         return True
 
-    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:
+    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:  # noqa: F841
         """
         Create response message according to the rule.
 
@@ -56,7 +65,7 @@ class _EmergencyServiceNotSupported(ResponseRule):
 class _EmergencyNoResponse(ResponseRule):
     """Emergency Rule to stay silent and do not respond."""
 
-    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:
+    def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:  # noqa: F841
         """
         Check if the rule might be used to generate a response message for the received request.
 
@@ -67,7 +76,7 @@ class _EmergencyNoResponse(ResponseRule):
         """
         return True
 
-    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:
+    def create_response(self, request: UdsRequest, current_states: CurrentStatesValues) -> Optional[UdsResponse]:  # noqa: F841
         """
         Create response message according to the rule.
 
@@ -159,11 +168,24 @@ class ResponseManager:
     @property
     def current_states_values(self) -> CurrentStatesValues:
         """Values for all the states that the simulated server currently is in."""
-        # idle_transitions = {}
-        # for state in self.__server_states:
-        #     transition = state.update_on_idle()
-        #     if transition is not None:
-        #         idle_transitions.
+        transitions = []
+        # perform all transitions due to idle state
+        for state in self.__server_states:
+            idle_transition = state.update_on_idle()
+            if idle_transition is not None:
+                transitions.append((state.state_name, idle_transition))
+        # perform all transitions cause by idle state transitions
+        while transitions:
+            state_name, transition = transitions.pop(0)
+            for state in self.__server_states:
+                if state_name in state.depends_on:
+                    state_transition = state.update_on_other_state_transition(state_name=state_name,
+                                                                              previous_value=transition[0],
+                                                                              new_value=transition[1])
+                    if state_transition is not None:
+                        transitions.append((state.state_name, state_transition))
+        # return actual values
+        return {state.state_name: state.current_value for state in self.__server_states}
 
     @property
     def response_rules(self) -> ResponseRulesTuple:
@@ -183,5 +205,20 @@ class ResponseManager:
 
         :param request: Request message for which response to be generated.
 
+        :raise EmergencyRuleError:
+
         :return: Response message that was generated. None if no message to be sent in the response.
         """
+        if request.addressing is None:
+            raise ValueError("Provided request messages has no assigned addressing value.")
+        current_state = self.current_states_values
+        user_rules = self.__response_rules_dict.get(request.addressing, {}).get(request.raw_message[0], [])
+        for rule in user_rules:
+            if rule.is_triggered(request=request, current_states=current_state):
+                return rule.create_response(request=request, current_states=current_state)
+        warn(message="No matching user rule was found. Emergency rules to be checked.", category=EmergencyRuleUsed)
+        for emergency_rule in self.__EMERGENCY_RESPONSE_RULES:
+            if emergency_rule.is_triggered(request=request, current_states=current_state):
+                return emergency_rule.create_response(request=request, current_states=current_state)
+        raise EmergencyRuleError(f"No matching emergency rule was found. Request addressing: {request.addressing}. "
+                                 f"Request raw_message: {request.raw_message}")

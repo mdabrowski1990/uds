@@ -89,8 +89,8 @@ class ServerState(ABC):
     @abstractmethod
     def update_on_other_state_transition(self,
                                          state_name: StateName,
-                                         previous_value: StateValue,
-                                         new_value: StateValue) -> Optional[StateTransition]:
+                                         previous_value: StateValue,  # noqa: F841
+                                         new_value: StateValue) -> Optional[StateTransition]:  # noqa: F841
         """
         Access whether adjustment of current value is needed after transition of another state.
 
