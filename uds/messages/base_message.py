@@ -6,7 +6,7 @@ from typing import Optional
 
 from .addressing import AddressingType
 from .pdu import AbstractPDU
-from .types import RawMessage, PDUs
+from .types import RawMessage, RawMessageTuple, PDUs, PDUsTuple
 
 
 class UdsMessage:
@@ -61,7 +61,7 @@ class UdsMessage:
             raise ValueError("'pdu_sequence' does not contain AbstractPDU instances only")
 
     @property
-    def pdu_sequence(self) -> PDUs:
+    def pdu_sequence(self) -> PDUsTuple:
         """
         Get PDUs that were sent/received to transmit this message over any bus.
 
@@ -70,7 +70,7 @@ class UdsMessage:
         return self.__pdu_sequence
 
     @property
-    def raw_message(self) -> RawMessage:
+    def raw_message(self) -> RawMessageTuple:
         """Raw message that this message carries."""
         return self.__raw_message
 

@@ -5,13 +5,14 @@ __all__ = ["ResponseRule"]
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from .types import AddressingType, AddressingTypes, RequestSIDRawValues, UdsRequest, UdsResponse, CurrentStatesValues
+from .types import AddressingType, AddressingTypesContainer, AddressingTypesSet, \
+    SIDRawValuesContainer, SIDRawValuesSet, UdsRequest, UdsResponse, CurrentStatesValues
 
 
 class ResponseRule(ABC):
     """A single rule for creating response message by a server."""
 
-    def __init__(self, addressing_types: AddressingTypes, related_request_sids: RequestSIDRawValues) -> None:
+    def __init__(self, addressing_types: AddressingTypesContainer, related_request_sids: SIDRawValuesContainer) -> None:
         """
         Configure the rule.
 
@@ -24,7 +25,7 @@ class ResponseRule(ABC):
         self.__related_request_sids = set(related_request_sids)
 
     @staticmethod
-    def __validate_addressing_types(addressing_types: AddressingTypes) -> None:
+    def __validate_addressing_types(addressing_types: AddressingTypesContainer) -> None:
         """
         Verify addressing types argument.
 
@@ -39,7 +40,7 @@ class ResponseRule(ABC):
             raise ValueError("'addressing_types' does not contain instances of AddressingType only")
 
     @staticmethod
-    def __validate_related_request_sids(related_request_sids: RequestSIDRawValues) -> None:
+    def __validate_related_request_sids(related_request_sids: SIDRawValuesContainer) -> None:
         """
         Verify related requests SIDs argument.
 
@@ -76,11 +77,11 @@ class ResponseRule(ABC):
         """
 
     @property
-    def addressing_types(self) -> AddressingTypes:
+    def addressing_types(self) -> AddressingTypesSet:
         """Addressing types of incoming requests for which this rule is supported."""
         return self.__addressing_types
 
     @property
-    def related_request_sids(self) -> RequestSIDRawValues:
+    def related_request_sids(self) -> SIDRawValuesSet:
         """Service Identifiers of incoming requests for which this rule is supported."""
         return self.__related_request_sids

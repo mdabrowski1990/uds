@@ -95,11 +95,20 @@ class TestResponseManager:
 
     @pytest.mark.parametrize("response_rules", [(1, 2), [Mock(spec=ResponseRule)]])
     @pytest.mark.parametrize("server_states", [("a", "b"), [Mock(spec=ServerState)]])
-    def test_init__params_verification(self, response_rules, server_states):
+    def test_init__params_validation(self, response_rules, server_states):
         ResponseManager.__init__(self=self.mock_response_manager, response_rules=response_rules,
                                  server_states=server_states)
-        self.mock_response_manager._ResponseManager__validate_response_rules.assert_called_once_with(response_rules=response_rules)
         self.mock_response_manager._ResponseManager__validate_server_states.assert_called_once_with(server_states=server_states)
+
+    @pytest.mark.parametrize("response_rules", [(1, 2), [Mock(spec=ResponseRule)]])
+    @pytest.mark.parametrize("server_states", [("a", "b"), [Mock(spec=ServerState)]])
+    def test_init__value_setting(self, response_rules, server_states):
+        ResponseManager.__init__(self=self.mock_response_manager, response_rules=response_rules,
+                                 server_states=server_states)
+        assert self.mock_response_manager._ResponseManager__response_rules_tuple == ()
+        assert self.mock_response_manager._ResponseManager__response_rules_dict == {}
+        assert self.mock_response_manager._ResponseManager__server_states == set(server_states)
+        assert self.mock_response_manager.response_rules == response_rules
 
     # __validate_response_rules
 
@@ -148,3 +157,48 @@ class TestResponseManager:
     def test_validate_server_states__wrong_value(self, server_states):
         with pytest.raises(ValueError):
             ResponseManager._ResponseManager__validate_server_states(server_states=server_states)
+
+    # _create_response_rules_dict
+
+    def test_create_response_rules_dict__no_rules(self):
+        assert ResponseManager._create_response_rules_dict(response_rules=[]) == {}
+
+    @pytest.mark.parametrize("addressing_types", [{AddressingType.BROADCAST}, list(AddressingType)])
+    @pytest.mark.parametrize("related_request_sids", [{0x10}, {0x22, 0x2E, 0x31, 0x27}])
+    def test_create_response_rules_dict__one_rule(self, addressing_types, related_request_sids):
+        rule_mock = Mock(addressing_types=addressing_types, related_request_sids=related_request_sids)
+        rules_dict = {addressing: {sid: [rule_mock] for sid in related_request_sids}
+                      for addressing in addressing_types}
+        assert ResponseManager._create_response_rules_dict(response_rules=[rule_mock]) == rules_dict
+
+    @pytest.mark.parametrize("addressing_types", [{AddressingType.FUNCTIONAL}, list(AddressingType)])
+    @pytest.mark.parametrize("related_request_sids", [{0x3E}, {0x22, 0x2E, 0x31, 0x27}])
+    def test_create_response_rules_dict__rules_order(self, addressing_types, related_request_sids):
+        rule_1 = Mock(addressing_types=addressing_types, related_request_sids=related_request_sids)
+        rule_2 = Mock(addressing_types=addressing_types, related_request_sids=related_request_sids)
+        rules_dict = {addressing: {sid: [rule_1, rule_2] for sid in related_request_sids}
+                      for addressing in addressing_types}
+        assert ResponseManager._create_response_rules_dict(response_rules=[rule_1, rule_2]) == rules_dict
+
+    # response_rules
+
+    @pytest.mark.parametrize("response_rules", [("rule1", "rule2"), Mock()])
+    def test_get_response_rules(self, response_rules):
+        self.mock_response_manager._ResponseManager__response_rules_tuple = response_rules
+        assert ResponseManager.response_rules.fget(self=self.mock_response_manager) is response_rules
+
+    @pytest.mark.parametrize("response_rules", [(), [Mock(), Mock()]])
+    def test_set_response_rules__param_validation(self, response_rules):
+        ResponseManager.response_rules.fset(self=self.mock_response_manager, value=response_rules)
+        self.mock_response_manager._ResponseManager__validate_response_rules.assert_called_once_with(
+            response_rules=response_rules)
+
+    @pytest.mark.parametrize("response_rules", [(), [Mock(addressing="Physical", sids={0x10})]])
+    @pytest.mark.parametrize("response_rules_dict", [{}, {"Physical Addressing": {0x10: [Mock()]}}])
+    def test_set_response_rules__values(self, response_rules, response_rules_dict):
+        self.mock_response_manager._create_response_rules_dict.return_value = response_rules_dict
+        ResponseManager.response_rules.fset(self=self.mock_response_manager, value=response_rules)
+        assert self.mock_response_manager._ResponseManager__response_rules_tuple == tuple(response_rules)
+        assert self.mock_response_manager._ResponseManager__response_rules_dict == response_rules_dict
+        self.mock_response_manager._create_response_rules_dict.assert_called_once_with(response_rules=response_rules)
+

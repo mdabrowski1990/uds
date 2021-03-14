@@ -2,7 +2,7 @@
 
 __all__ = ["Server"]
 
-from typing import Optional, Union
+from typing import Optional
 
 from .types import TimeMilliseconds
 from .consts import DEFAULT_P2EXT_SERVER_MAX, DEFAULT_P2_SERVER_MAX

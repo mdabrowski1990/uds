@@ -5,7 +5,7 @@ __all__ = ["ServerState"]
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from .types import StateName, StateNames, StateValue, StateValues, StateTransition, UdsRequest, UdsResponse
+from .types import StateName, StateNames, StateValue, StateValuesContainer, StateTransition, UdsRequest, UdsResponse
 
 
 class ServerState(ABC):
@@ -46,7 +46,7 @@ class ServerState(ABC):
 
     @property
     @abstractmethod
-    def possible_values(self) -> StateValues:
+    def possible_values(self) -> StateValuesContainer:
         """All possible values of this state."""
 
     @property

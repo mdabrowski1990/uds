@@ -4,6 +4,7 @@ __all__ = ["AbstractPDU"]
 
 from typing import Optional
 from abc import ABC, abstractmethod
+from enum import Enum
 
 from .addressing import AddressingType
 
@@ -22,5 +23,5 @@ class AbstractPDU(ABC):
 
     @property  # noqa
     @abstractmethod
-    def pdu_type(self):  # TODO: update typing
+    def pdu_type(self) -> Enum:
         """Getter of this PDU type."""

@@ -8,16 +8,20 @@ ResponseManager is meant to:
 
 __all__ = ["ResponseManager"]
 
-from typing import Optional, List, Container
+from typing import Union, Optional, List, Tuple, Set, Dict
 
 from uds.messages import ResponseSID, AddressingType, UdsRequest, UdsResponse, NRC, POSSIBLE_REQUEST_SIDS
 from .types import CurrentStatesValues
 from .server_state import ServerState
 from .response_rule import ResponseRule
 
-
-Rules = List[ResponseRule]
-States = Container[ServerState]
+# pylint: disable=unsubscriptable-object
+ResponseRulesTuple = Tuple[ResponseRule, ...]
+ResponseRulesList = List[ResponseRule]
+ResponseRulesDict = Dict[AddressingType, Dict[int, ResponseRulesList]]
+ResponseRulesSequence = Union[ResponseRulesList, ResponseRulesTuple]
+ServerStatesSet = Set[ServerState]
+ServerStatesSequence = Union[List[ServerState], Tuple[ServerState, ...], ServerStatesSet]
 
 
 class _EmergencyServiceNotSupported(ResponseRule):
@@ -43,14 +47,14 @@ class _EmergencyServiceNotSupported(ResponseRule):
 
         :return: Response message that was generated. None if no message to be sent in the response.
         """
-        raw_negative_message = [ResponseSID.NegativeResponse.value,
+        raw_negative_message = [ResponseSID.NegativeResponse.value,  # type: ignore
                                 request.raw_message[0],
-                                NRC.ServiceNotSupported.value]
+                                NRC.ServiceNotSupported.value]  # type: ignore
         return UdsResponse(raw_message=raw_negative_message)
 
 
 class _EmergencyNoResponse(ResponseRule):
-    """Emergency Rule to stay silent and not respond."""
+    """Emergency Rule to stay silent and do not respond."""
 
     def is_triggered(self, request: UdsRequest, current_states: CurrentStatesValues) -> bool:
         """
@@ -90,7 +94,7 @@ class ResponseManager:
                              related_request_sids=POSSIBLE_REQUEST_SIDS),
     )
 
-    def __init__(self, response_rules: Rules, server_states: States) -> None:
+    def __init__(self, response_rules: ResponseRulesSequence, server_states: ServerStatesSequence) -> None:
         """
         Create response manager, define rules it uses and states that it contains.
 
@@ -99,11 +103,14 @@ class ResponseManager:
         :param server_states: States (e.g. DiagnosticSession SecurityAccess) of the server might change during
             the diagnostic communication.
         """
-        self.__validate_response_rules(response_rules=response_rules)
         self.__validate_server_states(server_states=server_states)
+        self.__server_states = set(server_states)
+        self.__response_rules_tuple: ResponseRulesTuple = ()  # default value
+        self.__response_rules_dict: ResponseRulesDict = {}  # default value
+        self.response_rules = tuple(response_rules)
 
     @staticmethod
-    def __validate_response_rules(response_rules: Rules) -> None:
+    def __validate_response_rules(response_rules: ResponseRulesSequence) -> None:
         """
         Verify response rules argument.
 
@@ -118,7 +125,7 @@ class ResponseManager:
             raise ValueError("'response_rules' does not contain ResponseRule instances only")
 
     @staticmethod
-    def __validate_server_states(server_states: States) -> None:
+    def __validate_server_states(server_states: ServerStatesSequence) -> None:
         """
         Verify server states argument.
 
@@ -132,13 +139,43 @@ class ResponseManager:
         if not all([isinstance(server_state, ServerState) for server_state in server_states]):
             raise ValueError("'server_states' does not contain ServerState instances only")
 
+    @staticmethod
+    def _create_response_rules_dict(response_rules: ResponseRulesSequence) -> ResponseRulesDict:
+        """
+        Create dictionary with quick access for rules related to given addressing and SID.
+
+        :param response_rules: Response rules from which quick access dictionary to be created.
+
+        :return: Dictionary with quick rules access.
+        """
+        rules_dict: ResponseRulesDict = {}
+        for rule in response_rules:
+            for addressing in rule.addressing_types:
+                addressing_rules_dict = rules_dict.setdefault(addressing, {})
+                for sid in rule.related_request_sids:
+                    addressing_rules_dict.setdefault(sid, []).append(rule)
+        return rules_dict
+
     @property
     def current_states_values(self) -> CurrentStatesValues:
         """Values for all the states that the simulated server currently is in."""
+        # idle_transitions = {}
+        # for state in self.__server_states:
+        #     transition = state.update_on_idle()
+        #     if transition is not None:
+        #         idle_transitions.
 
     @property
-    def response_rules(self) -> Rules:
+    def response_rules(self) -> ResponseRulesTuple:
         """Rules (in priority order) that the manager is currently using."""
+        return self.__response_rules_tuple
+
+    @response_rules.setter
+    def response_rules(self, value: ResponseRulesSequence) -> None:
+        """Set rules (in priority order) that the manager will use."""
+        self.__validate_response_rules(response_rules=value)
+        self.__response_rules_tuple = tuple(value)
+        self.__response_rules_dict = self._create_response_rules_dict(response_rules=value)
 
     def create_response(self, request: UdsRequest) -> Optional[UdsResponse]:
         """
