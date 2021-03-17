@@ -5,6 +5,7 @@ from uds.server.response_rule import ResponseRule, AddressingType
 
 
 class TestResponseRule:
+    """Tests for `ResponseRule` class."""
 
     def setup(self):
         self.mock_response_rule = Mock(spec=ResponseRule)

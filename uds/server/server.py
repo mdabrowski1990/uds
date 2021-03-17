@@ -16,6 +16,8 @@ class Server:
     UDS server receives diagnostic requests and sends diagnostic response.
     Each server object simulates a single on-board ECU.
     """
+    __P2_SERVER_MIN: TimeMilliseconds = 0
+    __P2EXT_SERVER_MIN: TimeMilliseconds = 0
 
     def __init__(self,
                  transport_interface,
@@ -26,127 +28,104 @@ class Server:
                  p2_server_max: TimeMilliseconds = DEFAULT_P2_SERVER_MAX,
                  p2ext_server_max: TimeMilliseconds = DEFAULT_P2EXT_SERVER_MAX) -> None:
         """
-        TODO
+        Configure simulation of UDS Server.
 
-        :param transport_interface:
-        :param response_manager:
-        :param p4_server:
-        :param p2_server:
-        :param p2ext_server_max:
+        :param transport_interface: Interface to be used for sending and receiving UDS messages.
+        :param response_manager: Manager which automatically generates responses to received UDS requests.
+        :param p4_server: TODO
+            ISO 14229-2 explanation of P4Server:
+            This is the time between the reception of a request (T_Data.indication) and the start of the transmission
+            of the final response (T_Data.request) at the server side.
+        :param p2_server: TODO
+            ISO 14229-2 explanation of P2Server:
+            Performance requirement for the server to start with the response message after the reception of a request
+            message (indicated via T_Data.ind).
+        :param p2ext_server: TODO
+            ISO 14229-2 explanation of P2*Server:
+            Performance requirement for the server to start with the response message after the transmission of
+            a negative response message (indicated via T_Data.con) with negative response code 0x78 (enhanced
+            response timing).
+        :param p2_server_max: TODO
+        :param p2ext_server_max: TODO
         """
 
     def turn_on(self) -> None:
-        """
-        TODO
-
-        :return:
-        """
+        """Turn on server simulation and automatic responses to received requests messages."""
 
     def turn_off(self) -> None:
-        """
-        TODO
-
-        :return:
-        """
+        """Turn off server simulation and automatic responses to received requests messages."""
 
     @property
     def response_manager(self) -> ResponseManager:
-        """
-        TODO
-
-        :return:
-        """
+        """Response manager used by the server."""
 
     @response_manager.setter
-    def response_manager(self, value_to_set: ResponseManager) -> None:
+    def response_manager(self, value: ResponseManager) -> None:
         """
-        TODO
+        Set new value of response manager.
 
-        :param value_to_set:
-        :return:
+        :raise TypeError: Provided value is not ResponseManager type.
         """
 
     @property
     def p2_server(self) -> TimeMilliseconds:
-        """
-        TODO
-
-        :return:
-        """
+        """Value of P2Server used by the server."""
 
     @p2_server.setter
-    def p2_server(self, value_to_set: TimeMilliseconds) -> None:
+    def p2_server(self, value: TimeMilliseconds) -> None:
         """
-        TODO
+        Set new value of P2Server.
 
-        :param value_to_set:
-        :return:
+        :raise ValueError: Provided value is out of range P2Server_min-P2Server_max.
+        :raise TypeError: Provided value has incompatible type.
         """
 
     @property
     def p2_server_max(self) -> TimeMilliseconds:
-        """
-        TODO
-
-        :return:
-        """
+        """Maximal value of P2Server that can be used by the server."""
 
     @p2_server_max.setter
-    def p2_server_max(self, value_to_set: TimeMilliseconds) -> None:
+    def p2_server_max(self, value: TimeMilliseconds) -> None:
         """
-        TODO
+        Set maximal value of P2Server that can be used by the server.
 
-        :param value_to_set:
-        :return:
+        :raise TypeError: Provided value has incompatible type.
         """
 
     @property
     def p2ext_server(self) -> TimeMilliseconds:
-        """
-        TODO
-
-        :return:
-        """
+        """Value of P2*Server used by the server."""
 
     @p2ext_server.setter
-    def p2ext_server(self, value_to_set: TimeMilliseconds) -> None:
+    def p2ext_server(self, value: TimeMilliseconds) -> None:
         """
-        TODO
+        Set new value of P2*Server.
 
-        :param value_to_set:
-        :return:
+        :raise ValueError: Provided value is out of range P2*Server_min-P2*Server_max.
+        :raise TypeError: Provided value has incompatible type.
         """
 
     @property
     def p2ext_server_max(self) -> TimeMilliseconds:
-        """
-        TODO
-
-        :return:
-        """
+        """Maximal value of P2*Server that can be used by the server."""
 
     @p2ext_server_max.setter
-    def p2ext_server_max(self, value_to_set: TimeMilliseconds) -> None:
+    def p2ext_server_max(self, value: TimeMilliseconds) -> None:
         """
-        TODO
+        Set maximal value of P2*Server that can be used by the server.
 
-        :param value_to_set:
-        :return:
+        :raise TypeError: Provided value has incompatible type.
         """
 
     @property
     def p4_server(self) -> TimeMilliseconds:
-        """
-        TODO
-
-        :return:
-        """
+        """Value of P4Server used by the server."""
 
     @p4_server.setter
-    def p4_server(self, value_to_set: TimeMilliseconds) -> None:
+    def p4_server(self, value: TimeMilliseconds) -> None:
         """
-        TODO
+        Set new value of P4Server.
 
-        :param value_to_set:
-        :return:
+        :raise ValueError: Provided value is out of range.
+        :raise TypeError: Provided value has incompatible type.
         """
