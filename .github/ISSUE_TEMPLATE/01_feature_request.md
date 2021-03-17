@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea of a feature for this project
-title: "[INVESTIGATE]"
+title: "[INVESTIGATE] enter short title here"
 labels: enhancement
 assignees: ''
 
