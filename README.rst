@@ -2,12 +2,9 @@
 UDS
 *****
 
-.. image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci_dynamic_tests.yml/badge.svg?branch=main
+.. image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml/badge.svg?branch=main
    :target: https://github.com/mdabrowski1990/uds/actions
 
-.. image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci_static_tests.yml/badge.svg?branch=main
-   :target: https://github.com/mdabrowski1990/uds/actions
-   
 .. image:: https://travis-ci.com/mdabrowski1990/uds.svg?branch=main
    :target: https://travis-ci.com/mdabrowski1990/uds
    
@@ -31,11 +28,11 @@ It supports different communication buses on both sides of communication (client
 Current Functionalities
 =============
 - Diagnostic message support
+- Server (on-board ECU) simulation
 
 Planned Functionalities
 =============
 - Client (diagnostic tester) simulation
-- Server (on-board ECU) simulation
 - Messaging databases support
 - Automatic messaging database import from CANdelaStudio File format (CDD)
 - CAN support
