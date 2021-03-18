@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  dynamic_software_tests_with_coverage:
+  dynamic_tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,12 +23,15 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools
         pip install -r requirements.txt
+        
     - name: Install tests dependencies
       run: |
         pip install -r tests/requirements_for_software_tests.txt
-    - name: Software tests (unit - SWE.4, integration - SWE.5, qualification - SWE.6) [pytest]
+        
+    - name: Execute unit and integration tests [pytest]
       run: |
         pytest --cov-report term-missing --cov=uds tests/software_tests
+        
         
   static_code_analysis:
     runs-on: ubuntu-latest
@@ -49,8 +52,15 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools
         pip install -r requirements.txt
+        
     - name: Install tests dependencies
       run: |
+        pip install -r tests/requirements_for_static_code_analysis.txt
+        
+    - name: Execute static code analysis [prospector]
+      run: |
+        prospector --profile tests/prospector_profile.yaml uds
+      
         pip install -r tests/requirements_for_static_code_analysis.txt
     - name: Static code analysis [prospector]
       run: |
