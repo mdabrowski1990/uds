@@ -35,7 +35,7 @@ class ResponseRule(ABC):
         :raise ValueError: At least one member of addressing types is not AddressingType.
         """
         if not isinstance(addressing_types, (set, tuple, list)):
-            raise TypeError("'addressing_types' is not iterable")
+            raise TypeError("'addressing_types' is not set, tuple or list")
         if not all([isinstance(addressing_type, AddressingType) for addressing_type in addressing_types]):
             raise ValueError("'addressing_types' does not contain instances of AddressingType only")
 

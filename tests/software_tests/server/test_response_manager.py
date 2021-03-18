@@ -187,12 +187,12 @@ class TestResponseManager:
     # response_rules
 
     @pytest.mark.parametrize("response_rules", [("rule1", "rule2"), Mock()])
-    def test_get_response_rules(self, response_rules):
+    def test_get_response_rules__get(self, response_rules):
         self.mock_response_manager._ResponseManager__response_rules_tuple = response_rules
         assert ResponseManager.response_rules.fget(self=self.mock_response_manager) is response_rules
 
     @pytest.mark.parametrize("response_rules", [(), [Mock(), Mock()]])
-    def test_set_response_rules__param_validation(self, response_rules):
+    def test_set_response_rules__param_validation_on_set(self, response_rules):
         ResponseManager.response_rules.fset(self=self.mock_response_manager, value=response_rules)
         self.mock_response_manager._ResponseManager__validate_response_rules.assert_called_once_with(
             response_rules=response_rules)

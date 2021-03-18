@@ -17,6 +17,7 @@ pylint:
   options:
     max-line-length: 120
     max-args: 8
+    max-attributes: 15
 
 pyflakes:
   disable:

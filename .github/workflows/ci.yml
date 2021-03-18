@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade setuptools
         pip install -r requirements.txt
         
-    - name: Install tests dependencies
+    - name: Install external packages used for dynamic tests
       run: |
         pip install -r tests/requirements_for_software_tests.txt
         
@@ -53,15 +53,10 @@ jobs:
         python -m pip install --upgrade setuptools
         pip install -r requirements.txt
         
-    - name: Install tests dependencies
+    - name: Install external packages used for static tests
       run: |
         pip install -r tests/requirements_for_static_code_analysis.txt
         
     - name: Execute static code analysis [prospector]
-      run: |
-        prospector --profile tests/prospector_profile.yaml uds
-      
-        pip install -r tests/requirements_for_static_code_analysis.txt
-    - name: Static code analysis [prospector]
       run: |
         prospector --profile tests/prospector_profile.yaml uds
