@@ -3,7 +3,7 @@ name: CI Dynamic Testing
 on: [push, pull_request]
 
 jobs:
-  test:
+  dynamic_software_tests_with_coverage:
     runs-on: ubuntu-latest
     strategy:
       matrix:
