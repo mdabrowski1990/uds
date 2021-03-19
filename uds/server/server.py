@@ -74,9 +74,11 @@ class Server:
 
     def turn_on(self) -> None:
         """Turn on server simulation and automatic responses to received requests messages."""
+        # TODO: add implementation
 
     def turn_off(self) -> None:
         """Turn off server simulation and automatic responses to received requests messages."""
+        # TODO: add implementation
 
     @property
     def response_manager(self) -> ResponseManager:

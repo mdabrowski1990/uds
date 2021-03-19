@@ -75,7 +75,7 @@ class ServerState(ABC):
         """
 
     @abstractmethod
-    def update_on_response(self, response: UdsResponse) -> Optional[StateTransition]:
+    def update_on_response(self, response: UdsResponse) -> Optional[StateTransition]:  # noqa: F841
         """
         Access whether adjustment of current value is needed after transmission of the diagnostic response.
 

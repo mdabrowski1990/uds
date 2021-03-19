@@ -139,7 +139,7 @@ class TestServer:
         [321, 320.99999],
         [321, 10]
     ])
-    def test_p2_server__set_invalid_value(self, p2_server_min, p2_server_max):
+    def test_p2_server_max__set_invalid_value(self, p2_server_min, p2_server_max):
         self.mock_server._Server__P2_SERVER_MIN = p2_server_min
         with pytest.raises(ValueError):
             Server.p2_server_max.fset(self=self.mock_server, value=p2_server_max)
@@ -153,7 +153,7 @@ class TestServer:
         [321, 500],
         [321, 321.431]
     ])
-    def test_p2_server__set_valid(self, p2_server_min, p2_server_max):
+    def test_p2_server_max__set_valid(self, p2_server_min, p2_server_max):
         self.mock_server._Server__P2_SERVER_MIN = p2_server_min
         Server.p2_server_max.fset(self=self.mock_server, value=p2_server_max)
         assert self.mock_server._Server__p2_server_max == p2_server_max
@@ -294,5 +294,11 @@ class TestServer:
         Server.p4_server.fset(self=self.mock_server, value=p4_server)
         assert self.mock_server._Server__p4_server == p4_server
 
+    # p4_server
+
+    @pytest.mark.parametrize("p2_server", [0, 43.2, 35])
+    def test_p4_server_min(self, p2_server):
+        self.mock_server.p2_server = p2_server
+        assert Server.p4_server_min.fget(self=self.mock_server) == p2_server
 
 # TODO: integration tests for Server.__init__ to make sure values are set in proper order
