@@ -1,6 +1,6 @@
 # How to Contribute
-I am glad that you are reading this as I need help to make this project successful and widely used. You will find on this page all the necessary information to valuable become contributor in my [UDS project](https://github.com/mdabrowski1990/uds).
-Here is the list of most important topics for all contributors depending on a role they are eager to fullfil:
+I am glad that you are reading this as I need help to make this project successful and widely used. You will find on this page all the necessary information to become valuable contributor in my [UDS project](https://github.com/mdabrowski1990/uds).
+Below is the list of most important topics for all contributors depending on a role they are eager to fullfil:
 - Developers:
   - [Before you start](#before-you-start)
   - [Coding Convention](#coding-convention)
@@ -20,7 +20,7 @@ Here is the list of most important topics for all contributors depending on a ro
   - [Software Development Process Lifecycle](#sdpl)
 
 
-## Before you start
+## Before You Start
 I recommend you to [join our mailing list](https://groups.google.com/g/uds-package-development/about) first as we discuss hot topics there. It is also a place to simply say 'hi', tell a few words about yourself, what are you good at, what can you or would like to do in the project. We welcome anyone who wants to help while providing open and supportive environment and offering great learning experience.
 If you are willing to help, but you have no python skills, you can still be an influential member of this project! Let us know what are your skill and we will find you a role matching your ambitions and abilities!
 
@@ -31,7 +31,7 @@ List of standards/guidelines that are followed in the code:
 - [pep257](https://www.python.org/dev/peps/pep-0257/)
 - reStructuredText for all docstrings
 
-Compliance with these standards/guidelines is checked during [static test analysis](#static-code-analysis).
+Compliance with these standards/guidelines is checked during [static test analysis](#static-code-analysis) and [review](#review).
 
 
 ## <a name="sdpl">Software Development Process Lifecycle</a>
@@ -89,12 +89,19 @@ Please follow these simple rule when implementing the code:
 - Unit tests are must have and they must be merged together with the code (there is no approval for merging code and unit tests separately).
 - Before pull request is created, all acceptance criteria (defined in related tasks) should be met.
 - Pull request must be linked with tasks (defined in [issues tracking project](https://github.com/mdabrowski1990/uds/projects/1)) that it implements.
-- Before code is merged, it must be reviewed (preferably 2+ reviewers) and approved.
+- Before code is merged, it must be [reviewed and approved](#review).
 
 Input to this phase is [output from defining phase](#defining-output).
 
 <a name="implementation-output">Output</a>:
 - Updated [main branch](https://github.com/mdabrowski1990/uds/tree/main) with changes that were delivered.
+
+#### Static Code Analysis
+Static Code Analysis is performed automatically on each commit according the [policy file](https://github.com/mdabrowski1990/uds/blob/main/tests/prospector_profile.yaml).
+
+#### Review
+Review before each pull request is mandatory.
+Desired number of reviewers: 2-4 (with one senior member).
 
 ### Testing
 In this phase, system (e.g. exploratory) tests might be executed. The idea is to confirm that the pacakge has no major problems and it is ready to be released.
