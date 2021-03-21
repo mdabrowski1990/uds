@@ -13,6 +13,11 @@ def example_request_sids(request):
     return request.param
 
 
+@fixture(params=list(AddressingType))
+def example_addressing_type(request):
+    return request.param
+
+
 @fixture
 def example_addressing_types():
     return list(AddressingType)

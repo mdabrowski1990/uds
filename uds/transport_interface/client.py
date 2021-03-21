@@ -4,7 +4,7 @@ __all__ = ["UdsSequenceError", "TransportInterfaceClient"]
 
 from abc import abstractmethod
 
-from .types import AddressingType, UdsRequest, UdsResponses
+from .types import UdsRequest, UdsResponses
 from .common import TransportInterface
 
 
@@ -16,12 +16,11 @@ class TransportInterfaceClient(TransportInterface):
     """Abstract definition of Client's side of Transport Interface."""
 
     @abstractmethod
-    def send_request(self, request: UdsRequest, addressing: AddressingType) -> UdsRequest:  # noqa: F841
+    def send_request(self, request: UdsRequest) -> UdsRequest:
         """
         Transmit request message.
 
         :param request: Request message to transmit.
-        :param addressing: Addressing type to use for the transmission.
 
         :return: Transmitted request message updated with data related to its transmission.
         """

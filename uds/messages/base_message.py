@@ -14,11 +14,14 @@ class UdsMessage:
 
     def __init__(self,
                  raw_message: RawMessage,
+                 addressing: Optional[AddressingType] = None,
                  pdu_sequence: Optional[PDUs] = None) -> None:  # pylint: disable=unsubscriptable-object
         """
         Create storage for a single UDS message.
 
         :param raw_message: A single message that consists of raw bytes only.
+        :param addressing: Addressing type for which this message is relevant.
+            This parameter does not have to be set if 'pdu_sequence' is provided.
         :param pdu_sequence: Sequence of PDUs (Protocol Data Units) that were published to a bus to send/receive
             this messages. It should be None, if message was never transmitted.
         """
@@ -26,9 +29,12 @@ class UdsMessage:
         self.__validate_raw_message(raw_message=raw_message)
         if pdu_sequence is not None:
             self.__validate_pdu_sequence(pdu_sequence=pdu_sequence)
+        if addressing is not None:
+            self.__validate_addressing(addressing=addressing)
         # update data
         self.__raw_message = tuple(raw_message)
         self.__pdu_sequence = tuple() if pdu_sequence is None else tuple(pdu_sequence)
+        self.__addressing = addressing
 
     @staticmethod
     def __validate_raw_message(raw_message: RawMessage) -> None:
@@ -60,6 +66,18 @@ class UdsMessage:
         if not all([isinstance(pdu, AbstractPDU) for pdu in pdu_sequence]):
             raise ValueError("'pdu_sequence' does not contain AbstractPDU instances only")
 
+    @staticmethod
+    def __validate_addressing(addressing: AddressingType) -> None:
+        """
+        Verify addressing type argument.
+
+        :param addressing: Type of addressing to validate.
+
+        :raise TypeError: Addressing argument is not instance of AddressingType.
+        """
+        if not isinstance(addressing, AddressingType):
+            raise TypeError("'addressing' is instance of AddressingType")
+
     @property
     def pdu_sequence(self) -> PDUsTuple:
         """
@@ -81,4 +99,6 @@ class UdsMessage:
 
         :return: Addressing over which this message was sent/received. None if messages was never transmitted.
         """
-        return self.pdu_sequence[0].addressing if self.pdu_sequence else None
+        if self.pdu_sequence:
+            return self.pdu_sequence[0].addressing
+        return self.__addressing

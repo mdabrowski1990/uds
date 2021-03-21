@@ -4,7 +4,7 @@ __all__ = ["TransportInterface", "UdsSegmentationError"]
 
 from abc import ABC, abstractmethod
 
-from .types import AddressingType, PDU, PDUs, UdsMessage
+from .types import PDU, PDUs, UdsMessage
 
 
 class UdsSegmentationError(Exception):
@@ -22,7 +22,7 @@ class TransportInterface(ABC):
     """Abstract definition of Transport Interface that is common for the server and the client."""
 
     @abstractmethod
-    def send_pdu(self, pdu: PDU, addressing: AddressingType) -> PDU:
+    def send_pdu(self, pdu: PDU) -> PDU:
         """
         Transmit a single Protocol Data Unit (PDU).
 
@@ -41,14 +41,6 @@ class TransportInterface(ABC):
             This method might keep the program in the infinite loop if no PDU is ever received.
 
         :return: The first PDU that to be received after the call of this method.
-        """
-
-    @abstractmethod
-    def get_received_pdus(self) -> PDUs:
-        """
-        Get all Protocol Data Units (PDUs) that were silently received by the Transport Interface.
-
-        :return: PDUs that were received since last call of this method.
         """
 
     @abstractmethod

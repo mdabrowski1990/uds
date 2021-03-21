@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock
 
-from uds.messages.base_message import UdsMessage, AbstractPDU
+from uds.messages.base_message import UdsMessage, AbstractPDU, AddressingType
 
 
 class TestUdsMessage:
@@ -12,37 +12,32 @@ class TestUdsMessage:
 
     # __init__
 
-    @pytest.mark.parametrize("raw_message", [
-        [0x10, 0x01],
-        (0x22, 0x10, 0x01, 0x12, 0x34),
-        [0x51, 0x03],
-        (0x54, ),
-    ])
-    @pytest.mark.parametrize("pdu_sequence", [
-        [Mock(spec=AbstractPDU), Mock(spec=AbstractPDU)],
-        (Mock(spec=AbstractPDU), )
-    ])
-    def test_init__valid_values(self, raw_message, pdu_sequence):
-        UdsMessage.__init__(self=self.mock_uds_message, raw_message=raw_message, pdu_sequence=pdu_sequence)
-        # data validation
-        self.mock_uds_message._UdsMessage__validate_raw_message.assert_called_once_with(raw_message=raw_message)
-        self.mock_uds_message._UdsMessage__validate_pdu_sequence.assert_called_once_with(pdu_sequence=pdu_sequence)
-        # raw_message verification
-        assert isinstance(self.mock_uds_message._UdsMessage__raw_message, tuple), \
-            "Value must be converted to tuple to be immutable"
-        assert len(self.mock_uds_message._UdsMessage__raw_message) == len(raw_message), "Elements must be unchanged"
-        assert all(value_set == value_provided for value_set, value_provided in
-                   zip(self.mock_uds_message._UdsMessage__raw_message, raw_message)), "Elements must be unchanged"
-        # pdu_sequence verification
-        assert isinstance(self.mock_uds_message._UdsMessage__pdu_sequence, tuple), \
-            "Value must be converted to tuple to be immutable"
-        assert len(self.mock_uds_message._UdsMessage__pdu_sequence) == len(pdu_sequence), "Elements must be unchanged"
-        assert all(value_set == value_provided for value_set, value_provided in
-                   zip(self.mock_uds_message._UdsMessage__pdu_sequence, pdu_sequence)), "Elements must be unchanged"
-
-    def test_init__no_pdus(self, example_raw_message):
+    def test_init__only_raw_message(self, example_raw_message):
         UdsMessage.__init__(self=self.mock_uds_message, raw_message=example_raw_message)
-        assert self.mock_uds_message._UdsMessage__pdu_sequence == ()
+        # data validation
+        self.mock_uds_message._UdsMessage__validate_raw_message.assert_called_once_with(raw_message=example_raw_message)
+        self.mock_uds_message._UdsMessage__validate_pdu_sequence.assert_not_called()
+        self.mock_uds_message._UdsMessage__validate_addressing.assert_not_called()
+        # data setting
+        assert self.mock_uds_message._UdsMessage__raw_message == tuple(example_raw_message)
+        assert self.mock_uds_message._UdsMessage__pdu_sequence == tuple()
+        assert self.mock_uds_message._UdsMessage__addressing is None
+
+    @pytest.mark.parametrize("pdu_sequence", [
+        [Mock(spec=AbstractPDU)],
+        (Mock(spec=AbstractPDU), Mock(spec=AbstractPDU))
+    ])
+    def test_init__all_params(self, example_raw_message, example_addressing_type, pdu_sequence):
+        UdsMessage.__init__(self=self.mock_uds_message, raw_message=example_raw_message, pdu_sequence=pdu_sequence,
+                            addressing=example_addressing_type)
+        # data validation
+        self.mock_uds_message._UdsMessage__validate_raw_message.assert_called_once_with(raw_message=example_raw_message)
+        self.mock_uds_message._UdsMessage__validate_pdu_sequence.assert_called_once_with(pdu_sequence=pdu_sequence)
+        self.mock_uds_message._UdsMessage__validate_addressing.assert_called_once_with(addressing=example_addressing_type)
+        # data setting
+        assert self.mock_uds_message._UdsMessage__raw_message == tuple(example_raw_message)
+        assert self.mock_uds_message._UdsMessage__pdu_sequence == tuple(pdu_sequence)
+        assert self.mock_uds_message._UdsMessage__addressing == example_addressing_type
 
     # __validate_raw_message
 
@@ -60,7 +55,7 @@ class TestUdsMessage:
         "abcdef",
         b"\x10\x01"
     ])
-    def test_validate_raw_message__wrong_type(self, raw_message):
+    def test_validate_raw_message__invalid_type(self, raw_message):
         with pytest.raises(TypeError):
             UdsMessage._UdsMessage__validate_raw_message(raw_message=raw_message)
 
@@ -70,7 +65,7 @@ class TestUdsMessage:
         [0x22, "10", "00"],
         [0x11, 1.]
     ])
-    def test_validate_raw_message__wrong_value(self, raw_message):
+    def test_validate_raw_message__invalid_value(self, raw_message):
         with pytest.raises(ValueError):
             UdsMessage._UdsMessage__validate_raw_message(raw_message=raw_message)
 
@@ -86,7 +81,7 @@ class TestUdsMessage:
     @pytest.mark.parametrize("pdu_sequence", [
         {Mock(spec=AbstractPDU), Mock(spec=AbstractPDU)}
     ])
-    def test_validate_pdu_sequence__wrong_type(self, pdu_sequence):
+    def test_validate_pdu_sequence__invalid_type(self, pdu_sequence):
         with pytest.raises(TypeError):
             UdsMessage._UdsMessage__validate_pdu_sequence(pdu_sequence=pdu_sequence)
 
@@ -94,15 +89,37 @@ class TestUdsMessage:
         [-1],
         (Mock(spec=AbstractPDU), "10"),
     ])
-    def test_validate_pdu_sequence__wrong_value(self, pdu_sequence):
+    def test_validate_pdu_sequence__invalid_value(self, pdu_sequence):
         with pytest.raises(ValueError):
             UdsMessage._UdsMessage__validate_pdu_sequence(pdu_sequence=pdu_sequence)
 
+    # __validate_addressing
+
+    @pytest.mark.parametrize("addressing", [
+        Mock(spec=AddressingType),
+        AddressingType.FUNCTIONAL,
+        AddressingType.PHYSICAL,
+        AddressingType.BROADCAST,
+    ])
+    def test_validate_addressing__valid(self, addressing):
+        assert UdsMessage._UdsMessage__validate_addressing(addressing=addressing) is None
+
+    @pytest.mark.parametrize("addressing", [
+        "not an addressing",
+        1,
+        None
+    ])
+    def test_validate_addressing__invalid_type(self, addressing):
+        with pytest.raises(TypeError):
+            UdsMessage._UdsMessage__validate_addressing(addressing=addressing)
+
     # addressing
 
-    def test_addressing__undefined(self):
+    @pytest.mark.parametrize("addressing", [None, "functional", 0])
+    def test_addressing__pdu_sequence_undefined(self, addressing):
         self.mock_uds_message.pdu_sequence = []
-        assert UdsMessage.addressing.fget(self=self.mock_uds_message) is None
+        self.mock_uds_message._UdsMessage__addressing = addressing
+        assert UdsMessage.addressing.fget(self=self.mock_uds_message) is addressing
 
     @pytest.mark.parametrize("pdu_sequence", [
         [Mock(spec=AbstractPDU)],
