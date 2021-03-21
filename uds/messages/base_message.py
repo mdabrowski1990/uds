@@ -102,3 +102,25 @@ class UdsMessage:
         if self.pdu_sequence:
             return self.pdu_sequence[0].addressing
         return self.__addressing
+
+    @property  # noqa: F841
+    def time_transmission_start(self):  # TODO: annotation
+        """
+        Time when the message transmission to a bus was started.
+
+        It is determined by a time when the first PDU (that carries this message) was either received or transmitted.
+
+        :return:  TODO
+        """
+        return self.pdu_sequence[0].time_transmitted if self.pdu_sequence else None
+
+    @property  # noqa: F841
+    def time_transmission_end(self):  # TODO: annotation
+        """
+        Time when the message transmission to a bus was finished.
+
+        It is determined by a time when the last PDU (that carries this message) was either received or transmitted.
+
+        :return:  TODO
+        """
+        return self.pdu_sequence[-1].time_transmitted if self.pdu_sequence else None

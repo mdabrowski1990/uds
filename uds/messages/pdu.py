@@ -21,7 +21,18 @@ class AbstractPDU(ABC):
         :return: Addressing over which the PDU was transmitted/received. None if PDU was not transmitted/received.
         """
 
-    @property  # noqa
+    @property  # noqa: F841
     @abstractmethod
     def pdu_type(self) -> Enum:
         """Getter of this PDU type."""
+
+    @property
+    @abstractmethod
+    def time_transmitted(self):  # TODO: annotation
+        """
+        Time when the PDU was published to on a bus.
+
+        It is determined by either time when received or transmitted to a bus.
+
+        :return: TODO
+        """

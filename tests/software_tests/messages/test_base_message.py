@@ -142,3 +142,35 @@ class TestUdsMessage:
     def test_raw_message(self, raw_message):
         self.mock_uds_message._UdsMessage__raw_message = raw_message
         assert UdsMessage.raw_message.fget(self=self.mock_uds_message) is raw_message
+
+    # time_transmission_start
+
+    def test_time_transmission_start__no_pdu(self):
+        self.mock_uds_message.pdu_sequence = ()
+        assert UdsMessage.time_transmission_start.fget(self=self.mock_uds_message) is None
+
+    @pytest.mark.parametrize("pdu_sequence", [
+        [Mock(spec=AbstractPDU)],
+        (Mock(spec=AbstractPDU), Mock(spec=AbstractPDU), Mock(spec=AbstractPDU), Mock(spec=AbstractPDU)),
+    ])
+    @pytest.mark.parametrize("first_pdu_time", [1, None, "some time"])
+    def test_time_transmission_start__pdus(self, pdu_sequence, first_pdu_time):
+        pdu_sequence[0].time_transmitted = first_pdu_time
+        self.mock_uds_message.pdu_sequence = pdu_sequence
+        assert UdsMessage.time_transmission_start.fget(self=self.mock_uds_message) is first_pdu_time
+
+    # time_transmission_start
+
+    def test_time_transmission_end__no_pdu(self):
+        self.mock_uds_message.pdu_sequence = ()
+        assert UdsMessage.time_transmission_end.fget(self=self.mock_uds_message) is None
+
+    @pytest.mark.parametrize("pdu_sequence", [
+        [Mock(spec=AbstractPDU)],
+        (Mock(spec=AbstractPDU), Mock(spec=AbstractPDU), Mock(spec=AbstractPDU), Mock(spec=AbstractPDU)),
+    ])
+    @pytest.mark.parametrize("last_pdu_time", [1, None, "some time"])
+    def test_time_transmission_end__pdus(self, pdu_sequence, last_pdu_time):
+        pdu_sequence[-1].time_transmitted = last_pdu_time
+        self.mock_uds_message.pdu_sequence = pdu_sequence
+        assert UdsMessage.time_transmission_end.fget(self=self.mock_uds_message) is last_pdu_time
