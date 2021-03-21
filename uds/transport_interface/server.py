@@ -16,7 +16,7 @@ class TransportInterfaceServer(TransportInterface):
         """Forget all received PDUs that were silently received up to now."""
 
     @abstractmethod
-    def send_response(self, response: UdsResponse) -> UdsResponse:
+    def send_response(self, response: UdsResponse) -> UdsResponse:  # noqa: F841
         """
         Transmit response message.
 

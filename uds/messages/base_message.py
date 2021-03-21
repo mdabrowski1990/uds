@@ -14,7 +14,7 @@ class UdsMessage:
 
     def __init__(self,
                  raw_message: RawMessage,
-                 addressing: Optional[AddressingType] = None,
+                 addressing: Optional[AddressingType] = None,  # pylint: disable=unsubscriptable-object
                  pdu_sequence: Optional[PDUs] = None) -> None:  # pylint: disable=unsubscriptable-object
         """
         Create storage for a single UDS message.
