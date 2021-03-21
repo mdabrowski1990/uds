@@ -11,7 +11,7 @@ from .consts import DEFAULT_P2EXT_SERVER_MAX, DEFAULT_P2_SERVER_MAX
 from .response_manager import ResponseManager
 
 
-class Server:
+class Server:  # TODO: mechanism for safe update of parameter (e.g. p4_server set, then p2_server changed)
     """
     UDS Server simulator.
 
@@ -72,13 +72,27 @@ class Server:
         if not isinstance(transport_interface, TransportInterfaceServer):
             raise TypeError("'transport_interface' is not TransportInterfaceServer type")
 
+    # def _schedule_response(self, request) -> None:
+    #     """
+    #     Set up transmission of a response message.
+    #
+    #     :param request: Request for which the response will be transmitted.
+    #     """
+    #     if self.p4_server == self.p2_server:
+    #         self  # TODO: transmit final response message
+    #     else:
+    #         self  # TODO: transmit response pending(s) before final message
+    #
+    # def x(self, request):
+    #     response = self.response_manager.create_response(request=request)
+    #     self.__transport_interface.send_response(response=response)
+
     def turn_on(self) -> None:
         """Turn on server simulation and automatic responses to received requests messages."""
-        # TODO: add implementation
+        self.__transport_interface.flush_received_pdus()
 
     def turn_off(self) -> None:
         """Turn off server simulation and automatic responses to received requests messages."""
-        # TODO: add implementation
 
     @property
     def response_manager(self) -> ResponseManager:

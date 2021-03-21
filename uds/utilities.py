@@ -6,27 +6,29 @@ from typing import Union, Callable, Iterable, Optional
 from threading import Timer
 from warnings import warn
 
+from .common_types import TimeSeconds
 
-class RepeatedCall:  # TODO: improve performance and precision (currently there is 2-30ms delay after each call)
+
+class RepeatedCall:
     """Class for cyclically calling function in another thread."""
 
     def __init__(self,
-                 interval: Union[int, float],
+                 interval: TimeSeconds,
                  function: Callable,
-                 function_args: Optional[Iterable] = None,
-                 function_kwargs: Optional[dict] = None,
-                 number_of_calls: Union[int, float] = float("inf")) -> None:
+                 function_args: Optional[Iterable] = None,  # pylint: disable=unsubscriptable-object
+                 function_kwargs: Optional[dict] = None,  # pylint: disable=unsubscriptable-object
+                 number_of_calls: Union[int, float] = float("inf")) -> None:  # pylint: disable=unsubscriptable-object
         """
         Configure thread for cyclically calling a function with provided arguments.
 
-        :param interval: How often the call to be executed [s].
+        :param interval: Time in seconds describing the interval with which the function to be executed.
         :param function: Function to be called.
         :param number_of_calls: Number of calls the function to be executed.
             Use float("inf") if you do not want to provide precise number of calls to execute.
         :param function_args: Arguments to pass to the function at every call.
         :param function_kwargs: Keyword arguments to pass to the function at every call.
         """
-        self._timer: Optional[Timer] = None
+        self._timer: Optional[Timer] = None  # pylint: disable=unsubscriptable-object
         self.interval = interval
         self.function = function
         self.function_args = function_args if function_args else ()
@@ -34,11 +36,11 @@ class RepeatedCall:  # TODO: improve performance and precision (currently there 
         self.is_running = False
         self.calls_left = number_of_calls
 
-    def start(self, delay: Union[int, float] = 0) -> None:
+    def start(self, delay: TimeSeconds = 0) -> None:
         """
         Start to call the function cyclically.
 
-        :param delay: Time after which the first call to be executed.
+        :param delay: Time in seconds after which the first call to be executed.
         """
         if not self.is_running:
             self.is_running = True
