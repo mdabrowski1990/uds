@@ -28,9 +28,13 @@ jobs:
       run: |
         pip install -r tests/requirements_for_software_tests.txt
         
-    - name: Execute unit and integration tests [pytest]
+    - name: Execute unit tests [pytest]
       run: |
-        pytest --cov-report term-missing --cov=uds tests/software_tests
+        pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
+
+    - name: Execute integration tests [pytest]
+      run: |
+        pytest tests/software_tests -m integration
         
         
   static_code_analysis:

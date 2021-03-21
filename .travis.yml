@@ -11,7 +11,6 @@ install:
   - "pip install coveralls"
 
 script:
-  - "pytest --cov-report term-missing --cov=uds tests/software_tests"
   - "coverage run --source=uds -m pytest tests/software_tests/"
  
 after_sucess: coveralls
