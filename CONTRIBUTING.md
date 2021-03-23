@@ -22,8 +22,8 @@ Depending on the role that you want to fulfill, these are links to the most impo
     - [Testing process](https://github.com/mdabrowski1990/uds/wiki/Software-Development-Life-Cycle#testing)
   - [Testing approach](https://github.com/mdabrowski1990/uds/wiki/Testing)
 - Sponsors:
+  - [Sponsoring](https://github.com/mdabrowski1990/uds/wiki/Sponsoring)
   - [Code of Conduct](https://github.com/mdabrowski1990/uds/blob/main/CODE_OF_CONDUCT.md)
-  - [ISO Standards](https://github.com/mdabrowski1990/uds/wiki/ISO-Standards)
   - [Project milestones](https://github.com/mdabrowski1990/uds/milestones)
 - Other:
-  - [Project](https://github.com/mdabrowski1990/uds/wiki)
+  - [Project Wiki](https://github.com/mdabrowski1990/uds/wiki)
