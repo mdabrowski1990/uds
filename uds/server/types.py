@@ -3,11 +3,11 @@
 __all__ = ["AddressingType", "AddressingTypesContainer", "AddressingTypesSet",
            "UdsRequest", "UdsResponse", "SIDRawValue", "SIDRawValuesContainer", "SIDRawValuesSet",
            "StateName", "StateNames", "StateValue", "StateValuesContainer", "CurrentStatesValues", "StateTransition",
-           "TimeMilliseconds"]
+           "TimeMilliseconds", "TimeSeconds"]
 
 from typing import Any, Union, List, Tuple, Set, Dict
 
-from uds.common_types import TimeMilliseconds
+from uds.common_types import TimeMilliseconds, TimeSeconds
 from uds.messages import UdsRequest, UdsResponse, AddressingType
 
 # pylint: disable=unsubscriptable-object

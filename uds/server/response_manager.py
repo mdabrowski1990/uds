@@ -148,6 +148,24 @@ class ResponseManager:
         if not all([isinstance(server_state, ServerState) for server_state in server_states]):
             raise ValueError("'server_states' does not contain ServerState instances only")
 
+    def _update_states_on_request(self, request: UdsRequest) -> None:
+        """
+        Update all server states on reception of request message.
+
+        :param request: Request message received by the server.
+        """
+        for server_state in self.__server_states:
+            server_state.update_on_request(request=request)
+
+    def _update_states_on_response(self, response: UdsResponse) -> None:
+        """
+        Update all server states on transmission of response message.
+
+        :param response: Response message sent by the server.
+        """
+        for server_state in self.__server_states:
+            server_state.update_on_response(response=response)
+
     @staticmethod
     def _create_response_rules_dict(response_rules: ResponseRulesSequence) -> ResponseRulesDict:
         """
@@ -199,26 +217,59 @@ class ResponseManager:
         self.__response_rules_tuple = tuple(value)
         self.__response_rules_dict = self._create_response_rules_dict(response_rules=value)
 
+    def _find_matching_user_rule(self, request: UdsRequest,
+                                 current_states: CurrentStatesValues) -> Optional[ResponseRule]:
+        """
+        Try to find matching user rule to create response message.
+
+        :param request: Request message for which matching response rule is searched.
+        :param current_states: Current server states values.
+
+        :return: Matching response rule or None if not found.
+        """
+        dict_rules_for_sid = self.__response_rules_dict.get(request.addressing, {})  # type: ignore
+        user_rules_to_consider = dict_rules_for_sid.get(request.raw_message[0], [])
+        for rule in user_rules_to_consider:
+            if rule.is_triggered(request=request, current_states=current_states):
+                return rule
+        return None
+
+    def _find_matching_emergency_rule(self, request: UdsRequest,
+                                      current_states: CurrentStatesValues) -> ResponseRule:
+        """
+        Try to find matching emergency rule to create response message.
+
+        :param request: Request message for which matching response rule is searched.
+        :param current_states: Current server states values.
+
+        :raise EmergencyRuleError: No matching emergency rule was found.
+
+        :return: Matching response rule.
+        """
+        for emergency_rule in self.__EMERGENCY_RESPONSE_RULES:
+            if emergency_rule.is_triggered(request=request, current_states=current_states):
+                return emergency_rule
+        raise EmergencyRuleError(f"No matching emergency rule was found. Request addressing: {request.addressing}. "
+                                 f"Request raw_message: {request.raw_message}")
+
     def create_response(self, request: UdsRequest) -> Optional[UdsResponse]:
         """
         Create response message according to the rule.
 
         :param request: Request message for which response to be generated.
 
-        :raise EmergencyRuleError:
-
         :return: Response message that was generated. None if no message to be sent in the response.
         """
         if request.addressing is None:
             raise ValueError("Provided request messages has no assigned addressing value.")
-        current_state = self.current_states_values
-        user_rules = self.__response_rules_dict.get(request.addressing, {}).get(request.raw_message[0], [])
-        for rule in user_rules:
-            if rule.is_triggered(request=request, current_states=current_state):
-                return rule.create_response(request=request, current_states=current_state)
-        warn(message="No matching user rule was found. Emergency rules to be checked.", category=EmergencyRuleUsed)
-        for emergency_rule in self.__EMERGENCY_RESPONSE_RULES:
-            if emergency_rule.is_triggered(request=request, current_states=current_state):
-                return emergency_rule.create_response(request=request, current_states=current_state)
-        raise EmergencyRuleError(f"No matching emergency rule was found. Request addressing: {request.addressing}. "
-                                 f"Request raw_message: {request.raw_message}")
+        self._update_states_on_request(request=request)
+        current_states = self.current_states_values
+        matching_rule = self._find_matching_user_rule(request=request, current_states=current_states)
+        if matching_rule is None:
+            warn(message=f"No matching user rule was found to request: {request}. Emergency rules will be checked.",
+                 category=EmergencyRuleUsed)
+            matching_rule = self._find_matching_emergency_rule(request=request, current_states=current_states)
+        response = matching_rule.create_response(request=request, current_states=current_states)
+        if response is not None:
+            self._update_states_on_response(response=response)
+        return response

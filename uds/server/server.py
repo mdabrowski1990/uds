@@ -6,8 +6,9 @@ from typing import Optional
 from warnings import warn
 
 from uds.transport_interface import TransportInterfaceServer
+# from uds.utilities import RepeatedCall
 
-from .types import TimeMilliseconds
+from .types import TimeMilliseconds, TimeSeconds
 from .consts import DEFAULT_P2EXT_SERVER_MAX, DEFAULT_P2_SERVER_MAX, DEFAULT_P4_SERVER_MAX
 from .response_manager import ResponseManager
 
@@ -22,7 +23,7 @@ class ServerSimulationWarning(Warning):
     """
 
 
-class Server:  # TODO: mechanism for safe update of parameters (e.g. p4_server set, then p2_server changed)
+class Server:
     """
     UDS Server simulator.
 
@@ -32,7 +33,7 @@ class Server:  # TODO: mechanism for safe update of parameters (e.g. p4_server s
 
     __P2_SERVER_MIN: TimeMilliseconds = 0
     __P2EXT_SERVER_MIN: TimeMilliseconds = 0
-    __DEFAULT_P2_SERVER: TimeMilliseconds = __P2_SERVER_MIN
+    __DEFAULT_P2_SERVER: TimeMilliseconds = 0.9 * DEFAULT_P2_SERVER_MAX
     __DEFAULT_P2EXT_SERVER: TimeMilliseconds = 0.9 * DEFAULT_P2EXT_SERVER_MAX
 
     def __init__(self,
@@ -83,6 +84,8 @@ class Server:  # TODO: mechanism for safe update of parameters (e.g. p4_server s
         self.p2_server = p2_server
         self.p2ext_server = p2ext_server
         self.p4_server = p4_server  # type: ignore
+        # define simulation task
+        # self.__simulation_task: RepeatedCall
 
     # transport_interface
 
@@ -166,7 +169,7 @@ class Server:  # TODO: mechanism for safe update of parameters (e.g. p4_server s
         """
         if not isinstance(value, (int, float)):
             raise TypeError("'value' is not int or float type")
-        if not self.p2_server_min <= value <= self.p2_server_max:
+        if not self.p2_server_min < value <= self.p2_server_max:
             raise ValueError(f"'value' is not: P2Server_min <= value <= P2Server_max. "
                              f"P2Server_min = {self.p2_server_min}. P2Server_max = {self.p2_server_max}")
         self.__p2_server = value
@@ -220,7 +223,7 @@ class Server:  # TODO: mechanism for safe update of parameters (e.g. p4_server s
         """
         if not isinstance(value, (int, float)):
             raise TypeError("'value' is not int or float type")
-        if not self.p2ext_server_min <= value <= self.p2ext_server_max:
+        if not self.p2ext_server_min < value <= self.p2ext_server_max:
             raise ValueError(f"'value' is not: P2*Server_min <= value <= P2*Server_max. "
                              f"P2*Server_min = {self.p2ext_server_min}. P2*Server_max = {self.p2ext_server_max}")
         self.__p2ext_server = value
@@ -283,6 +286,23 @@ class Server:  # TODO: mechanism for safe update of parameters (e.g. p4_server s
 
     # simulation
 
+    def _get_task_interval(self) -> TimeSeconds:
+        """
+        Get interval for simulation task.
+
+        :return: Simulation task interval in seconds.
+        """
+        return (self.p2_server / 1000.) / 2.
+
+    # TODO:prepare methods to turn on and off the simulation
+    # def _iteration(self):
+    #     requests = self.transport_interface.get_received_requests()
+    #     for request in requests:
+    #         response = self.response_manager.create_response(request=request)
+    #         sent_response = self.transport_interface.send_response(response=response)
+    #         # self.response_manager.
+    #
+    #
     # def _schedule_response(self, request) -> None:
     #     """
     #     Set up transmission of a response message.
@@ -297,10 +317,13 @@ class Server:  # TODO: mechanism for safe update of parameters (e.g. p4_server s
     # def x(self, request):
     #     response = self.response_manager.create_response(request=request)
     #     self.__transport_interface.send_response(response=response)
-
-    def turn_on(self) -> None:
-        """Turn on server simulation and automatic responses to received requests messages."""
-        self.__transport_interface.flush_received_pdus()
-
-    def turn_off(self) -> None:
-        """Turn off server simulation and automatic responses to received requests messages."""
+    #
+    # def turn_on(self) -> None:
+    #     """Turn on server simulation and automatic responses to received requests messages."""
+    #     self.transport_interface.flush_received_pdus()
+    #     self.__simulation_task.interval = self._get_task_interval()
+    #     self.__simulation_task.start()
+    #
+    # def turn_off(self) -> None:
+    #     """Turn off server simulation and automatic responses to received requests messages."""
+    #     self.__simulation_task.stop()

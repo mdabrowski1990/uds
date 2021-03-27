@@ -179,10 +179,12 @@ class TestServer:
 
     @pytest.mark.parametrize("p2_server_min, p2_server, p2_server_max", [
         [10, 9, 11],
+        [10, 10, 11],
         [10, 9.99, 11],
+        [10, 10., 11],
         [10, 11.01, 11],
         [10, 12, 11],
-        [0, -1, 50],
+        [0, 0, 50],
         [0, -0.01, 50],
         [0, 50.01, 50],
         [0, 51, 50],
@@ -194,15 +196,14 @@ class TestServer:
             Server.p2_server.fset(self=self.mock_server, value=p2_server)
 
     @pytest.mark.parametrize("p2_server_min, p2_server, p2_server_max", [
-        [10, 10, 11],
         [10, 11, 11],
         [10, 10.5, 11],
-        [10, 10., 11],
+        [10, 10.1, 11],
         [10, 11., 11],
-        [0, 0, 50],
+        [0, 1, 50],
         [0, 50, 50],
         [0, 50., 50],
-        [0, 0., 50],
+        [0, 0.1, 50],
         [0, 32.2312, 50],
     ])
     def test_p2_server__set_valid(self, p2_server_min, p2_server, p2_server_max):
@@ -342,10 +343,12 @@ class TestServer:
 
     @pytest.mark.parametrize("p2ext_server_min, p2ext_server, p2ext_server_max", [
         [10, 9, 11],
+        [10, 10, 11],
         [10, 9.99, 11],
+        [10, 10., 11],
         [10, 11.01, 11],
         [10, 12, 11],
-        [0, -1, 50],
+        [0, 0, 50],
         [0, -0.01, 50],
         [0, 50.01, 50],
         [0, 51, 50],
@@ -357,15 +360,14 @@ class TestServer:
             Server.p2ext_server.fset(self=self.mock_server, value=p2ext_server)
 
     @pytest.mark.parametrize("p2ext_server_min, p2ext_server, p2ext_server_max", [
-        [10, 10, 11],
         [10, 11, 11],
         [10, 10.5, 11],
-        [10, 10., 11],
+        [10, 10.1, 11],
         [10, 11., 11],
-        [0, 0, 50],
+        [0, 1, 50],
         [0, 50, 50],
         [0, 50., 50],
-        [0, 0., 50],
+        [0, 0.1, 50],
         [0, 32.2312, 50],
     ])
     def test_p2ext_server__set_valid(self, p2ext_server_min, p2ext_server, p2ext_server_max):

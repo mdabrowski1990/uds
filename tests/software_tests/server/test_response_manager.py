@@ -1,9 +1,8 @@
 import pytest
 from mock import Mock, patch
 
-from uds.messages import UdsResponse, ResponseSID, NRC, POSSIBLE_REQUEST_SIDS, AddressingType
 from uds.server.response_manager import ResponseManager, _EmergencyServiceNotSupported, _EmergencyNoResponse, \
-    ResponseRule, ServerState, EmergencyRuleError
+    ResponseRule, ServerState, EmergencyRuleError, UdsResponse, ResponseSID, NRC, POSSIBLE_REQUEST_SIDS, AddressingType
 
 
 class TestEmergencyServiceNotSupported:
@@ -162,6 +161,38 @@ class TestResponseManager:
         with pytest.raises(ValueError):
             ResponseManager._ResponseManager__validate_server_states(server_states=server_states)
 
+    # _update_states_on_request
+
+    @pytest.mark.parametrize("uds_request", ["some request", Mock()])
+    @pytest.mark.parametrize("server_states", [
+        (),
+        {Mock()},
+        (Mock(), Mock()),
+        [Mock(), Mock(), Mock()]
+    ])
+    def test_update_states_on_request(self, uds_request, server_states):
+        self.mock_response_manager._ResponseManager__server_states = server_states
+        assert ResponseManager._update_states_on_request(self=self.mock_response_manager, request=uds_request) is None
+        for server_state in server_states:
+            server_state.update_on_request.assert_called_once_with(request=uds_request)
+            server_state.update_on_request.reset_mock()
+
+    # _update_states_on_request
+
+    @pytest.mark.parametrize("uds_response", ["some response", Mock()])
+    @pytest.mark.parametrize("server_states", [
+        (),
+        {Mock()},
+        (Mock(), Mock()),
+        [Mock(), Mock(), Mock()]
+    ])
+    def test_update_states_on_response(self, uds_response, server_states):
+        self.mock_response_manager._ResponseManager__server_states = server_states
+        assert ResponseManager._update_states_on_response(self=self.mock_response_manager, response=uds_response) is None
+        for server_state in server_states:
+            server_state.update_on_response.assert_called_once_with(response=uds_response)
+            server_state.update_on_response.reset_mock()
+
     # _create_response_rules_dict
 
     def test_create_response_rules_dict__no_rules(self):
@@ -256,6 +287,71 @@ class TestResponseManager:
         ResponseManager.current_states_values.fget(self=self.mock_response_manager)
         not_depending_state.update_on_other_state_transition.assert_not_called()
 
+    # _find_matching_user_rule
+
+    @pytest.mark.parametrize("user_rules, matching_rule_index", [
+        ([Mock(is_triggered=Mock(return_value=True))], 0),
+        ([Mock(is_triggered=Mock(return_value=True)), Mock(is_triggered=Mock(return_value=True))], 0),
+        ([Mock(is_triggered=Mock(return_value=False)), Mock(is_triggered=Mock(return_value=True))], 1),
+        ([Mock(is_triggered=Mock(return_value=False)), Mock(is_triggered=Mock(return_value=True)), Mock(is_triggered=Mock(return_value=True))], 1),
+    ])
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    @pytest.mark.parametrize("request_addressing", list(AddressingType))
+    def test_find_matching_user_rule__found(self, request_addressing, example_uds_request_raw_data, current_states,
+                                            user_rules, matching_rule_index):
+        self.mock_response_manager._ResponseManager__response_rules_dict = {
+            request_addressing: {example_uds_request_raw_data[0]: user_rules}
+        }
+        mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
+        matched_rule = ResponseManager._find_matching_user_rule(self=self.mock_response_manager, request=mock_request,
+                                                                current_states=current_states)
+        assert matched_rule == user_rules[matching_rule_index]
+
+    @pytest.mark.parametrize("user_rules", [
+        [],
+        [Mock(is_triggered=Mock(return_value=False))],
+        [Mock(is_triggered=Mock(return_value=False)), Mock(is_triggered=Mock(return_value=False))],
+    ])
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    @pytest.mark.parametrize("request_addressing", list(AddressingType))
+    def test_find_matching_user_rule__not_found(self, request_addressing, example_uds_request_raw_data, current_states,
+                                                user_rules):
+        self.mock_response_manager._ResponseManager__response_rules_dict = {
+            request_addressing: {example_uds_request_raw_data[0]: user_rules}
+        }
+        mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
+        assert ResponseManager._find_matching_user_rule(self=self.mock_response_manager, request=mock_request,
+                                                        current_states=current_states) is None
+
+    # _find_matching_emergency_rule
+
+    @pytest.mark.parametrize("emergency_rules, matching_rule_index", [
+        ([Mock(is_triggered=Mock(return_value=True))], 0),
+        ([Mock(is_triggered=Mock(return_value=True)), Mock(is_triggered=Mock(return_value=True))], 0),
+        ([Mock(is_triggered=Mock(return_value=False)), Mock(is_triggered=Mock(return_value=True))], 1),
+        ([Mock(is_triggered=Mock(return_value=False)), Mock(is_triggered=Mock(return_value=True)), Mock(is_triggered=Mock(return_value=True))], 1),
+    ])
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    def test_find_matching_emergency_rule__found(self, example_uds_request, current_states, emergency_rules,
+                                                 matching_rule_index):
+        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = emergency_rules
+        matched_rule = ResponseManager._find_matching_emergency_rule(self=self.mock_response_manager,
+                                                                     request=example_uds_request,
+                                                                     current_states=current_states)
+        assert matched_rule == emergency_rules[matching_rule_index]
+
+    @pytest.mark.parametrize("emergency_rules", [
+        [],
+        [Mock(is_triggered=Mock(return_value=False))],
+        [Mock(is_triggered=Mock(return_value=False)), Mock(is_triggered=Mock(return_value=False))],
+    ])
+    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
+    def test_find_matching_emergency_rule__not_found(self, example_uds_request, current_states, emergency_rules):
+        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = emergency_rules
+        with pytest.raises(EmergencyRuleError):
+            ResponseManager._find_matching_emergency_rule(self=self.mock_response_manager, request=example_uds_request,
+                                                          current_states=current_states)
+
     # create_response
 
     def test_create_response__invalid_request(self, example_uds_request_raw_data):
@@ -265,73 +361,40 @@ class TestResponseManager:
 
     @pytest.mark.parametrize("request_addressing", list(AddressingType))
     @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
-    def test_create_response__emergency_rule_not_triggered(self, example_uds_request_raw_data, request_addressing,
-                                                             current_states):
+    def test_create_response__user_rule_found(self, example_uds_request_raw_data, request_addressing, current_states):
         mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
-        mock_emergency_rule_1 = Mock(is_triggered=Mock(return_value=False))
-        mock_emergency_rule_2 = Mock(is_triggered=Mock(return_value=False))
-        self.mock_response_manager._ResponseManager__response_rules_dict = {}
-        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule_1,
-                                                                                 mock_emergency_rule_2]
+        mock_user_rule = Mock()
+        self.mock_response_manager._find_matching_user_rule.return_value = mock_user_rule
         self.mock_response_manager.current_states_values = current_states
-        with pytest.raises(EmergencyRuleError):
-            ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
-        mock_emergency_rule_1.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
-        mock_emergency_rule_2.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
-        mock_emergency_rule_1.create_response.assert_not_called()
-        mock_emergency_rule_2.create_response.assert_not_called()
-        self.mock_warn.assert_called_once()
+        response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
+        assert response == mock_user_rule.create_response.return_value
+        mock_user_rule.create_response.assert_called_once_with(request=mock_request, current_states=current_states)
+        self.mock_response_manager._find_matching_user_rule.assert_called_once_with(request=mock_request, current_states=current_states)
+        self.mock_response_manager._find_matching_emergency_rule.assert_not_called()
 
     @pytest.mark.parametrize("request_addressing", list(AddressingType))
     @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
-    def test_create_response__emergency_rule_due_to_no_rules(self, example_uds_request_raw_data, request_addressing,
-                                                             current_states):
+    def test_create_response__user_rule_not_found(self, example_uds_request_raw_data, request_addressing, current_states):
         mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
-        mock_emergency_rule = Mock(is_triggered=Mock(return_value=True))
-        self.mock_response_manager._ResponseManager__response_rules_dict = {}
-        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule]
+        mock_emergency_rule = Mock()
+        self.mock_response_manager._find_matching_user_rule.return_value = None
+        self.mock_response_manager._find_matching_emergency_rule.return_value = mock_emergency_rule
         self.mock_response_manager.current_states_values = current_states
         response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
-        mock_emergency_rule.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
+        assert response == mock_emergency_rule.create_response.return_value
         mock_emergency_rule.create_response.assert_called_once_with(request=mock_request, current_states=current_states)
-        assert response == mock_emergency_rule.create_response.return_value
-        self.mock_warn.assert_called_once()
+        self.mock_response_manager._find_matching_user_rule.assert_called_once_with(request=mock_request, current_states=current_states)
+        self.mock_response_manager._find_matching_emergency_rule.assert_called_once_with(request=mock_request, current_states=current_states)
 
+    @pytest.mark.parametrize("response_message", [None, Mock(), "some response"])
     @pytest.mark.parametrize("request_addressing", list(AddressingType))
-    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
-    def test_create_response__emergency_rule_due_to_no_matching_rules(self, example_uds_request_raw_data,
-                                                                      request_addressing, current_states):
+    def test_create_response__state_update(self, example_uds_request_raw_data, request_addressing, response_message):
         mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
-        mock_emergency_rule = Mock(is_triggered=Mock(return_value=True))
-        mock_not_matching_rule_1 = Mock(is_triggered=Mock(return_value=False))
-        mock_not_matching_rule_2 = Mock(is_triggered=Mock(return_value=False))
-        self.mock_response_manager._ResponseManager__response_rules_dict = {
-            request_addressing: {example_uds_request_raw_data[0]: [mock_not_matching_rule_1, mock_not_matching_rule_2]}
-        }
-        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule]
-        self.mock_response_manager.current_states_values = current_states
+        self.mock_response_manager._find_matching_user_rule.return_value = Mock(create_response=Mock(return_value=response_message))
         response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
-        mock_not_matching_rule_1.is_triggered.assert_called_once_with(request=mock_request,
-                                                                      current_states=current_states)
-        mock_not_matching_rule_2.is_triggered.assert_called_once_with(request=mock_request,
-                                                                      current_states=current_states)
-        assert response == mock_emergency_rule.create_response.return_value
-
-    @pytest.mark.parametrize("request_addressing", list(AddressingType))
-    @pytest.mark.parametrize("current_states", [{}, {"Session": "Extended", "Security Access": "Locked"}])
-    def test_create_response__user_rule_triggered(self, example_uds_request_raw_data, request_addressing,
-                                                  current_states):
-        mock_request = Mock(addressing=request_addressing, raw_message=example_uds_request_raw_data)
-        mock_emergency_rule = Mock(is_triggered=Mock(return_value=True))
-        mock_user_rule_1 = Mock(is_triggered=Mock(return_value=True))
-        mock_user_rule_2 = Mock(is_triggered=Mock(return_value=True))
-        self.mock_response_manager._ResponseManager__response_rules_dict = {
-            request_addressing: {example_uds_request_raw_data[0]: [mock_user_rule_1, mock_user_rule_2]}
-        }
-        self.mock_response_manager._ResponseManager__EMERGENCY_RESPONSE_RULES = [mock_emergency_rule]
-        self.mock_response_manager.current_states_values = current_states
-        response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
-        mock_user_rule_1.is_triggered.assert_called_once_with(request=mock_request, current_states=current_states)
-        mock_user_rule_2.is_triggered.assert_not_called()
-        mock_emergency_rule.is_triggered.assert_not_called()
-        assert response == mock_user_rule_1.create_response.return_value
+        assert response == response_message, "Make sure that test conditions are properly set"
+        self.mock_response_manager._update_states_on_request.assert_called_once_with(request=mock_request)
+        if response_message is None:
+            self.mock_response_manager._update_states_on_response.assert_not_called()
+        else:
+            self.mock_response_manager._update_states_on_response.assert_called_once_with(response=response_message)
