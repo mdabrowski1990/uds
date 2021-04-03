@@ -11,8 +11,7 @@ __all__ = ["ResponseManager"]
 from warnings import warn
 from typing import Union, Optional, List, Tuple, Set, Dict
 
-from uds.messages import ResponseSID, AddressingType, UdsRequest, UdsResponse, NRC, POSSIBLE_REQUEST_SIDS
-from .types import CurrentStatesValues
+from .types import CurrentStatesValues, ResponseSID, AddressingType, UdsRequest, UdsResponse, NRC, POSSIBLE_REQUEST_SIDS
 from .server_state import ServerState
 from .response_rule import ResponseRule
 
@@ -157,9 +156,9 @@ class ResponseManager:
         for server_state in self.__server_states:
             server_state.update_on_request(request=request)
 
-    def _update_states_on_response(self, response: UdsResponse) -> None:
+    def update_states_on_response(self, response: UdsResponse) -> None:
         """
-        Update all server states on transmission of response message.
+        Update all server states after transmission of response message.
 
         :param response: Response message sent by the server.
         """
@@ -269,7 +268,4 @@ class ResponseManager:
             warn(message=f"No matching user rule was found to request: {request}. Emergency rules will be checked.",
                  category=EmergencyRuleUsed)
             matching_rule = self._find_matching_emergency_rule(request=request, current_states=current_states)
-        response = matching_rule.create_response(request=request, current_states=current_states)
-        if response is not None:
-            self._update_states_on_response(response=response)
-        return response
+        return matching_rule.create_response(request=request, current_states=current_states)

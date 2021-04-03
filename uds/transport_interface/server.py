@@ -3,12 +3,13 @@
 __all__ = ["TransportInterfaceServer"]
 
 from abc import abstractmethod
+from typing import Optional
 
-from .types import UdsRequests, UdsResponse
+from .types import UdsRequests, UdsResponse, TimeMilliseconds
 from .common import TransportInterface
 
 
-class TransportInterfaceServer(TransportInterface):
+class TransportInterfaceServer(TransportInterface):  # TODO: rework for asynchronous implementation
     """Abstract definition of Client's side of Transport Interface."""
 
     @abstractmethod
@@ -16,11 +17,13 @@ class TransportInterfaceServer(TransportInterface):
         """Forget all received PDUs that were silently received up to now."""
 
     @abstractmethod
-    def send_response(self, response: UdsResponse) -> UdsResponse:  # noqa: F841
+    async def schedule_response(self, response: UdsResponse,
+                                delay: Optional[TimeMilliseconds] = None) -> UdsResponse:  # noqa: F841
         """
         Transmit response message.
 
         :param response: Response message to transmit.
+        :param delay: TODO
 
         :return: Transmitted response message updated with data related to its transmission.
         """

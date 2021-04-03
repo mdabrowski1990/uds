@@ -5,6 +5,7 @@ __all__ = ["AbstractPDU"]
 from typing import Optional
 from abc import ABC, abstractmethod
 from enum import Enum
+from datetime import datetime
 
 from .addressing import AddressingType
 
@@ -28,11 +29,11 @@ class AbstractPDU(ABC):
 
     @property
     @abstractmethod
-    def time_transmitted(self):  # TODO: annotation
+    def time_transmitted(self) -> Optional[datetime]:
         """
         Time when the PDU was published to on a bus.
 
         It is determined by either time when received or transmitted to a bus.
 
-        :return: TODO
+        :return: Date and time when the PDU was fully transmitted.
         """

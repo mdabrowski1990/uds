@@ -1,14 +1,19 @@
 """Container with all types (and its aliases) used by the module."""
 
-__all__ = ["AddressingType", "AddressingTypesContainer", "AddressingTypesSet",
-           "UdsRequest", "UdsResponse", "SIDRawValue", "SIDRawValuesContainer", "SIDRawValuesSet",
+__all__ = ["AddressingTypesContainer", "AddressingTypesSet", "AddressingType",
+           "UdsRequest", "UdsResponse", "ResponseSID", "NRC",
+           "SIDRawValue", "SIDRawValuesContainer", "SIDRawValuesSet", "POSSIBLE_REQUEST_SIDS",
            "StateName", "StateNames", "StateValue", "StateValuesContainer", "CurrentStatesValues", "StateTransition",
-           "TimeMilliseconds", "TimeSeconds"]
+           "TimeMilliseconds",
+           "ResponsesTimetable",
+           "TransportInterfaceServer"]
 
 from typing import Any, Union, List, Tuple, Set, Dict
+from datetime import datetime
 
-from uds.common_types import TimeMilliseconds, TimeSeconds
-from uds.messages import UdsRequest, UdsResponse, AddressingType
+from uds.common_types import TimeMilliseconds
+from uds.transport_interface import TransportInterfaceServer
+from uds.messages import UdsRequest, UdsResponse, AddressingType, ResponseSID, POSSIBLE_REQUEST_SIDS, NRC
 
 # pylint: disable=unsubscriptable-object
 
@@ -26,3 +31,7 @@ StateValue = Any
 StateValuesContainer = Union[List[StateValue], Tuple[StateValue, ...], Set[StateValue]]
 StateTransition = Tuple[StateValue, StateValue]
 CurrentStatesValues = Dict[StateName, StateValue]
+
+# Server related
+PlannedResponse = Tuple[UdsResponse, datetime]
+ResponsesTimetable = List[PlannedResponse]

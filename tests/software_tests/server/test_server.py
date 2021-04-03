@@ -1,9 +1,8 @@
 import pytest
 from mock import Mock, patch
 
-from uds.transport_interface import TransportInterfaceServer
-from uds.server import ResponseManager
-from uds.server.server import Server
+from uds.server.server import Server, ServerSimulationError, ResponseManager, TransportInterfaceServer, UdsResponse, \
+    AddressingType, UdsRequest
 
 
 class TestServer:
@@ -12,12 +11,23 @@ class TestServer:
     SOURCE_SCRIPT_LOCATION = "uds.server.server"
 
     def setup(self):
+        def timedelta_side_effect(milliseconds):
+            return milliseconds
+
         self.mock_server = Mock(spec=Server)
+        # patching
         self._patcher_warn = patch(f"{self.SOURCE_SCRIPT_LOCATION}.warn")
+        self._patcher_datetime = patch(f"{self.SOURCE_SCRIPT_LOCATION}.datetime")
+        self._patcher_timedelta = patch(f"{self.SOURCE_SCRIPT_LOCATION}.timedelta")
         self.mock_warn = self._patcher_warn.start()
+        self.mock_datetime = self._patcher_datetime.start()
+        self.mock_timedelta = self._patcher_timedelta.start()
+        self.mock_timedelta.side_effect = timedelta_side_effect
 
     def teardown(self):
         self._patcher_warn.stop()
+        self._patcher_datetime.stop()
+        self._patcher_timedelta.stop()
 
     # __init __
 
@@ -512,3 +522,79 @@ class TestServer:
         self.mock_server.p4_server_max = p4_server_max
         Server.p4_server.fset(self=self.mock_server, value=p4_server)
         assert self.mock_server._Server__p4_server == p4_server
+
+    # create_response_pending_message
+
+    @pytest.mark.parametrize("request_sid", [0x10, 0x11, 0x22, 0x31, 0x85])
+    @pytest.mark.parametrize("addressing", [None] + list(AddressingType))
+    def test_create_response_pending_message(self, request_sid, addressing):
+        message = Server.create_response_pending_message(request_sid=request_sid, addressing=addressing)
+        assert isinstance(message, UdsResponse)
+        assert len(message.raw_message) == 3
+        assert message.raw_message[0] == 0x7F
+        assert message.raw_message[1] == request_sid
+        assert message.raw_message[2] == 0x78
+        assert message.addressing == addressing
+
+    # _create_response_plan
+
+    def test_create_response_plan__no_response(self, example_uds_request):
+        self.mock_server.response_manager.create_response = Mock(return_value=None)
+        assert Server._create_response_plan(self=self.mock_server, request=example_uds_request) is None
+        self.mock_server.response_manager.create_response.assert_called_once_with(request=example_uds_request)
+
+    @pytest.mark.parametrize("p2_server", [10, 49.5, 50])
+    def test_create_response_plan__single_response(self, p2_server, example_uds_request_raw_data):
+        mock_time_transmission_end = Mock()
+        mock_add = Mock()
+        mock_time_transmission_end.__add__ = mock_add
+        mock_uds_request = Mock(spec=UdsRequest, raw_message=example_uds_request_raw_data,
+                                time_transmission_end=mock_time_transmission_end)
+        self.mock_server.p4_server = self.mock_server.p2_server = p2_server
+        response_timetable = Server._create_response_plan(self=self.mock_server, request=mock_uds_request)
+        assert isinstance(response_timetable, list)
+        assert len(response_timetable) == 1
+        assert response_timetable[0] == \
+               (self.mock_server.response_manager.create_response.return_value, mock_add.return_value)
+
+    @pytest.mark.parametrize("p2_server, p2ext_server, p4_server, response_pending_number", [
+        (50, 900, 51, 1),
+        (50, 900, 950, 1),
+        (50, 900, 951, 2),
+        (100, 800, 1700, 2),
+        (100, 800, 1701, 3),
+    ])
+    def test_create_response_plan__with_response_pending(self, p2_server, p2ext_server, p4_server, response_pending_number,
+                                                         example_uds_request_raw_data, example_addressing_type):
+        mock_uds_request = Mock(spec=UdsRequest, raw_message=example_uds_request_raw_data,
+                                addressing=example_addressing_type, time_transmission_end=0)
+        self.mock_server.p2_server = p2_server
+        self.mock_server.p2ext_server = p2ext_server
+        self.mock_server.p4_server = p4_server
+        response_timetable = Server._create_response_plan(self=self.mock_server, request=mock_uds_request)
+        assert isinstance(response_timetable, list)
+        assert len(response_timetable) == response_pending_number + 1
+        assert all([message == self.mock_server.create_response_pending_message.return_value
+                    for message, planned_time in response_timetable[:response_pending_number]])
+        assert response_timetable[-1][0] == self.mock_server.response_manager.create_response.return_value
+        self.mock_server.create_response_pending_message.assert_called_once_with(
+            request_sid=example_uds_request_raw_data[0], addressing=example_addressing_type)
+
+    # _schedule_response
+
+    @pytest.mark.parametrize("time_now, response_timetable", [
+        (1, [(Mock(), 0)]),
+        (0.1, [(Mock(), 0), (Mock(), 1)]),
+        (100, [(Mock(), 99.9), (Mock(), 0)]),
+        (100, [(Mock(), 99)])
+    ])
+    def test_schedule_response__time_exceeded(self, time_now, response_timetable):
+        self.mock_datetime.now = Mock(return_value=time_now)
+        with pytest.raises(ServerSimulationError):
+            Server._schedule_response(self=self.mock_server, response_timetable=response_timetable)
+
+    # @pytest.mark.parametrize("time_now, response_timetable", [
+    # ])
+    # def test_schedule_response__time_exceeded(self, time_now, response_timetable):
+    #     self.mock_datetime.now = Mock(return_value=time_now)
+    #     assert Server._schedule_response(self=self.mock_server, response_timetable=response_timetable) is None

@@ -4,20 +4,31 @@ __all__ = ["Server"]
 
 from typing import Optional
 from warnings import warn
+from datetime import datetime, timedelta
 
-from uds.transport_interface import TransportInterfaceServer
-# from uds.utilities import RepeatedCall
-
-from .types import TimeMilliseconds, TimeSeconds
+from .types import TimeMilliseconds, ResponsesTimetable, UdsResponse, UdsRequest, NRC, ResponseSID, AddressingType, \
+    TransportInterfaceServer
 from .consts import DEFAULT_P2EXT_SERVER_MAX, DEFAULT_P2_SERVER_MAX, DEFAULT_P4_SERVER_MAX
 from .response_manager import ResponseManager
 
 
+# pylint: disable=unsubscriptable-object
+
+
+class ServerSimulationError(Exception):
+    """
+    Error which informs about problem with Server simulation.
+
+    Example situations when the error will be raised:
+     - Problem with Server tasks (timing performance could not be achieved).
+    """
+
+
 class ServerSimulationWarning(Warning):
     """
-    Warning informing about inconsistent simulation directives from the user.
+    Warning which informs about inconsistent simulation directives from the user.
 
-    Examples the warning will be reported:
+    Example situations when the warning will be reported:
      - P2Server_max value of Server is set below current value P2Server
      - P2*Server_max value of Server is set below current value P2*Server
     """
@@ -39,7 +50,7 @@ class Server:
     def __init__(self,
                  transport_interface: TransportInterfaceServer,
                  response_manager: ResponseManager,
-                 p4_server: Optional[TimeMilliseconds] = None,  # pylint: disable=unsubscriptable-object
+                 p4_server: Optional[TimeMilliseconds] = None,
                  p4_server_max: Optional[TimeMilliseconds] = DEFAULT_P4_SERVER_MAX,
                  p2_server: TimeMilliseconds = __DEFAULT_P2_SERVER,
                  p2ext_server: TimeMilliseconds = __DEFAULT_P2EXT_SERVER,
@@ -66,7 +77,6 @@ class Server:
         :param p2_server_max: Maximal value (in milliseconds) of P2Server that can be set.
         :param p2ext_server_max: Maximal value (in milliseconds) of P2*Server that can be set.
         """
-        # pylint: disable=unsubscriptable-object
         self.__validate_transport_interface(transport_interface=transport_interface)
         self.__transport_interface = transport_interface
         self.response_manager = response_manager
@@ -84,8 +94,6 @@ class Server:
         self.p2_server = p2_server
         self.p2ext_server = p2ext_server
         self.p4_server = p4_server  # type: ignore
-        # define simulation task
-        # self.__simulation_task: RepeatedCall
 
     # transport_interface
 
@@ -241,7 +249,7 @@ class Server:
         return self.__p4_server_max if self.__p4_server_max is not None else self.p2_server_max
 
     @p4_server_max.setter
-    def p4_server_max(self, value: Optional[TimeMilliseconds]) -> None:  # pylint: disable=unsubscriptable-object
+    def p4_server_max(self, value: Optional[TimeMilliseconds]) -> None:
         """
         Set maximal value of P4Server that can be used by the server.
 
@@ -267,7 +275,7 @@ class Server:
         return self.p2_server if self.__p4_server is None else self.__p4_server
 
     @p4_server.setter
-    def p4_server(self, value: Optional[TimeMilliseconds]) -> None:  # pylint: disable=unsubscriptable-object
+    def p4_server(self, value: Optional[TimeMilliseconds]) -> None:
         """
         Set new value of P4Server.
 
@@ -284,46 +292,70 @@ class Server:
                                  f"P4Server_min = {self.p4_server_min}. P4Server_max = {self.p4_server_max}")
         self.__p4_server = value
 
+    # utilities
+
+    @staticmethod
+    def create_response_pending_message(request_sid: int, addressing: Optional[AddressingType] = None) -> UdsResponse:
+        """
+        Create negative response message with NRC Response Pending.
+
+        :param request_sid: Value of request SID for which response message to be created.
+        :param addressing: Addressing type for which this message is relevant. None if unspecified.
+
+        :return: Negative response message with NRC Response Pending.
+        """
+        raw_message = [ResponseSID.NegativeResponse.value,  # type: ignore
+                       request_sid,
+                       NRC.RequestCorrectlyReceived_ResponsePending.value]  # type: ignore
+        return UdsResponse(raw_message=raw_message, addressing=addressing)
+
     # simulation
 
-    def _get_task_interval(self) -> TimeSeconds:
+    def _create_response_plan(self, request: UdsRequest) -> Optional[ResponsesTimetable]:
         """
-        Get interval for simulation task.
+        Create a plan for response messages transmission.
 
-        :return: Simulation task interval in seconds.
+        :param request: Request for which response to be planned.
+
+        :return: Timetable with response messages and planned transmission time.
         """
-        return (self.p2_server / 1000.) / 2.
+        final_response = self.response_manager.create_response(request=request)
+        if final_response is None:
+            return None
+        final_response_time: datetime = \
+            request.time_transmission_end + timedelta(milliseconds=self.p4_server)  # type: ignore
+        messages = [final_response]
+        transmission_times = [final_response_time]
+        if self.p2_server < self.p4_server:
+            response_pending_message = self.create_response_pending_message(request_sid=request.raw_message[0],
+                                                                            addressing=request.addressing)
+            first_response_time: datetime\
+                = request.time_transmission_end + timedelta(milliseconds=self.p2_server)  # type: ignore
+            messages.insert(0, response_pending_message)
+            transmission_times.insert(0, first_response_time)
+            time_delta_p2ext_server = timedelta(milliseconds=self.p2ext_server)
+            while transmission_times[-1] - transmission_times[-2] > time_delta_p2ext_server:
+                messages.insert(0, response_pending_message)
+                transmission_times.insert(-1, transmission_times[-2] + time_delta_p2ext_server)
+        return list(zip(messages, transmission_times))
 
-    # TODO:prepare methods to turn on and off the simulation
-    # def _iteration(self):
-    #     requests = self.transport_interface.get_received_requests()
-    #     for request in requests:
-    #         response = self.response_manager.create_response(request=request)
-    #         sent_response = self.transport_interface.send_response(response=response)
-    #         # self.response_manager.
-    #
-    #
-    # def _schedule_response(self, request) -> None:
-    #     """
-    #     Set up transmission of a response message.
-    #
-    #     :param request: Request for which the response will be transmitted.
-    #     """
-    #     if self.p4_server == self.p2_server:
-    #         self  # TODO: transmit final response message
-    #     else:
-    #         self  # TODO: transmit response pending(s) before final message
-    #
-    # def x(self, request):
-    #     response = self.response_manager.create_response(request=request)
-    #     self.__transport_interface.send_response(response=response)
-    #
-    # def turn_on(self) -> None:
-    #     """Turn on server simulation and automatic responses to received requests messages."""
-    #     self.transport_interface.flush_received_pdus()
-    #     self.__simulation_task.interval = self._get_task_interval()
-    #     self.__simulation_task.start()
-    #
-    # def turn_off(self) -> None:
-    #     """Turn off server simulation and automatic responses to received requests messages."""
-    #     self.__simulation_task.stop()
+    @staticmethod  # TODO: change to bound method
+    def _schedule_response(response_timetable: ResponsesTimetable) -> None:
+        """
+        Schedule transmission of response messages.
+
+        :param response_timetable: Table with response messages and timing when to send them.
+        """
+        if response_timetable[0][1] < datetime.now():
+            raise ServerSimulationError(f"Response message planned transmission time exceeded. "
+                                        f"Planned transmission time: {response_timetable[0][1]}. Now: {datetime.now()}")
+        # TODO: use transport_interface to schedule message transmission
+
+    def turn_on(self) -> None:
+        """Turn on server simulation and automatic responses to received requests messages."""
+        self.transport_interface.flush_received_pdus()
+        # TODO: start infinite asynchronous task in separate thread ?@unsync.unsync(cpu_bound=True)?
+
+    def turn_off(self) -> None:
+        """Turn off server simulation and automatic responses to received requests messages."""
+        # TODO: turn off the task (and all subtasks) started in turn_on

@@ -12,7 +12,7 @@ class UdsSequenceError(Exception):
     """Request message was not transmitted before an attempt to receive response messages."""
 
 
-class TransportInterfaceClient(TransportInterface):
+class TransportInterfaceClient(TransportInterface):  # TODO: rework for async
     """Abstract definition of Client's side of Transport Interface."""
 
     @abstractmethod

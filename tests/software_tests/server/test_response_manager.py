@@ -188,7 +188,7 @@ class TestResponseManager:
     ])
     def test_update_states_on_response(self, uds_response, server_states):
         self.mock_response_manager._ResponseManager__server_states = server_states
-        assert ResponseManager._update_states_on_response(self=self.mock_response_manager, response=uds_response) is None
+        assert ResponseManager.update_states_on_response(self=self.mock_response_manager, response=uds_response) is None
         for server_state in server_states:
             server_state.update_on_response.assert_called_once_with(response=uds_response)
             server_state.update_on_response.reset_mock()
@@ -394,7 +394,4 @@ class TestResponseManager:
         response = ResponseManager.create_response(self=self.mock_response_manager, request=mock_request)
         assert response == response_message, "Make sure that test conditions are properly set"
         self.mock_response_manager._update_states_on_request.assert_called_once_with(request=mock_request)
-        if response_message is None:
-            self.mock_response_manager._update_states_on_response.assert_not_called()
-        else:
-            self.mock_response_manager._update_states_on_response.assert_called_once_with(response=response_message)
+        self.mock_response_manager.update_states_on_response.assert_not_called()

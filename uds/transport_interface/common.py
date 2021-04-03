@@ -3,8 +3,9 @@
 __all__ = ["TransportInterface", "UdsSegmentationError"]
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
-from .types import PDU, PDUs, UdsMessage
+from .types import PDU, PDUs, UdsMessage, TimeMilliseconds
 
 
 class UdsSegmentationError(Exception):
@@ -18,27 +19,25 @@ class UdsSegmentationError(Exception):
     """
 
 
-class TransportInterface(ABC):
+class TransportInterface(ABC):  # TODO: rework for async
     """Abstract definition of Transport Interface that is common for the server and the client."""
 
     @abstractmethod
-    def send_pdu(self, pdu: PDU) -> PDU:
+    async def send_pdu(self, pdu: PDU) -> PDU:
         """
         Transmit a single Protocol Data Unit (PDU).
 
         :param pdu: Protocol Data Unit to transmit.
-        :param addressing: Addressing type to use for the transmission.
 
         :return: Transmitted PDU updated with data related to its transmission.
         """
 
     @abstractmethod
-    def receive_pdu(self) -> PDU:
+    async def receive_pdu(self, timeout: Optional[TimeMilliseconds] = None) -> PDU:    # noqa: F841
         """
         Wait till incoming PDU is received and return it.
 
-        Warning:
-            This method might keep the program in the infinite loop if no PDU is ever received.
+        :param timeout: TODO
 
         :return: The first PDU that to be received after the call of this method.
         """
