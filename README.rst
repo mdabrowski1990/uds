@@ -8,8 +8,8 @@ UDS
 .. image:: https://travis-ci.com/mdabrowski1990/uds.svg?branch=main
    :target: https://travis-ci.com/mdabrowski1990/uds
    
-.. image:: https://coveralls.io/repos/github/mdabrowski1990/uds/badge.svg
-   :target: https://coveralls.io/github/mdabrowski1990/uds
+.. image:: https://coveralls.io/repos/github/mdabrowski1990/uds/badge.svg?branch=main
+   :target: https://coveralls.io/github/mdabrowski1990/uds?branch=main
    
 .. image:: https://readthedocs.org/projects/uds/badge/?version=latest
    :target: https://uds.readthedocs.io/
