@@ -1,0 +1,6 @@
+from pytest import fixture
+
+
+@fixture(params=[[0x10, 0x01], (0x50, 0x03), (0x14, 0xFF, 0xFF, 0xFF), [0x54]])
+def example_raw_message(request):
+    return request.param

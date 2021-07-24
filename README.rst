@@ -4,7 +4,7 @@ UDS
 
 .. image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml/badge.svg?branch=main
    :target: https://github.com/mdabrowski1990/uds/actions
-   
+
 .. image:: https://travis-ci.com/mdabrowski1990/uds.svg?branch=main
    :target: https://travis-ci.com/mdabrowski1990/uds
    
@@ -34,11 +34,11 @@ Planned Functionalities
 - Client (diagnostic tester) simulation
 - Server (on-board ECU) simulation
 - Messaging databases support
-- Automatic messaging database import from Candela File format (CDD)
+- Automatic messaging database import from CANdelaStudio File format (CDD)
 - CAN support
 - Ethernet support
 - LIN support
-- Flexray support
+- FlexRay support
 - K-Line support
 
 Documentation
@@ -53,7 +53,7 @@ Documentation
 - UDS on LIN:
    - `ISO 14229-7:2015 <https://www.iso.org/standard/61221.html/>`_
    - `ISO 17987-2:2016 <https://www.iso.org/standard/61223.html/>`_
-- UDS on Ethertnet:
+- UDS on Ethernet:
    - `ISO 14229-5:2013 <https://www.iso.org/standard/55287.html/>`_
    - `ISO 13400-2:2019 <https://www.iso.org/standard/74785.html/>`_
 

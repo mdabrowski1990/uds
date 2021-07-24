@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test:
+  dynamic_tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,12 +23,45 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools
         pip install -r requirements.txt
-        pip install -r tests/requirements_for_tests.txt
+        
+    - name: Install external packages used for dynamic tests
+      run: |
+        pip install -r tests/requirements_for_software_tests.txt
+        
+    - name: Execute unit tests [pytest]
+      run: |
+        pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
 
-    - name: Static code analysis [prospector]
+# TODO: revert when integration tests are created
+#    - name: Execute integration tests [pytest]
+#      run: |
+#        pytest tests/software_tests -m integration
+        
+        
+  static_code_analysis:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install project dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools
+        pip install -r requirements.txt
+        
+    - name: Install external packages used for static tests
+      run: |
+        pip install -r tests/requirements_for_static_code_analysis.txt
+        
+    - name: Execute static code analysis [prospector]
       run: |
         prospector --profile tests/prospector_profile.yaml uds
-
-    - name: Unit and integrations tests [pytest]
-      run: |
-        pytest --cov-report term-missing --cov=uds tests

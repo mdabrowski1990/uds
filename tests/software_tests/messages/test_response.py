@@ -1,13 +1,19 @@
 import pytest
 from mock import Mock
 
-from uds.messages.response import UdsResponse, UdsResponseType
+from uds.messages.response import UdsMessage, UdsResponse, UdsResponseType
 
 
 class TestsUdsResponse:
+    """Tests for UdsResponse class."""
 
     def setup(self):
         self.mock_uds_response = Mock(spec=UdsResponse)
+
+    # inheritance
+
+    def test_inherits_after_uds_message(self):
+        assert issubclass(UdsResponse, UdsMessage)
 
     # get_response_type
 
