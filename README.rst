@@ -28,11 +28,11 @@ It supports different communication buses on both sides of communication (client
 Current Functionalities
 =============
 - Diagnostic message support
-- Server (on-board ECU) simulation
 
 Planned Functionalities
 =============
 - Client (diagnostic tester) simulation
+- Server (on-board ECU) simulation
 - Messaging databases support
 - Automatic messaging database import from CANdelaStudio File format (CDD)
 - CAN support

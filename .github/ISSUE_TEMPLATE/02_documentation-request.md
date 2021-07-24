@@ -1,7 +1,7 @@
 ---
 name: Documentation request
 about: Let us know about functionalities that are not described in the documentation
-title: "[INVESTIGATE] enter short title here"
+title: "[INVESTIGATE]"
 labels: documentation
 assignees: ''
 
