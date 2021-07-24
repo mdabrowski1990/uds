@@ -1,16 +1,17 @@
 """Container with all types (and its aliases) used by the module."""
 
-__all__ = ["AddressingType", "AddressingTypes", "PDU", "PDUs",
-           "UdsMessage", "UdsRequest", "UdsResponse", "UdsResponses"]
+__all__ = ["PDU", "PDUs",
+           "UdsMessage", "UdsRequest", "UdsRequests", "UdsResponse", "UdsResponses",
+           "TimeMilliseconds"]
 
 from typing import List, Union
 
-from uds.messages import AddressingType, AbstractPDU, UdsResponse, UdsRequest
-
-AddressingTypes = List[AddressingType]
+from uds.messages import AbstractPDU, UdsResponse, UdsRequest
+from uds.common_types import TimeMilliseconds
 
 PDU = AbstractPDU
 PDUs = List[AbstractPDU]
 
 UdsMessage = Union[UdsResponse, UdsRequest]  # pylint: disable=unsubscriptable-object
 UdsResponses = List[UdsResponse]
+UdsRequests = List[UdsRequest]

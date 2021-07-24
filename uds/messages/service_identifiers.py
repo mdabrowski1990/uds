@@ -1,14 +1,35 @@
 """Module with data and implementation related to Service Identifiers (SID)."""
 
-__all__ = ["RequestSID", "ResponseSID"]
+__all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS"]
+
+from warnings import warn
 
 from aenum import IntEnum, unique, extend_enum
 
 from .types import RawByte
 
+# reserved SID values
+_REQUEST_SIDS_DEFINED_IN_SAEJ1979 = set(range(0x01, 0x10))
+_RESPONSE_SIDS_DEFINED_IN_SAEJ1979 = set(range(0x41, 0x50))
+_REQUEST_SIDS_DEFINED_IN_ISO_14229 = set(range(0x10, 0x3F)).union(set(range(0x83, 0x89)), set(range(0xBA, 0xBF)))
+_RESPONSE_SIDS_DEFINED_IN_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC3, 0xC9)), set(range(0xFA, 0xFF)))
+
+# all supported SID values according to UDS
+POSSIBLE_REQUEST_SIDS = _REQUEST_SIDS_DEFINED_IN_SAEJ1979.union(_REQUEST_SIDS_DEFINED_IN_ISO_14229)
+POSSIBLE_RESPONSE_SIDS = _RESPONSE_SIDS_DEFINED_IN_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_IN_ISO_14229)
+
+
+class UnsupportedSID(Warning):
+    """
+    Warning about SID that is legit but currently not supported by the package.
+
+    You can either define member for this SID manually or raise `feature request` on webpage
+    https://github.com/mdabrowski1990/uds/issues/new/choose to have support (for this SID) implemented in the package.
+    """
+
 
 @unique
-class RequestSID(IntEnum):
+class RequestSID(IntEnum):  # TODO: check that new values are from REQUEST_SIDS
     """
     Storage for all known Service Identifiers (SID).
 
@@ -28,6 +49,8 @@ class RequestSID(IntEnum):
             cls(value)
             return True
         except ValueError:
+            if value in POSSIBLE_REQUEST_SIDS:
+                warn(message=f"SID {value} is not supported by this version of the package", category=UnsupportedSID)
             return False
 
     # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
@@ -65,7 +88,7 @@ class RequestSID(IntEnum):
 
 
 @unique
-class ResponseSID(IntEnum):
+class ResponseSID(IntEnum):  # TODO: check that new values are from RESPONSE_SIDS
     """
     Storage for all known Response Service Identifiers (RSID).
 
@@ -85,6 +108,8 @@ class ResponseSID(IntEnum):
             cls(value)
             return True
         except ValueError:
+            if value in POSSIBLE_RESPONSE_SIDS:
+                warn(message=f"RSID {value} is not supported by this version of the package", category=UnsupportedSID)
             return False
 
     NegativeResponse = 0x7F

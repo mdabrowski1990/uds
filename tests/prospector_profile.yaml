@@ -16,7 +16,8 @@ pep8:
 pylint:
   options:
     max-line-length: 120
-    max-args: 8
+    max-args: 10
+    max-attributes: 15
 
 pyflakes:
   disable:
@@ -36,7 +37,6 @@ pep257:
 
 mccabe:
   run: true
-
   options:
     max-complexity: 10
 
@@ -52,4 +52,7 @@ vulture:
   run: true
 
 pyroma:
+  run: true
+
+bandit:  # there is probably be no use of it (not applicable for this project), but it is run anyways to make sure everything is secure
   run: true
