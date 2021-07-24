@@ -582,17 +582,18 @@ class TestServer:
 
     # _schedule_response
 
-    @pytest.mark.parametrize("time_now, response_timetable", [
-        (1, [(Mock(), 0)]),
-        (0.1, [(Mock(), 0), (Mock(), 1)]),
-        (100, [(Mock(), 99.9), (Mock(), 0)]),
-        (100, [(Mock(), 99)])
-    ])
-    def test_schedule_response__time_exceeded(self, time_now, response_timetable):
-        self.mock_datetime.now = Mock(return_value=time_now)
-        with pytest.raises(ServerSimulationError):
-            Server._schedule_response(self=self.mock_server, response_timetable=response_timetable)
-
+    # TODO
+    # @pytest.mark.parametrize("time_now, response_timetable", [
+    #     (1, [(Mock(), 0)]),
+    #     (0.1, [(Mock(), 0), (Mock(), 1)]),
+    #     (100, [(Mock(), 99.9), (Mock(), 0)]),
+    #     (100, [(Mock(), 99)])
+    # ])
+    # def test_schedule_response__time_exceeded(self, time_now, response_timetable):
+    #     self.mock_datetime.now = Mock(return_value=time_now)
+    #     with pytest.raises(ServerSimulationError):
+    #         Server._schedule_response(self=self.mock_server, response_timetable=response_timetable)
+    #
     # @pytest.mark.parametrize("time_now, response_timetable", [
     # ])
     # def test_schedule_response__time_exceeded(self, time_now, response_timetable):
