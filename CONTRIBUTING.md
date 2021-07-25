@@ -8,7 +8,7 @@ I recommend you to [join mailing list](https://groups.google.com/g/uds-package-d
 It is also a place to simply say 'hi', share your story, tell what you are good at and what would you like do.
 We welcome anyone who wants to help while providing open and supportive environment and offering great learning experience.
 
-**You are motivated to help bit you have no python skill?** No problem, you can still become an influential member of our team! 
+**You are motivated to help, but you have no python skill?** No problem, you can still become an influential member of our team! 
 Let us know what skills you have, and we are going to find you a role matching your abilities and ambitions!
 
 
