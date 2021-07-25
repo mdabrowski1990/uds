@@ -32,7 +32,7 @@ Documentation
 | - User documentation on `ReadTheDocs <https://uds.readthedocs.io/en/latest/>`_
 | - User documentation on `GitHub Pages <https://mdabrowski1990.github.io/uds/>`_
 | - `Security relevant information <https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md>`_
-
+|
 | For contributors:
 | - `How to become a contributor? <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_
 | - `Wiki <https://github.com/mdabrowski1990/uds/wiki>`_ with crucial links and information
@@ -41,7 +41,7 @@ Documentation
 Contact
 =======
 - e-mail: uds-package-development@googlegroups.com
-- `UDS package development group <https://groups.google.com/g/uds-package-development/about>`_
+- group: `UDS package development <https://groups.google.com/g/uds-package-development/about>`_
 
 
 
