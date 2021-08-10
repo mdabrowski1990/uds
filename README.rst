@@ -27,7 +27,7 @@ It supports different communication buses on both communication sides (client an
 
 
 Documentation
-=============
+-------------
 | For users:
 | - User documentation on `ReadTheDocs <https://uds.readthedocs.io/en/latest/>`_
 | - User documentation on `GitHub Pages <https://mdabrowski1990.github.io/uds/>`_
@@ -39,7 +39,7 @@ Documentation
 
 
 Contact
-=======
+-------
 - e-mail: uds-package-development@googlegroups.com
 - group: `UDS package development <https://groups.google.com/g/uds-package-development/about>`_
 

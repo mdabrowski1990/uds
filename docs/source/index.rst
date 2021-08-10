@@ -5,20 +5,34 @@ Welcome to UDS's documentation!
    :caption: Contents:
 
    installation
-   development
+   transport
+   client_simulation
+   server_simulation
+   uds_message
+   uds_knowledge_base
+   contribution
 
 
-Support
-=======
-If you are having issues, please let us know.
-We have a mailing list located at: uds-package-development@googlegroups.com
+Overview
+--------
+The purpose of this project is to provide python tools for simulation (on both sides - client and server) and monitoring of diagnostic communication defined
+by ISO-14229. It can be used with any bus type (e.g. CAN, Ethernet, LIN).
 
-If you found ay bug in project's software, please report it in `project's issue tracking system <https://github.com/mdabrowski1990/uds/issues>`_.
+The most probable use cases of UDS package are:
+ - communication with your vehicle (e.g. reading Diagnostic Trouble Codes)
+ - performing tests against on-board ECU (server)
+ - performing tests against OBD Tester (client)
 
 
 License
-=======
+-------
 The project is licensed under the MIT license - https://github.com/mdabrowski1990/uds/blob/main/LICENSE
+
+
+Contact
+-------
+- e-mail: uds-package-development@googlegroups.com
+- group: `UDS package development <https://groups.google.com/g/uds-package-development/about>`_
 
 
 .. admonition:: Documentation generated
