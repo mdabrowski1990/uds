@@ -27,19 +27,17 @@ It supports different communication buses on both communication sides (client an
 
 
 Documentation
-=============
-| For users:
-| - User documentation on `ReadTheDocs <https://uds.readthedocs.io/en/latest/>`_
-| - User documentation on `GitHub Pages <https://mdabrowski1990.github.io/uds/>`_
-| - `Security relevant information <https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md>`_
-|
-| For contributors:
-| - `How to become a contributor? <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_
-| - `Wiki <https://github.com/mdabrowski1990/uds/wiki>`_ with crucial links and information
+-------------
+User documentation is available `here <https://uds.readthedocs.io/en/latest/>`_.
+
+Security policy is stored in `SECURITY.md <https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md>`_ file.
+
+If you want to become a contributor, please read
+`CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ file.
 
 
 Contact
-=======
+-------
 - e-mail: uds-package-development@googlegroups.com
 - group: `UDS package development <https://groups.google.com/g/uds-package-development/about>`_
 

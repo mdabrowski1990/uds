@@ -12,4 +12,5 @@ There were no security updates so far.
 
 ## Reporting a Vulnerability
 
-Report all security vulnerabilities via e-mail: uds-package-development@googlegroups.com
+If you have noticed any security vulnerabilities, please report it via e-mail to 
+[uds-package-development@googlegroups.com](mailto:uds-package-development@googlegroups.com)
