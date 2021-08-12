@@ -2,23 +2,23 @@ Welcome to UDS's documentation!
 ===============================
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :hidden:
 
-   installation
-   transport
-   client_simulation
-   server_simulation
-   uds_message
-   uds_knowledge_base
-   contribution
+   Home <self>
+   pages/installation.rst
+   pages/transport.rst
+   pages/client_simulation.rst
+   pages/server_simulation.rst
+   pages/uds_message.rst
+   pages/contribution.rst
 
 
 Overview
 --------
-The purpose of this project is to provide python tools for simulation (on both sides - client and server) and monitoring of diagnostic communication defined
-by ISO-14229. It can be used with any bus type (e.g. CAN, Ethernet, LIN).
+The purpose of this project is to provide python tools for simulation (on both sides - client and server) and
+monitoring of diagnostic communication defined by ISO-14229. It can be used with any bus type (e.g. CAN, Ethernet, LIN).
 
-The most probable use cases of UDS package are:
+The most likely use cases of UDS package are:
  - communication with your vehicle (e.g. reading Diagnostic Trouble Codes)
  - performing tests against on-board ECU (server)
  - performing tests against OBD Tester (client)
