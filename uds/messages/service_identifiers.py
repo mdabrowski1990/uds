@@ -4,9 +4,10 @@ __all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPO
 
 from warnings import warn
 
-from aenum import IntEnum, unique, extend_enum
+from aenum import unique, extend_enum
 
 from .types import RawByte
+from ..utilities import ByteEnum
 
 # reserved SID values
 _REQUEST_SIDS_DEFINED_IN_SAEJ1979 = set(range(0x01, 0x10))
@@ -29,7 +30,7 @@ class UnsupportedSID(Warning):
 
 
 @unique
-class RequestSID(IntEnum):  # TODO: check that new values are from REQUEST_SIDS
+class RequestSID(ByteEnum):
     """
     Storage for all known Service Identifiers (SID).
 
@@ -88,7 +89,7 @@ class RequestSID(IntEnum):  # TODO: check that new values are from REQUEST_SIDS
 
 
 @unique
-class ResponseSID(IntEnum):  # TODO: check that new values are from RESPONSE_SIDS
+class ResponseSID(ByteEnum):
     """
     Storage for all known Response Service Identifiers (RSID).
 
@@ -116,5 +117,5 @@ class ResponseSID(IntEnum):  # TODO: check that new values are from RESPONSE_SID
 
 
 # extend 'ResponseSID' with members that were defined in RequestSID
-for request_name, request_enum_member in RequestSID.__members__.items():
+for request_name, request_enum_member in RequestSID.__members__.items():  # TODO: make it smoother
     extend_enum(ResponseSID, request_name, request_enum_member.value + 0x40)

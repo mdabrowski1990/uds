@@ -2,11 +2,13 @@
 
 __all__ = ["NRC"]
 
-from aenum import IntEnum, unique
+from aenum import unique
+
+from ..utilities import ByteEnum
 
 
 @unique
-class NRC(IntEnum):  # TODO: byte enum
+class NRC(ByteEnum):
     """
     Storage for all known Negative Response Codes (NRC).
 
