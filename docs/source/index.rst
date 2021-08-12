@@ -9,7 +9,7 @@ Welcome to UDS's documentation!
    pages/transport.rst
    pages/client_simulation.rst
    pages/server_simulation.rst
-   pages/uds_message.rst
+   pages/uds_messages.rst
    pages/contribution.rst
 
 
