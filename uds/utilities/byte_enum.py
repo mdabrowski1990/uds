@@ -28,7 +28,7 @@ class ByteEnum(IntEnum):
 
         :raise ValueError: Such name or value is already defined.
         """
-        for member in cls.__members__:
+        for member in list(cls):  # noqa
             if member.name == name:
                 raise ValueError(f"Name '{name}' is already in use.")
             if member.value == value:
