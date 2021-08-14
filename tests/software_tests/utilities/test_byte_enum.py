@@ -1,10 +1,13 @@
 import pytest
+from mock import patch
 
 from uds.utilities.byte_enum import ByteEnum
 
 
 class TestByteEnum:
     """Tests for `ByteEnum` class."""
+
+    SCRIPT_LOCATION = "uds.utilities.byte_enum"
 
     class ExampleByteEnum1(ByteEnum):
         A = 0
@@ -36,6 +39,63 @@ class TestByteEnum:
         assert ExampleByteEnum.Value == value
         assert isinstance(ExampleByteEnum.Value, ExampleByteEnum)
         assert ExampleByteEnum.Value in list(ExampleByteEnum)
+
+    # is_member
+
+    @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
+    def test_is_member__true_instance(self, enum_class):
+        assert all([enum_class.is_member(member) is True for member in list(enum_class)])
+
+    @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
+    def test_is_member__true_value(self, enum_class):
+        assert all([enum_class.is_member(member.value) is True for member in list(enum_class)])
+
+    @pytest.mark.parametrize("enum_class, not_member", [
+        (ExampleByteEnum1, ExampleByteEnum2.Value1),
+        (ExampleByteEnum1, ExampleByteEnum2.Value2.value),
+        (ExampleByteEnum1, None),
+        (ExampleByteEnum2, ExampleByteEnum1.A),
+        (ExampleByteEnum2, ExampleByteEnum1.B.value),
+        (ExampleByteEnum2, "some crap"),
+    ])
+    def test_is_member__false(self, enum_class, not_member):
+        assert enum_class.is_member(not_member) is False
+
+    # validate_member
+
+    @patch(f"{SCRIPT_LOCATION}.ByteEnum.is_member")
+    @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
+    @pytest.mark.parametrize("value", [None, ExampleByteEnum1.A, ExampleByteEnum2.Value1.value, 5])
+    def test_validate_member__valid(self, mock_is_member, enum_class, value):
+        mock_is_member.return_value = True
+        assert enum_class.validate_member(value) is None
+        mock_is_member.assert_called_once_with(value=value)
+
+    @patch(f"{SCRIPT_LOCATION}.ByteEnum.is_member")
+    @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
+    @pytest.mark.parametrize("value", [None, ExampleByteEnum1.A, ExampleByteEnum2.Value1.value, 5])
+    def test_validate_member__invalid(self, mock_is_member, enum_class, value):
+        mock_is_member.return_value = False
+        with pytest.raises(TypeError):
+            enum_class.validate_member(value)
+        mock_is_member.assert_called_once_with(value=value)
+
+
+class TestByteEnumAddMember:
+    """
+    Tests for 'add_member' method of `ByteEnum` class.
+
+    These test are separated as it very hard to restore initial test conditions after each test case.
+    """
+
+    class ExampleByteEnum1(ByteEnum):
+        A = 0
+        B = 255
+
+    class ExampleByteEnum2(ByteEnum):
+        Value1 = 11
+        Value2 = 93
+        Value3 = 237
 
     # add_member
 

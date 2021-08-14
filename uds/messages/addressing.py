@@ -29,7 +29,11 @@ class AddressingType(Enum):
 
         :return: True if value is addressing type, else False.
         """
-        return isinstance(value, cls)
+        try:
+            cls(value)
+        except ValueError:
+            return False
+        return True
 
     @classmethod
     def validate_addressing_type(cls, value: Any) -> None:

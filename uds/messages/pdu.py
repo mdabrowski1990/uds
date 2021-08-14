@@ -2,10 +2,15 @@
 
 __all__ = ["AbstractPDU"]
 
-from abc import ABC
+from abc import ABC, abstractmethod
+from typing import NoReturn
 
 from .addressing import AddressingType
-from ..utilities import RawBytes, validate_raw_bytes
+from ..utilities import ByteEnum, RawBytes, RawBytesTuple, validate_raw_bytes
+
+
+class PDUType(ByteEnum):
+    ...
 
 
 class AbstractPDU(ABC):
@@ -18,45 +23,25 @@ class AbstractPDU(ABC):
         :param raw_data: Raw bytes of PDU data.
         :param addressing: Addressing type for which this PDU is relevant.
         """
-        self.raw_data = raw_data
-        self.addressing = addressing
+        ...
 
-    # TODO: setting restriction
-    # def __setattr__(self, key, value):
-    #     if key == "raw_data":
-    #         try:
-    #             self.__getattribute__("raw_data")
-    #         except:
+    @property
+    def raw_data(self) -> RawBytesTuple:
+        ...
 
+    @raw_data.setter
+    def raw_data(self, value: RawBytes) -> NoReturn:
+        ...
 
-    #
-    # @property
-    # @abstractmethod
-    # def raw_data(self) -> RawBytesTuple:
-    #     """"""
-    #
-    # @property
-    # @abstractmethod
-    # def addressing(self) -> Optional[AddressingType]:
-    #     """
-    #     Get addressing type over which this PDU was transmitted/received.
-    #
-    #     :return: Addressing over which the PDU was transmitted/received. None if PDU was not transmitted/received.
-    #     """
-    #
-    # @property  # noqa: F841
-    # @abstractmethod
-    # def pdu_type(self) -> Enum:
-    #     """Getter of this PDU type."""
-    #
-    # @property
-    # @abstractmethod
-    # def time_transmitted(self) -> Optional[datetime]:
-    #     """
-    #     Time when the PDU was published to on a bus.
-    #
-    #     It is determined by either time when received or transmitted to a bus.
-    #
-    #     :return: Date and time when the PDU was fully transmitted.
-    #     """
+    @property
+    def addressing(self) -> AddressingType:
+        ...
 
+    @addressing.setter
+    def addressing(self, value: AddressingType) -> NoReturn:
+        ...
+
+    @property
+    @abstractmethod
+    def pdu_type(self) -> PDUType:
+        ...

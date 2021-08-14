@@ -6,16 +6,23 @@ from uds.messages.addressing import AddressingType
 
 
 class TestAddressingType:
+    """Tests for `AddressingType` class."""
 
     SCRIPT_LOCATION = "uds.messages.addressing"
 
-    def test_is_addressing_type__true(self, example_addressing_type):
+    # is_addressing_type
+
+    def test_is_addressing_type__true_instance(self, example_addressing_type):
         assert AddressingType.is_addressing_type(value=example_addressing_type) is True
 
-    @pytest.mark.parametrize("not_addressing_type", [None, 0.1, Mock(spec=Enum), Mock(spec=IntEnum),
-                                                     AddressingType.PHYSICAL.value])
+    def test_is_addressing_type__true_value(self, example_addressing_type):
+        assert AddressingType.is_addressing_type(value=example_addressing_type.value) is True
+
+    @pytest.mark.parametrize("not_addressing_type", [None, 0.1, Mock(spec=Enum), Mock(spec=IntEnum)])
     def test_is_addressing_type__false(self, not_addressing_type):
         assert AddressingType.is_addressing_type(value=not_addressing_type) is False
+
+    # validate_addressing_type
 
     @patch(f"{SCRIPT_LOCATION}.AddressingType.is_addressing_type")
     @pytest.mark.parametrize("value_to_check", [None, AddressingType.PHYSICAL, "something"])
