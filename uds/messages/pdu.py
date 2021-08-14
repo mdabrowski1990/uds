@@ -2,38 +2,61 @@
 
 __all__ = ["AbstractPDU"]
 
-from typing import Optional
-from abc import ABC, abstractmethod
-from enum import Enum
-from datetime import datetime
+from abc import ABC
 
 from .addressing import AddressingType
+from ..utilities import RawBytes
 
 
 class AbstractPDU(ABC):
-    """Abstract definition of Protocol Data Unit."""
+    """Abstract definition of Protocol Data Unit that carries part of diagnostic message."""
 
-    @property
-    @abstractmethod
-    def addressing(self) -> Optional[AddressingType]:
+    def __init__(self, raw_data: RawBytes, addressing: AddressingType) -> None:
         """
-        Get addressing type over which this PDU was transmitted/received.
+        Create storage for information about a single UDS PDU.
 
-        :return: Addressing over which the PDU was transmitted/received. None if PDU was not transmitted/received.
+        :param raw_data: Raw bytes of PDU data.
+        :param addressing: Addressing type for which this PDU is relevant.
         """
+        self.raw_data = raw_data
+        self.addressing = addressing
 
-    @property  # noqa: F841
-    @abstractmethod
-    def pdu_type(self) -> Enum:
-        """Getter of this PDU type."""
+    # TODO: setting restriction
+    # def __setattr__(self, key, value):
+    #     if key == "raw_data":
+    #         try:
+    #             self.__getattribute__("raw_data")
+    #         except:
 
-    @property
-    @abstractmethod
-    def time_transmitted(self) -> Optional[datetime]:
-        """
-        Time when the PDU was published to on a bus.
 
-        It is determined by either time when received or transmitted to a bus.
+    #
+    # @property
+    # @abstractmethod
+    # def raw_data(self) -> RawBytesTuple:
+    #     """"""
+    #
+    # @property
+    # @abstractmethod
+    # def addressing(self) -> Optional[AddressingType]:
+    #     """
+    #     Get addressing type over which this PDU was transmitted/received.
+    #
+    #     :return: Addressing over which the PDU was transmitted/received. None if PDU was not transmitted/received.
+    #     """
+    #
+    # @property  # noqa: F841
+    # @abstractmethod
+    # def pdu_type(self) -> Enum:
+    #     """Getter of this PDU type."""
+    #
+    # @property
+    # @abstractmethod
+    # def time_transmitted(self) -> Optional[datetime]:
+    #     """
+    #     Time when the PDU was published to on a bus.
+    #
+    #     It is determined by either time when received or transmitted to a bus.
+    #
+    #     :return: Date and time when the PDU was fully transmitted.
+    #     """
 
-        :return: Date and time when the PDU was fully transmitted.
-        """

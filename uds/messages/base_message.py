@@ -2,19 +2,22 @@
 
 __all__ = ["UdsMessage"]
 
-from typing import Optional
+from typing import Optional, Union, Tuple, List
 from datetime import datetime
 
 from .addressing import AddressingType
 from .pdu import AbstractPDU
-from .types import RawMessage, RawMessageTuple, PDUs, PDUsTuple
+from uds.utilities import RawBytes, RawBytesTuple
+
+PDUsTuple = Tuple[AbstractPDU, ...]
+PDUs = Union[PDUsTuple, List[AbstractPDU]]
 
 
 class UdsMessage:
     """Common implementation of all UDS messages (requests and responses)."""
 
     def __init__(self,
-                 raw_message: RawMessage,
+                 raw_message: RawBytes,
                  addressing: Optional[AddressingType] = None,  # pylint: disable=unsubscriptable-object
                  pdu_sequence: Optional[PDUs] = None) -> None:  # pylint: disable=unsubscriptable-object
         """
@@ -38,7 +41,7 @@ class UdsMessage:
         self.__addressing = addressing
 
     @staticmethod
-    def __validate_raw_message(raw_message: RawMessage) -> None:
+    def __validate_raw_message(raw_message: RawBytes) -> None:
         """
         Verify raw message argument.
 
@@ -89,7 +92,7 @@ class UdsMessage:
         return self.__pdu_sequence
 
     @property
-    def raw_message(self) -> RawMessageTuple:
+    def raw_message(self) -> RawBytesTuple:
         """Raw message that this message carries."""
         return self.__raw_message
 

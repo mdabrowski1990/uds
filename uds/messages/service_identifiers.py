@@ -6,7 +6,7 @@ from warnings import warn
 
 from aenum import unique, extend_enum
 
-from .types import RawByte
+from uds.utilities import RawByte
 from ..utilities import ByteEnum
 
 # reserved SID values
