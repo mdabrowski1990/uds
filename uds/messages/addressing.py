@@ -2,6 +2,7 @@
 
 __all__ = ["AddressingType"]
 
+from typing import Any
 from enum import Enum
 
 
@@ -15,6 +16,29 @@ class AddressingType(Enum):
     - BROADCAST - 1 (client) to many (servers) communication that does not require response
     """
 
-    PHYSICAL = "Physical"  # noqa: F841
-    FUNCTIONAL = "Functional"  # noqa: F841
-    BROADCAST = "Broadcast"  # noqa: F841
+    PHYSICAL = "Physical"
+    FUNCTIONAL = "Functional"
+    BROADCAST = "Broadcast"
+
+    @classmethod
+    def is_addressing_type(cls, value: Any) -> bool:
+        """
+        Check whether given value is Addressing Type.
+
+        :param value: Value to check.
+
+        :return: True if value is addressing type, else False.
+        """
+        return isinstance(value, cls)
+
+    @classmethod
+    def validate_addressing_type(cls, value: Any) -> None:
+        """
+        Validate whether provided value stores an addressing type.
+
+        :param value: Value to validate.
+
+        :raise TypeError: Provided value is not proper addressing type.
+        """
+        if not cls.is_addressing_type(value=value):
+            raise TypeError(f"Provided value is not addressing type. Actual type: {type(value)}.")

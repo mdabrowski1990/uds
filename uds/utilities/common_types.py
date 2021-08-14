@@ -2,7 +2,7 @@
 
 __all__ = ["TimeMilliseconds", "RawByte", "RawBytes", "RawBytesTuple", "validate_raw_bytes"]
 
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Any
 
 RawByte = int
 # TODO: prospector supports only pylint version 2.5 that has serious problem with Aliases in Python 3.9.
@@ -12,9 +12,9 @@ RawBytes = Union[RawBytesTuple, List[RawByte]]  # pylint: disable=unsubscriptabl
 TimeMilliseconds = Union[int, float]  # pylint: disable=unsubscriptable-object
 
 
-def validate_raw_bytes(value: RawBytes) -> None:
+def validate_raw_bytes(value: Any) -> None:
     """
-    Validate whether provided value contains raw bytes.
+    Validate whether provided value stores raw bytes.
 
     :param value: Value to validate.
 

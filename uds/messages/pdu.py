@@ -5,7 +5,7 @@ __all__ = ["AbstractPDU"]
 from abc import ABC
 
 from .addressing import AddressingType
-from ..utilities import RawBytes
+from ..utilities import RawBytes, validate_raw_bytes
 
 
 class AbstractPDU(ABC):
