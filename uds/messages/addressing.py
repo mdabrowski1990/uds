@@ -1,8 +1,8 @@
 """UDS messages addressing implementation."""
 
-__all__ = ["AddressingType"]
+__all__ = ["AddressingType", "AddressingMemberTyping"]
 
-from typing import Any
+from typing import Any, Union
 from enum import Enum
 
 
@@ -46,3 +46,6 @@ class AddressingType(Enum):
         """
         if not cls.is_addressing_type(value=value):
             raise TypeError(f"Provided value is not addressing type. Actual type: {type(value)}.")
+
+
+AddressingMemberTyping = Union[AddressingType, str]

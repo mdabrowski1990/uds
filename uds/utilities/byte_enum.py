@@ -46,7 +46,6 @@ class ByteEnum(IntEnum):
 
         :return: True if given argument is member (or its value), else False.
         """
-
         try:
             cls(value)
         except ValueError:
