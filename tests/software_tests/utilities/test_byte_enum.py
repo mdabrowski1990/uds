@@ -76,7 +76,7 @@ class TestByteEnum:
     @pytest.mark.parametrize("value", [None, ExampleByteEnum1.A, ExampleByteEnum2.Value1.value, 5])
     def test_validate_member__invalid(self, mock_is_member, enum_class, value):
         mock_is_member.return_value = False
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             enum_class.validate_member(value)
         mock_is_member.assert_called_once_with(value=value)
 

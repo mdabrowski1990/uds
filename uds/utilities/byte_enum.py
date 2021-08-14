@@ -13,9 +13,9 @@ class ByteEnum(IntEnum):
     def __new__(cls, value: int):
         """Creation of a new member."""
         if not isinstance(value, int):
-            raise TypeError("'value' is not int type")
+            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
         if not 0 <= value <= 255:
-            raise ValueError(f"'value' is not in range 0x00-0xFF. value = {value}.")
+            raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}.")
         member = int.__new__(cls, value)
         member._value_ = value  # noqa: F841
         return member
@@ -62,4 +62,4 @@ class ByteEnum(IntEnum):
         :raise TypeError: Provided value is neither member (or its value) of this Enum.
         """
         if not cls.is_member(value=value):
-            raise TypeError(f"Provided value is not member of this Enum. Actual type: {type(value)}.")
+            raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}.")
