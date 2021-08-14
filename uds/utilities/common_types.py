@@ -1,17 +1,18 @@
 """Container with all types (and its aliases) used by the module."""
 
-__all__ = ["RawByte", "RawBytes", "RawBytesTuple", "validate_raw_bytes"]
+__all__ = ["TimeMilliseconds", "RawByte", "RawBytes", "RawBytesTuple", "validate_raw_bytes"]
 
-from typing import Union, Tuple, List, Any
+from typing import Union, Tuple, List
 
 RawByte = int
 # TODO: prospector supports only pylint version 2.5 that has serious problem with Aliases in Python 3.9.
 #  Remove unsubscriptable-object once prospector supports newer versions of pylint for Python 3.9.
 RawBytesTuple = Tuple[RawByte, ...]  # pylint: disable=unsubscriptable-object
 RawBytes = Union[RawBytesTuple, List[RawByte]]  # pylint: disable=unsubscriptable-object
+TimeMilliseconds = Union[int, float]  # pylint: disable=unsubscriptable-object
 
 
-def validate_raw_bytes(value: Any) -> None:
+def validate_raw_bytes(value: RawBytes) -> None:
     """
     Validate whether provided value contains raw bytes.
 

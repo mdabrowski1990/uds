@@ -11,7 +11,7 @@ __all__ = ["AddressingTypesContainer", "AddressingTypesSet", "AddressingType",
 from typing import Any, Union, List, Tuple, Set, Dict
 from datetime import datetime
 
-from uds.common_types import TimeMilliseconds
+from uds.utilities import TimeMilliseconds
 from uds.transport_interface import TransportInterfaceServer
 from uds.messages import UdsRequest, UdsResponse, AddressingType, ResponseSID, POSSIBLE_REQUEST_SIDS, NRC
 

@@ -7,7 +7,7 @@ __all__ = ["PDU", "PDUs",
 from typing import List, Union
 
 from uds.messages import AbstractPDU, UdsResponse, UdsRequest
-from uds.common_types import TimeMilliseconds
+from uds.utilities import TimeMilliseconds
 
 PDU = AbstractPDU
 PDUs = List[AbstractPDU]
