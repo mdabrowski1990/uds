@@ -1,6 +1,6 @@
 """Common implementation of UDS PDU (Protocol Data Unit) for all bus types."""
 
-__all__ = ["AbstractPDU", "AbstractPCI"]
+__all__ = ["AbstractPCI", "AbstractPDU", "AbstractPDURecord"]
 
 from abc import ABC, abstractmethod
 from typing import Any

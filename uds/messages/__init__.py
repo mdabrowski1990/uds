@@ -1,6 +1,6 @@
 """Module with basic tools to handle UDS messages."""
 
-from .pdu import AbstractPDU
+from .pdu import AbstractPCI, AbstractPDU, AbstractPDURecord
 from .uds_message import UdsMessage
 from .response import UdsResponse, UdsResponseType
 from .request import UdsRequest

@@ -28,7 +28,7 @@ class ExtendableEnum(Enum):
             if member.value == value:
                 raise ValueError(f"Value '{value}' is already in use.")
         extend_enum(cls, name, value)
-        return cls[name]
+        return cls[name]  # type: ignore
 
 
 class ValidatedEnum(Enum):
