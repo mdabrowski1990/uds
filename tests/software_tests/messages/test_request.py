@@ -1,5 +1,3 @@
-import pytest
-
 from uds.messages.request import UdsMessage, UdsRequest
 
 

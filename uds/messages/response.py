@@ -4,7 +4,7 @@ __all__ = ["UdsResponse", "UdsResponseType"]
 
 from enum import Enum
 
-from .base_message import UdsMessage
+from .uds_message import UdsMessage
 from .service_identifiers import RequestSID, ResponseSID
 
 

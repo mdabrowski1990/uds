@@ -5,12 +5,12 @@ __all__ = ["UdsMessage"]
 from typing import Optional, Union, Tuple, List
 from datetime import datetime
 
-from .addressing import AddressingType
+from .transmission_attributes import AddressingType
 from .pdu import AbstractPDU
-from uds.utilities import RawBytes, RawBytesTuple
+from ..utilities import RawBytes, RawBytesTuple
 
 PDUsTuple = Tuple[AbstractPDU, ...]
-PDUs = Union[PDUsTuple, List[AbstractPDU]]
+PDUs = Union[PDUsTuple, List[AbstractPDU]]  # pylint: disable=unsubscriptable-object
 
 
 class UdsMessage:

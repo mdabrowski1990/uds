@@ -1,24 +1,14 @@
 """Implementation of Byte Enum."""
 
-__all__ = ["ByteEnum"]
+__all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum"]
 
 from typing import Any
 
-from aenum import IntEnum, extend_enum
+from aenum import Enum, IntEnum, extend_enum
 
 
-class ByteEnum(IntEnum):
-    """Enum which members can one byte integers (0x00-0xFF)."""
-
-    def __new__(cls, value: int):
-        """Creation of a new member."""
-        if not isinstance(value, int):
-            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
-        if not 0 <= value <= 255:
-            raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}.")
-        member = int.__new__(cls, value)
-        member._value_ = value  # noqa: F841
-        return member
+class ExtendableEnum(Enum):
+    """Enum with method for adding new members."""
 
     @classmethod
     def add_member(cls, name: str, value: int) -> None:
@@ -30,17 +20,21 @@ class ByteEnum(IntEnum):
 
         :raise ValueError: Such name or value is already defined.
         """
-        for member in list(cls):  # noqa
+        for member in list(cls):  # noqa: F841
             if member.name == name:
                 raise ValueError(f"Name '{name}' is already in use.")
             if member.value == value:
                 raise ValueError(f"Value '{value}' is already in use.")
         extend_enum(cls, name, value)
 
+
+class ValidatedEnum(Enum):
+    """Enum with methods for members validation."""
+
     @classmethod
     def is_member(cls, value: Any) -> bool:
         """
-        Check whether given value is this enum member.
+        Check whether given value is a member (or its value).
 
         :param value: Value to check.
 
@@ -55,7 +49,7 @@ class ByteEnum(IntEnum):
     @classmethod
     def validate_member(cls, value: Any) -> None:
         """
-        Validate whether provided value is this enum member.
+        Validate whether given value is a member (or its value).
 
         :param value: Value to validate.
 
@@ -63,3 +57,24 @@ class ByteEnum(IntEnum):
         """
         if not cls.is_member(value=value):
             raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}.")
+
+
+class ByteEnum(IntEnum):
+    """Enum which members are one byte integers (0x00-0xFF)."""
+
+    def __new__(cls, value: int):
+        """
+        Creation of a new member.
+
+        :param value: One byte integer.
+
+        :raise TypeError: Provided value is not int type.
+        :raise ValueError: Provided value is not in inclusive range 0x00-0xFF.
+        """
+        if not isinstance(value, int):
+            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
+        if not 0 <= value <= 255:
+            raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}.")
+        member = int.__new__(cls, value)
+        member._value_ = value  # noqa: F841
+        return member

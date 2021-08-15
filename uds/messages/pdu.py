@@ -4,8 +4,9 @@ __all__ = ["AbstractPDU", "AbstractPDUType"]
 
 from abc import ABC, abstractmethod
 
-from .addressing import AddressingMemberTyping, AddressingType
-from ..utilities import ByteEnum, RawBytes, RawBytesTuple, validate_raw_bytes
+from .transmission_attributes import AddressingMemberTyping, AddressingType, \
+    TransmissionDirection, DirectionMemberTyping
+from ..utilities import ByteEnum, RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError
 
 
 class AbstractPDUType(ByteEnum):
@@ -56,10 +57,54 @@ class AbstractPDU(ABC):
 
         :param value: Value of addressing type to set.
         """
-        AddressingType.validate_addressing_type(value=value)
+        AddressingType.validate_member(value=value)
         self.__addressing = AddressingType(value)
 
     @property  # noqa: F841
     @abstractmethod
     def pdu_type(self) -> AbstractPDUType:
         """Type of this PDU."""
+
+
+class AbstractPDURecord(ABC):
+    """Abstract definition of Record that stores information about transmitted or received PDU."""
+
+    @abstractmethod
+    def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:
+        """
+        Create record of a PDU that was either received of transmitted to a bus.
+
+        :param frame: Frame that carried this PDU.
+        :param direction: Information whether this PDU was transmitted or received.
+        """
+        self.frame = frame
+        self.direction = direction
+
+    @abstractmethod
+    def __validate_frame(self, frame: object) -> None:
+        """
+        Validate value of a frame before attribute assignment.
+
+        :param frame: Frame value to validate.
+
+        :raise TypeError: Frame has other type than expected.
+        :raise ValueError: Some values of a frame are not
+        """
+
+    @property
+    def frame(self) -> object:
+        """Frame that carried this PDU."""
+        # TODO
+
+    @frame.setter
+    def frame(self, value: DirectionMemberTyping):
+        """
+        Set value of frame attribute.
+
+        :param value:
+
+        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        """
+        # TODO
+
+    # TODO: other arguments

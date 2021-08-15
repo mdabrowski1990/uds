@@ -32,10 +32,9 @@ jobs:
       run: |
         pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
 
-# TODO: revert when integration tests are created
-#    - name: Execute integration tests [pytest]
-#      run: |
-#        pytest tests/software_tests -m integration
+    - name: Execute integration tests [pytest]
+      run: |
+        pytest tests/software_tests -m integration
         
         
   static_code_analysis:
