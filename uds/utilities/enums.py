@@ -11,7 +11,7 @@ class ExtendableEnum(Enum):
     """Enum with method for adding new members."""
 
     @classmethod
-    def add_member(cls, name: str, value: int) -> None:
+    def add_member(cls, name: str, value: Any) -> Enum:
         """
         Register a new member.
 
@@ -19,6 +19,8 @@ class ExtendableEnum(Enum):
         :param value: Value of a new member.
 
         :raise ValueError: Such name or value is already defined.
+
+        :return: The new member that was just created.
         """
         for member in list(cls):  # noqa: F841
             if member.name == name:
@@ -26,6 +28,7 @@ class ExtendableEnum(Enum):
             if member.value == value:
                 raise ValueError(f"Value '{value}' is already in use.")
         extend_enum(cls, name, value)
+        return cls[name]
 
 
 class ValidatedEnum(Enum):

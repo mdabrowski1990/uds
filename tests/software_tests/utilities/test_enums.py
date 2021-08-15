@@ -115,8 +115,7 @@ class TestExtendableEnum:
         (ExampleByteEnum2, "X", 255),
     ])
     def test_add_member__valid(self, enum_class, name, value):
-        enum_class.add_member(name=name, value=value)
-        member = enum_class[name]
+        member = enum_class.add_member(name=name, value=value)
         assert member.name == name
         assert member.value == value
         assert isinstance(member, enum_class)
@@ -232,8 +231,7 @@ class TestMultipleEnums:
         (ExtendableStrEnum, "NewVar", "-=.,';[;31413n2qtgbhj6"),
     ])
     def test_add_member__valid(self, enum_class, name, value):
-        enum_class.add_member(name=name, value=value)
-        member = enum_class[name]
+        member = enum_class.add_member(name=name, value=value)
         assert member.name == name
         assert member.value == value
         assert isinstance(member, enum_class)
