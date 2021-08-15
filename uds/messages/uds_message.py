@@ -4,9 +4,9 @@ __all__ = ["UdsMessage"]
 
 from typing import Optional, Union, Tuple, List
 
+from uds.utilities import RawBytes, RawBytesTuple
 from .transmission_attributes import AddressingType
 from .pdu import AbstractPDU
-from ..utilities import RawBytes, RawBytesTuple
 
 PDUsTuple = Tuple[AbstractPDU, ...]
 PDUs = Union[PDUsTuple, List[AbstractPDU]]  # pylint: disable=unsubscriptable-object

@@ -6,7 +6,7 @@ from typing import Union
 
 from aenum import StrEnum
 
-from ..utilities import ValidatedEnum
+from uds.utilities import ValidatedEnum
 
 
 class AddressingType(StrEnum, ValidatedEnum):

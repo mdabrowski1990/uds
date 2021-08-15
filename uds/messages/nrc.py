@@ -4,7 +4,7 @@ __all__ = ["NRC"]
 
 from aenum import unique
 
-from ..utilities import ByteEnum
+from uds.utilities import ByteEnum
 
 
 @unique

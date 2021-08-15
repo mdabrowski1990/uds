@@ -6,10 +6,10 @@ from abc import ABC, abstractmethod
 from typing import Any
 from datetime import datetime
 
+from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum, \
+    RawByte, RawBytes, RawBytesTuple, validate_raw_bytes
 from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
-from ..utilities import ByteEnum, ValidatedEnum, ExtendableEnum, \
-    RawByte, RawBytes, RawBytesTuple, validate_raw_bytes
 
 
 class AbstractPCI(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
@@ -66,8 +66,8 @@ class AbstractPDU(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def pdu_type(self) -> AbstractPCI:
-        """Type of this PDU."""
+    def pci(self) -> AbstractPCI:
+        """N_PCI (type of PDU) value of this PDU."""
 
 
 class AbstractPDURecord(ABC):
