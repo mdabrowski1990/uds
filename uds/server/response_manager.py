@@ -96,9 +96,9 @@ class ResponseManager:
     """
 
     __EMERGENCY_RESPONSE_RULES = (
-        _EmergencyServiceNotSupported(addressing_types={AddressingType.PHYSICAL},
+        _EmergencyServiceNotSupported(addressing_types={AddressingType.PHYSICAL},  # type: ignore
                                       related_request_sids=POSSIBLE_REQUEST_SIDS),
-        _EmergencyNoResponse(addressing_types={AddressingType.BROADCAST, AddressingType.FUNCTIONAL},
+        _EmergencyNoResponse(addressing_types={AddressingType.BROADCAST, AddressingType.FUNCTIONAL},  # type: ignore
                              related_request_sids=POSSIBLE_REQUEST_SIDS),
     )
 
@@ -177,7 +177,7 @@ class ResponseManager:
         rules_dict: ResponseRulesDict = {}
         for rule in response_rules:
             for addressing in rule.addressing_types:
-                addressing_rules_dict = rules_dict.setdefault(addressing, {})
+                addressing_rules_dict = rules_dict.setdefault(addressing, {})  # type: ignore
                 for sid in rule.related_request_sids:
                     addressing_rules_dict.setdefault(sid, []).append(rule)
         return rules_dict

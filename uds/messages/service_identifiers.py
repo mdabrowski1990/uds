@@ -6,8 +6,7 @@ from warnings import warn
 
 from aenum import unique, extend_enum
 
-from .types import RawByte
-from ..utilities import ByteEnum
+from uds.utilities import RawByte, ByteEnum
 
 # reserved SID values
 _REQUEST_SIDS_DEFINED_IN_SAEJ1979 = set(range(0x01, 0x10))

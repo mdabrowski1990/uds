@@ -18,6 +18,7 @@ pylint:
     max-line-length: 120
     max-args: 10
     max-attributes: 15
+    min-public-methods: 1
 
 pyflakes:
   disable:
@@ -54,5 +55,5 @@ vulture:
 pyroma:
   run: true
 
-bandit:  # there is probably be no use of it (not applicable for this project), but it is run anyways to make sure everything is secure
+bandit:  # there is probably no use of it (not applicable for this project), but it is run anyways to make sure everything is secured
   run: true

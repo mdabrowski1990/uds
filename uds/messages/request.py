@@ -2,7 +2,7 @@
 
 __all__ = ["UdsRequest"]
 
-from .base_message import UdsMessage
+from .uds_message import UdsMessage
 
 
 class UdsRequest(UdsMessage):
