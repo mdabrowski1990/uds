@@ -1,19 +1,23 @@
 """Common implementation of UDS PDU (Protocol Data Unit) for all bus types."""
 
-__all__ = ["AbstractPDU", "AbstractPDUType"]
+__all__ = ["AbstractPDU", "AbstractPCI"]
 
 from abc import ABC, abstractmethod
+from typing import Any
+from datetime import datetime
 
 from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
-from ..utilities import ByteEnum, RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError
+from ..utilities import ByteEnum, ValidatedEnum, ExtendableEnum, \
+    RawByte, RawBytes, RawBytesTuple, validate_raw_bytes
 
 
-class AbstractPDUType(ByteEnum):
+class AbstractPCI(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
     """
-    Abstract definition of Protocol Data Unit.
+    Abstract definition of Protocol Control Information (N_PCI).
 
-    Enum with PDU types for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
+    Enum with N_PCI for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
+    There are some differences in available values for each bus (e.g. LIN does not use Flow Control).
     """
 
 
@@ -62,7 +66,7 @@ class AbstractPDU(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def pdu_type(self) -> AbstractPDUType:
+    def pdu_type(self) -> AbstractPCI:
         """Type of this PDU."""
 
 
@@ -78,33 +82,77 @@ class AbstractPDURecord(ABC):
         :param direction: Information whether this PDU was transmitted or received.
         """
         self.frame = frame
-        self.direction = direction
+        self.direction = direction  # type: ignore
 
     @abstractmethod
-    def __validate_frame(self, frame: object) -> None:
+    def __validate_frame(self, value: Any) -> None:
         """
         Validate value of a frame before attribute assignment.
 
-        :param frame: Frame value to validate.
+        :param value: Frame value to validate.
 
         :raise TypeError: Frame has other type than expected.
         :raise ValueError: Some values of a frame are not
         """
 
+    def __get_raw_pci(self) -> RawByte:
+        """
+        Get N_PCI (value that describes PDU type) of a PDU.
+
+        :return: Integer value of N_PCI.
+        """
+        return (self.raw_data[0] >> 4) & 0xF  # TODO: make sure it is the first nibble of data for all buses
+
     @property
     def frame(self) -> object:
         """Frame that carried this PDU."""
-        # TODO
+        return self.__frame
 
     @frame.setter
     def frame(self, value: DirectionMemberTyping):
         """
         Set value of frame attribute.
 
-        :param value:
+        :param value: Frame value to set.
 
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
-        # TODO
+        self.__validate_frame(value=value)
+        self.__frame = value
 
-    # TODO: other arguments
+    @property
+    def direction(self) -> TransmissionDirection:
+        """Information whether this PDU was transmitted or received."""
+        return self.__direction
+
+    @direction.setter
+    def direction(self, value: DirectionMemberTyping):
+        """
+        Set value of direction attribute.
+
+        :param value: Direction value to set.
+
+        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        """
+        TransmissionDirection.validate_member(value=value)
+        self.__direction = TransmissionDirection(value)
+
+    @property
+    @abstractmethod
+    def raw_data(self) -> RawBytesTuple:
+        """Raw bytes of data that this PDU carried."""
+
+    @property   # noqa: F841
+    @abstractmethod
+    def pci(self) -> AbstractPCI:
+        """N_PCI (type of PDU) value carried by this PDU."""
+
+    @property
+    @abstractmethod
+    def addressing(self) -> AddressingType:
+        """Addressing type over which this PDU was transmitted."""
+
+    @property  # noqa: F841
+    @abstractmethod
+    def transmission_time(self) -> datetime:
+        """Timestamp when this PDU was fully transmitted on a bus."""

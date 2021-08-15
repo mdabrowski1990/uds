@@ -1,6 +1,6 @@
 from pytest import fixture
 
-from uds.messages import AddressingType, POSSIBLE_REQUEST_SIDS, UdsRequest, UdsResponse
+from uds.messages import AddressingType, POSSIBLE_REQUEST_SIDS, UdsRequest, UdsResponse, TransmissionDirection
 
 
 @fixture(params=[(0x00, 0xFF, 0xAA, 0x55), [0xA1], [0x12, 0xFF, 0xE0, 0x1D, 0xC2, 0x3B, 0x00, 0xFF], (0xFF, ), [0x00]])
@@ -41,3 +41,8 @@ def example_addressing_type(request):
 @fixture
 def example_addressing_types():
     return list(AddressingType)
+
+
+@fixture(params=list(TransmissionDirection))
+def example_transmission_direction(request):
+    return request.param

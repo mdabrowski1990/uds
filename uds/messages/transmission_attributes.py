@@ -36,8 +36,8 @@ class TransmissionDirection(StrEnum, ValidatedEnum):
     - TRANSMITTED - transmission (pushed to a bus by python code)
     """
 
-    RECEIVED = "Rx"
-    TRANSMITTED = "Tx"
+    RECEIVED = "Rx"  # noqa: F841
+    TRANSMITTED = "Tx"  # noqa: F841
 
 
 DirectionMemberTyping = Union[TransmissionDirection, str]  # pylint: disable=unsubscriptable-object

@@ -3,7 +3,6 @@
 __all__ = ["UdsMessage"]
 
 from typing import Optional, Union, Tuple, List
-from datetime import datetime
 
 from .transmission_attributes import AddressingType
 from .pdu import AbstractPDU
@@ -107,24 +106,24 @@ class UdsMessage:
             return self.pdu_sequence[0].addressing
         return self.__addressing
 
-    @property  # noqa: F841
-    def time_transmission_start(self) -> Optional[datetime]:  # pylint: disable=unsubscriptable-object
-        """
-        Time when the message transmission to a bus was started.
-
-        It is determined by a time when the first PDU (that carries this message) was either received or transmitted.
-
-        :return: Date and time when the message transmission was initiated. None if message was not transmitted.
-        """
-        return self.pdu_sequence[0].time_transmitted if self.pdu_sequence else None
-
-    @property
-    def time_transmission_end(self) -> Optional[datetime]:  # pylint: disable=unsubscriptable-object
-        """
-        Time when the message transmission to a bus was finished.
-
-        It is determined by a time when the last PDU (that carries this message) was either received or transmitted.
-
-        :return: Date and time when the message transmission was completed. None if message was not transmitted.
-        """
-        return self.pdu_sequence[-1].time_transmitted if self.pdu_sequence else None
+    # @property  # noqa: F841
+    # def time_transmission_start(self) -> Optional[datetime]:  # pylint: disable=unsubscriptable-object
+    #     """
+    #     Time when the message transmission to a bus was started.
+    #
+    #     It is determined by a time when the first PDU (that carries this message) was either received or transmitted.
+    #
+    #     :return: Date and time when the message transmission was initiated. None if message was not transmitted.
+    #     """
+    #     return self.pdu_sequence[0].time_transmitted if self.pdu_sequence else None
+    #
+    # @property
+    # def time_transmission_end(self) -> Optional[datetime]:  # pylint: disable=unsubscriptable-object
+    #     """
+    #     Time when the message transmission to a bus was finished.
+    #
+    #     It is determined by a time when the last PDU (that carries this message) was either received or transmitted.
+    #
+    #     :return: Date and time when the message transmission was completed. None if message was not transmitted.
+    #     """
+    #     return self.pdu_sequence[-1].time_transmitted if self.pdu_sequence else None

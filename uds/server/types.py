@@ -13,13 +13,15 @@ from datetime import datetime
 
 from uds.utilities import TimeMilliseconds
 from uds.transport_interface import TransportInterfaceServer
-from uds.messages import UdsRequest, UdsResponse, AddressingType, ResponseSID, POSSIBLE_REQUEST_SIDS, NRC
+from uds.messages import UdsRequest, UdsResponse, AddressingType, AddressingMemberTyping,\
+    ResponseSID, POSSIBLE_REQUEST_SIDS, NRC
 
 # pylint: disable=unsubscriptable-object
 
 # UDS Messages related
-AddressingTypesSet = Set[AddressingType]
-AddressingTypesContainer = Union[List[AddressingType], Tuple[AddressingType, ...], AddressingTypesSet]
+AddressingTypesSet = Set[AddressingMemberTyping]
+AddressingTypesContainer = Union[List[AddressingMemberTyping], Tuple[AddressingMemberTyping, ...],
+                                 AddressingMemberTyping]
 SIDRawValue = int
 SIDRawValuesSet = Set[SIDRawValue]
 SIDRawValuesContainer = Union[List[SIDRawValue], Tuple[SIDRawValue, ...], SIDRawValuesSet]
