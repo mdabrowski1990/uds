@@ -28,7 +28,6 @@ class TestByteEnum:
             Value = value
         assert ExampleByteEnum.Value == value
         assert isinstance(ExampleByteEnum.Value, ExampleByteEnum)
-        assert ExampleByteEnum.Value in list(ExampleByteEnum)
 
 
 class TestValidatedEnum:
@@ -119,7 +118,6 @@ class TestExtendableEnum:
         assert member.name == name
         assert member.value == value
         assert isinstance(member, enum_class)
-        assert member in list(enum_class)
 
     @pytest.mark.parametrize("enum_class, name, value", [
         (ExampleByteEnum1, list(ExampleByteEnum1)[0].name, 111),
@@ -235,4 +233,3 @@ class TestMultipleEnums:
         assert member.name == name
         assert member.value == value
         assert isinstance(member, enum_class)
-        assert member in list(enum_class)
