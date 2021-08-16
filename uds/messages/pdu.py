@@ -7,7 +7,7 @@ from typing import Any
 from datetime import datetime
 
 from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum, \
-    RawByte, RawBytes, RawBytesTuple, validate_raw_bytes
+    RawByte, RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError
 from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
 
@@ -66,7 +66,7 @@ class AbstractNPDU(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def pci(self) -> AbstractNPCI:
+    def npci(self) -> AbstractNPCI:
         """N_PCI (type of UDS N_PDU) value of this N_PDU."""
 
 
@@ -117,8 +117,13 @@ class AbstractNPDURecord(ABC):
 
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
-        self.__validate_frame(value=value)
-        self.__frame = value
+        try:
+            self.__getattribute__("_AbstractNPDURecord__frame")
+        except AttributeError:
+            self.__validate_frame(value=value)
+            self.__frame = value
+        else:
+            raise ReassignmentError(f"You cannot change value of 'frame' attribute once it is assigned.")
 
     @property
     def direction(self) -> TransmissionDirection:
@@ -134,8 +139,13 @@ class AbstractNPDURecord(ABC):
 
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
-        TransmissionDirection.validate_member(value=value)
-        self.__direction = TransmissionDirection(value)
+        try:
+            self.__getattribute__("_AbstractNPDURecord__direction")
+        except AttributeError:
+            TransmissionDirection.validate_member(value=value)
+            self.__direction = TransmissionDirection(value)
+        else:
+            raise ReassignmentError(f"You cannot change value of 'direction' attribute once it is assigned.")
 
     @property
     @abstractmethod
@@ -144,7 +154,7 @@ class AbstractNPDURecord(ABC):
 
     @property   # noqa: F841
     @abstractmethod
-    def pci(self) -> AbstractNPCI:
+    def npci(self) -> AbstractNPCI:
         """N_PCI (type of N_PDU) value carried by this N_PDU."""
 
     @property
