@@ -123,7 +123,7 @@ class AbstractNPDURecord(ABC):
             self.__validate_frame(value=value)
             self.__frame = value
         else:
-            raise ReassignmentError(f"You cannot change value of 'frame' attribute once it is assigned.")
+            raise ReassignmentError("You cannot change value of 'frame' attribute once it is assigned.")
 
     @property
     def direction(self) -> TransmissionDirection:
@@ -145,7 +145,7 @@ class AbstractNPDURecord(ABC):
             TransmissionDirection.validate_member(value=value)
             self.__direction = TransmissionDirection(value)
         else:
-            raise ReassignmentError(f"You cannot change value of 'direction' attribute once it is assigned.")
+            raise ReassignmentError("You cannot change value of 'direction' attribute once it is assigned.")
 
     @property
     @abstractmethod
