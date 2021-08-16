@@ -11,6 +11,7 @@ Welcome to UDS's documentation!
    pages/client_simulation.rst
    pages/server_simulation.rst
    pages/contribution.rst
+   pages/knowledge_base.rst
 
 
 Overview
