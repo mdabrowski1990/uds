@@ -27,7 +27,7 @@ Physical
 Physical addressing is used to send a dedicated message to a certain server (ECU).
 When physically addressed messages are sent, the direct (point-to-point) communication between the client and
 the server takes place. The server shall respond to physically addressed request unless the request contains
-an information that response is not required what is presented with details in
+an information that response is not required what is presented with detailed explanation in
 `response behaviour to physically addressed request`_ chapter.
 
 NOTE: You do not need a direct physical connection between the client and the server to have physically addressed
@@ -67,7 +67,7 @@ Columns explanation:
  - SPRMIB - flag whether Suppress Positive Response Message Indication Bit is set or not in the received request message
  - SID supported - flag whether Service Identifier in the received request message is supported by the server or not
  - SF supported - flag whether subFunction in the received request message is supported by the server or not
- - DataParam supported - flag whether data parameters (e.g. DID) in the received request message is supported by
+ - DataParam supported - flag whether data parameters (e.g. DID) in the received request message are supported by
    the server or not
 
 
@@ -75,11 +75,12 @@ Functional
 ..........
 Functional addressing is used to send messages to multiple servers (ECUs) in the network.
 When functionally addressed messages are sent, the one to many communication between the client and
-the servers (ECUs) takes place. The served shall respond only to certain requests what is presented with details in
-`response behaviour to functionally addressed request`_ chapter.
+the servers (ECUs) takes place. The server shall respond only to certain requests what is presented with detailed
+explanation in `response behaviour to functionally addressed request`_ chapter.
 
 NOTE: Some types of buses (e.g. LIN) might also support broadcast communication which is very similar to functionally
-addressed, but the only difference is that server response in broadcast communication is never expected by the client.
+addressed. The only difference between casual functional addressing and broadcast communication is that a server
+response, in broadcast communication, is never expected by the client.
 
 Response behaviour to functionally addressed request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,7 +116,7 @@ Columns explanation:
  - SPRMIB - flag whether Suppress Positive Response Message Indication Bit is set or not in the received request message
  - SID supported - flag whether Service Identifier in the received request message is supported by the server or not
  - SF supported - flag whether subFunction in the received request message is supported by the server or not
- - DataParam supported - flag whether data parameters (e.g. DID) in the received request message is supported by
+ - DataParam supported - flag whether data parameters (e.g. DID) in the received request message are supported by
    the server or not
 
 
@@ -125,8 +126,9 @@ Segmentation
 Network Protocol Data Unit
 ''''''''''''''''''''''''''
 Network Protocol Data Unit (N_PDU) is a single packet which is transmitted during segmentation_ process of
-a `diagnostic service`_. Each `diagnostic service`_ consists of at least one N_PDU. There exists some N_PDUs which
-does not carry any `diagnostic service`_ data as they are used to control flow of other packets (e.g. Flow Control).
+a `diagnostic service`_. Each `diagnostic service`_ consists of at least one N_PDU. There are some N_PDUs which
+does not carry any `diagnostic service`_ data as they are used to control flow of other N_PDUs. Example of such N_PDU
+which carry no diagnostic data is Flow Control.
 
 Network Protocol Data Unit (N_PDU) consists of following fields:
  - `Network Address Information`_ (N_AI)
