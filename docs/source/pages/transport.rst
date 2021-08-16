@@ -8,31 +8,31 @@ first two layers for CAN bus).
 
 CAN
 ---
-`THIS FEATURE <https://github.com/mdabrowski1990/uds/milestone/3>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
+`CAN FEATURE <https://github.com/mdabrowski1990/uds/milestone/3>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
 THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
 
 
 Ethernet
 --------
-`THIS FEATURE <https://github.com/mdabrowski1990/uds/milestone/5>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
+`Ethernet FEATURE <https://github.com/mdabrowski1990/uds/milestone/5>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
 THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
 
 
 LIN
 ---
-`THIS FEATURE <https://github.com/mdabrowski1990/uds/milestone/4>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
+`LIN FEATURE <https://github.com/mdabrowski1990/uds/milestone/4>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
 THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
 
 
 FlexRay
 -------
-`THIS FEATURE <https://github.com/mdabrowski1990/uds/milestone/9>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
+`FlexRay FEATURE <https://github.com/mdabrowski1990/uds/milestone/9>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
 THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
 
 
 K-Line
 ------
-`THIS FEATURE <https://github.com/mdabrowski1990/uds/milestone/10>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
+`K-Line FEATURE <https://github.com/mdabrowski1990/uds/milestone/10>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
 THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
 
 

@@ -2,7 +2,7 @@ UDS Knowledge Base
 ==================
 If you are not an UDS expert, this part of documentation is created for you. It is meant to provide a technical support
 for every user of `UDS package <https://github.com/mdabrowski1990/uds>`_ so you can better understand the code, but also
-the UDS protocol itself.
+UDS protocol itself.
 
 
 Data Flow
@@ -27,7 +27,8 @@ Physical
 Physical addressing is used to send a dedicated message to a certain server (ECU).
 When physically addressed messages are sent, the direct (point-to-point) communication between the client and
 the server takes place. The server shall respond to physically addressed request unless the request contains
-an information that response is not required.
+an information that response is not required what is presented with details in
+`response behaviour to physically addressed request`_ chapter.
 
 NOTE: You do not need a direct physical connection between the client and the server to have physically addressed
 communication, as all messages would be routed by other servers that are between the client and the server.
@@ -41,25 +42,25 @@ The table below presents expected server behaviour in case of receiving physical
 +------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+                                                                                             |
 | Addressing |      SPRMIB     | SID supported | SF supported | DataParam supported |        Message        |          NRC          |                                                                                             |
 +------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|  physical  | False (bit = 0) |      YES      |      YES     |      At least 1     |   Positive Response   |           -           |                  Server supports the requests and sends positive response.                  |
+|  physical  | False (bit = 0) |      YES      |      YES     |      At least 1     |   Positive Response   |          ---          |                  Server supports the requests and sends positive response.                  |
 |            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
 |            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |       -      |          -          |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
+|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |          -          |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
+|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
 |            +-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |  True (bit = 1) |      YES      |      YES     |      At least 1     |      No Response      |           -           |                               Server does not send a response.                              |
+|            |  True (bit = 1) |      YES      |      YES     |      At least 1     |      No Response      |          ---          |                               Server does not send a response.                              |
 |            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
 |            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |       -      |          -          |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
+|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |          -          |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
+|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
 +------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
 
 Columns explanation:
@@ -74,10 +75,11 @@ Functional
 ..........
 Functional addressing is used to send messages to multiple servers (ECUs) in the network.
 When functionally addressed messages are sent, the one to many communication between the client and
-the servers (ECUs) takes place. The served shall respond only to certain requests.
+the servers (ECUs) takes place. The served shall respond only to certain requests what is presented with details in
+`response behaviour to functionally addressed request`_ chapter.
 
 NOTE: Some types of buses (e.g. LIN) might also support broadcast communication which is very similar to functionally
-addressed, but the response is never expected by the client.
+addressed, but the only difference is that server response in broadcast communication is never expected by the client.
 
 Response behaviour to functionally addressed request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,25 +90,25 @@ The table below presents expected server behaviour in case of receiving function
 +------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+                                                                                             |
 | Addressing |      SPRMIB     | SID supported | SF supported | DataParam supported |        Message        |          NRC          |                                                                                             |
 +------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|  physical  | False (bit = 0) |      YES      |      YES     |      At least 1     |   Positive Response   |           -           |                  Server supports the requests and sends positive response.                  |
+|  physical  | False (bit = 0) |      YES      |      YES     |      At least 1     |   Positive Response   |          ---          |                  Server supports the requests and sends positive response.                  |
 |            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
 |            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |       -      |          -          |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
+|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |          -          |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
+|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
 |            +-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |  True (bit = 1) |      YES      |      YES     |      At least 1     |      No Response      |           -           |                               Server does not send a response.                              |
+|            |  True (bit = 1) |      YES      |      YES     |      At least 1     |      No Response      |          ---          |                               Server does not send a response.                              |
 |            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
 |            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
 |            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |       -      |          -          |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
+|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
 |            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |          -          |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
+|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
 +------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
 
 Columns explanation:
