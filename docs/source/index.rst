@@ -7,9 +7,9 @@ Welcome to UDS's documentation!
    Home <self>
    pages/installation.rst
    pages/transport.rst
+   pages/messages.rst
    pages/client_simulation.rst
    pages/server_simulation.rst
-   pages/uds_messages.rst
    pages/contribution.rst
 
 

@@ -6,11 +6,11 @@ __all__ = ["PDU", "PDUs",
 
 from typing import List, Union
 
-from uds.messages import AbstractPDU, UdsResponse, UdsRequest
+from uds.messages import AbstractNPDU, UdsResponse, UdsRequest
 from uds.utilities import TimeMilliseconds
 
-PDU = AbstractPDU
-PDUs = List[AbstractPDU]
+PDU = AbstractNPDU
+PDUs = List[AbstractNPDU]
 
 UdsMessage = Union[UdsResponse, UdsRequest]  # pylint: disable=unsubscriptable-object
 UdsResponses = List[UdsResponse]

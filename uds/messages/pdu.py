@@ -1,6 +1,6 @@
-"""Common implementation of UDS PDU (Protocol Data Unit) for all bus types."""
+"""Common implementation of UDS N_PDU (Network Protocol Data Unit) for all bus types."""
 
-__all__ = ["AbstractPCI", "AbstractPDU", "AbstractPDURecord"]
+__all__ = ["AbstractNPCI", "AbstractNPDU", "AbstractNPDURecord"]
 
 from abc import ABC, abstractmethod
 from typing import Any
@@ -12,7 +12,7 @@ from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
 
 
-class AbstractPCI(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
+class AbstractNPCI(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
     """
     Abstract definition of Protocol Control Information (N_PCI).
 
@@ -21,22 +21,22 @@ class AbstractPCI(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=t
     """
 
 
-class AbstractPDU(ABC):
-    """Abstract definition of Protocol Data Unit that carries part of diagnostic message."""
+class AbstractNPDU(ABC):
+    """Abstract definition of N_PDU (Network Protocol Data Unit) that is a packet of diagnostic message."""
 
     def __init__(self, raw_data: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
-        Create storage for information about a single UDS PDU.
+        Create storage for information about a single UDS N_PDU.
 
-        :param raw_data: Raw bytes of PDU data.
-        :param addressing: Addressing type for which this PDU is relevant.
+        :param raw_data: Raw bytes of N_PDU data.
+        :param addressing: Addressing type for which this N_PDU is relevant.
         """
         self.raw_data = raw_data  # type: ignore
         self.addressing = addressing  # type: ignore
 
     @property
     def raw_data(self) -> RawBytesTuple:
-        """Raw bytes of data that this PDU carries."""
+        """Raw bytes of data that this N_PDU carries."""
         return self.__raw_data
 
     @raw_data.setter
@@ -44,14 +44,14 @@ class AbstractPDU(ABC):
         """
         Set value of raw bytes of data.
 
-        :param value: Raw bytes of data to be carries by this PDU.
+        :param value: Raw bytes of data to be carries by this N_PDU.
         """
         validate_raw_bytes(value=value)
         self.__raw_data = tuple(value)
 
     @property
     def addressing(self) -> AddressingType:
-        """Addressing type for which this PDU is relevant."""
+        """Addressing type for which this N_PDU is relevant."""
         return self.__addressing
 
     @addressing.setter
@@ -66,20 +66,20 @@ class AbstractPDU(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def pci(self) -> AbstractPCI:
-        """N_PCI (type of PDU) value of this PDU."""
+    def pci(self) -> AbstractNPCI:
+        """N_PCI (type of UDS N_PDU) value of this N_PDU."""
 
 
-class AbstractPDURecord(ABC):
-    """Abstract definition of Record that stores information about transmitted or received PDU."""
+class AbstractNPDURecord(ABC):
+    """Abstract definition of Record that stores information about transmitted or received N_PDU."""
 
     @abstractmethod
     def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:
         """
-        Create record of a PDU that was either received of transmitted to a bus.
+        Create record of a N_PDU that was either received of transmitted to a bus.
 
-        :param frame: Frame that carried this PDU.
-        :param direction: Information whether this PDU was transmitted or received.
+        :param frame: Frame that carried this N_PDU.
+        :param direction: Information whether this N_PDU was transmitted or received.
         """
         self.frame = frame
         self.direction = direction  # type: ignore
@@ -97,7 +97,7 @@ class AbstractPDURecord(ABC):
 
     def __get_raw_pci(self) -> RawByte:
         """
-        Get N_PCI (value that describes PDU type) of a PDU.
+        Get N_PCI (value that describes N_PDU type) of this N_PDU.
 
         :return: Integer value of N_PCI.
         """
@@ -105,7 +105,7 @@ class AbstractPDURecord(ABC):
 
     @property
     def frame(self) -> object:
-        """Frame that carried this PDU."""
+        """Frame that carried this N_PDU."""
         return self.__frame
 
     @frame.setter
@@ -122,7 +122,7 @@ class AbstractPDURecord(ABC):
 
     @property
     def direction(self) -> TransmissionDirection:
-        """Information whether this PDU was transmitted or received."""
+        """Information whether this N_PDU was transmitted or received."""
         return self.__direction
 
     @direction.setter
@@ -140,19 +140,19 @@ class AbstractPDURecord(ABC):
     @property
     @abstractmethod
     def raw_data(self) -> RawBytesTuple:
-        """Raw bytes of data that this PDU carried."""
+        """Raw bytes of data that this N_PDU carried."""
 
     @property   # noqa: F841
     @abstractmethod
-    def pci(self) -> AbstractPCI:
-        """N_PCI (type of PDU) value carried by this PDU."""
+    def pci(self) -> AbstractNPCI:
+        """N_PCI (type of N_PDU) value carried by this N_PDU."""
 
     @property
     @abstractmethod
     def addressing(self) -> AddressingType:
-        """Addressing type over which this PDU was transmitted."""
+        """Addressing type over which this N_PDU was transmitted."""
 
     @property  # noqa: F841
     @abstractmethod
     def transmission_time(self) -> datetime:
-        """Timestamp when this PDU was fully transmitted on a bus."""
+        """Timestamp when this N_PDU was fully transmitted on a bus."""

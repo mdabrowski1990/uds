@@ -6,10 +6,10 @@ from typing import Optional, Union, Tuple, List
 
 from uds.utilities import RawBytes, RawBytesTuple
 from .transmission_attributes import AddressingType
-from .pdu import AbstractPDU
+from .pdu import AbstractNPDU
 
-PDUsTuple = Tuple[AbstractPDU, ...]
-PDUs = Union[PDUsTuple, List[AbstractPDU]]  # pylint: disable=unsubscriptable-object
+PDUsTuple = Tuple[AbstractNPDU, ...]
+PDUs = Union[PDUsTuple, List[AbstractNPDU]]  # pylint: disable=unsubscriptable-object
 
 
 class UdsMessage:
@@ -66,7 +66,7 @@ class UdsMessage:
         """
         if not isinstance(pdu_sequence, (tuple, list)):
             raise TypeError("'pdu_sequence' is not list or tuple type")
-        if not all([isinstance(pdu, AbstractPDU) for pdu in pdu_sequence]):
+        if not all([isinstance(pdu, AbstractNPDU) for pdu in pdu_sequence]):
             raise ValueError("'pdu_sequence' does not contain AbstractPDU instances only")
 
     @staticmethod
