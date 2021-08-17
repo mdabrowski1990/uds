@@ -4,10 +4,15 @@ UDS
 
 .. image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml/badge.svg?branch=main
    :target: https://github.com/mdabrowski1990/uds/actions
+   :alt: Continuous Integration
 
 .. image:: https://travis-ci.com/mdabrowski1990/uds.svg?branch=main
    :target: https://travis-ci.com/mdabrowski1990/uds
-   
+   :alt: Build Status
+
+.. image:: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.yml/badge.svg?branch=main
+   :target: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.ym
+
 .. image:: https://coveralls.io/repos/github/mdabrowski1990/uds/badge.svg?branch=main
    :target: https://coveralls.io/github/mdabrowski1990/uds?branch=main
    
