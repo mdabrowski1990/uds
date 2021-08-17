@@ -35,40 +35,68 @@ communication, as all messages would be routed by other servers that are between
 
 Response behaviour to physically addressed request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The table below presents expected server behaviour in case of receiving physically addressed request message.
+Expected server behaviour in case of receiving physically addressed request message with SubFunction parameter:
 
-+------------------------------+----------------------------------------------------+-----------------------------------------------+---------------------------------------------------------------------------------------------+
-|        Client request        |                  Server capability                 |                Server response                |                                           Comment                                           |
-+------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+                                                                                             |
-| Addressing |      SPRMIB     | SID supported | SF supported | DataParam supported |        Message        |          NRC          |                                                                                             |
-+------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|  physical  | False (bit = 0) |      YES      |      YES     |      At least 1     |   Positive Response   |          ---          |                  Server supports the requests and sends positive response.                  |
-|            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
-|            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
-|            +-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |  True (bit = 1) |      YES      |      YES     |      At least 1     |      No Response      |          ---          |                               Server does not send a response.                              |
-|            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
-|            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
-+------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
++----------------------------------+----------------------------------------------------------------+-----------------------------------------------+-------------------------------------------------------------------------------------------------------------+
+|        **Client request**        |                      **Server capability**                     |              **Server response**              |                                                 **Comment**                                                 |
++----------------+-----------------+-------------------+------------------+-------------------------+-----------------------+-----------------------+                                                                                                             |
+| **Addressing** |    **SPRMIB**   | **SID supported** | **SF supported** | **DataParam supported** |      **Message**      |        **NRC**        |                                                                                                             |
++----------------+-----------------+-------------------+------------------+-------------------------+-----------------------+-----------------------+-------------------------------------------------------------------------------------------------------------+
+|    physical    | False (bit = 0) |        YES        |        YES       |        At least 1       |   Positive Response   |          ---          |                          Server supports the requests and sends positive response.                          |
+|                |                 |                   |                  +-------------------------+-----------------------+-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |        At least 1       |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred processing the data parameters of request message. |
+|                |                 |                   |                  +-------------------------+                       +-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |           None          |                       |       NRC = ROOR      |                                Servers sends negative response with NRC 0x31.                               |
+|                |                 +-------------------+------------------+-------------------------+                       +-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |         NO        |        ---       |           ---           |                       |  NRC = SNS or SNSIAS  |                            Servers sends negative response with NRC 0x11 or 0x7F.                           |
+|                |                 +-------------------+------------------+-------------------------+                       +-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |        YES        |        NO        |           ---           |                       | NRC = SFNS or SFNSIAS |                            Servers sends negative response with NRC 0x12 or 0x7E.                           |
+|                +-----------------+-------------------+------------------+-------------------------+-----------------------+-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |  True (bit = 1) |        YES        |        YES       |        At least 1       |      No Response      |          ---          |                                       Server does not send a response.                                      |
+|                |                 |                   |                  +-------------------------+-----------------------+-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |        At least 1       |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred processing the data parameters of request message. |
+|                |                 |                   |                  +-------------------------+                       +-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |           None          |                       |       NRC = ROOR      |                                Servers sends negative response with NRC 0x31.                               |
+|                |                 +-------------------+------------------+-------------------------+                       +-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |         NO        |        ---       |           ---           |                       |  NRC = SNS or SNSIAS  |                            Servers sends negative response with NRC 0x11 or 0x7F.                           |
+|                |                 +-------------------+------------------+-------------------------+                       +-----------------------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |        YES        |        NO        |           ---           |                       | NRC = SFNS or SFNSIAS |                            Servers sends negative response with NRC 0x12 or 0x7E.                           |
++----------------+-----------------+-------------------+------------------+-------------------------+-----------------------+-----------------------+-------------------------------------------------------------------------------------------------------------+
 
-Columns explanation:
- - SPRMIB - flag whether Suppress Positive Response Message Indication Bit is set or not in the received request message
- - SID supported - flag whether Service Identifier in the received request message is supported by the server or not
- - SF supported - flag whether subFunction in the received request message is supported by the server or not
- - DataParam supported - flag whether data parameters (e.g. DID) in the received request message are supported by
-   the server or not
+Expected server behaviour in case of receiving physically addressed request message without SubFunction parameter:
+
++--------------------+---------------------------------------------+-----------------------------------------+-------------------------------------------------------------------------------------------------------------+
+| **Client request** |            **Server capability**            |           **Server response**           |                                                 **Comment**                                                 |
++--------------------+-------------------+-------------------------+-------------------+---------------------+                                                                                                             |
+|   **Addressing**   | **SID supported** | **DataParam supported** |    **Message**    |       **NRC**       |                                                                                                             |
++--------------------+-------------------+-------------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------------+
+|      physical      |        YES        |           All           | Positive Response |         ---         |                          Server supports the requests and sends positive response.                          |
+|                    |                   +-------------------------+                   +---------------------+-------------------------------------------------------------------------------------------------------------+
+|                    |                   |        At least 1       |                   |         ---         |                          Server supports the requests and sends positive response.                          |
+|                    |                   +-------------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------------+
+|                    |                   |        At least 1       | Negative Response |       NRC = XX      | Server sends negative response because an error occurred processing the data parameters of request message. |
+|                    |                   +-------------------------+                   +---------------------+-------------------------------------------------------------------------------------------------------------+
+|                    |                   |           None          |                   |      NRC = ROOR     |                                Servers sends negative response with NRC 0x31.                               |
+|                    +-------------------+-------------------------+                   +---------------------+-------------------------------------------------------------------------------------------------------------+
+|                    |         NO        |           ---           |                   | NRC = SNS or SNSIAS |                            Servers sends negative response with NRC 0x11 or 0x7F                            |
++--------------------+-------------------+-------------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------------+
+
+
+Explanation:
+ - SPRMIB - flag informing whether Suppress Positive Response Message Indication Bit is set in the received request
+   message
+ - SID supported - flag informing whether Service Identifier in the received request message is supported by the server
+ - SF supported - flag informing whether SubFunction in the received request message is supported by the server
+ - DataParam supported - information whether values of data parameters (e.g. DIDs, RIDs, DTCStatusMask) in the received
+   request message are supported by the server
+ - NRC - Negative Response Code
+ - ROOR - NRC 0x31 (requestOutOfRange)
+ - SNS - NRC 0x11 (serviceNotSupported)
+ - SNSIAS - NRC 0x7F (serviceNotSupportedInActiveSession)
+ - SFNS - NRC 0x12 (SubFunctionNotSupported)
+ - SFNSIAS - NRC 0x7E (SubFunctionNotSupportedInActiveSession)
+ - XX - NRC code that is supported by the server and suitable to the current situation (e.g. NRC 0x21 busyRepeatRequest
+   if server is currently overloaded and cannot process request message at the moment)
 
 
 Functional
@@ -84,40 +112,62 @@ response, in broadcast communication, is never expected by the client.
 
 Response behaviour to functionally addressed request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The table below presents expected server behaviour in case of receiving functionally addressed request message.
+Expected server behaviour in case of receiving functionally addressed request message with SubFunction parameter:
 
-+------------------------------+----------------------------------------------------+-----------------------------------------------+---------------------------------------------------------------------------------------------+
-|        Client request        |                  Server capability                 |                Server response                |                                           Comment                                           |
-+------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+                                                                                             |
-| Addressing |      SPRMIB     | SID supported | SF supported | DataParam supported |        Message        |          NRC          |                                                                                             |
-+------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|  physical  | False (bit = 0) |      YES      |      YES     |      At least 1     |   Positive Response   |          ---          |                  Server supports the requests and sends positive response.                  |
-|            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
-|            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
-|            +-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |  True (bit = 1) |      YES      |      YES     |      At least 1     |      No Response      |          ---          |                               Server does not send a response.                              |
-|            |                 |               |              +---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |      At least 1     |   Negative Response   |        NRC = XX       | Server sends negative response because an error occurred during request message processing. |
-|            |                 |               |              +---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |               |              |         None        |                       |       NRC = ROOR      |                        Servers sends negative response with NRC 0x31.                       |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |       NO      |      ---     |         ---         |                       |  NRC = SNS or SNSIAS  |                    Servers sends negative response with NRC 0x11 or 0x7F.                   |
-|            |                 +---------------+--------------+---------------------+                       +-----------------------+---------------------------------------------------------------------------------------------+
-|            |                 |      YES      |      NO      |         ---         |                       | NRC = SFNS or SFNSIAS |                    Servers sends negative response with NRC 0x12 or 0x7E.                   |
-+------------+-----------------+---------------+--------------+---------------------+-----------------------+-----------------------+---------------------------------------------------------------------------------------------+
++----------------------------------+----------------------------------------------------------------+------------------------------+-------------------------------------------------------------------------------------------------------------+
+|        **Client request**        |                      **Server capability**                     |      **Server response**     |                                                 **Comment**                                                 |
++----------------+-----------------+-------------------+------------------+-------------------------+-------------------+----------+                                                                                                             |
+| **Addressing** |    **SPRMIB**   | **SID supported** | **SF supported** | **DataParam supported** |    **Message**    |  **NRC** |                                                                                                             |
++----------------+-----------------+-------------------+------------------+-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|   functional   | False (bit = 0) |        YES        |        YES       |        At least 1       | Positive Response |    ---   |                          Server supports the requests and sends positive response.                          |
+|                |                 |                   |                  +-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |        At least 1       | Negative Response | NRC = XX | Server sends negative response because an error occurred processing the data parameters of request message. |
+|                |                 |                   |                  +-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |           None          |    No Response    |    ---   |                                       Server does not send a response.                                      |
+|                |                 +-------------------+------------------+-------------------------+                   +----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |         NO        |        ---       |           ---           |                   |    ---   |                                       Server does not send a response.                                      |
+|                |                 +-------------------+------------------+-------------------------+                   +----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |        YES        |        NO        |           ---           |                   |    ---   |                                       Server does not send a response.                                      |
+|                +-----------------+-------------------+------------------+-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|                |  True (bit = 1) |        YES        |        YES       |        At least 1       |    No Response    |    ---   |                                       Server does not send a response.                                      |
+|                |                 |                   |                  +-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |        At least 1       | Negative Response | NRC = XX | Server sends negative response because an error occurred processing the data parameters of request message. |
+|                |                 |                   |                  +-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |                   |                  |           None          |    No Response    |    ---   |                                       Server does not send a response.                                      |
+|                |                 +-------------------+------------------+-------------------------+                   +----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |         NO        |        ---       |           ---           |                   |    ---   |                                       Server does not send a response.                                      |
+|                |                 +-------------------+------------------+-------------------------+                   +----------+-------------------------------------------------------------------------------------------------------------+
+|                |                 |        YES        |        NO        |           ---           |                   |    ---   |                                       Server does not send a response.                                      |
++----------------+-----------------+-------------------+------------------+-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
 
-Columns explanation:
- - SPRMIB - flag whether Suppress Positive Response Message Indication Bit is set or not in the received request message
- - SID supported - flag whether Service Identifier in the received request message is supported by the server or not
- - SF supported - flag whether subFunction in the received request message is supported by the server or not
- - DataParam supported - flag whether data parameters (e.g. DID) in the received request message are supported by
-   the server or not
+Expected server behaviour in case of receiving functionally addressed request message without SubFunction parameter:
+
++--------------------+---------------------------------------------+------------------------------+-------------------------------------------------------------------------------------------------------------+
+| **Client request** |            **Server capability**            |      **Server response**     |                                                 **Comment**                                                 |
++--------------------+-------------------+-------------------------+-------------------+----------+                                                                                                             |
+|   **Addressing**   | **SID supported** | **DataParam supported** |    **Message**    |  **NRC** |                                                                                                             |
++--------------------+-------------------+-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|     functional     |        YES        |           All           | Positive Response |    ---   |                          Server supports the requests and sends positive response.                          |
+|                    |                   +-------------------------+                   +----------+-------------------------------------------------------------------------------------------------------------+
+|                    |                   |        At least 1       |                   |    ---   |                          Server supports the requests and sends positive response.                          |
+|                    |                   +-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|                    |                   |        At least 1       | Negative Response | NRC = XX | Server sends negative response because an error occurred processing the data parameters of request message. |
+|                    |                   +-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+|                    |                   |           None          |    No Response    |    ---   |                                       Server does not send a response.                                      |
+|                    +-------------------+-------------------------+                   +----------+-------------------------------------------------------------------------------------------------------------+
+|                    |         NO        |           ---           |                   |    ---   |                                       Server does not send a response.                                      |
++--------------------+-------------------+-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
+
+Explanation:
+ - SPRMIB - flag informing whether Suppress Positive Response Message Indication Bit is set in the received request
+   message
+ - SID supported - flag informing whether Service Identifier in the received request message is supported by the server
+ - SF supported - flag informing whether SubFunction in the received request message is supported by the server
+ - DataParam supported - information whether values of data parameters (e.g. DIDs, RIDs, DTCStatusMask) in the received
+   request message are supported by the server
+ - NRC - Negative Response Code
+ - XX - NRC code that is supported by the server and suitable to the current situation (e.g. NRC 0x21 busyRepeatRequest
+   if server is currently overloaded and cannot process request message at the moment)
 
 
 Segmentation
