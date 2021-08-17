@@ -122,8 +122,8 @@ class TestAbstractNPDURecord:
         assert self.mock_pdu_record._AbstractNPDURecord__frame == frame
         self.mock_pdu_record._AbstractNPDURecord__validate_frame.assert_called_once_with(value=frame)
 
-    @pytest.mark.parametrize("old_value", [0, "some frame"])
-    @pytest.mark.parametrize("new_value", [True, "some other frame"])
+    @pytest.mark.parametrize("old_value", [None, 0, "some frame"])
+    @pytest.mark.parametrize("new_value", [None, True, "some frame", "some other frame"])
     def test_frame__set__second_attempt(self, old_value, new_value):
         self.mock_pdu_record._AbstractNPDURecord__frame = old_value
         with pytest.raises(ReassignmentError):
@@ -148,8 +148,8 @@ class TestAbstractNPDURecord:
         assert self.mock_pdu_record._AbstractNPDURecord__direction == example_transmission_direction
         self.mock_validate_direction.assert_called_once_with(value=example_transmission_direction.value)
 
-    @pytest.mark.parametrize("old_value", [0, "some frame"])
-    @pytest.mark.parametrize("new_value", [True, "some other frame"])
+    @pytest.mark.parametrize("old_value", [None, 0, "some direction"])
+    @pytest.mark.parametrize("new_value", [None, True, "some direction", "some other direction"])
     def test_direction__set__second_attempt(self, old_value, new_value):
         self.mock_pdu_record._AbstractNPDURecord__direction = old_value
         with pytest.raises(ReassignmentError):
