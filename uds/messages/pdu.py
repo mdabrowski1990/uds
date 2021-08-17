@@ -6,13 +6,13 @@ from abc import ABC, abstractmethod
 from typing import Any
 from datetime import datetime
 
-from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum, \
+from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawByte, RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError
 from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
 
 
-class AbstractNPCI(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
+class AbstractNPCI(NibbleEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
     """
     Abstract definition of Protocol Control Information (N_PCI).
 

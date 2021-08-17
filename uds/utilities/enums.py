@@ -1,6 +1,6 @@
 """Implementation of Byte Enum."""
 
-__all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum"]
+__all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum"]
 
 from typing import Any
 
@@ -76,8 +76,29 @@ class ByteEnum(IntEnum):
         """
         if not isinstance(value, int):
             raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
-        if not 0 <= value <= 255:
+        if not 0x00 <= value <= 0xFF:
             raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}.")
+        member = int.__new__(cls, value)
+        member._value_ = value  # noqa: F841
+        return member
+
+
+class NibbleEnum(IntEnum):
+    """Enum which members are one nibble (4 bits) integers (0x0-0xF)."""
+
+    def __new__(cls, value: int):
+        """
+        Creation of a new member.
+
+        :param value: One nibble (4 bits) integer.
+
+        :raise TypeError: Provided value is not int type.
+        :raise ValueError: Provided value is not in inclusive range 0x0-0xF.
+        """
+        if not isinstance(value, int):
+            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
+        if not 0x0 <= value <= 0xF:
+            raise ValueError(f"Provided 'value' is not in range 0x0-0xF. Actual value = {value}.")
         member = int.__new__(cls, value)
         member._value_ = value  # noqa: F841
         return member

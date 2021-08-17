@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 from aenum import IntEnum, StrEnum
 
-from uds.utilities.enums import ExtendableEnum, ValidatedEnum, ByteEnum
+from uds.utilities.enums import ExtendableEnum, ValidatedEnum, ByteEnum, NibbleEnum
 
 
 class TestByteEnum:
@@ -28,6 +28,31 @@ class TestByteEnum:
             Value = value
         assert ExampleByteEnum.Value == value
         assert isinstance(ExampleByteEnum.Value, ExampleByteEnum)
+
+
+class TestNibbleEnum:
+    """Tests for `NibbleEnum` class."""
+
+    # __new__
+
+    @pytest.mark.parametrize("value", ["some text", 2.34, None, (0, 1)])
+    def test_new__invalid_type(self, value):
+        with pytest.raises(TypeError):
+            class InvalidByteEnum(NibbleEnum):
+                Value = value
+
+    @pytest.mark.parametrize("value", [-100, -1, 16, 1000])
+    def test_new__invalid_value(self, value):
+        with pytest.raises(ValueError):
+            class InvalidByteEnum(NibbleEnum):
+                Value = value
+
+    @pytest.mark.parametrize("value", [0, 1, 7, 14, 15])
+    def test_new__valid(self, value):
+        class ExampleNibbleEnum(NibbleEnum):
+            Value = value
+        assert ExampleNibbleEnum.Value == value
+        assert isinstance(ExampleNibbleEnum.Value, ExampleNibbleEnum)
 
 
 class TestValidatedEnum:

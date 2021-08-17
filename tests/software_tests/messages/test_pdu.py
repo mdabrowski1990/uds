@@ -2,14 +2,14 @@ import pytest
 from mock import Mock, patch
 
 from uds.messages.pdu import AbstractNPDU, AbstractNPCI, AbstractNPDURecord, \
-    AddressingType, ByteEnum, ValidatedEnum, ExtendableEnum, TransmissionDirection, ReassignmentError
+    AddressingType, NibbleEnum, ValidatedEnum, ExtendableEnum, TransmissionDirection, ReassignmentError
 
 
 class TestAbstractNPDUType:
     """Tests for 'AbstractNPDUType' class."""
 
-    def test_inheritance__byte_enum(self):
-        assert issubclass(AbstractNPCI, ByteEnum)
+    def test_inheritance__nibble_enum(self):
+        assert issubclass(AbstractNPCI, NibbleEnum)
 
     def test_inheritance__validated_enum(self):
         assert issubclass(AbstractNPCI, ValidatedEnum)
