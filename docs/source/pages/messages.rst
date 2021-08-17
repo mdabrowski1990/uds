@@ -107,7 +107,11 @@ Currently following enums with N_PCI values are implemented:
 
 AbstractNPCI
 ''''''''''''
-An empty enum that is parent class for all N_PCI enums for concrete buses.
+An empty enum with helper methods that is parent class for all N_PCI enums for concrete buses.
+
+.. code-block::  python
+
+   from uds.messages import AbstractNPCI
 
 
 Bus Frame
