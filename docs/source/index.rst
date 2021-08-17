@@ -1,15 +1,16 @@
 Welcome to UDS's documentation!
 ===============================
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :hidden:
 
    Home <self>
    pages/installation.rst
    pages/transport.rst
+   pages/messages.rst
    pages/client_simulation.rst
    pages/server_simulation.rst
-   pages/uds_messages.rst
+   pages/knowledge_base.rst
    pages/contribution.rst
 
 
