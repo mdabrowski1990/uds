@@ -195,7 +195,7 @@ for the message.
 Network Protocol Control Information
 ....................................
 Network Protocol Control Information (N_PCI) identifies the type of `Network Protocol Data Unit`_.
-Supported N_PCIs and theirs value interpretation are bus specific.
+Supported N_PCIs and theirs values interpretation are bus specific.
 
 
 Network Data Field

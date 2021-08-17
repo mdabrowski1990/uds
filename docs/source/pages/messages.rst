@@ -5,18 +5,18 @@ Diagnostic Messages
     :language: python
 
 
-In this chapter, you will find information about :python:`messages` subpackage implementation. It contains code that is
-required to create and describe transmission of entities that carry diagnostic messages.
+In this chapter, you will find information about :python:`messages` subpackage implementation. It contains code that
+enables creation of entities that carry UDS data and helps to describe theirs transmission.
 
 In implementation we distinguish following entities that carry diagnostic data:
- - `UDS Message`_ - carries application UDS data (diagnostic service) on upper layers (layers 5-7 of OSI model)
- - `Network Protocol Data Unit`_ - it is a single packet that was created after segmentation of UDS Message
-   (layers 3-4 of OSI model)
- - `Bus Frame`_ - a single frame transmitted over any bus that carries any data (not necessarily related to
-   UDS communication)
+ - `UDS Message`_ - carries application data (diagnostic service) on upper layers (layers 5-7 of UDS OSI model)
+ - `Network Protocol Data Unit`_ - it is a single packet that was created after a segmentation of UDS Message
+   (layers 3-4 of UDS OSI model)
+ - `Bus Frame`_ - a single frame transmitted over any bus that carries any data that is not necessarily related to
+   UDS communication (layers 1-2 of bus OSI model)
 
 Additionally, you will find `Transmission Attributes`_ chapter which contains implementation details of enums that
-are used to describe type and direction of these entities transmission.
+are used to describe type and direction of UDS transmission.
 
 
 UDS Message
@@ -26,16 +26,16 @@ TODO during `UDS Message documentation task <https://github.com/mdabrowski1990/u
 
 Network Protocol Data Unit
 --------------------------
-To efficiently use Network Protocol Data Units (N_PDUs), the implementation is divided into two parts:
+To efficiently handle Network Protocol Data Units (N_PDUs), the implementation is divided into two parts:
 
 - `Network Protocol Data Unit Definition`_ - storage of N_PDU attributes that could be used to transmit the N_PDU
   on a bus
-- `Network Protocol Data Unit Record`_ - historic record with information about either received or transmitted N_PDU
+- `Network Protocol Data Unit Record`_ - record with historic information about either received or transmitted N_PDU
 
 
 Network Protocol Data Unit Definition
 `````````````````````````````````````
-Network Protocol Data Unit slightly differs for each bus type, therefore abstract class (AbstractNPDU_) is separated
+Network Protocol Data Unit slightly differs for each bus, therefore abstract class (AbstractNPDU_) is separated
 out in the implementation. If you want to define a N_PDU (that might be sent later on), you should create an object of
 any of concrete classes that inherits after :python:`AbstractNPDU` class.
 
@@ -71,7 +71,7 @@ Network Protocol Data Unit Record is a record with historic data of N_PDU that w
 Due to Network Protocol Data Units differences for various buses, abstract class (AbstractNPDURecord_) is separated
 out in the implementation.
 
-Currently following classes are implemented to store records of N_PDUs:
+Currently following classes are implemented to store historic data of N_PDUs:
  - AbstractNPDURecord_
 
 AbstractNPDURecord
@@ -113,6 +113,9 @@ An empty enum with helper methods that is parent class for all N_PCI enums for c
 
    from uds.messages import AbstractNPCI
 
+    AbstractNPCI.is_member(value_to_check)  # returns true/false
+    AbstractNPCI.validate_member(value_to_check)  # raises an exception if not a member
+    AbstractNPCI.add_member(name="NEW_NPCI_NAME", value=0x0)
 
 Bus Frame
 ---------
@@ -121,27 +124,33 @@ TODO during first bus implementation, probably `CAN <https://github.com/mdabrows
 
 Transmission Attributes
 -----------------------
-Transmission attributes are used to unambiguously describe transmission of entities (`UDS Message`_,
-`Network Protocol Data Unit`_, `Bus Frame`_) that carry diagnostic messages.
+Transmission attributes are used to unambiguously describe UDS transmission.
 
-Following enums are used:
+Following enums are available:
  - TransmissionDirection_
  - AddressingType_
 
 
 TransmissionDirection
 `````````````````````
-:python:`TransmissionDirection` enum is used to determine whether entity (frame/message/PDU) was either received
-or transmitted.
+:python:`TransmissionDirection` enum is used to determine whether diagnostic data entity (frame/message/PDU) was
+either received or transmitted.
 
 .. code-block::  python
 
    from uds.messages import TransmissionDirection
 
+   TransmissionDirection.RECEIVED
+   TransmissionDirection.TRANSMITTED
+
 AddressingType
 ``````````````
-:python:`AddressingType` is used to determine type of transmission (one/many recipients, communication model).
+:python:`AddressingType` is used to determine type of transmission (one/many recipients and communication model).
 
 .. code-block::  python
 
    from uds.messages import AddressingType
+
+   AddressingType.PHYSICAL
+   AddressingType.FUNCTIONAL
+   AddressingType.BROADCAST  # in fact, this is FUNCTIONAL addressing with broadcast communication used, but it was separated to distinguish this case
