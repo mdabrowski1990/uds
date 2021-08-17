@@ -22,7 +22,7 @@ class ExtendableEnum(Enum):
 
         :return: The new member that was just created.
         """
-        for member in list(cls):  # noqa: F841
+        for member in cls:  # type: ignore
             if member.name == name:
                 raise ValueError(f"Name '{name}' is already in use.")
             if member.value == value:

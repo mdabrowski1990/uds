@@ -52,11 +52,11 @@ class TestValidatedEnum:
 
     @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
     def test_is_member__true_instance(self, enum_class):
-        assert all([enum_class.is_member(member) is True for member in list(enum_class)])
+        assert all([enum_class.is_member(member) is True for member in enum_class])
 
     @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
     def test_is_member__true_value(self, enum_class):
-        assert all([enum_class.is_member(member.value) is True for member in list(enum_class)])
+        assert all([enum_class.is_member(member.value) is True for member in enum_class])
 
     @pytest.mark.parametrize("enum_class, not_member", [
         (ExampleByteEnum1, ExampleByteEnum2.Value1),
@@ -164,11 +164,11 @@ class TestMultipleEnums:
 
     @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
     def test_is_member__true_instance(self, enum_class):
-        assert all([enum_class.is_member(member) is True for member in list(enum_class)])
+        assert all([enum_class.is_member(member) is True for member in enum_class])
 
     @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
     def test_is_member__true_value(self, enum_class):
-        assert all([enum_class.is_member(member.value) is True for member in list(enum_class)])
+        assert all([enum_class.is_member(member.value) is True for member in enum_class])
 
     @pytest.mark.parametrize("enum_class, not_member", [
         (ExtendableByteEnumWithValidated, ExtendableStrEnum.Text1),
