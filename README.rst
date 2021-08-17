@@ -11,7 +11,7 @@ UDS
    :alt: Build Status
 
 .. image:: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.yml/badge.svg?branch=main
-   :target: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.ym
+   :target: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.yml
 
 .. image:: https://coveralls.io/repos/github/mdabrowski1990/uds/badge.svg?branch=main
    :target: https://coveralls.io/github/mdabrowski1990/uds?branch=main
