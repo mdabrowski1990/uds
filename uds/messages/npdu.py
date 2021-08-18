@@ -4,10 +4,10 @@ __all__ = ["AbstractNPCI", "AbstractNPDU", "AbstractNPDURecord"]
 
 from abc import ABC, abstractmethod
 from typing import Any
-from datetime import datetime
 
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
-    RawByte, RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError
+    RawByte, RawBytes, RawBytesTuple, validate_raw_bytes,\
+    ReassignmentError, TimeStamp
 from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
 
@@ -26,7 +26,7 @@ class AbstractNPDU(ABC):
 
     def __init__(self, raw_data: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
-        Create storage for information about a single UDS N_PDU.
+        Create a storage for a single UDS N_PDU.
 
         :param raw_data: Raw bytes of N_PDU data.
         :param addressing: Addressing type for which this N_PDU is relevant.
@@ -44,9 +44,9 @@ class AbstractNPDU(ABC):
         """
         Set value of raw bytes of data.
 
-        :param value: Raw bytes of data to be carries by this N_PDU.
+        :param value: Raw bytes of data to be carried by this N_PDU.
         """
-        validate_raw_bytes(value=value)
+        validate_raw_bytes(value)
         self.__raw_data = tuple(value)
 
     @property
@@ -61,7 +61,7 @@ class AbstractNPDU(ABC):
 
         :param value: Value of addressing type to set.
         """
-        AddressingType.validate_member(value=value)
+        AddressingType.validate_member(value)
         self.__addressing = AddressingType(value)
 
     @property  # noqa: F841
@@ -71,12 +71,12 @@ class AbstractNPDU(ABC):
 
 
 class AbstractNPDURecord(ABC):
-    """Abstract definition of Record that stores information about transmitted or received N_PDU."""
+    """Abstract definition of a record that stores historic information about transmitted or received N_PDU."""
 
     @abstractmethod
     def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:
         """
-        Create record of a N_PDU that was either received of transmitted to a bus.
+        Create historic record of a N_PDU that was either received of transmitted to a bus.
 
         :param frame: Frame that carried this N_PDU.
         :param direction: Information whether this N_PDU was transmitted or received.
@@ -120,7 +120,7 @@ class AbstractNPDURecord(ABC):
         try:
             self.__getattribute__("_AbstractNPDURecord__frame")
         except AttributeError:
-            self.__validate_frame(value=value)
+            self.__validate_frame(value)
             self.__frame = value
         else:
             raise ReassignmentError("You cannot change value of 'frame' attribute once it is assigned.")
@@ -142,7 +142,7 @@ class AbstractNPDURecord(ABC):
         try:
             self.__getattribute__("_AbstractNPDURecord__direction")
         except AttributeError:
-            TransmissionDirection.validate_member(value=value)
+            TransmissionDirection.validate_member(value)
             self.__direction = TransmissionDirection(value)
         else:
             raise ReassignmentError("You cannot change value of 'direction' attribute once it is assigned.")
@@ -164,5 +164,5 @@ class AbstractNPDURecord(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def transmission_time(self) -> datetime:
-        """Timestamp when this N_PDU was fully transmitted on a bus."""
+    def transmission_time(self) -> TimeStamp:
+        """Time stamp when this N_PDU was fully transmitted on a bus."""

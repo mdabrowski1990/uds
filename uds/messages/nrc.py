@@ -19,7 +19,7 @@ class NRC(ByteEnum):
     # This NRC shall not be used in a negative response message as positiveResponse parameter value is reserved
     # for server internal implementation. Refer to 8.7.5 of ISO 14229-1 for more details.
     GeneralReject = 0x10  # noqa: F841
-    ServiceNotSupported = 0x11
+    ServiceNotSupported = 0x11  # noqa: F841
     SubFunctionNotSupported = 0x12  # noqa: F841
     IncorrectMessageLengthOrInvalidFormat = 0x13  # noqa: F841
     ResponseTooLong = 0x14  # noqa: F841

@@ -19,9 +19,9 @@ class AddressingType(StrEnum, ValidatedEnum):
     - BROADCAST - 1 (client) to many (servers) communication that does not require response
     """
 
-    PHYSICAL = "Physical"
-    FUNCTIONAL = "Functional"
-    BROADCAST = "Broadcast"
+    PHYSICAL = "Physical"  # noqa: F841
+    FUNCTIONAL = "Functional"  # noqa: F841
+    BROADCAST = "Broadcast"  # noqa: F841
 
 
 AddressingMemberTyping = Union[AddressingType, str]  # pylint: disable=unsubscriptable-object

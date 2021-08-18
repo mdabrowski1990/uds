@@ -112,7 +112,7 @@ class ResponseSID(ByteEnum):
                 warn(message=f"RSID {value} is not supported by this version of the package", category=UnsupportedSID)
             return False
 
-    NegativeResponse = 0x7F
+    NegativeResponse = 0x7F  # noqa: F841
 
 
 # extend 'ResponseSID' with members that were defined in RequestSID

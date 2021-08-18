@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from uds.messages.pdu import AbstractNPDU, AbstractNPCI, AbstractNPDURecord, \
+from uds.messages.npdu import AbstractNPDU, AbstractNPCI, AbstractNPDURecord, \
     AddressingType, NibbleEnum, ValidatedEnum, ExtendableEnum, TransmissionDirection, ReassignmentError
 
 
@@ -21,7 +21,7 @@ class TestAbstractNPDUType:
 class TestAbstractNPDU:
     """Tests for 'AbstractNPDU' class."""
 
-    SCRIPT_LOCATION = "uds.messages.pdu"
+    SCRIPT_LOCATION = "uds.messages.npdu"
 
     def setup(self):
         self.mock_abstract_npdu = Mock(spec=AbstractNPDU)
@@ -53,7 +53,7 @@ class TestAbstractNPDU:
 
     def test_raw_data__set(self, example_raw_bytes):
         AbstractNPDU.raw_data.fset(self=self.mock_abstract_npdu, value=example_raw_bytes)
-        self.mock_validate_raw_bytes.assert_called_once_with(value=example_raw_bytes)
+        self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
         assert self.mock_abstract_npdu._AbstractNPDU__raw_data == tuple(example_raw_bytes)
 
     # addressing
@@ -65,12 +65,12 @@ class TestAbstractNPDU:
 
     def test_addressing__set_instance(self, example_addressing_type):
         AbstractNPDU.addressing.fset(self=self.mock_abstract_npdu, value=example_addressing_type)
-        self.mock_validate_addressing_type.assert_called_once_with(value=example_addressing_type)
+        self.mock_validate_addressing_type.assert_called_once_with(example_addressing_type)
         assert self.mock_abstract_npdu._AbstractNPDU__addressing == example_addressing_type
 
     def test_addressing__set_value(self, example_addressing_type):
         AbstractNPDU.addressing.fset(self=self.mock_abstract_npdu, value=example_addressing_type.value)
-        self.mock_validate_addressing_type.assert_called_once_with(value=example_addressing_type.value)
+        self.mock_validate_addressing_type.assert_called_once_with(example_addressing_type.value)
         assert self.mock_abstract_npdu._AbstractNPDU__addressing == example_addressing_type
 
 
@@ -120,7 +120,7 @@ class TestAbstractNPDURecord:
     def test_frame__set(self, frame):
         AbstractNPDURecord.frame.fset(self=self.mock_pdu_record, value=frame)
         assert self.mock_pdu_record._AbstractNPDURecord__frame == frame
-        self.mock_pdu_record._AbstractNPDURecord__validate_frame.assert_called_once_with(value=frame)
+        self.mock_pdu_record._AbstractNPDURecord__validate_frame.assert_called_once_with(frame)
 
     @pytest.mark.parametrize("old_value", [None, 0, "some frame"])
     @pytest.mark.parametrize("new_value", [None, True, "some frame", "some other frame"])
@@ -141,12 +141,12 @@ class TestAbstractNPDURecord:
     def test_direction__set_instance(self, example_transmission_direction):
         AbstractNPDURecord.direction.fset(self=self.mock_pdu_record, value=example_transmission_direction)
         assert self.mock_pdu_record._AbstractNPDURecord__direction == example_transmission_direction
-        self.mock_validate_direction.assert_called_once_with(value=example_transmission_direction)
+        self.mock_validate_direction.assert_called_once_with(example_transmission_direction)
 
     def test_direction__set_value(self, example_transmission_direction):
         AbstractNPDURecord.direction.fset(self=self.mock_pdu_record, value=example_transmission_direction.value)
         assert self.mock_pdu_record._AbstractNPDURecord__direction == example_transmission_direction
-        self.mock_validate_direction.assert_called_once_with(value=example_transmission_direction.value)
+        self.mock_validate_direction.assert_called_once_with(example_transmission_direction.value)
 
     @pytest.mark.parametrize("old_value", [None, 0, "some direction"])
     @pytest.mark.parametrize("new_value", [None, True, "some direction", "some other direction"])

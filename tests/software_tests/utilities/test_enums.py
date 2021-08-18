@@ -102,7 +102,7 @@ class TestValidatedEnum:
     def test_validate_member__valid(self, mock_is_member, enum_class, value):
         mock_is_member.return_value = True
         assert enum_class.validate_member(value) is None
-        mock_is_member.assert_called_once_with(value=value)
+        mock_is_member.assert_called_once_with(value)
 
     @patch(f"{SCRIPT_LOCATION}.ValidatedEnum.is_member")
     @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
@@ -111,7 +111,7 @@ class TestValidatedEnum:
         mock_is_member.return_value = False
         with pytest.raises(ValueError):
             enum_class.validate_member(value)
-        mock_is_member.assert_called_once_with(value=value)
+        mock_is_member.assert_called_once_with(value)
 
 
 class TestExtendableEnum:
@@ -216,7 +216,7 @@ class TestMultipleEnums:
     def test_validate_member__valid(self, mock_is_member, enum_class, value):
         mock_is_member.return_value = True
         assert enum_class.validate_member(value) is None
-        mock_is_member.assert_called_once_with(value=value)
+        mock_is_member.assert_called_once_with(value)
 
     @patch(f"{SCRIPT_LOCATION}.ValidatedEnum.is_member")
     @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
@@ -225,7 +225,7 @@ class TestMultipleEnums:
         mock_is_member.return_value = False
         with pytest.raises(ValueError):
             enum_class.validate_member(value)
-        mock_is_member.assert_called_once_with(value=value)
+        mock_is_member.assert_called_once_with(value)
 
     # add_member
 
