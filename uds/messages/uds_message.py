@@ -1,4 +1,4 @@
-"""Common implementation of all UDS messages (requests and responses)."""
+"""Common implementation of all diagnostic messages (requests and responses)."""
 
 __all__ = ["UdsMessage", "UdsMessageRecord"]
 
@@ -13,11 +13,11 @@ NPDURecordsSequence = Union[NPDURecordsTuple, List[AbstractNPDURecord]]  # pylin
 
 
 class UdsMessage:
-    """Definition a diagnostic messages that are exchanged by UDS servers and clients."""
+    """Definition of diagnostic messages that are exchanged by UDS servers and clients."""
 
     def __init__(self, raw_message: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
-        Create a storage for information of a single diagnostic message.
+        Create a storage for a single diagnostic message.
 
         :param raw_message: Raw bytes of data that this diagnostic message carries.
         :param addressing: Addressing type for which this message is relevant.
@@ -33,7 +33,7 @@ class UdsMessage:
     @raw_message.setter
     def raw_message(self, value: RawBytes):
         """
-        Set value of raw message which this diagnostic message carries.
+        Set value of raw data bytes that this diagnostic message carries.
 
         :param value: Raw message value to set.
         """
@@ -61,7 +61,7 @@ class UdsMessageRecord:
 
     def __init__(self, raw_message: RawBytes, npdu_sequence: NPDURecordsSequence) -> None:
         """
-        Create historic record of a diagnostic message that was either received of transmitted to a bus.
+        Create a historic record of a diagnostic message that was either received of transmitted to a bus.
 
         :param raw_message: Raw bytes of data that this diagnostic message carried.
         :param npdu_sequence: Record of N_PDUs (in transmission order) that carried this diagnostic message.

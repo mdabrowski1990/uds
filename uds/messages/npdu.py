@@ -26,7 +26,7 @@ class AbstractNPDU(ABC):
 
     def __init__(self, raw_data: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
-        Create a storage for information of a single UDS N_PDU.
+        Create a storage for a single UDS N_PDU.
 
         :param raw_data: Raw bytes of N_PDU data.
         :param addressing: Addressing type for which this N_PDU is relevant.
