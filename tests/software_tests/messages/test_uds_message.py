@@ -45,9 +45,7 @@ class TestUdsMessage:
 
     def test_raw_message__set_second_call(self, example_raw_bytes):
         self.mock_uds_message._UdsMessage__raw_message = "some value"
-        UdsMessage.raw_message.fset(self=self.mock_uds_message, value=example_raw_bytes)
-        assert self.mock_uds_message._UdsMessage__raw_message == tuple(example_raw_bytes)
-        self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
+        self.test_raw_message__set(example_raw_bytes=example_raw_bytes)
 
     # addressing
 
@@ -68,9 +66,7 @@ class TestUdsMessage:
 
     def test_addressing__set_second_call(self, example_addressing_type):
         self.mock_uds_message._UdsMessage__addressing = "some value"
-        UdsMessage.addressing.fset(self=self.mock_uds_message, value=example_addressing_type)
-        assert self.mock_uds_message._UdsMessage__addressing == example_addressing_type
-        self.mock_validate_addressing.assert_called_once_with(example_addressing_type)
+        self.test_addressing__set_instance(example_addressing_type=example_addressing_type)
 
 
 class TestUdsMessageRecord:
