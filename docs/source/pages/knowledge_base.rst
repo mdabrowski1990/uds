@@ -5,12 +5,34 @@ for every user of `UDS package <https://github.com/mdabrowski1990/uds>`_ so you 
 UDS protocol itself.
 
 
+Client
+------
+
+Server
+------
+
+
 Data Flow
 ---------
+TODO: update (server responds, passes the request if it sent to it or ECUs in its subnet).
+UDS communication is always initiated by a client_ who sends a diagnostic request to all server in the network.
+The client_ might not be directly connected to a desired recipient(s) of the request, therefore some servers might act as gateways and transmit the
+request to another network(s) that they are connect to. In presented case, the server_ in one network operates as
+the client_ in another.
+
+TODO: picture 1
+
+Each server_ which was the recipient of the request, might decide to send a response back to the nearest client_
+(the one which transmitted the request in this sub-network). Then, the client_ acts as the gateway again and transmit
+the response back until it reaches the request message originator (Diagnostic Tester).
+
+TODO: picture 2
 
 
 Diagnostic Service
 ``````````````````
+
+
 
 
 Addressing
