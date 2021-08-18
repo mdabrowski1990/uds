@@ -6,7 +6,7 @@ from uds.messages.uds_message import UdsMessage, UdsMessageRecord, \
 
 
 class TestUdsMessage:
-    """Tests for UdsMessage class."""
+    """Tests for 'UdsMessage' class."""
 
     SCRIPT_LOCATION = "uds.messages.uds_message"
 
@@ -70,6 +70,7 @@ class TestUdsMessage:
 
 
 class TestUdsMessageRecord:
+    """Tests for 'UdsMessageRecord' class."""
 
     SCRIPT_LOCATION = TestUdsMessage.SCRIPT_LOCATION
 
