@@ -39,10 +39,17 @@ class TestUdsMessage:
         assert UdsMessage.raw_message.fget(self=self.mock_uds_message) is value
 
     def test_raw_message__set(self, example_raw_bytes):
-        self.mock_uds_message._UdsMessage__raw_message = None
         UdsMessage.raw_message.fset(self=self.mock_uds_message, value=example_raw_bytes)
         assert self.mock_uds_message._UdsMessage__raw_message == tuple(example_raw_bytes)
         self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
+
+    @pytest.mark.parametrize("value1", [[1], (0, 255), [0x11, 0x55]])
+    @pytest.mark.parametrize("value2", [[1], (0, 255), [0x11, 0x55]])
+    def test_raw_message__set_twice(self, value1, value2):
+        UdsMessage.raw_message.fset(self=self.mock_uds_message, value=value1)
+        assert self.mock_uds_message._UdsMessage__raw_message == tuple(value1)
+        UdsMessage.raw_message.fset(self=self.mock_uds_message, value=value2)
+        assert self.mock_uds_message._UdsMessage__raw_message == tuple(value2)
 
     # addressing
 
@@ -52,16 +59,22 @@ class TestUdsMessage:
         assert UdsMessage.addressing.fget(self=self.mock_uds_message) is value
 
     def test_addressing__set_instance(self, example_addressing_type):
-        self.mock_uds_message._UdsMessage__addressing = None
         UdsMessage.addressing.fset(self=self.mock_uds_message, value=example_addressing_type)
         assert self.mock_uds_message._UdsMessage__addressing == example_addressing_type
         self.mock_validate_addressing.assert_called_once_with(example_addressing_type)
 
     def test_addressing__set_value(self, example_addressing_type):
-        self.mock_uds_message._UdsMessage__addressing = None
         UdsMessage.addressing.fset(self=self.mock_uds_message, value=example_addressing_type.value)
         assert self.mock_uds_message._UdsMessage__addressing == example_addressing_type
         self.mock_validate_addressing.assert_called_once_with(example_addressing_type.value)
+
+    @pytest.mark.parametrize("value1", list(AddressingType))
+    @pytest.mark.parametrize("value2", list(AddressingType))
+    def test_addressing__set_twice(self, value1, value2):
+        UdsMessage.addressing.fset(self=self.mock_uds_message, value=value1)
+        assert self.mock_uds_message._UdsMessage__addressing == value1
+        UdsMessage.addressing.fset(self=self.mock_uds_message, value=value2)
+        assert self.mock_uds_message._UdsMessage__addressing == value2
 
 
 class TestUdsMessageRecord:
