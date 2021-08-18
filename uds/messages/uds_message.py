@@ -1,15 +1,34 @@
 """Common implementation of all UDS messages (requests and responses)."""
 
-__all__ = ["UdsMessage"]
+__all__ = ["UdsMessage", "UdsResponseType"]
 
 from typing import Optional, Union, Tuple, List
 
-from uds.utilities import RawBytes, RawBytesTuple
+from uds.utilities import RawBytes, RawBytesTuple, ValidatedEnum
 from .transmission_attributes import AddressingType
 from .pdu import AbstractNPDU
 
 PDUsTuple = Tuple[AbstractNPDU, ...]
 PDUs = Union[PDUsTuple, List[AbstractNPDU]]  # pylint: disable=unsubscriptable-object
+
+
+class UdsResponseType(ValidatedEnum):
+    """
+    Types of UDS response messages.
+
+    Options:
+    - POSITIVE - response messages
+        !WARNING! Note that this status does not reflect compatibility with message format (messaging database).
+    - NEGATIVE - negative response messages in format [0x7F, SID, NRC]
+        Where:
+        SID - Service Identifier of request (identifies request to which it is response)
+        NRC - Negative Response Code (provides reason why responded negatively)
+    - INVALID - response messages that is incompatible with UDS standard
+    """
+
+    POSITIVE = "Positive Response Message"  # noqa: F841
+    NEGATIVE = "Negative Response Message"  # noqa: F841
+    INVALID = "Invalid"  # noqa: F841
 
 
 class UdsMessage:

@@ -9,7 +9,7 @@ RawByte = int
 #  Remove unsubscriptable-object once prospector supports newer versions of pylint for Python 3.9.
 RawBytesTuple = Tuple[RawByte, ...]  # pylint: disable=unsubscriptable-object
 RawBytes = Union[RawBytesTuple, List[RawByte]]  # pylint: disable=unsubscriptable-object
-TimeMilliseconds = Union[int, float]  # pylint: disable=unsubscriptable-object
+TimeMilliseconds = Union[int, float]  # noqa: F841, pylint: disable=unsubscriptable-object
 
 
 def validate_raw_bytes(value: Any) -> None:

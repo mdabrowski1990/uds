@@ -12,8 +12,8 @@ Other (bus specific) layers would be supported by extensions (once released) to 
 created by users themselves.
 """
 
-__all__ = ["messages", "transport_interface"]
-__version__ = "0.0"
-__author__ = "Maciej Dąbrowski"  # TODO: add other other contributors
+__all__ = ["messages"]
+__version__ = "0.0.0"
+__author__ = "Maciej Dąbrowski"
 # __credits__ = []  TODO: place for sponsors and other stakeholders
-__email__ = "maciek_dabrowski@o2.pl"
+__email__ = "uds-package-development@googlegroups.com"
