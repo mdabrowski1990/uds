@@ -219,16 +219,16 @@ Explanation:
 Segmentation
 ````````````
 
-Network Protocol Data Unit
+UDS Packet
 ''''''''''''''''''''''''''
-Network Protocol Data Unit (N_PDU) is a single packet which is transmitted during segmentation_ process of
-a `diagnostic message`_. Each `diagnostic message`_ consists of at least one N_PDU. There are some N_PDUs which
-does not carry any `diagnostic message`_ data as they are used to manage the flow of other N_PDUs.
+UDS packet is also called Network Protocol Data Unit (N_PDU). It is created during segmentation_ of a
+`diagnostic message`_. Each `diagnostic message`_ consists of at least one N_PDU. There are some packets (N_PDUs) which
+does not carry any `diagnostic message`_ data as they are used to manage the flow of other packets (N_PDUs).
 
-Network Protocol Data Unit (N_PDU) consists of following fields:
- - `Network Address Information`_ (N_AI)
- - `Network Protocol Control Information`_ (N_PCI)
- - `Network Data Field`_ (N_Data)
+UDS packet (N_PDU) consists of following fields:
+ - `Network Address Information`_ (N_AI) - packet addressing
+ - `Network Protocol Control Information`_ (N_PCI) - packet type
+ - `Network Data Field`_ (N_Data) - packet date
 
 
 Network Address Information
@@ -240,7 +240,7 @@ for the message.
 
 Network Protocol Control Information
 ....................................
-Network Protocol Control Information (N_PCI) identifies the type of `Network Protocol Data Unit`_.
+Network Protocol Control Information (N_PCI) identifies the type of `UDS packet`_ (Network Protocol Data Unit).
 Supported N_PCIs and theirs values interpretation are bus specific.
 
 
