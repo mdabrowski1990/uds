@@ -6,10 +6,11 @@ from typing import Union, Tuple, List
 
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
 from .transmission_attributes import AddressingType, AddressingMemberTyping, TransmissionDirection
-from .npdu import AbstractNPDURecord
+from .uds_packet import AbstractUdsPacketRecord
 
-NPDURecordsTuple = Tuple[AbstractNPDURecord, ...]
-NPDURecordsSequence = Union[NPDURecordsTuple, List[AbstractNPDURecord]]  # pylint: disable=unsubscriptable-object
+PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
+PacketsRecordsSequence = Union[PacketsRecordsTuple,  # pylint: disable=unsubscriptable-object
+                               List[AbstractUdsPacketRecord]]
 
 
 class UdsMessage:
@@ -59,32 +60,33 @@ class UdsMessage:
 class UdsMessageRecord:
     """Definition of a record that stores historic information about transmitted or received UDSMessage."""
 
-    def __init__(self, raw_message: RawBytes, npdu_sequence: NPDURecordsSequence) -> None:
+    def __init__(self, raw_message: RawBytes, packets_records: PacketsRecordsSequence) -> None:
         """
         Create a historic record of a diagnostic message that was either received of transmitted to a bus.
 
         :param raw_message: Raw bytes of data that this diagnostic message carried.
-        :param npdu_sequence: Record of N_PDUs (in transmission order) that carried this diagnostic message.
+        :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
+            diagnostic message.
         """
         self.raw_message = raw_message  # type: ignore
-        self.npdu_sequence = npdu_sequence  # type: ignore
+        self.packets_records = packets_records  # type: ignore
 
     @staticmethod
-    def __validate_npdu_sequence(npdu_sequence: NPDURecordsSequence) -> None:
+    def __validate_packets_records(packets_records: PacketsRecordsSequence) -> None:
         """
         Validate N_PDUs sequence argument.
 
-        :param npdu_sequence: Value of N_PDUs sequence to validate.
+        :param packets_records: Value of N_PDUs sequence to validate.
 
         :raise TypeError: N_PDUs sequence is not list or tuple type.
         :raise ValueError: At least one of N_PDUs sequence elements is not an object of N_PDU.
         """
-        if not isinstance(npdu_sequence, (tuple, list)):
-            raise TypeError(f"Provided value of 'npdu_sequence' is not list or tuple type. "
-                            f"Actual type: {type(npdu_sequence)}.")
-        if not npdu_sequence or any([not isinstance(npdu, AbstractNPDURecord) for npdu in npdu_sequence]):
-            raise ValueError(f"Provided value of 'npdu_sequence' must contain only instances of AbstractNPDURecord "
-                             f"class. Actual value: {npdu_sequence}")
+        if not isinstance(packets_records, (tuple, list)):
+            raise TypeError(f"Provided value of 'packets_records' is not list or tuple type. "
+                            f"Actual type: {type(packets_records)}.")
+        if not packets_records or any([not isinstance(packet, AbstractUdsPacketRecord) for packet in packets_records]):
+            raise ValueError(f"Provided value of 'packets_records' must contain only instances of "
+                             f"AbstractUdsPacketRecord class. Actual value: {packets_records}")
 
     @property
     def raw_message(self) -> RawBytesTuple:
@@ -109,12 +111,12 @@ class UdsMessageRecord:
             raise ReassignmentError("You cannot change value of 'raw_message' attribute once it is assigned.")
 
     @property
-    def npdu_sequence(self) -> NPDURecordsTuple:
-        """Sequence (in transmission order) of Network Protocol Data Units that carried this diagnostic message."""
-        return self.__npdu_sequence
+    def packets_records(self) -> PacketsRecordsTuple:
+        """Sequence (in transmission order) of UDS packets records that carried this diagnostic message."""
+        return self.__packets_records
 
-    @npdu_sequence.setter
-    def npdu_sequence(self, value: NPDURecordsSequence):
+    @packets_records.setter
+    def packets_records(self, value: PacketsRecordsSequence):
         """
         Assign N_PDUs which carried this diagnostic message .
 
@@ -123,43 +125,43 @@ class UdsMessageRecord:
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_UdsMessageRecord__npdu_sequence")
+            self.__getattribute__("_UdsMessageRecord__packets_records")
         except AttributeError:
-            self.__validate_npdu_sequence(value)
-            self.__npdu_sequence = tuple(value)
+            self.__validate_packets_records(value)
+            self.__packets_records = tuple(value)
         else:
-            raise ReassignmentError("You cannot change value of 'npdu_sequence' attribute once it is assigned.")
+            raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
 
     @property
     def addressing(self) -> AddressingType:
         """Addressing type which was used to transmit this message."""
-        return self.npdu_sequence[0].addressing
+        return self.packets_records[0].addressing
 
     @property
     def direction(self) -> TransmissionDirection:
         """Information whether this message was received or sent by the code."""
-        return self.npdu_sequence[0].direction
+        return self.packets_records[0].direction
 
     @property  # noqa: F841
     def transmission_start(self) -> TimeStamp:
         """
         Time stamp when transmission of this messages was initiated.
 
-        It is determined by a moment of time when the first N_PDU (that carried this message) was either published
+        It is determined by a moment of time when the first packet (that carried this message) was published
         to a bus (either received or transmitted).
 
         :return: Time stamp when transmission of this message was initiated.
         """
-        return self.npdu_sequence[0].transmission_time
+        return self.packets_records[0].transmission_time
 
     @property  # noqa: F841
     def transmission_end(self) -> TimeStamp:
         """
         Time stamp when transmission of this messages was completed.
 
-        It is determined by a moment of time when the last N_PDU (that carried this message) was either published
+        It is determined by a moment of time when the last packet (that carried this message) was published
         to a bus (either received or transmitted).
 
         :return: Time stamp when transmission of this message was completed.
         """
-        return self.npdu_sequence[-1].transmission_time
+        return self.packets_records[-1].transmission_time

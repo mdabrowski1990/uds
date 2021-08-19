@@ -2,7 +2,7 @@ import pytest
 from mock import Mock, patch
 
 from uds.messages.uds_message import UdsMessage, UdsMessageRecord, \
-    AddressingType, TransmissionDirection, ReassignmentError, AbstractNPDURecord
+    AddressingType, TransmissionDirection, ReassignmentError, AbstractUdsPacketRecord
 
 
 class TestUdsMessage:
@@ -89,32 +89,32 @@ class TestUdsMessageRecord:
     # __init__
 
     @pytest.mark.parametrize("raw_message", [None, [0x1, 0x02], "some message"])
-    @pytest.mark.parametrize("npdu_sequence", [False, [1, 2, 3, 4], "abcdef"])
-    def test_init(self, raw_message, npdu_sequence):
+    @pytest.mark.parametrize("packets_records", [False, [1, 2, 3, 4], "abcdef"])
+    def test_init(self, raw_message, packets_records):
         UdsMessageRecord.__init__(self=self.mock_uds_message_record, raw_message=raw_message,
-                                  npdu_sequence=npdu_sequence)
+                                  packets_records=packets_records)
         assert self.mock_uds_message_record.raw_message == raw_message
-        assert self.mock_uds_message_record.npdu_sequence == npdu_sequence
+        assert self.mock_uds_message_record.packets_records == packets_records
 
-    # __validate_npdu_sequence
+    # __validate_packets_records
 
     @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractNPDURecord),),
-        [Mock(spec=AbstractNPDURecord), Mock(spec=AbstractNPDURecord)],
-        (Mock(spec=AbstractNPDURecord), Mock(spec=AbstractNPDURecord), Mock(spec=AbstractNPDURecord))
+        (Mock(spec=AbstractUdsPacketRecord),),
+        [Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord)],
+        (Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord))
     ])
-    def test_validate_npdu_sequence__valid(self, value):
-        assert UdsMessageRecord._UdsMessageRecord__validate_npdu_sequence(npdu_sequence=value) is None
+    def test_validate_packets_records__valid(self, value):
+        assert UdsMessageRecord._UdsMessageRecord__validate_packets_records(packets_records=value) is None
 
-    @pytest.mark.parametrize("value", [None, False, 0, Mock(spec=AbstractNPDURecord)])
-    def test_validate_npdu_sequence__invalid_type(self, value):
+    @pytest.mark.parametrize("value", [None, False, 0, Mock(spec=AbstractUdsPacketRecord)])
+    def test_validate_packets_records__invalid_type(self, value):
         with pytest.raises(TypeError):
-            UdsMessageRecord._UdsMessageRecord__validate_npdu_sequence(npdu_sequence=value)
+            UdsMessageRecord._UdsMessageRecord__validate_packets_records(packets_records=value)
 
-    @pytest.mark.parametrize("value", [tuple(), [], ["a"], (None, ), (Mock(spec=AbstractNPDURecord), "not N_PDU")])
-    def test_validate_npdu_sequence__invalid_value(self, value):
+    @pytest.mark.parametrize("value", [tuple(), [], ["a"], (None, ), (Mock(spec=AbstractUdsPacketRecord), "not N_PDU")])
+    def test_validate_packets_records__invalid_value(self, value):
         with pytest.raises(ValueError):
-            UdsMessageRecord._UdsMessageRecord__validate_npdu_sequence(npdu_sequence=value)
+            UdsMessageRecord._UdsMessageRecord__validate_packets_records(packets_records=value)
 
     # raw_message
 
@@ -137,76 +137,76 @@ class TestUdsMessageRecord:
         assert self.mock_uds_message_record._UdsMessageRecord__raw_message == old_value
         self.mock_validate_raw_bytes.assert_not_called()
 
-    # npdu_sequence
+    # packets_records
 
     @pytest.mark.parametrize("value", [None, [Mock(), Mock()], "some sequence"])
-    def test_npdu_sequence__get(self, value):
-        self.mock_uds_message_record._UdsMessageRecord__npdu_sequence = value
-        assert UdsMessageRecord.npdu_sequence.fget(self.mock_uds_message_record) is value
+    def test_packets_records__get(self, value):
+        self.mock_uds_message_record._UdsMessageRecord__packets_records = value
+        assert UdsMessageRecord.packets_records.fget(self.mock_uds_message_record) is value
 
-    @pytest.mark.parametrize("npdu_sequence", [
+    @pytest.mark.parametrize("packets_records", [
         (Mock(), Mock(), Mock()),
         [1, 2, 3, 4],
         "abcdefg"
     ])
-    def test_npdu_sequence__set__first_call(self, npdu_sequence):
-        UdsMessageRecord.npdu_sequence.fset(self=self.mock_uds_message_record, value=npdu_sequence)
-        assert self.mock_uds_message_record._UdsMessageRecord__npdu_sequence == tuple(npdu_sequence)
-        self.mock_uds_message_record._UdsMessageRecord__validate_npdu_sequence.assert_called_once_with(npdu_sequence)
+    def test_packets_records__set__first_call(self, packets_records):
+        UdsMessageRecord.packets_records.fset(self=self.mock_uds_message_record, value=packets_records)
+        assert self.mock_uds_message_record._UdsMessageRecord__packets_records == tuple(packets_records)
+        self.mock_uds_message_record._UdsMessageRecord__validate_packets_records.assert_called_once_with(packets_records)
 
     @pytest.mark.parametrize("old_value", [(Mock(), Mock(), Mock()), [1, 2, 3, 4], "abcdefg"])
     @pytest.mark.parametrize("new_value", [(Mock(), Mock(), Mock()), [1, 2, 3, 4], "abcdefg"])
-    def test_npdu_sequence__set__second_call(self, old_value, new_value):
-        self.mock_uds_message_record._UdsMessageRecord__npdu_sequence = old_value
+    def test_packets_records__set__second_call(self, old_value, new_value):
+        self.mock_uds_message_record._UdsMessageRecord__packets_records = old_value
         with pytest.raises(ReassignmentError):
-            UdsMessageRecord.npdu_sequence.fset(self=self.mock_uds_message_record, value=new_value)
-        assert self.mock_uds_message_record._UdsMessageRecord__npdu_sequence == old_value
-        self.mock_uds_message_record._UdsMessageRecord__validate_npdu_sequence.assert_not_called()
+            UdsMessageRecord.packets_records.fset(self=self.mock_uds_message_record, value=new_value)
+        assert self.mock_uds_message_record._UdsMessageRecord__packets_records == old_value
+        self.mock_uds_message_record._UdsMessageRecord__validate_packets_records.assert_not_called()
 
     # addressing
 
-    @pytest.mark.parametrize("npdu_sequence", [
-        (Mock(spec=AbstractNPDURecord, addressing=AddressingType.PHYSICAL), ),
-        (Mock(spec=AbstractNPDURecord, addressing=AddressingType.FUNCTIONAL),
-         Mock(spec=AbstractNPDURecord, addressing=AddressingType.PHYSICAL)),
+    @pytest.mark.parametrize("packets_records", [
+        (Mock(spec=AbstractUdsPacketRecord, addressing=AddressingType.PHYSICAL),),
+        (Mock(spec=AbstractUdsPacketRecord, addressing=AddressingType.FUNCTIONAL),
+         Mock(spec=AbstractUdsPacketRecord, addressing=AddressingType.PHYSICAL)),
     ])
-    def test_addressing__get(self, npdu_sequence):
-        self.mock_uds_message_record.npdu_sequence = npdu_sequence
-        assert UdsMessageRecord.addressing.fget(self=self.mock_uds_message_record) == npdu_sequence[0].addressing
+    def test_addressing__get(self, packets_records):
+        self.mock_uds_message_record.packets_records = packets_records
+        assert UdsMessageRecord.addressing.fget(self=self.mock_uds_message_record) == packets_records[0].addressing
 
     # direction
 
-    @pytest.mark.parametrize("npdu_sequence", [
-        (Mock(spec=AbstractNPDURecord, direction=TransmissionDirection.RECEIVED), ),
-        (Mock(spec=AbstractNPDURecord, direction=TransmissionDirection.TRANSMITTED),
-         Mock(spec=AbstractNPDURecord, direction=TransmissionDirection.RECEIVED)),
+    @pytest.mark.parametrize("packets_records", [
+        (Mock(spec=AbstractUdsPacketRecord, direction=TransmissionDirection.RECEIVED),),
+        (Mock(spec=AbstractUdsPacketRecord, direction=TransmissionDirection.TRANSMITTED),
+         Mock(spec=AbstractUdsPacketRecord, direction=TransmissionDirection.RECEIVED)),
     ])
-    def test_direction__get(self, npdu_sequence):
-        self.mock_uds_message_record.npdu_sequence = npdu_sequence
-        assert UdsMessageRecord.direction.fget(self=self.mock_uds_message_record) == npdu_sequence[0].direction
+    def test_direction__get(self, packets_records):
+        self.mock_uds_message_record.packets_records = packets_records
+        assert UdsMessageRecord.direction.fget(self=self.mock_uds_message_record) == packets_records[0].direction
 
     # transmission_start
 
-    @pytest.mark.parametrize("npdu_sequence", [
-        (Mock(spec=AbstractNPDURecord, transmission_time=0),),
-        (Mock(spec=AbstractNPDURecord, transmission_time=1), Mock(spec=AbstractNPDURecord, transmission_time=2)),
-        (Mock(spec=AbstractNPDURecord, transmission_time=9654.3), Mock(spec=AbstractNPDURecord, transmission_time=-453),
-         Mock(spec=AbstractNPDURecord, transmission_time=3.2),),
+    @pytest.mark.parametrize("packets_records", [
+        (Mock(spec=AbstractUdsPacketRecord, transmission_time=0),),
+        (Mock(spec=AbstractUdsPacketRecord, transmission_time=1), Mock(spec=AbstractUdsPacketRecord, transmission_time=2)),
+        (Mock(spec=AbstractUdsPacketRecord, transmission_time=9654.3), Mock(spec=AbstractUdsPacketRecord, transmission_time=-453),
+         Mock(spec=AbstractUdsPacketRecord, transmission_time=3.2),),
     ])
-    def test_transmission_start__get(self, npdu_sequence):
-        self.mock_uds_message_record.npdu_sequence = npdu_sequence
+    def test_transmission_start__get(self, packets_records):
+        self.mock_uds_message_record.packets_records = packets_records
         assert UdsMessageRecord.transmission_start.fget(self=self.mock_uds_message_record) \
-               == npdu_sequence[0].transmission_time
+               == packets_records[0].transmission_time
 
     # transmission_end
 
-    @pytest.mark.parametrize("npdu_sequence", [
-        (Mock(spec=AbstractNPDURecord, transmission_time=0),),
-        (Mock(spec=AbstractNPDURecord, transmission_time=1), Mock(spec=AbstractNPDURecord, transmission_time=2)),
-        (Mock(spec=AbstractNPDURecord, transmission_time=9654.3), Mock(spec=AbstractNPDURecord, transmission_time=-453),
-         Mock(spec=AbstractNPDURecord, transmission_time=3.2),),
+    @pytest.mark.parametrize("packets_records", [
+        (Mock(spec=AbstractUdsPacketRecord, transmission_time=0),),
+        (Mock(spec=AbstractUdsPacketRecord, transmission_time=1), Mock(spec=AbstractUdsPacketRecord, transmission_time=2)),
+        (Mock(spec=AbstractUdsPacketRecord, transmission_time=9654.3), Mock(spec=AbstractUdsPacketRecord, transmission_time=-453),
+         Mock(spec=AbstractUdsPacketRecord, transmission_time=3.2),),
     ])
-    def test_transmission_end__get(self, npdu_sequence):
-        self.mock_uds_message_record.npdu_sequence = npdu_sequence
+    def test_transmission_end__get(self, packets_records):
+        self.mock_uds_message_record.packets_records = packets_records
         assert UdsMessageRecord.transmission_end.fget(self=self.mock_uds_message_record) \
-               == npdu_sequence[-1].transmission_time
+               == packets_records[-1].transmission_time

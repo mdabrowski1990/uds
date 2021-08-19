@@ -32,7 +32,7 @@ the request.
 
 Each server_ which was the recipient of the request, might decide to send a response back to the nearest client_
 (the one which transmitted the request in this sub-network). Then, the client_ shall act as the gateway again and
-redirects the response back until it reaches the request message originator (Diagnostic Tester).
+redirect the response back until it reaches the request message originator (Diagnostic Tester).
 
 .. figure:: ../diagrams/KnowledgeBase-Gateway_response.png
     :alt: Gateway - response
@@ -42,10 +42,22 @@ redirects the response back until it reaches the request message originator (Dia
 
     In this example all ECUs in the vehicle responds to the request.
 
-Diagnostic Service
+
+Both examples that were presented above, uses terminology like *'diagnostic message'*, *'diagnostic request'* and
+*'diagnostic response'* that were not previously explained.
+
+- `diagnostic message`_ - also called 'diagnostic service' or Application Protocol Data Unit (A_PDU)
+-
+
+
+.. figure:: ../diagrams/KnowledgeBase-PDUs.png
+    :alt: UDS PDUs
+    :figclass: align-center
+    :width: 20000
+
+
+Diagnostic Message
 ``````````````````
-
-
 
 
 Addressing
@@ -210,8 +222,8 @@ Segmentation
 Network Protocol Data Unit
 ''''''''''''''''''''''''''
 Network Protocol Data Unit (N_PDU) is a single packet which is transmitted during segmentation_ process of
-a `diagnostic service`_. Each `diagnostic service`_ consists of at least one N_PDU. There are some N_PDUs which
-does not carry any `diagnostic service`_ data as they are used to manage the flow of other N_PDUs.
+a `diagnostic message`_. Each `diagnostic message`_ consists of at least one N_PDU. There are some N_PDUs which
+does not carry any `diagnostic message`_ data as they are used to manage the flow of other N_PDUs.
 
 Network Protocol Data Unit (N_PDU) consists of following fields:
  - `Network Address Information`_ (N_AI)
@@ -234,6 +246,6 @@ Supported N_PCIs and theirs values interpretation are bus specific.
 
 Network Data Field
 ..................
-Network Data Field (N_Data) carries `diagnostic service`_ data. It might be an entire `diagnostic service`_ data (if
-`diagnostic service`_ fits into one packet) or just a part (a single packet) of it (if `segmentation`_ had to be
-used to divide `diagnostic service`_ into smaller parts).
+Network Data Field (N_Data) carries `diagnostic message`_ data. It might be an entire `diagnostic message`_ data (if
+`diagnostic message`_ fits into one packet) or just a part (a single packet) of it (if `segmentation`_ had to be
+used to divide `diagnostic message`_ into smaller parts).
