@@ -14,20 +14,33 @@ Server
 
 Data Flow
 ---------
-TODO: update (server responds, passes the request if it sent to it or ECUs in its subnet).
-UDS communication is always initiated by a client_ who sends a diagnostic request to all server in the network.
-The client_ might not be directly connected to a desired recipient(s) of the request, therefore some servers might act as gateways and transmit the
-request to another network(s) that they are connect to. In presented case, the server_ in one network operates as
-the client_ in another.
+UDS communication is always initiated by a client_ who sends a diagnostic request to a network that it is connected to.
+The client_ might not be directly connected to a desired recipient(s) of the request, therefore some servers might be
+forced to act as gateways and transmit the request to another network(s) to which they are connected. Server_ decision
+(whether to redirect the request to another vehicle sub-network or not) depends on a target(s) of the request i.e.
+server_ shall transmit the request in the sub-network if at least on ECU in this sub-network is the target of
+the request.
 
-TODO: picture 1
+.. figure:: ../diagrams/KnowledgeBase-Gateway_request.png
+    :alt: Gateway - request
+    :figclass: align-center
+
+    Diagnostic request routing in example vehicle networks.
+
+    In this example all ECUs in the vehicle are the targets of the request - functionally addressed request was sent.
+
 
 Each server_ which was the recipient of the request, might decide to send a response back to the nearest client_
-(the one which transmitted the request in this sub-network). Then, the client_ acts as the gateway again and transmit
-the response back until it reaches the request message originator (Diagnostic Tester).
+(the one which transmitted the request in this sub-network). Then, the client_ shall act as the gateway again and
+redirects the response back until it reaches the request message originator (Diagnostic Tester).
 
-TODO: picture 2
+.. figure:: ../diagrams/KnowledgeBase-Gateway_response.png
+    :alt: Gateway - response
+    :figclass: align-center
 
+    Diagnostic responses routing in example vehicle networks.
+
+    In this example all ECUs in the vehicle responds to the request.
 
 Diagnostic Service
 ``````````````````
@@ -53,8 +66,7 @@ an information that response is not required (further explained in`response beha
 chapter).
 
 NOTE: You do not need a direct physical connection between the client and the server to have physically addressed
-communication, as all messages would be routed by other servers that are part of the network and connected between
-the client and the server.
+communication as all messages shall be routed to a target of each message.
 
 Response behaviour to physically addressed request
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
