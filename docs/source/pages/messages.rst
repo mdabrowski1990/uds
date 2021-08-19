@@ -27,9 +27,9 @@ TODO during `UDS Message documentation task <https://github.com/mdabrowski1990/u
 UDS Packet
 ----------
 To efficiently handle UDS Packets (Network Protocol Data Units - N_PDUs), the implementation is divided into two parts:
-- `UDS Packet Definition`_ - storage of UDS Packet (N_PDU) attributes that could be used to transmit UDS Packet on
-  a dedicated bus
-- `UDS Packet Record`_ - record with historic information about either received or transmitted UDS Packet (N_PDU)
+ - `UDS Packet Definition`_ - storage of UDS Packet (N_PDU) attributes that could be used to transmit UDS Packet on
+   a dedicated bus
+ - `UDS Packet Record`_ - record with historic information about either received or transmitted UDS Packet (N_PDU)
 
 
 UDS Packet Definition
