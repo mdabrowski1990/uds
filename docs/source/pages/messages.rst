@@ -39,6 +39,7 @@ out in the implementation. If you want to define UDS Packet (that might be sent 
 an object of any of concrete classes that inherits after :python:`AbstractUdsPacket` class.
 
 Currently following classes are implemented to handle creation of new UDS Packets (N_PDUs):
+
  - AbstractUdsPacket_
 
 AbstractUdsPacket
