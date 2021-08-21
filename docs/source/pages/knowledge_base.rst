@@ -18,8 +18,8 @@ TODO DURING `SERVER EPIC <https://github.com/mdabrowski1990/uds/milestone/7>`_
 Diagnostic Message
 ------------------
 If we only consider the top layer of OSI Model (layer 7 - Application), then the messages that are exchanged by
-clients and servers during UDS communication would be called 'Application Protocol Data Units' (A_PDU),
-'diagnostic messages' or 'UDS messages'.
+clients and servers during UDS communication are called 'Application Protocol Data Units' (A_PDU),
+'diagnostic messages' or 'UDS messages' in this documentation.
 
 There are two types of diagnostic messages:
  - `diagnostic request`_ - a message transmitted by a client
@@ -56,7 +56,7 @@ redirect the response back until it reaches the request message originator (Diag
 
 
 To better understand 'diagnostic message' terminology, we need to know how these messages are actually transmitted
-(what entities carry the message on other layers of OSI model). This is presented in the figure below:
+(what entities carry the message on all layers of OSI model). Pictorial drawing is presented in the figure below:
 
 .. figure:: ../diagrams/KnowledgeBase-PDUs.png
     :alt: UDS PDUs
@@ -65,7 +65,8 @@ To better understand 'diagnostic message' terminology, we need to know how these
 
     UDS Protocol Data Units on different layers of OSI Model.
 
-We distinguish (in UDS package implementation) following entities on different layers of UDS OSI model, that take part in UDS communication:
+We distinguish (in UDS package implementation) following entities that take part in UDS communication on
+different layers of UDS OSI model:
  - `Diagnostic message`_ - also called 'Application Protocol Data Unit' (A_PDU)
  - `UDS packet`_ - also called 'Network Protocol Data Unit' (N_PDU). UDS packets types and transmission rules are
     bus specific.
@@ -107,7 +108,7 @@ message and executed actions requested by a client.
 +------+------------------+------------+
 
 Where:
- - SID - Service Identifier value that was received in the request message to which the server responded
+ - SID - `Service Identifier`_ value that was received in the request message to which the server responded
  - XX - any byte value
 
 
@@ -127,8 +128,8 @@ execute actions requested by a client.
 +------+-----------------------+-------+
 
 Where:
- - SID - Service Identifier value that was received in the request message to which the server responded
- - NRC - Negative Response Code value
+ - SID - `Service Identifier`_ value that was received in the request message to which the server responded
+ - NRC - `Negative Response Code`_ value that identified the reason for negative response
 
 
 Service Identifier
