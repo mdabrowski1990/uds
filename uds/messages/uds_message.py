@@ -74,12 +74,13 @@ class UdsMessageRecord:
     @staticmethod
     def __validate_packets_records(packets_records: PacketsRecordsSequence) -> None:
         """
-        Validate N_PDUs sequence argument.
+        Validate UDS Packet Records sequence argument.
 
-        :param packets_records: Value of N_PDUs sequence to validate.
+        :param packets_records: Value of UDS Packet Records sequence to validate.
 
-        :raise TypeError: N_PDUs sequence is not list or tuple type.
-        :raise ValueError: At least one of N_PDUs sequence elements is not an object of N_PDU.
+        :raise TypeError: UDS Packet Records sequence is not list or tuple type.
+        :raise ValueError: At least one of UDS Packet Records sequence elements is not an object of
+            AbstractUdsPacketRecord class.
         """
         if not isinstance(packets_records, (tuple, list)):
             raise TypeError(f"Provided value of 'packets_records' is not list or tuple type. "
@@ -118,9 +119,9 @@ class UdsMessageRecord:
     @packets_records.setter
     def packets_records(self, value: PacketsRecordsSequence):
         """
-        Assign N_PDUs which carried this diagnostic message .
+        Assign records value of UDS Packets that carried this diagnostic message .
 
-        :param value: N_PDUs sequence value to set.
+        :param value: UDS Packet Records sequence value to set.
 
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
