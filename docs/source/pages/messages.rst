@@ -9,39 +9,41 @@ In this chapter, you will find information about :python:`messages` subpackage i
 enables creation of entities that carry UDS data and helps to describe theirs transmission.
 
 In implementation we distinguish following entities that carry diagnostic data:
- - `UDS Message`_ - carries application data (diagnostic service) on upper layers (layers 5-7 of UDS OSI model)
+ - `UDS Message`_ - carries application data (diagnostic service) on upper layers (layers 5-7 of UDS OSI model),
+   it might also be called Application Protocol Data Unit (A_PDU)
  - `UDS Packet`_ - packets that are exchanged between client and server during `UDS Message`_ segmentation
-   (layers 3-4 of UDS OSI model); UDS Packet is called Network Protocol Data Unit (N_PDU)
- - `Bus Frame`_ - a single frame transmitted over any bus that carries any data that is not necessarily related to
-   UDS communication (layers 1-2 of bus OSI model)
+   (layers 3-4 of UDS OSI model), it might also be called Network Protocol Data Unit (N_PDU)
+ - `Bus Frame`_ - a single frame transmitted over any bus on lower layers (layers 1-2 of UDS/bus OSI model),
+   it carries any data that is not necessarily related to UDS communication
 
-Additionally, you will find `Transmission Attributes`_ chapter which contains implementation details of enums that
-are used to describe UDS transmission.
+Additionally, you will find `Transmission Attributes`_ and `UDS Data Enums`_ chapters which contain implementation
+details about enums that help to describe transmission and data of aforementioned entities.
 
 
 UDS Message
 -----------
 Diagnostic messages (either diagnostic requests or response messages) are called 'UDS Messages' in the implementation.
 
-In the code, the diagnostic message feature is divided into two parts:
+In the code, the diagnostic message features are divided into two parts:
  - UdsMessage_ - storage for diagnostic message (A_PDU) attributes that could be used by a user to transmit this
    UDS Message on a configured bus
- - UdsMessageRecord_ - record with historic information about either received or transmitted UDS Message
+ - UdsMessageRecord_ - record with historic information about either received or transmitted diagnostic message
 
 
 UdsMessage
 ``````````
-Diagnostic messages has common specification for all buses, therefore :python:`UdsMessage` class has only one
-implementation that is the same regardless of bus configured by a user. :python:`UdsMessage` is a storage
-for diagnostic message attributes, that are required to transmit this message. Therefore, if you want to send any
-diagnostic message, you should prior create :python:`UdsMessage` object first.
+Diagnostic messages has common specification for all buses, therefore :python:`UdsMessage` class has the only one
+implementation which is the same regardless of bus used by a user. :python:`UdsMessage` is a storage
+for diagnostic message attributes, therefore if you want to send any diagnostic message, you should prior create
+:python:`UdsMessage` object first.
 
 .. code-block::  python
 
    from uds.messages import UdsMessage, AddressingType
 
    # example how to define a UDS Message
-   uds_message = UdsMessage(raw_message=[0x10, 0x03], addressing=AddressingType.PHYSICAL)
+   uds_message = UdsMessage(raw_message=[0x10, 0x03],
+                            addressing=AddressingType.PHYSICAL)
 
    # you have two attributes that you can freely change
    print(uds_message.raw_message)
@@ -164,11 +166,14 @@ An empty enum with helper methods. It is meant to be parent class for all concre
 
 .. code-block::  python
 
-   from uds.messages import AbstractPacketType
+    from uds.messages import AbstractPacketType
 
-    AbstractPacketType.is_member(value_to_check)  # checks whether value is enum member - returns true/false
-    AbstractPacketType.validate_member(value_to_check)  # checks whether value is enum member - raises an exception if not a member
-    AbstractPacketType.add_member(name="NEW_NPCI_NAME", value=0x0)  # adds a new member to enum class
+    # you can check if value is member of AbstractPacketType enum
+    AbstractPacketType.is_member(value_to_check)  # returns True if value is member, False otherwise
+    AbstractPacketType.validate_member(value_to_check)  # raises an exception if value is not a member of the enum
+
+    # you can add a new enum member
+    AbstractPacketType.add_member(name="NEW_NPCI_NAME", value=0x0)
 
 Bus Frame
 ---------
@@ -186,7 +191,7 @@ Following enums are available:
 
 TransmissionDirection
 `````````````````````
-:python:`TransmissionDirection` enum is used to determine whether diagnostic data entity (frame/message/PDU) was
+:python:`TransmissionDirection` enum is used to determine whether diagnostic data entity (message/packet/frame) was
 either received or transmitted.
 
 .. code-block::  python
@@ -198,7 +203,7 @@ either received or transmitted.
 
 AddressingType
 ``````````````
-:python:`AddressingType` is used to determine type of transmission (one/many recipients and communication model).
+:python:`AddressingType` is used to determine type of transmission (one/many recipient(s) and communication model).
 
 .. code-block::  python
 
@@ -257,7 +262,7 @@ Enum with all known Negative Response Code (NRC) values that might be used in a 
 
    from uds.messages import NRC
 
-   # you can check whether value is enum member
+   # you can check whether value is NRC enum member
    NRC.is_member(value_to_check)  # returns True if value is member, False otherwise
    NRC.validate_member(value_to_check)  # raises an exception if value is not a member of the enum
 
