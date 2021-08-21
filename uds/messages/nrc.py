@@ -4,11 +4,11 @@ __all__ = ["NRC"]
 
 from aenum import unique
 
-from uds.utilities import ByteEnum
+from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum
 
 
-@unique
-class NRC(ByteEnum):
+@unique  # pylint: disable=too-many-ancestors
+class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
     """
     Storage for all known Negative Response Codes (NRC).
 

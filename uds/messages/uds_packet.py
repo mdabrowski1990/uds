@@ -1,6 +1,6 @@
-"""Common implementation of UDS N_PDU (Network Protocol Data Unit) for all bus types."""
+"""Common implementation of UDS packets for all bus types."""
 
-__all__ = ["AbstractNPCI", "AbstractNPDU", "AbstractNPDURecord"]
+__all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord"]
 
 from abc import ABC, abstractmethod
 from typing import Any
@@ -12,31 +12,33 @@ from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
 
 
-class AbstractNPCI(NibbleEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
+class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
     """
-    Abstract definition of Protocol Control Information (N_PCI).
+    Abstract definition of UDS packet type.
 
-    Enum with N_PCI for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
-    There are some differences in available values for each bus (e.g. LIN does not use Flow Control).
+    Packet type information is carried by Network Protocol Control Information (N_PCI).
+    Enums with packet types (N_PCI) values for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
+
+    Note: There are some differences in values for each bus (e.g. LIN does not use Flow Control).
     """
 
 
-class AbstractNPDU(ABC):
-    """Abstract definition of N_PDU (Network Protocol Data Unit) that is a packet of diagnostic message."""
+class AbstractUdsPacket(ABC):
+    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU )."""
 
     def __init__(self, raw_data: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
-        Create a storage for a single UDS N_PDU.
+        Create a storage for a single UDS packet.
 
-        :param raw_data: Raw bytes of N_PDU data.
-        :param addressing: Addressing type for which this N_PDU is relevant.
+        :param raw_data: Raw bytes of UDS packet data.
+        :param addressing: Addressing type for which this packet is relevant.
         """
         self.raw_data = raw_data  # type: ignore
         self.addressing = addressing  # type: ignore
 
     @property
     def raw_data(self) -> RawBytesTuple:
-        """Raw bytes of data that this N_PDU carries."""
+        """Raw bytes of data that this packet carries."""
         return self.__raw_data
 
     @raw_data.setter
@@ -44,14 +46,14 @@ class AbstractNPDU(ABC):
         """
         Set value of raw bytes of data.
 
-        :param value: Raw bytes of data to be carried by this N_PDU.
+        :param value: Raw bytes of data to be carried by this packet.
         """
         validate_raw_bytes(value)
         self.__raw_data = tuple(value)
 
     @property
     def addressing(self) -> AddressingType:
-        """Addressing type for which this N_PDU is relevant."""
+        """Addressing type for which this packet is relevant."""
         return self.__addressing
 
     @addressing.setter
@@ -66,20 +68,20 @@ class AbstractNPDU(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def npci(self) -> AbstractNPCI:
-        """N_PCI (type of UDS N_PDU) value of this N_PDU."""
+    def packet_type(self) -> AbstractPacketType:
+        """Type of UDS packet - N_PCI value of this N_PDU."""
 
 
-class AbstractNPDURecord(ABC):
-    """Abstract definition of a record that stores historic information about transmitted or received N_PDU."""
+class AbstractUdsPacketRecord(ABC):
+    """Abstract definition of a record that stores historic information about transmitted or received UDS packet."""
 
     @abstractmethod
     def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:
         """
-        Create historic record of a N_PDU that was either received of transmitted to a bus.
+        Create historic record of a packet that was either received of transmitted to a bus.
 
-        :param frame: Frame that carried this N_PDU.
-        :param direction: Information whether this N_PDU was transmitted or received.
+        :param frame: Frame that carried this UDS packet.
+        :param direction: Information whether this packet was transmitted or received.
         """
         self.frame = frame
         self.direction = direction  # type: ignore
@@ -95,9 +97,9 @@ class AbstractNPDURecord(ABC):
         :raise ValueError: Some values of a frame are not
         """
 
-    def __get_raw_pci(self) -> RawByte:
+    def __get_raw_packet_type(self) -> RawByte:
         """
-        Get N_PCI (value that describes N_PDU type) of this N_PDU.
+        Get raw value of packet type (N_PCI).
 
         :return: Integer value of N_PCI.
         """
@@ -105,7 +107,7 @@ class AbstractNPDURecord(ABC):
 
     @property
     def frame(self) -> object:
-        """Frame that carried this N_PDU."""
+        """Frame that carried this packet."""
         return self.__frame
 
     @frame.setter
@@ -118,7 +120,7 @@ class AbstractNPDURecord(ABC):
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_AbstractNPDURecord__frame")
+            self.__getattribute__("_AbstractUdsPacketRecord__frame")
         except AttributeError:
             self.__validate_frame(value)
             self.__frame = value
@@ -127,7 +129,7 @@ class AbstractNPDURecord(ABC):
 
     @property
     def direction(self) -> TransmissionDirection:
-        """Information whether this N_PDU was transmitted or received."""
+        """Information whether this packet was transmitted or received."""
         return self.__direction
 
     @direction.setter
@@ -140,7 +142,7 @@ class AbstractNPDURecord(ABC):
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_AbstractNPDURecord__direction")
+            self.__getattribute__("_AbstractUdsPacketRecord__direction")
         except AttributeError:
             TransmissionDirection.validate_member(value)
             self.__direction = TransmissionDirection(value)
@@ -154,15 +156,15 @@ class AbstractNPDURecord(ABC):
 
     @property   # noqa: F841
     @abstractmethod
-    def npci(self) -> AbstractNPCI:
-        """N_PCI (type of N_PDU) value carried by this N_PDU."""
+    def packet_type(self) -> AbstractPacketType:
+        """Type of UDS packet - N_PCI value carried by this N_PDU."""
 
     @property
     @abstractmethod
     def addressing(self) -> AddressingType:
-        """Addressing type over which this N_PDU was transmitted."""
+        """Addressing type over which this packet was transmitted."""
 
     @property  # noqa: F841
     @abstractmethod
     def transmission_time(self) -> TimeStamp:
-        """Time stamp when this N_PDU was fully transmitted on a bus."""
+        """Time stamp when this packet was fully transmitted on a bus."""

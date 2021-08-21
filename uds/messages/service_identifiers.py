@@ -4,19 +4,19 @@ __all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPO
 
 from warnings import warn
 
-from aenum import unique, extend_enum
+from aenum import unique
 
-from uds.utilities import RawByte, ByteEnum
+from uds.utilities import RawByte, ByteEnum, ValidatedEnum, ExtendableEnum
 
 # reserved SID values
-_REQUEST_SIDS_DEFINED_IN_SAEJ1979 = set(range(0x01, 0x10))
-_RESPONSE_SIDS_DEFINED_IN_SAEJ1979 = set(range(0x41, 0x50))
-_REQUEST_SIDS_DEFINED_IN_ISO_14229 = set(range(0x10, 0x3F)).union(set(range(0x83, 0x89)), set(range(0xBA, 0xBF)))
-_RESPONSE_SIDS_DEFINED_IN_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC3, 0xC9)), set(range(0xFA, 0xFF)))
+_REQUEST_SIDS_DEFINED_BY_SAEJ1979 = set(range(0x01, 0x10))
+_RESPONSE_SIDS_DEFINED_BY_SAEJ1979 = set(range(0x41, 0x50))
+_REQUEST_SIDS_DEFINED_BY_ISO_14229 = set(range(0x10, 0x3F)).union(set(range(0x83, 0x89)), set(range(0xBA, 0xBF)))
+_RESPONSE_SIDS_DEFINED_BY_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC3, 0xC9)), set(range(0xFA, 0xFF)))
 
 # all supported SID values according to UDS
-POSSIBLE_REQUEST_SIDS = _REQUEST_SIDS_DEFINED_IN_SAEJ1979.union(_REQUEST_SIDS_DEFINED_IN_ISO_14229)
-POSSIBLE_RESPONSE_SIDS = _RESPONSE_SIDS_DEFINED_IN_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_IN_ISO_14229)
+POSSIBLE_REQUEST_SIDS = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
+POSSIBLE_RESPONSE_SIDS = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
 
 
 class UnsupportedSID(Warning):
@@ -29,7 +29,7 @@ class UnsupportedSID(Warning):
 
 
 @unique
-class RequestSID(ByteEnum):
+class RequestSID(ByteEnum, ValidatedEnum):
     """
     Storage for all known Service Identifiers (SID).
 
@@ -45,13 +45,11 @@ class RequestSID(ByteEnum):
 
         :return: True if value is int of known SID, else False.
         """
-        try:
-            cls(value)
-            return True
-        except ValueError:
-            if value in POSSIBLE_REQUEST_SIDS:
-                warn(message=f"SID {value} is not supported by this version of the package", category=UnsupportedSID)
-            return False
+        if not cls.is_member(value):
+            if value not in POSSIBLE_REQUEST_SIDS:
+                return False
+            warn(message=f"SID 0x{value:X} is not supported by this version of the package", category=UnsupportedSID)
+        return True
 
     # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
     DiagnosticSessionControl = 0x10  # noqa: F841
@@ -87,8 +85,8 @@ class RequestSID(ByteEnum):
     SecuredDataTransmission = 0x84  # noqa: F841
 
 
-@unique
-class ResponseSID(ByteEnum):
+@unique  # pylint: disable=too-many-ancestors
+class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
     """
     Storage for all known Response Service Identifiers (RSID).
 
@@ -104,17 +102,15 @@ class ResponseSID(ByteEnum):
 
         :return: True if value is int of known RSID, else False.
         """
-        try:
-            cls(value)
-            return True
-        except ValueError:
-            if value in POSSIBLE_RESPONSE_SIDS:
-                warn(message=f"RSID {value} is not supported by this version of the package", category=UnsupportedSID)
-            return False
+        if not cls.is_member(value):
+            if value not in POSSIBLE_RESPONSE_SIDS:
+                return False
+            warn(message=f"RSID 0x{value:X} is not supported by this version of the package", category=UnsupportedSID)
+        return True
 
     NegativeResponse = 0x7F  # noqa: F841
 
 
 # extend 'ResponseSID' with members that were defined in RequestSID
-for request_name, request_enum_member in RequestSID.__members__.items():  # TODO: make it smoother
-    extend_enum(ResponseSID, request_name, request_enum_member.value + 0x40)
+for request_sid_member in RequestSID:  # type: ignore
+    ResponseSID.add_member(request_sid_member.name, request_sid_member.value + 0x40)

@@ -1,7 +1,7 @@
-Welcome to UDS's documentation!
-===============================
+Welcome to UDS documentation!
+=============================
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
    :hidden:
 
    Home <self>
@@ -12,6 +12,12 @@ Welcome to UDS's documentation!
    pages/server_simulation.rst
    pages/knowledge_base.rst
    pages/contribution.rst
+
+
+.. figure:: images/UDS_logo.PNG
+    :alt: UDS
+    :width: 200px
+    :figclass: align-center
 
 
 Overview
