@@ -163,7 +163,7 @@ List of all Service Identifier (SID) values and their application:
  - 0x2F - `InputOutputControlByIdentifier`_ service request
  - 0x30 - reserved by ISO 14229-1
  - 0x31 - `RoutineControl`_ service request
- - 0x32-0x23 - reserved by ISO 14229-1
+ - 0x32-0x33 - reserved by ISO 14229-1
  - 0x34 - `RequestDownload`_ service request
  - 0x35 - `RequestUpload`_ service request
  - 0x36 - `TransferData`_ service request
@@ -185,7 +185,7 @@ List of all Service Identifier (SID) values and their application:
  - 0x62 - positive response to `ReadDataByIdentifier`_ service
  - 0x63 - positive response to `ReadMemoryByAddress`_ service
  - 0x64 - positive response to `ReadScalingDataByIdentifier`_ service
- - 0x63-0x66 - reserved by ISO 14229-1
+ - 0x65-0x66 - reserved by ISO 14229-1
  - 0x67 - positive response to `SecurityAccess`_ service
  - 0x68 - positive response to `CommunicationControl`_ service
  - 0x69 - positive response to `Authentication`_ service
