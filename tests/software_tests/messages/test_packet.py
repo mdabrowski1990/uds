@@ -56,6 +56,10 @@ class TestAbstractUdsPacket:
         self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
         assert self.mock_abstract_packet._AbstractUdsPacket__raw_data == tuple(example_raw_bytes)
 
+    def test_raw_message__set_second_call(self, example_raw_bytes):
+        self.mock_abstract_packet._AbstractUdsPacket__raw_data = "some value"
+        self.test_raw_data__set(example_raw_bytes=example_raw_bytes)
+
     # addressing
 
     @pytest.mark.parametrize("value_stored", [None, 0, False, AddressingType.PHYSICAL])
@@ -72,6 +76,10 @@ class TestAbstractUdsPacket:
         AbstractUdsPacket.addressing.fset(self=self.mock_abstract_packet, value=example_addressing_type.value)
         self.mock_validate_addressing_type.assert_called_once_with(example_addressing_type.value)
         assert self.mock_abstract_packet._AbstractUdsPacket__addressing == example_addressing_type
+
+    def test_addressing__set_second_call(self, example_addressing_type):
+        self.mock_abstract_packet._AbstractUdsPacket__addressing = "some value"
+        self.test_addressing__set_instance(example_addressing_type=example_addressing_type)
 
 
 class TestAbstractUdsPacketRecord:
