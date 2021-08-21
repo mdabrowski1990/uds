@@ -55,25 +55,6 @@ redirect the response back until it reaches the request message originator (Diag
     In this example all ECUs in the vehicle responds to the request.
 
 
-To better understand 'diagnostic message' terminology, we need to know how these messages are actually transmitted
-(what entities carry the message on all layers of OSI model). Pictorial drawing is presented in the figure below:
-
-.. figure:: ../diagrams/KnowledgeBase-PDUs.png
-    :alt: UDS PDUs
-    :figclass: align-center
-    :width: 100%
-
-    UDS Protocol Data Units on different layers of OSI Model.
-
-We distinguish (in UDS package implementation) following entities that take part in UDS communication on
-different layers of UDS OSI model:
- - `Diagnostic message`_ - also called 'Application Protocol Data Unit' (A_PDU)
- - `UDS packet`_ - also called 'Network Protocol Data Unit' (N_PDU). UDS packets types and transmission rules are
-    bus specific.
- - `Frame <https://en.wikipedia.org/wiki/Frame_(networking)>`_ - the smallest piece of information exchanged by nodes
-   in a bus network
-
-
 Diagnostic Request
 ``````````````````
 Diagnostic request is a `diagnostic message`_ that was transmitted by a client and targets a server or group of servers.
@@ -709,7 +690,26 @@ Explanation:
 
 Segmentation
 ````````````
-TODO
+If `diagnostic message`_ data to be transmitted does not fit into a single bus frame, then segmentation process
+is required to divide `diagnostic message`_ into smaller pieces called UDS Packets. Each `UDS Packet`_ (or N_PDU)
+fits into one frame. To visualize the concept, look on the figure below:
+
+.. figure:: ../diagrams/KnowledgeBase-PDUs.png
+    :alt: UDS PDUs
+    :figclass: align-center
+    :width: 100%
+
+    UDS Protocol Data Units on different layers of OSI Model.
+
+To summarize, we distinguish (in UDS package implementation) following entities that take part in UDS communication on
+different layers of UDS OSI model:
+ - `Diagnostic message`_ - also called 'Application Protocol Data Unit' (A_PDU)
+ - `UDS packet`_ - also called 'Network Protocol Data Unit' (N_PDU). UDS packets types and transmission rules are
+    bus specific and always fit into one frame.
+ - `Frame <https://en.wikipedia.org/wiki/Frame_(networking)>`_ - the smallest piece of information exchanged by nodes
+   in a bus network. Only specific frames take part in UDS communication.
+
+Segmentation process is specific for a bus on which UDS Packets would transmitted.
 
 
 UDS Packet
