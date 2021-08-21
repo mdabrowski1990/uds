@@ -21,14 +21,64 @@ are used to describe UDS transmission.
 
 UDS Message
 -----------
-TODO during `UDS Message documentation task <https://github.com/mdabrowski1990/uds/issues/52>`_
+Diagnostic messages (either diagnostic requests or response messages) are called 'UDS Messages' in the implementation.
+
+In the code, the diagnostic message feature is divided into two parts:
+ - UdsMessage_ - storage for diagnostic message (A_PDU) attributes that could be used by a user to transmit this
+   UDS Message on a configured bus
+ - UdsMessageRecord_ - record with historic information about either received or transmitted UDS Message
+
+
+UdsMessage
+``````````
+Diagnostic messages has common specification for all buses, therefore :python:`UdsMessage` class has only one
+implementation that is the same regardless of bus configured by a user. :python:`UdsMessage` is a storage
+for diagnostic message attributes, that are required to transmit this message. Therefore, if you want to send any
+diagnostic message, you should prior create :python:`UdsMessage` object first.
+
+.. code-block::  python
+
+   from uds.messages import UdsMessage, AddressingType
+
+   # example how to define a UDS Message
+   uds_message = UdsMessage(raw_message=[0x10, 0x03], addressing=AddressingType.PHYSICAL)
+
+   # you have two attributes that you can freely change
+   print(uds_message.raw_message)
+   uds_message.raw_message = [0x3E, 0x00]
+   print(uds_message.raw_message)
+
+   print(uds_message.addressing)
+   uds_message.addressing = AddressingType.FUNCTIONAL
+   print(uds_message.addressing)
+
+
+UdsMessageRecord
+````````````````
+Historic records with information about diagnostic messages that were either received or transmitted, are stored in
+objects of :python:`UdsMessageRecord` class.
+
+.. code-block::  python
+
+   from uds.messages import UdsMessageRecord, AddressingType
+
+   # usually, you would not be doing this by yourself as Client and Server features are meant to create objects of this class
+   uds_message_records = UdsMessageRecord(raw_message=[0x10, 0x03],
+                                          packets_records=[uds_packet_record])  # at least one packet - instance of `AbstractUdsPacketRecord` class
+
+   # you can get attributes of the UDS Message Record object
+   print(uds_message_records.raw_message)
+   print(uds_message_records.packets_records)
+   print(uds_message_records.addressing)
+   print(uds_message_records.direction)
+   print(uds_message_records.transmission_end)
 
 
 UDS Packet
 ----------
 To efficiently handle UDS Packets (Network Protocol Data Units - N_PDUs), the implementation is divided into two parts:
- - `UDS Packet Definition`_ - storage of UDS Packet (N_PDU) attributes that could be used to transmit UDS Packet on
-   a dedicated bus
+ - `UDS Packet Definition`_ - storage of UDS Packet (N_PDU) attributes that could be used by a user to transmit
+   UDS Packet on a dedicated bus
  - `UDS Packet Record`_ - record with historic information about either received or transmitted UDS Packet (N_PDU)
 
 
@@ -85,7 +135,7 @@ AbstractUdsPacketRecord
 
    from uds.messages import TransmissionDirection, ConcreteUdsPacketRecord
 
-   # usually, you would not be doing this by yourself as Transport Interface feature is meant to handle this feature
+   # usually, you would not be doing this by yourself as Transport Interface feature is meant to create objects of this class
    packet_record = ConcreteUdsPacketRecord(frame=some_frame,
                                            direction=TransmissionDirection.RECEIVED,
                                            ...)  # ... represents additional arguments that are required by a concrete class
@@ -157,3 +207,59 @@ AddressingType
    AddressingType.PHYSICAL
    AddressingType.FUNCTIONAL
    AddressingType.BROADCAST  # in fact, this is FUNCTIONAL addressing with broadcast communication used, but it was separated to distinguish this case
+
+
+UDS Data Enums
+----------------
+There are following enums that contains information related to UDS Messages data:
+ - RequestSID_
+ - ResponseSID_
+ - NRC_
+
+
+RequestSID
+``````````
+Enum with all known Service Identifier (SID) values that might be used in a request message.
+
+.. code-block::  python
+
+   from uds.messages import RequestSID
+
+   # you can check if value is valid request sid
+   RequestSID.is_request_sid(value_to_check)
+
+   # you can check whether value is enum member
+   RequestSID.is_member(value_to_check)  # returns True if value is member, False otherwise
+   RequestSID.validate_member(value_to_check)  # raises an exception if value is not a member of the enum
+
+
+ResponseSID
+```````````
+Enum with all known Response Service Identifier (RSID) values that might be used in a response message.
+
+.. code-block::  python
+
+   from uds.messages import ResponseSID
+
+   # you can check if value is valid request sid
+   ResponseSID.is_response_sid(value_to_check)
+
+   # you can check whether value is enum member
+   ResponseSID.is_member(value_to_check)  # returns True if value is member, False otherwise
+   ResponseSID.validate_member(value_to_check)  # raises an exception if value is not a member of the enum
+
+
+NRC
+```
+Enum with all known Negative Response Code (NRC) values that might be used in a negative response message.
+
+.. code-block::  python
+
+   from uds.messages import NRC
+
+   # you can check whether value is enum member
+   NRC.is_member(value_to_check)  # returns True if value is member, False otherwise
+   NRC.validate_member(value_to_check)  # raises an exception if value is not a member of the enum
+
+   # you can add a new enum member
+   NRC.add_member(name="NAME_FOR_NEW_MEMBER", value=0x00)
