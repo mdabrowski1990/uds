@@ -5,6 +5,116 @@ for every user of `UDS package <https://github.com/mdabrowski1990/uds>`_ so you 
 UDS protocol itself.
 
 
+UDS OSI Model
+-------------
+
++--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
+|   OSI Layer  |          ISO Standards         |              Functionalities              |                                Implementation                               |
++==============+================================+===========================================+=============================================================================+
+| Layer 7      | Common:                        | Diagnostic message:                       | - UdsMessage                                                                |
+| Application  |                                |                                           |                                                                             |
+|              | - ISO 14229-1                  | - creating                                | - UdsMessageRecord                                                          |
+|              |                                |                                           |                                                                             |
+|              | - ISO 27145-3                  | - storing historic data                   | - RequestSID                                                                |
+|              |                                |                                           |                                                                             |
+|              |                                | - various SIDs support                    | - ResponseSID                                                               |
+|              | CAN specific:                  |                                           |                                                                             |
+|              |                                | - bus specific services                   | - NRC                                                                       |
+|              | - ISO 14229-3                  |                                           |                                                                             |
+|              |                                |                                           | - AddressingType                                                            |
+|              |                                |                                           |                                                                             |
+|              | FlexRay specific:              |                                           |                                                                             |
+|              |                                |                                           | To be extended in milestones:                                               |
+|              | - ISO 14229-4                  |                                           |                                                                             |
+|              |                                |                                           | - `Database support <https://github.com/mdabrowski1990/uds/milestone/2>`_   |
+|              |                                |                                           |                                                                             |
+|              | Ethernet specific:             |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 14229-5                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | K-Line specific:               |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 14229-6                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | LIN specific:                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 14229-7                  |                                           |                                                                             |
++--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
+| Layer 6      | Common:                        | - diagnostic messages data interpretation | To be implemented in milestones:                                            |
+| Presentation |                                |                                           |                                                                             |
+|              | - ISO 27145-2                  | - messaging database import from a file   | - `Database support <https://github.com/mdabrowski1990/uds/milestone/2>`_   |
+|              |                                |                                           |                                                                             |
+|              |                                | - messaging database export to a file     |                                                                             |
+|              | Unique per system:             |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - system manufacturer specific |                                           |                                                                             |
++--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
+| Layer 5      | Common:                        | - Client simulation                       | To be implemented in milestones:                                            |
+| Session      |                                |                                           |                                                                             |
+|              | - ISO 14229-2                  | - Server simulation                       | - `Client simulation <https://github.com/mdabrowski1990/uds/milestone/8>`_  |
+|              |                                |                                           |                                                                             |
+|              |                                |                                           | - `Server simulation <https://github.com/mdabrowski1990/uds/milestone/7>`_  |
++--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
+| Layer 4      | CAN specific:                  | UDS packets:                              | - AbstractUdsPacket                                                         |
+| Transport    |                                |                                           |                                                                             |
+|              | - ISO 15765-2                  | - creating                                | - AbstractUdsPacketRecord                                                   |
+|              |                                | - storing historic data                   |                                                                             |
+|              |                                |                                           | - AbstractPacketType                                                        |
+|              | FlexRay specific:              | - support for bus specific packets        |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - 10681-2                      |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                | UDS communication:                        |                                                                             |
+|              | Ethernet specific:             |                                           |                                                                             |
++--------------+                                |                                           |                                                                             |
+| Layer 3      | - 13400-2                      | - diagnostic messages segmentation        |                                                                             |
+| Network      |                                |                                           |                                                                             |
+|              |                                | - receiving packets                       |                                                                             |
+|              | LIN specific:                  |                                           |                                                                             |
+|              |                                | - transmitting packets                    |                                                                             |
+|              | - 17987-2                      |                                           |                                                                             |
+|              |                                | - errors handling                         |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                | - errors simulation                       |                                                                             |
++--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
+| Layer 2      | CAN specific:                  | Bus handling:                             | External python packages for bus handling:                                  |
+| Data         |                                |                                           |                                                                             |
+|              | - ISO 11898-1                  | - creating frames                         | - `CAN <https://python-can.readthedocs.io>`_                                |
+|              |                                |                                           |                                                                             |
+|              | - ISO 11898-2                  | - storing historic frames data            |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 11898-3                  | - frames receiving                        |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                | - frames transmitting                     |                                                                             |
+|              | FlexRay specific:              |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 17458-2                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 17458-4                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
++--------------+ Ethernet specific:             |                                           |                                                                             |
+| Layer 1      |                                |                                           |                                                                             |
+| Physical     | - 13400-3                      |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | K-Line specific:               |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 14230-2                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 14230-1                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | LIN specific:                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 17987-3                  |                                           |                                                                             |
+|              |                                |                                           |                                                                             |
+|              | - ISO 17987-4                  |                                           |                                                                             |
++--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
+
+
 Client
 ------
 TODO DURING `CLIENT EPIC <https://github.com/mdabrowski1990/uds/milestone/8>`_
@@ -701,11 +811,12 @@ fits into one frame. To visualize the concept, look on the figure below:
 
     UDS Protocol Data Units on different layers of OSI Model.
 
-To summarize, we distinguish (in UDS package implementation) following entities that take part in UDS communication on
-different layers of UDS OSI model:
+
+To summarize, we distinguish (in UDS package implementation) following entities that take part in UDS communication
+on different layers of UDS OSI model:
  - `Diagnostic message`_ - also called 'Application Protocol Data Unit' (A_PDU)
- - `UDS packet`_ - also called 'Network Protocol Data Unit' (N_PDU). UDS packets types and transmission rules are
-    bus specific and always fit into one frame.
+ - `UDS packet`_ - also called 'Network Protocol Data Unit' (N_PDU). UDS packets types and transmission rules are bus
+   specific and always fit into one frame.
  - `Frame <https://en.wikipedia.org/wiki/Frame_(networking)>`_ - the smallest piece of information exchanged by nodes
    in a bus network. Only specific frames take part in UDS communication.
 
