@@ -708,8 +708,7 @@ Expected server behaviour in case of receiving physically addressed request mess
 |                    |         NO        |           ---           |                   | NRC = SNS or SNSIAS |                            Servers sends negative response with NRC 0x11 or 0x7F                            |
 +--------------------+-------------------+-------------------------+-------------------+---------------------+-------------------------------------------------------------------------------------------------------------+
 
-
-Explanation:
+Where:
  - SPRMIB - flag informing whether Suppress Positive Response Message Indication Bit is set in the received request
    message
  - SID supported - flag informing whether Service Identifier in the received request message is supported by the server
@@ -785,7 +784,7 @@ Expected server behaviour in case of receiving functionally addressed request me
 |                    |         NO        |           ---           |                   |    ---   |                                       Server does not send a response.                                      |
 +--------------------+-------------------+-------------------------+-------------------+----------+-------------------------------------------------------------------------------------------------------------+
 
-Explanation:
+Where:
  - SPRMIB - flag informing whether Suppress Positive Response Message Indication Bit is set in the received request
    message
  - SID supported - flag informing whether Service Identifier in the received request message is supported by the server
