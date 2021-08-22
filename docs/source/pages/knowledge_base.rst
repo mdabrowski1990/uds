@@ -7,6 +7,8 @@ UDS protocol itself.
 
 UDS OSI Model
 -------------
+`OSI Model <https://en.wikipedia.org/wiki/OSI_model>`_ of the UDS with functionalities implemented in the package is
+available in the table below:
 
 +--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
 |   OSI Layer  |          ISO Standards         |              Functionalities              |                                Implementation                               |
@@ -812,8 +814,7 @@ fits into one frame. To visualize the concept, look on the figure below:
     UDS Protocol Data Units on different layers of OSI Model.
 
 
-To summarize, we distinguish (in UDS package implementation) following entities that take part in UDS communication
-on different layers of UDS OSI model:
+To summarize, we distinguish (in UDS package implementation) following entities that take part in UDS communication on different layers of UDS OSI model:
  - `Diagnostic message`_ - also called 'Application Protocol Data Unit' (A_PDU)
  - `UDS packet`_ - also called 'Network Protocol Data Unit' (N_PDU). UDS packets types and transmission rules are bus
    specific and always fit into one frame.

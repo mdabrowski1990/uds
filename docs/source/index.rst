@@ -16,7 +16,7 @@ Welcome to UDS documentation!
 
 .. figure:: images/UDS_logo.PNG
     :alt: UDS
-    :width: 200px
+    :width: 25%
     :figclass: align-center
 
 
