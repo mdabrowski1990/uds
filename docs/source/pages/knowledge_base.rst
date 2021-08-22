@@ -7,9 +7,6 @@ UDS protocol itself.
 
 UDS OSI Model
 -------------
-`OSI Model <https://en.wikipedia.org/wiki/OSI_model>`_ of the UDS with functionalities implemented in the package is
-available in the table below:
-
 +--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
 |   OSI Layer  |          ISO Standards         |              Functionalities              |                                Implementation                               |
 +==============+================================+===========================================+=============================================================================+
