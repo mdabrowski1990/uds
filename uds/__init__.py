@@ -13,6 +13,6 @@ created by users themselves.
 """
 
 __all__ = ["messages"]
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Maciej Dąbrowski"
 __email__ = "uds-package-development@googlegroups.com"
