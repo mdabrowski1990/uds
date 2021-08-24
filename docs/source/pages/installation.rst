@@ -1,4 +1,14 @@
 Installation
 ============
-This chapter will be updates after the package is published on PyPI.
-At the moment, the only option to get the code is to download it from https://github.com/mdabrowski1990/uds.
+
+.. role:: shell(code)
+    :language: shell
+
+To install the package, run the following command in your command line interface:
+:shell:`pip install py-uds`
+
+If you have already installed the package, you can update it with the following command:
+:shell:`pip install -U py-uds`
+
+UDS package is distributed via `PyPI <https://pypi.org/>`_ and distribution page is is available under following link:
+https://pypi.org/project/py-uds/.
