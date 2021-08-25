@@ -2,6 +2,6 @@ github: [mdabrowski1990]
 issuehunt: mdabrowski1990
 liberapay: mdabrowski1990
 otechie: mdabrowski
-#TODO: tidelift - once released on PyPI
+tidelift: pypi/py-uds
 community_bridge: uds
-custom: ['https://paypal.me/pools/c/8xzKVUT0ba', 'https://paypal.me/pools/c/8xBlQ11Adr', 'https://paypal.me/pools/c/8xBlUHGPpE', 'https://paypal.me/pools/c/8xBm451jNW']
+custom: []
