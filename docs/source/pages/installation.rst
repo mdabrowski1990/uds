@@ -12,5 +12,5 @@ If you have already installed the package, you can update it using the following
 
 :shell:`pip install -U py-uds`
 
-UDS package is distributed via `PyPI <https://pypi.org/>`_ and distribution page is is available under following link:
-https://pypi.org/project/py-uds/.
+UDS package is distributed via `PyPI <https://pypi.org/>`_.
+You can visit distribution page of UDS package using the following hyperlink: https://pypi.org/project/py-uds/.
