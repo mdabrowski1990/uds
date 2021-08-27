@@ -1,6 +1,6 @@
 """Common implementation of UDS packets for all bus types."""
 
-__all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord"]
+__all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord", "get_raw_packet_type"]
 
 from abc import ABC, abstractmethod
 from typing import Any
@@ -10,6 +10,17 @@ from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     ReassignmentError, TimeStamp
 from .transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
+
+
+def get_raw_packet_type(packet_raw_data: RawBytes) -> RawByte:
+    """
+    Get raw value of packet type (N_PCI).
+
+    :param packet_raw_data: Raw data of UDS packet.
+
+    :return: Raw value of packet type (N_PCI).
+    """
+    return (packet_raw_data[0] >> 4) & 0xF  # TODO: make sure that this is valid for all bus types
 
 
 class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
@@ -66,10 +77,15 @@ class AbstractUdsPacket(ABC):
         AddressingType.validate_member(value)
         self.__addressing = AddressingType(value)
 
-    @property  # noqa: F841
+    @property
     @abstractmethod
+    def packet_type_enum(self) -> type:
+        """Get enum with possible UDS packet types."""
+
+    @property  # noqa: F841
     def packet_type(self) -> AbstractPacketType:
         """Type of UDS packet - N_PCI value of this N_PDU."""
+        return self.packet_type_enum(get_raw_packet_type(self.raw_data))
 
 
 class AbstractUdsPacketRecord(ABC):
@@ -96,14 +112,6 @@ class AbstractUdsPacketRecord(ABC):
         :raise TypeError: Frame has other type than expected.
         :raise ValueError: Some values of a frame are not
         """
-
-    def __get_raw_packet_type(self) -> RawByte:
-        """
-        Get raw value of packet type (N_PCI).
-
-        :return: Integer value of N_PCI.
-        """
-        return (self.raw_data[0] >> 4) & 0xF  # TODO: make sure it is the first nibble of data for all buses
 
     @property
     def frame(self) -> object:
@@ -154,11 +162,6 @@ class AbstractUdsPacketRecord(ABC):
     def raw_data(self) -> RawBytesTuple:
         """Raw bytes of data that this N_PDU carried."""
 
-    @property   # noqa: F841
-    @abstractmethod
-    def packet_type(self) -> AbstractPacketType:
-        """Type of UDS packet - N_PCI value carried by this N_PDU."""
-
     @property
     @abstractmethod
     def addressing(self) -> AddressingType:
@@ -168,3 +171,13 @@ class AbstractUdsPacketRecord(ABC):
     @abstractmethod
     def transmission_time(self) -> TimeStamp:
         """Time stamp when this packet was fully transmitted on a bus."""
+
+    @property
+    @abstractmethod
+    def packet_type_enum(self) -> type:
+        """Get enum with possible UDS packet types."""
+
+    @property  # noqa: F841
+    def packet_type(self) -> AbstractPacketType:
+        """Type of UDS packet - N_PCI value carried by this N_PDU."""
+        return self.packet_type_enum(get_raw_packet_type(self.raw_data))

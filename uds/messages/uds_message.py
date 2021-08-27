@@ -9,8 +9,7 @@ from .transmission_attributes import AddressingType, AddressingMemberTyping, Tra
 from .uds_packet import AbstractUdsPacketRecord
 
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-PacketsRecordsSequence = Union[PacketsRecordsTuple,  # pylint: disable=unsubscriptable-object
-                               List[AbstractUdsPacketRecord]]
+PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
 
 
 class UdsMessage:
@@ -85,7 +84,7 @@ class UdsMessageRecord:
         if not isinstance(packets_records, (tuple, list)):
             raise TypeError(f"Provided value of 'packets_records' is not list or tuple type. "
                             f"Actual type: {type(packets_records)}.")
-        if not packets_records or any([not isinstance(packet, AbstractUdsPacketRecord) for packet in packets_records]):
+        if not packets_records or any(not isinstance(packet, AbstractUdsPacketRecord) for packet in packets_records):
             raise ValueError(f"Provided value of 'packets_records' must contain only instances of "
                              f"AbstractUdsPacketRecord class. Actual value: {packets_records}")
 
