@@ -24,7 +24,7 @@ class AddressingType(StrEnum, ValidatedEnum):
     BROADCAST = "Broadcast"  # noqa: F841
 
 
-AddressingMemberTyping = Union[AddressingType, str]  # pylint: disable=unsubscriptable-object
+AddressingMemberTyping = Union[AddressingType, str]
 
 
 class TransmissionDirection(StrEnum, ValidatedEnum):
@@ -40,4 +40,4 @@ class TransmissionDirection(StrEnum, ValidatedEnum):
     TRANSMITTED = "Tx"  # noqa: F841
 
 
-DirectionMemberTyping = Union[TransmissionDirection, str]  # pylint: disable=unsubscriptable-object
+DirectionMemberTyping = Union[TransmissionDirection, str]

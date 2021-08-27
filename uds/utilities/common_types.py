@@ -7,11 +7,9 @@ from typing import Union, Tuple, List, Any
 from datetime import datetime
 
 RawByte = int
-# TODO: prospector supports only pylint version 2.5 that has serious problem with Aliases in Python 3.9.
-#  Remove unsubscriptable-object once prospector supports newer versions of pylint for Python 3.9.
-RawBytesTuple = Tuple[RawByte, ...]  # pylint: disable=unsubscriptable-object
-RawBytes = Union[RawBytesTuple, List[RawByte]]  # pylint: disable=unsubscriptable-object
-TimeMilliseconds = Union[int, float]  # noqa: F841, pylint: disable=unsubscriptable-object
+RawBytesTuple = Tuple[RawByte, ...]
+RawBytes = Union[RawBytesTuple, List[RawByte]]
+TimeMilliseconds = Union[int, float]  # noqa: F841
 TimeStamp = datetime
 
 
@@ -26,6 +24,6 @@ def validate_raw_bytes(value: Any) -> None:
     """
     if not isinstance(value, (tuple, list)):
         raise TypeError(f"Provided value is not list or tuple type. Actual type: {type(value)}.")
-    if not value or not all([isinstance(raw_byte, int) and 0x00 <= raw_byte <= 0xFF for raw_byte in value]):
+    if not value or not all(isinstance(raw_byte, int) and 0x00 <= raw_byte <= 0xFF for raw_byte in value):
         raise ValueError(f"Provided value does not contain raw bytes (int value between 0x00 and 0xFF) only. "
                          f"Actual value: {value}")

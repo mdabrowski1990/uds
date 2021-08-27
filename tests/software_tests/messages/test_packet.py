@@ -1,8 +1,21 @@
 import pytest
 from mock import Mock, patch
 
-from uds.messages.uds_packet import AbstractUdsPacket, AbstractPacketType, AbstractUdsPacketRecord, \
+from uds.messages.uds_packet import AbstractUdsPacket, AbstractPacketType, AbstractUdsPacketRecord, get_raw_packet_type, \
     AddressingType, NibbleEnum, ValidatedEnum, ExtendableEnum, TransmissionDirection, ReassignmentError
+
+
+class TestFunctions:
+    # __get_raw_packet_type
+
+    @pytest.mark.parametrize("raw_data, expected_result", [
+        ([0x12], 0x1),
+        ([0x00, 0x11, 0x22, 0x33], 0x0),
+        ((0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10), 0xF),
+        ((0xA5, 0x55, 0x33), 0xA),
+    ])
+    def test_get_raw_packet_type(self, raw_data, expected_result):
+        assert get_raw_packet_type(raw_data) == expected_result
 
 
 class TestAbstractPacketType:
@@ -30,10 +43,13 @@ class TestAbstractUdsPacket:
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
         self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
+        self._patcher_get_raw_packet_type = patch(f"{self.SCRIPT_LOCATION}.get_raw_packet_type")
+        self.mock_get_raw_packet_type = self._patcher_get_raw_packet_type.start()
 
     def teardown(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_addressing_type.stop()
+        self._patcher_get_raw_packet_type.stop()
 
     # __init__
 
@@ -81,6 +97,15 @@ class TestAbstractUdsPacket:
         self.mock_abstract_packet._AbstractUdsPacket__addressing = "some value"
         self.test_addressing__set_instance(example_addressing_type=example_addressing_type)
 
+    # packet_type
+
+    def test_packet_type__get(self, example_raw_bytes):
+        self.mock_abstract_packet.raw_data = example_raw_bytes
+        assert AbstractUdsPacket.packet_type.fget(self=self.mock_abstract_packet) \
+               is self.mock_abstract_packet.packet_type_enum.return_value
+        self.mock_get_raw_packet_type.assert_called_once_with(example_raw_bytes)
+        self.mock_abstract_packet.packet_type_enum.assert_called_once_with(self.mock_get_raw_packet_type.return_value)
+
 
 class TestAbstractUdsPacketRecord:
     """Tests for 'AbstractUdsPacketRecord' class."""
@@ -92,6 +117,8 @@ class TestAbstractUdsPacketRecord:
         # patching
         self._patcher_validate_direction = patch(f"{self.SCRIPT_LOCATION}.TransmissionDirection.validate_member")
         self.mock_validate_direction = self._patcher_validate_direction.start()
+        self._patcher_get_raw_packet_type = patch(f"{self.SCRIPT_LOCATION}.get_raw_packet_type")
+        self.mock_get_raw_packet_type = self._patcher_get_raw_packet_type.start()
 
     def teardown(self):
         self._patcher_validate_direction.stop()
@@ -104,18 +131,6 @@ class TestAbstractUdsPacketRecord:
         AbstractUdsPacketRecord.__init__(self=self.mock_packet_record, frame=frame, direction=direction)
         assert self.mock_packet_record.frame == frame
         assert self.mock_packet_record.direction == direction
-
-    # __get_raw_packet_type
-
-    @pytest.mark.parametrize("raw_data, expected_result", [
-        ([0x12], 0x1),
-        ([0x00, 0x11, 0x22, 0x33], 0x0),
-        ((0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10), 0xF),
-        ((0xA5, 0x55, 0x33), 0xA),
-    ])
-    def test_get_raw_packet_type(self, raw_data, expected_result):
-        self.mock_packet_record.raw_data = raw_data
-        assert AbstractUdsPacketRecord._AbstractUdsPacketRecord__get_raw_packet_type(self=self.mock_packet_record) == expected_result
 
     # frame
 
@@ -164,3 +179,12 @@ class TestAbstractUdsPacketRecord:
             AbstractUdsPacketRecord.direction.fset(self=self.mock_packet_record, value=new_value)
         assert self.mock_packet_record._AbstractUdsPacketRecord__direction == old_value
         self.mock_validate_direction.assert_not_called()
+
+    # packet_type
+
+    def test_packet_type__get(self, example_raw_bytes):
+        self.mock_packet_record.raw_data = example_raw_bytes
+        assert AbstractUdsPacketRecord.packet_type.fget(self=self.mock_packet_record) \
+               is self.mock_packet_record.packet_type_enum.return_value
+        self.mock_get_raw_packet_type.assert_called_once_with(example_raw_bytes)
+        self.mock_packet_record.packet_type_enum.assert_called_once_with(self.mock_get_raw_packet_type.return_value)
