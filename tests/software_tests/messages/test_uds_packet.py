@@ -6,7 +6,7 @@ from uds.messages.uds_packet import AbstractUdsPacket, AbstractPacketType, Abstr
 
 
 class TestFunctions:
-    # __get_raw_packet_type
+    """Tests for helper functions in the package."""
 
     @pytest.mark.parametrize("raw_data, expected_result", [
         ([0x12], 0x1),
