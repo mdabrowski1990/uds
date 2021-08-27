@@ -82,7 +82,7 @@ class AbstractUdsPacket(ABC):
     def packet_type_enum(self) -> type:
         """Get enum with possible UDS packet types."""
 
-    @property
+    @property  # noqa: F841
     def packet_type(self) -> AbstractPacketType:
         """Type of UDS packet - N_PCI value of this N_PDU."""
         return self.packet_type_enum(get_raw_packet_type(self.raw_data))
@@ -177,7 +177,7 @@ class AbstractUdsPacketRecord(ABC):
     def packet_type_enum(self) -> type:
         """Get enum with possible UDS packet types."""
 
-    @property
+    @property  # noqa: F841
     def packet_type(self) -> AbstractPacketType:
         """Type of UDS packet - N_PCI value carried by this N_PDU."""
         return self.packet_type_enum(get_raw_packet_type(self.raw_data))
