@@ -7,8 +7,8 @@ from aenum import unique
 from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum
 
 
-@unique  # pylint: disable=too-many-ancestors
-class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
+@unique
+class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
     Storage for all known Negative Response Codes (NRC).
 
