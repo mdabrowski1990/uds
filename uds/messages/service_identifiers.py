@@ -85,8 +85,8 @@ class RequestSID(ByteEnum, ValidatedEnum):
     SecuredDataTransmission = 0x84  # noqa: F841
 
 
-@unique  # pylint: disable=too-many-ancestors
-class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
+@unique
+class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
     Storage for all known Response Service Identifiers (RSID).
 

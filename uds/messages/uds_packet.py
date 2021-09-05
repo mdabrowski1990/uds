@@ -23,7 +23,7 @@ def get_raw_packet_type(packet_raw_data: RawBytes) -> RawByte:
     return (packet_raw_data[0] >> 4) & 0xF  # TODO: make sure that this is valid for all bus types
 
 
-class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):  # pylint: disable=too-many-ancestors
+class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
     """
     Abstract definition of UDS packet type.
 
