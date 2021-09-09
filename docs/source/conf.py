@@ -12,25 +12,37 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath("."))
+
+import re
+
+with open("../../uds/__init__.py", "r", encoding="utf-8") as init_file:
+    full_version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'UDS'
-copyright = '2021, Maciej Dąbrowski'
-author = 'Maciej Dąbrowski'
+project = u"UDS"
+copyright = u"2021, Maciej Dąbrowski"
+author = u"Maciej Dąbrowski"
 
 # The full version, including alpha/beta/rc tags
-release = '0.0'
+release = full_version
 
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
-extensions = []
+extensions = ["sphinx.ext.autodoc", "autoapi.extension"]
+
+autodoc_typehints = "description"
+
+autoapi_type = "python"
+autoapi_dirs = ["../../uds"]
+autoapi_add_toctree_entry = False
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = []
@@ -47,6 +59,13 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
+html_logo = "images/UDS_logo_without_background.PNG"
+
+html_theme_options = {
+    "sticky_navigation": False,
+    "collapse_navigation": False,
+    "navigation_depth": 5,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

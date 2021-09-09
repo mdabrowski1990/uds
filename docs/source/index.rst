@@ -10,14 +10,9 @@ Welcome to UDS documentation!
    pages/messages.rst
    pages/client_simulation.rst
    pages/server_simulation.rst
+   autoapi/uds/index
    pages/knowledge_base.rst
    pages/contribution.rst
-
-
-.. figure:: images/UDS_logo.PNG
-    :alt: UDS
-    :width: 25%
-    :figclass: align-center
 
 
 Overview

@@ -1,0 +1,2 @@
+sphinx>=4.1.2
+sphinx-autoapi>=1.8.4
