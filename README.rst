@@ -52,6 +52,7 @@ Contact
 -------
 - e-mail: uds-package-development@googlegroups.com
 - group: `UDS package development <https://groups.google.com/g/uds-package-development/about>`_
+- discord: https://discord.gg/XYhJGeBg
 
 
 
