@@ -7,6 +7,9 @@ How to contribute?
 If you want to become a contributor, please visit `UDS project page <https://github.com/mdabrowski1990/uds>`_
 and read `CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ file.
 
+If you are looking for a contact information, you are going to find them in the
+`ReadMe <https://github.com/mdabrowski1990/uds#readme>`_ file.
+
 
 Sponsoring
 ----------
@@ -16,4 +19,4 @@ If you are interested to sponsor development team that created and improves this
 
 Reporting issues
 ----------------
-To report issues, please visit our `issues tracking system <https://github.com/mdabrowski1990/uds/issues>`_.
+To report issues, please use our `issues tracking system <https://github.com/mdabrowski1990/uds/issues>`_.
