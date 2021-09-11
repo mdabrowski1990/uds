@@ -40,9 +40,10 @@ It supports different communication buses on both communication sides (client an
 
 Documentation
 -------------
-User documentation is available `here <https://uds.readthedocs.io/en/latest/>`_.
+User documentation is hosted by ReadTheDocs portal and available under the following link: https://uds.readthedocs.io/
 
-Security policy is stored in `SECURITY.md <https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md>`_ file.
+Security policy for this package is defined in
+`SECURITY.md <https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md>`_ file.
 
 If you want to become a contributor, please read
 `CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ file.
