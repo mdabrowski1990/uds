@@ -42,8 +42,11 @@ autodoc_typehints = "description"
 
 autoapi_type = "python"
 autoapi_dirs = ["../../uds"]
-autoapi_add_toctree_entry = False
-autoapi_generate_api_docs = False
+autoapi_add_toctree_entry = True
+autoapi_generate_api_docs = True
+autoapi_options = ["members", "inherited-members", "undoc-members", "private-members", "special-members",
+                   "show-inheritance", "show-inheritance-diagram", "show-module-summary", "imported-members"]
+autoapi_python_class_content = "both"
 
 
 # Add any paths that contain templates here, relative to this directory.

@@ -5,7 +5,7 @@ Diagnostic Messages
     :language: python
 
 
-In this chapter, you will find information about :python:`messages` subpackage implementation. It contains code that
+In this chapter, you will find information about :mod:`uds.messages` subpackage implementation. It contains code that
 enables creation of entities that carry UDS data and helps to describe theirs transmission.
 
 In implementation we distinguish following entities that carry diagnostic data:
@@ -25,17 +25,23 @@ UDS Message
 Diagnostic messages (either diagnostic requests or response messages) are called 'UDS Messages' in the implementation.
 
 In the code, the diagnostic message features are divided into two parts:
- - UdsMessage_ - storage for diagnostic message (A_PDU) attributes that could be used by a user to transmit this
+ - :class:`~uds.messages.UdsMessage` - storage for diagnostic message (A_PDU) attributes that could be used by a user to transmit this
    UDS Message on a configured bus
- - UdsMessageRecord_ - record with historic information about either received or transmitted diagnostic message
+ - :class:`~uds.messages.UdsMessageRecord` - record with historic information about either received or transmitted diagnostic message
 
 
 UdsMessage
 ``````````
-Diagnostic messages has common specification for all buses, therefore :python:`UdsMessage` class has the only one
+Diagnostic messages has common specification for all buses, therefore :class:`~uds.messages.UdsMessage` class has the only one
 implementation which is the same regardless of bus used by a user. :python:`UdsMessage` is a storage
 for diagnostic message attributes, therefore if you want to send any diagnostic message, you should prior create
 :python:`UdsMessage` object first.
+
+
+.. autoapiclass:: uds.messages.UdsMessage
+   :members:
+   :special-members:
+
 
 .. code-block::  python
 
@@ -57,6 +63,10 @@ for diagnostic message attributes, therefore if you want to send any diagnostic 
 
 UdsMessageRecord
 ````````````````
+.. autoapiclass:: uds.messages.UdsMessageRecord
+   :members:
+   :special-members:
+
 Historic records with information about diagnostic messages that were either received or transmitted, are stored in
 objects of :python:`UdsMessageRecord` class.
 
