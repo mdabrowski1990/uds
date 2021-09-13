@@ -1,7 +1,7 @@
 Welcome to UDS documentation!
 =============================
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 6
    :hidden:
 
    Home <self>
@@ -12,6 +12,8 @@ Welcome to UDS documentation!
    pages/server_simulation.rst
    pages/knowledge_base.rst
    pages/contribution.rst
+   pages/autoapi_test.rst
+   autoapi/index.rst
 
 
 Overview

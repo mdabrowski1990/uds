@@ -10,9 +10,9 @@ from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum
 @unique
 class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
-    Storage for all known Negative Response Codes (NRC).
+    All Negative Response Codes (NRC) values defined in ISO 14229-1:2020.
 
-    Explanation when each of NRC shall be used can be found in appendix A1 of ISO 14229-1.
+    Explanation of NRC meaning is located in appendix A1 of ISO 14229-1 standard.
     """
 
     # PositiveResponse = 0x00

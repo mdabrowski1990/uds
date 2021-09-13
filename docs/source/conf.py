@@ -44,8 +44,8 @@ autoapi_type = "python"
 autoapi_dirs = ["../../uds"]
 autoapi_add_toctree_entry = True
 autoapi_generate_api_docs = True
-autoapi_options = ["members", "inherited-members", "undoc-members", "private-members", "special-members",
-                   "show-inheritance", "show-inheritance-diagram", "show-module-summary", "imported-members"]
+autoapi_options = ["members", "private-members", "special-members", "undoc-members",
+                   "show-inheritance", "show-inheritance-diagram", "show-module-summary"]
 autoapi_python_class_content = "both"
 
 
@@ -69,7 +69,7 @@ html_logo = "images/UDS_logo_without_background.PNG"
 html_theme_options = {
     "sticky_navigation": False,
     "collapse_navigation": False,
-    "navigation_depth": 5,
+    "navigation_depth": 6,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

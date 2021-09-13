@@ -4,7 +4,6 @@ Diagnostic Messages
 .. role:: python(code)
     :language: python
 
-
 In this chapter, you will find information about :mod:`uds.messages` subpackage implementation. It contains code that
 enables creation of entities that carry UDS data and helps to describe theirs transmission.
 

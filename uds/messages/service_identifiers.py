@@ -2,6 +2,7 @@
 
 __all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS"]
 
+from typing import Set
 from warnings import warn
 
 from aenum import unique
@@ -15,8 +16,10 @@ _REQUEST_SIDS_DEFINED_BY_ISO_14229 = set(range(0x10, 0x3F)).union(set(range(0x83
 _RESPONSE_SIDS_DEFINED_BY_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC3, 0xC9)), set(range(0xFA, 0xFF)))
 
 # all supported SID values according to UDS
-POSSIBLE_REQUEST_SIDS = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
-POSSIBLE_RESPONSE_SIDS = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
+POSSIBLE_REQUEST_SIDS: Set[RawByte] = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
+"""Set with all possible values of Request SID byte according to SAE J1979 and ISO 14229 standards."""
+POSSIBLE_RESPONSE_SIDS: Set[RawByte] = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
+"""Set with all possible values of Response SID byte according to SAE J1979 and ISO 14229 standards."""
 
 
 class UnsupportedSID(Warning):
@@ -31,9 +34,9 @@ class UnsupportedSID(Warning):
 @unique
 class RequestSID(ByteEnum, ValidatedEnum):
     """
-    Storage for all known Service Identifiers (SID).
+    All Request Service Identifier values defined in ISO 14229-1:2020.
 
-    SID is always the first byte of the request messages. In this enum, only the valid values are defined.
+    Note: Request SID is always the first data byte of all request messages.
     """
 
     @classmethod
@@ -88,9 +91,9 @@ class RequestSID(ByteEnum, ValidatedEnum):
 @unique
 class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
-    Storage for all known Response Service Identifiers (RSID).
+    All Response Service Identifier values defined in ISO 14229-1:2020.
 
-    RSID is always the first byte of the response messages. In this enum, only the valid values are defined.
+    Note: Response SID is always the first data byte of all response messages.
     """
 
     @classmethod

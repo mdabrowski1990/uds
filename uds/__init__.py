@@ -7,7 +7,8 @@ The package is meant to provide tools to handle following UDS protocol layers (a
  - Session (5th) - specified by ISO 14229-2
  - Presentation (6th) - some part is specified by ISO 27145-2, rest is vehicle manufacturer specific
  - Application (7th) - specified by ISO 14229-1, ISO 14229-3, ISO 14229-4, ISO 14229-5, ISO 14229-6, ISO 14229-7,
-        ISO 14229-8, ISO 27145-3 and further standards
+   ISO 14229-8, ISO 27145-3 and further standards
+
 Other (bus specific) layers would be supported by extensions (once released) to this package or by custom interfaces
 created by users themselves.
 """
