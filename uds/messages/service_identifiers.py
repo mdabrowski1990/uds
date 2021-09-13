@@ -2,12 +2,11 @@
 
 __all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS"]
 
-from typing import Set
 from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import RawByte, ByteEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import RawByte, RawBytesSet, ByteEnum, ValidatedEnum, ExtendableEnum
 
 # reserved SID values
 _REQUEST_SIDS_DEFINED_BY_SAEJ1979 = set(range(0x01, 0x10))
@@ -16,9 +15,9 @@ _REQUEST_SIDS_DEFINED_BY_ISO_14229 = set(range(0x10, 0x3F)).union(set(range(0x83
 _RESPONSE_SIDS_DEFINED_BY_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC3, 0xC9)), set(range(0xFA, 0xFF)))
 
 # all supported SID values according to UDS
-POSSIBLE_REQUEST_SIDS: Set[RawByte] = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
+POSSIBLE_REQUEST_SIDS: RawBytesSet = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
 """Set with all possible values of Request SID byte according to SAE J1979 and ISO 14229 standards."""
-POSSIBLE_RESPONSE_SIDS: Set[RawByte] = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
+POSSIBLE_RESPONSE_SIDS: RawBytesSet = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
 """Set with all possible values of Response SID byte according to SAE J1979 and ISO 14229 standards."""
 
 

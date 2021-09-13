@@ -1,13 +1,14 @@
 """Container with all types (and its aliases) used by the module."""
 
-__all__ = ["RawByte", "RawBytes", "RawBytesTuple", "validate_raw_bytes",
+__all__ = ["RawByte", "RawBytes", "RawBytesTuple", "RawBytesSet", "validate_raw_bytes",
            "TimeMilliseconds", "TimeStamp"]
 
-from typing import Union, Tuple, List, Any
+from typing import Union, Tuple, List, Set, Any
 from datetime import datetime
 
 RawByte = int
 RawBytesTuple = Tuple[RawByte, ...]
+RawBytesSet = Set[RawByte]
 RawBytes = Union[RawBytesTuple, List[RawByte]]
 TimeMilliseconds = Union[int, float]  # noqa: F841
 TimeStamp = datetime

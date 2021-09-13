@@ -626,7 +626,7 @@ List of NRC values:
    a preprogrammed maximum threshold).
  - 0x93 - voltageTooLow - This NRC indicates that the requested action will not be taken because the server
    prerequisite condition for voltage at the primary pin of the server (ECU) is not met (current voltage is below
-   a preprogrammed maximum threshold).
+   a preprogrammed minimum threshold).
  - 0x94 - ResourceTemporarilyNotAvailable - This NRC indicates that the server has received the request but
    the requested action could not be performed by the server because an application which is necessary to supply
    the requested information is temporality not available. This NRC is in general supported by each diagnostic service,
