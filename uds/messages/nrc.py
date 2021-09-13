@@ -1,4 +1,4 @@
-"""Negative Response Codes (NRC) implementation."""
+"""Module with entire Negative Response Codes (NRC) implementation."""
 
 __all__ = ["NRC"]
 
