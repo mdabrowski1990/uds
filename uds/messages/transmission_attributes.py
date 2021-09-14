@@ -10,18 +10,19 @@ from uds.utilities import ValidatedEnum
 
 
 class AddressingType(StrEnum, ValidatedEnum):
-    """
-    Types of communication (addressing) defined by UDS.
-
-    Options:
-     - PHYSICAL - 1 (client) to 1 (server) communication
-     - FUNCTIONAL - 1 (client) to many (servers) communication
-     - BROADCAST - 1 (client) to many (servers) communication that does not require response
-    """
+    """Types of communication (addressing) defined by UDS."""
 
     PHYSICAL = "Physical"  # noqa: F841
+    """Physical addressing - 1 (client) to 1 (server) communication."""
     FUNCTIONAL = "Functional"  # noqa: F841
+    """Functional addressing - 1 (client) to many (servers) communication."""
     BROADCAST = "Broadcast"  # noqa: F841
+    """
+    Functional addressing using broadcast transmission - 1 (client) to many (servers) communication that does not
+    require response from recipients.
+
+    Note: This is not a unique addressing.
+    """  # TODO: finish note and clarify why it is added
 
 
 AddressingMemberTyping = Union[AddressingType, str]
