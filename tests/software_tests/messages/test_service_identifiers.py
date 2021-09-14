@@ -29,6 +29,9 @@ class TestRequestSID:
     def test_inheritance__validated_enum(self):
         assert issubclass(RequestSID, ValidatedEnum)
 
+    def test_inheritance__extendable_enum(self):
+        assert issubclass(ResponseSID, ExtendableEnum)
+
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_request_sid__member(self, value):
         self.mock_is_member.return_value = True
