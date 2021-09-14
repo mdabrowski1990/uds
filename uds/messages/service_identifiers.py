@@ -25,11 +25,14 @@ class UnrecognizedSIDWarning(Warning):
     """
     Warning about SID value that is legit but not recognized by the package.
 
-    To register SID value, you can define member for this SID manually using
-    :meth:`~uds.utilities.RequestSID.add_member` and :meth:`~uds.utilities.ResponseSID.add_member` methods.
-    You can also `create feature request in the UDS project issues management system
+    If you want to register a SID value, you need to define members (for this SID) manually using
+    :meth:`~uds.messages.service_identifiers.RequestSID.add_member`
+    (on :class:`~uds.messages.service_identifiers.RequestSID` class) and
+    :meth:`~uds.messages.service_identifiers.ResponseSID.add_member`
+    (on :class:`~uds.messages.service_identifiers.ResponseSID` class) methods.
+    You can also create feature request in the UDS project `issues management system
     <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register the SID value (for which this warning
-    was raised) in this package.
+    was raised).
     """
 
 
@@ -39,6 +42,7 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     Request Service Identifier values for all services that are defined in ISO 14229-1:2020.
 
     Note: Request SID is always the first data byte of all request messages.
+
     """
 
     @classmethod
