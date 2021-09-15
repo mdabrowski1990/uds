@@ -19,9 +19,9 @@ The full list of developers with `Security Developers` rank:
 
 
 ## Reporting Vulnerabilities
-If you have noticed any security vulnerabilities, you can report it via:
+If you have noticed any security vulnerability, you can report it via:
 - e-mail: [uds-package-development@googlegroups.com](mailto:uds-package-development@googlegroups.com)
 - discord: https://discord.gg/XYhJGeBg
 
-Please reach to at least one (preferable two) of our [Security Developers](#security-developers) if you have found 
-an issue that must be handled quietly.
+Please, contact directly at least two of our [Security Developers](#security-developers) if you have found an issue
+that must be handled quietly without informing all contributors.

@@ -8,7 +8,7 @@ If you want to become a contributor, please visit `UDS project page <https://git
 and read `CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ file.
 
 If you are looking for a contact information, you are going to find them in the
-`ReadMe <https://github.com/mdabrowski1990/uds#readme>`_ file.
+`contact section of README file <https://github.com/mdabrowski1990/uds#contact>`_.
 
 
 Sponsoring
