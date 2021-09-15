@@ -2,4 +2,4 @@
 
 
 class ReassignmentError(Exception):
-    """Trying to set a new value to a variable or an attribute which cannot be changed."""
+    """Attempt to set a new value of an attribute that cannot be changed after the initial value was already set."""

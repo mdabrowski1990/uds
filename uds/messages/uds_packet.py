@@ -192,6 +192,6 @@ class AbstractUdsPacketRecord(ABC):
 
 
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-"""Typing of a tuple filled with UDS Packets."""
+"""Typing alias of a tuple filled with UDS Packets."""
 PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
-"""Typing of a sequence filled with UDS Packets."""
+"""Typing alias of a sequence filled with UDS Packets."""

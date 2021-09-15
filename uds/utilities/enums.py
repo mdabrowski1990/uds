@@ -1,4 +1,4 @@
-"""Implementation of Byte Enum."""
+"""Module with special `Enums <https://en.wikipedia.org/wiki/Enumerated_type#Python>`_ implementations."""
 
 __all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum"]
 
@@ -8,7 +8,7 @@ from aenum import Enum, IntEnum, extend_enum
 
 
 class ExtendableEnum(Enum):
-    """Enum with method for adding new members."""
+    """Enum that supports new members adding."""
 
     @classmethod
     def add_member(cls, name: str, value: Any) -> Enum:
@@ -18,7 +18,7 @@ class ExtendableEnum(Enum):
         :param name: Name of a new member.
         :param value: Value of a new member.
 
-        :raise ValueError: Such name or value is already defined.
+        :raise ValueError: Such name or value is already in use.
 
         :return: The new member that was just created.
         """
@@ -32,16 +32,16 @@ class ExtendableEnum(Enum):
 
 
 class ValidatedEnum(Enum):
-    """Enum with methods for members validation."""
+    """Enum that supports members validation."""
 
     @classmethod
     def is_member(cls, value: Any) -> bool:
         """
-        Check whether given value is a member (or its value).
+        Check whether given argument is a member or a value stored by this Enum.
 
         :param value: Value to check.
 
-        :return: True if given argument is member (or its value), else False.
+        :return: True if given argument is a member or a value of this Enum, else False.
         """
         try:
             cls(value)
@@ -52,18 +52,18 @@ class ValidatedEnum(Enum):
     @classmethod
     def validate_member(cls, value: Any) -> None:
         """
-        Validate whether given value is a member (or its value).
+        Validate whether given argument is a member or a value stored by this Enum.
 
         :param value: Value to validate.
 
-        :raise TypeError: Provided value is neither member (or its value) of this Enum.
+        :raise TypeError: Provided value is not a member neither a value of this Enum.
         """
         if not cls.is_member(value):
             raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}.")
 
 
 class ByteEnum(IntEnum):
-    """Enum which members are one byte integers (0x00-0xFF)."""
+    """Enum which members are one byte integers (0x00-0xFF) only."""
 
     def __new__(cls, value: int):
         """
@@ -84,7 +84,7 @@ class ByteEnum(IntEnum):
 
 
 class NibbleEnum(IntEnum):
-    """Enum which members are one nibble (4 bits) integers (0x0-0xF)."""
+    """Enum which members are one nibble (4 bits) integers (0x0-0xF) only."""
 
     def __new__(cls, value: int):
         """

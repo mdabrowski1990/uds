@@ -19,7 +19,7 @@ class AddressingType(StrEnum, ValidatedEnum):
 
 
 AddressingMemberTyping = Union[AddressingType, str]
-"""Typing that describes AddressingType member."""
+"""Typing alias that describes AddressingType member."""
 
 
 class TransmissionDirection(StrEnum, ValidatedEnum):
@@ -32,4 +32,4 @@ class TransmissionDirection(StrEnum, ValidatedEnum):
 
 
 DirectionMemberTyping = Union[TransmissionDirection, str]
-"""Typing that describes TransmissionDirection member."""
+"""Typing alias that describes TransmissionDirection member."""
