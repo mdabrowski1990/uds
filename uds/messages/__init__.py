@@ -1,4 +1,4 @@
-"""Module with basic tools to handle UDS messages."""
+"""Subpackage with tools to handle UDS messages."""
 
 from .uds_packet import AbstractPacketType, AbstractUdsPacket, AbstractUdsPacketRecord, get_raw_packet_type
 from .uds_message import UdsMessage, UdsMessageRecord
