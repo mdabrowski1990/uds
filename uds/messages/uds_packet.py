@@ -1,9 +1,11 @@
 """Common implementation of UDS packets for all bus types."""
 
-__all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord", "get_raw_packet_type"]
+__all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
+           "PacketsRecordsTuple", "PacketsRecordsSequence",
+           "get_raw_packet_type"]
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Union, Tuple, List, Any
 
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawByte, RawBytes, RawBytesTuple, validate_raw_bytes,\
@@ -181,3 +183,9 @@ class AbstractUdsPacketRecord(ABC):
     def packet_type(self) -> AbstractPacketType:
         """Type of UDS packet - N_PCI value carried by this N_PDU."""
         return self.packet_type_enum(get_raw_packet_type(self.raw_data))
+
+
+PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
+"""Typing of a tuple filled with UDS Packets."""
+PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
+"""Typing of a sequence filled with UDS Packets."""

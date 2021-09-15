@@ -24,28 +24,28 @@ class TestUdsMessage:
 
     # __init__
 
-    @pytest.mark.parametrize("raw_message", [None, [0x1, 0x02], "some message"])
+    @pytest.mark.parametrize("payload", [None, [0x1, 0x02], "some message"])
     @pytest.mark.parametrize("addressing", ["Physical", 0, False, AddressingType.FUNCTIONAL])
-    def test_init(self, raw_message, addressing):
-        UdsMessage.__init__(self=self.mock_uds_message, raw_message=raw_message, addressing=addressing)
-        assert self.mock_uds_message.raw_message == raw_message
+    def test_init(self, payload, addressing):
+        UdsMessage.__init__(self=self.mock_uds_message, payload=payload, addressing=addressing)
+        assert self.mock_uds_message.payload == payload
         assert self.mock_uds_message.addressing == addressing
 
-    # raw_message
+    # payload
 
     @pytest.mark.parametrize("value", [None, [0x1, 0x02], "some message"])
-    def test_raw_message__get(self, value):
-        self.mock_uds_message._UdsMessage__raw_message = value
-        assert UdsMessage.raw_message.fget(self=self.mock_uds_message) is value
+    def test_payload__get(self, value):
+        self.mock_uds_message._UdsMessage__payload = value
+        assert UdsMessage.payload.fget(self=self.mock_uds_message) is value
 
-    def test_raw_message__set(self, example_raw_bytes):
-        UdsMessage.raw_message.fset(self=self.mock_uds_message, value=example_raw_bytes)
-        assert self.mock_uds_message._UdsMessage__raw_message == tuple(example_raw_bytes)
+    def test_payload__set(self, example_raw_bytes):
+        UdsMessage.payload.fset(self=self.mock_uds_message, value=example_raw_bytes)
+        assert self.mock_uds_message._UdsMessage__payload == tuple(example_raw_bytes)
         self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
 
-    def test_raw_message__set_second_call(self, example_raw_bytes):
-        self.mock_uds_message._UdsMessage__raw_message = "some value"
-        self.test_raw_message__set(example_raw_bytes=example_raw_bytes)
+    def test_payload__set_second_call(self, example_raw_bytes):
+        self.mock_uds_message._UdsMessage__payload = "some value"
+        self.test_payload__set(example_raw_bytes=example_raw_bytes)
 
     # addressing
 
@@ -88,12 +88,12 @@ class TestUdsMessageRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("raw_message", [None, [0x1, 0x02], "some message"])
+    @pytest.mark.parametrize("payload", [None, [0x1, 0x02], "some message"])
     @pytest.mark.parametrize("packets_records", [False, [1, 2, 3, 4], "abcdef"])
-    def test_init(self, raw_message, packets_records):
-        UdsMessageRecord.__init__(self=self.mock_uds_message_record, raw_message=raw_message,
+    def test_init(self, payload, packets_records):
+        UdsMessageRecord.__init__(self=self.mock_uds_message_record, payload=payload,
                                   packets_records=packets_records)
-        assert self.mock_uds_message_record.raw_message == raw_message
+        assert self.mock_uds_message_record.payload == payload
         assert self.mock_uds_message_record.packets_records == packets_records
 
     # __validate_packets_records
@@ -116,25 +116,25 @@ class TestUdsMessageRecord:
         with pytest.raises(ValueError):
             UdsMessageRecord._UdsMessageRecord__validate_packets_records(packets_records=value)
 
-    # raw_message
+    # payload
 
     @pytest.mark.parametrize("value", [None, [0x1, 0x02], "some message"])
-    def test_raw_message__get(self, value):
-        self.mock_uds_message_record._UdsMessageRecord__raw_message = value
-        assert UdsMessageRecord.raw_message.fget(self=self.mock_uds_message_record) is value
+    def test_payload__get(self, value):
+        self.mock_uds_message_record._UdsMessageRecord__payload = value
+        assert UdsMessageRecord.payload.fget(self=self.mock_uds_message_record) is value
 
-    def test_raw_message__set__first_call(self, example_raw_bytes):
-        UdsMessageRecord.raw_message.fset(self=self.mock_uds_message_record, value=example_raw_bytes)
-        assert self.mock_uds_message_record._UdsMessageRecord__raw_message == tuple(example_raw_bytes)
+    def test_payload__set__first_call(self, example_raw_bytes):
+        UdsMessageRecord.payload.fset(self=self.mock_uds_message_record, value=example_raw_bytes)
+        assert self.mock_uds_message_record._UdsMessageRecord__payload == tuple(example_raw_bytes)
         self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
 
     @pytest.mark.parametrize("old_value", [None, [0x1, 0x02], "some message"])
     @pytest.mark.parametrize("new_value", [None, [0x1, 0x02], "some message"])
-    def test_raw_message__set__second_call(self, old_value, new_value):
-        self.mock_uds_message_record._UdsMessageRecord__raw_message = old_value
+    def test_payload__set__second_call(self, old_value, new_value):
+        self.mock_uds_message_record._UdsMessageRecord__payload = old_value
         with pytest.raises(ReassignmentError):
-            UdsMessageRecord.raw_message.fset(self=self.mock_uds_message_record, value=new_value)
-        assert self.mock_uds_message_record._UdsMessageRecord__raw_message == old_value
+            UdsMessageRecord.payload.fset(self=self.mock_uds_message_record, value=new_value)
+        assert self.mock_uds_message_record._UdsMessageRecord__payload == old_value
         self.mock_validate_raw_bytes.assert_not_called()
 
     # packets_records
