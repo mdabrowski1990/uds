@@ -11,9 +11,10 @@ There were no security updates so far.
 
 
 ## Security Developers
-Our developers who are specially trained and qualified for dealing with security issues has special 
-`Security Developer` role assigned on our discord channel. 
-Additionally, can find below a full list of people that fulfills this role:
+We have a special `Security Developer` rank for developers who are specially trained and qualified for dealing 
+with security issues.
+
+The full list of developers with `Security Developers` rank:
 - [Maciej Dąbrowski](https://www.linkedin.com/in/maciej-dabrowski-test-engineer/)
 
 
@@ -22,5 +23,5 @@ If you have noticed any security vulnerabilities, you can report it via:
 - e-mail: [uds-package-development@googlegroups.com](mailto:uds-package-development@googlegroups.com)
 - discord: https://discord.gg/XYhJGeBg
 
-Please reach to at least one (preferable two) of our [Security Developers](#security-developers) if you have found an issue that must be 
-handled quietly.
+Please reach to at least one (preferable two) of our [Security Developers](#security-developers) if you have found 
+an issue that must be handled quietly.
