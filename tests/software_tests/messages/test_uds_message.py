@@ -104,17 +104,17 @@ class TestUdsMessageRecord:
         (Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord))
     ])
     def test_validate_packets_records__valid(self, value):
-        assert UdsMessageRecord._UdsMessageRecord__validate_packets_records(packets_records=value) is None
+        assert UdsMessageRecord._UdsMessageRecord__validate_packets_records(value=value) is None
 
     @pytest.mark.parametrize("value", [None, False, 0, Mock(spec=AbstractUdsPacketRecord)])
     def test_validate_packets_records__invalid_type(self, value):
         with pytest.raises(TypeError):
-            UdsMessageRecord._UdsMessageRecord__validate_packets_records(packets_records=value)
+            UdsMessageRecord._UdsMessageRecord__validate_packets_records(value=value)
 
     @pytest.mark.parametrize("value", [tuple(), [], ["a"], (None, ), (Mock(spec=AbstractUdsPacketRecord), "not N_PDU")])
     def test_validate_packets_records__invalid_value(self, value):
         with pytest.raises(ValueError):
-            UdsMessageRecord._UdsMessageRecord__validate_packets_records(packets_records=value)
+            UdsMessageRecord._UdsMessageRecord__validate_packets_records(value=value)
 
     # payload
 

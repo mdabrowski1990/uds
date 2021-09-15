@@ -1,9 +1,9 @@
 """
 Module with common implementation of all diagnostic messages (requests and responses).
 
-`Diagnostic messages <http://localhost:63342/uds/docs/build/html/pages/knowledge_base.html#diagnostic-message>`_
-are described on higher layers of `UDS OSI Model
-<http://localhost:63342/uds/docs/build/html/pages/knowledge_base.html#uds-osi-model>`_.
+`Diagnostic messages <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#diagnostic-message>`_
+are defined on higher layers of `UDS OSI Model
+<https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#uds-osi-model>`_.
 """
 
 __all__ = ["UdsMessage", "UdsMessageRecord"]
@@ -64,11 +64,11 @@ class UdsMessage:
 
 
 class UdsMessageRecord:
-    """Record of a historic diagnostic message that was either received or transmitted."""
+    """Record with a historic diagnostic message that was either received or transmitted."""
 
     def __init__(self, payload: RawBytes, packets_records: PacketsRecordsSequence) -> None:
         """
-        Create a record of a historic information about diagnostic message that was either received of transmitted.
+        Create a record of a historic information about a diagnostic message that was either received or transmitted.
 
         :param payload: Raw bytes of payload that this diagnostic message carried.
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
@@ -78,22 +78,22 @@ class UdsMessageRecord:
         self.packets_records = packets_records  # type: ignore
 
     @staticmethod
-    def __validate_packets_records(packets_records: PacketsRecordsSequence) -> None:
+    def __validate_packets_records(value: PacketsRecordsSequence) -> None:
         """
         Validate whether the argument contains UDS Packets records.
 
-        :param packets_records: Value to validate.
+        :param value: Value to validate.
 
         :raise TypeError: UDS Packet Records sequence is not list or tuple type.
         :raise ValueError: At least one of UDS Packet Records sequence elements is not an object of
             :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class.
         """
-        if not isinstance(packets_records, (tuple, list)):
-            raise TypeError(f"Provided value of 'packets_records' is not list or tuple type. "
-                            f"Actual type: {type(packets_records)}.")
-        if not packets_records or any(not isinstance(packet, AbstractUdsPacketRecord) for packet in packets_records):
-            raise ValueError(f"Provided value of 'packets_records' must contain only instances of "
-                             f"AbstractUdsPacketRecord class. Actual value: {packets_records}")
+        if not isinstance(value, (tuple, list)):
+            raise TypeError(f"Provided value is not list or tuple type. "
+                            f"Actual type: {type(value)}.")
+        if not value or any(not isinstance(element, AbstractUdsPacketRecord) for element in value):
+            raise ValueError(f"Provided value must contain only instances of AbstractUdsPacketRecord class. "
+                             f"Actual value: {value}.")
 
     @property
     def payload(self) -> RawBytesTuple:

@@ -1,4 +1,9 @@
-"""Common implementation of UDS packets for all bus types."""
+"""
+Module with common implementation of UDS packets for all bus types.
+
+`UDS Packets <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#uds-packet>`_ are defined on middle layers
+of `UDS OSI Model <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#uds-osi-model>`_.
+"""
 
 __all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketsRecordsTuple", "PacketsRecordsSequence",
@@ -29,7 +34,8 @@ class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
     """
     Abstract definition of UDS packet type.
 
-    Packet type information is carried by Network Protocol Control Information (N_PCI).
+    Packet type information is carried by `Network Protocol Control Information (N_PCI)
+    <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#network-protocol-control-information>`_.
     Enums with packet types (N_PCI) values for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
 
     Note: There are some differences in values for each bus (e.g. LIN does not use Flow Control).
@@ -37,7 +43,7 @@ class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
 
 
 class AbstractUdsPacket(ABC):
-    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU )."""
+    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
 
     def __init__(self, raw_data: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
@@ -91,12 +97,12 @@ class AbstractUdsPacket(ABC):
 
 
 class AbstractUdsPacketRecord(ABC):
-    """Abstract definition of a record that stores historic information about transmitted or received UDS packet."""
+    """Abstract definition of a record that stores historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
     def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:
         """
-        Create historic record of a packet that was either received of transmitted to a bus.
+        Create a record of a historic information about a packet that was either received or transmitted.
 
         :param frame: Frame that carried this UDS packet.
         :param direction: Information whether this packet was transmitted or received.
@@ -107,12 +113,12 @@ class AbstractUdsPacketRecord(ABC):
     @abstractmethod
     def __validate_frame(self, value: Any) -> None:
         """
-        Validate value of a frame before attribute assignment.
+        Validate whether the argument contains value with a frame object.
 
-        :param value: Frame value to validate.
+        :param value: Value to validate.
 
-        :raise TypeError: Frame has other type than expected.
-        :raise ValueError: Some values of a frame are not
+        :raise TypeError: The frame argument has other type than expected.
+        :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
         """
 
     @property
