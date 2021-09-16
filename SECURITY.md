@@ -23,6 +23,6 @@ If you have noticed any security vulnerability, you can report it via:
 - e-mail: [uds-package-development@googlegroups.com](mailto:uds-package-development@googlegroups.com)
 - discord: https://discord.gg/XYhJGeBg
 
-If you have found an issue that must be handled quietly, then please contact directly at least two of our 
-[Security Developers](#security-developers). It would help us to keep things quiet until the problem is officially 
-resolved.
+If you have found a safety critical issue that must be fixed quietly, then please contact directly at least 
+two of our [Security Developers](#security-developers).
+It would help us to keep things as quiet as possible until the problem is officially resolved.
