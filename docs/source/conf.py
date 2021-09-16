@@ -14,6 +14,10 @@
 # import sys
 # sys.path.insert(0, os.path.abspath("."))
 
+import os
+import sys
+sys.path.append(os.path.abspath('../..'))
+
 import re
 
 with open("../../uds/__init__.py", "r", encoding="utf-8") as init_file:
