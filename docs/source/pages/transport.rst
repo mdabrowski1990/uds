@@ -8,7 +8,7 @@ first two layers for CAN bus).
 
 .. toctree::
    :maxdepth: 1
-   :caption: Transport Interface for:
+   :caption: Transport Interface Implementations:
 
    transport/can.rst
    transport/ethernet.rst
