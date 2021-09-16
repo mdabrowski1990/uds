@@ -11,8 +11,8 @@ There were no security updates so far.
 
 
 ## Security Developers
-We have a special `Security Developer` rank for developers who are additionally trained and qualified for dealing 
-with security issues.
+We have a special `Security Developer` rank for developers who are trusted and trained to deal with security issues.
+Our intention is to highlight people with exceptional skills who can be relied upon.
 
 The full list of developers with `Security Developers` rank:
 - [Maciej Dąbrowski](https://www.linkedin.com/in/maciej-dabrowski-test-engineer/)
