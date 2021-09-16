@@ -11,7 +11,7 @@ There were no security updates so far.
 
 
 ## Security Developers
-We have a special `Security Developer` rank for developers who are specially trained and qualified for dealing 
+We have a special `Security Developer` rank for developers who are additionally trained and qualified for dealing 
 with security issues.
 
 The full list of developers with `Security Developers` rank:

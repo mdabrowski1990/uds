@@ -11,10 +11,10 @@ You should also `contact us <https://uds.readthedocs.io/en/latest/index.html#con
 
 Sponsoring
 ----------
-If you consider sponsoring the development team, please visit our `wiki page with detailed information for sponsors
+If you consider sponsoring our development team, please visit our `wiki page with detailed information for sponsors
 <https://github.com/mdabrowski1990/uds/wiki/Sponsoring>`_.
-We need your help and with some dose of it, we would be able to improve the quality of the code,
-speed up the development and provide more features. We also offer special treatment for all our sponsors.
+With a little help from you, we would be able to improve the quality of the code, speed up the development and
+provide more features. We also offer special treatment for all our sponsors.
 Please `contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_ for more details.
 
 
