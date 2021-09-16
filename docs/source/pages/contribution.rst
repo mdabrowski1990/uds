@@ -13,11 +13,11 @@ If you are looking for a contact information, you are going to find them in the
 
 Sponsoring
 ----------
-If you consider sponsoring the development, please visit our `wiki page with detailed information for sponsors
+If you consider sponsoring the development team, please visit our `wiki page with detailed information for sponsors
 <https://github.com/mdabrowski1990/uds/wiki/Sponsoring>`_.
 We need your help and with some dose of it, we would be able to improve the quality of the code,
-speed up the development and provide additional features. We also offer special treatment for all our sponsors.
-Please [contact us](https://github.com/mdabrowski1990/uds#contact) for more details.
+speed up the development and provide more features. We also offer special treatment for all our sponsors.
+Please `contact us <https://github.com/mdabrowski1990/uds#contact>`_ for more details.
 
 
 Reporting issues
