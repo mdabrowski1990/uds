@@ -7,35 +7,48 @@ Implementation of diagnostic messages and packets is located in :mod:`uds.messag
 UDS Message Implementation
 --------------------------
 Diagnostic messages implementation is divided into two parts:
- - `UDS Message Definition`_ - temporary definition a diagnostic message that (for instance) can be transmitted
- - `UDS Message Record`_ - storage for historic information of a diagnostic message that was either received
+ - `UdsMessage`_ - temporary definition a diagnostic message that (for instance) can be transmitted
+ - `UdsMessageRecord`_ - storage for historic information of a diagnostic message that was either received
    or transmitted
 
 
-UDS Message Definition
-``````````````````````
-.. autoclass:: uds.messages.uds_message.UdsMessage
-   :noindex:
-   :members:
-   :special-members: __init__
+UdsMessage
+```````````
+:class:`~uds.messages.uds_message.UdsMessage` class is meant to provide containers for diagnostic messages information.
+Once a diagnostic message object is created, it stores diagnostic message data that were provided by a user.
+One can use these objects to execute complex operations such as diagnostic messages transmission or segmentation.
+
+All :class:`~uds.messages.uds_message.UdsMessage` attributes (:attr:`~uds.messages.uds_message.UdsMessage.payload`,
+:attr:`~uds.messages.uds_message.UdsMessage.addressing`) are **validated on each value change** (a user will face
+an exception if one tries to set an invalid value to of these attributes).
 
 
-Example use case:
+Example code:
 
 .. code-block::  python
 
    from uds.messages import UdsMessage, AddressingType
 
+   # example how to create an object
    uds_message = UdsMessage(payload=[0x10, 0x03], addressing=AddressingType.PHYSICAL)
 
+   # raw message attribute
+   print(uds_message.payload)
+   uds_message.payload = (0x3E, 0x00)
+   print(uds_message.payload)
+   uds_message.payload = [0x54]
+   print(uds_message.payload)
+
+   # addressing attribute
+   print(uds_message.addressing)
+   uds_message.addressing = AddressingType.FUNCTIONAL
+   print(uds_message.addressing)
+   uds_message.addressing = AddressingType.PHYSICAL.value
+   print(uds_message.addressing)
 
 
-
-UDS Message Record
-``````````````````
-.. autoclass:: uds.messages.uds_message.UdsMessageRecord
-   :noindex:
-   :members:
+UdsMessageRecord
+````````````````
 
 
 
@@ -43,19 +56,11 @@ UDS Packet Implementation
 --------------------------
 
 
-UDS Packet Definition
-`````````````````````
-.. autoclass:: uds.messages.uds_packet.AbstractUdsPacket
-   :noindex:
-
+UDS Packet
 
 
 UDS Packet Record
 `````````````````
-.. autoclass:: uds.messages.uds_packet.AbstractUdsPacketRecord
-   :noindex:
-
-
 
 
 
@@ -64,18 +69,13 @@ UDS Messages Data
 
 Service Identifiers
 ```````````````````
-.. autoclass:: uds.messages.service_identifiers.RequestSID
-   :noindex:
 
 
-.. autoclass:: uds.messages.service_identifiers.ResponseSID
-   :noindex:
+
 
 
 Negative Response Codes
 ```````````````````````
-.. autoclass:: uds.messages.nrc.NRC
-   :noindex:
 
 
 Transmission Attributes
@@ -84,14 +84,12 @@ Transmission Attributes
 
 Addressing
 ``````````
-.. autoclass:: uds.messages.transmission_attributes.AddressingType
-   :noindex:
+
 
 
 Transmission Direction
 ``````````````````````
-.. autoclass:: uds.messages.transmission_attributes.TransmissionDirection
-   :noindex:
+
 
 
 .. role:: python(code)
