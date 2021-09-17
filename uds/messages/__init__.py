@@ -1,5 +1,5 @@
 """
-A subpackage with tools to handle UDS messages.
+A subpackage with tools for handling diagnostic messages.
 
 It provides tools for:
  - creating new diagnostic messages

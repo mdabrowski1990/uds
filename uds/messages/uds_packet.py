@@ -97,7 +97,7 @@ class AbstractUdsPacket(ABC):
 
 
 class AbstractUdsPacketRecord(ABC):
-    """Abstract definition of a record that stores historic information about transmitted or received UDS Packet."""
+    """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
     def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:

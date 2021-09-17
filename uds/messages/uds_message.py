@@ -64,7 +64,7 @@ class UdsMessage:
 
 
 class UdsMessageRecord:
-    """Record with a historic diagnostic message that was either received or transmitted."""
+    """Storage for historic information of a diagnostic message that was either received or transmitted."""
 
     def __init__(self, payload: RawBytes, packets_records: PacketsRecordsSequence) -> None:
         """

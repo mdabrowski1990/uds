@@ -1,23 +1,34 @@
 Diagnostic Messages
 ===================
+Implementation of diagnostic messages and packets is located in :mod:`uds.messages` sub-package.
 
-
-Implementation of `diagnostic messages
-<http://localhost:63342/uds/docs/build/html/pages/knowledge_base.html#diagnostic-message>`_.
-implementation is located in :mod:`~uds.messages` sub-package.
 
 
 UDS Message Implementation
 --------------------------
-Diagnostic Messages
+Diagnostic messages implementation is divided into two parts:
+ - `UDS Message Definition`_ - temporary definition a diagnostic message that (for instance) can be transmitted
+ - `UDS Message Record`_ - storage for historic information of a diagnostic message that was either received
+   or transmitted
+
 
 UDS Message Definition
 ``````````````````````
-:class:`~uds.messages.uds_message.UdsMessage`
-
 .. autoclass:: uds.messages.uds_message.UdsMessage
    :noindex:
    :members:
+   :special-members: __init__
+
+
+Example use case:
+
+.. code-block::  python
+
+   from uds.messages import UdsMessage, AddressingType
+
+   uds_message = UdsMessage(payload=[0x10, 0x03], addressing=AddressingType.PHYSICAL)
+
+
 
 
 UDS Message Record
@@ -81,3 +92,7 @@ Transmission Direction
 ``````````````````````
 .. autoclass:: uds.messages.transmission_attributes.TransmissionDirection
    :noindex:
+
+
+.. role:: python(code)
+    :language: python
