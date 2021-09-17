@@ -1,4 +1,15 @@
-"""Subpackage with tools to handle UDS messages."""
+"""
+A subpackage with tools to handle UDS messages.
+
+It provides tools for:
+ - creating new diagnostic messages
+ - storing historic information about diagnostic messages that were either received or transmitted
+ - creating new packets
+ - storing historic information about packets that were either received or transmitted
+ - Service Identifiers (SID) definition
+ - Negative Response Codes (NRC) definition
+ - addressing types definition
+"""
 
 from .uds_packet import AbstractPacketType, AbstractUdsPacket, AbstractUdsPacketRecord, get_raw_packet_type
 from .uds_message import UdsMessage, UdsMessageRecord

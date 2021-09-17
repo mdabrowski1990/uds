@@ -40,9 +40,12 @@ release = full_version
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = ["sphinx.ext.autodoc",
-              "autoapi.extension"]
+              "autoapi.extension",
+              "sphinx.ext.viewcode"]
 
 autodoc_typehints = "description"
+autodoc_typehints_description_target = "all"
+
 
 autoapi_type = "python"
 autoapi_dirs = ["../../uds"]
@@ -51,6 +54,8 @@ autoapi_generate_api_docs = True
 autoapi_options = ["members", "private-members", "special-members", "undoc-members",
                    "show-inheritance", "show-inheritance-diagram", "show-module-summary"]
 autoapi_python_class_content = "both"
+
+viewcode_follow_imported_members = True
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -79,7 +84,7 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = []
 
 
 def setup(app):
