@@ -72,7 +72,7 @@ Packets implementation is divided into three parts:
 
 UdsPacketType
 `````````````
-Currently implemented UDS packet types:
+Currently implemented UDS packet type classes:
  - `AbstractUdsPacketType`_
 
 AbstractUdsPacketType
@@ -80,7 +80,7 @@ AbstractUdsPacketType
 
 UdsPacket
 `````````
-Currently implemented UDS packets:
+Currently implemented UDS packet classes:
  - `AbstractUdsPacket`_
 
 AbstractUdsPacket
@@ -89,8 +89,8 @@ AbstractUdsPacket
 
 UdsPacketRecord
 ```````````````
-Currently implemented UDS packets:
- - `AbstractUdsPacket`_
+Currently implemented UDS packet record classes:
+ - `AbstractUdsPacketRecord`_
 
 AbstractUdsPacketRecord
 '''''''''''''''''''''''
@@ -100,28 +100,35 @@ AbstractUdsPacketRecord
 UDS Messages Data
 -----------------
 
-Service Identifiers
-```````````````````
+
+POSSIBLE_REQUEST_SIDS
+`````````````````````
+
+RequestSID
+``````````
+
+POSSIBLE_RESPONSE_SIDS
+``````````````````````
+
+ResponseSID
+```````````
 
 
-
-
-
-Negative Response Codes
-```````````````````````
+NRC
+```
 
 
 Transmission Attributes
 -----------------------
 
 
-Addressing
-``````````
+AddressingType
+``````````````
 
 
 
-Transmission Direction
-``````````````````````
+TransmissionDirection
+`````````````````````
 
 
 
