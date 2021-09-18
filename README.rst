@@ -50,10 +50,6 @@ UDS
    :target: https://lbesson.mit-license.org/
    :alt: License
 
-.. image:: https://img.shields.io/discord/885797700652638301.svg?color=7289da&label=UDS%20Package%20Development&logo=discord&style=flat-square
-   :target: https://discord.gg/XYhJGeBg
-   :alt: Discord Server
-
 
 Python package for handling `Unified Diagnostic Services`_ (UDS_) protocol defined by ISO 14229.
 It supports different communication buses on both communication sides (client and server).
