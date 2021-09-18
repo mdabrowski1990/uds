@@ -16,9 +16,9 @@ _RESPONSE_SIDS_DEFINED_BY_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC
 
 # all supported SID values according to UDS
 POSSIBLE_REQUEST_SIDS: RawBytesSet = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
-"""Set with all possible values of Request SID byte according to SAE J1979 and ISO 14229 standards."""
+"""Set with all possible values of Request SID data parameter according to SAE J1979 and ISO 14229 standards."""
 POSSIBLE_RESPONSE_SIDS: RawBytesSet = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
-"""Set with all possible values of Response SID byte according to SAE J1979 and ISO 14229 standards."""
+"""Set with all possible values of Response SID data parameter according to SAE J1979 and ISO 14229 standards."""
 
 
 class UnrecognizedSIDWarning(Warning):
@@ -26,10 +26,9 @@ class UnrecognizedSIDWarning(Warning):
     Warning about SID value that is legit but not recognized by the package.
 
     If you want to register a SID value, you need to define members (for this SID) manually using
-    :meth:`~uds.messages.service_identifiers.RequestSID.add_member`
-    (on :class:`~uds.messages.service_identifiers.RequestSID` class) and
-    :meth:`~uds.messages.service_identifiers.ResponseSID.add_member`
-    (on :class:`~uds.messages.service_identifiers.ResponseSID` class) methods.
+    :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
+    (on :class:`~uds.messages.service_identifiers.RequestSID` and
+    :class:`~uds.messages.service_identifiers.ResponseSID` classes) method.
     You can also create feature request in the UDS project `issues management system
     <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register the SID value (for which this warning
     was raised).

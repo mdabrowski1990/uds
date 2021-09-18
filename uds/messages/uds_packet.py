@@ -33,8 +33,7 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
     """
     Abstract definition of UDS packet type.
 
-    Packet type information is carried by `Network Protocol Control Information (N_PCI)
-    <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#network-protocol-control-information>`_.
+    Packet type information is carried by Network Protocol Control Information (N_PCI).
     Enums with packet types (N_PCI) values for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
 
     Note: There are some differences in values for each bus (e.g. LIN does not use Flow Control).
