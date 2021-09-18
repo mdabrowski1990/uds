@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from uds.messages.uds_packet import AbstractUdsPacket, AbstractPacketType, AbstractUdsPacketRecord, get_raw_packet_type, \
+from uds.messages.uds_packet import AbstractUdsPacket, AbstractUdsPacketType, AbstractUdsPacketRecord, get_raw_packet_type, \
     AddressingType, NibbleEnum, ValidatedEnum, ExtendableEnum, TransmissionDirection, ReassignmentError
 
 
@@ -22,13 +22,13 @@ class TestAbstractPacketType:
     """Tests for 'AbstractPacketType' class."""
 
     def test_inheritance__nibble_enum(self):
-        assert issubclass(AbstractPacketType, NibbleEnum)
+        assert issubclass(AbstractUdsPacketType, NibbleEnum)
 
     def test_inheritance__validated_enum(self):
-        assert issubclass(AbstractPacketType, ValidatedEnum)
+        assert issubclass(AbstractUdsPacketType, ValidatedEnum)
 
     def test_inheritance__extendable_enum(self):
-        assert issubclass(AbstractPacketType, ExtendableEnum)
+        assert issubclass(AbstractUdsPacketType, ExtendableEnum)
 
 
 class TestAbstractUdsPacket:

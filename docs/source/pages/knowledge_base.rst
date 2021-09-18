@@ -60,7 +60,7 @@ UDS OSI Model
 | Transport    |                                |                                           |                                                                             |
 |              | - ISO 15765-2                  | - creating                                | - AbstractUdsPacketRecord                                                   |
 |              |                                | - storing historic data                   |                                                                             |
-|              |                                |                                           | - AbstractPacketType                                                        |
+|              |                                |                                           | - AbstractUdsPacketType                                                     |
 |              | FlexRay specific:              | - support for bus specific packets        |                                                                             |
 |              |                                |                                           |                                                                             |
 |              | - 10681-2                      |                                           |                                                                             |

@@ -5,7 +5,7 @@ Module with common implementation of UDS packets for all bus types.
 of `UDS OSI Model <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#uds-osi-model>`_.
 """
 
-__all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
+__all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketsRecordsTuple", "PacketsRecordsSequence",
            "get_raw_packet_type"]
 
@@ -30,7 +30,7 @@ def get_raw_packet_type(packet_raw_data: RawBytes) -> RawByte:
     return (packet_raw_data[0] >> 4) & 0xF  # TODO: make sure that this is valid for all bus types
 
 
-class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
+class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
     """
     Abstract definition of UDS packet type.
 
@@ -91,7 +91,7 @@ class AbstractUdsPacket(ABC):
         """Get enum with possible UDS packet types."""
 
     @property  # noqa: F841
-    def packet_type(self) -> AbstractPacketType:
+    def packet_type(self) -> AbstractUdsPacketType:
         """Type of UDS packet - N_PCI value of this N_PDU."""
         return self.packet_type_enum(get_raw_packet_type(self.raw_data))
 
@@ -186,7 +186,7 @@ class AbstractUdsPacketRecord(ABC):
         """Get enum with possible UDS packet types."""
 
     @property  # noqa: F841
-    def packet_type(self) -> AbstractPacketType:
+    def packet_type(self) -> AbstractUdsPacketType:
         """Type of UDS packet - N_PCI value carried by this N_PDU."""
         return self.packet_type_enum(get_raw_packet_type(self.raw_data))
 

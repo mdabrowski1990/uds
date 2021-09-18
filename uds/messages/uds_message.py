@@ -8,6 +8,8 @@ are defined on higher layers of `UDS OSI Model
 
 __all__ = ["UdsMessage", "UdsMessageRecord"]
 
+from typing import Any
+
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
 from .transmission_attributes import AddressingType, AddressingMemberTyping, TransmissionDirection
 from .uds_packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
@@ -78,7 +80,7 @@ class UdsMessageRecord:
         self.packets_records = packets_records  # type: ignore
 
     @staticmethod
-    def __validate_packets_records(value: PacketsRecordsSequence) -> None:
+    def __validate_packets_records(value: Any) -> None:
         """
         Validate whether the argument contains UDS Packets records.
 
