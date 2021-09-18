@@ -21,7 +21,7 @@ sys.path.append(os.path.abspath('../..'))
 import re
 
 with open("../../uds/__init__.py", "r", encoding="utf-8") as init_file:
-    full_version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
+    full_version_str = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
 
 
 # -- Project information -----------------------------------------------------
@@ -31,7 +31,7 @@ copyright = u"2021, Maciej Dąbrowski"
 author = u"Maciej Dąbrowski"
 
 # The full version, including alpha/beta/rc tags
-release = full_version
+release = full_version_str
 
 
 # -- General configuration ---------------------------------------------------

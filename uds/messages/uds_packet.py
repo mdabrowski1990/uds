@@ -1,8 +1,7 @@
 """
 Module with common implementation of UDS packets for all bus types.
 
-`UDS Packets <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#uds-packet>`_ are defined on middle layers
-of `UDS OSI Model <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#uds-osi-model>`_.
+UDS Packets are defined on middle layers of UDS OSI Model.
 """
 
 __all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",

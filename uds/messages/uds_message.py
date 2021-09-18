@@ -1,9 +1,7 @@
 """
 Module with common implementation of all diagnostic messages (requests and responses).
 
-`Diagnostic messages <https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#diagnostic-message>`_
-are defined on higher layers of `UDS OSI Model
-<https://uds.readthedocs.io/en/latest/pages/knowledge_base.html#uds-osi-model>`_.
+Diagnostic messages are defined on higher layers of UDS OSI Model.
 """
 
 __all__ = ["UdsMessage", "UdsMessageRecord"]
