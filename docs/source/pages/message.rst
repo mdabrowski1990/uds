@@ -6,12 +6,12 @@ Implementation related to diagnostic messages and packets is located in :mod:`ud
 UDS Message Implementation
 --------------------------
 Diagnostic messages implementation is divided into two parts:
- - `UdsMessage`_ - storage for a temporary diagnostic message definition on the user side
- - `UdsMessageRecord`_ - storage for historic information of a diagnostic message that was either received
+ - `UDS Message`_ - storage for a temporary diagnostic message definition on the user side
+ - `UDS Message Record`_ - storage for historic information of a diagnostic message that was either received
    or transmitted
 
 
-UdsMessage
+UDS Message
 ```````````
 :class:`~uds.messages.uds_message.UdsMessage` class is meant to provide containers for diagnostic messages information.
 Once a diagnostic message object is created, it stores diagnostic message data that were provided by a user.
@@ -50,12 +50,12 @@ Example code:
    print(uds_message.addressing)
 
 
-UdsMessageRecord
-````````````````
+UDS Message Record
+``````````````````
 :class:`~uds.messages.uds_message.UdsMessageRecord` class is meant to provide container for historic information
 of diagnostic messages that were either transmitted or received.
 A **user shall not create objects of this class** in normal cases, but one would probably use them quite often as they
-are returned by other layers of this package.
+are returned by other layers of :mod:`uds` package.
 
 All :class:`~uds.messages.uds_message.UdsMessageRecord` **attributes are read only** (they are set only once upon
 an object creation) as they store historic data and history cannot be changed (*can't it, right?*).
@@ -73,24 +73,25 @@ Attributes implemented in :class:`~uds.messages.uds_message.UdsMessageRecord` cl
 UDS Packet Implementation
 --------------------------
 Packets implementation is divided into three parts:
- - `UdsPacketType`_ - Network Protocol Control Information (N_PCI) values implementation
- - `UdsPacket`_ - storage for a temporary Network Protocol Data Unit (N_PDU) definition on the user side
- - `UdsPacketRecord`_ - storage for historic information of a Network Protocol Data Unit (N_PDU) that was either
+ - `UDS Packet Type`_ - enums with Network Protocol Control Information (N_PCI) values definitions
+ - `UDS Packet`_ - storages for a temporary Network Protocol Data Unit (N_PDU) definition on the user side
+ - `UDS Packet Record`_ - storages for historic information of a Network Protocol Data Unit (N_PDU) that was either
    received or transmitted
 
 
-UdsPacketType
-`````````````
+UDS Packet Type
+```````````````
 UDS packet types are supposed to be understood as values of Network Protocol Control Information (N_PCI).
 Supported values of UDS packet types are defined in specially designed for this purpose enum classes.
 
 Enum classes that implements UDS packet types:
  - `AbstractUdsPacketType`_
 
+
 AbstractUdsPacketType
 '''''''''''''''''''''
 :class:`~uds.messages.uds_packet.AbstractUdsPacketType` class is an empty enum that is a parent class for all concrete
-UDS packet types enum classes. It **provides common interface and value restriction** (UDS packet type value must be
+UDS packet types enum classes. It **provides common API and values restriction** (UDS packet type values must be
 4-bit integer) **for all children classes**.
 
 A **user shall not use** :class:`~uds.messages.uds_packet.AbstractUdsPacketType` **directly**, but one is able
@@ -103,8 +104,8 @@ Methods implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketType` c
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
 
-UdsPacket
-`````````
+UDS Packet
+``````````
 UDS packet is supposed to be understood as Network Protocol Data Unit (N_PDU).
 
 UDS packets **differs for each communication bus**, therefore **multiple classes implementing them are defined**.
@@ -115,6 +116,7 @@ packets transmission or desegmentation.
 
 Implemented UDS packet classes:
  - `AbstractUdsPacket`_
+
 
 AbstractUdsPacket
 '''''''''''''''''
@@ -132,17 +134,18 @@ Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacket` cl
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.packet_type_enum` - readable and abstract (bus specific)
 
 
-UdsPacketRecord
-```````````````
+UDS Packet Record
+`````````````````
 UDS packet record is a container that stores historic information of UDS packet (N_PDU) that was either received
 or transmitted.
 UDS packets **differs for each communication bus**, therefore **multiple classes implementing UDS packet records are defined**.
 
 A **user shall not create objects of UDS packet record classes** in normal cases, but one would probably use them quite
-often as they are returned by other layers of this package.
+often as they are returned by other layers of :mod:`uds` package.
 
 Implemented UDS packet record classes:
  - `AbstractUdsPacketRecord`_
+
 
 AbstractUdsPacketRecord
 '''''''''''''''''''''''
@@ -165,30 +168,35 @@ Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketReco
 
 UDS Messages Data
 -----------------
-UDS message data values that are specified by UDS standards and remain the same for all buses, are listed below:
- - Service Identifiers implementation:
+Implementation of data parameters that are defined by UDS specification.
 
-   - `POSSIBLE_REQUEST_SIDS`_ - all possible Service Identifier values in a request message
+UDS data parameters:
+ - `Service Identifiers`_ - are implemented by:
 
-   - `RequestSID`_ - enum with request Service Identifier values
+   - `POSSIBLE_REQUEST_SIDS`_
 
-   - `POSSIBLE_RESPONSE_SIDS`_ - all possible Service Identifier values in a response message
+   - `RequestSID`_
 
-   - `ResponseSID`_ - enum with response Service Identifier values
+   - `POSSIBLE_RESPONSE_SIDS`_
 
- - Negative Response Codes implementation:
+   - `ResponseSID`_
 
-   - `NRC`_ - enum with all common Negative Response Codes
+ - `Negative Response Codes`_
+
+
+Service Identifiers
+```````````````````
 
 
 POSSIBLE_REQUEST_SIDS
-`````````````````````
-:attr:`~uds.messages.service_identifiers.POSSIBLE_REQUEST_SIDS` is a set with all possible values of SID byte in
-a request message.
+'''''''''''''''''''''
+:attr:`~uds.messages.service_identifiers.POSSIBLE_REQUEST_SIDS` is a set with all possible values of Service Identifier
+data parameter in a request message.
+
 
 RequestSID
-``````````
-Enum :class:`~uds.messages.service_identifiers.RequestSID` contains definitions of request Service Identifiers.
+''''''''''
+Enum :class:`~uds.messages.service_identifiers.RequestSID` contains definitions of request Service Identifiers values.
 
 Methods implemented in :class:`~uds.messages.service_identifiers.RequestSID` class:
  - :meth:`~uds.messages.service_identifiers.RequestSID.is_request_sid`
@@ -196,14 +204,16 @@ Methods implemented in :class:`~uds.messages.service_identifiers.RequestSID` cla
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
+
 POSSIBLE_RESPONSE_SIDS
-``````````````````````
-:attr:`~uds.messages.service_identifiers.POSSIBLE_RESPONSE_SIDS` is a set with all possible values of SID byte in
-a response message.
+''''''''''''''''''''''
+:attr:`~uds.messages.service_identifiers.POSSIBLE_RESPONSE_SIDS` is a set with all possible values of Service Identifier
+data parameter in a response message.
+
 
 ResponseSID
-```````````
-Enum :class:`~uds.messages.service_identifiers.ResponseSID` contains definitions of response Service Identifiers.
+'''''''''''
+Enum :class:`~uds.messages.service_identifiers.ResponseSID` contains definitions of response Service Identifiers values.
 
 Methods implemented in :class:`~uds.messages.service_identifiers.ResponseSID` class:
  - :meth:`~uds.messages.service_identifiers.ResponseSID.is_response_sid`
@@ -211,9 +221,11 @@ Methods implemented in :class:`~uds.messages.service_identifiers.ResponseSID` cl
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
-NRC
-```
-Enum :class:`~uds.messages.nrc.NRC` contains definitions of all common Negative Response Codes.
+
+Negative Response Codes
+```````````````````````
+Enum :class:`~uds.messages.nrc.NRC` contains definitions of all common (defined by ISO 14229) Negative Response Codes
+values.
 
 Methods implemented in :class:`~uds.messages.nrc.NRC` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
@@ -223,13 +235,13 @@ Methods implemented in :class:`~uds.messages.nrc.NRC` class:
 
 Transmission Attributes
 -----------------------
-To unify description of communication
- - AddressingType_ - enum with UDS communication models
- - TransmissionDirection_ - enum with communication directions
+Attributes that describes UDS communication:
+ - Addressing_ - enum with UDS communication models
+ - `Transmission Direction`_ - enum with communication directions
 
 
-AddressingType
-``````````````
+Addressing
+``````````
 Enum :class:`~uds.messages.transmission_attributes.AddressingType` contains definitions of UDS communication models:
  - :attr:`~uds.messages.transmission_attributes.AddressingType.PHYSICAL` - direct one to one communication
  - :attr:`~uds.messages.transmission_attributes.AddressingType.FUNCTIONAL` - one to many communication
@@ -239,11 +251,11 @@ Methods implemented in :class:`~uds.messages.transmission_attributes.AddressingT
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
 
 
-TransmissionDirection
-`````````````````````
+Transmission Direction
+``````````````````````
 Enum :class:`~uds.messages.transmission_attributes.TransmissionDirection` contains definitions of communication directions:
- - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.RECEIVED`
- - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.TRANSMITTED`
+ - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.RECEIVED` - incoming
+ - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.TRANSMITTED` - outcoming
 
 Methods implemented in :class:`~uds.messages.transmission_attributes.TransmissionDirection` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
