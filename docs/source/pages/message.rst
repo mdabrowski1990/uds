@@ -21,7 +21,7 @@ transmission or segmentation.
 All :class:`~uds.messages.uds_message.UdsMessage` **attributes are validated on each value change**, therefore a user will
 face an exception if one tries to set an invalid (incompatible with the annotation) value to of these attributes.
 
-Attributes provided by :class:`~uds.messages.uds_message.UdsMessage` class:
+Attributes implemented in :class:`~uds.messages.uds_message.UdsMessage` class:
  - :attr:`~uds.messages.uds_message.UdsMessage.payload` - settable
  - :attr:`~uds.messages.uds_message.UdsMessage.addressing` - settable
 
@@ -61,7 +61,7 @@ All :class:`~uds.messages.uds_message.UdsMessageRecord` **attributes are read on
 an object creation) as they store historic data and history cannot be changed (*can't it, right?*).
 A user will face an exception if one tries to modify any attribute.
 
-Attributes provided by :class:`~uds.messages.uds_message.UdsMessageRecord` class:
+Attributes implemented in :class:`~uds.messages.uds_message.UdsMessageRecord` class:
  - :attr:`~uds.messages.uds_message.UdsMessageRecord.payload` - readable
  - :attr:`~uds.messages.uds_message.UdsMessageRecord.addressing` - readable
  - :attr:`~uds.messages.uds_message.UdsMessageRecord.direction` - readable
@@ -97,7 +97,7 @@ A **user shall not use** :class:`~uds.messages.uds_packet.AbstractUdsPacketType`
 (and encouraged) to use :class:`~uds.messages.uds_packet.AbstractUdsPacketType` implementation with any of its
 children classes.
 
-Methods provided by :class:`~uds.messages.uds_packet.AbstractUdsPacketType` class:
+Methods implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketType` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
@@ -125,7 +125,7 @@ A **user shall not use** :class:`~uds.messages.uds_packet.AbstractUdsPacket` **d
 (and encouraged) to use :class:`~uds.messages.uds_packet.AbstractUdsPacket` implementation with any of its
 children classes.
 
-Properties provided by :class:`~uds.messages.uds_packet.AbstractUdsPacket` class:
+Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacket` class:
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.raw_data` - settable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.addressing` - settable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.packet_type` - readable
@@ -153,7 +153,7 @@ A **user shall not use** :class:`~uds.messages.uds_packet.AbstractUdsPacketRecor
 (and encouraged) to use :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` implementation with any of its
 children classes.
 
-Properties provided by :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class:
+Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class:
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.frame` - readable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.direction` - readable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.packet_type` - readable
@@ -190,7 +190,7 @@ RequestSID
 ``````````
 Enum :class:`~uds.messages.service_identifiers.RequestSID` contains definitions of request Service Identifiers.
 
-Methods provided in :class:`~uds.messages.service_identifiers.RequestSID` class:
+Methods implemented in :class:`~uds.messages.service_identifiers.RequestSID` class:
  - :meth:`~uds.messages.service_identifiers.RequestSID.is_request_sid`
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
@@ -205,7 +205,7 @@ ResponseSID
 ```````````
 Enum :class:`~uds.messages.service_identifiers.ResponseSID` contains definitions of response Service Identifiers.
 
-Methods provided in :class:`~uds.messages.service_identifiers.ResponseSID` class:
+Methods implemented in :class:`~uds.messages.service_identifiers.ResponseSID` class:
  - :meth:`~uds.messages.service_identifiers.ResponseSID.is_response_sid`
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
@@ -215,7 +215,7 @@ NRC
 ```
 Enum :class:`~uds.messages.nrc.NRC` contains definitions of all common Negative Response Codes.
 
-Methods provided in :class:`~uds.messages.nrc.NRC` class:
+Methods implemented in :class:`~uds.messages.nrc.NRC` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
@@ -223,16 +223,31 @@ Methods provided in :class:`~uds.messages.nrc.NRC` class:
 
 Transmission Attributes
 -----------------------
+To unify description of communication
+ - AddressingType_ - enum with UDS communication models
+ - TransmissionDirection_ - enum with communication directions
 
 
 AddressingType
 ``````````````
+Enum :class:`~uds.messages.transmission_attributes.AddressingType` contains definitions of UDS communication models:
+ - :attr:`~uds.messages.transmission_attributes.AddressingType.PHYSICAL` - direct one to one communication
+ - :attr:`~uds.messages.transmission_attributes.AddressingType.FUNCTIONAL` - one to many communication
 
+Methods implemented in :class:`~uds.messages.transmission_attributes.AddressingType` class:
+ - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+ - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
 
 
 TransmissionDirection
 `````````````````````
+Enum :class:`~uds.messages.transmission_attributes.TransmissionDirection` contains definitions of communication directions:
+ - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.RECEIVED`
+ - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.TRANSMITTED`
 
+Methods implemented in :class:`~uds.messages.transmission_attributes.TransmissionDirection` class:
+ - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+ - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
 
 
 .. role:: python(code)
