@@ -20,6 +20,9 @@ pylint:
     max-attributes: 15
     min-public-methods: 1
 
+  disable:
+    - django-not-available
+
 pyflakes:
   disable:
     - F401
