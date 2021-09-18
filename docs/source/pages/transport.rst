@@ -6,36 +6,14 @@ usually handled by external packages (e.g. `python-can <https://python-can.readt
 first two layers for CAN bus).
 
 
-CAN
----
-`CAN FEATURE <https://github.com/mdabrowski1990/uds/milestone/3>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
-THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
+.. toctree::
+   :maxdepth: 1
+   :caption: Transport Interface Implementations:
 
+   transport/can.rst
+   transport/ethernet.rst
+   transport/lin.rst
+   transport/flexray.rst
+   transport/kline.rst
+   transport/custom.rst
 
-Ethernet
---------
-`Ethernet FEATURE <https://github.com/mdabrowski1990/uds/milestone/5>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
-THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
-
-
-LIN
----
-`LIN FEATURE <https://github.com/mdabrowski1990/uds/milestone/4>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
-THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
-
-
-FlexRay
--------
-`FlexRay FEATURE <https://github.com/mdabrowski1990/uds/milestone/9>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
-THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
-
-
-K-Line
-------
-`K-Line FEATURE <https://github.com/mdabrowski1990/uds/milestone/10>`_ IS PLANNED BUT NOT IMPLEMENTED YET,
-THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
-
-
-Custom
-------
-THIS FEATURE IS PLANNED BUT NOT IMPLEMENTED YET, THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.

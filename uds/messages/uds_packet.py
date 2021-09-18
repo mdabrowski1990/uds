@@ -1,9 +1,15 @@
-"""Common implementation of UDS packets for all bus types."""
+"""
+Module with common implementation of UDS packets for all bus types.
 
-__all__ = ["AbstractPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord", "get_raw_packet_type"]
+UDS Packets are defined on middle layers of UDS OSI Model.
+"""
+
+__all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
+           "PacketsRecordsTuple", "PacketsRecordsSequence",
+           "get_raw_packet_type"]
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Union, Tuple, List, Any
 
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawByte, RawBytes, RawBytesTuple, validate_raw_bytes,\
@@ -23,7 +29,7 @@ def get_raw_packet_type(packet_raw_data: RawBytes) -> RawByte:
     return (packet_raw_data[0] >> 4) & 0xF  # TODO: make sure that this is valid for all bus types
 
 
-class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
+class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
     """
     Abstract definition of UDS packet type.
 
@@ -35,7 +41,7 @@ class AbstractPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
 
 
 class AbstractUdsPacket(ABC):
-    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU )."""
+    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
 
     def __init__(self, raw_data: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
@@ -83,18 +89,18 @@ class AbstractUdsPacket(ABC):
         """Get enum with possible UDS packet types."""
 
     @property  # noqa: F841
-    def packet_type(self) -> AbstractPacketType:
+    def packet_type(self) -> AbstractUdsPacketType:
         """Type of UDS packet - N_PCI value of this N_PDU."""
         return self.packet_type_enum(get_raw_packet_type(self.raw_data))
 
 
 class AbstractUdsPacketRecord(ABC):
-    """Abstract definition of a record that stores historic information about transmitted or received UDS packet."""
+    """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
     def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:
         """
-        Create historic record of a packet that was either received of transmitted to a bus.
+        Create a record of a historic information about a packet that was either received or transmitted.
 
         :param frame: Frame that carried this UDS packet.
         :param direction: Information whether this packet was transmitted or received.
@@ -105,12 +111,12 @@ class AbstractUdsPacketRecord(ABC):
     @abstractmethod
     def __validate_frame(self, value: Any) -> None:
         """
-        Validate value of a frame before attribute assignment.
+        Validate whether the argument contains value with a frame object.
 
-        :param value: Frame value to validate.
+        :param value: Value to validate.
 
-        :raise TypeError: Frame has other type than expected.
-        :raise ValueError: Some values of a frame are not
+        :raise TypeError: The frame argument has other type than expected.
+        :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
         """
 
     @property
@@ -178,6 +184,12 @@ class AbstractUdsPacketRecord(ABC):
         """Get enum with possible UDS packet types."""
 
     @property  # noqa: F841
-    def packet_type(self) -> AbstractPacketType:
+    def packet_type(self) -> AbstractUdsPacketType:
         """Type of UDS packet - N_PCI value carried by this N_PDU."""
         return self.packet_type_enum(get_raw_packet_type(self.raw_data))
+
+
+PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
+"""Typing alias of a tuple filled with UDS Packets."""
+PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
+"""Typing alias of a sequence filled with UDS Packets."""

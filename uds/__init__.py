@@ -3,13 +3,18 @@
 """
 Package for handling Unified Diagnostic Services (UDS) protocol defined by ISO-14229.
 
-The package is meant to provide tools to handle following UDS protocol layers (according to OSI model):
- - Session (5th) - specified by ISO 14229-2
- - Presentation (6th) - some part is specified by ISO 27145-2, rest is vehicle manufacturer specific
- - Application (7th) - specified by ISO 14229-1, ISO 14229-3, ISO 14229-4, ISO 14229-5, ISO 14229-6, ISO 14229-7,
-        ISO 14229-8, ISO 27145-3 and further standards
-Other (bus specific) layers would be supported by extensions (once released) to this package or by custom interfaces
-created by users themselves.
+The package is meant to provide tools that enables:
+ - monitoring UDS communication
+ - simulation of any UDS node (either a client or a server)
+ - testing of a device that supports UDS
+ - injection of communication faults on any layers 3-7 of UDS OSI Model
+
+The package is created with an idea to support any communication bus:
+ - `CAN <https://en.wikipedia.org/wiki/CAN_bus>`_
+ - `LIN <https://en.wikipedia.org/wiki/Local_Interconnect_Network>`_
+ - `Ethernet <https://en.wikipedia.org/wiki/Ethernet>`_
+ - `FlexRay <https://en.wikipedia.org/wiki/FlexRay>`_
+ - `K-Line <https://en.wikipedia.org/wiki/K-Line>`_
 """
 
 __all__ = ["messages"]

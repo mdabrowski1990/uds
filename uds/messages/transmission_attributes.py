@@ -1,4 +1,4 @@
-"""Attributes that describes UDS transmission."""
+"""Attributes that describes UDS communication."""
 
 __all__ = ["AddressingType", "AddressingMemberTyping", "TransmissionDirection", "DirectionMemberTyping"]
 
@@ -10,34 +10,26 @@ from uds.utilities import ValidatedEnum
 
 
 class AddressingType(StrEnum, ValidatedEnum):
-    """
-    Types of communication (addressing) defined by UDS.
-
-    Options:
-    - PHYSICAL - 1 (client) to 1 (server) communication
-    - FUNCTIONAL - 1 (client) to many (servers) communication
-    - BROADCAST - 1 (client) to many (servers) communication that does not require response
-    """
+    """Model of UDS communication."""
 
     PHYSICAL = "Physical"  # noqa: F841
+    """Physical addressing - 1 (client) to 1 (server) communication."""
     FUNCTIONAL = "Functional"  # noqa: F841
-    BROADCAST = "Broadcast"  # noqa: F841
+    """Functional addressing - 1 (client) to many (servers) communication."""
 
 
 AddressingMemberTyping = Union[AddressingType, str]
+"""Typing alias that describes AddressingType member."""
 
 
 class TransmissionDirection(StrEnum, ValidatedEnum):
-    """
-    Direction of communication.
-
-    Options:
-    - RECEIVED - receiving (received from a bus by python code)
-    - TRANSMITTED - transmission (pushed to a bus by python code)
-    """
+    """Direction of a communication."""
 
     RECEIVED = "Rx"  # noqa: F841
+    """Incoming transmission from the perspective of the code."""
     TRANSMITTED = "Tx"  # noqa: F841
+    """Outcoming transmission from the perspective of the code."""
 
 
 DirectionMemberTyping = Union[TransmissionDirection, str]
+"""Typing alias that describes TransmissionDirection member."""

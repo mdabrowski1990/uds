@@ -1,0 +1,3 @@
+FlexRay Transport Interface
+===========================
+FlexRay FEATURE IS PLANNED BUT NOT IMPLEMENTED YET, THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.

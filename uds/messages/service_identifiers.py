@@ -1,12 +1,12 @@
-"""Module with data and implementation related to Service Identifiers (SID)."""
+"""Service Identifiers (SID) implementation."""
 
-__all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS"]
+__all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS", "UnrecognizedSIDWarning"]
 
 from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import RawByte, ByteEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import RawByte, RawBytesSet, ByteEnum, ValidatedEnum, ExtendableEnum
 
 # reserved SID values
 _REQUEST_SIDS_DEFINED_BY_SAEJ1979 = set(range(0x01, 0x10))
@@ -15,25 +15,33 @@ _REQUEST_SIDS_DEFINED_BY_ISO_14229 = set(range(0x10, 0x3F)).union(set(range(0x83
 _RESPONSE_SIDS_DEFINED_BY_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC3, 0xC9)), set(range(0xFA, 0xFF)))
 
 # all supported SID values according to UDS
-POSSIBLE_REQUEST_SIDS = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
-POSSIBLE_RESPONSE_SIDS = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
+POSSIBLE_REQUEST_SIDS: RawBytesSet = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
+"""Set with all possible values of Request SID data parameter according to SAE J1979 and ISO 14229 standards."""
+POSSIBLE_RESPONSE_SIDS: RawBytesSet = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
+"""Set with all possible values of Response SID data parameter according to SAE J1979 and ISO 14229 standards."""
 
 
-class UnsupportedSID(Warning):
+class UnrecognizedSIDWarning(Warning):
     """
-    Warning about SID that is legit but currently not supported by the package.
+    Warning about SID value that is legit but not recognized by the package.
 
-    You can either define member for this SID manually or raise `feature request` on webpage
-    https://github.com/mdabrowski1990/uds/issues/new/choose to have support (for this SID) implemented in the package.
+    If you want to register a SID value, you need to define members (for this SID) manually using
+    :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method
+    (on :class:`~uds.messages.service_identifiers.RequestSID` and
+    :class:`~uds.messages.service_identifiers.ResponseSID` classes).
+    You can also create feature request in the UDS project `issues management system
+    <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register the SID value (for which this warning
+    was raised).
     """
 
 
 @unique
-class RequestSID(ByteEnum, ValidatedEnum):
+class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
-    Storage for all known Service Identifiers (SID).
+    Request Service Identifier values for all services that are defined in ISO 14229-1:2020.
 
-    SID is always the first byte of the request messages. In this enum, only the valid values are defined.
+    Note: Request SID is always the first payload byte of all request messages.
+
     """
 
     @classmethod
@@ -43,13 +51,15 @@ class RequestSID(ByteEnum, ValidatedEnum):
 
         :param value: Value to check.
 
-        :return: True if value is int of known SID, else False.
+        :return: True if value is valid SID, else False.
         """
-        if not cls.is_member(value):
-            if value not in POSSIBLE_REQUEST_SIDS:
-                return False
-            warn(message=f"SID 0x{value:X} is not supported by this version of the package", category=UnsupportedSID)
-        return True
+        if cls.is_member(value):
+            return True
+        if value in POSSIBLE_REQUEST_SIDS:
+            warn(message=f"SID 0x{value:X} is not recognized by this version of the package.",
+                 category=UnrecognizedSIDWarning)
+            return True
+        return False
 
     # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
     DiagnosticSessionControl = 0x10  # noqa: F841
@@ -88,9 +98,12 @@ class RequestSID(ByteEnum, ValidatedEnum):
 @unique
 class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
-    Storage for all known Response Service Identifiers (RSID).
+    Response Service Identifier values for all services that are defined in ISO 14229-1:2020.
 
-    RSID is always the first byte of the response messages. In this enum, only the valid values are defined.
+    Note: Response SID is always the first payload byte of all request messages.
+
+    Note: This Enum contains multiple members (for all the services as RequestSID), but most of them are
+    dynamically (implicitly) added and invisible in the documentation.
     """
 
     @classmethod
@@ -100,13 +113,15 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 
         :param value: Value to check.
 
-        :return: True if value is int of known RSID, else False.
+        :return: True if value is valid RSID, else False.
         """
-        if not cls.is_member(value):
-            if value not in POSSIBLE_RESPONSE_SIDS:
-                return False
-            warn(message=f"RSID 0x{value:X} is not supported by this version of the package", category=UnsupportedSID)
-        return True
+        if cls.is_member(value):
+            return True
+        if value in POSSIBLE_RESPONSE_SIDS:
+            warn(message=f"RSID 0x{value:X} is not recognized by this version of the package",
+                 category=UnrecognizedSIDWarning)
+            return True
+        return False
 
     NegativeResponse = 0x7F  # noqa: F841
 

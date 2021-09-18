@@ -1,44 +1,51 @@
-"""Common implementation of all diagnostic messages (requests and responses)."""
+"""
+Module with common implementation of all diagnostic messages (requests and responses).
+
+Diagnostic messages are defined on higher layers of UDS OSI Model.
+"""
 
 __all__ = ["UdsMessage", "UdsMessageRecord"]
 
-from typing import Union, Tuple, List
+from typing import Any
 
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
 from .transmission_attributes import AddressingType, AddressingMemberTyping, TransmissionDirection
-from .uds_packet import AbstractUdsPacketRecord
-
-PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
+from .uds_packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
 
 class UdsMessage:
-    """Definition of diagnostic messages that are exchanged by UDS servers and clients."""
+    """
+    Definition of a diagnostic message.
 
-    def __init__(self, raw_message: RawBytes, addressing: AddressingMemberTyping) -> None:
+    Objects of this class act as a storage for all relevant attributes of a diagnostic message.
+    Later on, such object might be used in segmentation process or to transmit the message. Once a message
+    is transmitted, its historic data would be stored in :class:`~uds.messages.uds_message.UdsMessageRecord`.
+    """
+
+    def __init__(self, payload: RawBytes, addressing: AddressingMemberTyping) -> None:
         """
         Create a storage for a single diagnostic message.
 
-        :param raw_message: Raw bytes of data that this diagnostic message carries.
+        :param payload: Raw bytes of payload that this diagnostic message carries.
         :param addressing: Addressing type for which this message is relevant.
         """
-        self.raw_message = raw_message  # type: ignore
+        self.payload = payload  # type: ignore
         self.addressing = addressing  # type: ignore
 
     @property
-    def raw_message(self) -> RawBytesTuple:
-        """Raw bytes of data that this diagnostic message carries."""
-        return self.__raw_message
+    def payload(self) -> RawBytesTuple:
+        """Raw bytes of payload that this diagnostic message carries."""
+        return self.__payload
 
-    @raw_message.setter
-    def raw_message(self, value: RawBytes):
+    @payload.setter
+    def payload(self, value: RawBytes):
         """
-        Set value of raw data bytes that this diagnostic message carries.
+        Set value of raw payload bytes that this diagnostic message carries.
 
-        :param value: Raw message value to set.
+        :param value: Payload value to set.
         """
         validate_raw_bytes(value)
-        self.__raw_message = tuple(value)
+        self.__payload = tuple(value)
 
     @property
     def addressing(self) -> AddressingType:
@@ -57,58 +64,58 @@ class UdsMessage:
 
 
 class UdsMessageRecord:
-    """Definition of a record that stores historic information about transmitted or received UDSMessage."""
+    """Storage for historic information of a diagnostic message that was either received or transmitted."""
 
-    def __init__(self, raw_message: RawBytes, packets_records: PacketsRecordsSequence) -> None:
+    def __init__(self, payload: RawBytes, packets_records: PacketsRecordsSequence) -> None:
         """
-        Create a historic record of a diagnostic message that was either received of transmitted to a bus.
+        Create a record of a historic information about a diagnostic message that was either received or transmitted.
 
-        :param raw_message: Raw bytes of data that this diagnostic message carried.
+        :param payload: Raw bytes of payload that this diagnostic message carried.
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
         """
-        self.raw_message = raw_message  # type: ignore
+        self.payload = payload  # type: ignore
         self.packets_records = packets_records  # type: ignore
 
     @staticmethod
-    def __validate_packets_records(packets_records: PacketsRecordsSequence) -> None:
+    def __validate_packets_records(value: Any) -> None:
         """
-        Validate UDS Packet Records sequence argument.
+        Validate whether the argument contains UDS Packets records.
 
-        :param packets_records: Value of UDS Packet Records sequence to validate.
+        :param value: Value to validate.
 
         :raise TypeError: UDS Packet Records sequence is not list or tuple type.
         :raise ValueError: At least one of UDS Packet Records sequence elements is not an object of
-            AbstractUdsPacketRecord class.
+            :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class.
         """
-        if not isinstance(packets_records, (tuple, list)):
-            raise TypeError(f"Provided value of 'packets_records' is not list or tuple type. "
-                            f"Actual type: {type(packets_records)}.")
-        if not packets_records or any(not isinstance(packet, AbstractUdsPacketRecord) for packet in packets_records):
-            raise ValueError(f"Provided value of 'packets_records' must contain only instances of "
-                             f"AbstractUdsPacketRecord class. Actual value: {packets_records}")
+        if not isinstance(value, (tuple, list)):
+            raise TypeError(f"Provided value is not list or tuple type. "
+                            f"Actual type: {type(value)}.")
+        if not value or any(not isinstance(element, AbstractUdsPacketRecord) for element in value):
+            raise ValueError(f"Provided value must contain only instances of AbstractUdsPacketRecord class. "
+                             f"Actual value: {value}.")
 
     @property
-    def raw_message(self) -> RawBytesTuple:
-        """Raw bytes of data that this diagnostic message carried."""
-        return self.__raw_message
+    def payload(self) -> RawBytesTuple:
+        """Raw bytes of payload that this diagnostic message carried."""
+        return self.__payload
 
-    @raw_message.setter
-    def raw_message(self, value: RawBytes):
+    @payload.setter
+    def payload(self, value: RawBytes):
         """
-        Set value of raw message which this diagnostic message carried.
+        Set value of raw payload bytes which this diagnostic message carried.
 
-        :param value: Raw message value to set.
+        :param value: Payload value to set.
 
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_UdsMessageRecord__raw_message")
+            self.__getattribute__("_UdsMessageRecord__payload")
         except AttributeError:
             validate_raw_bytes(value)
-            self.__raw_message = tuple(value)
+            self.__payload = tuple(value)
         else:
-            raise ReassignmentError("You cannot change value of 'raw_message' attribute once it is assigned.")
+            raise ReassignmentError("You cannot change value of 'payload' attribute once it is assigned.")
 
     @property
     def packets_records(self) -> PacketsRecordsTuple:
