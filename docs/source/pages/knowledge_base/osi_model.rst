@@ -1,5 +1,6 @@
 UDS OSI Model
 =============
+Overview of UDS `OSI model <https://en.wikipedia.org/wiki/OSI_model>`_ is presented in the table below.
 
 +--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
 |   OSI Layer  |          ISO Standards         |              Functionalities              |                                Implementation                               |
@@ -106,3 +107,9 @@ UDS OSI Model
 |              |                                |                                           |                                                                             |
 |              | - ISO 17987-4                  |                                           |                                                                             |
 +--------------+--------------------------------+-------------------------------------------+-----------------------------------------------------------------------------+
+
+Columns explanation:
+ - OSI Layer - layer of OSI Model
+ - Standards - list of standards that describes UDS protocol on given layer
+ - Functionalities - list of functionalities provided by UDS on given layer
+ - Implementation - which modules/classes/objects implements these functionalities in the UDS package
