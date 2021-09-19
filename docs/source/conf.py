@@ -32,6 +32,7 @@ author = u"Maciej Dąbrowski"
 
 # The full version, including alpha/beta/rc tags
 release = full_version_str
+version = ".".join(full_version_str.split(".")[:2])
 
 
 # -- General configuration ---------------------------------------------------
