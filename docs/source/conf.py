@@ -73,7 +73,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
-html_logo = "images/UDS_logo_without_background.PNG"
+html_logo = "images/UDS_logo_without_background.png"
 
 html_theme_options = {
     "sticky_navigation": False,
