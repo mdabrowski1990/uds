@@ -79,7 +79,7 @@ class AbstractUdsPacket(ABC):
     @property  # noqa: F841
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
-        """UDS packet type value - N_PCI value."""
+        """UDS packet type value - N_PCI value of this N_PDU."""
 
 
 class AbstractUdsPacketRecord(ABC):
@@ -174,7 +174,7 @@ class AbstractUdsPacketRecord(ABC):
     @property  # noqa: F841
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
-        """UDS packet type value - N_PCI value."""
+        """UDS packet type value - N_PCI value of this N_PDU."""
 
 
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
