@@ -18,6 +18,14 @@ UDS
    :target: https://uds.readthedocs.io/
    :alt: Documentation
 
+.. image:: https://bestpractices.coreinfrastructure.org/projects/4703/badge
+   :target: https://bestpractices.coreinfrastructure.org/projects/4703
+   :alt: CII Best Practices
+
+.. image:: https://img.shields.io/lgtm/grade/python/g/mdabrowski1990/uds.svg?logo=lgtm&logoWidth=18
+   :target: https://lgtm.com/projects/g/mdabrowski1990/uds/context:python
+   :alt: LGTM assessment
+
 .. image:: https://coveralls.io/repos/github/mdabrowski1990/uds/badge.svg?branch=main
    :target: https://coveralls.io/github/mdabrowski1990/uds?branch=main
    :alt: Coverage
@@ -26,13 +34,22 @@ UDS
    :target: https://pypi.python.org/pypi/py-uds
    :alt: Latest Version of UDS
 
-.. image:: https://bestpractices.coreinfrastructure.org/projects/4703/badge
-   :target: https://bestpractices.coreinfrastructure.org/projects/4703
-   :alt: CII Best Practices
+.. image:: https://img.shields.io/pypi/pyversions/py-uds.svg
+   :target: https://pypi.python.org/pypi/py-uds/
+   :alt: Supported Python versions
+
+.. image:: https://img.shields.io/pypi/status/py-uds.svg
+   :target: https://pypi.python.org/pypi/py-uds/
+   :alt: PyPI status
+
+.. image:: https://pepy.tech/badge/py-uds
+   :target: https://pepy.tech/project/py-uds
+   :alt: Total PyPI downloads
 
 .. image:: https://img.shields.io/badge/License-MIT-blue.svg
    :target: https://lbesson.mit-license.org/
    :alt: License
+
 
 Python package for handling `Unified Diagnostic Services`_ (UDS_) protocol defined by ISO 14229.
 It supports different communication buses on both communication sides (client and server).
