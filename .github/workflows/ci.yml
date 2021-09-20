@@ -64,6 +64,7 @@ jobs:
         pip install -r tests/requirements_for_static_code_analysis.txt
 
     - name: Uninstall pylint-django (due to issue https://github.com/PyCQA/prospector/issues/443)
+      run: |
         pip uninstall pylint-django -y
         
     - name: Execute static code analysis [prospector]
