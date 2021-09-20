@@ -1,3 +1,5 @@
+.. _knowledge-base-diagnostic-message:
+
 Diagnostic Message
 ==================
 
