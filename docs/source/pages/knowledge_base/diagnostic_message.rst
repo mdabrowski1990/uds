@@ -2,28 +2,20 @@
 
 Diagnostic Message
 ==================
+Messages that are exchanged by clients and servers during UDS communications are usually called `diagnostic messages`.
+In the documentation and the implementation, `UDS message` name is also used.
+
+We distinguish two types of diagnostic messages depending on a transmitter:
+ - `diagnostic request`_
+ - `diagnostic response`_
 
 
-
-
-
-
-
-If we only consider the top layer of OSI Model (layer 7 - Application), then the messages that are exchanged by
-clients and servers during UDS communication are called 'Application Protocol Data Units' (A_PDU),
-'diagnostic messages' or 'UDS messages' in this documentation.
-
-There are two types of diagnostic messages:
- - `diagnostic request`_ - a message transmitted by a client
- - `diagnostic response`_ - a message transmitted by a server
-
-
-UDS communication is always initiated by a client who sends a `diagnostic request`_ to a network that it is connected to.
-The client might not be directly connected to a desired recipient(s) of the request, therefore some servers might be
-forced to act as gateways and transmit the request to another network(s) to which they are connected. Server decision
-(whether to redirect the request to another vehicle sub-network or not) depends on a target(s) of the request i.e.
-server shall transmit the request in the sub-network if at least on ECU in this sub-network is the target of
-the request.
+UDS communication is always initiated by a client who sends a `diagnostic request`_ to a network that it has direct
+connection with. The client might not be directly connected to a desired recipient(s) of the request, therefore some
+servers might be forced to act as gateways and transmit the request to another sub-network(s). Servers' decision
+(whether to redirect a message to another sub-network) depends on a target(s) of the request i.e.
+server shall transmit the request to the sub-network if this is a route (not necessarily a direct one) to at least
+one recipient of the message.
 
 .. figure:: ../../diagrams/KnowledgeBase-Gateway_request.png
     :alt: Gateway - request
@@ -35,8 +27,8 @@ the request.
 
 
 Each server which was the recipient of the request, might decide to send a response back to the nearest client
-(the one which transmitted the request in this sub-network). Then, the client shall act as the gateway again and
-redirect the response back until it reaches the request message originator (Diagnostic Tester).
+(the one which previously transmitted the request in this sub-network). Then, the client shall act as a gateway again
+and redirect the response back until it reaches the request message originator (Diagnostic Tester).
 
 .. figure:: ../../diagrams/KnowledgeBase-Gateway_response.png
     :alt: Gateway - response
@@ -48,25 +40,27 @@ redirect the response back until it reaches the request message originator (Diag
 
 
 Diagnostic Request
-``````````````````
+------------------
 Diagnostic request is a `diagnostic message`_ that was transmitted by a client and targets a server or group of servers.
 Diagnostic request can be identified by its `Service Identifier`_ (SID) value.
 
 
 Diagnostic Response
-```````````````````
+-------------------
 Diagnostic response is a `diagnostic message`_ that was transmitted by a server and targets a client.
 Diagnostic response can be identified by its `Service Identifier`_ (SID) value.
 
-UDS describes two formats of diagnostic responses:
+UDS defines two formats of diagnostic responses:
  - `positive response message`_
  - `negative response message`_
 
 
 Positive Response Message
-'''''''''''''''''''''''''
-If a server responds with positive response message, it means that the server received the corresponding request
+`````````````````````````
+If a server responds with a positive response message, it means that the server received the corresponding request
 message and executed actions requested by a client.
+
+Format of positive response messages:
 
 +------+------------------+------------+
 | Byte | Description      | Value      |
@@ -84,11 +78,19 @@ Where:
  - SID - `Service Identifier`_ value that was received in the request message to which the server responded
  - XX - any byte value
 
+Note: When positive diagnostic message is received, this equation is always true:
+
+.. code-block::
+
+   RSID = SID + 0x40
+
 
 Negative Response Message
-'''''''''''''''''''''''''
-If a server responds with negative response message, it means that the server for some reason the server could not
-execute actions requested by a client.
+`````````````````````````
+If a server responds with a negative response message, it means that (for some reason) the server could not execute
+actions requested by a client.
+
+Format of negative response messages:
 
 +------+-----------------------+-------+
 | Byte | Description           | Value |
@@ -106,9 +108,10 @@ Where:
 
 
 Service Identifier
-``````````````````
-Service Identifier (SID) is one byte integer located in the first byte of Application Data (A_Data) in the
-`diagnostic message`_. SID determines whether the message is `diagnostic request`_ or `diagnostic response`_.
+------------------
+Service Identifier (SID) is data parameter that is always located in the first Application Data (A_Data) byte
+of each `diagnostic message`_ .
+SID value determines whether the message is `diagnostic request`_ or `diagnostic response`_.
 General purpose (application) and format of `diagnostic message`_ is also by determined by SID value.
 
 List of all Service Identifier (SID) values and their application:
@@ -202,137 +205,137 @@ List of all Service Identifier (SID) values and their application:
 
 
 DiagnosticSessionControl
-''''''''''''''''''''''''
+````````````````````````
 DiagnosticSessionControl service is used to change diagnostic sessions in the server(s).
 In each diagnostic session a different set of diagnostic services (and/or functionalities) is enabled in the server.
 Server shall always be in exactly one diagnostic session.
 
 
 ECUReset
-''''''''
+````````
 ECUReset service is used by the client to request a server reset.
 
 
 ClearDiagnosticInformation
-''''''''''''''''''''''''''
+``````````````````````````
 ClearDiagnosticInformation service is used by the client to clear all diagnostic information (DTC and related data)
 in one or multiple servers' memory.
 
 
 ReadDTCInformation
-''''''''''''''''''
+``````````````````
 ReadDTCInformation service allows the client to read from any server or group of servers within a vehicle,
 current information about all Diagnostic Trouble Codes. This could be a status of reported Diagnostic Trouble Code (DTC),
 number of currently active DTCs or any other information returned by supported ReadDTCInformation SubFunctions.
 
 
 ReadDataByIdentifier
-''''''''''''''''''''
+````````````````````
 ReadDataByIdentifier service allows the client to request data record values from the server identifier by one or more
 DataIdentifiers (DIDs).
 
 
 ReadMemoryByAddress
-'''''''''''''''''''
+```````````````````
 ReadMemoryByAddress service allows the client to request server's memory data stored under provided memory address.
 
 
 ReadScalingDataByIdentifier
-'''''''''''''''''''''''''''
+```````````````````````````
 ReadScalingDataByIdentifier service allows the client to request from the server a scaling data record identified
 by a DataIdentifier (DID). The scaling data contains information such as data record type (e.g. ASCII, signed float),
 formula and its coefficients used for value calculation, units, etc.
 
 
 SecurityAccess
-''''''''''''''
+``````````````
 SecurityAccess service allows the client to unlock functions/services with restricted access.
 
 
 CommunicationControl
-''''''''''''''''''''
+````````````````````
 CommunicationControl service allows the client to switch on/off the transmission and/or the reception of certain
 messages on a server(s).
 
 
 Authentication
-''''''''''''''
+``````````````
 Authentication service provides a means for the client to prove its identity, allowing it to access data and/or
 diagnostic services, which have restricted access for, for example security, emissions, or safety reasons.
 
 
 ReadDataByPeriodicIdentifier
-''''''''''''''''''''''''''''
+````````````````````````````
 ReadDataByPeriodicIdentifier service allows the client to request the periodic transmission of data record values
 from the server identified by one or more periodicDataIdentifiers.
 
 
 DynamicallyDefineDataIdentifier
-'''''''''''''''''''''''''''''''
+```````````````````````````````
 DynamicallyDefineDataIdentifier service allows the client to dynamically define in a server a DataIdentifier (DID)
 that can be read via the ReadDataByIdentifier_ service at a later time.
 
 
 WriteDataByIdentifier
-'''''''''''''''''''''
+`````````````````````
 WriteDataByIdentifier service allows the client to write information into the server at an internal location
 specified by the provided DataIdentifier (DID).
 
 
 InputOutputControlByIdentifier
-''''''''''''''''''''''''''''''
+``````````````````````````````
 InputOutputControlByIdentifier service allows the client to substitute a value for an input signal, internal server
 function and/or force control to a value for an output (actuator) of an electronic system.
 
 
 RoutineControl
-''''''''''''''
+``````````````
 RoutineControl service allows the client to execute a defined sequence of steps to obtain any relevant result.
 There is a lot of flexibility with this service, but typical usage may include functionality such as erasing memory,
 resetting or learning adaptive data, running a self-test, overriding the normal server control strategy.
 
 
 RequestDownload
-'''''''''''''''
+```````````````
 RequestDownload service allows the client to initiate a data transfer from the client to the server (download).
 
 
 RequestUpload
-'''''''''''''
+`````````````
 RequestUpload service allows the client to initiate a data transfer from the server to the client (upload).
 
 
 TransferData
-''''''''''''
+````````````
 TransferData service is used by the client to transfer data either from the client to the server (download) or
 from the server to the client (upload).
 
 
 RequestTransferExit
-'''''''''''''''''''
+```````````````````
 RequestTransferExit service is used by the client to terminate a data transfer between the client and server.
 
 
 RequestFileTransfer
-'''''''''''''''''''
+```````````````````
 RequestFileTransfer service allows the client to initiate a file data transfer either from the server to
 the client (upload) or from the server to the client (upload).
 
 
 WriteMemoryByAddress
-''''''''''''''''''''
+````````````````````
 WriteMemoryByAddress service allows the client to write information into server's memory data under provided
 memory address.
 
 
 TesterPresent
-'''''''''''''
+`````````````
 TesterPresent service is used by the client to indicate to a server(s) that the client is still connected to a vehicle
 and certain diagnostic services and/or communication that have been previously activated are to remain active.
 
 
 SecuredDataTransmission
-'''''''''''''''''''''''
+```````````````````````
 SecuredDataTransmission service is applicable if a client intends to use diagnostic services defined
 in this document in a secured mode. It may also be used to transmit external data, which conform to
 some other application protocol, in a secured mode between a client and a server. A secured mode in
@@ -340,24 +343,24 @@ this context means that the data transmitted is protected by cryptographic metho
 
 
 ControlDTCSetting
-'''''''''''''''''
+`````````````````
 ControlDTCSetting service allows the client to stop or resume the updating of DTC status bits in the server(s) memory.
 
 
 ResponseOnEvent
-'''''''''''''''
+```````````````
 ResponseOnEvent service allows the client to request from the server to start ot stop transmission of responses on
 a specified event.
 
 
 LinkControl
-'''''''''''
+```````````
 LinkControl service allows the client to control the communication between the client and the server(s) in order to
 gain bus bandwidth for diagnostic purposes (e.g. programming).
 
 
 Negative Response Code
-``````````````````````
+----------------------
 Negative Response Code (NRC) is one byte value which contains information why a server is not sending
 a positive response message.
 
@@ -523,7 +526,7 @@ List of NRC values:
 
 
 Addressing
-``````````
+----------
 Addressing determines model of UDS communication.
 
 We distinguish following addressing types:
@@ -532,19 +535,19 @@ We distinguish following addressing types:
 
 
 Physical
-''''''''
+````````
 Physical addressing is used to send a dedicated message to a certain server (ECU).
 When physically addressed messages are sent, the direct (point-to-point) communication between the client and
-the server takes place. The server shall respond to physically addressed request unless the request contains
-an information that response is not required (further explained in`response behaviour to physically addressed request`_
-chapter).
+the server takes place. The server shall respond to a physically addressed request unless the request contains
+an information that a response is not required (further explained in
+`response behaviour to physically addressed request`_ chapter).
 
-NOTE: You do not need a direct physical connection between the client and the server to have physically addressed
+NOTE: You do not need a direct physical connection between a client and a server to have physically addressed
 communication as all messages shall be routed to a target of each message.
 
 
 Response behaviour to physically addressed request
-..................................................
+''''''''''''''''''''''''''''''''''''''''''''''''''
 Expected server behaviour in case of receiving physically addressed request message with SubFunction parameter:
 
 +----------------------------------+----------------------------------------------------------------+-----------------------------------------------+-------------------------------------------------------------------------------------------------------------+
@@ -609,18 +612,18 @@ Where:
 
 
 Functional
-''''''''''
+``````````
 Functional addressing is used to send messages to multiple servers (ECUs) in the network.
-When functionally addressed messages are sent, the one to many communication between the client and
-the servers (ECUs) takes place. The server shall only respond to certain requests (further explained in
+When functionally addressed messages are sent, a one to many communication between a client and servers (ECUs)
+takes place. A server shall only respond to certain functionally addressed requests (further explained in
 `response behaviour to functionally addressed request`_ chapter.
 
-NOTE: Some types of buses (e.g. LIN) might also support broadcast communication which is very similar to functionally
-addressed. The only difference is that a server response is never expected by the client during broadcast communication.
+NOTE: Some types of buses (e.g. LIN) might also support broadcast communication which slightly change expected
+server behaviour. When broadcast communication is used, then a server response is never expected by a client.
 
 
 Response behaviour to functionally addressed request
-....................................................
+''''''''''''''''''''''''''''''''''''''''''''''''''''
 Expected server behaviour in case of receiving functionally addressed request message with SubFunction parameter:
 
 +----------------------------------+----------------------------------------------------------------+------------------------------+-------------------------------------------------------------------------------------------------------------+
