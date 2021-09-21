@@ -1,5 +1,7 @@
 .. _knowledge-base-segmentation:
 
+.. _knowledge-base-desegmentation:
+
 Segmentation
 ============
 If diagnostic message data to be transmitted does not fit into a single frame, then segmentation process is required
