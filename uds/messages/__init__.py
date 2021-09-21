@@ -12,7 +12,9 @@ It provides tools for:
 """
 
 from .uds_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractUdsPacketRecord, \
-    PacketsTuple, PacketsSequence, PacketsRecordsTuple, PacketsRecordsSequence
+    PacketTyping, PacketsTuple, PacketsSequence, \
+    PacketsDefinitionTuple, PacketsDefinitionSequence, \
+    PacketsRecordsTuple, PacketsRecordsSequence
 from .uds_message import UdsMessage, UdsMessageRecord
 from .service_identifiers import RequestSID, ResponseSID, POSSIBLE_REQUEST_SIDS, POSSIBLE_RESPONSE_SIDS, \
     UnrecognizedSIDWarning

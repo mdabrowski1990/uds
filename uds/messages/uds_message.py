@@ -66,15 +66,15 @@ class UdsMessage:
 class UdsMessageRecord:
     """Storage for historic information of a diagnostic message that was either received or transmitted."""
 
-    def __init__(self, packets_records: PacketsRecordsSequence) -> None:
+    def __init__(self, payload: RawBytes, packets_records: PacketsRecordsSequence) -> None:
         """
         Create a record of a historic information about a diagnostic message that was either received or transmitted.
 
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
         """
+        self.payload = payload  # type: ignore
         self.packets_records = packets_records  # type: ignore
-        self.payload = tuple(payload_byte for packet in packets_records for payload_byte in packet.payload)
 
     @staticmethod
     def __validate_packets_records(value: Any) -> None:
