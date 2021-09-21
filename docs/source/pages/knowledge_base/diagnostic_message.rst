@@ -19,6 +19,7 @@ one recipient of the message.
 .. figure:: ../../diagrams/KnowledgeBase-Gateway_request.png
     :alt: Gateway - request
     :figclass: align-center
+    :width: 100%
 
     Diagnostic request routing in example vehicle networks.
 
@@ -31,6 +32,7 @@ and redirect the response back until it reaches the request message originator (
 .. figure:: ../../diagrams/KnowledgeBase-Gateway_response.png
     :alt: Gateway - response
     :figclass: align-center
+    :width: 100%
 
     Diagnostic responses routing in example vehicle networks.
 
