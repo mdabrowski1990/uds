@@ -3,6 +3,8 @@ Diagnostic Messages
 Implementation related to diagnostic messages and packets is located in :mod:`uds.messages` sub-package.
 
 
+.. _implementation-diagnostic-message:
+
 UDS Message Implementation
 --------------------------
 Diagnostic messages implementation is divided into two parts:
@@ -69,6 +71,8 @@ Attributes implemented in :class:`~uds.messages.uds_message.UdsMessageRecord` cl
  - :attr:`~uds.messages.uds_message.UdsMessageRecord.transmission_start` - readable
  - :attr:`~uds.messages.uds_message.UdsMessageRecord.transmission_end` - readable
 
+
+.. _implementation-uds-packet:
 
 UDS Packet Implementation
 --------------------------

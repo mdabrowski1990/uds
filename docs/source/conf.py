@@ -16,6 +16,7 @@
 
 import os
 import sys
+import datetime
 sys.path.append(os.path.abspath('../..'))
 
 import re
@@ -27,8 +28,8 @@ with open("../../uds/__init__.py", "r", encoding="utf-8") as init_file:
 # -- Project information -----------------------------------------------------
 
 project = u"UDS"
-copyright = u"2021, Maciej Dąbrowski"
 author = u"Maciej Dąbrowski"
+copyright = u"{}, {}".format(datetime.date.today().year, author)
 
 # The full version, including alpha/beta/rc tags
 release = full_version_str
