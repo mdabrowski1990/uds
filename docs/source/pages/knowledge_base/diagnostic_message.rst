@@ -3,12 +3,11 @@
 Diagnostic Message
 ==================
 Messages that are exchanged by clients and servers during UDS communications are usually called `diagnostic messages`.
-In the documentation and the implementation, `UDS message` name is also used.
+In the documentation and the implementation, `UDS message` name is also in use.
 
-We distinguish two types of diagnostic messages depending on a transmitter:
+We distinguish two types of diagnostic messages depending on who is a transmitter:
  - `diagnostic request`_
  - `diagnostic response`_
-
 
 UDS communication is always initiated by a client who sends a `diagnostic request`_ to a network that it has direct
 connection with. The client might not be directly connected to a desired recipient(s) of the request, therefore some
@@ -24,7 +23,6 @@ one recipient of the message.
     Diagnostic request routing in example vehicle networks.
 
     In this example all ECUs in the vehicle are the targets of the request - functionally addressed request was sent.
-
 
 Each server which was the recipient of the request, might decide to send a response back to the nearest client
 (the one which previously transmitted the request in this sub-network). Then, the client shall act as a gateway again
@@ -680,4 +678,3 @@ Where:
  - NRC - Negative Response Code
  - XX - NRC code that is supported by the server and suitable to the current situation (e.g. NRC 0x21 busyRepeatRequest
    if server is currently overloaded and cannot process next request message)
-

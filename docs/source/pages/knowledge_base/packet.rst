@@ -2,11 +2,13 @@
 
 UDS Packet
 ==========
-UDS packet might also be called Network Protocol Data Unit (N_PDU). It is created during segmentation of a
-diagnostic message. Each diagnostic message consists of at least one N_PDU. There are some packets (N_PDUs) which
-does not carry any diagnostic message data as they are used to manage the flow of other packets (N_PDUs).
+UDS packet might also be called Network Protocol Data Unit (N_PDU). The packets are created during
+:ref:`segmentation <knowledge-base-segmentation>` of a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+Each :ref:`diagnostic message <knowledge-base-diagnostic-message>` consists of at least one UDS Packet (N_PDU).
+There are some packets which does not carry any diagnostic message data as they are used to manage the flow of
+other packets.
 
-UDS packet (N_PDU) consists of following fields:
+UDS packet consists of following fields:
  - `Network Address Information`_ (N_AI) - packet addressing
  - `Network Protocol Control Information`_ (N_PCI) - packet type
  - `Network Data Field`_ (N_Data) - packet date
@@ -27,6 +29,7 @@ N_PCI values and their interpretation are bus specific.
 
 Network Data Field
 ------------------
-Network Data Field (N_Data) carries diagnostic message data. It might be an entire diagnostic message data (if
-diagnostic message fits into one packet) or just a part (a single packet) of it (if segmentation had to be
-used to divide diagnostic message into smaller parts).
+Network Data Field (N_Data) carries diagnostic message data. It might be an entire diagnostic message data
+(if a :ref:`diagnostic message <knowledge-base-diagnostic-message>` fits into one packet) or just a part of it
+(if :ref:`segmentation <knowledge-base-segmentation>` had to be used to divide
+a :ref:`diagnostic message <knowledge-base-diagnostic-message>` into smaller parts).
