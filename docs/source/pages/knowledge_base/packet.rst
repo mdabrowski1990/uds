@@ -21,6 +21,8 @@ between whom data exchange takes place. It also describes communication model (e
 for the message.
 
 
+.. _knowledge-base-n-pci:
+
 Network Protocol Control Information
 ------------------------------------
 Network Protocol Control Information (N_PCI) identifies the type of `UDS packet`_ (Network Protocol Data Unit).

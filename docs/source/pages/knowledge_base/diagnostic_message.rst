@@ -39,11 +39,15 @@ and redirect the response back until it reaches the request message originator (
     In this example all ECUs in the vehicle responds to the request.
 
 
+.. _knowledge-base-request-message:
+
 Diagnostic Request
 ------------------
 Diagnostic request is a `diagnostic message`_ that was transmitted by a client and targets a server or group of servers.
 Diagnostic request can be identified by its `Service Identifier`_ (SID) value.
 
+
+.. _knowledge-base-response-message:
 
 Diagnostic Response
 -------------------
@@ -106,6 +110,8 @@ Where:
  - SID - `Service Identifier`_ value that was received in the request message to which the server responded
  - NRC - `Negative Response Code`_ value that identified the reason for negative response
 
+
+.. _knowledge-base-sid:
 
 Service Identifier
 ------------------
@@ -359,6 +365,8 @@ LinkControl service allows the client to control the communication between the c
 gain bus bandwidth for diagnostic purposes (e.g. programming).
 
 
+.. _knowledge-base-nrc:
+
 Negative Response Code
 ----------------------
 Negative Response Code (NRC) is one byte value which contains information why a server is not sending
@@ -525,6 +533,8 @@ List of NRC values:
  - 0xFF - ISO Reserved - This value is reserved for future definition by ISO 14229 Standard.
 
 
+.. _knowledge-base-addressing:
+
 Addressing
 ----------
 Addressing determines model of UDS communication.
@@ -533,6 +543,8 @@ We distinguish following addressing types:
  - Physical_
  - Functional_
 
+
+.. _knowledge-base-physical-addressing:
 
 Physical
 ````````
@@ -610,6 +622,8 @@ Where:
  - XX - NRC code that is supported by the server and suitable to the current situation (e.g. NRC 0x21 busyRepeatRequest
    if server is currently overloaded and cannot process next request message)
 
+
+.. _knowledge-base-functional-addressing:
 
 Functional
 ``````````
