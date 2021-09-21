@@ -5,7 +5,7 @@ Overview of UDS `OSI model <https://en.wikipedia.org/wiki/OSI_model>`_.
 
 UDS Standards
 -------------
-UDS protocol is defined by multiple standards which are the main source of information and requirements about it.
+UDS is defined by multiple standards which are the main source of information and requirements about this protocol.
 Full list of standards is included in the table below:
 
 +--------------+-------------+-------------+-------------+-------------+----------------+-------------+
