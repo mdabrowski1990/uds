@@ -19,6 +19,8 @@ class AbstractSegmenter(ABC):
 
     Segmenters are classes that perform UDS segmentation and desegmentation.
     They contain helper methods that are essential for successful segmentation and desegmentation execution.
+
+    `Strategy design pattern <https://www.tutorialspoint.com/design_pattern/strategy_pattern.htm>`_ is used here.
     """
 
     @abstractmethod
