@@ -42,6 +42,21 @@ class AbstractUdsPacket(ABC):
         self.addressing = addressing  # type: ignore
 
     @property
+    def addressing(self) -> AddressingType:
+        """Addressing type for which this packet is relevant."""
+        return self.__addressing
+
+    @addressing.setter
+    def addressing(self, value: AddressingMemberTyping):
+        """
+        Set value of addressing type attribute.
+
+        :param value: Value of addressing type to set.
+        """
+        AddressingType.validate_member(value)
+        self.__addressing = AddressingType(value)
+
+    @property
     def raw_data(self) -> RawBytesTuple:
         """Raw bytes of data that this packet carries."""
         return self.__raw_data
@@ -57,19 +72,9 @@ class AbstractUdsPacket(ABC):
         self.__raw_data = tuple(value)
 
     @property
-    def addressing(self) -> AddressingType:
-        """Addressing type for which this packet is relevant."""
-        return self.__addressing
-
-    @addressing.setter
-    def addressing(self, value: AddressingMemberTyping):
-        """
-        Set value of addressing type attribute.
-
-        :param value: Value of addressing type to set.
-        """
-        AddressingType.validate_member(value)
-        self.__addressing = AddressingType(value)
+    @abstractmethod
+    def payload(self) -> RawBytesTuple:
+        """Diagnostic message payload carried by this packet."""
 
     @property  # noqa: F841
     @abstractmethod
@@ -154,7 +159,12 @@ class AbstractUdsPacketRecord(ABC):
     @property
     @abstractmethod
     def raw_data(self) -> RawBytesTuple:
-        """Raw bytes of data that this N_PDU carried."""
+        """Raw bytes of data that this packet carried."""
+
+    @property
+    @abstractmethod
+    def payload(self) -> RawBytesTuple:
+        """Diagnostic message payload carried by this packet."""
 
     @property
     @abstractmethod
