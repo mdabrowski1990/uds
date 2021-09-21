@@ -1,4 +1,4 @@
-"""Common definition of segmentation and desegmentation executors."""
+"""Definition of API for segmentation and desegmentation strategies."""
 
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
@@ -17,10 +17,9 @@ class AbstractSegmenter(ABC):
     """
     Abstract definition of segmenter class.
 
-    Segmenters are classes that perform UDS segmentation and desegmentation.
+    Segmenters are classes with UDS segmentation and desegmentation
+    `strategies <https://www.tutorialspoint.com/design_pattern/strategy_pattern.htm>`_.
     They contain helper methods that are essential for successful segmentation and desegmentation execution.
-
-    `Strategy design pattern <https://www.tutorialspoint.com/design_pattern/strategy_pattern.htm>`_ is used here.
     """
 
     @abstractmethod
