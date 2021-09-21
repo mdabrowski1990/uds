@@ -5,7 +5,7 @@ UDS Packets are defined on middle layers of UDS OSI Model.
 """
 
 __all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
-           "PacketsRecordsTuple", "PacketsRecordsSequence"]
+           "PacketsTuple", "PacketsSequence", "PacketsRecordsTuple", "PacketsRecordsSequence"]
 
 from abc import ABC, abstractmethod
 from typing import Union, Tuple, List, Any
@@ -187,7 +187,12 @@ class AbstractUdsPacketRecord(ABC):
         """UDS packet type value - N_PCI value of this N_PDU."""
 
 
-PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
+PacketsTuple = Tuple[AbstractUdsPacket, ...]
 """Typing alias of a tuple filled with UDS Packets."""
-PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
+PacketsSequence = Union[PacketsTuple, List[AbstractUdsPacket]]
 """Typing alias of a sequence filled with UDS Packets."""
+
+PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
+"""Typing alias of a tuple filled with UDS Packets Records."""
+PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
+"""Typing alias of a sequence filled with UDS Packets Records."""
