@@ -55,8 +55,8 @@ mypy:
 vulture:
   run: true
 
-pyroma:
-  run: true
-
 bandit:  # there is probably no use of it (not applicable for this project), but it is run anyways to make sure everything is secured
   run: true
+
+pyroma:
+  run: false
