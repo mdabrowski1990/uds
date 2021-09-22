@@ -73,3 +73,18 @@ class TestAbstractSegmenter:
     @pytest.mark.parametrize("packet", [Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacketRecord)])
     def test_is_first_packet__valid_input(self, packet):
         AbstractSegmenter.is_first_packet(self=self.mock_abstract_segmenter, packet=packet)
+
+    # get_consecutive_packets_needed
+
+    @pytest.mark.parametrize("packet", [None, True, "a packet", 6321, [0x1, 0x2, 0x3], Mock(spec=AbstractUdsPacket)])
+    def test_get_consecutive_packets_needed__value_error(self, packet):
+        self.mock_abstract_segmenter.is_first_packet.return_value = False
+        with pytest.raises(ValueError):
+            AbstractSegmenter.get_consecutive_packets_number(self=self.mock_abstract_segmenter, first_packet=packet)
+        self.mock_abstract_segmenter.is_first_packet.assert_called_once_with(packet=packet)
+
+    @pytest.mark.parametrize("packet", [None, True, "a packet", 6321, [0x1, 0x2, 0x3], Mock(spec=AbstractUdsPacket)])
+    def test_get_consecutive_packets_needed__valid_input(self, packet):
+        self.mock_abstract_segmenter.is_first_packet.return_value = True
+        AbstractSegmenter.get_consecutive_packets_number(self=self.mock_abstract_segmenter, first_packet=packet)
+        self.mock_abstract_segmenter.is_first_packet.assert_called_once_with(packet=packet)

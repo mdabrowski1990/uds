@@ -91,3 +91,17 @@ class AbstractSegmenter(ABC):
         if not isinstance(packet, (AbstractUdsPacket, AbstractUdsPacketRecord)):
             raise TypeError(f"Provided value is not AbstractUdsPacket or AbstractUdsPacketRecord type. "
                             f"Actual value: {packet}.")
+
+    @abstractmethod
+    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
+        """
+        Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
+
+        :param first_packet: The first packet of a segmented diagnostic message.
+
+        :raise ValueError: Provided `packet` argument is not a packet that initiates diagnostic message.
+
+        :return: Number of following packets that together carry a diagnostic message.
+        """
+        if not self.is_first_packet(packet=first_packet):
+            raise ValueError(f"Provided value is not a first packet. Actual value: {first_packet}.")
