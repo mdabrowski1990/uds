@@ -1,1 +1,2 @@
 aenum>=3.0.0
+insecure-package>=0.0.0
