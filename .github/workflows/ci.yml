@@ -13,30 +13,30 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install project dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools
-        pip install -r requirements.txt
-        
-    - name: Install external packages used for dynamic tests
-      run: |
-        pip install -r tests/requirements_for_software_tests.txt
-        
-    - name: Execute unit tests [pytest]
-      run: |
-        pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          pip install -r requirements.txt
 
-    - name: Execute integration tests [pytest]
-      run: |
-        pytest tests/software_tests -m integration
+      - name: Install external packages used for dynamic tests
+        run: |
+          pip install -r tests/requirements_for_software_tests.txt
+
+      - name: Execute unit tests [pytest]
+        run: |
+          pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
+
+      - name: Execute integration tests [pytest]
+        run: |
+          pytest tests/software_tests -m integration
         
         
   static_code_analysis:
@@ -46,31 +46,60 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install project dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools
-        pip install -r requirements.txt
-        
-    - name: Install external packages used for static tests
-      run: |
-        pip install -r tests/requirements_for_static_code_analysis.txt
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          pip install -r requirements.txt
 
-    - name: Uninstall pylint-django (due to issue https://github.com/PyCQA/prospector/issues/443)
-      run: |
-        pip uninstall pylint-django -y
-        
-    - name: Execute static code analysis [prospector]
-      run: |
-        prospector --profile tests/prospector_profile.yaml uds
+      - name: Install external packages used for static tests
+        run: |
+          pip install -r tests/requirements_for_static_code_analysis.txt
 
-    - name: Execute static code analysis [pyroma]
-      run: |
-        pyroma -a .
+      - name: Uninstall pylint-django (due to issue https://github.com/PyCQA/prospector/issues/443)
+        run: |
+          pip uninstall pylint-django -y
+
+      - name: Execute static code analysis [prospector]
+        run: |
+          prospector --profile tests/prospector_profile.yaml uds
+
+      - name: Execute static code analysis [pyroma]
+        run: |
+          pyroma -a .
+
+
+  dependency_checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          pip install -r requirements.txt
+
+      - name: Install external packages used for dependency scanning
+        run: |
+          pip install -r tests/requirements_for_dependency_scanning.txt
+
+      - name: Execute dependency scanning [safety]
+        run: |
+          safety check --full-report
