@@ -6,9 +6,25 @@ from uds.segmentation.abstract_segmenter import AbstractSegmenter, SegmentationE
 
 
 class TestAbstractSegmenter:
+    """Tests for `AbstractSegmenter` class."""
 
     def setup(self):
         self.mock_abstract_segmenter = Mock(spec=AbstractSegmenter)
+
+    # _validate_packet
+
+    @pytest.mark.parametrize("packet", [None, True, "a packet", 232, [0x1, 0x2, 0x3], Mock(spec=AbstractUdsPacket)])
+    def test_validate_packet__valid(self, packet):
+        self.mock_abstract_segmenter._is_packet.return_value = True
+        assert AbstractSegmenter._validate_packet(self=self.mock_abstract_segmenter, packet=packet) is None
+        self.mock_abstract_segmenter._is_packet.assert_called_once_with(packet=packet)
+
+    @pytest.mark.parametrize("packet", [None, True, "a packet", 232, [0x1, 0x2, 0x3], Mock(spec=AbstractUdsPacket)])
+    def test_validate_packet__type_error(self, packet):
+        self.mock_abstract_segmenter._is_packet.return_value = False
+        with pytest.raises(TypeError):
+            AbstractSegmenter._validate_packet(self=self.mock_abstract_segmenter, packet=packet)
+        self.mock_abstract_segmenter._is_packet.assert_called_once_with(packet=packet)
 
     # segmentation
 
