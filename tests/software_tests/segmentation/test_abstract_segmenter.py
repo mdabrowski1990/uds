@@ -43,18 +43,6 @@ class TestAbstractSegmenter:
             AbstractSegmenter.is_complete_packet_set(self=self.mock_abstract_segmenter, packets=packets)
 
     @pytest.mark.parametrize("packets", [
-        (1, 2, 3, 4),
-        [True, False],
-        (None, ),
-        [Mock(), Mock()],
-        [Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacketRecord)],
-        (Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacket)),
-    ])
-    def test_is_complete_packet_set__value_error(self, packets):
-        with pytest.raises(ValueError):
-            AbstractSegmenter.is_complete_packet_set(self=self.mock_abstract_segmenter, packets=packets)
-
-    @pytest.mark.parametrize("packets", [
         [Mock(spec=AbstractUdsPacket)],
         [Mock(spec=AbstractUdsPacketRecord)],
         (Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord)),

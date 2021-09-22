@@ -23,6 +23,16 @@ class AbstractSegmenter(ABC):
     """
 
     @abstractmethod
+    def _is_packet(self, packet: PacketTyping) -> bool:
+        # TODO: docstring
+        ...
+
+    @abstractmethod
+    def _is_packet_sequence(self, packets: PacketsSequence) -> bool:
+        # TODO: docstring
+        ...
+
+    @abstractmethod
     def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # type: ignore
         """
         Perform diagnostic message segmentation.
@@ -71,10 +81,7 @@ class AbstractSegmenter(ABC):
         """
         if not isinstance(packets, (tuple, list)):
             raise TypeError(f"Provided value is not tuple or list type. Actual value: {packets}.")
-        if any(not isinstance(packet, AbstractUdsPacket) for packet in packets) and \
-                any(not isinstance(packet, AbstractUdsPacketRecord) for packet in packets):
-            raise ValueError(f"Provided value of `packets` is not filled only with AbstractUdsPacket or "
-                             f"AbstractUdsPacketRecord instances. Actual value: {packets}.")
+        # TODO: _is_packet_sequence
 
     @abstractmethod
     def is_first_packet(self, packet: PacketTyping) -> bool:  # type: ignore
@@ -88,6 +95,7 @@ class AbstractSegmenter(ABC):
 
         :return: True if the packet is the only or the first packet of a diagnostic message.
         """
+        # TODO: _is_packet
         if not isinstance(packet, (AbstractUdsPacket, AbstractUdsPacketRecord)):
             raise TypeError(f"Provided value is not AbstractUdsPacket or AbstractUdsPacketRecord type. "
                             f"Actual value: {packet}.")
@@ -105,3 +113,5 @@ class AbstractSegmenter(ABC):
         """
         if not self.is_first_packet(packet=first_packet):
             raise ValueError(f"Provided value is not a first packet. Actual value: {first_packet}.")
+
+    # TODO: def is_following_packet
