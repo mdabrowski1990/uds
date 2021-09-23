@@ -138,7 +138,6 @@ Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacket` cl
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.raw_data` - settable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.addressing` - settable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.packet_type` - readable
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.packet_type_enum` - readable and abstract (bus specific)
 
 
 UDS Packet Record
@@ -170,7 +169,6 @@ Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketReco
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.raw_data` - readable and abstract (bus specific)
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.addressing` - readable and abstract (bus specific)
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.transmission_time` - readable and abstract (bus specific)
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.packet_type_enum` - readable and abstract (bus specific)
 
 
 UDS Messages Data

@@ -2,11 +2,11 @@
 
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
-from typing import Union, Any
+from typing import Tuple, Union, Any
 from abc import ABC, abstractmethod
 
-from uds.messages import UdsMessage, UdsMessageRecord, AbstractUdsPacket, AbstractUdsPacketRecord, \
-    PacketTyping, PacketsSequence, PacketsDefinitionTuple
+from uds.messages import UdsMessage, UdsMessageRecord, \
+    PacketTyping, PacketsSequence, PacketsDefinitionTuple, PacketTypesTuple
 
 
 class SegmentationError(ValueError):
@@ -15,15 +15,26 @@ class SegmentationError(ValueError):
 
 class AbstractSegmenter(ABC):
     """
-    Abstract definition of segmenter class.
+    Abstract definition of a segmenter class.
 
-    Segmenters are classes with UDS segmentation and desegmentation
+    Segmenter classes defines UDS segmentation and desegmentation
     `strategies <https://www.tutorialspoint.com/design_pattern/strategy_pattern.htm>`_.
     They contain helper methods that are essential for successful segmentation and desegmentation execution.
+    Each concrete segmenter class handles a single bus.
     """
 
+    @property
     @abstractmethod
-    def _is_supported_packet(self, value: Any) -> bool:
+    def supported_packet_classes(self) -> Tuple[type]:
+        """Classes that define packet objects supported by this segmenter."""
+
+    @property
+    @abstractmethod
+    def initial_packet_types(self) -> PacketTypesTuple:
+        """Types of packets that initiates a diagnostic message transmission for handled bys."""
+        ...
+
+    def is_supported_packet(self, value: Any) -> bool:
         """
         Check if the argument value is a packet object of a supported type.
 
@@ -31,47 +42,51 @@ class AbstractSegmenter(ABC):
 
         :return: True if provided value is an object of a supported packet type, False otherwise.
         """
+        # TODO: tests and code
 
     def _validate_packet(self, packet: PacketTyping) -> None:
         """
-        Validate whether the argument value contains an object of a supported packet type.
+        Validate whether the argument contains an object of a supported packet type.
 
-        :param packet: Value to check.
+        :param packet: Packet object to check.
 
         :raise TypeError: Provided value is not an object of a supported packet type.
         """
-        # TODO: continue here - Unit Tests, docstrings, etc
+        # TODO: tests and code
         # if not self._is_supported_packet(value=packet):
         #     raise TypeError(f"Provided value is not supported packet type. Actual value: {packet}.")
 
-    @abstractmethod
-    def _is_supported_packets_sequence(self, packets: PacketsSequence) -> bool:
+    def is_supported_packets_sequence(self, value: Any) -> bool:
         """
-        Check
-        :param packets:
-        :return:
-        """
+        Check if the argument value is a packet sequence of a supported type.
 
-    @abstractmethod
+        :param value: Value to check.
+
+        :return: True if provided value is a packet sequence of a supported type, False otherwise.
+        """
+        # TODO: tests and code
+
     def _validate_packets_sequence(self, packets: PacketsSequence) -> None:
-        ...
+        """
+        Validate whether the argument contains a packet sequence of a supported type.
 
-    @abstractmethod
-    def is_first_packet(self, packet: PacketTyping) -> bool:  # type: ignore
+        :param packets: Packet sequence to check.
+
+        :raise TypeError: Provided value is not an object of a supported packet type.
+        """
+        # TODO: tests and code
+
+    def is_initial_packet(self, packet: PacketTyping) -> bool:
         """
         Check whether a provided packet initiates a diagnostic message.
 
         :param packet: Packet to check.
 
-        :raise TypeError: Provided `packet` argument is not :class:`~uds.messages.uds_packet.AbstractUdsPacket`
-            or :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` type.
+        :raise TypeError: TODO
 
         :return: True if the packet is the only or the first packet of a diagnostic message.
         """
-        # TODO: _is_packet
-        if not isinstance(packet, (AbstractUdsPacket, AbstractUdsPacketRecord)):
-            raise TypeError(f"Provided value is not AbstractUdsPacket or AbstractUdsPacketRecord type. "
-                            f"Actual value: {packet}.")
+        # TODO: tests and code
 
     @abstractmethod
     def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
@@ -80,19 +95,18 @@ class AbstractSegmenter(ABC):
 
         :param first_packet: The first packet of a segmented diagnostic message.
 
-        :raise ValueError: Provided `packet` argument is not a packet that initiates diagnostic message.
-
         :return: Number of following packets that together carry a diagnostic message.
         """
-        if not self.is_first_packet(packet=first_packet):
-            raise ValueError(f"Provided value is not a first packet. Actual value: {first_packet}.")
+        # TODO: tests and code
 
     @abstractmethod
     def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
+        Check whether provided packets are a sequence of following packets that might form a diagnostic message.
 
-        :param packets:
-        :return:
+        :param packets: Packets sequence to check.
+
+        :return: True if the packets are
         """
 
     @abstractmethod
@@ -102,16 +116,10 @@ class AbstractSegmenter(ABC):
 
         :param packets: Packets sequence to check.
 
-        :raise TypeError: Provided 'packets' argument is not list or tuple type.
-        :raise ValueError: Elements of 'packets' argument are not :class:`~uds.messages.uds_packet.AbstractUdsPacket`
-            or :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` type.
-
         :return: True if the packets form exactly one diagnostic message.
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
         """
-        if not isinstance(packets, (tuple, list)):
-            raise TypeError(f"Provided value is not tuple or list type. Actual value: {packets}.")
-        # TODO: _is_packet_sequence
+        # TODO: tests and code
 
     @abstractmethod
     def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # type: ignore
@@ -136,12 +144,6 @@ class AbstractSegmenter(ABC):
 
         :raise SegmentationError: Provided packets are not a complete packets set that form a diagnostic message.
 
-        :return: Diagnostic message created from these packets.
-            :class:`~uds.messages.uds_message.UdsMessage` type would be returned
-            if :class:`~uds.messages.uds_packet.AbstractUdsPacket` are provided.
-            :class:`~uds.messages.uds_message.UdsMessageRecord` type would be returned
-            if :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` are provided.
+        :return: Diagnostic message created from received packets.
         """
-        if not self.is_complete_packet_set(packets=packets):
-            raise SegmentationError("Provided packets are not forming exactly one diagnostic message. "
-                                    f"Actual value: {packets}.")
+        # TODO: tests and code

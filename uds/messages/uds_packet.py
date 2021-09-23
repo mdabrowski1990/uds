@@ -7,7 +7,8 @@ UDS Packets are defined on middle layers of UDS OSI Model.
 __all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketTyping", "PacketsTuple", "PacketsSequence",
            "PacketsDefinitionTuple", "PacketsDefinitionSequence",
-           "PacketsRecordsTuple", "PacketsRecordsSequence"]
+           "PacketsRecordsTuple", "PacketsRecordsSequence",
+           "PacketTypesTuple"]
 
 from abc import ABC, abstractmethod
 from typing import Union, Tuple, List, Any
@@ -72,11 +73,6 @@ class AbstractUdsPacket(ABC):
         """
         validate_raw_bytes(value)
         self.__raw_data = tuple(value)
-
-    @property  # noqa: F841
-    @abstractmethod
-    def packet_type_enum(self) -> type:
-        """Enum with possible UDS packet types."""
 
     @property  # noqa: F841
     @abstractmethod
@@ -170,14 +166,12 @@ class AbstractUdsPacketRecord(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def packet_type_enum(self) -> type:
-        """Enum with possible UDS packet types."""
-
-    @property  # noqa: F841
-    @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
         """UDS packet type value - N_PCI value of this N_PDU."""
 
+
+PacketTypesTuple = Tuple[AbstractUdsPacketType, ...]
+"""Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacketType` members."""
 
 PacketsDefinitionTuple = Tuple[AbstractUdsPacket, ...]
 """Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacket` instances."""
