@@ -5,28 +5,46 @@ from uds.segmentation.abstract_segmenter import AbstractSegmenter, SegmentationE
     UdsMessage, UdsMessageRecord
 
 
-# TODO: prepare tests
-# class TestAbstractSegmenter:
-#     """Tests for `AbstractSegmenter` class."""
-#
-#     def setup(self):
-#         self.mock_abstract_segmenter = Mock(spec=AbstractSegmenter)
-#
-#     # _validate_packet
-#
-#     @pytest.mark.parametrize("packet", [None, True, "a packet", 232, [0x1, 0x2, 0x3], Mock(spec=AbstractUdsPacket)])
-#     def test_validate_packet__valid(self, packet):
-#         self.mock_abstract_segmenter._is_packet.return_value = True
-#         assert AbstractSegmenter._validate_packet(self=self.mock_abstract_segmenter, packet=packet) is None
-#         self.mock_abstract_segmenter._is_packet.assert_called_once_with(packet=packet)
-#
-#     @pytest.mark.parametrize("packet", [None, True, "a packet", 232, [0x1, 0x2, 0x3], Mock(spec=AbstractUdsPacket)])
-#     def test_validate_packet__type_error(self, packet):
-#         self.mock_abstract_segmenter._is_packet.return_value = False
-#         with pytest.raises(TypeError):
-#             AbstractSegmenter._validate_packet(self=self.mock_abstract_segmenter, packet=packet)
-#         self.mock_abstract_segmenter._is_packet.assert_called_once_with(packet=packet)
-#
+class TestAbstractSegmenter:
+    """Tests for `AbstractSegmenter` class."""
+
+    def setup(self):
+        self.mock_abstract_segmenter = Mock(spec=AbstractSegmenter)
+
+    # _validate_packet
+
+    @pytest.mark.parametrize("packet", [None, True, "a packet", 232, [0x1, 0x2, 0x3], Mock()])
+    def test_validate_packet__valid(self, packet):
+        self.mock_abstract_segmenter.is_supported_packet.return_value = True
+        assert AbstractSegmenter._validate_packet(self=self.mock_abstract_segmenter, packet=packet) is None
+        self.mock_abstract_segmenter.is_supported_packet.assert_called_once_with(value=packet)
+
+    @pytest.mark.parametrize("packet", [None, True, "a packet", 232, [0x1, 0x2, 0x3], Mock()])
+    def test_validate_packet__type_error(self, packet):
+        self.mock_abstract_segmenter.is_supported_packet.return_value = False
+        with pytest.raises(TypeError):
+            AbstractSegmenter._validate_packet(self=self.mock_abstract_segmenter, packet=packet)
+        self.mock_abstract_segmenter.is_supported_packet.assert_called_once_with(value=packet)
+
+    # _validate_packets_sequence
+
+    @pytest.mark.parametrize("packets", [(True, False), [Mock(), Mock()], (1, 2, 3)])
+    def test_validate_packets_sequence__valid(self, packets):
+        self.mock_abstract_segmenter.is_supported_packets_sequence.return_value = True
+        assert AbstractSegmenter._validate_packets_sequence(self=self.mock_abstract_segmenter, packets=packets) is None
+        self.mock_abstract_segmenter.is_supported_packets_sequence.assert_called_once_with(value=packets)
+
+    @pytest.mark.parametrize("packets", [(True, False), [Mock(), Mock()], (1, 2, 3)])
+    def test_validate_packets_sequence__value_error(self, packets):
+        self.mock_abstract_segmenter.is_supported_packets_sequence.return_value = False
+        with pytest.raises(ValueError):
+            AbstractSegmenter._validate_packets_sequence(self=self.mock_abstract_segmenter, packets=packets)
+        self.mock_abstract_segmenter.is_supported_packets_sequence.assert_called_once_with(value=packets)
+
+    # is_supported_packet
+
+    # TODO: moar tests :)
+
 #     # segmentation
 #
 #     @pytest.mark.parametrize("message", [None, False, Mock(spec=UdsMessageRecord), (0x1, 0x2, 0x3)])
