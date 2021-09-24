@@ -76,7 +76,7 @@ class AbstractSegmenter(ABC):
         return packet.packet_type in self.initial_packet_types
 
     @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:
+    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
         """
         Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
 
@@ -91,7 +91,7 @@ class AbstractSegmenter(ABC):
                              f"Actual value: {first_packet}.")
 
     @abstractmethod
-    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:
+    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:  # type: ignore
         """
         Check whether provided packets are a sequence of following packets.
 
@@ -126,7 +126,7 @@ class AbstractSegmenter(ABC):
             self.get_consecutive_packets_number(packets[0]) == len(packets)
 
     @abstractmethod
-    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # type: ignore
         """
         Perform diagnostic message segmentation.
 
@@ -140,7 +140,7 @@ class AbstractSegmenter(ABC):
             raise TypeError(f"Provided value is not UdsMessage type. Actual value: {message}.")
 
     @abstractmethod
-    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:  # type: ignore
         """
         Perform diagnostic message desegmentation.
 
