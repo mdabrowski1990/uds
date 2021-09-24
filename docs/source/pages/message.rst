@@ -119,7 +119,7 @@ UDS Packet
 Each UDS packet class provides containers for :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
 information that are specific for a communication bus for which this class is relevant.
 **Objects of UDS packet classes might be used to execute complex operations** (provided in other subpackages) such as
-packets transmission or :ref:`desegmentation <knowledge-base-desegmentation>`.
+packets transmission or :ref:`desegmentation <knowledge-base-packets-desegmentation>`.
 
 Implemented UDS packet classes:
  - `AbstractUdsPacket`_
