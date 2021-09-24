@@ -91,7 +91,7 @@ class AbstractSegmenter(ABC):
                              f"Actual value: {first_packet}.")
 
     @abstractmethod
-    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:  # type: ignore
+    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:  # noqa
         """
         Check whether provided packets are a sequence of following packets.
 
