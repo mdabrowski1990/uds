@@ -128,13 +128,13 @@ class AbstractSegmenter(ABC):
     @abstractmethod
     def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # type: ignore
         """
-        Perform diagnostic message segmentation.
+        Perform segmentation of a diagnostic message.
 
         :param message: UDS message to divide into UDS packets.
 
         :raise TypeError: Provided 'message' argument is not :class:`~uds.messages.uds_message.UdsMessage` type.
 
-        :return: UDS packets that are the outcome of UDS message segmentation.
+        :return: UDS packets that are an outcome of UDS message segmentation.
         """
         if not isinstance(message, UdsMessage):
             raise TypeError(f"Provided value is not UdsMessage type. Actual value: {message}.")
@@ -142,13 +142,13 @@ class AbstractSegmenter(ABC):
     @abstractmethod
     def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:  # type: ignore
         """
-        Perform diagnostic message desegmentation.
+        Perform desegmentation of UDS packets.
 
         :param packets: UDS packets to desegment into UDS message.
 
         :raise SegmentationError: Provided packets are not a complete packet sequence that form a diagnostic message.
 
-        :return: Diagnostic message created from received packets.
+        :return: A diagnostic message that is an outcome of UDS packets desegmentation.
         """
         if not self.is_complete_packets_sequence(packets):
             raise SegmentationError(f"Provided packets are not a complete that form a diagnostic message. "
