@@ -88,19 +88,13 @@ class TestUdsMessageRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("packets_records, payload", [
-        ([Mock(payload=[1])], (1,)),
-        ([Mock(payload=[0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00])],
-         (0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00)),
-        ([Mock(payload=[0x12, 0x34, 0x56]), Mock(payload=(0x78, 0x9A, 0xBC, 0xDE, 0xF0))],
-         (0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0)),
-        ((Mock(payload=(0,)), Mock(payload=(1, 2)), Mock(payload=(3, 4, 5, 6, 7, 8)), Mock(payload=[9])),
-         tuple(range(10)))
-    ])
-    def test_init(self, packets_records, payload):
-        UdsMessageRecord.__init__(self=self.mock_uds_message_record, packets_records=packets_records)
-        assert self.mock_uds_message_record.packets_records == packets_records
+    @pytest.mark.parametrize("payload", [None, [0x1, 0x02], "some message"])
+    @pytest.mark.parametrize("packets_records", [False, [1, 2, 3, 4], "abcdef"])
+    def test_init(self, payload, packets_records):
+        UdsMessageRecord.__init__(self=self.mock_uds_message_record, payload=payload,
+                                  packets_records=packets_records)
         assert self.mock_uds_message_record.payload == payload
+        assert self.mock_uds_message_record.packets_records == packets_records
 
     # __validate_packets_records
 

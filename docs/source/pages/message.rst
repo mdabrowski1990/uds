@@ -119,7 +119,7 @@ UDS Packet
 Each UDS packet class provides containers for :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
 information that are specific for a communication bus for which this class is relevant.
 **Objects of UDS packet classes might be used to execute complex operations** (provided in other subpackages) such as
-packets transmission or :ref:`desegmentation <knowledge-base-desegmentation>`.
+packets transmission or :ref:`desegmentation <knowledge-base-packets-desegmentation>`.
 
 Implemented UDS packet classes:
  - `AbstractUdsPacket`_
@@ -138,8 +138,6 @@ Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacket` cl
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.raw_data` - settable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.addressing` - settable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.packet_type` - readable
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.packet_type_enum` - readable and abstract (bus specific)
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.payload` - readable and abstract (bus specific)
 
 
 UDS Packet Record
@@ -169,10 +167,8 @@ Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketReco
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.direction` - readable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.packet_type` - readable
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.raw_data` - readable and abstract (bus specific)
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.payload` - readable and abstract (bus specific)
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.addressing` - readable and abstract (bus specific)
  - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.transmission_time` - readable and abstract (bus specific)
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.packet_type_enum` - readable and abstract (bus specific)
 
 
 UDS Messages Data

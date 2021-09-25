@@ -5,7 +5,10 @@ UDS Packets are defined on middle layers of UDS OSI Model.
 """
 
 __all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
-           "PacketsRecordsTuple", "PacketsRecordsSequence"]
+           "PacketTyping", "PacketsTuple", "PacketsSequence",
+           "PacketsDefinitionTuple", "PacketsDefinitionSequence",
+           "PacketsRecordsTuple", "PacketsRecordsSequence",
+           "PacketTypesTuple"]
 
 from abc import ABC, abstractmethod
 from typing import Union, Tuple, List, Any
@@ -70,16 +73,6 @@ class AbstractUdsPacket(ABC):
         """
         validate_raw_bytes(value)
         self.__raw_data = tuple(value)
-
-    @property
-    @abstractmethod
-    def payload(self) -> RawBytesTuple:
-        """Diagnostic message payload carried by this packet."""
-
-    @property  # noqa: F841
-    @abstractmethod
-    def packet_type_enum(self) -> type:
-        """Enum with possible UDS packet types."""
 
     @property  # noqa: F841
     @abstractmethod
@@ -163,11 +156,6 @@ class AbstractUdsPacketRecord(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> RawBytesTuple:
-        """Diagnostic message payload carried by this packet."""
-
-    @property
-    @abstractmethod
     def addressing(self) -> AddressingType:
         """Addressing type over which this packet was transmitted."""
 
@@ -178,16 +166,26 @@ class AbstractUdsPacketRecord(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def packet_type_enum(self) -> type:
-        """Enum with possible UDS packet types."""
-
-    @property  # noqa: F841
-    @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
         """UDS packet type value - N_PCI value of this N_PDU."""
 
 
+PacketTypesTuple = Tuple[AbstractUdsPacketType, ...]
+"""Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacketType` members."""
+
+PacketsDefinitionTuple = Tuple[AbstractUdsPacket, ...]
+"""Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacket` instances."""
+PacketsDefinitionSequence = Union[PacketsDefinitionTuple, List[AbstractUdsPacket]]
+"""Typing alias of a sequence filled with :class:`~uds.messages.uds_packet.AbstractUdsPacket` instances."""
+
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-"""Typing alias of a tuple filled with UDS Packets."""
+"""Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` instances."""
 PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
-"""Typing alias of a sequence filled with UDS Packets."""
+"""Typing alias of a sequence filled with :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` instances."""
+
+PacketTyping = Union[AbstractUdsPacket, AbstractUdsPacketRecord]
+"""Typing alias of UDS packet."""
+PacketsTuple = Union[PacketsDefinitionTuple, PacketsRecordsTuple]  # noqa: F841
+"""Typing alias of a tuple filled with UDS packets."""
+PacketsSequence = Union[PacketsDefinitionSequence, PacketsRecordsSequence]
+"""Typing alias of a sequence filled with UDS packets."""
