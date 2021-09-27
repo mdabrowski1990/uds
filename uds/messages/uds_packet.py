@@ -30,6 +30,18 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
     Note: There are some differences in values for each bus (e.g. LIN does not use Flow Control).
     """
 
+    @classmethod
+    @abstractmethod
+    def is_initial_packet_type(cls, value: Any) -> bool:  # type: ignore
+        """
+        Check whether given argument is a member or a value of packet type that initiates a diagnostic message.
+
+        :param value: Value to check.
+
+        :return: True if given argument is a packet type that initiates a diagnostic message, else False.
+        """
+        cls.validate_member(value)
+
 
 class AbstractUdsPacket(ABC):
     """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""

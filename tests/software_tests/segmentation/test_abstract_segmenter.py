@@ -66,35 +66,6 @@ class TestAbstractSegmenter:
         assert AbstractSegmenter.is_supported_packets_sequence(self=self.mock_abstract_segmenter, value=value) is True
         self.mock_abstract_segmenter.is_supported_packet.assert_called()
 
-    # is_initial_packet
-
-    @pytest.mark.parametrize("packet", [Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacket)])
-    def test_is_initial_packet__type_error(self, packet):
-        self.mock_abstract_segmenter.is_supported_packet.return_value = False
-        with pytest.raises(TypeError):
-            AbstractSegmenter.is_initial_packet(self=self.mock_abstract_segmenter, packet=packet)
-        self.mock_abstract_segmenter.is_supported_packet.assert_called_once_with(packet)
-
-    @pytest.mark.parametrize("packet", [Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacket)])
-    def test_is_initial_packet__false(self, packet):
-        self.mock_abstract_segmenter.is_supported_packet.return_value = True
-        mock_initial_packet_types = MagicMock()
-        mock_initial_packet_types.__contains__.return_value = False
-        self.mock_abstract_segmenter.initial_packet_types = mock_initial_packet_types
-        assert AbstractSegmenter.is_initial_packet(self=self.mock_abstract_segmenter, packet=packet) is False
-        self.mock_abstract_segmenter.is_supported_packet.assert_called_once_with(packet)
-        mock_initial_packet_types.__contains__.assert_called_once_with(packet.packet_type)
-
-    @pytest.mark.parametrize("packet", [Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacket)])
-    def test_is_initial_packet__true(self, packet):
-        self.mock_abstract_segmenter.is_supported_packet.return_value = True
-        mock_initial_packet_types = MagicMock()
-        mock_initial_packet_types.__contains__.return_value = True
-        self.mock_abstract_segmenter.initial_packet_types = mock_initial_packet_types
-        assert AbstractSegmenter.is_initial_packet(self=self.mock_abstract_segmenter, packet=packet) is True
-        self.mock_abstract_segmenter.is_supported_packet.assert_called_once_with(packet)
-        mock_initial_packet_types.__contains__.assert_called_once_with(packet.packet_type)
-
     # get_consecutive_packets_number
 
     @pytest.mark.parametrize("packet", [Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacketRecord)])

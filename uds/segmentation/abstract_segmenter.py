@@ -60,21 +60,6 @@ class AbstractSegmenter(ABC):
         # check if all packets are the same type
         return len({type(element) for element in value}) == 1
 
-    def is_initial_packet(self, packet: PacketTyping) -> bool:
-        """
-        Check whether a provided packet initiates a diagnostic message.
-
-        :param packet: Packet to check.
-
-        :raise TypeError: Provided value is not an object of a supported packet type.
-
-        :return: True if the packet is the only or the first packet of a diagnostic message.
-        """
-        if not self.is_supported_packet(packet):
-            raise TypeError(f"Provided value is not a packet object that is supported by this Segmenter. "
-                            f"Actual value: {packet}.")
-        return packet.packet_type in self.initial_packet_types
-
     @abstractmethod
     def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
         """
