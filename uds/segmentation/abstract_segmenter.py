@@ -61,21 +61,6 @@ class AbstractSegmenter(ABC):
         return len({type(element) for element in value}) == 1
 
     @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
-        """
-        Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
-
-        :param first_packet: The first packet of a segmented diagnostic message.
-
-        :raise ValueError: Provided value is not an an initial packet.
-
-        :return: Number of following packets that together carry a diagnostic message.
-        """
-        if not self.is_initial_packet(first_packet):
-            raise ValueError(f"Provided value is not an initial packet of a type supported by this Segmenter. "
-                             f"Actual value: {first_packet}.")
-
-    @abstractmethod
     def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:  # noqa
         """
         Check whether provided packets are a sequence of following packets.
@@ -95,8 +80,6 @@ class AbstractSegmenter(ABC):
         if not self.is_supported_packets_sequence(packets):
             raise ValueError(f"Provided value is not a packets sequence of a supported type."
                              f"Actual value: {packets}.")
-        if not self.is_initial_packet(packets[0]):
-            return False
 
     def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
@@ -109,6 +92,18 @@ class AbstractSegmenter(ABC):
         """
         return self.is_following_packets_sequence(packets) and \
             self.get_consecutive_packets_number(packets[0]) == len(packets)
+
+    @abstractmethod
+    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
+        """
+        Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
+
+        :param first_packet: The first packet of a segmented diagnostic message.
+
+        :raise ValueError: Provided value is not an an initial packet.
+
+        :return: Number of following packets that together carry a diagnostic message.
+        """
 
     @abstractmethod
     def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # type: ignore
