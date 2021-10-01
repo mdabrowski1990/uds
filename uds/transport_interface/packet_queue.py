@@ -22,12 +22,12 @@ class ReceivedPacketsQueue:
         """
         raise NotImplementedError
 
-    def __len__(self) -> int:
-        """Get number of packets that are currently stored in the queue."""
-        raise NotImplementedError
-
     def __del__(self) -> NoReturn:
         """Delete the object and safely stop all queue threads."""
+        raise NotImplementedError
+
+    def __len__(self) -> int:
+        """Get number of packets that are currently stored in the queue."""
         raise NotImplementedError
 
     def is_empty(self) -> bool:
