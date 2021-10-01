@@ -38,3 +38,5 @@ class TestReceivedPacketsQueue:
     def test_packet_task_done(self):
         with pytest.raises(NotImplementedError):
             ReceivedPacketsQueue.packet_task_done(self=self.mock_received_packets_queue)
+
+    # TODO: add basic tests for async methods get_packet and put_packet
