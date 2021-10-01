@@ -1,4 +1,4 @@
-"""Service Identifiers (SID) implementation."""
+""":ref:`Service Identifiers (SID) <knowledge-base-sid>` implementation."""
 
 __all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS", "UnrecognizedSIDWarning"]
 
@@ -40,7 +40,7 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
     Request Service Identifier values for all services that are defined in ISO 14229-1:2020.
 
-    Note: Request SID is always the first payload byte of all request messages.
+    Note: Request :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request messages.
 
     """
 
@@ -100,7 +100,7 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
     Response Service Identifier values for all services that are defined in ISO 14229-1:2020.
 
-    Note: Response SID is always the first payload byte of all request messages.
+    Note: Response :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request messages.
 
     Note: This Enum contains multiple members (for all the services as RequestSID), but most of them are
     dynamically (implicitly) added and invisible in the documentation.

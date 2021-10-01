@@ -2,18 +2,15 @@
 
 __all__ = ["ReceivedPacketsQueue"]
 
-from typing import Optional
-from abc import ABC, abstractmethod
-from asyncio import Queue
+from typing import NoReturn
 
-from uds.utilities import TimeMilliseconds
-from uds.messages import AbstractUdsPacket, AbstractUdsPacketRecord
+from uds.messages import AbstractUdsPacketRecord
 
 
 class ReceivedPacketsQueue:
     """Queue for storing received packets."""
 
-    def __init__(self, packet_class: type = AbstractUdsPacketRecord) -> None:
+    def __init__(self, packet_class: type = AbstractUdsPacketRecord) -> None:  # noqa: F841
         """
         Create a queue as a storage for received packets.
 
@@ -26,17 +23,44 @@ class ReceivedPacketsQueue:
         raise NotImplementedError
 
     def __len__(self) -> int:
+        """Get number of packets that are currently stored in the queue."""
+        raise NotImplementedError
+
+    def __del__(self) -> NoReturn:
+        """Delete the object and safely stop all queue threads."""
         raise NotImplementedError
 
     def is_empty(self) -> bool:
+        """
+        Check if queue is empty.
+
+        :return: True if queue is empty (does not contain any packets), False otherwise.
+        """
+        raise NotImplementedError
+
+    def packet_task_done(self) -> None:
+        """
+        Inform that a task related to one packet was completed.
+
+        This method is used during closing all tasks safely and quietly.
+        """
         raise NotImplementedError
 
     async def get_packet(self) -> AbstractUdsPacketRecord:
+        """
+        Get the next received packet from the queue.
+
+        Note: If called, when there are no packets in the queue, then execution would await until another packet
+            is received.
+
+        :return: The next received packet.
+        """
         raise NotImplementedError
 
-    def packet_handled(self) -> None:
-        raise NotImplementedError
+    async def put_packet(self, packet: AbstractUdsPacketRecord) -> None:  # noqa: F841
+        """
+        Add a packet (that was just received) to the end of the queue.
 
-    async def put_packet(self, packet: AbstractUdsPacketRecord) -> None:
+        :param packet: A packet that was just received.
+        """
         raise NotImplementedError
-

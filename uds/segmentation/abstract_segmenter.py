@@ -19,7 +19,9 @@ class AbstractSegmenter(ABC):
 
     Segmenter classes defines UDS segmentation and desegmentation
     `strategies <https://www.tutorialspoint.com/design_pattern/strategy_pattern.htm>`_.
-    They contain helper methods that are essential for successful segmentation and desegmentation execution.
+    They contain helper methods that are essential for successful
+    :ref:`segmentation <knowledge-base-message-segmentation>` and
+    :ref:`desegmentation <knowledge-base-packets-desegmentation>` execution.
     Each concrete segmenter class handles a single bus.
     """
 
@@ -28,7 +30,7 @@ class AbstractSegmenter(ABC):
     def supported_packet_classes(self) -> Tuple[type]:
         """Classes that define packet objects supported by this segmenter."""
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def initial_packet_types(self) -> PacketTypesTuple:
         """Types of packets that initiates a diagnostic message transmission for the managed bus."""
@@ -94,7 +96,7 @@ class AbstractSegmenter(ABC):
             self.get_consecutive_packets_number(packets[0]) == len(packets)
 
     @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
+    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # noqa: F841
         """
         Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
 

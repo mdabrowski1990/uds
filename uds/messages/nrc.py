@@ -1,4 +1,4 @@
-"""Module with entire Negative Response Codes (NRC) implementation."""
+"""Module with entire :ref:`Negative Response Codes (NRC) <knowledge-base-nrc>` implementation."""
 
 __all__ = ["NRC"]
 
@@ -10,9 +10,9 @@ from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum
 @unique
 class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
-    Negative Response Codes (NRC) values defined in ISO 14229-1:2020.
+    Negative Response Codes (NRC) values.
 
-    Explanation of NRC meaning is located in appendix A1 of ISO 14229-1 standard.
+    Explanation of :ref:`NRC <knowledge-base-nrc>` values meaning is located in appendix A1 of ISO 14229-1 standard.
     """
 
     # PositiveResponse = 0x00
