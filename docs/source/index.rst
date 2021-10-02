@@ -27,6 +27,57 @@ The most likely use cases of this package are:
  - performing tests against OBD Tester (client)
 
 
+Implementation Status
+---------------------
+The package is currently in the early development phase, therefore only a few features are currently available.
+If you want to speed up the development, please visit :ref:`contribution section <contribution>` to find out
+what are your options.
+
+
+Features
+````````
+Current implementation status of package features:
+
++----------------------------------------------+------------------------------+
+|                    Feature                   |     Implementation Status    |
++==============================================+==============================+
+| UDS Messages and Packets                     | Implemented in version 0.0.2 |
++----------------------------------------------+------------------------------+
+| UDS Packets Reception                        | Ongoing                      |
++----------------------------------------------+------------------------------+
+| UDS Packets Transmission                     | Planned                      |
++----------------------------------------------+------------------------------+
+| Segmentation                                 | Ongoing                      |
++----------------------------------------------+------------------------------+
+| Support for Services with multiple responses | Planned                      |
++----------------------------------------------+------------------------------+
+| Client Simulation                            | Ongoing                      |
++----------------------------------------------+------------------------------+
+| Server Simulation                            | Planned                      |
++----------------------------------------------+------------------------------+
+| Support for Messages Databases               | Planned                      |
++----------------------------------------------+------------------------------+
+
+
+Buses supported
+```````````````
+Current implementation status of support for communication buses:
+
++----------+-----------------------+
+|    Bus   | Implementation Status |
++==========+=======================+
+| CAN      | Ongoing               |
++----------+-----------------------+
+| FlexRay  | Planned               |
++----------+-----------------------+
+| Ethernet | Planned               |
++----------+-----------------------+
+| K-Line   | Planned               |
++----------+-----------------------+
+| LIN      | Planned               |
++----------+-----------------------+
+
+
 License
 -------
 The project is licensed under the MIT license - https://github.com/mdabrowski1990/uds/blob/main/LICENSE
