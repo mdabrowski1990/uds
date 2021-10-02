@@ -29,33 +29,39 @@ The most likely use cases of this package are:
 
 Implementation Status
 ---------------------
-The package is currently in the early development phase.
+The package is currently in the early development phase, therefore only a few features are currently available.
+If you want to speed up the development, please visit :ref:`contribution section <contribution>` to find out
+what are your options.
 
-Features status
-'''''''''''''''
-Current status of features implementation:
 
-+---------------------------------------+-----------------------+
-|                Feature                | Implementation Status |
-+=======================================+=======================+
-| UDS Packets Reception                 |        Ongoing        |
-+---------------------------------------+-----------------------+
-| UDS Packets Transmission              |        Planned        |
-+---------------------------------------+-----------------------+
-| Segmentation                          |        Ongoing        |
-+---------------------------------------+-----------------------+
-| Periodic and OnEvent Services Support |        Planned        |
-+---------------------------------------+-----------------------+
-| Client Simulation                     |        Ongoing        |
-+---------------------------------------+-----------------------+
-| Server Simulation                     |        Planned        |
-+---------------------------------------+-----------------------+
-| Messaging Databases Support           |        Planned        |
-+---------------------------------------+-----------------------+
+Features
+````````
+Current implementation status of package features:
 
-Bus support status
-''''''''''''''''''
-Current bus support status:
++----------------------------------------------+------------------------------+
+|                    Feature                   |     Implementation Status    |
++==============================================+==============================+
+| UDS Messages and Packets                     | Implemented in version 0.0.2 |
++----------------------------------------------+------------------------------+
+| UDS Packets Reception                        | Ongoing                      |
++----------------------------------------------+------------------------------+
+| UDS Packets Transmission                     | Planned                      |
++----------------------------------------------+------------------------------+
+| Segmentation                                 | Ongoing                      |
++----------------------------------------------+------------------------------+
+| Support for Services with multiple responses | Planned                      |
++----------------------------------------------+------------------------------+
+| Client Simulation                            | Ongoing                      |
++----------------------------------------------+------------------------------+
+| Server Simulation                            | Planned                      |
++----------------------------------------------+------------------------------+
+| Support for Messages Databases               | Planned                      |
++----------------------------------------------+------------------------------+
+
+
+Buses supported
+```````````````
+Current implementation status of support for communication buses:
 
 +----------+-----------------------+
 |    Bus   | Implementation Status |
