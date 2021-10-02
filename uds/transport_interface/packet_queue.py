@@ -17,13 +17,19 @@ class ReceivedPacketsQueue:
         :param packet_class: A class that defines UDS packets type that is accepted by this queue.
             One can use this parameter to restrict packets managed by this queue.
 
-        :raise TypeError: Provided packet_class is not a class that inherits after
+        :raise TypeError: Provided packet_class argument is not a class that inherits after
             :class:"uds.messages.uds_packet.AbstractUdsPacketRecord".
         """
         raise NotImplementedError
 
     def __del__(self) -> NoReturn:
-        """Delete the object and safely stop all queue threads."""
+        """
+        Delete the object safely.
+
+        To satisfy safe tasks closure:
+         - prevent new tasks creations
+         - close or await already started tasks
+        """
         raise NotImplementedError
 
     def __len__(self) -> int:
