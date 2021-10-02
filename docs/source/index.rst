@@ -27,6 +27,51 @@ The most likely use cases of this package are:
  - performing tests against OBD Tester (client)
 
 
+Implementation Status
+---------------------
+The package is currently in the early development phase.
+
+Features status
+'''''''''''''''
+Current status of features implementation:
+
++---------------------------------------+-----------------------+
+|                Feature                | Implementation Status |
++=======================================+=======================+
+| UDS Packets Reception                 |        Ongoing        |
++---------------------------------------+-----------------------+
+| UDS Packets Transmission              |        Planned        |
++---------------------------------------+-----------------------+
+| Segmentation                          |        Ongoing        |
++---------------------------------------+-----------------------+
+| Periodic and OnEvent Services Support |        Planned        |
++---------------------------------------+-----------------------+
+| Client Simulation                     |        Ongoing        |
++---------------------------------------+-----------------------+
+| Server Simulation                     |        Planned        |
++---------------------------------------+-----------------------+
+| Messaging Databases Support           |        Planned        |
++---------------------------------------+-----------------------+
+
+Bus support status
+''''''''''''''''''
+Current bus support status:
+
++----------+-----------------------+
+|    Bus   | Implementation Status |
++==========+=======================+
+| CAN      | Ongoing               |
++----------+-----------------------+
+| FlexRay  | Planned               |
++----------+-----------------------+
+| Ethernet | Planned               |
++----------+-----------------------+
+| K-Line   | Planned               |
++----------+-----------------------+
+| LIN      | Planned               |
++----------+-----------------------+
+
+
 License
 -------
 The project is licensed under the MIT license - https://github.com/mdabrowski1990/uds/blob/main/LICENSE
