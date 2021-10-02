@@ -35,3 +35,16 @@ Network Data Field (N_Data) carries diagnostic message data. It might be an enti
 (if a :ref:`diagnostic message <knowledge-base-diagnostic-message>` fits into one packet) or just a part of it
 (if :ref:`segmentation <knowledge-base-segmentation>` had to be used to divide
 a :ref:`diagnostic message <knowledge-base-diagnostic-message>` into smaller parts).
+
+
+UDS Packet on CAN
+-----------------
+
+
+CAN Network Protocol Control Information
+````````````````````````````````````````
+TODO: explain those:
+- Single Frame (0x0)
+- First Frame (0x1)
+- Consecutive Frame (0x2)
+- Flow Control (0x3)
