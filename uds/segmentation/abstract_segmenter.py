@@ -19,7 +19,9 @@ class AbstractSegmenter(ABC):
 
     Segmenter classes defines UDS segmentation and desegmentation
     `strategies <https://www.tutorialspoint.com/design_pattern/strategy_pattern.htm>`_.
-    They contain helper methods that are essential for successful segmentation and desegmentation execution.
+    They contain helper methods that are essential for successful
+    :ref:`segmentation <knowledge-base-message-segmentation>` and
+    :ref:`desegmentation <knowledge-base-packets-desegmentation>` execution.
     Each concrete segmenter class handles a single bus.
     """
 
@@ -28,7 +30,7 @@ class AbstractSegmenter(ABC):
     def supported_packet_classes(self) -> Tuple[type]:
         """Classes that define packet objects supported by this segmenter."""
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def initial_packet_types(self) -> PacketTypesTuple:
         """Types of packets that initiates a diagnostic message transmission for the managed bus."""
@@ -60,36 +62,6 @@ class AbstractSegmenter(ABC):
         # check if all packets are the same type
         return len({type(element) for element in value}) == 1
 
-    def is_initial_packet(self, packet: PacketTyping) -> bool:
-        """
-        Check whether a provided packet initiates a diagnostic message.
-
-        :param packet: Packet to check.
-
-        :raise TypeError: Provided value is not an object of a supported packet type.
-
-        :return: True if the packet is the only or the first packet of a diagnostic message.
-        """
-        if not self.is_supported_packet(packet):
-            raise TypeError(f"Provided value is not a packet object that is supported by this Segmenter. "
-                            f"Actual value: {packet}.")
-        return packet.packet_type in self.initial_packet_types
-
-    @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # type: ignore
-        """
-        Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
-
-        :param first_packet: The first packet of a segmented diagnostic message.
-
-        :raise ValueError: Provided value is not an an initial packet.
-
-        :return: Number of following packets that together carry a diagnostic message.
-        """
-        if not self.is_initial_packet(first_packet):
-            raise ValueError(f"Provided value is not an initial packet of a type supported by this Segmenter. "
-                             f"Actual value: {first_packet}.")
-
     @abstractmethod
     def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:  # noqa
         """
@@ -110,8 +82,6 @@ class AbstractSegmenter(ABC):
         if not self.is_supported_packets_sequence(packets):
             raise ValueError(f"Provided value is not a packets sequence of a supported type."
                              f"Actual value: {packets}.")
-        if not self.is_initial_packet(packets[0]):
-            return False
 
     def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
@@ -124,6 +94,18 @@ class AbstractSegmenter(ABC):
         """
         return self.is_following_packets_sequence(packets) and \
             self.get_consecutive_packets_number(packets[0]) == len(packets)
+
+    @abstractmethod
+    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # noqa: F841
+        """
+        Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
+
+        :param first_packet: The first packet of a segmented diagnostic message.
+
+        :raise ValueError: Provided value is not an an initial packet.
+
+        :return: Number of following packets that together carry a diagnostic message.
+        """
 
     @abstractmethod
     def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # type: ignore
