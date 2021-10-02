@@ -26,14 +26,14 @@ class ReceivedPacketsQueue:
         """
         Delete the object safely.
 
-        To satisfy safe tasks closure:
+        To satisfy safe closure or tasks using the queue:
          - prevent new tasks creations
          - close or await already started tasks
         """
         raise NotImplementedError
 
     def __len__(self) -> int:
-        """Get number of packets that are currently stored in the queue."""
+        """Get number of packets that are currently stored by the queue."""
         raise NotImplementedError
 
     def is_empty(self) -> bool:
