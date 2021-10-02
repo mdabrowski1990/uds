@@ -22,6 +22,7 @@ __all__ = ["messages"]
 __version__ = "0.1.1"
 __author__ = "Maciej Dąbrowski"
 __maintainer__ = "Maciej Dąbrowski"
-__credits__ = ["Maciej Dąbrowski", "Merit Automotive"]
+__credits__ = ["Maciej Dąbrowski (https://www.linkedin.com/in/maciej-dabrowski-test-engineer/)",
+               "Merit Automotive (https://merit-automotive.com/)"]
 __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"
