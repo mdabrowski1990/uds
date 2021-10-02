@@ -5,6 +5,7 @@ from uds.transport_interface.packet_queue import ReceivedPacketsQueue
 
 
 class TestReceivedPacketsQueue:
+    """Tests for `ReceivedPacketsQueue class."""
 
     def setup(self):
         self.mock_received_packets_queue = Mock(spec=ReceivedPacketsQueue)
@@ -39,4 +40,16 @@ class TestReceivedPacketsQueue:
         with pytest.raises(NotImplementedError):
             ReceivedPacketsQueue.packet_task_done(self=self.mock_received_packets_queue)
 
-    # TODO: add basic tests for async methods get_packet and put_packet
+    # get_packet
+
+    @pytest.mark.asyncio
+    async def test_get_packet(self):
+        with pytest.raises(NotImplementedError):
+            await ReceivedPacketsQueue.get_packet(self=self.mock_received_packets_queue)
+
+    # put_packet
+
+    @pytest.mark.asyncio
+    async def test_put_packet(self):
+        with pytest.raises(NotImplementedError):
+            await ReceivedPacketsQueue.put_packet(self=self.mock_received_packets_queue, packet=Mock())
