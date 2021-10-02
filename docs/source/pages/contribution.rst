@@ -25,3 +25,15 @@ Please `contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_ f
 Reporting issues
 ----------------
 To report issues, please use our `issues tracking system <https://github.com/mdabrowski1990/uds/issues>`_.
+
+
+Our Sponsors
+------------
+
+Full list of our sponsors:
+
+* `Merit Automotive <https://merit-automotive.com/>`_ |Merit Logo| - sponsor since September 2021
+
+
+.. |Merit Logo| image:: ../images/MeritAutomotive.png
+   :height: 50

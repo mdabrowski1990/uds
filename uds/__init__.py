@@ -18,6 +18,10 @@ The package is created with an idea to support any communication bus:
 """
 
 __all__ = ["messages"]
-__version__ = "0.1.0"
+
+__version__ = "0.1.1"
 __author__ = "Maciej Dąbrowski"
+__maintainer__ = "Maciej Dąbrowski"
+__credits__ = ["Maciej Dąbrowski", "Merit Automotive"]
 __email__ = "uds-package-development@googlegroups.com"
+__license__ = "MIT"
