@@ -22,6 +22,7 @@ setuptools.setup(version=version,
                  author=author,
                  author_email=email,
                  maintainer=maintainer,
+                 maintainer_email=email,
                  packages=packages,
                  license=license_type,
                  install_requires=install_requires)

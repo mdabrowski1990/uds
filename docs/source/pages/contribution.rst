@@ -32,7 +32,7 @@ Our Sponsors
 
 Full list of our sponsors:
 
-* `Merit Automotive <https://merit-automotive.com/>`_ |Merit Logo| - sponsor since September 2021
+* `Merit Automotive <https://merit-automotive.com/>`_ |Merit Logo| - sponsoring since September 2021
 
 
 .. |Merit Logo| image:: ../images/MeritAutomotive.png
