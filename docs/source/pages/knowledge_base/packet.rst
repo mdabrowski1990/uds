@@ -161,35 +161,41 @@ Where:
 
 Single Frame
 ''''''''''''
-Single Frame (SF) shall be used by CAN entities to transmit a diagnostic message with a payload short enough to fit it
-into a single CAN packet.
-In other words, Single Frame carries payload of an entire diagnostic message.
-
-.. note:: Maximal number of diagnostic message payload bytes that might be carried by SF depends on
-   :ref:`its addressing format <knowledge-base-can-addressing>` and number of
-   :ref:`data bytes carried by CAN message <knowledge-base-can-data-field>`.
+Single Frame (SF) are used by CAN entities to transmit a diagnostic message with a payload short enough to fit it
+into a single CAN packet. In other words, Single Frame carries payload of an entire diagnostic message.
+Number of payload bytes carried by SF is specified by `Single Frame Data Length`_ value.
 
 
 .. _knowledge-base-can-single-frame-data-length:
 
 Single Frame Data Length
 ........................
-is 4-bit or 8-bit value which specifies number of diagnostic message payload bytes
-   transmitted by a Single Frame
+Single Frame Data Length (SF_DL) is 4-bit (for CAN packets with DLC=8) or 8-bit (for CAN packets with DLC>8) value
+carried by every Single Frame. SF_DL specifies number of diagnostic message payload bytes transmitted by a Single Frame.
+
+.. note:: Maximal value of SF_DL depends on Single Frame :ref:`addressing format <knowledge-base-can-addressing>`
+    and ref:`DLC of a CAN message <knowledge-base-can-data-field>` that carries this packet.
 
 
 .. _knowledge-base-can-first-frame:
 
 First Frame
 '''''''''''
+First Frame (FF) are used by CAN entities to indicate start of a diagnostic message transmission.
+First Frames are only used in transmission of a segmented diagnostic messages that could not fit into a
+:ref:`Single Frame <knowledge-base-can-single-frame>`.
 
 
 .. _knowledge-base-can-first-frame-data-length:
 
 First Frame Data Length
 .......................
-is 12-bit or 4-byte value which specifies number of diagnostic message payload bytes
-   transmitted by a First Frame and Consecutive Frames
+First Frame Data Length (FF_DL) is 12-bit (if FF_DL ≤ 4095) or 4-byte (if FF_DL > 4095) value carried by every
+First Frame. FF_DL specifies number of diagnostic message payload bytes of a diagnostic message which transmission
+was initiated.
+
+.. note:: Maximal value of FF_DL is 4294967295 (0xFFFFFFFF). It means that CAN bus is capable of transmitting
+    diagnostic messages that contains up to nearly 4,3 GB of payload bytes.
 
 
 .. _knowledge-base-can-consecutive-frame:
