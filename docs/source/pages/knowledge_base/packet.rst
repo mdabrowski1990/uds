@@ -39,7 +39,7 @@ N_PCI values and their interpretation are bus specific.
 
 UDS Packet on CAN
 -----------------
-In this chapter you will find information about UDS packets specific for CAN bus, therefore
+In this chapter you will find information about UDS packets that are specific for CAN bus, therefore
 **applicable only for UDS packets that are transmitted over CAN bus**.
 
 
@@ -109,7 +109,7 @@ CAN Packet Types
 ````````````````
 According to ISO 15765-2, CAN bus supports 4 types of UDS packets.
 
-List of `Network Protocol Control Information`_ supported by CAN bus:
+List of all values of `Network Protocol Control Information`_ supported by CAN bus:
  - 0x0 - :ref:`Single Frame <knowledge-base-can-single-frame>`
  - 0x1 - :ref:`First Frame <knowledge-base-can-first-frame>`
  - 0x2 - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
@@ -161,9 +161,10 @@ Where:
 
 Single Frame
 ''''''''''''
-Single Frame (SF) are used by CAN entities to transmit a diagnostic message with a payload short enough to fit it
+Single Frame (SF) is used by CAN entities to transmit a diagnostic message with a payload short enough to fit it
 into a single CAN packet. In other words, Single Frame carries payload of an entire diagnostic message.
-Number of payload bytes carried by SF is specified by `Single Frame Data Length`_ value.
+Number of payload bytes carried by SF is specified by
+:ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` value.
 
 
 .. _knowledge-base-can-single-frame-data-length:
@@ -171,19 +172,22 @@ Number of payload bytes carried by SF is specified by `Single Frame Data Length`
 Single Frame Data Length
 ........................
 Single Frame Data Length (SF_DL) is 4-bit (for CAN packets with DLC=8) or 8-bit (for CAN packets with DLC>8) value
-carried by every Single Frame. SF_DL specifies number of diagnostic message payload bytes transmitted by a Single Frame.
+carried by every Single Frame as presented in :ref:`the table with CAN packet formats<knowledge-base-can-packets-format>`.
+SF_DL specifies number of diagnostic message payload bytes transmitted in a Single Frame.
 
 .. note:: Maximal value of SF_DL depends on Single Frame :ref:`addressing format <knowledge-base-can-addressing>`
-    and ref:`DLC of a CAN message <knowledge-base-can-data-field>` that carries this packet.
+    and :ref:`DLC of a CAN message <knowledge-base-can-data-field>` that carries this packet.
 
 
 .. _knowledge-base-can-first-frame:
 
 First Frame
 '''''''''''
-First Frame (FF) are used by CAN entities to indicate start of a diagnostic message transmission.
-First Frames are only used in transmission of a segmented diagnostic messages that could not fit into a
+First Frame (FF) is used by CAN entities to indicate start of a diagnostic message transmission.
+First Frames are only used during a transmission of a segmented diagnostic messages that could not fit into a
 :ref:`Single Frame <knowledge-base-can-single-frame>`.
+Number of payload bytes carried by FF is specified by
+:ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>` value.
 
 
 .. _knowledge-base-can-first-frame-data-length:
@@ -192,7 +196,7 @@ First Frame Data Length
 .......................
 First Frame Data Length (FF_DL) is 12-bit (if FF_DL ≤ 4095) or 4-byte (if FF_DL > 4095) value carried by every
 First Frame. FF_DL specifies number of diagnostic message payload bytes of a diagnostic message which transmission
-was initiated.
+was initiated by a First Frame.
 
 .. note:: Maximal value of FF_DL is 4294967295 (0xFFFFFFFF). It means that CAN bus is capable of transmitting
     diagnostic messages that contains up to nearly 4,3 GB of payload bytes.
@@ -202,41 +206,150 @@ was initiated.
 
 Consecutive Frame
 '''''''''''''''''
+Consecutive Frame (CF) is used by CAN entities to continue transmission of a diagnostic message.
+:ref:`First Frame <knowledge-base-can-first-frame>` shall always precede (one or more) Consecutive Frames.
+Consecutive Frames carry payload bytes of a diagnostic message that was not transmitted in
+a :ref:`First Frame <knowledge-base-can-first-frame>` that preceded them.
+To avoid ambiguity and to make sure that no Consecutive Frame is lost, the order of Consecutive Frames is determined by
+:ref:`Sequence Number <knowledge-base-can-sequence-number>` value.
 
 
 .. _knowledge-base-can-sequence-number:
 
 Sequence Number
 ...............
- is 4-bit value used to specify order of Consecutive Frames
+Sequence Number (SN) is 4-bit value used to specify the order of Consecutive Frames.
+
+The rules of proper Sequence Number value assignment are following:
+ - SN value of the first :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` that directly follows
+   a :ref:`First Frame <knowledge-base-can-first-frame>` shall be set to 1
+ - SN shall be incremented by 1 for each following :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+ - SN value shall not be affected by :ref:`Flow Control <knowledge-base-can-flow-control>` frames
+ - when SN reaches the value of 15, it shall wraparound and be set to 0 in the next
+   :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
 .. _knowledge-base-can-flow-control:
 
 Flow Control
 ''''''''''''
+Flow Control (FC) is used by receiving CAN entities to instruct sending entities to stop, start, pause or resume
+transmission of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+Flow Control packet contains following parameters:
+ - :ref:`Flow Status <knowledge-base-can-flow-status>`
+ - :ref:`Block Size <knowledge-base-can-block-size>`
+ - :ref:`Separation Time Minimum <knowledge-base-can-st-min>`
 
 
 .. _knowledge-base-can-flow-status:
 
 Flow Status
 ...........
-is 4-bit value that is used to inform a sending network entity whether it can proceed with
-   a Consecutive Frames transmission
+Flow Status (FS) is 4-bit value that is used to inform a sending network entity whether it can proceed with
+a Consecutive Frames transmission.
+
+Values of Flow Status:
+ - 0x0 - ContinueToSend (CTS)
+
+    ContinueToSend value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
+    with CTS) is ready to receive a maximum of :ref:`Block Size <knowledge-base-can-block-size>` number of
+    :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+    Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with ContinueToSend value shall cause
+    the sender to resume ConsecutiveFrames sending.
+
+ - 0x1 - wait (WAIT)
+
+    Wait value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with WAIT)
+    is not ready to receive another :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+    Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with WAIT value shall cause
+    the sender to pause ConsecutiveFrames sending and wait for another
+    :ref:`Flow Control <knowledge-base-can-flow-control>` frame.
+
+    Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
+    the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains WAIT value of Flow Status)
+    are not relevant and shall be ignored.
+
+ - 0x2 - Overflow (OVFLW)
+
+    Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with OVFLW)
+    is not able to receive a full diagnostic message as it is too big and reception of the message would result in
+    `Buffer Overflow <https://en.wikipedia.org/wiki/Buffer_overflow>`_ on receiving side. In other words, the value of
+    :ref:`FF_DL <knowledge-base-can-first-frame-data-length>` exceeds the buffer size of the receiving entity.
+
+    Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with Overflow value shall cause
+    the sender to abort the transmission of a diagnostic message.
+
+    Overflow value shall only be sent in a :ref:`Flow Control <knowledge-base-can-flow-control>` frame that directly
+    follows a :ref:`First Frame <knowledge-base-can-first-frame>`.
+
+    Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
+    the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains OVFLW value of Flow Status)
+    are not relevant and shall be ignored.
+
+ - 0x3-0xF - Reserved
+
+    This range of values is reserved for future extension by ISO 15765.
 
 
 .. _knowledge-base-can-block-size:
 
 Block Size
 ..........
- is a one byte value specified by receiving entity that informs about number of Consecutive Frames
-   to be sent in a one block of packets
+Block Size (BS) is a one byte value specified by receiving entity that informs about number of
+:ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` to be sent in a one block of packets.
+
+Block Size values:
+ - 0x00
+
+    The value 0 of the Block Size parameter informs a sender that no more :ref:`Flow Control <knowledge-base-can-flow-control>`
+    frames shall be sent during the transmission of the segmented message.
+
+    Reception of Block Size = 0 shall cause the sender to send all remaining
+    :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` without any stop for further
+    :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
+
+ - 0x01-0xFF
+
+    This range of Block Size values informs a sender the maximum number of
+    :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` that can be transmitted without an intermediate
+    :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
 
 
 .. _knowledge-base-can-st-min:
 
 Separation Time Minimum
 .......................
- is a one byte value specified by receiving entity that
+Separation Time minimum (STmin) is a one byte value specified by receiving entity that informs about minimum time gap
+between the transmission of two following :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
+STmin values:
+ - 0x00-0x7F - Separation Time minimum range 0-127 ms
 
+    The value of STmin in this range represents the value in milliseconds (ms).
+
+    0x00 = 0 ms
+
+    0xFF = 127 ms
+
+ - 0x80-0xF0 - Reserved
+
+    This range of values is reserved for future extension by ISO 15765.
+
+ - 0xF1-0xF9 - Separation Time minum range 100-900 μs
+
+    The value of STmin in this range represents the value in microseconds (μs) according to the formula:
+
+    .. code-block::
+
+        ([STmin] - 0xF0) * 100 μs
+
+    0xF1 = 100 μs
+
+    0xF9 = 900 μs
+
+ - 0xFA-0xFF - Reserved
+
+    This range of values is reserved for future extension by ISO 15765.
