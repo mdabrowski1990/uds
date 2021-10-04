@@ -47,28 +47,83 @@ In this chapter you will find information about UDS packets that are specific fo
 
 CAN Packet Addressing Formats
 `````````````````````````````
+TODO: add reference to `Network Address Information`_
+
 The exchange of UDS Packets on CAN is supported by three addressing formats:
  - :ref:`Normal addressing <knowledge-base-can-normal-addressing>`
  - :ref:`Extended addressing <knowledge-base-can-extended-addressing>`
  - :ref:`Mixed addressing <knowledge-base-can-mixed-addressing>`
 
+.. note:: Regardless of addressing format used, to transmit a :ref:`functionally addressed <knowledge-base-functional-addressing>`
+   message over CAN, a sender is allowed to use :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
+
 
 .. _knowledge-base-can-normal-addressing:
 
-Normal addressing
+Normal Addressing
 '''''''''''''''''
+If normal addressing is used, then value of CAN Identifier carries an entire `Network Address Information`_.
+Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>`,
+a sender and a target/targets entities of a packet.
+
+.. note:: Correspondence between `Network Address Information`_ and the value of CAN Identifier is left open for
+   a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` subformat is used.
+
+
+.. _knowledge-base-can-normal-fixed-addressing:
+
+Normal Fixed Addressing
+.......................
+Normal fixed addressing is a special case of :ref:`normal addressing <knowledge-base-can-normal-addressing>`
+in which the mapping of the address information into the CAN identifier is further defined.
+
+For normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
+
+CAN Identifier values used for UDS communication using normal fixed addressing:
+ - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
+   according to formula:
+
+   .. code-block::
+
+      CAN_ID = 0x18DA0000 + TA*0x100 + SA
+
+   or
+
+   .. code-block::
+
+      CAN_ID = 0x18DATTSS
+
+ - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
+   according to formula:
+
+   .. code-block::
+
+      CAN_ID = 0x18DB0000 + TA*0x100 + SA
+
+   or
+
+   .. code-block::
+
+      CAN_ID = 0x18DATTSS
+
+Where:
+ - CAN_ID - value of CAN Identifier
+ - TA - 8-bit value of a target address
+ - TT - two (hexadecimal) digits of a 8-bit target address value
+ - SA - 8-bit value of a source address
+ - SS - two (hexadecimal) digits of a 8-bit source address value
 
 
 .. _knowledge-base-can-extended-addressing:
 
-Extended addressing
+Extended Addressing
 '''''''''''''''''''
 
 
 .. _knowledge-base-can-mixed-addressing:
 
-Mixed addressing
-''''''''''''''''''''
+Mixed Addressing
+''''''''''''''''
 
 
 .. _knowledge-base-can-data-field:
@@ -338,7 +393,7 @@ STmin values:
 
     This range of values is reserved for future extension by ISO 15765.
 
- - 0xF1-0xF9 - Separation Time minum range 100-900 μs
+ - 0xF1-0xF9 - Separation Time minimum range 100-900 μs
 
     The value of STmin in this range represents the value in microseconds (μs) according to the formula:
 
