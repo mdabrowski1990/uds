@@ -62,7 +62,7 @@ The exchange of UDS Packets on CAN is supported by three addressing formats:
 
 Normal Addressing
 '''''''''''''''''
-If normal addressing is used, then value of CAN Identifier carries an entire `Network Address Information`_.
+If normal addressing format is used, then the value of CAN Identifier carries an entire `Network Address Information`_.
 Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>`,
 a sender and a target/targets entities of a packet.
 
@@ -74,7 +74,7 @@ a sender and a target/targets entities of a packet.
 
 Normal Fixed Addressing
 .......................
-Normal fixed addressing is a special case of :ref:`normal addressing <knowledge-base-can-normal-addressing>`
+Normal fixed addressing format is a special case of :ref:`normal addressing <knowledge-base-can-normal-addressing>`
 in which the mapping of the address information into the CAN identifier is further defined.
 
 For normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
@@ -118,6 +118,10 @@ Where:
 
 Extended Addressing
 '''''''''''''''''''
+If extended addressing format is used, then value of the first CAN frame byte informs about target of a UDS packet
+and remaining `Network Address Information`_ are determined by CAN Identifier value.
+Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>` and
+a sender entity of a packet.
 
 
 .. _knowledge-base-can-mixed-addressing:
@@ -125,11 +129,60 @@ Extended Addressing
 Mixed Addressing
 ''''''''''''''''
 
+Mixed Addressing - 11-bit CAN Identifier
+........................................
+If mixed addressing format is used with 11-bit CAN Identifiers, then the value of the first CAN frame byte extends the
+information of the CAN Identifier and a combination of these is `Network Address Information`_.
+
+
+Mixed Addressing - 29-bit CAN Identifier
+........................................
+If mixed addressing format is used with 29-bit CAN Identifiers, then the value of the first CAN frame byte extends the
+information of the CAN Identifier (that contains Target Address and Sender Address values) and a combination of these
+is `Network Address Information`_.
+
+
+CAN Identifier values used for UDS communication using normal fixed addressing:
+ - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
+   according to formula:
+
+   .. code-block::
+
+      CAN_ID = 0x18CE0000 + TA*0x100 + SA
+
+   or
+
+   .. code-block::
+
+      CAN_ID = 0x18CETTSS
+
+ - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
+   according to formula:
+
+   .. code-block::
+
+      CAN_ID = 0x18CD0000 + TA*0x100 + SA
+
+   or
+
+   .. code-block::
+
+      CAN_ID = 0x18CDTTSS
+
+Where:
+ - CAN_ID - value of CAN Identifier
+ - TA - 8-bit value of a target address
+ - TT - two (hexadecimal) digits of a 8-bit target address value
+ - SA - 8-bit value of a source address
+ - SS - two (hexadecimal) digits of a 8-bit source address value
+
 
 .. _knowledge-base-can-data-field:
 
 CAN Data Field
 ``````````````
+TODO: Not true - read 10.4 chapter of ISO 15765-2
+
 CAN frames that are exchanged during UDS communication must have Data Length Code (DLC) equal to 8 (for CLASSICAL CAN
 and CAN FD) or greater (for CAN FD). For details, refer to the table below.
 
@@ -156,6 +209,16 @@ Where:
 
 .. note:: Number of bytes that carry diagnostic message payload depends on a type and format of a CAN packet as it is
    presented in :ref:`the table with CAN packets formats <knowledge-base-can-packets-format>`.
+
+
+
+Data padding ?
+''''''''''''''
+
+
+DLC optimization ?
+''''''''''''''''''
+
 
 
 .. _knowledge-base-can-n-pci:
