@@ -43,6 +43,8 @@ In this chapter you will find information about UDS packets that are specific fo
 **applicable only for UDS packets that are transmitted over CAN bus**.
 
 
+.. _knowledge-base-can-frame:
+
 CAN Frame
 `````````
 `CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frame that used
@@ -247,45 +249,52 @@ Where:
 
 CAN Data Field
 ``````````````
-TODO: Not true - read 10.4 chapter of ISO 15765-2
+:ref:`CAN frames <knowledge-base-can-frame>` that are exchanged during UDS communication must have
+Data Length Code (DLC) equal to 8 (for CLASSICAL CAN and CAN FD) or greater (for CAN FD).
+The only exception is `CAN Frame Data Optimization`_.
 
-CAN frames that are exchanged during UDS communication must have Data Length Code (DLC) equal to 8 (for CLASSICAL CAN
-and CAN FD) or greater (for CAN FD). For details, refer to the table below.
-
-+-----+--------------------------------------------------------------------+
-| DLC |                             Description                            |
-+=====+====================================================================+
-|  <8 | *Invalid*                                                          |
-|     |                                                                    |
-|     | Values in this range are invalid for UDS communication.            |
-+-----+--------------------------------------------------------------------+
-|  8  | *Configured CAN frame maximum payload length of 8 bytes*           |
-|     |                                                                    |
-|     | For the use with CLASSICAL CAN and CAN FD type frames.             |
-+-----+--------------------------------------------------------------------+
-| >8  | *Configured CAN frame maximum payload length greater than 8 bytes* |
-|     |                                                                    |
-|     | For the use with CAN FD type frames only.                          |
-|     |                                                                    |
-|     | Possible values DLC values: 12, 16, 20, 24, 32, 48, 64             |
-+-----+--------------------------------------------------------------------+
++-----+--------------------------------------------------------------------------+
+| DLC |                                Description                               |
++=====+==========================================================================+
+|  <8 | *Valid for CAN frames using data optimization only*                      |
+|     |                                                                          |
+|     | Values in this range are only valid for Single Frame,                    |
+|     | Flow Control and Consecutive Frame that use CAN frame data optimization. |
++-----+--------------------------------------------------------------------------+
+|  8  | *Configured CAN frame maximum payload length of 8 bytes*                 |
+|     |                                                                          |
+|     | For the use with CLASSICAL CAN and CAN FD type frames.                   |
++-----+--------------------------------------------------------------------------+
+| >8  | *Configured CAN frame maximum payload length greater than 8 bytes*       |
+|     |                                                                          |
+|     | For the use with CAN FD type frames only.                                |
++-----+--------------------------------------------------------------------------+
 
 Where:
- - DLC - Data Length Code of a CAN frame, it is equal to number of data bytes carried by this CAN frame
+ - DLC - Data Length Code of a :ref:`CAN frame <knowledge-base-can-frame>`
 
 .. note:: Number of bytes that carry diagnostic message payload depends on a type and format of a CAN packet as it is
    presented in :ref:`the table with CAN packets formats <knowledge-base-can-packets-format>`.
 
 
-
 CAN Frame Data Padding
 ''''''''''''''''''''''
-If a CAN Packet data to be transmitted are shorter than DLC
+CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8 and optional for frames
+with DLC=8. If a number of bytes specified in a UDS Packet is shorter than a number of bytes in CAN frame's data field,
+then the sender has to pad any unused bytes in the frame. This can only be a case for
+:ref:`Single Frame <knowledge-base-can-single-frame>`, :ref:`Flow Control <knowledge-base-can-flow-control>` and the last
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a segmented message.
+If not specified differently, the default value 0xCC shall be used for the frame padding to minimize the bit stuffing
+insertions and bit alteration on the wire.
 
 
-DLC optimization ?
-''''''''''''''''''
+CAN Frame Data Optimization
+'''''''''''''''''''''''''''
+CAN frame data optimization is an alternative to `CAN Frame Data Padding`_.
+If a number of bytes specified in a UDS Packet is shorter than a number of bytes in CAN frame's data field,
+then the sender might decrease DLC value of the :ref:`CAN frame <knowledge-base-can-frame>`.
 
+.. wanining:: TODO: not finished yet.
 
 
 .. _knowledge-base-can-n-pci:
