@@ -43,6 +43,41 @@ In this chapter you will find information about UDS packets that are specific fo
 **applicable only for UDS packets that are transmitted over CAN bus**.
 
 
+CAN Frame
+`````````
+`CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frame that used
+during normal UDS communication. A data frames is made up of many different fields, but the key (that are manipulated
+by UDS communication) are listed below:
+
+- CAN Identifier (CAN ID)
+
+  CAN ID is a CAN frame field that informs every receiving CAN node whether a frame is addressed for them.
+  CAN nodes shall filter out and ignore CAN frames with CAN IDs that are not relevant for them.
+
+  There are two formats of CAN ID:
+
+  - Standard (11-bit Identifier)
+
+  - Extended (29-bit identifier)
+
+- Data Length Code (DLC)
+
+  Data Length Code (DLC) informs about number of CAN frame payload bytes to the receivers.
+
+  Maximum value of DLC:
+
+  - CLASSICAL CAN: 8 bytes
+
+  - CAN FD: 64 bytes
+
+- CAN Data Field
+
+  CAN Data Field contains CAN frame payload bytes that are
+
+.. note:: To learn more about CAN bus and CAN frame structure, we recommend to visit
+   `CAN tutorial on Vector page <https://elearning.vector.com/mod/page/view.php?id=333>`_
+
+
 .. _knowledge-base-can-addressing:
 
 CAN Packet Addressing Formats
@@ -212,8 +247,9 @@ Where:
 
 
 
-Data padding ?
-''''''''''''''
+CAN Frame Data Padding
+''''''''''''''''''''''
+If a CAN Packet data to be transmitted are shorter than DLC
 
 
 DLC optimization ?
