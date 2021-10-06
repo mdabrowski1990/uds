@@ -51,7 +51,7 @@ by UDS communication) are listed below:
 
 - CAN Identifier (CAN ID)
 
-  CAN ID is a CAN frame field that informs every receiving CAN node whether a frame is addressed for them.
+  CAN ID is a CAN frame field that informs every receiving CAN node about a sender and a content of a frame.
   CAN nodes shall filter out and ignore CAN frames with CAN IDs that are not relevant for them.
 
   There are two formats of CAN ID:
@@ -62,20 +62,51 @@ by UDS communication) are listed below:
 
 - Data Length Code (DLC)
 
-  Data Length Code (DLC) informs about number of CAN frame payload bytes to the receivers.
-
-  Maximum value of DLC:
-
-  - CLASSICAL CAN: 8 bytes
-
-  - CAN FD: 64 bytes
+  Data Length Code (DLC) informs about number of CAN frame payload bytes that CAN Data Field contains.
 
 - CAN Data Field
 
-  CAN Data Field contains CAN frame payload bytes that are
+  CAN Data consists of CAN frame payload bytes only. The number of bytes that CAN Data Field contains is determined by
+  frame's DLC values as presented in the table:
 
-.. note:: To learn more about CAN bus and CAN frame structure, we recommend to visit
-   `CAN tutorial on Vector page <https://elearning.vector.com/mod/page/view.php?id=333>`_
+  +-----+--------------------------+----------------------------+---------------------+
+  | DLC | Number of CAN Data bytes | Supported by CLASSICAL CAN | Supported by CAN FD |
+  +=====+==========================+============================+=====================+
+  | 0x0 |             0            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x1 |             1            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x2 |             2            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x3 |             3            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x4 |             4            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x5 |             5            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x6 |             6            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x7 |             7            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x8 |             8            |             YES            |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0x9 |            12            |             NO             |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0xA |            16            |             NO             |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0xB |            20            |             NO             |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0xC |            24            |             NO             |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0xD |            32            |             NO             |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0xE |            48            |             NO             |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+  | 0xF |            64            |             NO             |         YES         |
+  +-----+--------------------------+----------------------------+---------------------+
+
+.. note:: To learn more about CAN bus and CAN frame structure, you are encouraged to visit
+   `e-learning portal of Vector Informatik GmbH <https://elearning.vector.com/>`_.
 
 
 .. _knowledge-base-can-addressing:
