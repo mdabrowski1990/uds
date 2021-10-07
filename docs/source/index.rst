@@ -6,6 +6,7 @@ Welcome to UDS documentation!
    Home <self>
    pages/installation.rst
    pages/message.rst
+   pages/packet.rst
    pages/segmentation.rst
    pages/transport.rst
    pages/client_simulation.rst

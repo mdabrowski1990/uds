@@ -1,14 +1,14 @@
 import pytest
 from mock import patch
 
-from uds.messages.service_identifiers import RequestSID, ResponseSID, \
+from uds.message.service_identifiers import RequestSID, ResponseSID, \
     ByteEnum, ValidatedEnum, ExtendableEnum
 
 
 class TestRequestSID:
     """Tests for 'RequestSID' enum."""
 
-    SCRIPT_LOCATION = "uds.messages.service_identifiers"
+    SCRIPT_LOCATION = "uds.message.service_identifiers"
 
     def setup(self):
         self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")

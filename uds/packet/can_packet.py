@@ -2,7 +2,7 @@
 
 __all__ = ["CanPacketType", "CanPacket", "CanPacketRecord"]
 
-from .uds_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractUdsPacketRecord
+from uds.packet.abstract_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractUdsPacketRecord
 
 
 class CanPacketType(AbstractUdsPacketType):

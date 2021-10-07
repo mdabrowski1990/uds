@@ -1,4 +1,4 @@
-from uds.messages.nrc import NRC, \
+from uds.message.nrc import NRC, \
     ByteEnum, ValidatedEnum, ExtendableEnum
 
 

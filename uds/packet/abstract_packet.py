@@ -16,7 +16,7 @@ from typing import Union, Tuple, List, Any
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawBytes, RawBytesTuple, validate_raw_bytes,\
     ReassignmentError, TimeStamp
-from .transmission_attributes import AddressingMemberTyping, AddressingType, \
+from uds.message.transmission_attributes import AddressingMemberTyping, AddressingType, \
     TransmissionDirection, DirectionMemberTyping
 
 
@@ -183,17 +183,17 @@ class AbstractUdsPacketRecord(ABC):
 
 
 PacketTypesTuple = Tuple[AbstractUdsPacketType, ...]
-"""Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacketType` members."""
+"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacketType` members."""
 
 PacketsDefinitionTuple = Tuple[AbstractUdsPacket, ...]
-"""Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacket` instances."""
+"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacket` instances."""
 PacketsDefinitionSequence = Union[PacketsDefinitionTuple, List[AbstractUdsPacket]]
-"""Typing alias of a sequence filled with :class:`~uds.messages.uds_packet.AbstractUdsPacket` instances."""
+"""Typing alias of a sequence filled with :class:`~uds.message.uds_packet.AbstractUdsPacket` instances."""
 
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-"""Typing alias of a tuple filled with :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` instances."""
+"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` instances."""
 PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
-"""Typing alias of a sequence filled with :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` instances."""
+"""Typing alias of a sequence filled with :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` instances."""
 
 PacketTyping = Union[AbstractUdsPacket, AbstractUdsPacketRecord]
 """Typing alias of UDS packet."""

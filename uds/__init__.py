@@ -17,7 +17,7 @@ The package is created with an idea to support any communication bus:
  - `K-Line <https://en.wikipedia.org/wiki/K-Line>`_
 """
 
-__all__ = ["messages", "segmentation", "transport_interface"]
+__all__ = ["message", "segmentation", "transport_interface"]
 
 __version__ = "0.1.1"
 __author__ = "Maciej Dąbrowski"

@@ -45,7 +45,7 @@ class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):
     prerequisite conditions are not met."""
     RequestSequenceError = 0x24  # noqa: F841
     """RequestSequenceError (0x24) NRC indicates that the requested action will not be taken because the server
-    expects a different sequence of request messages or message as sent by the client. This may occur when sequence
+    expects a different sequence of request message or message as sent by the client. This may occur when sequence
     sensitive requests are issued in the wrong order."""
     NoResponseFromSubnetComponent = 0x25  # noqa: F841
     """NoResponseFromSubnetComponent (0x25) NRC indicates that the server has received the request but the requested

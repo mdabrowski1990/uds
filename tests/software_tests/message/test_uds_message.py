@@ -1,14 +1,14 @@
 import pytest
 from mock import Mock, patch
 
-from uds.messages.uds_message import UdsMessage, UdsMessageRecord, \
+from uds.message.uds_message import UdsMessage, UdsMessageRecord, \
     AddressingType, TransmissionDirection, ReassignmentError, AbstractUdsPacketRecord
 
 
 class TestUdsMessage:
     """Tests for 'UdsMessage' class."""
 
-    SCRIPT_LOCATION = "uds.messages.uds_message"
+    SCRIPT_LOCATION = "uds.message.uds_message"
 
     def setup(self):
         self.mock_uds_message = Mock(spec=UdsMessage)

@@ -1,6 +1,6 @@
 Diagnostic Messages
 ===================
-Implementation related to diagnostic messages and packets is located in :mod:`uds.messages` sub-package.
+Implementation related to diagnostic messages and packets is located in :mod:`uds.message` sub-package.
 
 
 .. _implementation-diagnostic-message:
@@ -15,24 +15,24 @@ UDS Message Implementation
 
 UDS Message
 ```````````
-:class:`~uds.messages.uds_message.UdsMessage` class is meant to provide containers for
+:class:`~uds.message.uds_message.UdsMessage` class is meant to provide containers for
 :ref:`diagnostic messages <knowledge-base-diagnostic-message>` information.
 Once a diagnostic message object is created, it stores diagnostic message data that were provided by a user.
 One can **use these objects to execute complex operations** (provided in other subpackages) such as diagnostic messages
 transmission or :ref:`segmentation <knowledge-base-segmentation>`.
 
-All :class:`~uds.messages.uds_message.UdsMessage` **attributes are validated on each value change**, therefore a user will
+All :class:`~uds.message.uds_message.UdsMessage` **attributes are validated on each value change**, therefore a user will
 face an exception if one tries to set an invalid (incompatible with the annotation) value to of these attributes.
 
-Attributes implemented in :class:`~uds.messages.uds_message.UdsMessage` class:
- - :attr:`~uds.messages.uds_message.UdsMessage.payload` - settable
- - :attr:`~uds.messages.uds_message.UdsMessage.addressing` - settable
+Attributes implemented in :class:`~uds.message.uds_message.UdsMessage` class:
+ - :attr:`~uds.message.uds_message.UdsMessage.payload` - settable
+ - :attr:`~uds.message.uds_message.UdsMessage.addressing` - settable
 
 Example code:
 
 .. code-block::  python
 
-   from uds.messages import UdsMessage, AddressingType
+   from uds.message import UdsMessage, AddressingType
 
    # example how to create an object
    uds_message = UdsMessage(payload=[0x10, 0x03],
@@ -55,120 +55,22 @@ Example code:
 
 UDS Message Record
 ``````````````````
-:class:`~uds.messages.uds_message.UdsMessageRecord` class is meant to provide container for historic information
+:class:`~uds.message.uds_message.UdsMessageRecord` class is meant to provide container for historic information
 of :ref:`diagnostic messages <knowledge-base-diagnostic-message>` that were either transmitted or received.
 A **user shall not create objects of this class** in normal cases, but one would probably use them quite often as they
 are returned by other layers of :mod:`uds` package.
 
-All :class:`~uds.messages.uds_message.UdsMessageRecord` **attributes are read only** (they are set only once upon
+All :class:`~uds.message.uds_message.UdsMessageRecord` **attributes are read only** (they are set only once upon
 an object creation) as they store historic data and history cannot be changed (*can't it, right?*).
 A user will face an exception if one tries to modify any attribute.
 
-Attributes implemented in :class:`~uds.messages.uds_message.UdsMessageRecord` class:
- - :attr:`~uds.messages.uds_message.UdsMessageRecord.payload` - readable
- - :attr:`~uds.messages.uds_message.UdsMessageRecord.addressing` - readable
- - :attr:`~uds.messages.uds_message.UdsMessageRecord.direction` - readable
- - :attr:`~uds.messages.uds_message.UdsMessageRecord.packets_records` - readable
- - :attr:`~uds.messages.uds_message.UdsMessageRecord.transmission_start` - readable
- - :attr:`~uds.messages.uds_message.UdsMessageRecord.transmission_end` - readable
-
-
-.. _implementation-uds-packet:
-
-UDS Packet Implementation
---------------------------
-:ref:`UDS packets <knowledge-base-uds-packet>` implementation is divided into three parts:
- - `UDS Packet Type`_ - enums with :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`
-   values definitions
- - `UDS Packet`_ - storages for a temporary :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
-   definition on the user side
- - `UDS Packet Record`_ - storages for historic information of a :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
-   that was either received or transmitted
-
-
-UDS Packet Type
-```````````````
-UDS packet types are supposed to be understood as values of
-:ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`.
-Supported values of UDS packet types are defined in specially designed for this purpose enum classes.
-
-Enum classes that implements UDS packet types:
- - `AbstractUdsPacketType`_
-
-
-AbstractUdsPacketType
-'''''''''''''''''''''
-:class:`~uds.messages.uds_packet.AbstractUdsPacketType` class is an empty enum that is a parent class for all concrete
-UDS packet types enum classes. It **provides common API and values restriction** (UDS packet type values must be
-4-bit integer) **for all children classes**.
-
-A **user shall not use** :class:`~uds.messages.uds_packet.AbstractUdsPacketType` **directly**, but one is able
-(and encouraged) to use :class:`~uds.messages.uds_packet.AbstractUdsPacketType` implementation with any of its
-children classes.
-
-Methods implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketType` class:
- - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
- - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
- - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
-
-
-UDS Packet
-``````````
-:ref:`UDS packets <knowledge-base-uds-packet>` **differs for each communication bus**, therefore
-**multiple classes implementing them are defined**.
-Each UDS packet class provides containers for :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
-information that are specific for a communication bus for which this class is relevant.
-**Objects of UDS packet classes might be used to execute complex operations** (provided in other subpackages) such as
-packets transmission or :ref:`desegmentation <knowledge-base-packets-desegmentation>`.
-
-Implemented UDS packet classes:
- - `AbstractUdsPacket`_
-
-
-AbstractUdsPacket
-'''''''''''''''''
-:class:`~uds.messages.uds_packet.AbstractUdsPacket` class **contains common implementation and provides common API**
-for all UDS Packet classes as they are inheriting after :class:`~uds.messages.uds_packet.AbstractUdsPacket` class.
-
-A **user shall not use** :class:`~uds.messages.uds_packet.AbstractUdsPacket` **directly**, but one is able
-(and encouraged) to use :class:`~uds.messages.uds_packet.AbstractUdsPacket` implementation with any of its
-children classes.
-
-Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacket` class:
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.raw_data` - settable
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.addressing` - settable
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacket.packet_type` - readable
-
-
-UDS Packet Record
-`````````````````
-UDS packet record is a container that stores historic information of :ref:`UDS packet (N_PDU) <knowledge-base-uds-packet>`
-that was either received or transmitted.
-UDS packets **differs for each communication bus**, therefore **multiple classes implementing UDS packet records are defined**.
-
-A **user shall not create objects of UDS packet record classes** in normal cases, but one would probably use them quite
-often as they are returned by other layers of :mod:`uds` package.
-
-Implemented UDS packet record classes:
- - `AbstractUdsPacketRecord`_
-
-
-AbstractUdsPacketRecord
-'''''''''''''''''''''''
-:class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class **contains common implementation and provides common API**
-for all UDS Packet classes as they are inheriting after :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class.
-
-A **user shall not use** :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` **directly**, but one is able
-(and encouraged) to use :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` implementation with any of its
-children classes.
-
-Properties implemented in :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class:
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.frame` - readable
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.direction` - readable
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.packet_type` - readable
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.raw_data` - readable and abstract (bus specific)
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.addressing` - readable and abstract (bus specific)
- - :attr:`~uds.messages.uds_packet.AbstractUdsPacketRecord.transmission_time` - readable and abstract (bus specific)
+Attributes implemented in :class:`~uds.message.uds_message.UdsMessageRecord` class:
+ - :attr:`~uds.message.uds_message.UdsMessageRecord.payload` - readable
+ - :attr:`~uds.message.uds_message.UdsMessageRecord.addressing` - readable
+ - :attr:`~uds.message.uds_message.UdsMessageRecord.direction` - readable
+ - :attr:`~uds.message.uds_message.UdsMessageRecord.packets_records` - readable
+ - :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start` - readable
+ - :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end` - readable
 
 
 UDS Messages Data
@@ -195,17 +97,17 @@ Service Identifiers
 
 POSSIBLE_REQUEST_SIDS
 '''''''''''''''''''''
-:attr:`~uds.messages.service_identifiers.POSSIBLE_REQUEST_SIDS` is a set with all possible values of
+:attr:`~uds.message.service_identifiers.POSSIBLE_REQUEST_SIDS` is a set with all possible values of
 :ref:`Service Identifier <knowledge-base-sid>` data parameter in a :ref:`request message <knowledge-base-request-message>`.
 
 
 RequestSID
 ''''''''''
-Enum :class:`~uds.messages.service_identifiers.RequestSID` contains definitions of request
+Enum :class:`~uds.message.service_identifiers.RequestSID` contains definitions of request
 :ref:`Service Identifiers <knowledge-base-sid>` values.
 
-Methods implemented in :class:`~uds.messages.service_identifiers.RequestSID` class:
- - :meth:`~uds.messages.service_identifiers.RequestSID.is_request_sid`
+Methods implemented in :class:`~uds.message.service_identifiers.RequestSID` class:
+ - :meth:`~uds.message.service_identifiers.RequestSID.is_request_sid`
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
@@ -213,17 +115,17 @@ Methods implemented in :class:`~uds.messages.service_identifiers.RequestSID` cla
 
 POSSIBLE_RESPONSE_SIDS
 ''''''''''''''''''''''
-:attr:`~uds.messages.service_identifiers.POSSIBLE_RESPONSE_SIDS` is a set with all possible values of
+:attr:`~uds.message.service_identifiers.POSSIBLE_RESPONSE_SIDS` is a set with all possible values of
 :ref:`Service Identifier <knowledge-base-sid>` data parameter in a :ref:`response message <knowledge-base-response-message>`.
 
 
 ResponseSID
 '''''''''''
-Enum :class:`~uds.messages.service_identifiers.ResponseSID` contains definitions of response
+Enum :class:`~uds.message.service_identifiers.ResponseSID` contains definitions of response
 :ref:`Service Identifiers <knowledge-base-sid>` values.
 
-Methods implemented in :class:`~uds.messages.service_identifiers.ResponseSID` class:
- - :meth:`~uds.messages.service_identifiers.ResponseSID.is_response_sid`
+Methods implemented in :class:`~uds.message.service_identifiers.ResponseSID` class:
+ - :meth:`~uds.message.service_identifiers.ResponseSID.is_response_sid`
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
@@ -231,10 +133,10 @@ Methods implemented in :class:`~uds.messages.service_identifiers.ResponseSID` cl
 
 Negative Response Codes
 ```````````````````````
-Enum :class:`~uds.messages.nrc.NRC` contains definitions of all common (defined by ISO 14229)
+Enum :class:`~uds.message.nrc.NRC` contains definitions of all common (defined by ISO 14229)
 :ref:`Negative Response Codes <knowledge-base-nrc>` values.
 
-Methods implemented in :class:`~uds.messages.nrc.NRC` class:
+Methods implemented in :class:`~uds.message.nrc.NRC` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
@@ -249,24 +151,24 @@ Attributes that describes UDS communication:
 
 Addressing
 ``````````
-Enum :class:`~uds.messages.transmission_attributes.AddressingType` contains definitions of :ref:`addressing <knowledge-base-addressing>` values that determines UDS communication model:
- - :attr:`~uds.messages.transmission_attributes.AddressingType.PHYSICAL` - direct one to one communication
+Enum :class:`~uds.message.transmission_attributes.AddressingType` contains definitions of :ref:`addressing <knowledge-base-addressing>` values that determines UDS communication model:
+ - :attr:`~uds.message.transmission_attributes.AddressingType.PHYSICAL` - direct one to one communication
    (:ref:`physical addressing <knowledge-base-physical-addressing>`)
- - :attr:`~uds.messages.transmission_attributes.AddressingType.FUNCTIONAL` - one to many communication
+ - :attr:`~uds.message.transmission_attributes.AddressingType.FUNCTIONAL` - one to many communication
    (:ref:`functional addressing <knowledge-base-functional-addressing>`)
 
-Methods implemented in :class:`~uds.messages.transmission_attributes.AddressingType` class:
+Methods implemented in :class:`~uds.message.transmission_attributes.AddressingType` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
 
 
 Transmission Direction
 ``````````````````````
-Enum :class:`~uds.messages.transmission_attributes.TransmissionDirection` contains definitions of communication directions:
- - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.RECEIVED` - incoming
- - :attr:`~uds.messages.transmission_attributes.TransmissionDirection.TRANSMITTED` - outcoming
+Enum :class:`~uds.message.transmission_attributes.TransmissionDirection` contains definitions of communication directions:
+ - :attr:`~uds.message.transmission_attributes.TransmissionDirection.RECEIVED` - incoming
+ - :attr:`~uds.message.transmission_attributes.TransmissionDirection.TRANSMITTED` - outcoming
 
-Methods implemented in :class:`~uds.messages.transmission_attributes.TransmissionDirection` class:
+Methods implemented in :class:`~uds.message.transmission_attributes.TransmissionDirection` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
 

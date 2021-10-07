@@ -3,7 +3,7 @@ from mock import Mock, patch, MagicMock
 
 from uds.segmentation.abstract_segmenter import AbstractSegmenter, SegmentationError, \
     UdsMessage, UdsMessageRecord
-from uds.messages import AbstractUdsPacket, AbstractUdsPacketRecord
+from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 
 
 class TestAbstractSegmenter:

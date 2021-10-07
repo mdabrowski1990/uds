@@ -51,8 +51,8 @@ An overview of features that are required to fully implement UDS protocol is pre
 
 +--------------+-------------------------------------------+----------------------------------------------+
 |   OSI Layer  |              Functionalities              |                Implementation                |
-+--------------+-------------------------------------------+----------------------------------------------+
-| Layer 7      | - diagnostic messages support             | - :mod:`uds.messages.uds_message`            |
++==============+===========================================+==============================================+
+| Layer 7      | - diagnostic messages support             | - :mod:`uds.message`                         |
 | Application  |                                           |                                              |
 +--------------+-------------------------------------------+----------------------------------------------+
 | Layer 6      | - diagnostic messages data interpretation | *To be provided with Database feature.*      |
@@ -65,7 +65,7 @@ An overview of features that are required to fully implement UDS protocol is pre
 | Session      |                                           |                                              |
 |              | - Server simulation                       | *To be provided with Server feature.*        |
 +--------------+-------------------------------------------+----------------------------------------------+
-| Layer 4      | - UDS packet support                      | - :mod:`uds.messages.uds_packet`             |
+| Layer 4      | - UDS packet support                      | - :mod:`uds.packet`                          |
 | Transport    |                                           |                                              |
 |              | - bus specific segmentation               |                                              |
 |              |                                           | *To be extended with features:*              |

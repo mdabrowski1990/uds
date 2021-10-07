@@ -4,7 +4,7 @@ __all__ = ["ReceivedPacketsQueue"]
 
 from typing import NoReturn
 
-from uds.messages import AbstractUdsPacketRecord
+from uds.packet import AbstractUdsPacketRecord
 
 
 class ReceivedPacketsQueue:
@@ -18,7 +18,7 @@ class ReceivedPacketsQueue:
             One can use this parameter to restrict packets managed by this queue.
 
         :raise TypeError: Provided packet_class argument is not a class that inherits after
-            :class:"uds.messages.uds_packet.AbstractUdsPacketRecord".
+            :class:"uds.message.uds_packet.AbstractUdsPacketRecord".
         """
         raise NotImplementedError
 

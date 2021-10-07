@@ -5,8 +5,8 @@ __all__ = ["SegmentationError", "AbstractSegmenter"]
 from typing import Tuple, Union, Any
 from abc import ABC, abstractmethod
 
-from uds.messages import UdsMessage, UdsMessageRecord, \
-    PacketTyping, PacketsSequence, PacketsDefinitionTuple, PacketTypesTuple
+from uds.message import UdsMessage, UdsMessageRecord
+from uds.packet import PacketTyping, PacketsSequence, PacketsDefinitionTuple, PacketTypesTuple
 
 
 class SegmentationError(ValueError):
@@ -114,7 +114,7 @@ class AbstractSegmenter(ABC):
 
         :param message: UDS message to divide into UDS packets.
 
-        :raise TypeError: Provided 'message' argument is not :class:`~uds.messages.uds_message.UdsMessage` type.
+        :raise TypeError: Provided 'message' argument is not :class:`~uds.message.uds_message.UdsMessage` type.
 
         :return: UDS packets that are an outcome of UDS message segmentation.
         """

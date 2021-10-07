@@ -1,16 +1,16 @@
 """
-Module with common implementation of all diagnostic messages (requests and responses).
+Module with common implementation of all diagnostic message (requests and responses).
 
-:ref:`Diagnostic messages <knowledge-base-diagnostic-message>` are defined on higher layers of UDS OSI Model.
+:ref:`Diagnostic message <knowledge-base-diagnostic-message>` are defined on higher layers of UDS OSI Model.
 """
 
 __all__ = ["UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 
-from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
 from .transmission_attributes import AddressingType, AddressingMemberTyping, TransmissionDirection
-from .uds_packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
+from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
+from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
 
 class UdsMessage:
@@ -19,7 +19,7 @@ class UdsMessage:
 
     Objects of this class act as a storage for all relevant attributes of a diagnostic message.
     Later on, such object might be used in segmentation process or to transmit the message. Once a message
-    is transmitted, its historic data would be stored in :class:`~uds.messages.uds_message.UdsMessageRecord`.
+    is transmitted, its historic data would be stored in :class:`~uds.message.uds_message.UdsMessageRecord`.
     """
 
     def __init__(self, payload: RawBytes, addressing: AddressingMemberTyping) -> None:
@@ -85,7 +85,7 @@ class UdsMessageRecord:
 
         :raise TypeError: UDS Packet Records sequence is not list or tuple type.
         :raise ValueError: At least one of UDS Packet Records sequence elements is not an object of
-            :class:`~uds.messages.uds_packet.AbstractUdsPacketRecord` class.
+            :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` class.
         """
         if not isinstance(value, (tuple, list)):
             raise TypeError(f"Provided value is not list or tuple type. "
@@ -151,7 +151,7 @@ class UdsMessageRecord:
     @property  # noqa: F841
     def transmission_start(self) -> TimeStamp:
         """
-        Time stamp when transmission of this messages was initiated.
+        Time stamp when transmission of this message was initiated.
 
         It is determined by a moment of time when the first packet (that carried this message) was published
         to a bus (either received or transmitted).
@@ -163,7 +163,7 @@ class UdsMessageRecord:
     @property  # noqa: F841
     def transmission_end(self) -> TimeStamp:
         """
-        Time stamp when transmission of this messages was completed.
+        Time stamp when transmission of this message was completed.
 
         It is determined by a moment of time when the last packet (that carried this message) was published
         to a bus (either received or transmitted).

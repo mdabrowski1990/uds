@@ -1,14 +1,14 @@
 import pytest
 from mock import Mock, patch
 
-from uds.messages.uds_packet import AbstractUdsPacket, AbstractUdsPacketType, AbstractUdsPacketRecord, \
+from uds.packet.abstract_packet import AbstractUdsPacket, AbstractUdsPacketType, AbstractUdsPacketRecord, \
     AddressingType, NibbleEnum, ValidatedEnum, ExtendableEnum, TransmissionDirection, ReassignmentError
 
 
 class TestAbstractPacketType:
     """Tests for 'AbstractPacketType' class."""
 
-    SCRIPT_LOCATION = "uds.messages.uds_packet"
+    SCRIPT_LOCATION = "uds.packet.abstract_packet"
 
     def setup(self):
         self._patcher_validate_member = patch(f"{self.SCRIPT_LOCATION}.ValidatedEnum.validate_member")
@@ -37,7 +37,7 @@ class TestAbstractPacketType:
 class TestAbstractUdsPacket:
     """Tests for 'AbstractUdsPacket' class."""
 
-    SCRIPT_LOCATION = "uds.messages.uds_packet"
+    SCRIPT_LOCATION = TestAbstractPacketType.SCRIPT_LOCATION
 
     def setup(self):
         self.mock_abstract_packet = Mock(spec=AbstractUdsPacket)
