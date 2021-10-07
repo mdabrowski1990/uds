@@ -137,6 +137,9 @@ a sender and a target/targets entities of a packet.
 .. note:: Correspondence between `Network Address Information`_ and the value of CAN Identifier is left open for
    a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` subformat is used.
 
+.. note:: `Network Protocol Control Information`_ is placed in the **first byte** of
+   :ref:`CAN frame data field <knowledge-base-can-data-field>` if normal addressing format is used.
+
 
 .. _knowledge-base-can-normal-fixed-addressing:
 
@@ -191,11 +194,20 @@ and remaining `Network Address Information`_ are determined by CAN Identifier va
 Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>` and
 a sender entity of a packet.
 
+.. note:: `Network Protocol Control Information`_ is placed in the second byte of
+   :ref:`CAN frame data field <knowledge-base-can-data-field>` if extended addressing format is used.
+
+
 
 .. _knowledge-base-can-mixed-addressing:
 
 Mixed Addressing
 ''''''''''''''''
+Mixed addressing format specifies that the first byte of a CAN frame is an extension of `Network Address Information`_.
+
+.. note:: `Network Protocol Control Information`_ is placed in the **second byte** of
+   :ref:`CAN frame data field <knowledge-base-can-data-field>` if mixed addressing format is used.
+
 
 Mixed Addressing - 11-bit CAN Identifier
 ........................................
@@ -294,7 +306,7 @@ CAN frame data optimization is an alternative to `CAN Frame Data Padding`_.
 If a number of bytes specified in a UDS Packet is shorter than a number of bytes in CAN frame's data field,
 then the sender might decrease DLC value of the :ref:`CAN frame <knowledge-base-can-frame>`.
 
-.. wanining:: TODO: not finished yet.
+.. warning:: TODO: not finished yet.
 
 
 .. _knowledge-base-can-n-pci:
