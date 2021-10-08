@@ -78,7 +78,7 @@ class TestCanSTmin:
         self.mock_validate_raw_byte.assert_called_once_with(raw_value)
         self.mock_warn.assert_not_called()
 
-    @pytest.mark.parametrize("raw_value", [0x80, 0x95, 0xA1, 0xBA, 0xC0, 0xD7, 0xE3, 0xF0, 0xFA, 0xF5, 0xFF])
+    @pytest.mark.parametrize("raw_value", [0x80, 0x95, 0xA1, 0xBA, 0xC0, 0xD7, 0xE3, 0xF0, 0xFA, 0xFE, 0xFF])
     def test_encode__unknown(self, raw_value):
         assert CanSTmin.encode(raw_value) == CanSTmin.MAX_STMIN_TIME
         self.mock_validate_raw_byte.assert_called_once_with(raw_value)
