@@ -41,6 +41,8 @@ Network Protocol Control Information (N_PCI) identifies the type of `UDS packet`
 N_PCI values and their interpretation are bus specific.
 
 
+.. _knowledge-base-uds-can-packet:
+
 UDS Packet on CAN
 -----------------
 In this chapter you will find information about UDS packets that are specific for CAN bus, therefore
@@ -221,11 +223,15 @@ Mixed addressing format specifies that **the first byte of a CAN frame is an ext
    :ref:`CAN frame data field <knowledge-base-can-data-field>` if mixed addressing format is used.
 
 
+.. _knowledge-base-can-mixed-11-bit-addressing:
+
 Mixed Addressing - 11-bit CAN Identifier
 ........................................
 If mixed addressing format is used with 11-bit CAN Identifiers, then the value of **the first CAN frame byte extends**
 the CAN Identifier and a combination of these data forms the entire `Network Address Information`_ of a CAN packet.
 
+
+.. _knowledge-base-can-mixed-29-bit-addressing:
 
 Mixed Addressing - 29-bit CAN Identifier
 ........................................

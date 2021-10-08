@@ -1,7 +1,7 @@
 """
-Module with common implementation of UDS packets for all bus types.
+Implementation of UDS packets that is common for all bus types.
 
-:ref:`UDS Packets <knowledge-base-uds-packet>` are defined on middle layers of UDS OSI Model.
+:ref:`UDS packets <knowledge-base-uds-packet>` are defined on middle layers of UDS OSI Model.
 """
 
 __all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
@@ -32,7 +32,7 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
 
     @classmethod
     @abstractmethod
-    def is_initial_packet_type(cls, value: Any) -> bool:  # type: ignore
+    def is_initial_packet_type(cls, value: Any) -> bool:
         """
         Check whether given argument is a member or a value of packet type that initiates a diagnostic message.
 
@@ -40,7 +40,6 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
 
         :return: True if given argument is a packet type that initiates a diagnostic message, else False.
         """
-        cls.validate_member(value)
 
 
 class AbstractUdsPacket(ABC):

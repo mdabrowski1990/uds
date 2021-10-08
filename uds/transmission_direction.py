@@ -4,11 +4,12 @@ __all__ = ["TransmissionDirection", "DirectionMemberTyping"]
 
 from typing import Union
 
-from aenum import StrEnum
+from aenum import StrEnum, unique
 
 from uds.utilities import ValidatedEnum
 
 
+@unique
 class TransmissionDirection(StrEnum, ValidatedEnum):
     """Direction of a communication."""
 

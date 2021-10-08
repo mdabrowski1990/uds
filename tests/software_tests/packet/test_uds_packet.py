@@ -10,13 +10,6 @@ class TestAbstractPacketType:
 
     SCRIPT_LOCATION = "uds.packet.abstract_packet"
 
-    def setup(self):
-        self._patcher_validate_member = patch(f"{self.SCRIPT_LOCATION}.ValidatedEnum.validate_member")
-        self.mock_validate_member = self._patcher_validate_member.start()
-
-    def teardown(self):
-        self._patcher_validate_member.stop()
-
     def test_inheritance__nibble_enum(self):
         assert issubclass(AbstractUdsPacketType, NibbleEnum)
 
@@ -25,13 +18,6 @@ class TestAbstractPacketType:
 
     def test_inheritance__extendable_enum(self):
         assert issubclass(AbstractUdsPacketType, ExtendableEnum)
-
-    # is_initial_packet_type
-
-    @pytest.mark.parametrize("value", [None, False, Mock()])
-    def test_is_initial_packet_type(self, value):
-        AbstractUdsPacketType.is_initial_packet_type(value=value)
-        self.mock_validate_member.assert_called_once_with(value)
 
 
 class TestAbstractUdsPacket:
