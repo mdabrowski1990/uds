@@ -22,7 +22,8 @@ class AbstractSegmenter(ABC):
     They contain helper methods that are essential for successful
     :ref:`segmentation <knowledge-base-message-segmentation>` and
     :ref:`desegmentation <knowledge-base-packets-desegmentation>` execution.
-    Each concrete segmenter class handles a single bus.
+
+    .. note:: Each concrete segmenter class handles a single bus.
     """
 
     @property
@@ -67,11 +68,12 @@ class AbstractSegmenter(ABC):
         """
         Check whether provided packets are a sequence of following packets.
 
-        Note: This function will return True under following conditions:
-         - a sequence of packets was provided
-         - the first packet in the sequence is an initial packet
-         - no other packet in the sequence is an initial packet
-         - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
+        .. note:: This function will return True under following conditions:
+
+            - a sequence of packets was provided
+            - the first packet in the sequence is an initial packet
+            - no other packet in the sequence is an initial packet
+            - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
 
         :param packets: Packets sequence to check.
 

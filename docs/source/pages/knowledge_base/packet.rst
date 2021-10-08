@@ -14,12 +14,16 @@ UDS packet consists of following fields:
  - `Network Protocol Control Information`_ (N_PCI) - packet type
 
 
+.. _knowledge-base-n-ai:
+
 Network Address Information
 ---------------------------
 Network Address Information (N_AI) contains address information which identifies the recipient(s) and the sender
 between whom data exchange takes place. It also describes communication model (e.g. whether response is required)
 for the message.
 
+
+.. _knowledge-base-n-data:
 
 Network Data Field
 ------------------

@@ -27,7 +27,7 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
     Packet type information is carried by :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`.
     Enums with packet types (N_PCI) values for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
 
-    Note: There are some differences in values for each bus (e.g. LIN does not use Flow Control).
+    .. note:: There are differences in values for each bus (e.g. LIN does not use Flow Control).
     """
 
     @classmethod

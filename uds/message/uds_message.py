@@ -19,8 +19,9 @@ class UdsMessage:
     Definition of a diagnostic message.
 
     Objects of this class act as a storage for all relevant attributes of a diagnostic message.
-    Later on, such object might be used in segmentation process or to transmit the message. Once a message
-    is transmitted, its historic data would be stored in :class:`~uds.message.uds_message.UdsMessageRecord`.
+    Later on, such object might be used in a segmentation process or to transmit the message.
+    Once a message is transmitted, its historic data would be stored in
+    :class:`~uds.message.uds_message.UdsMessageRecord`.
     """
 
     def __init__(self, payload: RawBytes, addressing: AddressingMemberTyping) -> None:

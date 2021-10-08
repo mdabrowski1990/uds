@@ -25,13 +25,14 @@ class UnrecognizedSIDWarning(Warning):
     """
     Warning about SID value that is legit but not recognized by the package.
 
-    If you want to register a SID value, you need to define members (for this SID) manually using
-    :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method
-    (on :class:`~uds.message.service_identifiers.RequestSID` and
-    :class:`~uds.message.service_identifiers.ResponseSID` classes).
-    You can also create feature request in the UDS project `issues management system
-    <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register the SID value (for which this warning
-    was raised).
+    .. note:: If you want to register a SID value, you need to define members (for this SID) manually using
+        :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method
+        (on :class:`~uds.message.service_identifiers.RequestSID` and
+        :class:`~uds.message.service_identifiers.ResponseSID` classes).
+
+        You can also create feature request in the UDS project `issues management system
+        <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register the SID value (for which this warning
+        was raised).
     """
 
 
@@ -40,8 +41,7 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
     Request Service Identifier values for all services that are defined in ISO 14229-1:2020.
 
-    Note: Request :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
-
+    .. note:: Request :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
     """
 
     @classmethod
@@ -100,10 +100,11 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
     Response Service Identifier values for all services that are defined in ISO 14229-1:2020.
 
-    Note: Response :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
+    .. note:: Response :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
 
-    Note: This Enum contains multiple members (for all the services as RequestSID), but most of them are
-    dynamically (implicitly) added and invisible in the documentation.
+    .. warning:: This enum contains multiple members (for all the services as
+        :class:`~uds.message.service_identifiers.RequestSID`), but most of them are dynamically (implicitly) added and
+        invisible in the documentation.
     """
 
     @classmethod
