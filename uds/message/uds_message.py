@@ -8,9 +8,10 @@ __all__ = ["UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 
-from .transmission_attributes import AddressingType, AddressingMemberTyping, TransmissionDirection
+from uds.transmission_direction import TransmissionDirection
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
+from .addressing import AddressingType, AddressingMemberTyping
 
 
 class UdsMessage:

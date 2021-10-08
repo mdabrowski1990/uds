@@ -16,8 +16,8 @@ from typing import Union, Tuple, List, Any
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawBytes, RawBytesTuple, validate_raw_bytes,\
     ReassignmentError, TimeStamp
-from uds.message.transmission_attributes import AddressingMemberTyping, AddressingType, \
-    TransmissionDirection, DirectionMemberTyping
+from uds.message.addressing import AddressingMemberTyping, AddressingType
+from uds.transmission_direction import TransmissionDirection, DirectionMemberTyping
 
 
 class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
