@@ -17,12 +17,13 @@ UDS Message
 ```````````
 :class:`~uds.message.uds_message.UdsMessage` class is meant to provide containers for
 :ref:`diagnostic messages <knowledge-base-diagnostic-message>` information.
-Once a diagnostic message object is created, it stores diagnostic message data that were provided by a user.
+Once a diagnostic message object is created, it stores all diagnostic message information that were provided by a user.
 One can **use these objects to execute complex operations** (provided in other subpackages) such as diagnostic messages
 transmission or :ref:`segmentation <knowledge-base-segmentation>`.
 
-All :class:`~uds.message.uds_message.UdsMessage` **attributes are validated on each value change**, therefore a user will
-face an exception if one tries to set an invalid (incompatible with the annotation) value to of these attributes.
+.. note:: All :class:`~uds.message.uds_message.UdsMessage` **attributes are validated on each value change**,
+   therefore a user will face an exception if one tries to set an invalid (e.g. incompatible with the annotation) value
+   to any of these attributes.
 
 Attributes implemented in :class:`~uds.message.uds_message.UdsMessage` class:
  - :attr:`~uds.message.uds_message.UdsMessage.payload` - settable
@@ -57,12 +58,16 @@ UDS Message Record
 ``````````````````
 :class:`~uds.message.uds_message.UdsMessageRecord` class is meant to provide container for historic information
 of :ref:`diagnostic messages <knowledge-base-diagnostic-message>` that were either transmitted or received.
-A **user shall not create objects of this class** in normal cases, but one would probably use them quite often as they
-are returned by other layers of :mod:`uds` package.
 
-All :class:`~uds.message.uds_message.UdsMessageRecord` **attributes are read only** (they are set only once upon
-an object creation) as they store historic data and history cannot be changed (*can't it, right?*).
-A user will face an exception if one tries to modify any attribute.
+.. note:: A **user shall not create objects of this class** in normal cases, but one would probably use them quite
+   often as they are returned by other layers of :mod:`uds` package.
+
+.. warning:: All :class:`~uds.message.uds_message.UdsMessageRecord` **attributes are read only**
+   (they are set only once upon an object creation) as they store historic data and history cannot be changed
+   (*can't it, right?*).
+
+   A user will face an exception if one tries to modify any attribute.
+
 
 Attributes implemented in :class:`~uds.message.uds_message.UdsMessageRecord` class:
  - :attr:`~uds.message.uds_message.UdsMessageRecord.payload` - readable
@@ -93,6 +98,7 @@ UDS data parameters:
 
 Service Identifiers
 ```````````````````
+Implementation of :ref:`SID <knowledge-base-sid>` values.
 
 
 POSSIBLE_REQUEST_SIDS
@@ -145,9 +151,8 @@ Methods implemented in :class:`~uds.message.nrc.NRC` class:
 Transmission Attributes
 -----------------------
 Attributes that describes UDS communication:
- - Addressing_ - enum with UDS communication models
- - `Transmission Direction`_ - enum with communication directions
-
+ - Addressing_ - attribute describing :ref:`addressing <knowledge-base-addressing>` value
+ - `Transmission Direction`_ - attribute describing direction of a communication
 
 Addressing
 ``````````

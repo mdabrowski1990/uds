@@ -29,7 +29,6 @@ To report issues, please use our `issues tracking system <https://github.com/mda
 
 Our Sponsors
 ------------
-
 Full list of our sponsors:
 
 * `Merit Automotive <https://merit-automotive.com/>`_ |Merit Logo| - sponsoring since September 2021
