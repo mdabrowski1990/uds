@@ -4,14 +4,25 @@ CAN bus specific implementation of UDS packets.
 :ref:`CAN packets <knowledge-base-uds-can-packet>`.
 """
 
-__all__ = ["CanPacketType", "CanAddressingFormat", "CanPacket", "CanPacketRecord"]
+__all__ = ["CanPacketType", "CanAddressingFormat", "CanFlowStatus", "CanPacket", "CanPacketRecord"]
 
 from typing import Any
+from warnings import warn
 
 from aenum import StrEnum, unique
 
-from uds.utilities import ValidatedEnum, NibbleEnum
+from uds.utilities import ValidatedEnum, NibbleEnum, RawByte, TimeMilliseconds, validate_raw_byte
 from .abstract_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractUdsPacketRecord
+
+
+class UnrecognizedSTminWarning(Warning):
+    """
+    Warning about :ref:`STmin <knowledge-base-can-st-min>` value is reserved and therefore not implemented.
+
+    .. note:: If you have any documentation that defines meaning of a value for which this warning was raised, please
+        create a request in `issues management system <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ with
+        details.
+    """
 
 
 @unique
@@ -64,7 +75,51 @@ class CanAddressingFormat(StrEnum, ValidatedEnum):
 
 @unique
 class CanFlowStatus(NibbleEnum, ValidatedEnum):
-    ...  # TODO
+    """Definition of :ref:`Flow Status (FS) <knowledge-base-can-flow-status>` values."""
+
+    ContinueToSend = 0x0
+    """Informs a sending entity to resume Consecutive Frames transmission."""
+    Wait = 0x1
+    """Inform a sending entity to pause Consecutive Frames transmission."""
+    Overflow = 0x2
+    """Informs a sending entity to abort transmission of a diagnostic message."""
+
+
+class CanSTmin:
+    """Helper class for :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>` mapping."""
+
+    MAX_STMIN_TIME: TimeMilliseconds = 127
+
+    @classmethod
+    def encode(cls, value: RawByte) -> TimeMilliseconds:
+        """
+        Map raw value of STmin into time value.
+
+        :param value: Raw value of STmin.
+
+        :return: STmin time in milliseconds.
+        """
+        validate_raw_byte(value)
+        if 0x00 <= value <= 0x7F:
+            return value
+        if 0xF1 <= value <= 0xF9:
+            return (value - 0xF0) * 0.1
+        warn(message=f"STmin 0x{value:X} is not recognized by this version of the package.",
+             category=UnrecognizedSTminWarning)
+        return cls.MAX_STMIN_TIME
+
+    @classmethod
+    def decode(cls, value: TimeMilliseconds) -> RawByte:
+        """
+        Map time value of STmin into raw value.
+
+        :param value: STmin time in milliseconds.
+
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Value out of supported range.
+
+        :return: Raw value of STmin.
+        """
 
 
 class CanPacket(AbstractUdsPacket):
