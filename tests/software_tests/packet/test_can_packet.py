@@ -63,6 +63,28 @@ class TestCanSTmin:
         self._patcher_validate_raw_byte.stop()
         self._patcher_warn.stop()
 
+    # _is_ms_value
+
+    @pytest.mark.parametrize("value", [0, 0., 1, 30, 59, 65., 99, 101, 126, 127, 127.])
+    def test_is_ms_value__true(self, value):
+        assert CanSTmin._is_ms_value(value) is True
+
+    @pytest.mark.parametrize("value", [-1, 128, 1.1, 6.0001, 99.9999])
+    def test_is_ms_value__false(self, value):
+        assert CanSTmin._is_ms_value(value) is False
+
+    # _is_100us_value
+
+    @pytest.mark.parametrize("value", [0.1*v for v in range(1, 10)])
+    def test_is_100us_value__true(self, value):
+        assert CanSTmin._is_100us_value(value) is True
+
+    @pytest.mark.parametrize("value", [0, 0.0, 0.10001, 0.75, 0.89999, 1])
+    def test_is_100us_value__false(self, value):
+        assert CanSTmin._is_100us_value(value) is False
+
+    # encode
+
     @pytest.mark.parametrize("raw_value, time_value", [
         (0x00, 0),
         (0x01, 1),
@@ -84,5 +106,34 @@ class TestCanSTmin:
         self.mock_validate_raw_byte.assert_called_once_with(raw_value)
         self.mock_warn.assert_called_once()
 
-    def test_decode(self):
-        ...
+    # decode
+
+    @pytest.mark.parametrize("value", [None, "1 ms", [1, 1]])
+    def test_decode__type_error(self, value):
+        with pytest.raises(TypeError):
+            CanSTmin.decode(value)
+
+    @pytest.mark.parametrize("value", [128, -1, 0.15, 0.11, 0.95])
+    def test_decode__value_error(self, value):
+        with pytest.raises(ValueError):
+            CanSTmin.decode(value)
+
+    @pytest.mark.parametrize("raw_value, time_value", [
+        (0x00, 0),
+        (0x01, 1),
+        (0x7E, 126),
+        (0x7F, 127),
+        (0xF1, 0.1),
+        (0xF2, 0.2),
+        (0xF8, 0.8),
+        (0xF9, 0.9),
+    ])
+    def test_decode__valid(self, raw_value, time_value):
+        assert CanSTmin.decode(time_value) == raw_value
+
+
+@pytest.mark.integration
+class TestCanSTminIntegration:
+    """Integration tests for CanSTmin class."""
+
+    ...

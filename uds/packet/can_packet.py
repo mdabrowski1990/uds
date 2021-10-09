@@ -89,6 +89,50 @@ class CanSTmin:
     """Helper class for :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>` mapping."""
 
     MAX_STMIN_TIME: TimeMilliseconds = 127
+    """Maximal time value of STmin."""
+
+    MIN_VALUE_MS_RANGE: int = 0
+    """Minimal value of STmin in milliseconds range (raw value and time value are equal)."""
+    MAX_VALUE_MS_RANGE: int = 127
+    """Maximal value of STmin in milliseconds range (raw value and time value are equal)."""
+
+    MIN_RAW_BYTE_VALUE_100US_RANGE: RawByte = 0xF1
+    """Minimal raw value of STmin in 100 microseconds range."""
+    MAX_RAW_BYTE_VALUE_100US_RANGE: RawByte = 0xF9
+    """Maximal raw value of STmin in 100 microseconds range."""
+    MIN_TIME_VALUE_100US_RANGE: TimeMilliseconds = 0.1
+    """Minimal time value of STmin in 100 microseconds range."""
+    MAX_TIME_VALUE_100US_RANGE: TimeMilliseconds = 0.9
+    """Maximal time value of STmin in 100 microseconds range."""
+
+    _FLOATING_POINT_ACCURACY: int = 8
+    """Accuracy of floating point values - when rounding is necessary due to float operation in python."""
+
+    @classmethod
+    def _is_ms_value(cls, value: TimeMilliseconds) -> bool:
+        """
+        Check if provided argument is STmin time value in milliseconds.
+
+        :param value: Value to check.
+
+        :return: True if provided valid value of STmin time in milliseconds, False otherwise.
+        """
+        if not cls.MIN_VALUE_MS_RANGE <= value <= cls.MAX_VALUE_MS_RANGE:
+            return False
+        return value % 1 == 0
+
+    @classmethod
+    def _is_100us_value(cls, value: TimeMilliseconds) -> bool:
+        """
+        Check if provided argument is STmin time value in 100 microseconds.
+
+        :param value: Value to check.
+
+        :return: True if provided valid value of STmin time in 100 microseconds, False otherwise.
+        """
+        if not cls.MIN_TIME_VALUE_100US_RANGE <= value <= cls.MAX_TIME_VALUE_100US_RANGE:
+            return False
+        return round(value % 0.1, cls._FLOATING_POINT_ACCURACY) in (0, 0.1)
 
     @classmethod
     def encode(cls, value: RawByte) -> TimeMilliseconds:
@@ -100,9 +144,9 @@ class CanSTmin:
         :return: STmin time in milliseconds.
         """
         validate_raw_byte(value)
-        if 0x00 <= value <= 0x7F:
+        if cls.MIN_VALUE_MS_RANGE <= value <= cls.MAX_VALUE_MS_RANGE:
             return value
-        if 0xF1 <= value <= 0xF9:
+        if cls.MIN_RAW_BYTE_VALUE_100US_RANGE <= value <= cls.MAX_RAW_BYTE_VALUE_100US_RANGE:
             return (value - 0xF0) * 0.1
         warn(message=f"STmin 0x{value:X} is not recognized by this version of the package.",
              category=UnrecognizedSTminWarning)
@@ -120,6 +164,13 @@ class CanSTmin:
 
         :return: Raw value of STmin.
         """
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
+        if cls._is_ms_value(value):
+            return int(value)
+        if cls._is_100us_value(value):
+            return int(round(value * 10, 0) + 0xF0)
+        raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {value}.")
 
 
 class CanPacket(AbstractUdsPacket):
