@@ -141,7 +141,8 @@ class TestCanPacket:
 
     # __init__
 
-    def test_init__invalid_type(self, addressing, addressing_format, packet_type):
+    @pytest.mark.parametrize("packet_type", [None, 0xFF, "not a packet type"])
+    def test_init__invalid_type(self, example_addressing_type, example_can_addressing_format, packet_type):
         with pytest.raises(ValueError):
             CanPacket.__init__(self=self.mock_can_packet)
 

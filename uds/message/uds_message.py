@@ -1,24 +1,25 @@
 """
 Module with common implementation of all diagnostic message (requests and responses).
 
-:ref:`Diagnostic message <knowledge-base-diagnostic-message>` are defined on higher layers of UDS OSI Model.
+:ref:`Diagnostic message <knowledge-base-diagnostic-message>` are defined on upper layers of UDS OSI Model.
 """
 
 __all__ = ["UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 
-from uds.transmission_direction import TransmissionDirection
+from uds.transmission_attributes.transmission_direction import TransmissionDirection
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
-from .addressing import AddressingType, AddressingTypeMemberTyping
+from uds.transmission_attributes.addressing import AddressingType, AddressingTypeMemberTyping
 
 
 class UdsMessage:
     """
     Definition of a diagnostic message.
 
-    Objects of this class act as a storage for all relevant attributes of a diagnostic message.
+    Objects of this class act as a storage for all relevant attributes of a
+    :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
     Later on, such object might be used in a segmentation process or to transmit the message.
     Once a message is transmitted, its historic data would be stored in
     :class:`~uds.message.uds_message.UdsMessageRecord`.
@@ -66,7 +67,7 @@ class UdsMessage:
 
 
 class UdsMessageRecord:
-    """Storage for historic information of a diagnostic message that was either received or transmitted."""
+    """Storage for historic information about a diagnostic message that was either received or transmitted."""
 
     def __init__(self, payload: RawBytes, packets_records: PacketsRecordsSequence) -> None:
         """
@@ -120,13 +121,22 @@ class UdsMessageRecord:
 
     @property
     def packets_records(self) -> PacketsRecordsTuple:
-        """Sequence (in transmission order) of UDS packets records that carried this diagnostic message."""
+        """
+        Sequence (in transmission order) of UDS packets records that carried this diagnostic message.
+
+        :ref:`UDS packets <knowledge-base-uds-packet>` sequence is a complete sequence of packets that was exchanged
+        during this diagnostic message transmission.
+        """
         return self.__packets_records
 
     @packets_records.setter
     def packets_records(self, value: PacketsRecordsSequence):
         """
         Assign records value of UDS Packets that carried this diagnostic message .
+
+        Provided :ref:`UDS packets <knowledge-base-uds-packet>` sequence must be a complete sequence of packets that
+        was exchanged during this diagnostic message transmission. Sequence must not contain any packets that are
+        unrelated to transmission of this message.
 
         :param value: UDS Packet Records sequence value to set.
 

@@ -1,8 +1,7 @@
 """
 Implementation of diagnostic messages addressing.
 
-Diagnostic messages :ref:`addressing <knowledge-base-addressing>` describes a communication model that is used
-during a transmission.
+:ref:`Addressing <knowledge-base-addressing>` describes a communication model that is used during UDS communication.
 """
 
 __all__ = ["AddressingType", "AddressingTypeMemberTyping"]
@@ -18,8 +17,7 @@ class AddressingType(StrEnum, ValidatedEnum):
     """
     Addressing types values defined by UDS protocol.
 
-    :ref:`Addressing <knowledge-base-addressing>` describes a communication model that is used for
-    a diagnostic message transmission.
+    :ref:`Addressing <knowledge-base-addressing>` describes a communication model that is used during UDS communication.
     """
 
     PHYSICAL = "Physical"  # noqa: F841

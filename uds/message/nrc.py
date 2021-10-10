@@ -1,4 +1,9 @@
-"""Module with entire :ref:`Negative Response Codes (NRC) <knowledge-base-nrc>` implementation."""
+"""
+Module with an entire Negative Response Code (NRC) data parameters implementation.
+
+.. note:: Explanation of :ref:`NRC <knowledge-base-nrc>` values meaning is located in appendix A1 of
+    ISO 14229-1 standard.
+"""
 
 __all__ = ["NRC"]
 
@@ -12,7 +17,8 @@ class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
     Negative Response Codes (NRC) values.
 
-    Explanation of :ref:`NRC <knowledge-base-nrc>` values meaning is located in appendix A1 of ISO 14229-1 standard.
+    `Negative Response Code <knowledge-base-nrc>` is a data parameter located in the last byte of a negative response
+    message. NRC informs why a server is not sending a positive response message.
     """
 
     # PositiveResponse = 0x00

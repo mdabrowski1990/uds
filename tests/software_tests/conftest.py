@@ -1,7 +1,7 @@
 from pytest import fixture
 
-from uds.message import AddressingType, POSSIBLE_REQUEST_SIDS
-from uds.transmission_direction import TransmissionDirection
+from uds.message import POSSIBLE_REQUEST_SIDS
+from uds.transmission_attributes import TransmissionDirection, AddressingType
 
 
 @fixture(params=[(0x00, 0xFF, 0xAA, 0x55), [0xA1], [0x12, 0xFF, 0xE0, 0x1D, 0xC2, 0x3B, 0x00, 0xFF], (0xFF, ), [0x00]])

@@ -1,6 +1,6 @@
 from aenum import StrEnum
 
-from uds.message.addressing import AddressingType
+from uds.transmission_attributes.addressing import AddressingType
 from uds.utilities import ValidatedEnum
 
 

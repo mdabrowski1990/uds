@@ -1,4 +1,9 @@
-""":ref:`Service Identifiers (SID) <knowledge-base-sid>` implementation."""
+"""
+Service Identifier (SID) data parameter implementation.
+
+.. note:: :ref:`Service Identifiers <knowledge-base-sid>` values and their meanings are defined by ISO 14229-1
+and SAE J1979 standards.
+"""
 
 __all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS", "UnrecognizedSIDWarning"]
 
@@ -30,16 +35,16 @@ class UnrecognizedSIDWarning(Warning):
         (on :class:`~uds.message.service_identifiers.RequestSID` and
         :class:`~uds.message.service_identifiers.ResponseSID` classes).
 
-        You can also create feature request in the UDS project `issues management system
-        <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register the SID value (for which this warning
-        was raised).
+        You can also create feature request in the UDS project
+        `issues management system <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register
+        a SID value (for which this warning was raised).
     """
 
 
 @unique
 class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
-    Request Service Identifier values for all services that are defined in ISO 14229-1:2020.
+    Request Service Identifier values.
 
     .. note:: Request :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
     """
@@ -98,7 +103,7 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 @unique
 class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
-    Response Service Identifier values for all services that are defined in ISO 14229-1:2020.
+    Response Service Identifier values.
 
     .. note:: Response :ref:`SID <knowledge-base-sid>` is always the first payload byte of all request message.
 

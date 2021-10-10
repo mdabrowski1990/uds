@@ -25,6 +25,8 @@ __credits__ = ["Maciej Dąbrowski (https://www.linkedin.com/in/maciej-dabrowski-
 __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"
 
+import uds.transmission_attributes
+import uds.packet
 import uds.message
 import uds.segmentation
 import uds.transport_interface

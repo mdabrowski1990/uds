@@ -7,7 +7,7 @@ from typing import Union, Tuple, List, Set, Any
 from datetime import datetime
 
 RawByte = int
-"""Typing alias of byte value - integer in range 0x00-0xFF - that is used by the package."""
+"""Typing alias of a byte value - integer in range 0x00-0xFF - that is used by the package."""
 RawBytesTuple = Tuple[RawByte, ...]
 """Typing alias of a tuple filled with byte values."""
 RawBytesSet = Set[RawByte]

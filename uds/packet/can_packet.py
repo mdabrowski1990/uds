@@ -11,7 +11,7 @@ from warnings import warn
 
 from aenum import StrEnum, unique
 
-from uds.message import AddressingTypeMemberTyping, AddressingType
+from uds.transmission_attributes import AddressingTypeMemberTyping, AddressingType
 from uds.utilities import ValidatedEnum, NibbleEnum, TimeMilliseconds, \
     RawByte, RawBytes, RawBytesTuple, validate_raw_byte
 from .abstract_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractUdsPacketRecord
