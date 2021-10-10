@@ -16,8 +16,8 @@ from typing import Union, Tuple, List, Any
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawBytes, RawBytesTuple, validate_raw_bytes,\
     ReassignmentError, TimeStamp
-from uds.message.addressing import AddressingMemberTyping, AddressingType
-from uds.transmission_direction import TransmissionDirection, DirectionMemberTyping
+from uds.message.addressing import AddressingTypeMemberTyping, AddressingType
+from uds.transmission_direction import TransmissionDirection, TransmissionDirectionTyping
 
 
 class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
@@ -45,47 +45,17 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
 class AbstractUdsPacket(ABC):
     """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
 
-    def __init__(self, raw_data: RawBytes, addressing: AddressingMemberTyping) -> None:
-        """
-        Create a storage for a single UDS packet.
-
-        :param raw_data: Raw bytes of UDS packet data.
-        :param addressing: Addressing type for which this packet is relevant.
-        """
-        self.raw_data = raw_data  # type: ignore
-        self.addressing = addressing  # type: ignore
-
     @property
+    @abstractmethod
     def addressing(self) -> AddressingType:
         """Addressing type for which this packet is relevant."""
-        return self.__addressing
-
-    @addressing.setter
-    def addressing(self, value: AddressingMemberTyping):
-        """
-        Set value of addressing type attribute.
-
-        :param value: Value of addressing type to set.
-        """
-        AddressingType.validate_member(value)
-        self.__addressing = AddressingType(value)
 
     @property
-    def raw_data(self) -> RawBytesTuple:
-        """Raw bytes of data that this packet carries."""
-        return self.__raw_data
+    @abstractmethod
+    def raw_frame_data(self) -> RawBytesTuple:
+        """Raw bytes of data of a frame that carries this packet."""
 
-    @raw_data.setter
-    def raw_data(self, value: RawBytes):
-        """
-        Set value of raw bytes of data.
-
-        :param value: Raw bytes of data to be carried by this packet.
-        """
-        validate_raw_bytes(value)
-        self.__raw_data = tuple(value)
-
-    @property  # noqa: F841
+    @property
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
         """UDS packet type value - N_PCI value of this N_PDU."""
@@ -95,7 +65,7 @@ class AbstractUdsPacketRecord(ABC):
     """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
-    def __init__(self, frame: object, direction: DirectionMemberTyping) -> None:
+    def __init__(self, frame: object, direction: TransmissionDirectionTyping) -> None:
         """
         Create a record of a historic information about a packet that was either received or transmitted.
 
@@ -122,7 +92,7 @@ class AbstractUdsPacketRecord(ABC):
         return self.__frame
 
     @frame.setter
-    def frame(self, value: DirectionMemberTyping):
+    def frame(self, value: TransmissionDirectionTyping):
         """
         Set value of frame attribute.
 
@@ -144,7 +114,7 @@ class AbstractUdsPacketRecord(ABC):
         return self.__direction
 
     @direction.setter
-    def direction(self, value: DirectionMemberTyping):
+    def direction(self, value: TransmissionDirectionTyping):
         """
         Set value of direction attribute.
 

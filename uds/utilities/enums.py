@@ -56,7 +56,7 @@ class ValidatedEnum(Enum):
 
         :param value: Value to validate.
 
-        :raise TypeError: Provided value is not a member neither a value of this Enum.
+        :raise ValueError: Provided value is not a member neither a value of this Enum.
         """
         if not cls.is_member(value):
             raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}.")

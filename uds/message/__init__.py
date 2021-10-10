@@ -9,9 +9,9 @@ It provides tools for:
  - Negative Response Codes (NRC) definition
 """
 
-from uds.transmission_direction import TransmissionDirection, DirectionMemberTyping
+from uds.transmission_direction import TransmissionDirection, TransmissionDirectionTyping
 from .uds_message import UdsMessage, UdsMessageRecord
 from .service_identifiers import RequestSID, ResponseSID, POSSIBLE_REQUEST_SIDS, POSSIBLE_RESPONSE_SIDS, \
     UnrecognizedSIDWarning
 from .nrc import NRC
-from .addressing import AddressingType, AddressingMemberTyping
+from .addressing import AddressingType, AddressingTypeMemberTyping

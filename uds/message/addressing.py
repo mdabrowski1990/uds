@@ -5,7 +5,7 @@ Diagnostic messages :ref:`addressing <knowledge-base-addressing>` describes a co
 during a transmission.
 """
 
-__all__ = ["AddressingType", "AddressingMemberTyping"]
+__all__ = ["AddressingType", "AddressingTypeMemberTyping"]
 
 from typing import Union
 
@@ -29,5 +29,5 @@ class AddressingType(StrEnum, ValidatedEnum):
     communication."""
 
 
-AddressingMemberTyping = Union[AddressingType, str]
-"""Typing alias that describes AddressingType member."""
+AddressingTypeMemberTyping = Union[AddressingType, str]
+"""Typing alias that describes :class:`~uds.message.addressing.AddressingType` member."""

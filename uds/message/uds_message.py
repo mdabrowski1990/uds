@@ -11,7 +11,7 @@ from typing import Any
 from uds.transmission_direction import TransmissionDirection
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
-from .addressing import AddressingType, AddressingMemberTyping
+from .addressing import AddressingType, AddressingTypeMemberTyping
 
 
 class UdsMessage:
@@ -24,7 +24,7 @@ class UdsMessage:
     :class:`~uds.message.uds_message.UdsMessageRecord`.
     """
 
-    def __init__(self, payload: RawBytes, addressing: AddressingMemberTyping) -> None:
+    def __init__(self, payload: RawBytes, addressing: AddressingTypeMemberTyping) -> None:
         """
         Create a storage for a single diagnostic message.
 
@@ -55,7 +55,7 @@ class UdsMessage:
         return self.__addressing
 
     @addressing.setter
-    def addressing(self, value: AddressingMemberTyping):
+    def addressing(self, value: AddressingTypeMemberTyping):
         """
         Set value of addressing type for which this diagnostic message is relevant.
 

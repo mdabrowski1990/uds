@@ -148,6 +148,9 @@ If normal addressing format is used, then the value of CAN Identifier carries an
 Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>`,
 a sender and a target/targets entities of a packet.
 
+Following parameters specifies `Network Address Information`_ when Normal Addressing is used:
+ - CAN ID
+
 .. note:: Correspondence between `Network Address Information`_ and the value of CAN Identifier is left open for
    a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` subformat is used.
 
@@ -162,30 +165,21 @@ Normal Fixed Addressing
 Normal fixed addressing format is a special case of :ref:`normal addressing <knowledge-base-can-normal-addressing>`
 in which the mapping of the address information into the CAN identifier is further defined.
 
-For normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
+.. note:: For normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
+
+Following parameters specifies `Network Address Information`_ when Normal Fixed Addressing is used:
+ - CAN ID (with embedded **Target Address** and **Source Address**)
 
 CAN Identifier values used for UDS communication using normal fixed addressing:
  - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
-   according to the formula:
-
-   .. code-block::
-
-      CAN_ID = 0x18DA0000 + TA*0x100 + SA
-
-   or
+   as presented below:
 
    .. code-block::
 
       CAN_ID = 0x18DATTSS
 
  - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
-   according to the formula:
-
-   .. code-block::
-
-      CAN_ID = 0x18DB0000 + TA*0x100 + SA
-
-   or
+   as presented below:
 
    .. code-block::
 
@@ -193,10 +187,8 @@ CAN Identifier values used for UDS communication using normal fixed addressing:
 
 where:
  - CAN_ID - value of **CAN Identifier**
- - TA - 8-bit value of a **target address**
- - TT - two (hexadecimal) digits of a 8-bit **target address** value
- - SA - 8-bit value of a **source address**
- - SS - two (hexadecimal) digits of a 8-bit **source address** value
+ - TT - two (hexadecimal) digits of a 8-bit **Target Address** value
+ - SS - two (hexadecimal) digits of a 8-bit **Source Address** value
 
 
 .. _knowledge-base-can-extended-addressing:
@@ -207,9 +199,12 @@ If extended addressing format is used, then the value of **the first CAN frame b
 a UDS packet and remaining `Network Address Information`_ (a sending entity and :ref:`an addressing type <knowledge-base-addressing>`)
 are determined by CAN Identifier value.
 
+Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
+ - CAN ID
+ - Target Address (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`)
+
 .. note:: `Network Protocol Control Information`_ is placed in the **second byte** of
    :ref:`CAN frame data field <knowledge-base-can-data-field>` if extended addressing format is used.
-
 
 
 .. _knowledge-base-can-mixed-addressing:
@@ -230,6 +225,10 @@ Mixed Addressing - 11-bit CAN Identifier
 If mixed addressing format is used with 11-bit CAN Identifiers, then the value of **the first CAN frame byte extends**
 the CAN Identifier and a combination of these data forms the entire `Network Address Information`_ of a CAN packet.
 
+Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
+ - CAN ID
+ - Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`)
+
 
 .. _knowledge-base-can-mixed-29-bit-addressing:
 
@@ -239,28 +238,20 @@ If mixed addressing format is used with 29-bit CAN Identifiers, then the value o
 the CAN Identifier (that contains **Target Address** and **Sender Address** values) and
 a combination of these data forms the entire `Network Address Information`_ of a CAN packet.
 
+Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
+ - CAN ID (with embedded **Target Address** and **Source Address**)
+ - Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`)
+
 CAN Identifier values used for UDS communication using mixed 29-bit addressing:
  - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
-   according to formula:
-
-   .. code-block::
-
-      CAN_ID = 0x18CE0000 + TA*0x100 + SA
-
-   or
+   as presented below:
 
    .. code-block::
 
       CAN_ID = 0x18CETTSS
 
  - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
-   according to formula:
-
-   .. code-block::
-
-      CAN_ID = 0x18CD0000 + TA*0x100 + SA
-
-   or
+   as presented below:
 
    .. code-block::
 
@@ -268,10 +259,8 @@ CAN Identifier values used for UDS communication using mixed 29-bit addressing:
 
 where:
  - CAN_ID - value of **CAN Identifier**
- - TA - 8-bit value of a **target address**
- - TT - two (hexadecimal) digits of a 8-bit **target address** value
- - SA - 8-bit value of a **source address**
- - SS - two (hexadecimal) digits of a 8-bit **source address** value
+ - TT - two (hexadecimal) digits of a 8-bit **Target Address** value
+ - SS - two (hexadecimal) digits of a 8-bit **Source Address** value
 
 
 .. _knowledge-base-can-data-field:
@@ -307,6 +296,8 @@ where:
    presented in :ref:`the table with CAN packets formats <knowledge-base-can-packets-format>`.
 
 
+.. _knowledge-base-can-frame-data-padding:
+
 CAN Frame Data Padding
 ''''''''''''''''''''''
 If a number of bytes specified in a UDS Packet is shorter than a number of bytes in CAN frame's data field,
@@ -319,6 +310,8 @@ insertions and bit alteration on the wire.
 .. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8 and
    optional for frames with DLC=8.
 
+
+.. _knowledge-base-can-data-optimization:
 
 CAN Frame Data Optimization
 '''''''''''''''''''''''''''

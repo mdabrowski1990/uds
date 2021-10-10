@@ -19,6 +19,7 @@ pylint:
     max-args: 10
     max-attributes: 15
     min-public-methods: 1
+    max-parents: 10
 
   disable:
     - django-not-available

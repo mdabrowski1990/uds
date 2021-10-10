@@ -8,9 +8,10 @@ It provides tools for:
  - storing historic information about packets that were either received or transmitted
 """
 
-from uds.transmission_direction import TransmissionDirection, DirectionMemberTyping
+from uds.transmission_direction import TransmissionDirection, TransmissionDirectionTyping
 from .abstract_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractUdsPacketRecord, \
     PacketTyping, PacketsTuple, PacketsSequence, \
     PacketsDefinitionTuple, PacketsDefinitionSequence, \
     PacketsRecordsTuple, PacketsRecordsSequence, \
     PacketTypesTuple
+from .can_packet import CanAddressingFormat
