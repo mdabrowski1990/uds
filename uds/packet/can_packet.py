@@ -102,7 +102,7 @@ class CanFlowStatus(NibbleEnum, ValidatedEnum):
 CanFlowStatusTyping = Union[CanFlowStatus, int]
 
 
-class CanSTmin:
+class CanSTminTranslator:
     """Helper class for :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>` mapping."""
 
     MAX_STMIN_TIME: TimeMilliseconds = 127
@@ -193,7 +193,14 @@ class CanSTmin:
         raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {value}.")
 
 
-CanSTminTyping = Union[CanSTmin, RawByte]
+class CanId:
+
+    MIN_11BIT_VALUE: int = 0
+    MAX_11BIT_VALUE: int = 0x7FF
+    MIN_29BIT_VALUE: int = 0x800
+
+    def is_can_id(self):
+        ...
 
 
 class CanPacket(AbstractUdsPacket):
@@ -207,48 +214,95 @@ class CanPacket(AbstractUdsPacket):
                  source_address: Optional[RawByte] = None,
                  address_extension: Optional[RawByte] = None,
                  use_data_optimization: bool = True,
-                 dlc: Optional[int] = None,  # auto assessed by default
+                 dlc: Optional[int] = None,
                  filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                 **type_specific_kwargs: Any) -> None:
+                 **packet_type_specific_kwargs: Any) -> None:
         """
         Create a storage for a single CAN packet.
 
-        :ref:`CAN packet <knowledge-base-uds-can-packet>` information are stored in this ob
+        :param addressing: Addressing type for which this CAN packet is relevant.
+        :param addressing_format: CAN addressing format that this CAN packet uses.
+        :param packet_type: Type of this CAN packet.
+        :param can_id: CAN Identifier that is used to transmit this packet.
+            If None, then an attempt would be made to assess the CAN ID value basing on other provided arguments.
+        :param target_address: Target Address value carried by this CAN Packet.
+            Leave None if provided `addressing_format` does not use Target Address parameter.
+        :param source_address: Source Address value carried by this CAN packet.
+            Leave None if provided `addressing_format` does not use Target Address parameter.
+        :param address_extension: Address Extension value carried by this CAN packet.
+            Leave None if provided `addressing_format` does not use Target Address parameter.
+        :param use_data_optimization: Flag whether to use CAN Data Frame Optimization during CAN Packet creation.
+            - False - CAN Frame Data Padding is used in all cases (`dlc` value must be provided).
+            - True - CAN Frame Data Optimization is used whenever possible, CAN Frame Data Padding is used when
+              sole CAN Frame Data Optimization is not enough.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
+            Leave None if `use_data_optimization` argument is set to True.
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
+        :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
+            - payload (required for: SF, FF and CF): Diagnostic message data that are carried by this CAN packet.
+            - data_length (required for: FF): Number of bytes that a diagnostic message carried by this CAN packet has.
+            - sequence_number (required for: CF): Sequence number of a Consecutive Frame.
+            - flow_status (required for: FC): Flow status information carried by a Flow Control frame.
+            - block_size (optional for: FC): Block size information carried by a Flow Control frame.
+            - stmin (optional for: FC): Separation Time minimum information carried by a Flow Control frame.
+        """
+        self.set_address_information(addressing=addressing,
+                                     addressing_format=addressing_format,
+                                     can_id=can_id,
+                                     target_address=target_address,
+                                     source_address=source_address,
+                                     address_extension=address_extension)
+        self.set_data(packet_type=packet_type,
+                      use_data_optimization=use_data_optimization,
+                      dlc=dlc,
+                      filler_byte=filler_byte,
+                      **packet_type_specific_kwargs)
+
+    def set_address_information(self,
+                                addressing: AddressingTypeMemberTyping,
+                                addressing_format: CanAddressingFormatTyping,
+                                *,
+                                can_id: Optional[int] = None,
+                                target_address: Optional[RawByte] = None,
+                                source_address: Optional[RawByte] = None,
+                                address_extension: Optional[RawByte] = None) -> None:
+        """
+        Set or change addressing information for this CAN packet.
+
+        This function enables to set an entire :ref:`Network Address Information <knowledge-base-n-ai>`
+        for a :ref:`CAN packet <knowledge-base-uds-can-packet>`.
 
         :param addressing: Addressing type for which this CAN packet is relevant.
-        :param addressing_format: CAN addressing format of this CAN packet.
-        :param packet_type:
-        :param can_id:
-        :param target_address:
-        :param source_address:
-        :param address_extension:
-        :param use_data_optimization:
-        :param dlc:
-        :param filler_byte:
-        :param type_specific_kwargs:
+        :param addressing_format: CAN addressing format that this CAN packet uses.
+        :param can_id: CAN Identifier that is used to transmit this packet.
+            If None, then an attempt would be made to assess the CAN ID value basing on other provided arguments.
+        :param target_address: Target Address value carried by this CAN Packet.
+            Leave None if provided `addressing_format` does not use Target Address parameter.
+        :param source_address: Source Address value carried by this CAN packet.
+            Leave None if provided `addressing_format` does not use Target Address parameter.
+        :param address_extension: Address Extension value carried by this CAN packet.
+            Leave None if provided `addressing_format` does not use Target Address parameter.
         """
+        self.__validate_address_information(addressing=addressing, addressing_format=addressing_format, can_id=can_id,
+                                            target_address=target_address, source_address=source_address,
+                                            address_extension=address_extension)
 
-    def set_addressing_information(self,
-                                   addressing: AddressingTypeMemberTyping,
-                                   addressing_format: CanAddressingFormatTyping,
-                                   *,
-                                   can_id: Optional[int] = None,
-                                   target_address: Optional[RawByte] = None,
-                                   source_address: Optional[RawByte] = None,
-                                   address_extension: Optional[RawByte] = None) -> None:
-        """
-        Set :ref:`Network Address Information (N_AI) <knowledge-base-n-ai>`.
-
-        :param addressing:
-        :param addressing_format:
-        :param can_id:
-        :param target_address:
-        :param source_address:
-        :param address_extension:
-
-        :raise TypeError:
-        :raise ValueError:
-        """
+        # convert arguments
+        addressing_type_instance = AddressingType(addressing)
+        can_addressing_format_instance = CanAddressingFormat(addressing_format)
+        # set values
+        if can_addressing_format_instance == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
+            ...
+        elif can_addressing_format_instance == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+            ...
+        elif can_addressing_format_instance == CanAddressingFormat.EXTENDED_ADDRESSING:
+            ...
+        elif can_addressing_format_instance == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+            ...
+        elif can_addressing_format_instance == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+            ...
+        else:
+            raise NotImplementedError
 
     def set_data(self,
                  packet_type: CanPacketTypeMemberTyping,
@@ -256,20 +310,52 @@ class CanPacket(AbstractUdsPacket):
                  use_data_optimization: bool = True,
                  dlc: Optional[int] = None,
                  filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                 **packet_specific_args: Any) -> None:
+                 **packet_type_specific_kwargs: Any) -> None:
         """
 
         :param packet_type:
         :param use_data_optimization:
         :param dlc:
         :param filler_byte:
-        :param packet_specific_args:
+        :param packet_type_specific_kwargs:
 
         :raise TypeError:
         :raise ValueError:
         """
 
-    def _set_single_frame_data(self, payload: RawBytes) -> None:
+    @staticmethod
+    def __validate_address_information(addressing: AddressingTypeMemberTyping,
+                                       addressing_format: CanAddressingFormatTyping,
+                                       can_id: Optional[int],
+                                       target_address: Optional[RawByte],
+                                       source_address: Optional[RawByte],
+                                       address_extension: Optional[RawByte]) -> None:
+        """
+        Validate addressing information arguments has proper types and value in range.
+
+        :param addressing: Addressing type for which this CAN packet is relevant.
+        :param addressing_format: CAN addressing format that this CAN packet uses.
+        :param can_id: CAN Identifier that is used to transmit this packet.
+        :param target_address: Target Address value carried by this CAN Packet.
+        :param source_address: Source Address value carried by this CAN packet.
+        :param address_extension: Address Extension value carried by this CAN packet.
+
+        :raise TypeError: At least one argument has invalid type (incompatible with annotation).
+        :raise ValueError: At least one argument has invalid value.
+        """
+        AddressingType.validate_member(addressing)
+        CanAddressingFormat.validate_member(addressing_format)
+        if can_id is not None and not isinstance(can_id, int):
+            # TODO: validate CAN ID
+            raise TypeError(f"Provided can_id value is not int type. Actual type: {type(can_id)}.")
+        if target_address is not None:
+            validate_raw_byte(target_address)
+        if source_address is not None:
+            validate_raw_byte(source_address)
+        if address_extension is not None:
+            validate_raw_byte(address_extension)
+
+    def __set_single_frame_data(self, payload: RawBytes) -> None:
         """
 
         :param payload:
@@ -278,7 +364,7 @@ class CanPacket(AbstractUdsPacket):
         :raise ValueError:
         """
 
-    def _set_first_frame_data(self, data_length: int, payload: RawBytes) -> None:
+    def __set_first_frame_data(self, data_length: int, payload: RawBytes) -> None:
         """
 
         :param data_length:
@@ -288,7 +374,7 @@ class CanPacket(AbstractUdsPacket):
         :raise ValueError:
         """
 
-    def _set_consecutive_frame_data(self, sequence_number: int, payload: RawBytes) -> None:
+    def __set_consecutive_frame_data(self, sequence_number: int, payload: RawBytes) -> None:
         """
 
         :param sequence_number:
@@ -298,8 +384,10 @@ class CanPacket(AbstractUdsPacket):
         :raise ValueError:
         """
 
-    def _set_flow_control_data(self, flow_status: CanFlowStatusTyping, block_size: RawByte,
-                              stmin: CanSTminTyping) -> None:
+    def __set_flow_control_data(self,
+                                flow_status: CanFlowStatusTyping,
+                                block_size: Optional[RawByte] = None,
+                                stmin: Optional[RawByte] = None) -> None:
         """
 
         :param flow_status:
