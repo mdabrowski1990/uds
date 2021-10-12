@@ -15,6 +15,15 @@ class TestCanPacket:
 
     def setup(self):
         self.mock_can_packet = Mock(spec=CanPacket)
+        # patching
+        self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
+        self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
+        self._patcher_validate_can_addressing_format = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
+        self.mock_validate_can_addressing_format = self._patcher_validate_can_addressing_format.start()
+
+    def teardown(self):
+        self._patcher_validate_addressing_type.stop()
+        self._patcher_validate_can_addressing_format.stop()
 
     # __init__
 
@@ -67,116 +76,7 @@ class TestCanPacket:
 
     # __validate_address_information
 
-    @pytest.mark.parametrize("addressing", [AddressingType.PHYSICAL, AddressingType.FUNCTIONAL.value])
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.EXTENDED_ADDRESSING,
-                                                   CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value,
-                                                   CanAddressingFormat.MIXED_29BIT_ADDRESSING])
-    @pytest.mark.parametrize("can_id", [None, 0, 0x1FFFFFFF])
-    @pytest.mark.parametrize("target_address, source_address, address_extension", [
-        (None, None, None),
-        (0, 0, 0),
-        (0x06, 0x92, 0xD1),
-        (0xFF, 0xFF, 0xFF),
-    ])
-    def test_validate_address_information__valid(self, addressing, addressing_format, can_id, target_address,
-                                                 source_address, address_extension):
-        assert CanPacket._CanPacket__validate_address_information(addressing=addressing,
-                                                                  addressing_format=addressing_format,
-                                                                  can_id=can_id,
-                                                                  target_address=target_address,
-                                                                  source_address=source_address,
-                                                                  address_extension=address_extension) is None
 
-    @pytest.mark.parametrize("addressing", [None, "not an addressing type"])
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.EXTENDED_ADDRESSING,
-                                                   CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value])
-    @pytest.mark.parametrize("can_id", [None, 0x1FFFFFFF])
-    @pytest.mark.parametrize("target_address, source_address, address_extension", [
-        (None, None, None),
-        (0xFF, 0xFF, 0xFF),
-    ])
-    def test_set_addressing_information__value_error__addressing(self, addressing, addressing_format, can_id,
-                                                                 target_address, source_address, address_extension):
-        with pytest.raises(ValueError):
-            CanPacket._CanPacket__validate_address_information(addressing=addressing,
-                                                               addressing_format=addressing_format,
-                                                               can_id=can_id,
-                                                               target_address=target_address,
-                                                               source_address=source_address,
-                                                               address_extension=address_extension) is None
-
-    @pytest.mark.parametrize("addressing", [AddressingType.PHYSICAL, AddressingType.FUNCTIONAL.value])
-    @pytest.mark.parametrize("addressing_format", [None, False, "not an addressing format"])
-    @pytest.mark.parametrize("can_id", [None, 0x1FFFFFFF])
-    @pytest.mark.parametrize("target_address, source_address, address_extension", [
-        (None, None, None),
-        (0xFF, 0xFF, 0xFF),
-    ])
-    def test_set_addressing_information__value_error__addressing_format(self, addressing, addressing_format, can_id,
-                                                                        target_address, source_address, address_extension):
-        with pytest.raises(ValueError):
-            CanPacket._CanPacket__validate_address_information(addressing=addressing,
-                                                               addressing_format=addressing_format,
-                                                               can_id=can_id,
-                                                               target_address=target_address,
-                                                               source_address=source_address,
-                                                               address_extension=address_extension) is None
-
-    @pytest.mark.parametrize("addressing", [AddressingType.PHYSICAL, AddressingType.FUNCTIONAL.value])
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.EXTENDED_ADDRESSING,
-                                                   CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value])
-    @pytest.mark.parametrize("can_id", [5.65, "not a can id", (0,)])
-    @pytest.mark.parametrize("target_address, source_address, address_extension", [
-        (None, None, None),
-        (0xFF, 0xFF, 0xFF),
-    ])
-    def test_set_addressing_information__type_error__can_id(self, addressing, addressing_format, can_id,
-                                                            target_address, source_address, address_extension):
-        with pytest.raises(TypeError):
-            CanPacket._CanPacket__validate_address_information(addressing=addressing,
-                                                               addressing_format=addressing_format,
-                                                               can_id=can_id,
-                                                               target_address=target_address,
-                                                               source_address=source_address,
-                                                               address_extension=address_extension) is None
-
-    @pytest.mark.parametrize("addressing", [AddressingType.PHYSICAL, AddressingType.FUNCTIONAL.value])
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.EXTENDED_ADDRESSING,
-                                                   CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value])
-    @pytest.mark.parametrize("can_id", [-1, 0x20000000])
-    @pytest.mark.parametrize("target_address, source_address, address_extension", [
-        (None, None, None),
-        (0xFF, 0xFF, 0xFF),
-    ])
-    def test_set_addressing_information__value_error__can_id(self, addressing, addressing_format, can_id,
-                                                             target_address, source_address, address_extension):
-        with pytest.raises(TypeError):
-            CanPacket._CanPacket__validate_address_information(addressing=addressing,
-                                                               addressing_format=addressing_format,
-                                                               can_id=can_id,
-                                                               target_address=target_address,
-                                                               source_address=source_address,
-                                                               address_extension=address_extension) is None
-
-    @pytest.mark.parametrize("param_name", ["target_address", "source_address", "address_extension"])
-    @pytest.mark.parametrize("value_invalid_type", [5.65, "not a can id", (0,)])
-    def test_set_addressing_information__type_error__byte_arg(self, param_name, value_invalid_type,
-                                                              example_addressing_type, example_can_addressing_format):
-        with pytest.raises(TypeError):
-            CanPacket.__validate_address_information(self=self.mock_can_packet,
-                                              addressing=example_addressing_type,
-                                              addressing_format=example_can_addressing_format,
-                                              **{param_name: value_invalid_type})
-
-    @pytest.mark.parametrize("param_name", ["target_address", "source_address", "address_extension"])
-    @pytest.mark.parametrize("value_invalid_type", [-1000, -1, 0x100, 999999])
-    def test_set_addressing_information__value_error__byte_arg(self, param_name, value_invalid_type,
-                                                               example_addressing_type, example_can_addressing_format):
-        with pytest.raises(ValueError):
-            CanPacket.__validate_address_information(self=self.mock_can_packet,
-                                              addressing=example_addressing_type,
-                                              addressing_format=example_can_addressing_format,
-                                              **{param_name: value_invalid_type})
 
     # packet_type
 

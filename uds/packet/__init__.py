@@ -13,6 +13,6 @@ from .abstract_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractU
     PacketsDefinitionTuple, PacketsDefinitionSequence, \
     PacketsRecordsTuple, PacketsRecordsSequence, \
     PacketTypesTuple  # TODO: review
-from .can_packet_attributes import CanIdHandler, \
-    CanPacketType, CanPacketTypeMemberTyping, CanAddressingFormat, CanAddressingFormatTyping
+from .can_packet_attributes import CanPacketType, CanPacketTypeMemberTyping, \
+    CanAddressingFormat, CanAddressingFormatTyping, CanIdHandler
 from .can_flow_control import CanFlowStatus, CanFlowStatusTyping, UnrecognizedSTminWarning, CanSTminTranslator

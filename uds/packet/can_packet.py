@@ -19,15 +19,13 @@ from .can_packet_attributes import *
 from .can_flow_control import *
 
 
-
-
-
-
-
-
-
-
 class CanPacket(AbstractUdsPacket):
+    """
+    Definition of a CAN packet.
+
+    Objects of this class act as a storage for all relevant attributes of a
+    :ref:`CAN packet <knowledge-base-uds-can-packet>`.
+    """
 
     def __init__(self,
                  addressing: AddressingTypeMemberTyping,
@@ -169,8 +167,7 @@ class CanPacket(AbstractUdsPacket):
         """
         AddressingType.validate_member(addressing)
         CanAddressingFormat.validate_member(addressing_format)
-        if can_id is not None and not isinstance(can_id, int):
-            # TODO: validate CAN ID
+        if CanIdHandler.is_can_id(can_id):
             raise TypeError(f"Provided can_id value is not int type. Actual type: {type(can_id)}")
         if target_address is not None:
             validate_raw_byte(target_address)
