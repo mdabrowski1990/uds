@@ -171,7 +171,7 @@ class CanPacket(AbstractUdsPacket):
         CanAddressingFormat.validate_member(addressing_format)
         if can_id is not None and not isinstance(can_id, int):
             # TODO: validate CAN ID
-            raise TypeError(f"Provided can_id value is not int type. Actual type: {type(can_id)}.")
+            raise TypeError(f"Provided can_id value is not int type. Actual type: {type(can_id)}")
         if target_address is not None:
             validate_raw_byte(target_address)
         if source_address is not None:

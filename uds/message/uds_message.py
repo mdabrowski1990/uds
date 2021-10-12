@@ -92,10 +92,10 @@ class UdsMessageRecord:
         """
         if not isinstance(value, (tuple, list)):
             raise TypeError(f"Provided value is not list or tuple type. "
-                            f"Actual type: {type(value)}.")
+                            f"Actual type: {type(value)}")
         if not value or any(not isinstance(element, AbstractUdsPacketRecord) for element in value):
             raise ValueError(f"Provided value must contain only instances of AbstractUdsPacketRecord class. "
-                             f"Actual value: {value}.")
+                             f"Actual value: {value}")
 
     @property
     def payload(self) -> RawBytesTuple:

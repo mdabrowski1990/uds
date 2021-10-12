@@ -137,9 +137,9 @@ class CanSTminTranslator:
         :return: Raw value of STmin.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
         if cls._is_ms_value(value):
             return int(value)
         if cls._is_100us_value(value):
             return int(round(value * 10, 0) + 0xF0)
-        raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {value}.")
+        raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {value}")

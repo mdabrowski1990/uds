@@ -59,7 +59,7 @@ class ValidatedEnum(Enum):
         :raise ValueError: Provided value is not a member neither a value of this Enum.
         """
         if not cls.is_member(value):
-            raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}.")
+            raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}")
 
 
 class ByteEnum(IntEnum):
@@ -75,9 +75,9 @@ class ByteEnum(IntEnum):
         :raise ValueError: Provided value is not in inclusive range 0x00-0xFF.
         """
         if not isinstance(value, int):
-            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
+            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}")
         if not 0x00 <= value <= 0xFF:
-            raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}.")
+            raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}")
         member = int.__new__(cls, value)
         member._value_ = value  # noqa: F841
         return member
@@ -96,9 +96,9 @@ class NibbleEnum(IntEnum):
         :raise ValueError: Provided value is not in inclusive range 0x0-0xF.
         """
         if not isinstance(value, int):
-            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
+            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}")
         if not 0x0 <= value <= 0xF:
-            raise ValueError(f"Provided 'value' is not in range 0x0-0xF. Actual value = {value}.")
+            raise ValueError(f"Provided 'value' is not in range 0x0-0xF. Actual value = {value}")
         member = int.__new__(cls, value)
         member._value_ = value  # noqa: F841
         return member

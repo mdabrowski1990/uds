@@ -30,9 +30,9 @@ def validate_raw_byte(value: Any) -> None:
     :raise ValueError: Value is out of byte range (0x00-0xFF).
     """
     if not isinstance(value, int):
-        raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
+        raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
     if not 0x00 <= value <= 0xFF:
-        raise ValueError(f"Provided value is out of byte values range (0x00-0xFF). Actual value: {value}.")
+        raise ValueError(f"Provided value is out of byte values range (0x00-0xFF). Actual value: {value}")
 
 
 def validate_raw_bytes(value: Any) -> None:
@@ -45,7 +45,7 @@ def validate_raw_bytes(value: Any) -> None:
     :raise ValueError: Value does not contain raw bytes (int value between 0x00-0xFF) only.
     """
     if not isinstance(value, (tuple, list)):
-        raise TypeError(f"Provided value is not list or tuple type. Actual type: {type(value)}.")
+        raise TypeError(f"Provided value is not list or tuple type. Actual type: {type(value)}")
     if not value or not all(isinstance(raw_byte, int) and 0x00 <= raw_byte <= 0xFF for raw_byte in value):
         raise ValueError(f"Provided value does not contain raw bytes (int value between 0x00 and 0xFF) only. "
                          f"Actual value: {value}")

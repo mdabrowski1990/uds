@@ -183,7 +183,7 @@ CAN Identifier values used for UDS communication using normal fixed addressing:
 
    .. code-block::
 
-      CAN_ID = 0x18DATTSS
+      CAN_ID = 0x18DBTTSS
 
 where:
  - CAN_ID - value of **CAN Identifier**
