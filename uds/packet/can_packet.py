@@ -4,7 +4,7 @@ CAN bus specific implementation of UDS packets.
 :ref:`CAN packets <knowledge-base-uds-can-packet>`.
 """
 
-__all__ = ["CanAddressingFormat", "CanPacket", "CanPacketRecord"]
+__all__ = ["CanAddressingFormat", "CanPacket", "CanPacketRecord", "IncompatibleCanAddressingFormatError"]
 
 from typing import Any, Union, Optional
 from warnings import warn
@@ -12,11 +12,23 @@ from warnings import warn
 from aenum import StrEnum, unique
 
 from uds.transmission_attributes import AddressingTypeMemberTyping, AddressingType
-from uds.utilities import ValidatedEnum, NibbleEnum, TimeMilliseconds, \
-    RawByte, RawBytes, RawBytesTuple, validate_raw_byte
+from uds.utilities import RawByte, RawBytes, RawBytesTuple, validate_raw_byte, \
+    ValidatedEnum, NibbleEnum, TimeMilliseconds, InconsistentArgumentsError
+
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from .can_packet_attributes import *
 from .can_flow_control import *
+
+
+class IncompatibleCanAddressingFormatError(Exception):
+    """
+    Addressing information cannot be changed for a CAN packet.
+
+    This error informs about an attempt to change :ref:`Network Address Information <knowledge-base-n-ai>`
+    to a value that is not compatible with previously used format.
+
+    .. note:: As a user, you can create a new CAN packet object instead of changing existing one.
+    """
 
 
 class CanPacket(AbstractUdsPacket):
@@ -68,6 +80,17 @@ class CanPacket(AbstractUdsPacket):
             - block_size (optional for: FC): Block size information carried by a Flow Control frame.
             - stmin (optional for: FC): Separation Time minimum information carried by a Flow Control frame.
         """
+        self.__addressing = None
+        self.__raw_frame_data = None
+        self.__packet_type = None
+        self.__addressing_format = None
+        self.__can_id = None
+        self.__target_address = None
+        self.__source_address = None
+        self.__address_extension = None
+        self.__dlc = None
+        self.__use_data_optimization = None
+        self.__filler_byte = None
         self.set_address_information(addressing=addressing,
                                      addressing_format=addressing_format,
                                      can_id=can_id,
@@ -126,6 +149,84 @@ class CanPacket(AbstractUdsPacket):
         else:
             raise NotImplementedError
 
+    def __set_address_information_normal_11bit(self, addressing: AddressingType, can_id: int) -> None:
+        """
+        Set or change addressing information to normal 11-bit addressing for this CAN Packet.
+
+        :param addressing: Addressing type for which this CAN packet is relevant.
+        :param can_id: CAN Identifier that is used to transmit this packet.
+
+        :raise IncompatibleCanAddressingFormatError: Addressing format cannot be changed to Normal 11-bit Addressing
+            format as previously used format is not compatible with it.
+        :raise ValueError: Provided value of CAN ID is not using Normal 11-bit Addressing format.
+        """
+        if self.addressing_format not in (None, CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                          CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
+            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN Normal 11-bit Addressing from "
+                                                       f"{self.addressing_format}")
+        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):
+            raise ValueError(f"Provided can_id value is not using Normal 11-bit Addressing format. "
+                             f"Actual value: {can_id}")
+        self.__addressing = addressing
+        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        self.__can_id = can_id
+        self.__target_address = None
+        self.__source_address = None
+        self.__address_extension = None
+
+    def __set_address_information_normal_fixed(self,
+                                               addressing: AddressingType,
+                                               can_id: Optional[int] = None,
+                                               target_address: Optional[RawByte] = None,
+                                               source_address: Optional[RawByte] = None) -> None:
+        """
+        Set or change addressing information to normal fixed addressing for this CAN Packet.
+
+        :param addressing: Addressing type for which this CAN packet is relevant.
+        :param can_id: CAN Identifier that is used to transmit this packet.
+            If None, then CAN ID value would be assessed basing on addressing, target_address and source_address values.
+        :param target_address: Target Address value carried by this CAN Packet.
+            Leave None if can_id value is provided.
+        :param source_address: Source Address value carried by this CAN packet.
+            Leave None if can_id value is provided.
+
+        :raise IncompatibleCanAddressingFormatError: Addressing format cannot be changed to Normal Fixed Addressing
+            format as previously used format is not compatible with it.
+        :raise InconsistentArgumentsError: Provided values of addressing, can_id, target_address and source_address
+            are not compatible.
+        """
+        if self.addressing_format not in (None, CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                          CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
+            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN Normal Fixed Addressing from "
+                                                       f"{self.addressing_format}")
+        if can_id is None:
+            if target_address is None or source_address is None:
+                raise InconsistentArgumentsError("Either can_id or target_address and source_address values must be"
+                                                 "provided.")
+            self.__can_id = CanIdHandler.get_normal_fixed_addressed_can_id(addressing_type=addressing,
+                                                                           target_address=target_address,
+                                                                           source_address=source_address)
+            self.__target_address = target_address
+            self.__source_address = source_address
+        else:
+            decoded_addressing, decoded_target_address, decoded_source_address = \
+                CanIdHandler.decode_normal_fixed_addressed_can_id(can_id=can_id)
+            if decoded_addressing != addressing:
+                raise InconsistentArgumentsError("Provided values of addressing and can_id does not match. "
+                                                 f"Actual values: addressing={addressing}, can_id={can_id}")
+            if target_address not in (None, decoded_target_address):
+                raise InconsistentArgumentsError("Provided values of target_address and can_id does not match. "
+                                                 f"Actual values: target_address={target_address}, can_id={can_id}")
+            if source_address not in (None, decoded_source_address):
+                raise InconsistentArgumentsError("Provided values of source_address and can_id does not match. "
+                                                 f"Actual values: source_address={source_address}, can_id={can_id}")
+            self.__can_id = can_id
+            self.__target_address = decoded_target_address
+            self.__source_address = decoded_source_address
+        self.__addressing = addressing
+        self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+        self.__address_extension = None
+
     def set_data(self,
                  packet_type: CanPacketTypeMemberTyping,
                  *,
@@ -153,7 +254,10 @@ class CanPacket(AbstractUdsPacket):
                                        source_address: Optional[RawByte],
                                        address_extension: Optional[RawByte]) -> None:
         """
-        Validate addressing information arguments has proper types and value in range.
+        Validate addressing information arguments has proper types and values in range.
+
+        Only sanity check is performed (whether types and values are in range). Values cross compatibility is
+        not checked.
 
         :param addressing: Addressing type for which this CAN packet is relevant.
         :param addressing_format: CAN addressing format that this CAN packet uses.
@@ -167,8 +271,8 @@ class CanPacket(AbstractUdsPacket):
         """
         AddressingType.validate_member(addressing)
         CanAddressingFormat.validate_member(addressing_format)
-        if CanIdHandler.is_can_id(can_id):
-            raise TypeError(f"Provided can_id value is not int type. Actual type: {type(can_id)}")
+        if can_id is not None:
+            CanIdHandler.validate_can_id(can_id)
         if target_address is not None:
             validate_raw_byte(target_address)
         if source_address is not None:
