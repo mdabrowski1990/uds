@@ -176,7 +176,7 @@ class CanIdHandler:
         raise NotImplementedError(f"Unknown addressing type value was provided: {addressing_type}")
 
     @classmethod
-    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> NORMAL_FIXED_CAN_ID_INFO_TYPING:
+    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> NORMAL_FIXED_CAN_ID_INFO_TYPING:  # noqa
         """
         Extract information out of CAN ID using Normal Fixed Addressing format.
 
@@ -194,14 +194,16 @@ class CanIdHandler:
         source_address = can_id & 0xFF
         can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
         if can_id_offset == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET:
-            return AddressingType.PHYSICAL, target_address, source_address
+            addressing_type = AddressingType(AddressingType.PHYSICAL)
+            return addressing_type, target_address, source_address
         if can_id_offset == cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET:
-            return AddressingType.FUNCTIONAL, target_address, source_address
+            addressing_type = AddressingType(AddressingType.FUNCTIONAL)
+            return addressing_type, target_address, source_address
         raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
                                   f"Actual value: {can_id}")
 
     @classmethod
-    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> MIXED_29BIT_CAN_ID_INFO_TYPING:
+    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> MIXED_29BIT_CAN_ID_INFO_TYPING:  # noqa
         """
         Extract information out of CAN ID using Normal Fixed Addressing format.
 
@@ -212,16 +214,18 @@ class CanIdHandler:
         :return: Tuple with [Addressing Type], [Target Address] and [Source Address] values decoded out of CAN ID.
         """
         cls.validate_can_id(can_id)
-        if not cls.is_mixed_addressed_29bit_can_id(can_id):
+        if not cls.is_mixed_29bit_addressed_can_id(can_id):
             raise ValueError(f"Provided CAN ID value is out of range. "
                              f"Expected 29-bit CAN ID using Mixed Addressing format. Actual value: {can_id}")
         target_address = (can_id >> 8) & 0xFF
         source_address = can_id & 0xFF
         can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
         if can_id_offset == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET:
-            return AddressingType.PHYSICAL, target_address, source_address
+            addressing_type = AddressingType(AddressingType.PHYSICAL)
+            return addressing_type, target_address, source_address
         if can_id_offset == cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET:
-            return AddressingType.FUNCTIONAL, target_address, source_address
+            addressing_type = AddressingType(AddressingType.FUNCTIONAL)
+            return addressing_type, target_address, source_address
         raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
                                   f"Actual value: {can_id}")
 
@@ -238,14 +242,14 @@ class CanIdHandler:
         :return: True if CAN ID value is compatible with provided addressing format, False otherwise.
         """
         cls.validate_can_id(can_id)
-        AddressingType.validate_member(addressing_format)
-        addressing_format_instance = AddressingType(addressing_format)
+        CanAddressingFormat.validate_member(addressing_format)
+        addressing_format_instance = CanAddressingFormat(addressing_format)
         compatibility_check_mapping = {
             CanAddressingFormat.NORMAL_11BIT_ADDRESSING: cls.is_normal_11bit_addressed_can_id,
             CanAddressingFormat.NORMAL_FIXED_ADDRESSING: cls.is_normal_fixed_addressed_can_id,
             CanAddressingFormat.EXTENDED_ADDRESSING: cls.is_extended_addressed_can_id,
             CanAddressingFormat.MIXED_11BIT_ADDRESSING: cls.is_mixed_11bit_addressed_can_id,
-            CanAddressingFormat.MIXED_29BIT_ADDRESSING: cls.is_mixed_addressed_29bit_can_id,
+            CanAddressingFormat.MIXED_29BIT_ADDRESSING: cls.is_mixed_29bit_addressed_can_id,
         }
         compatibility_checking_method = compatibility_check_mapping[addressing_format_instance]
         return compatibility_checking_method(can_id)
@@ -301,7 +305,7 @@ class CanIdHandler:
         return cls.is_standard_can_id(can_id)
 
     @classmethod
-    def is_mixed_addressed_29bit_can_id(cls, can_id: int) -> bool:
+    def is_mixed_29bit_addressed_can_id(cls, can_id: int) -> bool:
         """
         Check if provided value of CAN ID uses Mixed 29-bit Addressing format.
 

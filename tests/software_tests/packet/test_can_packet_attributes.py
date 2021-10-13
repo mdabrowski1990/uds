@@ -18,12 +18,27 @@ class TestCanIdHandler:
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
         self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
+        self._patcher_validate_addressing_format = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
+        self.mock_validate_addressing_format = self._patcher_validate_addressing_format.start()
 
     def teardown(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_type.stop()
+        self._patcher_validate_addressing_format.stop()
 
     # get_normal_fixed_addressed_can_id
+
+    @pytest.mark.parametrize("addressing_type", [None, True, "some addressing"])
+    @pytest.mark.parametrize("target_address, source_address", [(0, 0), (0xFF, 0xFF), (0xAA, 0x55)])
+    @patch(f"{SCRIPT_LOCATION}.AddressingType")
+    def test_get_normal_fixed_addressed_can_id__not_implemented(self, mock_addressing_type, addressing_type,
+                                                                target_address, source_address):
+        mock_addressing_type.return_value = addressing_type
+        with pytest.raises(NotImplementedError):
+            CanIdHandler.get_normal_fixed_addressed_can_id(addressing_type=addressing_type,
+                                                           target_address=target_address,
+                                                           source_address=source_address)
+        mock_addressing_type.assert_called_once_with(addressing_type)
 
     @pytest.mark.parametrize("addressing_type, target_address, source_address, expected_can_id", [
         (AddressingType.PHYSICAL, 0x12, 0x34, 0x18DA1234),
@@ -57,6 +72,18 @@ class TestCanIdHandler:
 
     # get_mixed_addressed_29bit_can_id
 
+    @pytest.mark.parametrize("addressing_type", [None, True, "some addressing"])
+    @pytest.mark.parametrize("target_address, source_address", [(0, 0), (0xFF, 0xFF), (0xAA, 0x55)])
+    @patch(f"{SCRIPT_LOCATION}.AddressingType")
+    def test_get_mixed_addressed_29bit_can_id__not_implemented(self, mock_addressing_type, addressing_type,
+                                                                target_address, source_address):
+        mock_addressing_type.return_value = addressing_type
+        with pytest.raises(NotImplementedError):
+            CanIdHandler.get_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
+                                                          target_address=target_address,
+                                                          source_address=source_address)
+        mock_addressing_type.assert_called_once_with(addressing_type)
+
     @pytest.mark.parametrize("addressing_type, target_address, source_address, expected_can_id", [
         (AddressingType.PHYSICAL, 0x12, 0x34, 0x18CE1234),
         (AddressingType.FUNCTIONAL, 0xFE, 0xDC, 0x18CDFEDC),
@@ -89,6 +116,17 @@ class TestCanIdHandler:
 
     # decode_normal_fixed_addressed_can_id
 
+    @pytest.mark.parametrize("can_id", [0, 0x10000, 0x20000])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_fixed_addressed_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
+    def test_decode_normal_fixed_addressed_can_id__not_implemented(self, mock_validate_can_id,
+                                                                   mock_is_normal_fixed_addressed_can_id, can_id):
+        mock_is_normal_fixed_addressed_can_id.return_value = True
+        with pytest.raises(NotImplementedError):
+            CanIdHandler.decode_normal_fixed_addressed_can_id(can_id=can_id)
+        mock_validate_can_id.assert_called_once_with(can_id)
+        mock_is_normal_fixed_addressed_can_id.assert_called_once_with(can_id)
+
     @pytest.mark.parametrize("value", [None, 2.5, 0x10, 0xFFFFFFFFFFFF, "something"])
     @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_fixed_addressed_can_id")
     @patch(f"{SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
@@ -113,15 +151,28 @@ class TestCanIdHandler:
 
     # decode_mixed_addressed_29bit_can_id
 
-    @pytest.mark.parametrize("value", [None, 2.5, 0x10, 0xFFFFFFFFFFFF, "something"])
-    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_mixed_addressed_29bit_can_id")
+    @pytest.mark.parametrize("can_id", [0, 0x10000, 0x20000])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_mixed_29bit_addressed_can_id")
     @patch(f"{SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
-    def test_decode_mixed_addressed_29bit_can_id__validation_error(self, mock_validate_can_id, mock_is_mixed_addressed_29bit_can_id, value):
-        mock_is_mixed_addressed_29bit_can_id.return_value = False
+    def test_decode_mixed_addressed_29bit_can_id__not_implemented(self, mock_validate_can_id,
+                                                                  mock_is_mixed_29bit_addressed_can_id, can_id):
+        mock_is_mixed_29bit_addressed_can_id.return_value = True
+        with pytest.raises(NotImplementedError):
+            CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id=can_id)
+        mock_validate_can_id.assert_called_once_with(can_id)
+        mock_is_mixed_29bit_addressed_can_id.assert_called_once_with(can_id)
+
+    @pytest.mark.parametrize("value", [None, 2.5, 0x10, 0xFFFFFFFFFFFF, "something"])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_mixed_29bit_addressed_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
+    def test_decode_mixed_addressed_29bit_can_id__validation_error(self, mock_validate_can_id,
+                                                                   mock_is_mixed_29bit_addressed_can_id,
+                                                                   value):
+        mock_is_mixed_29bit_addressed_can_id.return_value = False
         with pytest.raises((TypeError, ValueError)):
             CanIdHandler.decode_mixed_addressed_29bit_can_id(value)
         mock_validate_can_id.assert_called_once_with(value)
-        mock_is_mixed_addressed_29bit_can_id.assert_called_once_with(value)
+        mock_is_mixed_29bit_addressed_can_id.assert_called_once_with(value)
 
     @pytest.mark.parametrize("addressing_type, target_address, source_address, can_id", [
         (AddressingType.PHYSICAL, 0x12, 0x34, 0x18CE1234),
@@ -137,28 +188,47 @@ class TestCanIdHandler:
 
     # is_compatible_can_id
 
-    @pytest.mark.parametrize("can_id", [None, "not a can id", 6.6, -1, CanIdHandler.MAX_29BIT_VALUE + 1])
-    def test_is_compatible_can_id__invalid_can_id(self, can_id, example_can_addressing_format):
-        with pytest.raises((TypeError, ValueError)):
+    @pytest.mark.parametrize("can_id", [None, "not a can id", 6.6])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
+    def test_is_compatible_can_id__invalid_can_id(self, mock_validate_can_id, can_id, example_can_addressing_format):
+        mock_validate_can_id.side_effect = TypeError
+        with pytest.raises(TypeError):
             CanIdHandler.is_compatible_can_id(can_id=can_id, addressing_format=example_can_addressing_format)
+        mock_validate_can_id.assert_called_once_with(can_id)
 
     @pytest.mark.parametrize("can_addressing_format", [None, "not an addressing format", False, 9.9])
     @pytest.mark.parametrize("can_id", [CanIdHandler. MIN_11BIT_VALUE, CanIdHandler.MAX_11BIT_VALUE,
                                         CanIdHandler.MIN_29BIT_VALUE, CanIdHandler.MAX_29BIT_VALUE])
     def test_is_compatible_can_id__invalid_addressing_format(self, can_id, can_addressing_format):
-        self.mock_validate_addressing_type.side_effect = TypeError
+        self.mock_validate_addressing_format.side_effect = TypeError
         with pytest.raises(TypeError):
             CanIdHandler.is_compatible_can_id(can_id=can_id, addressing_format=can_addressing_format)
-        self.mock_validate_addressing_type.assert_called_once_with(can_addressing_format)
+        self.mock_validate_addressing_format.assert_called_once_with(can_addressing_format)
 
-    # TODO
-    # @pytest.mark.parametrize("can_id, addressing_format, is_compatible", [
-    #     (CanIdHandler.MIN_11BIT_VALUE, True),
-    #     (CanIdHandler.MAX_11BIT_VALUE, True),
-    #     ((CanIdHandler.MIN_11BIT_VALUE + CanIdHandler.MAX_11BIT_VALUE) // 2, True),
-    # ])
-    # def test_is_compatible_can_id(self, can_id, addressing_format, is_compatible):
-    #     assert CanIdHandler.is_compatible_can_id(can_id=can_id, addressing_format=addressing_format) is is_compatible
+    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                                   CanAddressingFormat.NORMAL_11BIT_ADDRESSING.value])
+    @pytest.mark.parametrize("is_compatible", [True, False])
+    @pytest.mark.parametrize("can_id", [CanIdHandler.MIN_11BIT_VALUE, CanIdHandler.MAX_11BIT_VALUE,
+                                        CanIdHandler.MIN_29BIT_VALUE, CanIdHandler.MAX_29BIT_VALUE])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_mixed_29bit_addressed_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_mixed_11bit_addressed_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_extended_addressed_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_fixed_addressed_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_11bit_addressed_can_id")
+    def test_is_compatible_can_id__normal_11bit(self,
+                                                mock_is_normal_11bit_addressed_can_id,
+                                                mock_is_normal_fixed_addressed_can_id,
+                                                mock_is_extended_addressed_can_id,
+                                                mock_is_mixed_11bit_addressed_can_id,
+                                                mock_is_mixed_29bit_addressed_can_id,
+                                                can_id, addressing_format, is_compatible):
+        mock_is_normal_11bit_addressed_can_id.return_value = is_compatible
+        assert CanIdHandler.is_compatible_can_id(can_id=can_id, addressing_format=addressing_format) is is_compatible
+        mock_is_normal_11bit_addressed_can_id.assert_called_once_with(can_id)
+        mock_is_normal_fixed_addressed_can_id.assert_not_called()
+        mock_is_extended_addressed_can_id.assert_not_called()
+        mock_is_mixed_11bit_addressed_can_id.assert_not_called()
+        mock_is_mixed_29bit_addressed_can_id.assert_not_called()
 
     # is_normal_11bit_addressed_can_id
 
@@ -216,13 +286,13 @@ class TestCanIdHandler:
                                        CanIdHandler.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET + 0xDEBA,
                                        CanIdHandler.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF])
     def test_is_mixed_addressed_29bit_can_id__true(self, value):
-        assert CanIdHandler.is_mixed_addressed_29bit_can_id(value) is True
+        assert CanIdHandler.is_mixed_29bit_addressed_can_id(value) is True
 
     @pytest.mark.parametrize("value", [CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET,
                                        CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET,
                                        0, 0x7FF, 0x620])
     def test_is_mixed_addressed_29bit_can_id__false(self, value):
-        assert CanIdHandler.is_mixed_addressed_29bit_can_id(value) is False
+        assert CanIdHandler.is_mixed_29bit_addressed_can_id(value) is False
 
     # is_standard_can_id
 
