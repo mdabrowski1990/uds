@@ -20,4 +20,4 @@ class TransmissionDirection(StrEnum, ValidatedEnum):
 
 
 TransmissionDirectionTyping = Union[TransmissionDirection, str]
-"""Typing alias that describes :class:`~uds.transmission_direction.TransmissionDirection` member."""
+"""Typing alias that describes :class:`~uds.transmission_attributes.TransmissionDirection` member."""
