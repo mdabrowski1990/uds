@@ -14,3 +14,7 @@ class InconsistentArgumentsError(ValueError):
         Function requires: a > b
         This function would raise InconsistentArgumentsError when values of a and b are not satisfying the requirement.
     """
+
+
+class UnusedArgumentsWarning(Warning):
+    """Some of provided arguments will not be used."""

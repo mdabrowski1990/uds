@@ -13,7 +13,7 @@ from aenum import StrEnum, unique
 
 from uds.transmission_attributes import AddressingTypeMemberTyping, AddressingType
 from uds.utilities import RawByte, RawBytes, RawBytesTuple, validate_raw_byte, \
-    ValidatedEnum, NibbleEnum, TimeMilliseconds, InconsistentArgumentsError
+    ValidatedEnum, NibbleEnum, TimeMilliseconds, InconsistentArgumentsError, UnusedArgumentsWarning
 
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from .can_packet_attributes import *
@@ -131,23 +131,67 @@ class CanPacket(AbstractUdsPacket):
         self.__validate_address_information(addressing=addressing, addressing_format=addressing_format, can_id=can_id,
                                             target_address=target_address, source_address=source_address,
                                             address_extension=address_extension)
-
         # convert arguments
         addressing_type_instance = AddressingType(addressing)
         can_addressing_format_instance = CanAddressingFormat(addressing_format)
         # set values
         if can_addressing_format_instance == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
-            ...
+            self.__set_address_information_normal_11bit(addressing=addressing_type_instance, can_id=can_id)
+            if (target_address, source_address, address_extension) != (None, None, None):
+                warn(message=f"Target Address, Source Address and Address Extension parameters are not used when "
+                             f"{can_addressing_format_instance.value} format is used. Provided values: "
+                             f"target_address={target_address}, source_address={source_address}, "
+                             f"address_extension={address_extension}",
+                     category=UnusedArgumentsWarning)
         elif can_addressing_format_instance == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
-            ...
+            if target_address is None or source_address is None:
+                raise ValueError(f"Target Address and Source Address values must be provided when "
+                                 f"{can_addressing_format_instance.value} format is used.")
+            self.__set_address_information_normal_fixed(addressing=addressing_type_instance,
+                                                        can_id=can_id,
+                                                        target_address=target_address,
+                                                        source_address=source_address)
+            if address_extension is not None:
+                warn(message=f"Address Extension parameter is not used when "
+                             f"{can_addressing_format_instance.value} format is used. "
+                             f"Provided value: address_extension={address_extension}",
+                     category=UnusedArgumentsWarning)
         elif can_addressing_format_instance == CanAddressingFormat.EXTENDED_ADDRESSING:
-            ...
+            if target_address is None:
+                raise ValueError(f"Target Address value must be provided when "
+                                 f"{can_addressing_format_instance.value} format is used.")
+            self.__set_address_information_extended(addressing=addressing,
+                                                    can_id=can_id,
+                                                    target_address=target_address)
+            if (source_address, address_extension) != (None, None):
+                warn(message=f"Source Address and Address Extension parameters are not used when "
+                             f"{can_addressing_format_instance.value} format is used. Provided values: "
+                             f"source_address={source_address}, address_extension={address_extension}",
+                     category=UnusedArgumentsWarning)
         elif can_addressing_format_instance == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
-            ...
+            if address_extension is None:
+                raise ValueError(f"Address Extension value must be provided when "
+                                 f"{can_addressing_format_instance.value} format is used.")
+            self.__set_address_information_mixed_11bit(addressing=addressing,
+                                                       can_id=can_id,
+                                                       address_extension=address_extension)
+            if (target_address, source_address) != (None, None):
+                warn(message=f"Target Address and Source Address parameters are not used when "
+                             f"{can_addressing_format_instance.value} format is used. Provided values: "
+                             f"target_address={target_address}, source_address={source_address}",
+                     category=UnusedArgumentsWarning)
         elif can_addressing_format_instance == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
-            ...
+            if target_address is None or source_address is None or address_extension is None:
+                raise ValueError(f"Target Address, Source Address and Address Extension values must be provided when "
+                                 f"{can_addressing_format_instance.value} format is used.")
+            self.__set_address_information_mixed_29bit(addressing=addressing_type_instance,
+                                                       can_id=can_id,
+                                                       target_address=target_address,
+                                                       source_address=source_address,
+                                                       address_extension=address_extension)
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"Unknown CAN Addressing Format value was provided: "
+                                      f"{can_addressing_format_instance}")
 
     def set_data(self,
                  packet_type: CanPacketTypeMemberTyping,
@@ -181,8 +225,9 @@ class CanPacket(AbstractUdsPacket):
         """
         if self.addressing_format not in (None, CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                           CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
-            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN Normal 11-bit Addressing format from "
-                                                       f"{self.addressing_format}")
+            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN "
+                                                       f"{CanAddressingFormat.NORMAL_11BIT_ADDRESSING.value} format "
+                                                       f"from {self.addressing_format}")
         if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):
             raise ValueError(f"Provided can_id value is not using Normal 11-bit Addressing format. "
                              f"Actual value: {can_id}")
@@ -216,8 +261,9 @@ class CanPacket(AbstractUdsPacket):
         """
         if self.addressing_format not in (None, CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                           CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
-            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN Normal Fixed Addressing format from "
-                                                       f"{self.addressing_format}")
+            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN "
+                                                       f"{CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value} format "
+                                                       f"from {self.addressing_format}")
         if can_id is None:
             if target_address is None or source_address is None:
                 raise InconsistentArgumentsError("Either can_id or target_address and source_address values must be"
@@ -263,8 +309,9 @@ class CanPacket(AbstractUdsPacket):
         if self.addressing_format not in (None, CanAddressingFormat.EXTENDED_ADDRESSING,
                                           CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                           CanAddressingFormat.MIXED_29BIT_ADDRESSING):
-            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN Extended Addressing format from "
-                                                       f"{self.addressing_format}")
+            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN "
+                                                       f"{CanAddressingFormat.EXTENDED_ADDRESSING.value} format "
+                                                       f"from {self.addressing_format}")
         self.__addressing = addressing
         self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING
         self.__can_id = can_id
@@ -290,8 +337,9 @@ class CanPacket(AbstractUdsPacket):
         if self.addressing_format not in (None, CanAddressingFormat.EXTENDED_ADDRESSING,
                                           CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                           CanAddressingFormat.MIXED_29BIT_ADDRESSING):
-            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN Mixed 11-bit Addressing format from "
-                                                       f"{self.addressing_format}")
+            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN "
+                                                       f"{CanAddressingFormat.MIXED_11BIT_ADDRESSING.value} format "
+                                                       f"from {self.addressing_format}")
         if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):
             raise ValueError(f"Provided can_id value is not using Mixed 11-bit Addressing format. "
                              f"Actual value: {can_id}")
@@ -328,8 +376,9 @@ class CanPacket(AbstractUdsPacket):
         if self.addressing_format not in (None, CanAddressingFormat.EXTENDED_ADDRESSING,
                                           CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                           CanAddressingFormat.MIXED_29BIT_ADDRESSING):
-            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN Mixed 29-bit Addressing format from "
-                                                       f"{self.addressing_format}")
+            raise IncompatibleCanAddressingFormatError(f"Cannot switch to CAN "
+                                                       f"{CanAddressingFormat.MIXED_29BIT_ADDRESSING.value} format "
+                                                       f"from {self.addressing_format}")
         if can_id is None:
             if target_address is None or source_address is None:
                 raise InconsistentArgumentsError("Either can_id or target_address and source_address values must be"
