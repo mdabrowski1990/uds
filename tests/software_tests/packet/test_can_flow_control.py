@@ -51,40 +51,7 @@ class TestCanSTmin:
     def test_is_100us_value__false(self, value):
         assert CanSTminTranslator._is_100us_value(value) is False
 
-    # encode
-
-    @pytest.mark.parametrize("raw_value, time_value", [
-        (0x00, 0),
-        (0x01, 1),
-        (0x7E, 126),
-        (0x7F, 127),
-        (0xF1, 0.1),
-        (0xF2, 0.2),
-        (0xF8, 0.8),
-        (0xF9, 0.9),
-    ])
-    def test_encode__valid(self, raw_value, time_value):
-        assert CanSTminTranslator.encode(raw_value) == time_value
-        self.mock_validate_raw_byte.assert_called_once_with(raw_value)
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("raw_value", [0x80, 0x95, 0xA1, 0xBA, 0xC0, 0xD7, 0xE3, 0xF0, 0xFA, 0xFE, 0xFF])
-    def test_encode__unknown(self, raw_value):
-        assert CanSTminTranslator.encode(raw_value) == CanSTminTranslator.MAX_STMIN_TIME
-        self.mock_validate_raw_byte.assert_called_once_with(raw_value)
-        self.mock_warn.assert_called_once()
-
     # decode
-
-    @pytest.mark.parametrize("value", [None, "1 ms", [1, 1]])
-    def test_decode__type_error(self, value):
-        with pytest.raises(TypeError):
-            CanSTminTranslator.decode(value)
-
-    @pytest.mark.parametrize("value", [128, -1, 0.15, 0.11, 0.95])
-    def test_decode__value_error(self, value):
-        with pytest.raises(ValueError):
-            CanSTminTranslator.decode(value)
 
     @pytest.mark.parametrize("raw_value, time_value", [
         (0x00, 0),
@@ -97,4 +64,52 @@ class TestCanSTmin:
         (0xF9, 0.9),
     ])
     def test_decode__valid(self, raw_value, time_value):
-        assert CanSTminTranslator.decode(time_value) == raw_value
+        assert CanSTminTranslator.decode(raw_value) == time_value
+        self.mock_validate_raw_byte.assert_called_once_with(raw_value)
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("raw_value", [0x80, 0x95, 0xA1, 0xBA, 0xC0, 0xD7, 0xE3, 0xF0, 0xFA, 0xFE, 0xFF])
+    def test_decode__unknown(self, raw_value):
+        assert CanSTminTranslator.decode(raw_value) == CanSTminTranslator.MAX_STMIN_TIME
+        self.mock_validate_raw_byte.assert_called_once_with(raw_value)
+        self.mock_warn.assert_called_once()
+
+    # encode
+
+    @pytest.mark.parametrize("value", [None, "1 ms", [1, 1]])
+    def test_encode__type_error(self, value):
+        with pytest.raises(TypeError):
+            CanSTminTranslator.encode(value)
+
+    @pytest.mark.parametrize("value", [128, -1, 0.15, 0.11, 0.95])
+    def test_encode__value_error(self, value):
+        with pytest.raises(ValueError):
+            CanSTminTranslator.encode(value)
+
+    @pytest.mark.parametrize("raw_value, time_value", [
+        (0x00, 0),
+        (0x01, 1),
+        (0x7E, 126),
+        (0x7F, 127),
+        (0xF1, 0.1),
+        (0xF2, 0.2),
+        (0xF8, 0.8),
+        (0xF9, 0.9),
+    ])
+    def test_encode__valid(self, raw_value, time_value):
+        assert CanSTminTranslator.encode(time_value) == raw_value
+
+
+@pytest.mark.integration
+class TestCanSTminIntegration:
+    """Integration tests for CanSTmin class."""
+
+    @pytest.mark.parametrize("raw_value", [0x00, 0x01, 0x12, 0x50, 0x6D, 0x7E, 0x7F, 0xF1, 0xF4, 0xF9])
+    def test_decode_and_encode(self, raw_value):
+        time_value = CanSTminTranslator.decode(raw_value)
+        assert CanSTminTranslator.encode(time_value) == raw_value
+
+    @pytest.mark.parametrize("time_value", [0, 1, 43, 126, 127] + [0.1*i for i in range(1, 10)])
+    def test_encode_and_decode(self, time_value):
+        raw_value = CanSTminTranslator.encode(time_value)
+        assert CanSTminTranslator.decode(raw_value) == time_value

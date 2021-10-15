@@ -193,25 +193,6 @@ class CanPacket(AbstractUdsPacket):
             raise NotImplementedError(f"Unknown CAN Addressing Format value was provided: "
                                       f"{can_addressing_format_instance}")
 
-    def set_data(self,
-                 packet_type: CanPacketTypeMemberTyping,
-                 *,
-                 use_data_optimization: bool = True,
-                 dlc: Optional[int] = None,
-                 filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                 **packet_type_specific_kwargs: Any) -> None:
-        """
-
-        :param packet_type:
-        :param use_data_optimization:
-        :param dlc:
-        :param filler_byte:
-        :param packet_type_specific_kwargs:
-
-        :raise TypeError:
-        :raise ValueError:
-        """
-
     def __set_address_information_normal_11bit(self, addressing: AddressingType, can_id: int) -> None:
         """
         Set or change addressing information for this CAN Packet to a value using normal 11-bit addressing format.
@@ -415,10 +396,11 @@ class CanPacket(AbstractUdsPacket):
                                        source_address: Optional[RawByte],
                                        address_extension: Optional[RawByte]) -> None:
         """
-        Validate addressing information arguments has proper types and values in range.
+        Validate addressing information arguments to make use they have proper types and values assigned.
 
-        Only sanity check is performed (whether types and values are in range). Values cross compatibility is
-        not checked.
+        Only sanity check is performed (whether types and values are in range).
+
+        .. warning:: Values cross compatibility is not checked.
 
         :param addressing: Addressing type for which this CAN packet is relevant.
         :param addressing_format: CAN addressing format that this CAN packet uses.
@@ -441,48 +423,92 @@ class CanPacket(AbstractUdsPacket):
         if address_extension is not None:
             validate_raw_byte(address_extension)
 
-    def __set_single_frame_data(self, payload: RawBytes) -> None:
+    def set_data(self,
+                 packet_type: CanPacketTypeMemberTyping,
+                 *,
+                 use_data_optimization: bool = True,
+                 dlc: Optional[int] = None,
+                 filler_byte: RawByte = DEFAULT_FILLER_BYTE,
+                 **packet_type_specific_kwargs: Any) -> None:
         """
 
-        :param payload:
+        :param packet_type:
+        :param use_data_optimization:
+        :param dlc:
+        :param filler_byte:
+        :param packet_type_specific_kwargs:
 
         :raise TypeError:
         :raise ValueError:
         """
 
-    def __set_first_frame_data(self, data_length: int, payload: RawBytes) -> None:
+    # def __set_single_frame_data(self, payload: RawBytes) -> None:
+    #     """
+    #
+    #     :param payload:
+    #
+    #     :raise TypeError:
+    #     :raise ValueError:
+    #     """
+    #
+    # def __set_first_frame_data(self, data_length: int, payload: RawBytes) -> None:
+    #     """
+    #
+    #     :param data_length:
+    #     :param payload:
+    #
+    #     :raise TypeError:
+    #     :raise ValueError:
+    #     """
+    #
+    # def __set_consecutive_frame_data(self, sequence_number: int, payload: RawBytes) -> None:
+    #     """
+    #
+    #     :param sequence_number:
+    #     :param payload:
+    #
+    #     :raise TypeError:
+    #     :raise ValueError:
+    #     """
+    #
+    # def __set_flow_control_data(self,
+    #                             flow_status: CanFlowStatusTyping,
+    #                             block_size: Optional[RawByte] = None,
+    #                             stmin: Optional[RawByte] = None) -> None:
+    #     """
+    #
+    #     :param flow_status:
+    #     :param block_size:
+    #     :param stmin:
+    #
+    #     :raise TypeError:
+    #     :raise ValueError:
+    #     """
+
+    @staticmethod
+    def __validate_packet_data(packet_type: CanPacketTypeMemberTyping,
+                               use_data_optimization: bool = True,
+                               dlc: Optional[int] = None,
+                               filler_byte: RawByte = DEFAULT_FILLER_BYTE,
+                               **packet_type_specific_kwargs: Any) -> None:
         """
+        Validate packet data arguments to make use they have proper types and values assigned.
 
-        :param data_length:
-        :param payload:
+        Only sanity check is performed (whether types and values are in range).
 
-        :raise TypeError:
-        :raise ValueError:
+        .. warning:: Values cross compatibility is not checked.
+
+        TODO
+
+        :raise TypeError: At least one argument has invalid type (incompatible with annotation).
+        :raise ValueError: At least one argument has invalid value.
         """
-
-    def __set_consecutive_frame_data(self, sequence_number: int, payload: RawBytes) -> None:
-        """
-
-        :param sequence_number:
-        :param payload:
-
-        :raise TypeError:
-        :raise ValueError:
-        """
-
-    def __set_flow_control_data(self,
-                                flow_status: CanFlowStatusTyping,
-                                block_size: Optional[RawByte] = None,
-                                stmin: Optional[RawByte] = None) -> None:
-        """
-
-        :param flow_status:
-        :param block_size:
-        :param stmin:
-
-        :raise TypeError:
-        :raise ValueError:
-        """
+        CanPacketType.validate_member(packet_type)
+        validate_raw_byte(filler_byte)
+        if not isinstance(use_data_optimization, bool):
+            raise TypeError(f"Provided 'use_data_optimization' value is not bool type. "
+                            f"Actual type: {type(use_data_optimization)}")
+        # TODO: validate remaining args
 
     @property
     def addressing(self) -> AddressingType:

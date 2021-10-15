@@ -3,7 +3,7 @@ import pytest
 from mock import patch, Mock, call
 
 from uds.packet.can_packet import CanPacketType, CanAddressingFormat, CanFlowStatus, CanSTminTranslator, CanPacket, \
-    AddressingType, IncompatibleCanAddressingFormatError, InconsistentArgumentsError
+    AddressingType, IncompatibleCanAddressingFormatError, InconsistentArgumentsError, DEFAULT_FILLER_BYTE
 from uds.packet.abstract_packet import AbstractUdsPacketType
 from uds.utilities import ValidatedEnum, NibbleEnum
 
@@ -20,6 +20,8 @@ class TestCanPacket:
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
         self._patcher_validate_can_addressing_format = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
         self.mock_validate_can_addressing_format = self._patcher_validate_can_addressing_format.start()
+        self._patcher_validate_can_packet_type = patch(f"{self.SCRIPT_LOCATION}.CanPacketType.validate_member")
+        self.mock_validate_can_packet_type = self._patcher_validate_can_packet_type.start()
         self._patcher_validate_can_id = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
         self.mock_validate_can_id = self._patcher_validate_can_id.start()
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
@@ -30,6 +32,7 @@ class TestCanPacket:
     def teardown(self):
         self._patcher_validate_addressing_type.stop()
         self._patcher_validate_can_addressing_format.stop()
+        self._patcher_validate_can_packet_type.stop()
         self._patcher_validate_can_id.stop()
         self._patcher_validate_raw_byte.stop()
         self._patcher_warn.stop()
@@ -805,7 +808,7 @@ class TestCanPacket:
 
     @pytest.mark.parametrize("addressing", [None, "addressing", AddressingType.FUNCTIONAL])
     @pytest.mark.parametrize("addressing_format", [None, "addressing format", CanAddressingFormat.NORMAL_11BIT_ADDRESSING])
-    def test_validate_address_information__sanity_check(self, addressing, addressing_format):
+    def test_validate_address_information__mandatory_args(self, addressing, addressing_format):
         CanPacket._CanPacket__validate_address_information(addressing=addressing, addressing_format=addressing_format,
                                                            can_id=None, target_address=None, source_address=None,
                                                            address_extension=None)
@@ -820,8 +823,8 @@ class TestCanPacket:
     @pytest.mark.parametrize("target_address", [0x55, "some Target Address"])
     @pytest.mark.parametrize("source_address", [0x12, "some Source Address"])
     @pytest.mark.parametrize("address_extension", [0xFE, "some Address Extension"])
-    def test_validate_address_information__sanity_check_2(self, addressing, addressing_format, can_id, target_address,
-                                                          source_address, address_extension):
+    def test_validate_address_information__optional_args(self, addressing, addressing_format, can_id, target_address,
+                                                         source_address, address_extension):
         CanPacket._CanPacket__validate_address_information(addressing=addressing, addressing_format=addressing_format,
                                                            can_id=can_id, target_address=target_address,
                                                            source_address=source_address,
@@ -830,6 +833,21 @@ class TestCanPacket:
         self.mock_validate_can_addressing_format.assert_called_once_with(addressing_format)
         self.mock_validate_can_id.assert_called_once_with(can_id)
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address), call(address_extension)])
+
+    # __validate_packet_data
+
+    @pytest.mark.parametrize("packet_type", [None, "packet type", CanPacketType.FIRST_FRAME])
+    def test_validate_packet_data__mandatory_args(self, packet_type):
+        CanPacket._CanPacket__validate_packet_data(packet_type=packet_type)
+        self.mock_validate_can_packet_type.assert_called_once_with(packet_type)
+        self.mock_validate_raw_byte.assert_called_once_with(DEFAULT_FILLER_BYTE)
+
+    @pytest.mark.parametrize("packet_type", ["packet type", CanPacketType.FIRST_FRAME])
+    @pytest.mark.parametrize("use_data_optimization", [None, 0, 1, 6.2, "True"])
+    def test_validate_packet_data__type_error__use_data_optimization(self, packet_type, use_data_optimization):
+        with pytest.raises(TypeError):
+            CanPacket._CanPacket__validate_packet_data(packet_type=packet_type,
+                                                       use_data_optimization=use_data_optimization)
 
     # packet_type
 
@@ -913,13 +931,3 @@ class TestCanPacket:
     def test_filler_byte__get(self, value_stored):
         self.mock_can_packet._CanPacket__filler_byte = value_stored
         assert CanPacket.filler_byte.fget(self=self.mock_can_packet) is value_stored
-
-
-@pytest.mark.integration
-class TestCanSTminIntegration:
-    """Integration tests for CanSTmin class."""
-
-    @pytest.mark.parametrize("value", [0x00, 0x01, 0x12, 0x50, 0x6D, 0x7E, 0x7F, 0xF1, 0xF4, 0xF9])
-    def test_encode_and_decode(self, value):
-        value_encoded = CanSTminTranslator.encode(value)
-        assert CanSTminTranslator.decode(value_encoded) == value

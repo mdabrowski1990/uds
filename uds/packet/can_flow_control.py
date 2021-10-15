@@ -104,42 +104,42 @@ class CanSTminTranslator:
         return round(value % 0.1, cls._FLOATING_POINT_ACCURACY) in (0, 0.1)
 
     @classmethod
-    def encode(cls, value: RawByte) -> TimeMilliseconds:
+    def decode(cls, raw_value: RawByte) -> TimeMilliseconds:
         """
         Map raw value of STmin into time value.
 
         .. note:: According to ISO 15765-2, if a raw value of STmin that is not recognized by its recipient,
             then the longest STmin time value (0x7F = 127 ms) shall be used instead.
 
-        :param value: Raw value of STmin.
+        :param raw_value: Raw value of STmin.
 
         :return: STmin time in milliseconds.
         """
-        validate_raw_byte(value)
-        if cls.MIN_VALUE_MS_RANGE <= value <= cls.MAX_VALUE_MS_RANGE:
-            return value
-        if cls.MIN_RAW_VALUE_100US_RANGE <= value <= cls.MAX_RAW_VALUE_100US_RANGE:
-            return (value - 0xF0) * 0.1
-        warn(message=f"STmin 0x{value:X} is not recognized by this version of the package.",
+        validate_raw_byte(raw_value)
+        if cls.MIN_VALUE_MS_RANGE <= raw_value <= cls.MAX_VALUE_MS_RANGE:
+            return raw_value
+        if cls.MIN_RAW_VALUE_100US_RANGE <= raw_value <= cls.MAX_RAW_VALUE_100US_RANGE:
+            return (raw_value - 0xF0) * 0.1
+        warn(message=f"STmin 0x{raw_value:X} is not recognized by this version of the package.",
              category=UnrecognizedSTminWarning)
         return cls.MAX_STMIN_TIME
 
     @classmethod
-    def decode(cls, value: TimeMilliseconds) -> RawByte:
+    def encode(cls, time_value: TimeMilliseconds) -> RawByte:
         """
         Map time value of STmin into raw value.
 
-        :param value: STmin time in milliseconds.
+        :param time_value: STmin time in milliseconds.
 
         :raise TypeError: Provided value is not time in milliseconds.
         :raise ValueError: Value out of supported range.
 
         :return: Raw value of STmin.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
-        if cls._is_ms_value(value):
-            return int(value)
-        if cls._is_100us_value(value):
-            return int(round(value * 10, 0) + 0xF0)
-        raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {value}")
+        if not isinstance(time_value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(time_value)}")
+        if cls._is_ms_value(time_value):
+            return int(time_value)
+        if cls._is_100us_value(time_value):
+            return int(round(time_value * 10, 0) + 0xF0)
+        raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {time_value}")

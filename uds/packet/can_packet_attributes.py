@@ -9,9 +9,10 @@ This module contains implementation of :ref:`CAN packet <knowledge-base-uds-can-
 """
 
 __all__ = ["CanPacketType", "CanPacketTypeMemberTyping", "CanAddressingFormat", "CanAddressingFormatTyping",
-           "CanIdHandler", "DEFAULT_FILLER_BYTE"]
+           "CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
-from typing import Union, Any, Tuple
+from typing import Union, Any, Tuple, Dict, Set
+from bisect import bisect_left
 
 from aenum import unique, StrEnum
 
@@ -367,3 +368,107 @@ class CanIdHandler:
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
         if not cls.is_can_id(value):
             raise ValueError(f"Provided value is out of CAN Identifier values range. Actual value: {value}")
+
+
+class CanDlcHandler:
+    """
+    Helper class that provides utilities for CAN Data Length Code field.
+
+    CAN Data Length Code (CAN DLC) is a CAN frame field that informs about number of data bytes carried in CAN frames.
+
+    CAN DLC supports two value ranges:
+     - 0x0-0x8 - supported by CLASSICAL CAN and CAN FD
+     - 0x9-0xF - supported by CAN FD only
+    """
+
+    __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(range(9, 0x10))
+    __DLC_VALUES: Tuple[int, ...] = tuple(range(0x10))
+    __DATA_BYTES_NUMBERS: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
+    __DLC_MAPPING: Dict[int, int] = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS))
+    __DATA_BYTES_NUMBER_MAPPING: Dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
+
+    @classmethod
+    def decode(cls, dlc: int) -> int:
+        """
+        Map raw value of CAN DLC into number of data bytes.
+
+        :param dlc: Raw value of CAN DLC.
+
+        :return: Number of data bytes in a CAN frame that is represented by provided DLC value.
+        """
+        cls.validate_dlc(dlc)
+        return cls.__DLC_MAPPING[dlc]
+
+    @classmethod
+    def encode(cls, data_bytes_number: int) -> int:
+        """
+        Map number of data bytes in a CAN frame into DLC value.
+
+        :param data_bytes_number: Number of data bytes in a CAN frame.
+
+        :return: DLC value of a CAN frame that represents provided number of data bytes.
+        """
+        cls.validate_data_bytes_number(data_bytes_number, True)
+        return cls.__DATA_BYTES_NUMBER_MAPPING[data_bytes_number]
+
+    @classmethod
+    def get_min_dlc(cls, data_bytes_number: int) -> int:
+        """
+        Get minimum value of CAN DLC that enables carrying provided number of CAN data bytes.
+
+        :param data_bytes_number: Number of payload data bytes in a CAN frame.
+
+        :return: Minimum CAN DLC value that enables carrying provided number of CAN data bytes.
+        """
+        cls.validate_data_bytes_number(data_bytes_number, False)
+        index = bisect_left(a=cls.__DATA_BYTES_NUMBERS, x=data_bytes_number)
+        return cls.__DLC_VALUES[index]
+
+    @classmethod
+    def is_can_fd_specific_value(cls, dlc: int) -> bool:
+        """
+        Check whether provided DLC value is applicable for CAN FD only.
+
+        :param dlc: Value of DLC to check.
+
+        :return: True if provided DLC value is CAN FD specific, False otherwise.
+        """
+        return dlc in cls.__DLC_SPECIFIC_FOR_CAN_FD
+
+    @classmethod
+    def validate_dlc(cls, value: Any) -> None:
+        """
+        Validate whether provided value is a valid CAN DLC value.
+
+        :param value: Value to validate.
+
+        :raise TypeError: Provided values is not int type.
+        :raise ValueError: Provided value is not a valid DLC value.
+        """
+        if not isinstance(value, int):
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+        if cls.__DLC_MAPPING.get(value, None) is None:
+            raise ValueError(f"Provided value is out of DLC values range. Actual value: {value}")
+
+    @classmethod
+    def validate_data_bytes_number(cls, value: Any, exact_value: bool = True) -> None:
+        """
+        Validate whether provided value is a valid number of data bytes that might be carried a CAN frame.
+
+        :param value: Value to validate.
+        :param exact_value: Informs whether the value must be the exact number of CAN frame data bytes or number.
+            - True - provided value must be the exact number of data bytes that might be carried by a CAN frame
+            - False - provided value must be a number of data bytes that in range of minimum and maximum data bytes
+              that CAN frame contain
+
+        :raise TypeError: Provided values is not int type.
+        :raise ValueError: Provided value is not number of data bytes that matches the criteria.
+        """
+        if not isinstance(value, int):
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+        if exact_value:
+            if cls.__DATA_BYTES_NUMBER_MAPPING.get(value, None) is None:
+                raise ValueError(f"Provided value is not a valid CAN Frame data bytes number. Actual value: {value}")
+        else:
+            if not cls.__DATA_BYTES_NUMBERS[0] <= value <= cls.__DATA_BYTES_NUMBERS[-1]:
+                raise ValueError(f"Provided value is out of CAN Frame data bytes number range. Actual value: {value}")
