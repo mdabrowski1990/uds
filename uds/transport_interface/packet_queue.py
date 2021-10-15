@@ -1,4 +1,4 @@
-"""Module with common implementation of UDS Packets queues."""
+"""Implementation of UDS Packets queues."""
 
 __all__ = ["ReceivedPacketsQueue"]
 
