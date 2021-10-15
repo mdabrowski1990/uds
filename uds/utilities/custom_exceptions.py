@@ -1,8 +1,17 @@
-"""Custom exception used within the project."""
+"""Custom exception that are used within the project."""
 
 
 class ReassignmentError(Exception):
-    """Attempt to set a new value of an attribute that cannot be changed after the initial value was already set."""
+    """
+    Attempt to set a new value to an attribute that cannot be changed.
+
+    Example:
+        Objects of class X are initialized with an attribute const_x that must not be changed after the object
+        creation (outside __init__ method).
+
+        ReassignmentError would be raised when a user tries to change the value of const_x attribute after the object
+        is initialized.
+    """
 
 
 class InconsistentArgumentsError(ValueError):
@@ -11,10 +20,22 @@ class InconsistentArgumentsError(ValueError):
 
     Example:
         A function takes two parameters: a, b
-        Function requires: a > b
-        This function would raise InconsistentArgumentsError when values of a and b are not satisfying the requirement.
+
+        Let's assume that the function requires to: a > b
+
+        The function would raise InconsistentArgumentsError when values of a and b are not satisfying
+        the requirement (a <= b).
     """
 
 
 class UnusedArgumentsWarning(Warning):
-    """Some of provided arguments will not be used."""
+    """
+    Some of provided arguments will not be used.
+
+    Example:
+        A function takes two parameters: a, b
+
+        Let's assume that parameter a must always be provided. Parameter b is used only when a == 1.
+
+        The function would warn about UnusedArgumentsWarning if a != 1 and b value was provided.
+    """

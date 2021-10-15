@@ -1,4 +1,9 @@
-"""Module with special `Enums <https://en.wikipedia.org/wiki/Enumerated_type#Python>`_ implementations."""
+"""
+Module with common and reused implementation of enums.
+
+`Enumerated types (enums) <https://en.wikipedia.org/wiki/Enumerated_type#Python>`_ are data types that consists of
+named values. This module provides extension to `aenum <https://pypi.org/project/aenum/>`_ package.
+"""
 
 __all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum"]
 

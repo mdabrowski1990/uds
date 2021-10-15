@@ -7,17 +7,17 @@ from typing import Union, Tuple, List, Set, Any
 from datetime import datetime
 
 RawByte = int
-"""Typing alias of a byte value - integer in range 0x00-0xFF - that is used by the package."""
+"""Typing alias of a byte value (integer in range 0x00-0xFF)."""
 RawBytesTuple = Tuple[RawByte, ...]
 """Typing alias of a tuple filled with byte values."""
 RawBytesSet = Set[RawByte]
 """Typing alias of a set filled with byte values."""
 RawBytes = Union[RawBytesTuple, List[RawByte]]
 """Typing alias of a sequence filled with byte values."""
-TimeMilliseconds = Union[int, float]  # noqa: F841
-"""Typing alias of an amount of time in milliseconds that is used by the package."""
+TimeMilliseconds = Union[int, float]
+"""Typing alias of an amount of time in milliseconds."""
 TimeStamp = datetime
-"""Typing alias of a `timestamp <https://en.wikipedia.org/wiki/Timestamp>`_ that is used by the package."""
+"""Typing alias of a `timestamp <https://en.wikipedia.org/wiki/Timestamp>`_."""
 
 
 def validate_raw_byte(value: Any) -> None:
