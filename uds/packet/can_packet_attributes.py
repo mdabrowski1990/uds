@@ -381,11 +381,11 @@ class CanDlcHandler:
      - 0x9-0xF - supported by CAN FD only
     """
 
-    __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(range(9, 0x10))
     __DLC_VALUES: Tuple[int, ...] = tuple(range(0x10))
     __DATA_BYTES_NUMBERS: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
     __DLC_MAPPING: Dict[int, int] = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS))
     __DATA_BYTES_NUMBER_MAPPING: Dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
+    __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(__DLC_VALUES[9:])
 
     @classmethod
     def decode(cls, dlc: int) -> int:

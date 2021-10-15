@@ -47,7 +47,6 @@ class CanPacket(AbstractUdsPacket):
                  target_address: Optional[RawByte] = None,
                  source_address: Optional[RawByte] = None,
                  address_extension: Optional[RawByte] = None,
-                 use_data_optimization: bool = True,
                  dlc: Optional[int] = None,
                  filler_byte: RawByte = DEFAULT_FILLER_BYTE,
                  **packet_type_specific_kwargs: Any) -> None:
@@ -65,12 +64,9 @@ class CanPacket(AbstractUdsPacket):
             Leave None if provided `addressing_format` does not use Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
             Leave None if provided `addressing_format` does not use Target Address parameter.
-        :param use_data_optimization: Flag whether to use CAN Data Frame Optimization during CAN Packet creation.
-            - False - CAN Frame Data Padding is used in all cases (`dlc` value must be provided).
-            - True - CAN Frame Data Optimization is used whenever possible, CAN Frame Data Padding is used when
-              sole CAN Frame Data Optimization is not enough.
-        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-            Leave None if `use_data_optimization` argument is set to True.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet. None to use CAN Data Frame Optimization.
+            - None - use CAN Data Frame Optimization
+            - int type value - DLC value to set, CAN Data Padding is always used
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
             - payload (required for: SF, FF and CF): Diagnostic message data that are carried by this CAN packet.
@@ -89,7 +85,6 @@ class CanPacket(AbstractUdsPacket):
         self.__source_address = None
         self.__address_extension = None
         self.__dlc = None
-        self.__use_data_optimization = None
         self.__filler_byte = None
         self.set_address_information(addressing=addressing,
                                      addressing_format=addressing_format,
@@ -98,7 +93,6 @@ class CanPacket(AbstractUdsPacket):
                                      source_address=source_address,
                                      address_extension=address_extension)
         self.set_data(packet_type=packet_type,
-                      use_data_optimization=use_data_optimization,
                       dlc=dlc,
                       filler_byte=filler_byte,
                       **packet_type_specific_kwargs)
@@ -127,6 +121,8 @@ class CanPacket(AbstractUdsPacket):
             Leave None if provided `addressing_format` does not use Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
             Leave None if provided `addressing_format` does not use Target Address parameter.
+
+        :raise NotImplementedError: A valid addressing format was provided, but there is no implementation for it.
         """
         self.__validate_address_information(addressing=addressing, addressing_format=addressing_format, can_id=can_id,
                                             target_address=target_address, source_address=source_address,
@@ -426,89 +422,104 @@ class CanPacket(AbstractUdsPacket):
     def set_data(self,
                  packet_type: CanPacketTypeMemberTyping,
                  *,
-                 use_data_optimization: bool = True,
                  dlc: Optional[int] = None,
                  filler_byte: RawByte = DEFAULT_FILLER_BYTE,
                  **packet_type_specific_kwargs: Any) -> None:
         """
+        Set or change packet type and data field for this CAN packet.
 
-        :param packet_type:
-        :param use_data_optimization:
-        :param dlc:
-        :param filler_byte:
-        :param packet_type_specific_kwargs:
+        This function enables to set an entire :ref:`Network Data Field <knowledge-base-n-data>` and
+        :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
+        a :ref:`CAN packet <knowledge-base-uds-can-packet>`.
+
+        :param packet_type: Type of this CAN packet.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
+            Leave None if `use_data_optimization` argument is set to True.
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
+        :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
+            - payload (required for: SF, FF and CF): Diagnostic message data that are carried by this CAN packet.
+            - data_length (required for: FF): Number of bytes that a diagnostic message carried by this CAN packet has.
+            - sequence_number (required for: CF): Sequence number of a Consecutive Frame.
+            - flow_status (required for: FC): Flow status information carried by a Flow Control frame.
+            - block_size (optional for: FC): Block size information carried by a Flow Control frame.
+            - stmin (optional for: FC): Separation Time minimum information carried by a Flow Control frame.
+
+        :raise NotImplementedError: A valid packet type was provided, but there is no implementation for it.
+        """
+        self.__validate_packet_data(packet_type=packet_type,
+                                    dlc=dlc,
+                                    filler_byte=filler_byte)
+        packet_type_instance = CanPacketType(packet_type)
+        if packet_type_instance == CanPacketType.SINGLE_FRAME:
+            self.__set_single_frame_data(dlc=dlc, filler_byte=filler_byte, **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.FIRST_FRAME:
+            self.__set_first_frame_data(dlc=dlc, filler_byte=filler_byte, **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.CONSECUTIVE_FRAME:
+            self.__set_consecutive_frame_data(dlc=dlc, filler_byte=filler_byte, **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.FLOW_CONTROL:
+            self.__set_flow_control_data(dlc=dlc, filler_byte=filler_byte, **packet_type_specific_kwargs)
+        else:
+            raise NotImplementedError(f"Unknown CAN Packet Type value was provided: {packet_type_instance}")
+
+    def __set_single_frame_data(self, payload: RawBytes) -> None:
+        """
+
+        :param payload:
 
         :raise TypeError:
         :raise ValueError:
         """
 
-    # def __set_single_frame_data(self, payload: RawBytes) -> None:
-    #     """
-    #
-    #     :param payload:
-    #
-    #     :raise TypeError:
-    #     :raise ValueError:
-    #     """
-    #
-    # def __set_first_frame_data(self, data_length: int, payload: RawBytes) -> None:
-    #     """
-    #
-    #     :param data_length:
-    #     :param payload:
-    #
-    #     :raise TypeError:
-    #     :raise ValueError:
-    #     """
-    #
-    # def __set_consecutive_frame_data(self, sequence_number: int, payload: RawBytes) -> None:
-    #     """
-    #
-    #     :param sequence_number:
-    #     :param payload:
-    #
-    #     :raise TypeError:
-    #     :raise ValueError:
-    #     """
-    #
-    # def __set_flow_control_data(self,
-    #                             flow_status: CanFlowStatusTyping,
-    #                             block_size: Optional[RawByte] = None,
-    #                             stmin: Optional[RawByte] = None) -> None:
-    #     """
-    #
-    #     :param flow_status:
-    #     :param block_size:
-    #     :param stmin:
-    #
-    #     :raise TypeError:
-    #     :raise ValueError:
-    #     """
+    def __set_first_frame_data(self, data_length: int, payload: RawBytes) -> None:
+        """
+
+        :param data_length:
+        :param payload:
+
+        :raise TypeError:
+        :raise ValueError:
+        """
+
+    def __set_consecutive_frame_data(self, sequence_number: int, payload: RawBytes) -> None:
+        """
+
+        :param sequence_number:
+        :param payload:
+
+        :raise TypeError:
+        :raise ValueError:
+        """
+
+    def __set_flow_control_data(self,
+                                flow_status: CanFlowStatusTyping,
+                                block_size: Optional[RawByte] = None,
+                                stmin: Optional[RawByte] = None) -> None:
+        """
+
+        :param flow_status:
+        :param block_size:
+        :param stmin:
+
+        :raise TypeError:
+        :raise ValueError:
+        """
 
     @staticmethod
     def __validate_packet_data(packet_type: CanPacketTypeMemberTyping,
-                               use_data_optimization: bool = True,
                                dlc: Optional[int] = None,
-                               filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                               **packet_type_specific_kwargs: Any) -> None:
+                               filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
         """
         Validate packet data arguments to make use they have proper types and values assigned.
 
-        Only sanity check is performed (whether types and values are in range).
-
-        .. warning:: Values cross compatibility is not checked.
-
-        TODO
-
-        :raise TypeError: At least one argument has invalid type (incompatible with annotation).
-        :raise ValueError: At least one argument has invalid value.
+        :param packet_type: Type of this CAN packet.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
+            Leave None if `use_data_optimization` argument is set to True.
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
         CanPacketType.validate_member(packet_type)
         validate_raw_byte(filler_byte)
-        if not isinstance(use_data_optimization, bool):
-            raise TypeError(f"Provided 'use_data_optimization' value is not bool type. "
-                            f"Actual type: {type(use_data_optimization)}")
-        # TODO: validate remaining args
+        if dlc is not None:
+            CanDlcHandler.validate_dlc(dlc)
 
     @property
     def addressing(self) -> AddressingType:
@@ -606,19 +617,6 @@ class CanPacket(AbstractUdsPacket):
         DLC value determines number of bytes that :ref:`CAN Frame <knowledge-base-can-frame>` contains.
         """
         return self.__dlc
-
-    @property
-    def use_data_optimization(self) -> bool:
-        """
-        Information whether this UDS packet uses CAN Frame Data Optimization.
-
-        Values mapping:
-         - False - :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is used in all cases
-         - True - :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used whenever possible
-           with :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` being used in special cases that
-           sole :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is not enough
-        """
-        return self.__use_data_optimization
 
     @property
     def filler_byte(self) -> RawByte:

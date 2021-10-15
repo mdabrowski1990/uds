@@ -24,6 +24,8 @@ class TestCanPacket:
         self.mock_validate_can_packet_type = self._patcher_validate_can_packet_type.start()
         self._patcher_validate_can_id = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
         self.mock_validate_can_id = self._patcher_validate_can_id.start()
+        self._patcher_validate_can_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.validate_dlc")
+        self.mock_validate_can_dlc = self._patcher_validate_can_dlc.start()
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
         self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
@@ -34,6 +36,7 @@ class TestCanPacket:
         self._patcher_validate_can_addressing_format.stop()
         self._patcher_validate_can_packet_type.stop()
         self._patcher_validate_can_id.stop()
+        self._patcher_validate_can_dlc.stop()
         self._patcher_validate_raw_byte.stop()
         self._patcher_warn.stop()
 
@@ -57,7 +60,6 @@ class TestCanPacket:
         assert self.mock_can_packet._CanPacket__source_address is None
         assert self.mock_can_packet._CanPacket__address_extension is None
         assert self.mock_can_packet._CanPacket__dlc is None
-        assert self.mock_can_packet._CanPacket__use_data_optimization is None
         assert self.mock_can_packet._CanPacket__filler_byte is None
 
     @pytest.mark.parametrize("packet_type", ["some packet type", 1])
@@ -73,12 +75,12 @@ class TestCanPacket:
         (None, 1, 2, 3),
         (0x675, None, None, None),
     ])
-    @pytest.mark.parametrize("use_data_optimization, dlc, filler_byte", [
-        (True, None, 0xCC),
-        (False, 8, 0xAA),
+    @pytest.mark.parametrize("dlc, filler_byte", [
+        (None, 0xCC),
+        (8, 0xAA),
     ])
     def test_init(self, packet_type, addressing_type, addressing_format, can_id, target_address, source_address,
-                  address_extension, use_data_optimization, dlc, filler_byte, packet_type_specific_kwargs):
+                  address_extension, dlc, filler_byte, packet_type_specific_kwargs):
         CanPacket.__init__(self=self.mock_can_packet,
                            packet_type=packet_type,
                            addressing=addressing_type,
@@ -87,7 +89,6 @@ class TestCanPacket:
                            target_address=target_address,
                            source_address=source_address,
                            address_extension=address_extension,
-                           use_data_optimization=use_data_optimization,
                            dlc=dlc,
                            filler_byte=filler_byte,
                            **packet_type_specific_kwargs)
@@ -100,7 +101,6 @@ class TestCanPacket:
         assert self.mock_can_packet._CanPacket__source_address is None
         assert self.mock_can_packet._CanPacket__address_extension is None
         assert self.mock_can_packet._CanPacket__dlc is None
-        assert self.mock_can_packet._CanPacket__use_data_optimization is None
         assert self.mock_can_packet._CanPacket__filler_byte is None
         self.mock_can_packet.set_address_information.assert_called_once_with(
             addressing=addressing_type,
@@ -111,7 +111,6 @@ class TestCanPacket:
             address_extension=address_extension)
         self.mock_can_packet.set_data.assert_called_once_with(
             packet_type=packet_type,
-            use_data_optimization=use_data_optimization,
             dlc=dlc,
             filler_byte=filler_byte,
             **packet_type_specific_kwargs)
@@ -834,6 +833,82 @@ class TestCanPacket:
         self.mock_validate_can_id.assert_called_once_with(can_id)
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address), call(address_extension)])
 
+    # set_data
+
+    @pytest.mark.parametrize("packet_type", [None, "unknown packet type", "something"])
+    @patch(f"{SCRIPT_LOCATION}.CanPacketType")
+    def test_set_data__unknown_type(self, mock_can_packet_type_class, packet_type):
+        with pytest.raises(NotImplementedError):
+            CanPacket.set_data(self=self.mock_can_packet, packet_type=packet_type)
+        mock_can_packet_type_class.assert_called_once_with(packet_type)
+        self.mock_can_packet._CanPacket__validate_packet_data.assert_called_once_with(packet_type=packet_type,
+                                                                                      dlc=None,
+                                                                                      filler_byte=DEFAULT_FILLER_BYTE)
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.SINGLE_FRAME, CanPacketType.SINGLE_FRAME.value])
+    @pytest.mark.parametrize("dlc, filler_byte", [
+        (None, 0xCC),
+        (8, 0xAA),
+        (15, 0x55),
+    ])
+    @pytest.mark.parametrize("kwargs", [{}, {"a": 1, "b": 2, "c": 3}, {"value": None, "another": "soemthing"}])
+    def test_set_data__single_frame(self, packet_type, dlc, filler_byte, kwargs):
+        CanPacket.set_data(self=self.mock_can_packet, packet_type=packet_type, dlc=dlc, filler_byte=filler_byte, **kwargs)
+        self.mock_can_packet._CanPacket__set_single_frame_data.assert_called_once_with(dlc=dlc,
+                                                                                       filler_byte=filler_byte,
+                                                                                       **kwargs)
+        self.mock_can_packet._CanPacket__set_first_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_consecutive_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_flow_control_data.assert_not_called()
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.FIRST_FRAME, CanPacketType.FIRST_FRAME.value])
+    @pytest.mark.parametrize("dlc, filler_byte", [
+        (None, 0xCC),
+        (8, 0xAA),
+        (15, 0x55),
+    ])
+    @pytest.mark.parametrize("kwargs", [{}, {"a": 1, "b": 2, "c": 3}, {"value": None, "another": "soemthing"}])
+    def test_set_data__first_frame(self, packet_type, dlc, filler_byte, kwargs):
+        CanPacket.set_data(self=self.mock_can_packet, packet_type=packet_type, dlc=dlc, filler_byte=filler_byte, **kwargs)
+        self.mock_can_packet._CanPacket__set_first_frame_data.assert_called_once_with(dlc=dlc,
+                                                                                      filler_byte=filler_byte,
+                                                                                      **kwargs)
+        self.mock_can_packet._CanPacket__set_single_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_consecutive_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_flow_control_data.assert_not_called()
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.CONSECUTIVE_FRAME, CanPacketType.CONSECUTIVE_FRAME.value])
+    @pytest.mark.parametrize("dlc, filler_byte", [
+        (None, 0xCC),
+        (8, 0xAA),
+        (15, 0x55),
+    ])
+    @pytest.mark.parametrize("kwargs", [{}, {"a": 1, "b": 2, "c": 3}, {"value": None, "another": "soemthing"}])
+    def test_set_data__consecutive_frame(self, packet_type, dlc, filler_byte, kwargs):
+        CanPacket.set_data(self=self.mock_can_packet, packet_type=packet_type, dlc=dlc, filler_byte=filler_byte, **kwargs)
+        self.mock_can_packet._CanPacket__set_consecutive_frame_data.assert_called_once_with(dlc=dlc,
+                                                                                            filler_byte=filler_byte,
+                                                                                            **kwargs)
+        self.mock_can_packet._CanPacket__set_single_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_first_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_flow_control_data.assert_not_called()
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.FLOW_CONTROL, CanPacketType.FLOW_CONTROL.value])
+    @pytest.mark.parametrize("dlc, filler_byte", [
+        (None, 0xCC),
+        (8, 0xAA),
+        (15, 0x55),
+    ])
+    @pytest.mark.parametrize("kwargs", [{}, {"a": 1, "b": 2, "c": 3}, {"value": None, "another": "soemthing"}])
+    def test_set_data__flow_control(self, packet_type, dlc, filler_byte, kwargs):
+        CanPacket.set_data(self=self.mock_can_packet, packet_type=packet_type, dlc=dlc, filler_byte=filler_byte, **kwargs)
+        self.mock_can_packet._CanPacket__set_flow_control_data.assert_called_once_with(dlc=dlc,
+                                                                                       filler_byte=filler_byte,
+                                                                                       **kwargs)
+        self.mock_can_packet._CanPacket__set_single_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_first_frame_data.assert_not_called()
+        self.mock_can_packet._CanPacket__set_consecutive_frame_data.assert_not_called()
+
     # __validate_packet_data
 
     @pytest.mark.parametrize("packet_type", [None, "packet type", CanPacketType.FIRST_FRAME])
@@ -843,11 +918,16 @@ class TestCanPacket:
         self.mock_validate_raw_byte.assert_called_once_with(DEFAULT_FILLER_BYTE)
 
     @pytest.mark.parametrize("packet_type", ["packet type", CanPacketType.FIRST_FRAME])
-    @pytest.mark.parametrize("use_data_optimization", [None, 0, 1, 6.2, "True"])
-    def test_validate_packet_data__type_error__use_data_optimization(self, packet_type, use_data_optimization):
-        with pytest.raises(TypeError):
-            CanPacket._CanPacket__validate_packet_data(packet_type=packet_type,
-                                                       use_data_optimization=use_data_optimization)
+    @pytest.mark.parametrize("dlc", ["dlc value", 0, 0xA])
+    def test_validate_packet_data__dlc__check(self, packet_type, dlc):
+        CanPacket._CanPacket__validate_packet_data(packet_type=packet_type,
+                                                   dlc=dlc)
+        self.mock_validate_can_dlc.assert_called_once_with(dlc)
+
+    @pytest.mark.parametrize("packet_type", ["packet type", CanPacketType.FIRST_FRAME])
+    def test_validate_packet_data__dlc__none(self, packet_type):
+        CanPacket._CanPacket__validate_packet_data(packet_type=packet_type, dlc=None)
+        self.mock_validate_can_dlc.assert_not_called()
 
     # packet_type
 
@@ -917,13 +997,6 @@ class TestCanPacket:
     def test_dlc__get(self, value_stored):
         self.mock_can_packet._CanPacket__dlc = value_stored
         assert CanPacket.dlc.fget(self=self.mock_can_packet) is value_stored
-
-    # use_data_optimization
-
-    @pytest.mark.parametrize("value_stored", [True, False])
-    def test_use_data_optimization__get(self, value_stored):
-        self.mock_can_packet._CanPacket__use_data_optimization = value_stored
-        assert CanPacket.use_data_optimization.fget(self=self.mock_can_packet) is value_stored
 
     # filler_byte
 
