@@ -461,48 +461,38 @@ class CanPacket(AbstractUdsPacket):
         else:
             raise NotImplementedError(f"Unknown CAN Packet Type value was provided: {packet_type_instance}")
 
-    def __set_single_frame_data(self, payload: RawBytes) -> None:
+    def __set_single_frame_data(self,
+                                dlc: Optional[int],
+                                filler_byte: int,
+                                payload: RawBytes) -> None:
         """
+        Set or change packet type and data field for this CAN packet.
 
+        :param dlc:
+        :param filler_byte:
         :param payload:
-
-        :raise TypeError:
-        :raise ValueError:
         """
 
-    def __set_first_frame_data(self, data_length: int, payload: RawBytes) -> None:
-        """
+    def __set_first_frame_data(self,
+                               dlc: Optional[int],
+                               filler_byte: int,
+                               data_length: int, payload: RawBytes) -> None:
+        ...
 
-        :param data_length:
-        :param payload:
-
-        :raise TypeError:
-        :raise ValueError:
-        """
-
-    def __set_consecutive_frame_data(self, sequence_number: int, payload: RawBytes) -> None:
-        """
-
-        :param sequence_number:
-        :param payload:
-
-        :raise TypeError:
-        :raise ValueError:
-        """
+    def __set_consecutive_frame_data(self,
+                                     dlc: Optional[int],
+                                     filler_byte: int,
+                                     sequence_number: int,
+                                     payload: RawBytes) -> None:
+        ...
 
     def __set_flow_control_data(self,
+                                dlc: Optional[int],
+                                filler_byte: int,
                                 flow_status: CanFlowStatusTyping,
                                 block_size: Optional[RawByte] = None,
                                 stmin: Optional[RawByte] = None) -> None:
-        """
-
-        :param flow_status:
-        :param block_size:
-        :param stmin:
-
-        :raise TypeError:
-        :raise ValueError:
-        """
+        ...
 
     @staticmethod
     def __validate_packet_data(packet_type: CanPacketTypeMemberTyping,
