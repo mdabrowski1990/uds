@@ -116,6 +116,9 @@ class TestResponseSID:
 @pytest.mark.integration
 class TestSIDIntegration:
 
+    SYSTEM_SPECIFIC_REQUEST_SID_VALUES = range(0xBA, 0xBF)
+    SYSTEM_SPECIFIC_RESPONSE_SID_VALUES = range(0xFA, 0xFF)
+
     def test_number_of_members(self):
         assert len(ResponseSID) == len(RequestSID) + 1, \
             "ResponseSID shall contain RSID for each SID and one additional element for 'NegativeResponse'."
@@ -124,13 +127,6 @@ class TestSIDIntegration:
     def test_rsid_members(self, request_sid_member):
         assert ResponseSID[request_sid_member.name] == request_sid_member.value + 0x40, \
             "Verify each ResponseSID member has correct value (SID + 0x40)."
-
-
-class TestSIDFunctional:
-    """Functional tests for SID Enums"""
-
-    SYSTEM_SPECIFIC_REQUEST_SID_VALUES = range(0xBA, 0xBF)
-    SYSTEM_SPECIFIC_RESPONSE_SID_VALUES = range(0xFA, 0xFF)
 
     @pytest.mark.parametrize("undefined_value", SYSTEM_SPECIFIC_REQUEST_SID_VALUES)
     def test_undefined_request_sid(self, undefined_value):

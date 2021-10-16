@@ -99,6 +99,25 @@ class TestCanSTmin:
     def test_encode__valid(self, raw_value, time_value):
         assert CanSTminTranslator.encode(time_value) == raw_value
 
+    # is_time_value
+
+    @pytest.mark.parametrize("value", [None, "1 ms", [1, 1]])
+    def test_is_time_value__invalid_type(self, value):
+        assert CanSTminTranslator.is_time_value(value) is False
+
+    @pytest.mark.parametrize("value", [1, 0.1, 0.5, 999])
+    @pytest.mark.parametrize("is_ms_value, is_100us_value, result", [
+        (True, False, True),
+        (False, True, True),
+        (False, False, False),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanSTminTranslator._is_ms_value")
+    @patch(f"{SCRIPT_LOCATION}.CanSTminTranslator._is_100us_value")
+    def test_is_time_value__result(self, mock_is_100us_value, mock_is_ms_value, is_ms_value, is_100us_value, result, value):
+        mock_is_100us_value.return_value = is_100us_value
+        mock_is_ms_value.return_value = is_ms_value
+        assert CanSTminTranslator.is_time_value(value) is result
+
 
 @pytest.mark.integration
 class TestCanSTminIntegration:

@@ -9,7 +9,7 @@ This module contains implementation of :ref:`Flow Control <knowledge-base-can-fl
 
 __all__ = ["CanFlowStatus", "CanFlowStatusTyping", "UnrecognizedSTminWarning", "CanSTminTranslator"]
 
-from typing import Union
+from typing import Union, Any
 from warnings import warn
 
 from aenum import unique
@@ -78,32 +78,6 @@ class CanSTminTranslator:
     """Accuracy of floating point values - when rounding is necessary due to float operation in python."""
 
     @classmethod
-    def _is_ms_value(cls, value: TimeMilliseconds) -> bool:
-        """
-        Check if provided argument is STmin time value in milliseconds.
-
-        :param value: Value to check.
-
-        :return: True if provided valid value of STmin time in milliseconds, False otherwise.
-        """
-        if not cls.MIN_VALUE_MS_RANGE <= value <= cls.MAX_VALUE_MS_RANGE:
-            return False
-        return value % 1 == 0
-
-    @classmethod
-    def _is_100us_value(cls, value: TimeMilliseconds) -> bool:
-        """
-        Check if provided argument is STmin time value in 100 microseconds.
-
-        :param value: Value to check.
-
-        :return: True if provided valid value of STmin time in 100 microseconds, False otherwise.
-        """
-        if not cls.MIN_TIME_VALUE_100US_RANGE <= value <= cls.MAX_TIME_VALUE_100US_RANGE:
-            return False
-        return round(value % 0.1, cls._FLOATING_POINT_ACCURACY) in (0, 0.1)
-
-    @classmethod
     def decode(cls, raw_value: RawByte) -> TimeMilliseconds:
         """
         Map raw value of STmin into time value.
@@ -143,3 +117,42 @@ class CanSTminTranslator:
         if cls._is_100us_value(time_value):
             return int(round(time_value * 10, 0) + 0xF0)
         raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {time_value}")
+
+    @classmethod
+    def is_time_value(cls, value: Any) -> bool:
+        """
+        Check if provided value is a valid time value of STmin.
+
+        :param value: Value to check.
+
+        :return: True if provided value is a valid time value of STmin, False otherwise.
+        """
+        if not isinstance(value, (int, float)):
+            return False
+        return cls._is_ms_value(value) or cls._is_100us_value(value)
+
+    @classmethod
+    def _is_ms_value(cls, value: TimeMilliseconds) -> bool:
+        """
+        Check if provided argument is STmin time value in milliseconds.
+
+        :param value: Value to check.
+
+        :return: True if provided valid value of STmin time in milliseconds, False otherwise.
+        """
+        if not cls.MIN_VALUE_MS_RANGE <= value <= cls.MAX_VALUE_MS_RANGE:
+            return False
+        return value % 1 == 0
+
+    @classmethod
+    def _is_100us_value(cls, value: TimeMilliseconds) -> bool:
+        """
+        Check if provided argument is STmin time value in 100 microseconds.
+
+        :param value: Value to check.
+
+        :return: True if provided valid value of STmin time in 100 microseconds, False otherwise.
+        """
+        if not cls.MIN_TIME_VALUE_100US_RANGE <= value <= cls.MAX_TIME_VALUE_100US_RANGE:
+            return False
+        return round(value % 0.1, cls._FLOATING_POINT_ACCURACY) in (0, 0.1)

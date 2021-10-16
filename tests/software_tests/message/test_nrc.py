@@ -17,9 +17,9 @@ class TestNRC:
         assert issubclass(NRC, ExtendableEnum)
 
 
-@pytest.mark.functional
-class TestNRCFunctional:
-    """Functional tests for NRC class."""
+@pytest.mark.integration
+class TestNRCIntegration:
+    """Integration tests for NRC class."""
 
     SPECIFIC_CONDITIONS_NOT_CORRECT_VALUES = range(0x95, 0xF0)
     SYSTEM_SPECIFIC_VALUES = range(0xF0, 0xFF)

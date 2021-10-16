@@ -32,15 +32,11 @@ jobs:
 
       - name: Execute unit tests [pytest]
         run: |
-          pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration and not function"
+          pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
 
       - name: Execute integration tests [pytest]
         run: |
           pytest tests/software_tests -m integration
-
-      - name: Execute functional tests [pytest]
-        run: |
-          pytest tests/software_tests -m functional
         
         
   static_code_analysis:
