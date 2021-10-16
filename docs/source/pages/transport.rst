@@ -7,13 +7,12 @@ first two layers for CAN bus).
 
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Transport Interface Implementations:
+    :maxdepth: 1
+    :caption: Transport Interface Implementations:
 
-   transport/can.rst
-   transport/ethernet.rst
-   transport/lin.rst
-   transport/flexray.rst
-   transport/kline.rst
-   transport/custom.rst
-
+    transport/can.rst
+    transport/ethernet.rst
+    transport/lin.rst
+    transport/flexray.rst
+    transport/kline.rst
+    transport/custom.rst

@@ -224,6 +224,3 @@ Methods implemented in :class:`~uds.message.nrc.NRC` class:
         uds.message.NRC.is_member(new_member)
         uds.message.NRC.is_member(0xF0)
 
-
-.. role:: python(code)
-    :language: python

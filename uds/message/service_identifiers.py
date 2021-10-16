@@ -2,7 +2,7 @@
 Service Identifier (SID) data parameter implementation.
 
 .. note:: :ref:`Service Identifiers <knowledge-base-sid>` values and their meanings are defined by ISO 14229-1
-and SAE J1979 standards.
+    and SAE J1979 standards.
 """
 
 __all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS", "UnrecognizedSIDWarning"]

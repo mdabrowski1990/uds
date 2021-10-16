@@ -36,4 +36,3 @@ Members defined in :class:`~uds.transmission_attributes.addressing.AddressingTyp
 Methods implemented in :class:`~uds.transmission_attributes.addressing.AddressingType` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
-
