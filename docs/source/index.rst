@@ -5,6 +5,7 @@ Welcome to UDS documentation!
 
    Home <self>
    pages/installation.rst
+   pages/transmission_attributes.rst
    pages/message.rst
    pages/packet.rst
    pages/segmentation.rst

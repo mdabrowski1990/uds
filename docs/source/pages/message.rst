@@ -148,35 +148,6 @@ Methods implemented in :class:`~uds.message.nrc.NRC` class:
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
 
-Transmission Attributes
------------------------
-Attributes that describes UDS communication:
- - Addressing_ - attribute describing :ref:`addressing <knowledge-base-addressing>` value
- - `Transmission Direction`_ - attribute describing direction of a communication
-
-Addressing
-``````````
-Enum :class:`~uds.message.transmission_attributes.AddressingType` contains definitions of :ref:`addressing <knowledge-base-addressing>` values that determines UDS communication model:
- - :attr:`~uds.message.transmission_attributes.AddressingType.PHYSICAL` - direct one to one communication
-   (:ref:`physical addressing <knowledge-base-physical-addressing>`)
- - :attr:`~uds.message.transmission_attributes.AddressingType.FUNCTIONAL` - one to many communication
-   (:ref:`functional addressing <knowledge-base-functional-addressing>`)
-
-Methods implemented in :class:`~uds.message.transmission_attributes.AddressingType` class:
- - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
- - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
-
-
-Transmission Direction
-``````````````````````
-Enum :class:`~uds.message.transmission_attributes.TransmissionDirection` contains definitions of communication directions:
- - :attr:`~uds.message.transmission_attributes.TransmissionDirection.RECEIVED` - incoming
- - :attr:`~uds.message.transmission_attributes.TransmissionDirection.TRANSMITTED` - outcoming
-
-Methods implemented in :class:`~uds.message.transmission_attributes.TransmissionDirection` class:
- - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
- - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
-
 
 .. role:: python(code)
     :language: python
