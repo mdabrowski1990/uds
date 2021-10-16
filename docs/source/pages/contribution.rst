@@ -35,4 +35,4 @@ Full list of our sponsors:
 
 
 .. |Merit Logo| image:: ../images/MeritAutomotive.png
-   :height: 50
+    :height: 50

@@ -86,15 +86,6 @@ class TestResponseSID:
     def test_inheritance__extendable_enum(self):
         assert issubclass(ResponseSID, ExtendableEnum)
 
-    def test_number_of_members(self):
-        assert len(ResponseSID) == len(RequestSID) + 1, \
-            "ResponseSID shall contain RSID for each SID and one additional element for 'NegativeResponse'."
-
-    @pytest.mark.parametrize("request_sid_member", list(RequestSID))
-    def test_rsid_members(self, request_sid_member):
-        assert ResponseSID[request_sid_member.name] == request_sid_member.value + 0x40, \
-            "Verify each ResponseSID member has correct value (SID + 0x40)."
-
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_response_sid__member(self, value):
         self.mock_is_member.return_value = True
@@ -120,3 +111,33 @@ class TestResponseSID:
         self.mock_warn.assert_not_called()
         self.mock_is_member.assert_called_once_with(value)
         self.mock_possible_response_sids.__contains__.assert_called_once_with(value)
+
+
+@pytest.mark.integration
+class TestSIDIntegration:
+
+    def test_number_of_members(self):
+        assert len(ResponseSID) == len(RequestSID) + 1, \
+            "ResponseSID shall contain RSID for each SID and one additional element for 'NegativeResponse'."
+
+    @pytest.mark.parametrize("request_sid_member", list(RequestSID))
+    def test_rsid_members(self, request_sid_member):
+        assert ResponseSID[request_sid_member.name] == request_sid_member.value + 0x40, \
+            "Verify each ResponseSID member has correct value (SID + 0x40)."
+
+
+class TestSIDFunctional:
+    """Functional tests for SID Enums"""
+
+    SYSTEM_SPECIFIC_REQUEST_SID_VALUES = range(0xBA, 0xBF)
+    SYSTEM_SPECIFIC_RESPONSE_SID_VALUES = range(0xFA, 0xFF)
+
+    @pytest.mark.parametrize("undefined_value", SYSTEM_SPECIFIC_REQUEST_SID_VALUES)
+    def test_undefined_request_sid(self, undefined_value):
+        assert RequestSID.is_request_sid(undefined_value) is True
+        assert RequestSID.is_member(undefined_value) is False
+
+    @pytest.mark.parametrize("undefined_value", SYSTEM_SPECIFIC_RESPONSE_SID_VALUES)
+    def test_undefined_response_sid(self, undefined_value):
+        assert ResponseSID.is_response_sid(undefined_value) is True
+        assert ResponseSID.is_member(undefined_value) is False
