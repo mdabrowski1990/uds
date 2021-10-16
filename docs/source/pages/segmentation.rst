@@ -1,6 +1,6 @@
 Segmentation
 ============
-Implementation related to :ref:`segmentation <knowledge-base-segmentation>` is located in :mod:`uds.segmentation`
+Implementation related to :ref:`segmentation process <knowledge-base-segmentation>` is located in :mod:`uds.segmentation`
 sub-package.
 
 
