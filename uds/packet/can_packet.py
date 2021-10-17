@@ -120,12 +120,12 @@ class CanPacket(AbstractUdsPacket):
 
         :raise NotImplementedError: A valid addressing format was provided, but the implementation is missing.
         """
-        self.__validate_ai(addressing=addressing,
-                           addressing_format=addressing_format,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension)
+        self.validate_address_information(addressing=addressing,
+                                          addressing_format=addressing_format,
+                                          can_id=can_id,
+                                          target_address=target_address,
+                                          source_address=source_address,
+                                          address_extension=address_extension)
         can_addressing_format_instance = CanAddressingFormat(addressing_format)
         if can_addressing_format_instance == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
             self.__set_address_information_normal_11bit(addressing=addressing,
@@ -314,13 +314,14 @@ class CanPacket(AbstractUdsPacket):
     def stmin(self) -> Optional[RawByte]:
         ...
 
-    def __validate_ai(self,
-                      addressing: AddressingTypeMemberTyping,  # TODO: update annotation
-                      addressing_format: CanAddressingFormatTyping,
-                      can_id: Optional[int],
-                      target_address: Optional[RawByte],
-                      source_address: Optional[RawByte],
-                      address_extension: Optional[RawByte]) -> None:
+    @classmethod
+    def validate_address_information(cls,
+                                     addressing: AddressingTypeMemberTyping,
+                                     addressing_format: CanAddressingFormatTyping,
+                                     can_id: Optional[int],
+                                     target_address: Optional[RawByte],
+                                     source_address: Optional[RawByte],
+                                     address_extension: Optional[RawByte]) -> None:
         """
         Validate addressing information arguments.
 
@@ -336,14 +337,15 @@ class CanPacket(AbstractUdsPacket):
         """
         AddressingType.validate_member(addressing)
         CanAddressingFormat.validate_member(addressing_format)
-        self.__validate_ai_consistency(addressing=addressing,
-                                       addressing_format=addressing_format,
-                                       can_id=can_id,
-                                       target_address=target_address,
-                                       source_address=source_address,
-                                       address_extension=address_extension)
+        cls.__validate_ai_consistency(addressing=addressing,
+                                      addressing_format=addressing_format,
+                                      can_id=can_id,
+                                      target_address=target_address,
+                                      source_address=source_address,
+                                      address_extension=address_extension)
 
-    def __validate_ai_consistency(self,
+    @classmethod
+    def __validate_ai_consistency(cls,
                                   addressing: AddressingTypeMemberTyping,
                                   addressing_format: CanAddressingFormatTyping,
                                   can_id: Optional[int],
@@ -353,34 +355,32 @@ class CanPacket(AbstractUdsPacket):
         # TODO: docstring
         can_addressing_format_instance = CanAddressingFormat(addressing_format)
         if can_addressing_format_instance == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
-            self.__validate_ai_consistency_normal_11bit(can_id=can_id,
-                                                        target_address=target_address,
-                                                        source_address=source_address,
-                                                        address_extension=address_extension)
+            cls.__validate_ai_consistency_normal_11bit(can_id=can_id,
+                                                       target_address=target_address,
+                                                       source_address=source_address,
+                                                       address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
-            self.__validate_ai_consistency_normal_fixed(addressing=addressing,
-                                                        can_id=can_id,
-                                                        target_address=target_address,
-                                                        source_address=source_address,
-                                                        address_extension=address_extension)
+            cls.__validate_ai_consistency_normal_fixed(addressing=addressing,
+                                                       can_id=can_id,
+                                                       target_address=target_address,
+                                                       source_address=source_address,
+                                                       address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.EXTENDED_ADDRESSING:
-            self.__validate_ai_consistency_extended(addressing=addressing,
-                                                    can_id=can_id,
-                                                    target_address=target_address,
-                                                    source_address=source_address,
-                                                    address_extension=address_extension)
+            cls.__validate_ai_consistency_extended(can_id=can_id,
+                                                   target_address=target_address,
+                                                   source_address=source_address,
+                                                   address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
-            self.__validate_ai_consistency_mixed_11bit(addressing=addressing,
-                                                       can_id=can_id,
-                                                       target_address=target_address,
-                                                       source_address=source_address,
-                                                       address_extension=address_extension)
+            cls.__validate_ai_consistency_mixed_11bit(can_id=can_id,
+                                                      target_address=target_address,
+                                                      source_address=source_address,
+                                                      address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
-            self.__validate_ai_consistency_mixed_29bit(addressing=addressing,
-                                                       can_id=can_id,
-                                                       target_address=target_address,
-                                                       source_address=source_address,
-                                                       address_extension=address_extension)
+            cls.__validate_ai_consistency_mixed_29bit(addressing=addressing,
+                                                      can_id=can_id,
+                                                      target_address=target_address,
+                                                      source_address=source_address,
+                                                      address_extension=address_extension)
         else:
             raise NotImplementedError(f"Unknown CAN Addressing Format value was provided: "
                                       f"{can_addressing_format_instance}")
@@ -409,30 +409,39 @@ class CanPacket(AbstractUdsPacket):
         if can_id is None:
             if None in (target_address, source_address):
                 raise InconsistentArgumentsError  # TODO: text
-            # validate_raw_byte(target_address)
-            # validate_raw_byte(source_address)
+            validate_raw_byte(target_address)
+            validate_raw_byte(source_address)
         else:
             if (target_address, source_address) != (None, None):
                 raise InconsistentArgumentsError  # TODO: text
-            # CanIdHandler.validate_can_id(can_id)
-            # if not CanIdHandler.is_normal_fixed_addressed_can_id(can_id):
-            #     raise InconsistentArgumentsError  # TODO: text
+            CanIdHandler.validate_can_id(can_id)
+            if not CanIdHandler.is_normal_fixed_addressed_can_id(can_id=can_id, addressing=addressing):
+                raise InconsistentArgumentsError  # TODO: text
 
     @staticmethod
-    def __validate_ai_consistency_extended(addressing: AddressingTypeMemberTyping,
-                                           can_id: Optional[int],
+    def __validate_ai_consistency_extended(can_id: Optional[int],
                                            target_address: Optional[RawByte],
                                            source_address: Optional[RawByte],
                                            address_extension: Optional[RawByte]) -> None:
-        ...
+        # TODO: docstring
+        if (source_address, address_extension) != (None, None):
+            raise UnusedArgumentError  # TODO: text
+        CanIdHandler.validate_can_id(can_id)
+        if not CanIdHandler.is_extended_addressed_can_id(can_id):
+            raise InconsistentArgumentsError  # TODO: text
+        validate_raw_byte(target_address)
 
     @staticmethod
-    def __validate_ai_consistency_mixed_11bit(addressing: AddressingTypeMemberTyping,
-                                              can_id: Optional[int],
+    def __validate_ai_consistency_mixed_11bit(can_id: Optional[int],
                                               target_address: Optional[RawByte],
                                               source_address: Optional[RawByte],
                                               address_extension: Optional[RawByte]) -> None:
-        ...
+        if (target_address, source_address) != (None, None):
+            raise UnusedArgumentError  # TODO: text
+        CanIdHandler.validate_can_id(can_id)
+        if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):
+            raise InconsistentArgumentsError  # TODO: text
+        validate_raw_byte(address_extension)
 
     @staticmethod
     def __validate_ai_consistency_mixed_29bit(addressing: AddressingTypeMemberTyping,
@@ -440,7 +449,18 @@ class CanPacket(AbstractUdsPacket):
                                               target_address: Optional[RawByte],
                                               source_address: Optional[RawByte],
                                               address_extension: Optional[RawByte]) -> None:
-        ...
+        validate_raw_byte(address_extension)
+        if can_id is None:
+            if None in (target_address, source_address):
+                raise InconsistentArgumentsError  # TODO: text
+            validate_raw_byte(target_address)
+            validate_raw_byte(source_address)
+        else:
+            if (target_address, source_address) != (None, None):
+                raise InconsistentArgumentsError  # TODO: text
+            CanIdHandler.validate_can_id(can_id)
+            if not CanIdHandler.is_mixed_29bit_addressed_can_id(can_id=can_id, addressing=addressing):
+                raise InconsistentArgumentsError  # TODO: text
 
     def __set_address_information_normal_11bit(self, addressing: AddressingType, can_id: int) -> None:
         """
