@@ -11,7 +11,7 @@ This module contains implementation of :ref:`CAN packet <knowledge-base-uds-can-
 __all__ = ["CanPacketType", "CanPacketTypeMemberTyping", "CanAddressingFormat", "CanAddressingFormatTyping",
            "CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
-from typing import Union, Any, Tuple, Dict, Set
+from typing import Optional, Union, Any, Tuple, Dict, Set
 from bisect import bisect_left
 
 from aenum import unique, StrEnum
@@ -19,7 +19,6 @@ from aenum import unique, StrEnum
 from uds.utilities import RawByte, validate_raw_byte, ValidatedEnum
 from uds.transmission_attributes import AddressingType, AddressingTypeMemberTyping
 from .abstract_packet import AbstractUdsPacketType
-
 
 DEFAULT_FILLER_BYTE: RawByte = 0xCC
 """Default value of Filler Byte that is specified by ISO 15765-2:2016 (chapter 10.4.2.1).
@@ -267,18 +266,29 @@ class CanIdHandler:
         return cls.is_standard_can_id(can_id)
 
     @classmethod
-    def is_normal_fixed_addressed_can_id(cls, can_id: int) -> bool:
+    def is_normal_fixed_addressed_can_id(cls, can_id: int,
+                                         addressing: Optional[AddressingTypeMemberTyping] = None) -> bool:
         """
         Check if provided value of CAN ID uses Normal Fixed Addressing format.
 
         :param can_id: Value to check.
+        :param addressing: Addressing type for which consistency check to be performed.
+            Leave None to not perform consistency check with Addressing Type.
 
-        :return: True if value is a valid CAN ID for Normal Fixed Addressing format, False otherwise.
+        :return: True if value is a valid CAN ID for Normal Fixed Addressing format (consistent with provided
+            addressing type), False otherwise.
         """
-        if cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET <= can_id \
+        if addressing is None:
+            addressing_instance = None
+        else:
+            AddressingType.validate_member(addressing)
+            addressing_instance = AddressingType(addressing)
+        if addressing_instance in (None, AddressingType.PHYSICAL) and \
+                cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
-        if cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
+        if addressing_instance in (None, AddressingType.FUNCTIONAL) and \
+                cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
         return False
@@ -306,7 +316,7 @@ class CanIdHandler:
         return cls.is_standard_can_id(can_id)
 
     @classmethod
-    def is_mixed_29bit_addressed_can_id(cls, can_id: int) -> bool:
+    def is_mixed_29bit_addressed_can_id(cls, can_id: int) -> bool:  # TODO: add addressing
         """
         Check if provided value of CAN ID uses Mixed 29-bit Addressing format.
 

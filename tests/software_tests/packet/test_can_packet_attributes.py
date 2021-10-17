@@ -248,14 +248,41 @@ class TestCanIdHandler:
                                        CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET,
                                        CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET + 0xDEBA,
                                        CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF])
-    def test_is_normal_fixed_addressed_can_id__true(self, value):
+    def test_is_normal_fixed_addressed_can_id__without_addressing__true(self, value):
         assert CanIdHandler.is_normal_fixed_addressed_can_id(value) is True
+        self.mock_validate_addressing_type.assert_not_called()
 
     @pytest.mark.parametrize("value", [CanIdHandler.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET,
                                        CanIdHandler.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET,
                                        0, 0x7FF, 0x620])
-    def test_is_normal_fixed_addressed_can_id__false(self, value):
+    def test_is_normal_fixed_addressed_can_id__without_addressing__false(self, value):
         assert CanIdHandler.is_normal_fixed_addressed_can_id(value) is False
+        self.mock_validate_addressing_type.assert_not_called()
+
+    @pytest.mark.parametrize("value, addressing", [
+        (CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET, AddressingType.PHYSICAL),
+        (CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET+0x1234, AddressingType.PHYSICAL.value),
+        (CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET, AddressingType.FUNCTIONAL.value),
+        (CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET+0xDEBA, AddressingType.FUNCTIONAL),
+        (CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET+0xFFFF, AddressingType.FUNCTIONAL),
+    ])
+    def test_is_normal_fixed_addressed_can_id__with_addressing__true(self, value, addressing):
+        assert CanIdHandler.is_normal_fixed_addressed_can_id(value, addressing=addressing) is True
+        self.mock_validate_addressing_type.assert_called_once_with(addressing)
+
+    @pytest.mark.parametrize("value, addressing", [
+        (CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET, AddressingType.FUNCTIONAL),
+        (CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET+0x1234, AddressingType.FUNCTIONAL.value),
+        (CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET, AddressingType.PHYSICAL.value),
+        (CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET+0xDEBA, AddressingType.PHYSICAL),
+        (CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET+0xFFFF, AddressingType.PHYSICAL),
+        (CanIdHandler.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET, AddressingType.FUNCTIONAL),
+        (CanIdHandler.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET, AddressingType.PHYSICAL),
+        (0, AddressingType.PHYSICAL),
+    ])
+    def test_is_normal_fixed_addressed_can_id__with_addressing__false(self, value, addressing):
+        assert CanIdHandler.is_normal_fixed_addressed_can_id(value, addressing=addressing) is False
+        self.mock_validate_addressing_type.assert_called_once_with(addressing)
 
     # is_normal_11bit_addressed_can_id
 

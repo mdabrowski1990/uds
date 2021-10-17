@@ -39,16 +39,3 @@ class UnusedArgumentError(ValueError):
 
         The function would warn about UnusedArgumentsWarning if a != 1 and b value was provided.
     """
-
-
-class UnusedArgumentsWarning(Warning):
-    """
-    Some of provided arguments will not be used.
-
-    Example:
-        A function takes two parameters: a, b
-
-        Let's assume that parameter a must always be provided. Parameter b is used only when a == 1.
-
-        The function would warn about UnusedArgumentsWarning if a != 1 and b value was provided.
-    """
