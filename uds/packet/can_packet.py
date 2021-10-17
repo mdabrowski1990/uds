@@ -180,6 +180,37 @@ class CanPacket(AbstractUdsPacket):
         :raise NotImplementedError: A valid packet type was provided, but there is no implementation for it.
         """
 
+    @classmethod
+    def validate_address_information(cls,
+                                     addressing: AddressingTypeMemberTyping,
+                                     addressing_format: CanAddressingFormatTyping,
+                                     can_id: Optional[int],
+                                     target_address: Optional[RawByte],
+                                     source_address: Optional[RawByte],
+                                     address_extension: Optional[RawByte]) -> None:
+        """
+        Validate addressing information arguments.
+
+        This methods performs comprehensive check of :ref:`Network Addressing Information (N_AI) <knowledge-base-n-ai>`
+        for :ref:`CAN Packet <knowledge-base-uds-can-packet>` to make sure that every required argument is provided
+        and arguments are consistent with provided :ref:`CAN Addressing Format <knowledge-base-can-addressing>`.
+
+        :param addressing: Addressing type to validate.
+        :param addressing_format: CAN addressing format to validate.
+        :param can_id: CAN Identifier that is used to transmit this packet. TODO
+        :param target_address: Target Address value carried by this CAN Packet.
+        :param source_address: Source Address value carried by this CAN packet.
+        :param address_extension: Address Extension value carried by this CAN packet.
+        """
+        AddressingType.validate_member(addressing)
+        CanAddressingFormat.validate_member(addressing_format)
+        cls.__validate_ai_consistency(addressing=addressing,
+                                      addressing_format=addressing_format,
+                                      can_id=can_id,
+                                      target_address=target_address,
+                                      source_address=source_address,
+                                      address_extension=address_extension)
+
     @property
     def raw_frame_data(self) -> RawBytesTuple:
         """
@@ -313,36 +344,6 @@ class CanPacket(AbstractUdsPacket):
     @property
     def stmin(self) -> Optional[RawByte]:
         ...
-
-    @classmethod
-    def validate_address_information(cls,
-                                     addressing: AddressingTypeMemberTyping,
-                                     addressing_format: CanAddressingFormatTyping,
-                                     can_id: Optional[int],
-                                     target_address: Optional[RawByte],
-                                     source_address: Optional[RawByte],
-                                     address_extension: Optional[RawByte]) -> None:
-        """
-        Validate addressing information arguments.
-
-        :param addressing: Addressing type for which this CAN packet is relevant.
-        :param addressing_format: CAN addressing format that this CAN packet uses.
-        :param can_id: CAN Identifier that is used to transmit this packet.
-        :param target_address: Target Address value carried by this CAN Packet.
-        :param source_address: Source Address value carried by this CAN packet.
-        :param address_extension: Address Extension value carried by this CAN packet.
-
-        :raise TypeError: At least one argument has invalid type (incompatible with annotation).
-        :raise ValueError: At least one argument has invalid value.
-        """
-        AddressingType.validate_member(addressing)
-        CanAddressingFormat.validate_member(addressing_format)
-        cls.__validate_ai_consistency(addressing=addressing,
-                                      addressing_format=addressing_format,
-                                      can_id=can_id,
-                                      target_address=target_address,
-                                      source_address=source_address,
-                                      address_extension=address_extension)
 
     @classmethod
     def __validate_ai_consistency(cls,
