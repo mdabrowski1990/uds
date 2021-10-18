@@ -69,18 +69,18 @@ class CanAddressingFormat(StrEnum, ValidatedEnum):
     :ref:`Network Address Information (N_AI) <knowledge-base-n-ai>` is provided in a CAN packet.
     """
 
-    NORMAL_11BIT_ADDRESSING = "Normal 11-bit Addressing"  # noqa: F841
+    NORMAL_11BIT_ADDRESSING = "Normal 11-bit Addressing"
     """:ref:`Normal addressing <knowledge-base-can-normal-addressing>` that uses 11-bit CAN Identifiers."""
-    NORMAL_FIXED_ADDRESSING = "Normal Fixed Addressing"  # noqa: F841
+    NORMAL_FIXED_ADDRESSING = "Normal Fixed Addressing"
     """:ref:`Normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` format.
     It uses 29-bit CAN Identifiers only."""
-    EXTENDED_ADDRESSING = "Extended Addressing"  # noqa: F841
+    EXTENDED_ADDRESSING = "Extended Addressing"
     """:ref:`Extended addressing <knowledge-base-can-extended-addressing>` format that uses either 11-bit or 29-bit
     CAN Identifiers."""
-    MIXED_11BIT_ADDRESSING = "Mixed 11-bit Addressing"  # noqa: F841
+    MIXED_11BIT_ADDRESSING = "Mixed 11-bit Addressing"
     """:ref:`Mixed addressing with 11-bit CAN ID <knowledge-base-can-mixed-11-bit-addressing>`. It is a subformat
     of :ref:`mixed addressing <knowledge-base-can-mixed-addressing>` that uses 11-bit CAN Identifiers."""
-    MIXED_29BIT_ADDRESSING = "Mixed 29-bit Addressing"  # noqa: F841
+    MIXED_29BIT_ADDRESSING = "Mixed 29-bit Addressing"
     """:ref:`Mixed addressing with 29-bit CAN ID <knowledge-base-can-mixed-29-bit-addressing>`. It is a subformat
     of :ref:`mixed addressing <knowledge-base-can-mixed-addressing>` that uses 29-bit CAN Identifiers."""
 
@@ -230,29 +230,39 @@ class CanIdHandler:
                                   f"Actual value: {can_id}")
 
     @classmethod
-    def is_compatible_can_id(cls, can_id: int, addressing_format: CanAddressingFormatTyping) -> bool:
+    def is_compatible_can_id(cls,
+                             can_id: int,
+                             addressing_format: CanAddressingFormatTyping,
+                             addressing: Optional[AddressingTypeMemberTyping] = None) -> bool:
         """
         Check if provided value of CAN ID is compatible with addressing format used.
 
         :param can_id: Value to check.
         :param addressing_format: Addressing format used.
+        :param addressing: Addressing type for which consistency check to be performed.
+            Leave None to not perform consistency check with Addressing Type.
 
         :raise ValueError: Provided value is not a valid value of addressing_format.
+        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
+            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            whenever you see this error.
 
         :return: True if CAN ID value is compatible with provided addressing format, False otherwise.
         """
         cls.validate_can_id(can_id)
         CanAddressingFormat.validate_member(addressing_format)
         addressing_format_instance = CanAddressingFormat(addressing_format)
-        compatibility_check_mapping = {
-            CanAddressingFormat.NORMAL_11BIT_ADDRESSING: cls.is_normal_11bit_addressed_can_id,
-            CanAddressingFormat.NORMAL_FIXED_ADDRESSING: cls.is_normal_fixed_addressed_can_id,
-            CanAddressingFormat.EXTENDED_ADDRESSING: cls.is_extended_addressed_can_id,
-            CanAddressingFormat.MIXED_11BIT_ADDRESSING: cls.is_mixed_11bit_addressed_can_id,
-            CanAddressingFormat.MIXED_29BIT_ADDRESSING: cls.is_mixed_29bit_addressed_can_id,
-        }
-        compatibility_checking_method = compatibility_check_mapping[addressing_format_instance]
-        return compatibility_checking_method(can_id)
+        if addressing_format_instance == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
+            return cls.is_normal_11bit_addressed_can_id(can_id=can_id)
+        if addressing_format_instance == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+            return cls.is_normal_fixed_addressed_can_id(can_id=can_id, addressing=addressing)
+        if addressing_format_instance == CanAddressingFormat.EXTENDED_ADDRESSING:
+            return cls.is_extended_addressed_can_id(can_id=can_id)
+        if addressing_format_instance == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+            return cls.is_mixed_11bit_addressed_can_id(can_id=can_id)
+        if addressing_format_instance == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+            return cls.is_mixed_29bit_addressed_can_id(can_id=can_id, addressing=addressing)
+        raise NotImplementedError(f"Missing implementation for: {addressing_format_instance}")
 
     @classmethod
     def is_normal_11bit_addressed_can_id(cls, can_id: int) -> bool:

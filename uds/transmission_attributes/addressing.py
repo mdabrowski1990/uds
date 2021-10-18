@@ -20,9 +20,9 @@ class AddressingType(StrEnum, ValidatedEnum):
     :ref:`Addressing <knowledge-base-addressing>` describes a communication model that is used during UDS communication.
     """
 
-    PHYSICAL = "Physical"  # noqa: F841
+    PHYSICAL = "Physical"
     """:ref:`Physical addressing <knowledge-base-physical-addressing>` - 1 (client) to 1 (server) communication."""
-    FUNCTIONAL = "Functional"  # noqa: F841
+    FUNCTIONAL = "Functional"
     """:ref:`Functional addressing <knowledge-base-functional-addressing>` - 1 (client) to many (servers)
     communication."""
 

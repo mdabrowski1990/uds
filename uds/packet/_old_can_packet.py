@@ -1,8 +1,4 @@
-"""
-CAN bus specific implementation of UDS packets.
-
-:ref:`CAN packets <knowledge-base-uds-can-packet>`.
-"""
+# noqa
 
 __all__ = ["CanAddressingFormat", "CanPacket", "CanPacketRecord", "IncompatibleCanAddressingFormatError"]
 
