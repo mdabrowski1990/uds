@@ -13,13 +13,13 @@ __all__ = ["CanPacket", "CanPacketRecord"]
 from typing import Optional, Any
 
 from uds.transmission_attributes import AddressingType, AddressingTypeMemberTyping
-from uds.utilities import RawByte, RawBytesTuple, validate_raw_byte, \
+from uds.utilities import RawByte, RawBytes, RawBytesTuple, validate_raw_byte, \
     InconsistentArgumentsError, UnusedArgumentError, AmbiguityError
 
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from .can_packet_attributes import DEFAULT_FILLER_BYTE, CanAddressingFormat, CanAddressingFormatTyping, \
-    CanPacketType, CanPacketTypeMemberTyping, CanIdHandler
-from .can_flow_control import CanFlowStatus
+    CanPacketType, CanPacketTypeMemberTyping, CanIdHandler, CanDlcHandler
+from .can_flow_control import CanFlowStatus, CanFlowStatusTyping, CanSTminTranslator
 
 
 class CanPacket(AbstractUdsPacket):
@@ -58,31 +58,31 @@ class CanPacket(AbstractUdsPacket):
         :param address_extension: Address Extension value carried by this CAN packet.
             Leave None if provided `addressing_format` does not use Address Extension parameter.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-
-            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-            - int type value - DLC value to set, CAN Data Padding will be used to fill unused data bytes
+            Possible values:
+             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+             - int type value - DLC value to set, CAN Data Padding will be used to fill unused data bytes
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
-
-            - :parameter payload: (required for: SF, FF and CF)
-                Payload of a diagnostic message that is carried by this CAN packet.
-            - :parameter data_length: (required for: FF)
-                Number of payload bytes that carried diagnostic message has.
-            - :parameter sequence_number: (required for: CF)
-                Sequence number of this Consecutive Frame.
-            - :parameter flow_status: (required for: FC)
-                Flow status information carried by this Flow Control frame.
-            - :parameter block_size: (optional for: FC)
-                Block size information carried by this Flow Control frame.
-            - :parameter stmin: (optional for: FC)
-                Separation Time minimum information carried by this Flow Control frame.
+            Possible parameters:
+             - :parameter payload: (required for: SF, FF and CF)
+                 Payload of a diagnostic message that is carried by this CAN packet.
+             - :parameter data_length: (required for: FF)
+                 Number of payload bytes that carried diagnostic message has.
+             - :parameter sequence_number: (required for: CF)
+                 Sequence number of this Consecutive Frame.
+             - :parameter flow_status: (required for: FC)
+                 Flow status information carried by this Flow Control frame.
+             - :parameter block_size: (optional for: FC)
+                 Block size information carried by this Flow Control frame.
+             - :parameter stmin: (optional for: FC)
+                 Separation Time minimum information carried by this Flow Control frame.
         """
-        self.__raw_frame_data: RawBytesTuple = None
-        self.__addressing: AddressingType = None
-        self.__addressing_format: CanAddressingFormat = None
-        self.__packet_type: CanPacketType = None
-        self.__can_id: int = None
-        self.__dlc: int = None
+        self.__raw_frame_data: RawBytesTuple = None  # type: ignore
+        self.__addressing: AddressingType = None  # type: ignore
+        self.__addressing_format: CanAddressingFormat = None  # type: ignore
+        self.__packet_type: CanPacketType = None  # type: ignore
+        self.__can_id: int = None  # type: ignore
+        self.__dlc: int = None  # type: ignore
         self.__target_address: Optional[RawByte] = None
         self.__address_extension: Optional[RawByte] = None
         self.set_address_information(addressing=addressing,
@@ -173,11 +173,24 @@ class CanPacket(AbstractUdsPacket):
 
         :param packet_type: Type of this CAN packet.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-
-            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-            - int type value - DLC value to set, CAN Data Padding will be used to fill unused data bytes
+            Possible values:
+             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+             - int type value - DLC value to set, CAN Data Padding will be used to fill unused data bytes
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
+            Possible parameters:
+             - :parameter payload: (required for: SF, FF and CF)
+                 Payload of a diagnostic message that is carried by this CAN packet.
+             - :parameter data_length: (required for: FF)
+                 Number of payload bytes that carried diagnostic message has.
+             - :parameter sequence_number: (required for: CF)
+                 Sequence number of this Consecutive Frame.
+             - :parameter flow_status: (required for: FC)
+                 Flow status information carried by this Flow Control frame.
+             - :parameter block_size: (optional for: FC)
+                 Block size information carried by this Flow Control frame.
+             - :parameter stmin: (optional for: FC)
+                 Separation Time minimum information carried by this Flow Control frame.
 
         :raise NotImplementedError: A valid packet type was provided, but the implementation for it is missing.
             Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
@@ -214,6 +227,33 @@ class CanPacket(AbstractUdsPacket):
                                       target_address=target_address,
                                       source_address=source_address,
                                       address_extension=address_extension)
+
+    @classmethod
+    def validate_data(cls,
+                      packet_type: CanPacketTypeMemberTyping,
+                      dlc: Optional[int],
+                      filler_byte: RawByte,
+                      **packet_type_specific_kwargs: Any) -> None:
+        """
+        Validate arguments related to CAN Packet data.
+
+        This methods performs comprehensive check of :ref:`Network Data Field (N_Data) <knowledge-base-n-data>`
+        and :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
+        :ref:`CAN Packet <knowledge-base-uds-can-packet>` to make sure that every required argument is provided
+        and their values are consistent with provided :ref:`CAN Packet Type <knowledge-base-can-n-pci>`.
+
+        :param packet_type: Packet type to validate.
+        :param dlc: DLC value to validate.
+        :param filler_byte: Filler Byte value to validate.
+        :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
+        """
+        CanPacketType.validate_member(packet_type)
+        validate_raw_byte(filler_byte)
+        if dlc is not None:
+            CanDlcHandler.validate_dlc(dlc)
+        cls.__validate_data_consistency(packet_type=packet_type,
+                                        dlc=dlc,
+                                        **packet_type_specific_kwargs)
 
     @property
     def raw_frame_data(self) -> RawBytesTuple:
@@ -284,6 +324,11 @@ class CanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        if self.addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+            return CanIdHandler.decode_normal_fixed_addressed_can_id(self.can_id)[2]
+        if self.addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+            return CanIdHandler.decode_mixed_addressed_29bit_can_id(self.can_id)[2]
+        return None
 
     @property
     def payload(self) -> Optional[RawBytesTuple]:
@@ -439,7 +484,7 @@ class CanPacket(AbstractUdsPacket):
                                       f"target_address={target_address}, source_address={source_address}, "
                                       f"address_extension={address_extension}")
         CanIdHandler.validate_can_id(can_id)
-        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):
+        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Normal 11-bit Addressing Format. Actual value: {can_id}")
 
@@ -505,7 +550,7 @@ class CanPacket(AbstractUdsPacket):
                                       f"provided for Extended Addressing Format. Actual values: "
                                       f"source_address={source_address}, address_extension={address_extension}")
         CanIdHandler.validate_can_id(can_id)
-        if not CanIdHandler.is_extended_addressed_can_id(can_id):
+        if not CanIdHandler.is_extended_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Extended Addressing Format. Actual value: {can_id}")
         validate_raw_byte(target_address)
@@ -532,7 +577,7 @@ class CanPacket(AbstractUdsPacket):
                                       f"provided for Mixed 11-bit Addressing Format. Actual values: "
                                       f"target_address={target_address}, address_extension={source_address}")
         CanIdHandler.validate_can_id(can_id)
-        if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):
+        if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Mixed 11-bit Addressing Format. Actual value: {can_id}")
         validate_raw_byte(address_extension)
@@ -584,7 +629,79 @@ class CanPacket(AbstractUdsPacket):
         if self.addressing_format is not None \
                 and CanAddressingFormat.get_number_of_data_bytes_used(addressing_format) \
                 != CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format):
-            raise AmbiguityError
+            raise AmbiguityError(f"Cannot change CAN Addressing Format from {self.addressing_format} to "
+                                 f"{addressing_format} as such operation provides ambiguity. "
+                                 f"Create a new CAN Packet object instead.")
+
+    @classmethod
+    def __validate_data_consistency(cls,
+                                    packet_type: CanPacketTypeMemberTyping,
+                                    dlc: Optional[int],
+                                    **packet_type_specific_kwargs: Any) -> None:
+        """
+        Validate consistency of arguments related to CAN Packet data.
+
+        :param packet_type: Packet type to validate.
+        :param dlc: DLC value to validate.
+        :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
+
+        :raise NotImplementedError: A valid CAN packet type was provided, but the implementation for it is missing.
+            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            whenever you see this error.
+        """
+        packet_type_instance = CanPacketType(packet_type)
+        if packet_type_instance == CanPacketType.SINGLE_FRAME:
+            cls.__validate_data_single_frame(dlc=dlc, **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.FIRST_FRAME:
+            cls.__validate_data_first_frame(dlc=dlc, **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.CONSECUTIVE_FRAME:
+            cls.__validate_data_consecutive_frame(dlc=dlc, **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.FLOW_CONTROL:
+            cls.__validate_data_flow_control(dlc=dlc, **packet_type_specific_kwargs)
+        raise NotImplementedError(f"Unknown CAN Packet Type value was provided: {packet_type_instance}")
+
+    @classmethod
+    def __validate_data_single_frame(cls, dlc: Optional[int], payload: RawBytes) -> None:
+        """
+        Validate data parameters of single frame packet.
+
+        :param dlc: DLC value to validate.
+        :param payload: Payload value to validate.
+        """
+
+    @classmethod
+    def __validate_data_first_frame(cls, dlc: Optional[int], data_length: int, payload: RawBytes) -> None:
+        """
+        Validate data parameters of single frame packet.
+
+        :param dlc: DLC value to validate.
+        :param payload: Payload value to validate.
+        """
+
+    @classmethod
+    def __validate_data_consecutive_frame(cls, dlc: Optional[int], sequence_number: int, payload: RawBytes) -> None:
+        """
+        Validate data parameters of single frame packet.
+
+        :param dlc: DLC value to validate.
+        :param sequence_number: Sequence Number value to validate.
+        :param payload: Payload value to validate.
+        """
+
+    @classmethod
+    def __validate_data_flow_control(cls,
+                                     dlc: Optional[int],
+                                     flow_status: CanFlowStatusTyping,
+                                     block_size: Optional[RawByte] = None,
+                                     stmin: Optional[RawByte] = None) -> None:
+        """
+        Validate data parameters of single frame packet.
+
+        :param dlc: DLC value to validate.
+        :param flow_status: Flow Status value to validate.
+        :param block_size: Block Size value to validate.
+        :param stmin: STmin value to validate.
+        """
 
     def __set_address_information_normal_11bit(self, addressing: AddressingType, can_id: int) -> None:
         """
@@ -594,8 +711,8 @@ class CanPacket(AbstractUdsPacket):
         :param can_id: CAN Identifier that is used to transmit this packet.
             If None, then other arguments must unambiguously determine CAN ID value.
         """
-        self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_11BIT_ADDRESSING)  # type: ignore
+        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING  # type: ignore
         self.__addressing = addressing
         self.__can_id = can_id
         self.__target_address = None

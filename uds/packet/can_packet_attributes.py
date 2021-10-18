@@ -435,6 +435,9 @@ class CanDlcHandler:
     __DATA_BYTES_NUMBER_MAPPING: Dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
     __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(__DLC_VALUES[9:])
 
+    MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBER_MAPPING)
+    MAX_DATA_BYTES_NUMBER: int = max(__DATA_BYTES_NUMBER_MAPPING)
+
     @classmethod
     def decode(cls, dlc: int) -> int:
         """
@@ -518,5 +521,5 @@ class CanDlcHandler:
             if cls.__DATA_BYTES_NUMBER_MAPPING.get(value, None) is None:
                 raise ValueError(f"Provided value is not a valid CAN Frame data bytes number. Actual value: {value}")
         else:
-            if not cls.__DATA_BYTES_NUMBERS[0] <= value <= cls.__DATA_BYTES_NUMBERS[-1]:
+            if not cls.MIN_DATA_BYTES_NUMBER <= value <= cls.MAX_DATA_BYTES_NUMBER:
                 raise ValueError(f"Provided value is out of CAN Frame data bytes number range. Actual value: {value}")
