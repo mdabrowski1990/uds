@@ -2,7 +2,7 @@ import pytest
 from mock import patch, Mock, call
 
 from uds.packet.can_packet import CanPacket, \
-    AddressingType, CanAddressingFormat, InconsistentArgumentsError, UnusedArgumentError
+    AddressingType, CanAddressingFormat, InconsistentArgumentsError, UnusedArgumentError, AmbiguityError
 
 
 class TestCanPacket:
@@ -15,9 +15,13 @@ class TestCanPacket:
         # patching
         self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
-        self._patcher_validate_can_addressing_format = patch(
-            f"{self.SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
+        self._patcher_validate_can_addressing_format = \
+            patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
         self.mock_validate_can_addressing_format = self._patcher_validate_can_addressing_format.start()
+        self._patcher_get_data_bytes_used_by_can_addressing_format = \
+            patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat.get_number_of_data_bytes_used")
+        self.mock_get_data_bytes_used_by_can_addressing_format = \
+            self._patcher_get_data_bytes_used_by_can_addressing_format.start()
         self._patcher_validate_can_packet_type = patch(f"{self.SCRIPT_LOCATION}.CanPacketType.validate_member")
         self.mock_validate_can_packet_type = self._patcher_validate_can_packet_type.start()
         self._patcher_validate_can_id = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
@@ -28,6 +32,7 @@ class TestCanPacket:
     def teardown(self):
         self._patcher_validate_addressing_type.stop()
         self._patcher_validate_can_addressing_format.stop()
+        self._patcher_get_data_bytes_used_by_can_addressing_format.stop()
         self._patcher_validate_can_packet_type.stop()
         self._patcher_validate_can_id.stop()
         self._patcher_validate_raw_byte.stop()
@@ -102,6 +107,62 @@ class TestCanPacket:
             dlc=dlc,
             filler_byte=filler_byte,
             **packet_type_specific_kwargs)
+
+    # raw_frame_data
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_raw_frame_data__get(self, value):
+        self.mock_can_packet._CanPacket__raw_frame_data = value
+        assert CanPacket.raw_frame_data.fget(self=self.mock_can_packet) == value
+
+    # addressing
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_addressing__get(self, value):
+        self.mock_can_packet._CanPacket__addressing = value
+        assert CanPacket.addressing.fget(self=self.mock_can_packet) == value
+
+    # addressing_format
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_addressing_format__get(self, value):
+        self.mock_can_packet._CanPacket__addressing_format = value
+        assert CanPacket.addressing_format.fget(self=self.mock_can_packet) == value
+
+    # packet_type
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_packet_type__get(self, value):
+        self.mock_can_packet._CanPacket__packet_type = value
+        assert CanPacket.packet_type.fget(self=self.mock_can_packet) == value
+
+    # can_id
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_can_id__get(self, value):
+        self.mock_can_packet._CanPacket__can_id = value
+        assert CanPacket.can_id.fget(self=self.mock_can_packet) == value
+
+    # dlc
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_dlc__get(self, value):
+        self.mock_can_packet._CanPacket__dlc = value
+        assert CanPacket.dlc.fget(self=self.mock_can_packet) == value
+
+    # address_extension
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_address_extension__get(self, value):
+        self.mock_can_packet._CanPacket__address_extension = value
+        assert CanPacket.address_extension.fget(self=self.mock_can_packet) == value
+
+    # target_address
+
+    @pytest.mark.parametrize("value", [None, "some", False, 5.5])
+    def test_target_address__get(self, value):
+        self.mock_can_packet._CanPacket__target_address = value
+        assert CanPacket.target_address.fget(self=self.mock_can_packet) == value
 
     # set_address_information
 
@@ -709,6 +770,185 @@ class TestCanPacket:
         mock_is_mixed_29bit_addressed_can_id.assert_called_once_with(can_id=can_id,
                                                                      addressing=example_addressing_type)
 
+    # __validate_unambiguous_ai_change
+
+    @pytest.mark.parametrize("new_addressing_format", list(CanAddressingFormat))
+    def test_validate_unambiguous_ai_change__none(self, new_addressing_format):
+        self.mock_can_packet.addressing_format = None
+        CanPacket._CanPacket__validate_unambiguous_ai_change(self=self.mock_can_packet,
+                                                             addressing_format=new_addressing_format)
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_not_called()
+
+    @pytest.mark.parametrize("data_bytes_used", [0, 1])
+    @pytest.mark.parametrize("new_addressing_format", ["value 1", "value 2"])
+    @pytest.mark.parametrize("old_addressing_format", ["other 1", "other 2"])
+    def test_validate_unambiguous_ai_change__compatible(self, new_addressing_format, old_addressing_format,
+                                                        data_bytes_used):
+        self.mock_can_packet.addressing_format = old_addressing_format
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = data_bytes_used
+        CanPacket._CanPacket__validate_unambiguous_ai_change(self=self.mock_can_packet,
+                                                             addressing_format=new_addressing_format)
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_has_calls(
+            [call(new_addressing_format), call(old_addressing_format)], any_order=True)
+
+    @pytest.mark.parametrize("data_bytes_used", [(0, 1), (1, 0)])
+    @pytest.mark.parametrize("new_addressing_format", ["value 1", "value 2"])
+    @pytest.mark.parametrize("old_addressing_format", ["other 1", "other 2"])
+    def test_validate_unambiguous_ai_change__incompatible(self, new_addressing_format, old_addressing_format,
+                                                          data_bytes_used):
+        self.mock_can_packet.addressing_format = old_addressing_format
+        self.mock_get_data_bytes_used_by_can_addressing_format.side_effect = data_bytes_used
+        with pytest.raises(AmbiguityError):
+            CanPacket._CanPacket__validate_unambiguous_ai_change(self=self.mock_can_packet,
+                                                                 addressing_format=new_addressing_format)
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_has_calls(
+            [call(new_addressing_format), call(old_addressing_format)], any_order=True)
+
     # __set_address_information_normal_11bit
 
-    # def test_set_address_information_normal_11bit
+    @pytest.mark.parametrize("can_id", ["some CAN ID", 0x64A])
+    def test_set_address_information_normal_11bit(self, example_addressing_type, can_id):
+        CanPacket._CanPacket__set_address_information_normal_11bit(self=self.mock_can_packet,
+                                                                   addressing=example_addressing_type,
+                                                                   can_id=can_id)
+        self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
+            CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing == example_addressing_type
+        assert self.mock_can_packet._CanPacket__can_id == can_id
+        assert self.mock_can_packet._CanPacket__target_address is None
+        assert self.mock_can_packet._CanPacket__address_extension is None
+
+    # __set_address_information_normal_fixed
+
+    @pytest.mark.parametrize("can_id", ["some CAN ID", 0x64A])
+    @pytest.mark.parametrize("decoded_target_address", ["value 1", "value 2"])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.decode_normal_fixed_addressed_can_id")
+    def test_set_address_information_normal_11bit__can_id(self, mock_decode_normal_fixed_addressed_can_id,
+                                                          example_addressing_type, can_id,
+                                                          decoded_target_address):
+        mock_decode_normal_fixed_addressed_can_id.return_value = (example_addressing_type, decoded_target_address,
+                                                                  "some source adddress")
+        CanPacket._CanPacket__set_address_information_normal_fixed(self=self.mock_can_packet,
+                                                                   addressing=example_addressing_type,
+                                                                   can_id=can_id)
+        self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
+            CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing == example_addressing_type
+        assert self.mock_can_packet._CanPacket__can_id == can_id
+        assert self.mock_can_packet._CanPacket__target_address == decoded_target_address
+        assert self.mock_can_packet._CanPacket__address_extension is None
+        mock_decode_normal_fixed_addressed_can_id.assert_called_once_with(can_id)
+
+    @pytest.mark.parametrize("can_id", ["some CAN ID", 0x64A])
+    @pytest.mark.parametrize("target_address, source_address", [
+        ("v1", "v2"),
+        (0x82, 0xF2),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.get_normal_fixed_addressed_can_id")
+    def test_set_address_information_normal_11bit__ta_sa(self, mock_get_normal_fixed_addressed_can_id,
+                                                         example_addressing_type, can_id,
+                                                         target_address, source_address):
+        mock_get_normal_fixed_addressed_can_id.return_value = can_id
+        CanPacket._CanPacket__set_address_information_normal_fixed(self=self.mock_can_packet,
+                                                                   addressing=example_addressing_type,
+                                                                   can_id=None,
+                                                                   target_address=target_address,
+                                                                   source_address=source_address)
+        self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
+            CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing == example_addressing_type
+        assert self.mock_can_packet._CanPacket__can_id == can_id
+        assert self.mock_can_packet._CanPacket__target_address == target_address
+        assert self.mock_can_packet._CanPacket__address_extension is None
+        mock_get_normal_fixed_addressed_can_id.assert_called_once_with(addressing_type=example_addressing_type,
+                                                                       target_address=target_address,
+                                                                       source_address=source_address)
+
+    # __set_address_information_extended
+
+    @pytest.mark.parametrize("can_id", ["some CAN ID", 0x64A])
+    @pytest.mark.parametrize("target_address", ["value 1", "value 2"])
+    def test_set_address_information_extended(self, example_addressing_type, can_id, target_address):
+        CanPacket._CanPacket__set_address_information_extended(self=self.mock_can_packet,
+                                                               addressing=example_addressing_type,
+                                                               can_id=can_id,
+                                                               target_address=target_address)
+        self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
+            CanAddressingFormat.EXTENDED_ADDRESSING)
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing == example_addressing_type
+        assert self.mock_can_packet._CanPacket__can_id == can_id
+        assert self.mock_can_packet._CanPacket__target_address == target_address
+        assert self.mock_can_packet._CanPacket__address_extension is None
+
+    # __set_address_information_mixed_11bit
+
+    @pytest.mark.parametrize("can_id", ["some CAN ID", 0x64A])
+    @pytest.mark.parametrize("address_extension", ["value 1", "value 2"])
+    def test_set_address_information_mixed_11bit(self, example_addressing_type, can_id, address_extension):
+        CanPacket._CanPacket__set_address_information_mixed_11bit(self=self.mock_can_packet,
+                                                                  addressing=example_addressing_type,
+                                                                  can_id=can_id,
+                                                                  address_extension=address_extension)
+        self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
+            CanAddressingFormat.MIXED_11BIT_ADDRESSING)
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing == example_addressing_type
+        assert self.mock_can_packet._CanPacket__can_id == can_id
+        assert self.mock_can_packet._CanPacket__target_address is None
+        assert self.mock_can_packet._CanPacket__address_extension == address_extension
+
+    # __set_address_information_mixed_29bit
+
+    @pytest.mark.parametrize("can_id", ["some CAN ID", 0x64A])
+    @pytest.mark.parametrize("decoded_target_address", ["value 1", "value 2"])
+    @pytest.mark.parametrize("address_extension", [0x21, 0x90])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.decode_mixed_addressed_29bit_can_id")
+    def test_set_address_information_mixed_29bit__can_id(self, mock_decode_mixed_addressed_29bit_can_id,
+                                                         example_addressing_type, can_id, address_extension,
+                                                         decoded_target_address):
+        mock_decode_mixed_addressed_29bit_can_id.return_value = (example_addressing_type, decoded_target_address,
+                                                                 "some source adddress")
+        CanPacket._CanPacket__set_address_information_mixed_29bit(self=self.mock_can_packet,
+                                                                  addressing=example_addressing_type,
+                                                                  address_extension=address_extension,
+                                                                  can_id=can_id)
+        self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
+            CanAddressingFormat.MIXED_29BIT_ADDRESSING)
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing == example_addressing_type
+        assert self.mock_can_packet._CanPacket__can_id == can_id
+        assert self.mock_can_packet._CanPacket__target_address == decoded_target_address
+        assert self.mock_can_packet._CanPacket__address_extension == address_extension
+        mock_decode_mixed_addressed_29bit_can_id.assert_called_once_with(can_id)
+
+    @pytest.mark.parametrize("can_id", ["some CAN ID", 0x64A])
+    @pytest.mark.parametrize("target_address, source_address", [
+        ("v1", "v2"),
+        (0x82, 0xF2),
+    ])
+    @pytest.mark.parametrize("address_extension", [0x21, 0x90])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.get_mixed_addressed_29bit_can_id")
+    def test_set_address_information_mixed_29bit__ta_sa(self, mock_get_mixed_addressed_29bit_can_id,
+                                                        example_addressing_type, can_id,
+                                                        target_address, source_address, address_extension):
+        mock_get_mixed_addressed_29bit_can_id.return_value = can_id
+        CanPacket._CanPacket__set_address_information_mixed_29bit(self=self.mock_can_packet,
+                                                                  addressing=example_addressing_type,
+                                                                  can_id=None,
+                                                                  target_address=target_address,
+                                                                  source_address=source_address,
+                                                                  address_extension=address_extension)
+        self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
+            CanAddressingFormat.MIXED_29BIT_ADDRESSING)
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing == example_addressing_type
+        assert self.mock_can_packet._CanPacket__can_id == can_id
+        assert self.mock_can_packet._CanPacket__target_address == target_address
+        assert self.mock_can_packet._CanPacket__address_extension == address_extension
+        mock_get_mixed_addressed_29bit_can_id.assert_called_once_with(addressing_type=example_addressing_type,
+                                                                      target_address=target_address,
+                                                                      source_address=source_address)

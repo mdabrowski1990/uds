@@ -39,3 +39,7 @@ class UnusedArgumentError(ValueError):
 
         The function would warn about UnusedArgumentsWarning if a != 1 and b value was provided.
     """
+
+
+class AmbiguityError(ValueError):
+    """Operation cannot be executed because it is ambiguous."""
