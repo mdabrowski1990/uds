@@ -84,6 +84,23 @@ class CanAddressingFormat(StrEnum, ValidatedEnum):
     """:ref:`Mixed addressing with 29-bit CAN ID <knowledge-base-can-mixed-29-bit-addressing>`. It is a subformat
     of :ref:`mixed addressing <knowledge-base-can-mixed-addressing>` that uses 29-bit CAN Identifiers."""
 
+    @classmethod
+    def get_number_of_data_bytes_used(cls, addressing_format: "CanAddressingFormat") -> int:
+        """
+        Get number of data bytes that are used by CAN Addressing Format.
+
+        :param addressing_format: CAN Addressing Format for which value to be provided.
+
+        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
+            CAN Addressing Format.
+        """
+        cls.validate_member(addressing_format)
+        return {cls.NORMAL_11BIT_ADDRESSING: 0,
+                cls.NORMAL_FIXED_ADDRESSING: 0,
+                cls.EXTENDED_ADDRESSING: 1,
+                cls.MIXED_11BIT_ADDRESSING: 1,
+                cls.MIXED_29BIT_ADDRESSING: 1}[cls(addressing_format)]
+
 
 CanAddressingFormatTyping = Union[CanAddressingFormat, str]
 """Typing alias that describes :class:`~uds.packet.can_packet_attributes.CanAddressingFormat` member."""

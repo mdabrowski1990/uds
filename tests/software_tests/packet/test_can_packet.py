@@ -22,8 +22,6 @@ class TestCanPacket:
         self.mock_validate_can_packet_type = self._patcher_validate_can_packet_type.start()
         self._patcher_validate_can_id = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
         self.mock_validate_can_id = self._patcher_validate_can_id.start()
-        self._patcher_validate_can_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.validate_dlc")
-        self.mock_validate_can_dlc = self._patcher_validate_can_dlc.start()
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
 
@@ -32,7 +30,6 @@ class TestCanPacket:
         self._patcher_validate_can_addressing_format.stop()
         self._patcher_validate_can_packet_type.stop()
         self._patcher_validate_can_id.stop()
-        self._patcher_validate_can_dlc.stop()
         self._patcher_validate_raw_byte.stop()
 
     # __init__
@@ -114,7 +111,9 @@ class TestCanPacket:
         (AddressingType.PHYSICAL, 0x754, 0x31, 0xD0, 0xE3),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanAddressingFormat")
-    def test_set_address_information__unknown_addressing_format(self, mock_can_addressing_format_class,
+    @patch(f"{SCRIPT_LOCATION}.AddressingType")
+    def test_set_address_information__unknown_addressing_format(self, mock_addressing_type_class,
+                                                                mock_can_addressing_format_class,
                                                                 addressing, addressing_format, can_id, target_address,
                                                                 source_address, address_extension):
         mock_can_addressing_format_class.return_value = addressing_format
@@ -136,89 +135,114 @@ class TestCanPacket:
 
     @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                                    CanAddressingFormat.NORMAL_11BIT_ADDRESSING.value])
+    @pytest.mark.parametrize("addressing, addressing_instance", [
+        (AddressingType.PHYSICAL, AddressingType.PHYSICAL),
+        (AddressingType.PHYSICAL.value, AddressingType.PHYSICAL),
+        (AddressingType.FUNCTIONAL.value, AddressingType.FUNCTIONAL),
+    ])
     @pytest.mark.parametrize("can_id", [0x1234, 0x721])
-    def test_set_address_information__normal_11_bit(self, addressing_format, example_addressing_type, can_id):
+    def test_set_address_information__normal_11_bit(self, addressing_format, addressing, addressing_instance, can_id):
         CanPacket.set_address_information(self=self.mock_can_packet,
-                                          addressing=example_addressing_type,
+                                          addressing=addressing,
                                           addressing_format=addressing_format,
                                           can_id=can_id)
         self.mock_can_packet._CanPacket__set_address_information_normal_11bit.assert_called_once_with(
-            addressing=example_addressing_type,
+            addressing=addressing_instance,
             can_id=can_id)
 
     @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
                                                    CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value])
+    @pytest.mark.parametrize("addressing, addressing_instance", [
+        (AddressingType.PHYSICAL, AddressingType.PHYSICAL),
+        (AddressingType.PHYSICAL.value, AddressingType.PHYSICAL),
+        (AddressingType.FUNCTIONAL.value, AddressingType.FUNCTIONAL),
+    ])
     @pytest.mark.parametrize("can_id, target_address, source_address", [
         (0x12345, 0x65, 0xFD),
         (0xDCFE, None, None),
     ])
-    def test_set_address_information__normal_fixed(self, addressing_format, example_addressing_type,
+    def test_set_address_information__normal_fixed(self, addressing_format, addressing, addressing_instance,
                                                    can_id, target_address, source_address):
         CanPacket.set_address_information(self=self.mock_can_packet,
-                                          addressing=example_addressing_type,
+                                          addressing=addressing,
                                           addressing_format=addressing_format,
                                           can_id=can_id,
                                           target_address=target_address,
                                           source_address=source_address)
         self.mock_can_packet._CanPacket__set_address_information_normal_fixed.assert_called_once_with(
-            addressing=example_addressing_type,
+            addressing=addressing_instance,
             can_id=can_id,
             target_address=target_address,
             source_address=source_address)
 
     @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.EXTENDED_ADDRESSING,
                                                    CanAddressingFormat.EXTENDED_ADDRESSING.value])
+    @pytest.mark.parametrize("addressing, addressing_instance", [
+        (AddressingType.PHYSICAL, AddressingType.PHYSICAL),
+        (AddressingType.PHYSICAL.value, AddressingType.PHYSICAL),
+        (AddressingType.FUNCTIONAL.value, AddressingType.FUNCTIONAL),
+    ])
     @pytest.mark.parametrize("can_id, target_address", [
         (0x12345, 0x65),
         (0xDCFE, None),
     ])
-    def test_set_address_information__extended(self, addressing_format, example_addressing_type,
+    def test_set_address_information__extended(self, addressing_format, addressing, addressing_instance,
                                                can_id, target_address):
         CanPacket.set_address_information(self=self.mock_can_packet,
-                                          addressing=example_addressing_type,
+                                          addressing=addressing,
                                           addressing_format=addressing_format,
                                           can_id=can_id,
                                           target_address=target_address)
         self.mock_can_packet._CanPacket__set_address_information_extended.assert_called_once_with(
-            addressing=example_addressing_type,
+            addressing=addressing_instance,
             can_id=can_id,
             target_address=target_address)
 
     @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                                    CanAddressingFormat.MIXED_11BIT_ADDRESSING.value])
+    @pytest.mark.parametrize("addressing, addressing_instance", [
+        (AddressingType.PHYSICAL, AddressingType.PHYSICAL),
+        (AddressingType.PHYSICAL.value, AddressingType.PHYSICAL),
+        (AddressingType.FUNCTIONAL.value, AddressingType.FUNCTIONAL),
+    ])
     @pytest.mark.parametrize("can_id, address_extension", [
         (0x12345, 0x65),
         (0xDCFE, None),
     ])
-    def test_set_address_information__mixed_11bit(self, addressing_format, example_addressing_type,
+    def test_set_address_information__mixed_11bit(self, addressing_format, addressing, addressing_instance,
                                                   can_id, address_extension):
         CanPacket.set_address_information(self=self.mock_can_packet,
-                                          addressing=example_addressing_type,
+                                          addressing=addressing,
                                           addressing_format=addressing_format,
                                           can_id=can_id,
                                           address_extension=address_extension)
         self.mock_can_packet._CanPacket__set_address_information_mixed_11bit.assert_called_once_with(
-            addressing=example_addressing_type,
+            addressing=addressing_instance,
             can_id=can_id,
             address_extension=address_extension)
 
     @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                                    CanAddressingFormat.MIXED_29BIT_ADDRESSING.value])
+    @pytest.mark.parametrize("addressing, addressing_instance", [
+        (AddressingType.PHYSICAL, AddressingType.PHYSICAL),
+        (AddressingType.PHYSICAL.value, AddressingType.PHYSICAL),
+        (AddressingType.FUNCTIONAL.value, AddressingType.FUNCTIONAL),
+    ])
     @pytest.mark.parametrize("can_id, target_address, source_address, address_extension", [
         (0x12345, 0x65, 0xFA, 0x03),
         (0xDCFE, None, None, None),
     ])
-    def test_set_address_information__mixed_29bit(self, addressing_format, example_addressing_type,
+    def test_set_address_information__mixed_29bit(self, addressing_format, addressing, addressing_instance,
                                                   can_id, target_address, source_address, address_extension):
         CanPacket.set_address_information(self=self.mock_can_packet,
-                                          addressing=example_addressing_type,
+                                          addressing=addressing,
                                           addressing_format=addressing_format,
                                           can_id=can_id,
                                           target_address=target_address,
                                           source_address=source_address,
                                           address_extension=address_extension)
         self.mock_can_packet._CanPacket__set_address_information_mixed_29bit.assert_called_once_with(
-            addressing=example_addressing_type,
+            addressing=addressing_instance,
             can_id=can_id,
             target_address=target_address,
             source_address=source_address,
@@ -684,3 +708,7 @@ class TestCanPacket:
         self.mock_validate_can_id.assert_called_once_with(can_id)
         mock_is_mixed_29bit_addressed_can_id.assert_called_once_with(can_id=can_id,
                                                                      addressing=example_addressing_type)
+
+    # __set_address_information_normal_11bit
+
+    # def test_set_address_information_normal_11bit
