@@ -566,11 +566,11 @@ class TestCanDlcHandler:
 
     @pytest.mark.parametrize("value", range(9, 16))
     def test_is_can_fd_specific_value__true(self, value):
-        assert CanDlcHandler.is_can_fd_specific_value(value) is True
+        assert CanDlcHandler.is_can_fd_specific_dlc(value) is True
 
     @pytest.mark.parametrize("value", range(9))
     def test_is_can_fd_specific_value__false(self, value):
-        assert CanDlcHandler.is_can_fd_specific_value(value) is False
+        assert CanDlcHandler.is_can_fd_specific_dlc(value) is False
 
     # validate_dlc
 

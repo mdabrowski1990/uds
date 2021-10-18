@@ -13,7 +13,7 @@ __all__ = ["CanPacket", "CanPacketRecord"]
 from typing import Optional, Any
 
 from uds.transmission_attributes import AddressingType, AddressingTypeMemberTyping
-from uds.utilities import RawByte, RawBytes, RawBytesTuple, validate_raw_byte, \
+from uds.utilities import RawByte, RawBytes, RawBytesTuple, validate_raw_byte, validate_raw_bytes, \
     InconsistentArgumentsError, UnusedArgumentError, AmbiguityError
 
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord
@@ -29,6 +29,31 @@ class CanPacket(AbstractUdsPacket):
     Objects of this class act as a storage for all relevant attributes of a
     :ref:`CAN packet <knowledge-base-uds-can-packet>`.
     """
+
+    MAX_DLC_VALUE_SHORT_SF_DL: int = 8
+    """Maximal value of DLC for which short 
+    :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` format is used."""
+    MAX_FF_DL_SHORT_FF_DL: int = 0xFFF
+    """Maximal value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` for which
+    short format of FF_DL is used."""
+    MAX_FF_DL_LONG_FF_DL: int = 0xFFFFFFFF
+    """Maximal value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
+
+    DATA_BYTES_SHORT_SF_DL: int = 1
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` 
+    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` values when DLC <= 8."""
+    DATA_BYTES_LONG_SF_DL: int = 2
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` 
+    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` values when DLC > 8."""
+    DATA_BYTES_SHORT_FF_DL: int = 2
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and 
+    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values when FF_DL <= 4095."""
+    DATA_BYTES_LONG_FF_DL: int = 6
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and 
+    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values when FF_DL > 4095."""
+
+    MIN_SEQUENCE_NUMBER: int = 0x0
+    MAX_SEQUENCE_NUMBER: int = 0xF
 
     def __init__(self, *,
                  addressing: AddressingTypeMemberTyping,
@@ -198,6 +223,45 @@ class CanPacket(AbstractUdsPacket):
         """
 
     @classmethod
+    def get_max_single_frame_data_length(cls,  # TODO: rework -> get min dlc
+                                         addressing_format: CanAddressingFormatTyping,
+                                         dlc: Optional[int] = None) -> int:
+        """
+        Get maximal value of Single Frame Data Length (SF_DL) for a CAN packet.
+
+        :param addressing_format: CAN addressing format to use in considered CAN Packet.
+        :param dlc: Value of DLC value in a CAN frame.
+            Leave None to use maximal value.
+
+        :return: Maximal value of SF_DL that UDS Packet with provided Addressing Format and DLC can fit in.
+            If negative, then a greater value of DLC must be used.
+        """
+        frame_data_bytes_number = CanDlcHandler.MAX_DATA_BYTES_NUMBER if dlc is None else CanDlcHandler.decode(dlc)
+        data_bytes_used_for_ai = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
+        data_bytes_used_for_sfdl_and_npci = cls.DATA_BYTES_SHORT_SF_DL \
+            if dlc is not None and dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.DATA_BYTES_LONG_SF_DL
+        return frame_data_bytes_number - data_bytes_used_for_ai - data_bytes_used_for_sfdl_and_npci
+
+    @classmethod
+    def get_first_frame_payload_length(cls,  # TODO: rework -> get dlc
+                                       addressing_format: CanAddressingFormatTyping,
+                                       data_length: int,
+                                       dlc: int) -> int:
+        ...  # TODO
+
+    @classmethod
+    def get_max_consecutive_frame_payload_length(cls,  # TODO: rework -> min dlc
+                                                 addressing_format: CanAddressingFormatTyping,
+                                                 dlc: Optional[int] = None) -> int:
+        ...  # TODO
+
+    @classmethod
+    def get_min_flow_control_dlc(cls,
+                                 addressing_format: CanAddressingFormatTyping,
+                                 flow_status: CanFlowStatusTyping) -> int:
+        ...  # TODO
+
+    @classmethod
     def validate_address_information(cls,
                                      addressing: AddressingTypeMemberTyping,
                                      addressing_format: CanAddressingFormatTyping,
@@ -227,33 +291,6 @@ class CanPacket(AbstractUdsPacket):
                                       target_address=target_address,
                                       source_address=source_address,
                                       address_extension=address_extension)
-
-    @classmethod
-    def validate_data(cls,
-                      packet_type: CanPacketTypeMemberTyping,
-                      dlc: Optional[int],
-                      filler_byte: RawByte,
-                      **packet_type_specific_kwargs: Any) -> None:
-        """
-        Validate arguments related to CAN Packet data.
-
-        This methods performs comprehensive check of :ref:`Network Data Field (N_Data) <knowledge-base-n-data>`
-        and :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        :ref:`CAN Packet <knowledge-base-uds-can-packet>` to make sure that every required argument is provided
-        and their values are consistent with provided :ref:`CAN Packet Type <knowledge-base-can-n-pci>`.
-
-        :param packet_type: Packet type to validate.
-        :param dlc: DLC value to validate.
-        :param filler_byte: Filler Byte value to validate.
-        :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
-        """
-        CanPacketType.validate_member(packet_type)
-        validate_raw_byte(filler_byte)
-        if dlc is not None:
-            CanDlcHandler.validate_dlc(dlc)
-        cls.__validate_data_consistency(packet_type=packet_type,
-                                        dlc=dlc,
-                                        **packet_type_specific_kwargs)
 
     @property
     def raw_frame_data(self) -> RawBytesTuple:
@@ -633,8 +670,33 @@ class CanPacket(AbstractUdsPacket):
                                  f"{addressing_format} as such operation provides ambiguity. "
                                  f"Create a new CAN Packet object instead.")
 
-    @classmethod
-    def __validate_data_consistency(cls,
+    def __validate_data(self,
+                        packet_type: CanPacketTypeMemberTyping,
+                        dlc: Optional[int],
+                        filler_byte: RawByte,
+                        **packet_type_specific_kwargs: Any) -> None:
+        """
+        Validate arguments related to CAN Packet data.
+
+        This methods performs comprehensive check of :ref:`Network Data Field (N_Data) <knowledge-base-n-data>`
+        and :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
+        :ref:`CAN Packet <knowledge-base-uds-can-packet>` to make sure that every required argument is provided
+        and their values are consistent with provided :ref:`CAN Packet Type <knowledge-base-can-n-pci>`.
+
+        :param packet_type: Packet type to validate.
+        :param dlc: DLC value to validate.
+        :param filler_byte: Filler Byte value to validate.
+        :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
+        """
+        CanPacketType.validate_member(packet_type)
+        validate_raw_byte(filler_byte)
+        if dlc is not None:
+            CanDlcHandler.validate_dlc(dlc)
+        self.__validate_data_consistency(packet_type=packet_type,
+                                         dlc=dlc,
+                                         **packet_type_specific_kwargs)
+
+    def __validate_data_consistency(self,
                                     packet_type: CanPacketTypeMemberTyping,
                                     dlc: Optional[int],
                                     **packet_type_specific_kwargs: Any) -> None:
@@ -651,45 +713,73 @@ class CanPacket(AbstractUdsPacket):
         """
         packet_type_instance = CanPacketType(packet_type)
         if packet_type_instance == CanPacketType.SINGLE_FRAME:
-            cls.__validate_data_single_frame(dlc=dlc, **packet_type_specific_kwargs)
+            self.__validate_data_single_frame(dlc=dlc, **packet_type_specific_kwargs)
         elif packet_type_instance == CanPacketType.FIRST_FRAME:
-            cls.__validate_data_first_frame(dlc=dlc, **packet_type_specific_kwargs)
+            self.__validate_data_first_frame(dlc=dlc, **packet_type_specific_kwargs)
         elif packet_type_instance == CanPacketType.CONSECUTIVE_FRAME:
-            cls.__validate_data_consecutive_frame(dlc=dlc, **packet_type_specific_kwargs)
+            self.__validate_data_consecutive_frame(dlc=dlc, **packet_type_specific_kwargs)
         elif packet_type_instance == CanPacketType.FLOW_CONTROL:
-            cls.__validate_data_flow_control(dlc=dlc, **packet_type_specific_kwargs)
+            self.__validate_data_flow_control(dlc=dlc, **packet_type_specific_kwargs)
         raise NotImplementedError(f"Unknown CAN Packet Type value was provided: {packet_type_instance}")
 
-    @classmethod
-    def __validate_data_single_frame(cls, dlc: Optional[int], payload: RawBytes) -> None:
+    def __validate_data_single_frame(self, dlc: Optional[int], payload: RawBytes) -> None:
         """
         Validate data parameters of single frame packet.
 
         :param dlc: DLC value to validate.
         :param payload: Payload value to validate.
-        """
 
-    @classmethod
-    def __validate_data_first_frame(cls, dlc: Optional[int], data_length: int, payload: RawBytes) -> None:
+        :raise InconsistentArgumentsError: Value of payload is not compatible with values of other parameters.
+        """
+        validate_raw_bytes(payload)
+        max_payload_length = self.get_max_single_frame_data_length(addressing_format=self.addressing_format, dlc=dlc)
+        if max_payload_length < len(payload):
+            raise InconsistentArgumentsError(f"Provided value of payload is not compatible with dlc and "
+                                             f"addressing_format values. Maximum payload length: {max_payload_length}. "
+                                             f"Actual payload length: {len(payload)}")
+
+    def __validate_data_first_frame(self, dlc: int, data_length: int, payload: RawBytes) -> None:
         """
         Validate data parameters of single frame packet.
 
         :param dlc: DLC value to validate.
         :param payload: Payload value to validate.
-        """
 
-    @classmethod
-    def __validate_data_consecutive_frame(cls, dlc: Optional[int], sequence_number: int, payload: RawBytes) -> None:
+        :raise InconsistentArgumentsError: Value of payload is not compatible with values of other parameters.
+        """
+        validate_raw_bytes(payload)
+        payload_length = self.get_first_frame_payload_length(addressing_format=self.addressing_format,
+                                                             data_length=data_length,
+                                                             dlc=dlc)
+        if len(payload) != payload_length:
+            raise InconsistentArgumentsError(f"Provided value of payload is not compatible with dlc, data_length and "
+                                             f"addressing_format values. Expected payload length: {payload_length}. "
+                                             f"Actual payload length: {len(payload)}")
+
+    def __validate_data_consecutive_frame(self, dlc: Optional[int], sequence_number: int, payload: RawBytes) -> None:
         """
         Validate data parameters of single frame packet.
 
         :param dlc: DLC value to validate.
         :param sequence_number: Sequence Number value to validate.
         :param payload: Payload value to validate.
-        """
 
-    @classmethod
-    def __validate_data_flow_control(cls,
+        :raise InconsistentArgumentsError: Value of payload is not compatible with values of other parameters.
+        """
+        validate_raw_bytes(payload)
+        if not isinstance(sequence_number, int):
+            raise TypeError(f"Provided sequence_number value is not int type. Actual type: {type(sequence_number)}")
+        if not self.MIN_SEQUENCE_NUMBER <= sequence_number <= self.MAX_SEQUENCE_NUMBER:
+            raise ValueError(f"Provided sequence_number sequence_number is out of range. "
+                             f"Actual value: {sequence_number}")
+        max_payload_length = self.get_max_consecutive_frame_payload_length(addressing_format=self.addressing_format,
+                                                                           dlc=dlc)
+        if len(payload) > max_payload_length:
+            raise InconsistentArgumentsError(f"Provided value of payload is not compatible with dlc, data_length and "
+                                             f"addressing_format values. Maximum payload length: {max_payload_length}. "
+                                             f"Actual payload length: {len(payload)}")
+
+    def __validate_data_flow_control(self,
                                      dlc: Optional[int],
                                      flow_status: CanFlowStatusTyping,
                                      block_size: Optional[RawByte] = None,
@@ -702,6 +792,23 @@ class CanPacket(AbstractUdsPacket):
         :param block_size: Block Size value to validate.
         :param stmin: STmin value to validate.
         """
+        CanFlowStatus.validate_member(flow_status)
+        flow_status_instance = CanFlowStatus(flow_status)
+        if flow_status_instance == CanFlowStatus.ContinueToSend:
+            validate_raw_byte(block_size)
+            validate_raw_byte(stmin)
+        elif (block_size, stmin) != (None, None):
+            raise InconsistentArgumentsError(f"Values of block_size and stmin must not be equal None,"
+                                             f"if ContinueToSend flow_status was provided. "
+                                             f"Actual values: block_size={block_size}, stmin={stmin}")
+        if dlc is not None:
+            CanDlcHandler.validate_dlc(dlc)
+            minimum_dlc = self.get_min_flow_control_dlc(addressing_format=self.addressing_format,
+                                                        flow_status=flow_status_instance)
+            if dlc < minimum_dlc:
+                raise InconsistentArgumentsError(f"Provided value of dlc is not compatible with flow status and "
+                                                 f"addressing_format values. Minimum dlc value: {minimum_dlc}. "
+                                                 f"Actual payload length: {dlc}")
 
     def __set_address_information_normal_11bit(self, addressing: AddressingType, can_id: int) -> None:
         """

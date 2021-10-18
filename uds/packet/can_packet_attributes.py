@@ -476,7 +476,7 @@ class CanDlcHandler:
         return cls.__DLC_VALUES[index]
 
     @classmethod
-    def is_can_fd_specific_value(cls, dlc: int) -> bool:
+    def is_can_fd_specific_dlc(cls, dlc: int) -> bool:
         """
         Check whether provided DLC value is applicable for CAN FD only.
 
