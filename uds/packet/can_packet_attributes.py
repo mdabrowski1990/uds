@@ -435,8 +435,10 @@ class CanDlcHandler:
     __DATA_BYTES_NUMBER_MAPPING: Dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
     __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(__DLC_VALUES[9:])
 
-    MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBER_MAPPING)
-    MAX_DATA_BYTES_NUMBER: int = max(__DATA_BYTES_NUMBER_MAPPING)
+    MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)  # TODO: description
+    MAX_DATA_BYTES_NUMBER: int = max(__DATA_BYTES_NUMBERS)
+    MIN_DLC_VALUE: int = min(__DLC_VALUES)
+    MAX_DLC_VALUE: int = max(__DLC_VALUES)
 
     @classmethod
     def decode(cls, dlc: int) -> int:

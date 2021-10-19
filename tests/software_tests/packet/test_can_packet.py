@@ -355,6 +355,126 @@ class TestCanPacket:
             source_address=source_address,
             address_extension=address_extension)
 
+    # TODO: set_data
+
+    # get_packet_dlc
+
+    @pytest.mark.parametrize("packet_type", [None, "unknown"])
+    @pytest.mark.parametrize("payload_length", [1, 5])
+    @patch(f"{SCRIPT_LOCATION}.CanPacketType")
+    def test_get_packet_dlc__unknown_packet_type(self, mock_packet_type_class, packet_type, payload_length,
+                                                 example_can_addressing_format):
+        with pytest.raises(NotImplementedError):
+            CanPacket.get_packet_dlc(packet_type=packet_type,
+                                     addressing_format=example_can_addressing_format,
+                                     payload_length=payload_length)
+        mock_packet_type_class.validate_member.assert_called_once_with(packet_type)
+        mock_packet_type_class.assert_called_once_with(packet_type)
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.SINGLE_FRAME, CanPacketType.SINGLE_FRAME.value])
+    @pytest.mark.parametrize("payload_length", [1, 5])
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_single_frame_dlc")
+    def test_get_packet_dlc__single_frame(self, mock_get_single_frame_dlc,
+                                          packet_type, payload_length, example_can_addressing_format):
+        assert CanPacket.get_packet_dlc(packet_type=packet_type,
+                                        addressing_format=example_can_addressing_format,
+                                        payload_length=payload_length) is mock_get_single_frame_dlc.return_value
+        mock_get_single_frame_dlc.assert_called_once_with(addressing_format=example_can_addressing_format,
+                                                          payload_length=payload_length)
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.FIRST_FRAME, CanPacketType.FIRST_FRAME.value])
+    @pytest.mark.parametrize("payload_length", [1, 5])
+    @pytest.mark.parametrize("data_length", [12345, 0xFEDCBA])
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_first_frame_dlc")
+    def test_get_packet_dlc__first_frame(self, mock_get_first_frame_dlc,
+                                         packet_type, payload_length, data_length, example_can_addressing_format):
+        assert CanPacket.get_packet_dlc(packet_type=packet_type,
+                                        addressing_format=example_can_addressing_format,
+                                        payload_length=payload_length,
+                                        data_length=data_length) is mock_get_first_frame_dlc.return_value
+        mock_get_first_frame_dlc.assert_called_once_with(addressing_format=example_can_addressing_format,
+                                                         payload_length=payload_length,
+                                                         data_length=data_length)
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.CONSECUTIVE_FRAME, CanPacketType.CONSECUTIVE_FRAME.value])
+    @pytest.mark.parametrize("payload_length", [1, 5])
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_consecutive_frame_dlc")
+    def test_get_packet_dlc__consecutive_frame(self, mock_get_consecutive_frame_dlc,
+                                               packet_type, payload_length, example_can_addressing_format):
+        assert CanPacket.get_packet_dlc(packet_type=packet_type,
+                                        addressing_format=example_can_addressing_format,
+                                        payload_length=payload_length) is mock_get_consecutive_frame_dlc.return_value
+        mock_get_consecutive_frame_dlc.assert_called_once_with(addressing_format=example_can_addressing_format,
+                                                               payload_length=payload_length)
+
+    @pytest.mark.parametrize("packet_type", [CanPacketType.FLOW_CONTROL, CanPacketType.FLOW_CONTROL.value])
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_flow_control_dlc")
+    def test_get_packet_dlc__flow_control(self, mock_get_flow_control_dlc,
+                                          packet_type, example_can_addressing_format):
+        assert CanPacket.get_packet_dlc(addressing_format=example_can_addressing_format,
+                                        packet_type=packet_type) is mock_get_flow_control_dlc.return_value
+        mock_get_flow_control_dlc.assert_called_once_with(addressing_format=example_can_addressing_format)
+
+    # get_single_frame_dlc
+
+    @pytest.mark.parametrize("payload_length", [None, 2., "not a payload length"])
+    def test_get_single_frame_dlc__type_error(self, example_can_addressing_format, payload_length):
+        with pytest.raises(TypeError):
+            CanPacket.get_single_frame_dlc(addressing_format=example_can_addressing_format,
+                                           payload_length=payload_length)
+
+    @pytest.mark.parametrize("payload_length", [-100, -1, 0])
+    def test_get_single_frame_dlc__value_error(self, example_can_addressing_format, payload_length):
+        with pytest.raises(ValueError):
+            CanPacket.get_single_frame_dlc(addressing_format=example_can_addressing_format,
+                                           payload_length=payload_length)
+
+    @pytest.mark.parametrize("payload_length, ai_bytes", [
+        (61, 2),
+        (62, 1),
+        (63, 0),
+        (100, 0),
+    ])
+    def test_get_single_frame_dlc__inconsistency_error(self, example_can_addressing_format, payload_length, ai_bytes):
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
+        with pytest.raises(InconsistentArgumentsError):
+            CanPacket.get_single_frame_dlc(addressing_format=example_can_addressing_format,
+                                           payload_length=payload_length)
+        self.mock_validate_can_addressing_format.assert_called_once_with(example_can_addressing_format)
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(example_can_addressing_format)
+
+    @pytest.mark.parametrize("payload_length, ai_bytes", [
+        (5, 0),
+        (6, 1),
+        (1, 0),
+        (2, 1),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
+    def test_get_single_frame_dlc__short_dlc(self, mock_get_min_dlc,
+                                             example_can_addressing_format, payload_length, ai_bytes):
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
+        assert CanPacket.get_single_frame_dlc(addressing_format=example_can_addressing_format,
+                                              payload_length=payload_length) == mock_get_min_dlc.return_value
+        self.mock_validate_can_addressing_format.assert_called_once_with(example_can_addressing_format)
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(example_can_addressing_format)
+        mock_get_min_dlc.assert_called_once_with(payload_length+ai_bytes+CanPacket.DATA_BYTES_SHORT_SF_DL)
+
+    @pytest.mark.parametrize("payload_length, ai_bytes", [
+        (61, 1),
+        (62, 0),
+        (31, 2),
+        (13, 0),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
+    def test_get_single_frame_dlc__long_dlc(self, mock_get_min_dlc,
+                                            example_can_addressing_format, payload_length, ai_bytes):
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
+        assert CanPacket.get_single_frame_dlc(addressing_format=example_can_addressing_format,
+                                              payload_length=payload_length) == mock_get_min_dlc.return_value
+        self.mock_validate_can_addressing_format.assert_called_once_with(example_can_addressing_format)
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(example_can_addressing_format)
+        mock_get_min_dlc.assert_called_once_with(payload_length+ai_bytes+CanPacket.DATA_BYTES_LONG_SF_DL)
+
     # validate_address_information
 
     @pytest.mark.parametrize("addressing", ["addressing", AddressingType.FUNCTIONAL])
@@ -946,77 +1066,84 @@ class TestCanPacket:
 
     # __validate_data_single_frame
 
-    @pytest.mark.parametrize("dlc", [None, 8, 15])
-    @pytest.mark.parametrize("payload, max_payload_length", [
-        (range(10), 10),
-        (range(10), 95),
-        ([0x12, 0x98, 0xF5], 3),
-        ([0x12, 0x98, 0xF5], 4),
-        ([0x45], 1),
-        ([0x45], 99),
+    @pytest.mark.parametrize("payload", [range(10), [0x55, 0xAA]])
+    @pytest.mark.parametrize("required_dlc, dlc", [
+        (5, 5),
+        (13, 13),
+        (15, None),
+        (5, None),
+        (8, 10),
     ])
-    def test_validate_data_single_frame__valid(self, dlc, payload, max_payload_length):
-        self.mock_can_packet.get_max_single_frame_data_length.return_value = max_payload_length
+    def test_validate_data_single_frame__valid(self, dlc, payload, required_dlc):
+        self.mock_can_packet.get_single_frame_dlc.return_value = required_dlc
         CanPacket._CanPacket__validate_data_single_frame(self=self.mock_can_packet,
                                                          dlc=dlc,
                                                          payload=payload)
         self.mock_validate_raw_bytes.assert_called_once_with(payload)
-        self.mock_can_packet.get_max_single_frame_data_length.assert_called_once_with(
+        self.mock_can_packet.get_single_frame_dlc.assert_called_once_with(
             addressing_format=self.mock_can_packet.addressing_format,
-            dlc=dlc)
+            payload_length=len(payload))
 
-    @pytest.mark.parametrize("dlc", [None, 8, 15])
-    @pytest.mark.parametrize("payload, max_payload_length", [
-        (range(10), 9),
-        (range(10), 5),
-        ([0x12, 0x98, 0xF5], 2),
-        ([0x12, 0x98, 0xF5], 0),
-        ([0x45], 0),
+    @pytest.mark.parametrize("payload", [range(10), [0x55, 0xAA]])
+    @pytest.mark.parametrize("required_dlc, dlc", [
+        (6, 5),
+        (14, 13),
+        (16, None),
+        (99, None),
+        (13, 10),
     ])
-    def test_validate_data_single_frame__invalid(self, dlc, payload, max_payload_length):
-        self.mock_can_packet.get_max_single_frame_data_length.return_value = max_payload_length
+    def test_validate_data_single_frame__invalid(self, dlc, payload, required_dlc):
+        self.mock_can_packet.get_single_frame_dlc.return_value = required_dlc
         with pytest.raises(InconsistentArgumentsError):
             CanPacket._CanPacket__validate_data_single_frame(self=self.mock_can_packet,
                                                              dlc=dlc,
                                                              payload=payload)
         self.mock_validate_raw_bytes.assert_called_once_with(payload)
-        self.mock_can_packet.get_max_single_frame_data_length.assert_called_once_with(
+        self.mock_can_packet.get_single_frame_dlc.assert_called_once_with(
             addressing_format=self.mock_can_packet.addressing_format,
-            dlc=dlc)
+            payload_length=len(payload))
 
     # __validate_data_first_frame
 
-    @pytest.mark.parametrize("dlc", [None, 8, 15])
-    @pytest.mark.parametrize("payload", [range(5), range(100)])
-    @pytest.mark.parametrize("data_length", [32, 9999, 0xF743A])
-    def test_validate_data_first_frame__valid(self, dlc, payload, data_length):
-        self.mock_can_packet.get_first_frame_payload_length.return_value = len(payload)
+    @pytest.mark.parametrize("payload", [range(10), [0x55, 0xAA]])
+    @pytest.mark.parametrize("data_length", [0xFFFFFF, 0xB2C3])
+    @pytest.mark.parametrize("required_dlc, dlc", [
+        (5, 5),
+        (13, 13),
+        (15, 15),
+    ])
+    def test_validate_data_first_frame__valid(self, dlc, payload, required_dlc, data_length):
+        self.mock_can_packet.get_first_frame_dlc.return_value = required_dlc
         CanPacket._CanPacket__validate_data_first_frame(self=self.mock_can_packet,
                                                         dlc=dlc,
-                                                        payload=payload,
-                                                        data_length=data_length)
-        self.mock_can_packet.get_first_frame_payload_length.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            dlc=dlc,
-            data_length=data_length)
+                                                        data_length=data_length,
+                                                        payload=payload)
         self.mock_validate_raw_bytes.assert_called_once_with(payload)
+        self.mock_can_packet.get_first_frame_dlc.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format,
+            data_length=data_length,
+            payload_length=len(payload))
 
-    @pytest.mark.parametrize("dlc", [None, 8])
-    @pytest.mark.parametrize("payload", [range(5), range(100)])
-    @pytest.mark.parametrize("data_length", [32, 0xF743A])
-    @pytest.mark.parametrize("delta", [-5, -1, 1, 100])
-    def test_validate_data_first_frame__invalid(self, dlc, payload, data_length, delta):
-        self.mock_can_packet.get_first_frame_payload_length.return_value = len(payload) + delta
+    @pytest.mark.parametrize("payload", [range(10), [0x55, 0xAA]])
+    @pytest.mark.parametrize("data_length", [0xFFFFFF, 0xB2C3])
+    @pytest.mark.parametrize("required_dlc, dlc", [
+        (4, 5),
+        (6, 5),
+        (12, 13),
+        (15, 3),
+    ])
+    def test_validate_data_first_frame__invalid(self, dlc, payload, required_dlc, data_length):
+        self.mock_can_packet.get_first_frame_dlc.return_value = required_dlc
         with pytest.raises(InconsistentArgumentsError):
             CanPacket._CanPacket__validate_data_first_frame(self=self.mock_can_packet,
                                                             dlc=dlc,
-                                                            payload=payload,
-                                                            data_length=data_length)
-        self.mock_can_packet.get_first_frame_payload_length.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            dlc=dlc,
-            data_length=data_length)
+                                                            data_length=data_length,
+                                                            payload=payload)
         self.mock_validate_raw_bytes.assert_called_once_with(payload)
+        self.mock_can_packet.get_first_frame_dlc.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format,
+            data_length=data_length,
+            payload_length=len(payload))
 
     # __validate_data_consecutive_frame
 
@@ -1024,7 +1151,6 @@ class TestCanPacket:
     @pytest.mark.parametrize("payload", [range(10), [0x10, 0x20]])
     @pytest.mark.parametrize("sequence_number", [None, 5.5, "not a sequence number"])
     def test_validate_data_consecutive_frame__sequence_number_type_error(self, dlc, payload, sequence_number):
-        self.mock_can_packet.get_max_consecutive_frame_payload_length.return_value = len(payload)
         with pytest.raises(TypeError):
             CanPacket._CanPacket__validate_data_consecutive_frame(self=self.mock_can_packet,
                                                                   dlc=dlc,
@@ -1035,50 +1161,49 @@ class TestCanPacket:
     @pytest.mark.parametrize("payload", [range(10), [0x10, 0x20]])
     @pytest.mark.parametrize("sequence_number", [-5, -1, 0x10, 0xFF])
     def test_validate_data_consecutive_frame__sequence_number_value_error(self, dlc, payload, sequence_number):
-        self.mock_can_packet.get_max_consecutive_frame_payload_length.return_value = len(payload)
         with pytest.raises(ValueError):
             CanPacket._CanPacket__validate_data_consecutive_frame(self=self.mock_can_packet,
                                                                   dlc=dlc,
                                                                   payload=payload,
                                                                   sequence_number=sequence_number)
 
-    @pytest.mark.parametrize("dlc", [None, 15])
-    @pytest.mark.parametrize("payload, max_payload_length", [
-        (range(10), 9),
-        (range(10), 3),
-        (range(3), 2),
-        (range(3), 0),
+    @pytest.mark.parametrize("payload", [range(10), [0x55, 0xAA]])
+    @pytest.mark.parametrize("required_dlc, dlc", [
+        (15, 14),
+        (4, 3),
+        (9, 5),
     ])
     @pytest.mark.parametrize("sequence_number", [0, 5, 0xF])
-    def test_validate_data_consecutive_frame__invalid(self, dlc, payload, sequence_number, max_payload_length):
-        self.mock_can_packet.get_max_consecutive_frame_payload_length.return_value = max_payload_length
+    def test_validate_data_consecutive_frame__invalid(self, dlc, payload, required_dlc, sequence_number):
+        self.mock_can_packet.get_consecutive_frame_dlc.return_value = required_dlc
         with pytest.raises(InconsistentArgumentsError):
             CanPacket._CanPacket__validate_data_consecutive_frame(self=self.mock_can_packet,
                                                                   dlc=dlc,
                                                                   payload=payload,
                                                                   sequence_number=sequence_number)
-        self.mock_can_packet.get_max_consecutive_frame_payload_length.assert_called_once_with(
+        self.mock_can_packet.get_consecutive_frame_dlc.assert_called_once_with(
             addressing_format=self.mock_can_packet.addressing_format,
-            dlc=dlc)
+            payload_length=len(payload))
         self.mock_validate_raw_bytes.assert_called_once_with(payload)
 
-    @pytest.mark.parametrize("dlc", [None, 15])
-    @pytest.mark.parametrize("payload, max_payload_length", [
-        (range(10), 10),
-        (range(10), 56),
-        (range(3), 3),
-        (range(3), 63),
+    @pytest.mark.parametrize("payload", [range(10), [0x55, 0xAA]])
+    @pytest.mark.parametrize("required_dlc, dlc", [
+        (15, 15),
+        (3, 3),
+        (3, 15),
+        (5, 5),
+        (5, 6),
     ])
     @pytest.mark.parametrize("sequence_number", [0, 5, 0xF])
-    def test_validate_data_consecutive_frame__valid(self, dlc, payload, sequence_number, max_payload_length):
-        self.mock_can_packet.get_max_consecutive_frame_payload_length.return_value = max_payload_length
+    def test_validate_data_consecutive_frame__valid(self, dlc, payload, required_dlc, sequence_number):
+        self.mock_can_packet.get_consecutive_frame_dlc.return_value = required_dlc
         CanPacket._CanPacket__validate_data_consecutive_frame(self=self.mock_can_packet,
                                                               dlc=dlc,
                                                               payload=payload,
                                                               sequence_number=sequence_number)
-        self.mock_can_packet.get_max_consecutive_frame_payload_length.assert_called_once_with(
+        self.mock_can_packet.get_consecutive_frame_dlc.assert_called_once_with(
             addressing_format=self.mock_can_packet.addressing_format,
-            dlc=dlc)
+            payload_length=len(payload))
         self.mock_validate_raw_bytes.assert_called_once_with(payload)
 
     # __validate_data_flow_control
@@ -1094,16 +1219,15 @@ class TestCanPacket:
         (3, 3),
     ])
     def test_validate_data_flow_control__valid_dlc(self, dlc, min_dlc, flow_status, block_size, stmin):
-        self.mock_can_packet.get_min_flow_control_dlc.return_value = min_dlc
+        self.mock_can_packet.get_flow_control_dlc.return_value = min_dlc
         CanPacket._CanPacket__validate_data_flow_control(self=self.mock_can_packet,
                                                          dlc=dlc,
                                                          flow_status=flow_status,
                                                          block_size=block_size,
                                                          stmin=stmin)
         self.mock_validate_dlc.assert_called_once_with(dlc)
-        self.mock_can_packet.get_min_flow_control_dlc.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            flow_status=flow_status)
+        self.mock_can_packet.get_flow_control_dlc.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format)
 
     @pytest.mark.parametrize("flow_status, block_size, stmin", [
         (CanFlowStatus.ContinueToSend, 0, 0),
@@ -1116,7 +1240,7 @@ class TestCanPacket:
         (2, 3),
     ])
     def test_validate_data_flow_control__invalid_dlc(self, dlc, min_dlc, flow_status, block_size, stmin):
-        self.mock_can_packet.get_min_flow_control_dlc.return_value = min_dlc
+        self.mock_can_packet.get_flow_control_dlc.return_value = min_dlc
         with pytest.raises(InconsistentArgumentsError):
             CanPacket._CanPacket__validate_data_flow_control(self=self.mock_can_packet,
                                                              dlc=dlc,
@@ -1124,9 +1248,8 @@ class TestCanPacket:
                                                              block_size=block_size,
                                                              stmin=stmin)
         self.mock_validate_dlc.assert_called_once_with(dlc)
-        self.mock_can_packet.get_min_flow_control_dlc.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            flow_status=flow_status)
+        self.mock_can_packet.get_flow_control_dlc.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format)
 
     @pytest.mark.parametrize("flow_status, block_size, stmin", [
         (CanFlowStatus.ContinueToSend, 0, 0),
