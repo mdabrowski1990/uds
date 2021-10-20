@@ -30,14 +30,16 @@ class CanPacket(AbstractUdsPacket):
     :ref:`CAN packet <knowledge-base-uds-can-packet>`.
     """
 
+    MIN_DLC_VALUE_FF: int = 8
+    """Minimum value of First Frame DLC."""
     MAX_DLC_VALUE_SHORT_SF_DL: int = 8
-    """Maximal value of DLC for which short 
+    """Maximum value of DLC for which short 
     :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` format is used."""
-    MAX_FF_DL_SHORT_FF_DL: int = 0xFFF
-    """Maximal value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` for which
+    MAX_SHORT_FF_DL_VALUE: int = 0xFFF
+    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` for which
     short format of FF_DL is used."""
-    MAX_FF_DL_LONG_FF_DL: int = 0xFFFFFFFF
-    """Maximal value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
+    MAX_LONG_FF_DL_VALUE: int = 0xFFFFFFFF
+    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
 
     DATA_BYTES_SHORT_SF_DL: int = 1
     """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` 
@@ -51,6 +53,14 @@ class CanPacket(AbstractUdsPacket):
     DATA_BYTES_LONG_FF_DL: int = 6
     """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and 
     :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values when FF_DL > 4095."""
+    DATA_BYTES_SN: int = 1
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` 
+    and :ref:`Sequence Number <knowledge-base-can-sequence-number>` values."""
+    DATA_BYTES_FC: int = 3
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`,
+    :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>` and
+    :ref:`Separation Time minimum <knowledge-base-can-st-min>` in :ref:`Flow Control <knowledge-base-can-flow-control>`.
+    """
 
     MIN_SEQUENCE_NUMBER: int = 0x0
     MAX_SEQUENCE_NUMBER: int = 0xF
@@ -205,7 +215,7 @@ class CanPacket(AbstractUdsPacket):
         :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
             Possible parameters:
              - :parameter payload: (required for: SF, FF and CF)
-                 Payload of a diagnostic message that is carried by this CAN packet.
+                 Payload of a diagnostic message to be carried by this CAN packet.
              - :parameter data_length: (required for: FF)
                  Number of payload bytes that carried diagnostic message has.
              - :parameter sequence_number: (required for: CF)
@@ -221,6 +231,132 @@ class CanPacket(AbstractUdsPacket):
             Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
             whenever you see this error.
         """
+        CanPacketType.validate_member(packet_type)
+        packet_type_instance = CanPacketType(packet_type)
+        if packet_type_instance == CanPacketType.SINGLE_FRAME:
+            self.set_single_frame(dlc=dlc,
+                                  filler_byte=filler_byte,
+                                  **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.FIRST_FRAME:
+            self.set_first_frame(dlc=dlc,
+                                 **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.CONSECUTIVE_FRAME:
+            self.set_consecutive_frame(dlc=dlc,
+                                       filler_byte=filler_byte,
+                                       **packet_type_specific_kwargs)
+        elif packet_type_instance == CanPacketType.FLOW_CONTROL:
+            self.set_flow_control(dlc=dlc,
+                                  filler_byte=filler_byte,
+                                  **packet_type_specific_kwargs)
+        else:
+            raise NotImplementedError(f"Missing implementation for: {packet_type_instance}")
+
+    def set_single_frame(self,
+                         payload: RawBytes,
+                         dlc: Optional[int] = None,
+                         filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
+        """
+        Set or change packet type and data field for this CAN packet.
+
+        :param payload: Payload of a diagnostic message that is carried by this CAN packet.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
+            Possible values:
+             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+             - int type value - DLC value to set, CAN Data Padding will be used to fill unused data bytes
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
+        """
+        self.__validate_data_single_frame(dlc=dlc,
+                                          payload=payload,
+                                          filler_byte=filler_byte)
+        self.__raw_frame_data = self.get_single_frame_data(addressing_format=self.addressing_format,
+                                                           target_address=self.target_address,
+                                                           address_extension=self.address_extension,
+                                                           dlc=dlc,
+                                                           payload=payload,
+                                                           filler_byte=filler_byte)
+        self.__dlc = dlc or self.get_single_frame_dlc(addressing_format=self.addressing_format,
+                                                      payload_length=len(payload))
+        self.__packet_type = CanPacketType.SINGLE_FRAME
+
+    def set_first_frame(self,
+                        payload: RawBytes,
+                        data_length: int,
+                        dlc: int) -> None:
+        """
+        Set or change packet type and data field for this CAN packet.
+
+        :param payload: Payload of a diagnostic message that is carried by this CAN packet.
+        :param data_length: Number of payload bytes of a diagnostic message initiated this First Frame packet.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
+        """
+        self.__validate_data_first_frame(dlc=dlc,
+                                         payload=payload,
+                                         data_length=data_length)
+        self.__raw_frame_data = self.get_first_frame_data(addressing_format=self.addressing_format,
+                                                          dlc=dlc,
+                                                          payload=payload,
+                                                          data_length=data_length)
+        self.__dlc = dlc
+        self.__packet_type = CanPacketType.FIRST_FRAME
+
+    def set_consecutive_frame(self,
+                              payload: RawBytes,
+                              sequence_number: int,
+                              dlc: Optional[int] = None,
+                              filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
+        """
+        Set or change packet type and data field for this CAN packet.
+
+        :param payload: Payload of a diagnostic message that is carried by this CAN packet.
+        :param sequence_number: Sequence number of this Consecutive Frame.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
+        """
+        # TODO: ugh continue here
+        # self.__validate_data_consecutive_frame()
+        # self.__raw_frame_data = self.get_consecutive_frame_data(addressing_format=self.addressing_format,
+        #                                                         payload=payload,
+        #                                                         sequence_number=sequence_number,
+        #                                                         dlc=dlc,
+        #                                                         filler_byte=filler_byte)
+
+    def set_flow_control(self,
+                         flow_status: CanFlowStatusTyping,
+                         block_size: Optional[RawByte] = None,
+                         stmin: Optional[RawByte] = None,
+                         dlc: Optional[int] = None,
+                         filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
+        """
+        Set or change packet type and data field for this CAN packet.
+
+        :param flow_status: Flow status information carried by this Flow Control frame.
+        :param block_size: Block size information carried by this Flow Control frame.
+        :param stmin: Separation Time minimum information carried by this Flow Control frame.
+        :param dlc: DLC value of a CAN frame that carries this CAN Packet.
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
+        """
+
+    @classmethod
+    def get_single_frame_data(cls,
+                              addressing_format: CanAddressingFormatTyping,
+                              payload: RawBytes,
+                              dlc: Optional[int] = None,
+                              filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE,
+                              target_address: Optional[RawByte] = None,
+                              address_extension: Optional[RawByte] = None) -> RawBytesTuple:
+        # TODO
+        ...
+
+    @classmethod
+    def get_first_frame_data(cls,
+                             addressing_format: CanAddressingFormatTyping,
+                             payload: RawBytes,
+                             dlc: int,
+                             data_length: int,
+                             target_address: Optional[RawByte] = None,
+                             address_extension: Optional[RawByte] = None) -> RawBytesTuple:
+        # TODO
+        ...
 
     @classmethod
     def get_packet_dlc(cls,
@@ -266,7 +402,7 @@ class CanPacket(AbstractUdsPacket):
                              addressing_format: CanAddressingFormatTyping,
                              payload_length: int) -> int:
         """
-        Get DLC value for Single Frame.
+        Get DLC value for a Single Frame.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
         :param payload_length: Number of payload bytes that considered CAN packet carries.
@@ -277,11 +413,7 @@ class CanPacket(AbstractUdsPacket):
         :return: The lowest value of DLC that enables to fit in provided packet data.
         """
         CanAddressingFormat.validate_member(addressing_format)
-        if not isinstance(payload_length, int):
-            raise TypeError(f"Provided payload_length value is not int type. Actual type: {type(payload_length)}")
-        if payload_length <= 0:
-            raise ValueError(f"Provided payload_length value not a positive number. Expected: payload_length>0."
-                             f"Actual value: {payload_length}")
+        cls.__validate_payload_length(payload_length)
         ai_data_bytes = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
         data_bytes_number_short_dlc = ai_data_bytes + payload_length + cls.DATA_BYTES_SHORT_SF_DL
         if data_bytes_number_short_dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL:
@@ -297,61 +429,100 @@ class CanPacket(AbstractUdsPacket):
                             addressing_format: CanAddressingFormatTyping,
                             data_length: int,
                             payload_length: int) -> int:
-        # TODO
-        ...
+        """
+        Get DLC value for a First Frame.
+
+        :param addressing_format: CAN addressing format that considered CAN packet uses.
+        :param data_length: Number of payload bytes of a diagnostic message initiated by considered First Frame.
+        :param payload_length: Number of payload bytes that considered CAN packet carries.
+
+        :raise InconsistentArgumentsError: Payload length requires usage of DLC that is invalid for First Frame.
+
+        :return: The exact value of DLC that enables to fit in provided packet data.
+        """
+        CanAddressingFormat.validate_member(addressing_format)
+        cls.__validate_payload_length(payload_length)
+        cls.__validate_ff_dl(data_length)
+        ai_data_bytes = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
+        ff_dl_bytes = cls.DATA_BYTES_SHORT_FF_DL if data_length <= cls.MAX_SHORT_FF_DL_VALUE \
+            else cls.DATA_BYTES_LONG_FF_DL
+        dlc = CanDlcHandler.encode(data_bytes_number=ai_data_bytes + ff_dl_bytes + payload_length)
+        if dlc < cls.MIN_DLC_VALUE_FF:
+            raise InconsistentArgumentsError(f"Provided payload_length requires DLC value that is invalid for "
+                                             f"First Frame packet. Actual values: payload_length={payload_length},"
+                                             f"calculated DLC value={dlc}, minimum DLC value={cls.MIN_DLC_VALUE_FF}")
+        return dlc
 
     @classmethod
     def get_consecutive_frame_dlc(cls,
                                   addressing_format: CanAddressingFormatTyping,
                                   payload_length: int) -> int:
-        # TODO
-        ...
+        """
+        Get DLC value for a Consecutive Frame.
+
+        :param addressing_format: CAN addressing format that considered CAN packet uses.
+        :param payload_length: Number of payload bytes that considered CAN packet carries.
+
+        :return: The lowest value of DLC that enables to fit in provided packet data.
+        """
+        CanAddressingFormat.validate_member(addressing_format)
+        cls.__validate_payload_length(payload_length)
+        ai_data_bytes = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
+        return CanDlcHandler.get_min_dlc(ai_data_bytes + cls.DATA_BYTES_SN + payload_length)
 
     @classmethod
     def get_flow_control_dlc(cls, addressing_format: CanAddressingFormatTyping) -> int:
-        # TODO
-        ...
-
-    @classmethod
-    def get_payload_length(cls,
-                           addressing_format: CanAddressingFormatTyping,
-                           packet_type: CanPacketType,
-                           dlc: Optional[int] = None) -> int:
-        # TODO
-        ...
-
-    @classmethod
-    def get_max_payload_length_single_frame(cls,  # TODO: get rid of it or transform to private
-                                            addressing_format: CanAddressingFormatTyping,
-                                            dlc: Optional[int] = None) -> int:
         """
-        Get maximal value of Single Frame Data Length (SF_DL) for a CAN packet.
+        Get DLC value for a Flow Control.
 
-        :param addressing_format: CAN addressing format to use in considered CAN Packet.
-        :param dlc: Value of DLC value in a CAN frame.
-            Leave None to use maximal value.
+        :param addressing_format: CAN addressing format that considered CAN packet uses.
 
-        :return: Maximal value of SF_DL that UDS Packet with provided Addressing Format and DLC can fit in.
-            If negative, then a greater value of DLC must be used.
+        :return: The lowest value of DLC that enables to fit in provided packet data.
         """
-        frame_data_bytes_number = CanDlcHandler.MAX_DATA_BYTES_NUMBER if dlc is None else CanDlcHandler.decode(dlc)
-        data_bytes_used_for_ai = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
-        data_bytes_used_for_sfdl_and_npci = cls.DATA_BYTES_SHORT_SF_DL \
-            if dlc is not None and dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.DATA_BYTES_LONG_SF_DL
-        return frame_data_bytes_number - data_bytes_used_for_ai - data_bytes_used_for_sfdl_and_npci
+        CanAddressingFormat.validate_member(addressing_format)
+        ai_data_bytes = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
+        return CanDlcHandler.get_min_dlc(ai_data_bytes + cls.DATA_BYTES_FC)
 
-    @classmethod
-    def get_payload_length_first_frame(cls,  # TODO: get rid of it or transform to private
-                                       addressing_format: CanAddressingFormatTyping,
-                                       data_length: int,
-                                       dlc: int) -> int:
-        ...  # TODO
-
-    @classmethod
-    def get_max_payload_length_consecutive_frame(cls,  # TODO: get rid of it or transform to private
-                                                 addressing_format: CanAddressingFormatTyping,
-                                                 dlc: Optional[int] = None) -> int:
-        ...  # TODO
+    # @classmethod
+    # def get_payload_length(cls,
+    #                        addressing_format: CanAddressingFormatTyping,
+    #                        packet_type: CanPacketType,
+    #                        dlc: Optional[int] = None) -> int:
+    #     # TODO
+    #     ...
+    #
+    # @classmethod
+    # def get_max_payload_length_single_frame(cls,  # TODO: get rid of it or transform to private
+    #                                         addressing_format: CanAddressingFormatTyping,
+    #                                         dlc: Optional[int] = None) -> int:
+    #     """
+    #     Get maximal value of Single Frame Data Length (SF_DL) for a CAN packet.
+    #
+    #     :param addressing_format: CAN addressing format to use in considered CAN Packet.
+    #     :param dlc: Value of DLC value in a CAN frame.
+    #         Leave None to use maximal value.
+    #
+    #     :return: Maximal value of SF_DL that UDS Packet with provided Addressing Format and DLC can fit in.
+    #         If negative, then a greater value of DLC must be used.
+    #     """
+    #     frame_data_bytes_number = CanDlcHandler.MAX_DATA_BYTES_NUMBER if dlc is None else CanDlcHandler.decode(dlc)
+    #     data_bytes_used_for_ai = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
+    #     data_bytes_used_for_sfdl_and_npci = cls.DATA_BYTES_SHORT_SF_DL \
+    #         if dlc is not None and dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.DATA_BYTES_LONG_SF_DL
+    #     return frame_data_bytes_number - data_bytes_used_for_ai - data_bytes_used_for_sfdl_and_npci
+    #
+    # @classmethod
+    # def get_payload_length_first_frame(cls,  # TODO: get rid of it or transform to private
+    #                                    addressing_format: CanAddressingFormatTyping,
+    #                                    data_length: int,
+    #                                    dlc: int) -> int:
+    #     ...  # TODO
+    #
+    # @classmethod
+    # def get_max_payload_length_consecutive_frame(cls,  # TODO: get rid of it or transform to private
+    #                                              addressing_format: CanAddressingFormatTyping,
+    #                                              dlc: Optional[int] = None) -> int:
+    #     ...  # TODO
 
     @classmethod
     def validate_address_information(cls,
@@ -761,6 +932,39 @@ class CanPacket(AbstractUdsPacket):
             raise AmbiguityError(f"Cannot change CAN Addressing Format from {self.addressing_format} to "
                                  f"{addressing_format} as such operation provides ambiguity. "
                                  f"Create a new CAN Packet object instead.")
+
+    @staticmethod
+    def __validate_payload_length(payload_length: int) -> None:
+        """
+        Validate value of payload length.
+
+        :param payload_length: Value to validate.
+
+        :raise TypeError: Provided value is not int type.
+        :raise ValueError: Provided value is not a positive value.
+            NOTE: Maximum value is not verified as there are multiple factors that affects it.
+        """
+        if not isinstance(payload_length, int):
+            raise TypeError(f"Provided payload_length value is not int type. Actual type: {type(payload_length)}")
+        if payload_length <= 0:
+            raise ValueError(f"Provided payload_length value not a positive number. Expected: payload_length>0."
+                             f"Actual value: {payload_length}")
+
+    @classmethod
+    def __validate_ff_dl(cls, ff_dl: int) -> None:
+        """
+        Validate value of First Frame Data Length.
+
+        :param ff_dl: Value to validate.
+
+        :raise TypeError: Provided value is not int type.
+        :raise ValueError: Provided value is out of range.
+        """
+        if not isinstance(ff_dl, int):
+            raise TypeError(f"Provided ff_dl value is not int type. Actual type: {type(ff_dl)}")
+        if not 0 < ff_dl <= cls.MAX_LONG_FF_DL_VALUE:
+            raise ValueError(f"Provided ff_dl value is out of range. Expected: 0 < ff_dl < {cls.MAX_LONG_FF_DL_VALUE}."
+                             f"Actual value: {ff_dl}")
 
     def __validate_data(self,
                         packet_type: CanPacketTypeMemberTyping,

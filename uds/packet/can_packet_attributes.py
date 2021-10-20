@@ -127,17 +127,17 @@ class CanIdHandler:
     """Maximum value of 29-bit CAN ID."""
 
     NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET: int = 0x18DA0000
-    """Physical CAN ID value with Target Address and Source Address information erased.
-    CAN ID value is compatible with Normal Fixed Addressing format."""
+    """Minimum value of Physical CAN ID (with Target Address and Source Address information erased) that is compatible
+    with :ref:`Normal Fixed Addressing Format <knowledge-base-can-normal-fixed-addressing>.`"""
     NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18DB0000
-    """Functional CAN ID value with Target Address and Source Address information erased.
-    CAN ID value is compatible with Normal Fixed Addressing format."""
+    """Minimum value of Functional CAN ID (with Target Address and Source Address information erased) that is compatible
+    with :ref:`Normal Fixed Addressing Format <knowledge-base-can-normal-fixed-addressing>.`"""
     MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET: int = 0x18CE0000
-    """Physical CAN ID value with Target Address and Source Address information erased.
-    CAN ID value is compatible with Mixed Addressing 29-bit format."""
+    """Minimum value of Physical CAN ID (with Target Address and Source Address information erased) that is compatible
+    with :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
     MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18CD0000
-    """Functional CAN ID value with Target Address and Source Address information erased.
-    CAN ID value is compatible with Mixed 29-bit Addressing format."""
+    """Minimum value of Functional CAN ID (with Target Address and Source Address information erased) that is compatible
+    with :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
 
     NORMAL_FIXED_CAN_ID_INFO_TYPING = Tuple[AddressingType, RawByte, RawByte]
     """Typing alias of information carried by CAN ID in Normal Fixed Addressing format."""
@@ -435,10 +435,14 @@ class CanDlcHandler:
     __DATA_BYTES_NUMBER_MAPPING: Dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
     __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(__DLC_VALUES[9:])
 
-    MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)  # TODO: description
+    MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)
+    """Minimum number of data bytes in a CAN frame."""
     MAX_DATA_BYTES_NUMBER: int = max(__DATA_BYTES_NUMBERS)
+    """Maximum number of data bytes in a CAN frame."""
     MIN_DLC_VALUE: int = min(__DLC_VALUES)
+    """Minimum value of a CAN Frame DLC parameter."""
     MAX_DLC_VALUE: int = max(__DLC_VALUES)
+    """Maximum value of a CAN Frame DLC parameter."""
 
     @classmethod
     def decode(cls, dlc: int) -> int:
