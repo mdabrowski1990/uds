@@ -74,9 +74,9 @@ class CanPacket(AbstractUdsPacket):
     packets."""
 
     def __init__(self, *,
-                 addressing: AddressingTypeMemberTyping,
-                 addressing_format: CanAddressingFormatTyping,
                  packet_type: CanPacketTypeMemberTyping,
+                 addressing_format: CanAddressingFormatTyping,
+                 addressing: AddressingTypeMemberTyping,
                  can_id: Optional[int] = None,
                  target_address: Optional[RawByte] = None,
                  source_address: Optional[RawByte] = None,
@@ -87,9 +87,9 @@ class CanPacket(AbstractUdsPacket):
         """
         Create a storage for a single CAN packet.
 
-        :param addressing: Addressing type for which this CAN packet is relevant.
-        :param addressing_format: CAN addressing format that this CAN packet uses.
         :param packet_type: Type of this CAN packet.
+        :param addressing_format: CAN addressing format that this CAN packet uses.
+        :param addressing: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
             Leave None if other arguments unambiguously determine CAN ID value.
         :param target_address: Target Address value carried by this CAN Packet.
@@ -142,15 +142,15 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def get_can_frame_dlc(cls,
-                          addressing_format: CanAddressingFormatTyping,
                           packet_type: CanPacketType,
+                          addressing_format: CanAddressingFormatTyping,
                           payload_length: Optional[int] = None,
                           data_length: Optional[int] = None) -> int:
         """
         Get value of a CAN frame DLC that carries a CAN packet.
 
-        :param addressing_format: CAN addressing format used by considered CAN packet.
         :param packet_type: Type of considered CAN packet.
+        :param addressing_format: CAN addressing format used by considered CAN packet.
         :param payload_length: Number of payload bytes that considered CAN packet carries.
             This parameter is only used with Single Frame, First Frame and Consecutive Frame packet type,
             otherwise ignored.
@@ -182,8 +182,8 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def create_can_frame_data(cls, *,
-                              addressing_format: CanAddressingFormatTyping,
                               packet_type: CanPacketTypeMemberTyping,
+                              addressing_format: CanAddressingFormatTyping,
                               dlc: Optional[int] = None,
                               filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE,
                               target_address: Optional[RawByte] = None,
@@ -192,8 +192,8 @@ class CanPacket(AbstractUdsPacket):
         """
         Create data field of a CAN frame that carries a CAN packet.
 
-        :param addressing_format: CAN addressing format used by considered CAN packet.
         :param packet_type: Type of considered CAN packet.
+        :param addressing_format: CAN addressing format used by considered CAN packet.
         :param dlc: DLC value of a CAN frame that carries considered CAN Packet.
             Possible values:
              - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
@@ -201,11 +201,9 @@ class CanPacket(AbstractUdsPacket):
             You have to provide DLC value for packets of First Frame type.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param target_address: Target Address value carried by this CAN Packet.
-            The value must only be provide if provided `addressing_format` stores Target Address value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
-            The value must only be provide if provided `addressing_format` stores Address Extension value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Address Extension parameter.
         :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
             Possible parameters:
              - :parameter payload: (required for: SF, FF and CF)
@@ -221,18 +219,51 @@ class CanPacket(AbstractUdsPacket):
              - :parameter stmin: (optional for: FC)
                  Separation Time minimum information carried by considered Flow Control frame.
 
+        :raise NotImplementedError: A valid packet type was provided, but the implementation for it is missing.
+            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            whenever you see this error.
+
         :return: Raw bytes of CAN frame data for the provided CAN packet information.
         """
-        # TODO: tests and implementation
+        CanPacketType.validate_member(packet_type)
+        packet_type_instance = CanPacketType(packet_type)
+        if packet_type_instance == CanPacketType.SINGLE_FRAME:
+            return cls.create_can_frame_data_single_frame(addressing_format=addressing_format,
+                                                          dlc=dlc,
+                                                          filler_byte=filler_byte,
+                                                          target_address=target_address,
+                                                          address_extension=address_extension,
+                                                          **packet_type_specific_kwargs)
+        if packet_type_instance == CanPacketType.FIRST_FRAME:
+            return cls.create_can_frame_data_first_frame(addressing_format=addressing_format,
+                                                         dlc=dlc,
+                                                         target_address=target_address,
+                                                         address_extension=address_extension,
+                                                         **packet_type_specific_kwargs)
+        if packet_type_instance == CanPacketType.CONSECUTIVE_FRAME:
+            return cls.create_can_frame_data_consecutive_frame(addressing_format=addressing_format,
+                                                               dlc=dlc,
+                                                               filler_byte=filler_byte,
+                                                               target_address=target_address,
+                                                               address_extension=address_extension,
+                                                               **packet_type_specific_kwargs)
+        if packet_type_instance == CanPacketType.FLOW_CONTROL:
+            return cls.create_can_frame_data_flow_control(addressing_format=addressing_format,
+                                                          dlc=dlc,
+                                                          filler_byte=filler_byte,
+                                                          target_address=target_address,
+                                                          address_extension=address_extension,
+                                                          **packet_type_specific_kwargs)
+        raise NotImplementedError(f"Missing implementation for: {packet_type_instance}")
 
     @classmethod
     def validate_address_information(cls,
-                                     addressing: AddressingTypeMemberTyping,
                                      addressing_format: CanAddressingFormatTyping,
-                                     can_id: Optional[int],
-                                     target_address: Optional[RawByte],
-                                     source_address: Optional[RawByte],
-                                     address_extension: Optional[RawByte]) -> None:
+                                     addressing: AddressingTypeMemberTyping,
+                                     can_id: Optional[int] = None,
+                                     target_address: Optional[RawByte] = None,
+                                     source_address: Optional[RawByte] = None,
+                                     address_extension: Optional[RawByte] = None) -> None:
         """
         Validate addressing information arguments.
 
@@ -240,34 +271,62 @@ class CanPacket(AbstractUdsPacket):
         for :ref:`CAN Packet <knowledge-base-uds-can-packet>` to make sure that every required argument is provided
         and their values are consistent with provided :ref:`CAN Addressing Format <knowledge-base-can-addressing>`.
 
-        :param addressing: Addressing type value to validate.
         :param addressing_format: CAN addressing format value to validate.
+        :param addressing: Addressing type value to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
+
+        :raise NotImplementedError: A valid packet type was provided, but the implementation for it is missing.
+            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            whenever you see this error.
         """
         CanAddressingFormat.validate_member(addressing_format)
-        # TODO: rework - perform validation for certain addressing format
-        cls.__validate_ai_consistency(addressing=addressing,
-                                      addressing_format=addressing_format,
-                                      can_id=can_id,
-                                      target_address=target_address,
-                                      source_address=source_address,
-                                      address_extension=address_extension)
+        addressing_format_instance = CanAddressingFormat(addressing_format)
+        if addressing_format_instance == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
+            cls.__validate_ai_normal_11bit(addressing=addressing,
+                                           can_id=can_id,
+                                           target_address=target_address,
+                                           source_address=source_address,
+                                           address_extension=address_extension)
+        elif addressing_format_instance == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+            cls.__validate_ai_normal_fixed(addressing=addressing,
+                                           can_id=can_id,
+                                           target_address=target_address,
+                                           source_address=source_address,
+                                           address_extension=address_extension)
+        elif addressing_format_instance == CanAddressingFormat.EXTENDED_ADDRESSING:
+            cls.__validate_ai_extended(addressing=addressing,
+                                       can_id=can_id,
+                                       target_address=target_address,
+                                       source_address=source_address,
+                                       address_extension=address_extension)
+        elif addressing_format_instance == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+            cls.__validate_ai_mixed_11bit(addressing=addressing,
+                                          can_id=can_id,
+                                          target_address=target_address,
+                                          source_address=source_address,
+                                          address_extension=address_extension)
+        elif addressing_format_instance == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+            cls.__validate_ai_mixed_29bit(addressing=addressing,
+                                          can_id=can_id,
+                                          target_address=target_address,
+                                          source_address=source_address,
+                                          address_extension=address_extension)
+        else:
+            raise NotImplementedError(f"Missing implementation for: {addressing_format_instance}")
 
     @classmethod
-    def get_can_frame_dlc_single_frame(cls,
-                                       addressing_format: CanAddressingFormatTyping,
-                                       payload_length: int) -> int:
+    def get_can_frame_dlc_single_frame(cls, addressing_format: CanAddressingFormatTyping, payload_length: int) -> int:
         """
-        Get value of a CAN frame DLC that carries a Single Frame packet.
+        Get the value of a CAN frame DLC that carries a Single Frame packet.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
         :param payload_length: Number of payload bytes that considered CAN packet carries.
 
-        :raise TypeError: Provided value type does not match annotation.
-        :raise ValueError: Provided value is out of range.
+        :raise InconsistentArgumentsError: Provided values of `payload_length` and `addressing_format` represent data
+            that cannot fit into a Single Frame.
 
         :return: The lowest value of DLC that enables to fit in provided Single Frame packet data.
         """
@@ -289,14 +348,14 @@ class CanPacket(AbstractUdsPacket):
                                       data_length: int,
                                       payload_length: int) -> int:
         """
-        Get value of a CAN frame DLC that carries a First Frame packet.
+        Get the value of a CAN frame DLC that carries a First Frame packet.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
         :param data_length: Number of payload bytes of a diagnostic message initiated by considered First Frame.
         :param payload_length: Number of payload bytes that considered CAN packet carries.
 
-        :raise InconsistentArgumentsError: Payload length requires usage of DLC that is considered invalid for
-            First Frame packet type.
+        :raise InconsistentArgumentsError: Provided values of `payload_length` and `addressing_format` requires using
+            CAN Frame Data Padding or DLC value that is invalid for the First Frame packet type.
 
         :return: The exact value of DLC that enables to fit in provided First Frame packet data.
         """
@@ -333,7 +392,7 @@ class CanPacket(AbstractUdsPacket):
     @classmethod
     def get_can_frame_dlc_flow_control(cls, addressing_format: CanAddressingFormatTyping) -> int:
         """
-        Get value of a CAN frame DLC that carries a Flow Control packet.
+        Get the value of a CAN frame DLC that carries a Flow Control packet.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
 
@@ -362,15 +421,25 @@ class CanPacket(AbstractUdsPacket):
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param target_address: Target Address value carried by this CAN Packet.
-            The value must only be provide if provided `addressing_format` stores Target Address value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
-            The value must only be provide if provided `addressing_format` stores Address Extension value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Address Extension parameter.
 
         :return: Raw bytes of CAN frame data for the provided Single Frame packet information.
         """
-        # TODO: tests and implementation
+        cls.__validate_data_single_frame(addressing_format=addressing_format,
+                                         dlc=dlc,
+                                         payload=payload,
+                                         filler_byte=filler_byte)
+        ai_data_bytes = cls.__get_can_frame_data_beginning(addressing_format=addressing_format,
+                                                           target_address=target_address,
+                                                           address_extension=address_extension)
+        frame_dlc = dlc or cls.get_can_frame_dlc_single_frame(addressing_format=addressing_format,
+                                                              payload_length=len(payload))
+        data_bytes_number = CanDlcHandler.decode(frame_dlc)
+        frame_data_bytes = list(ai_data_bytes) + list(payload)
+        frame_data_bytes += (data_bytes_number - len(frame_data_bytes)) * [filler_byte]
+        return tuple(frame_data_bytes)
 
     @classmethod
     def create_can_frame_data_first_frame(cls,
@@ -388,11 +457,9 @@ class CanPacket(AbstractUdsPacket):
         :param dlc: DLC value of a CAN frame that carries considered CAN Packet.
         :param data_length: Number of payload bytes of a diagnostic message initiated by considered First Frame packet.
         :param target_address: Target Address value carried by this CAN Packet.
-            The value must only be provide if provided `addressing_format` stores Target Address value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
-            The value must only be provide if provided `addressing_format` stores Address Extension value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Address Extension parameter.
 
         :return: Raw bytes of CAN frame data for the provided First Frame packet information.
         """
@@ -404,6 +471,7 @@ class CanPacket(AbstractUdsPacket):
                                                 payload: RawBytes,
                                                 sequence_number: int,
                                                 dlc: Optional[int] = None,
+                                                filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE,
                                                 target_address: Optional[RawByte] = None,
                                                 address_extension: Optional[RawByte] = None) -> RawBytesTuple:
         """
@@ -416,12 +484,11 @@ class CanPacket(AbstractUdsPacket):
             Possible values:
              - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param target_address: Target Address value carried by this CAN Packet.
-            The value must only be provide if provided `addressing_format` stores Target Address value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
-            The value must only be provide if provided `addressing_format` stores Address Extension value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Address Extension parameter.
 
         :return: Raw bytes of CAN frame data for the provided Consecutive Frame packet information.
         """
@@ -434,6 +501,7 @@ class CanPacket(AbstractUdsPacket):
                                            block_size: Optional[RawByte] = None,
                                            stmin: Optional[RawByte] = None,
                                            dlc: Optional[int] = None,
+                                           filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE,
                                            target_address: Optional[RawByte] = None,
                                            address_extension: Optional[RawByte] = None) -> RawBytesTuple:
         """
@@ -447,12 +515,11 @@ class CanPacket(AbstractUdsPacket):
             Possible values:
              - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+        :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param target_address: Target Address value carried by this CAN Packet.
-            The value must only be provide if provided `addressing_format` stores Target Address value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
-            The value must only be provide if provided `addressing_format` stores Address Extension value in
-            the data field of a CAN frame.
+            The value must only be provided if `addressing_format` uses Address Extension parameter.
 
         :return: Raw bytes of CAN frame data for the provided Flow Control packet information.
         """
@@ -609,7 +676,7 @@ class CanPacket(AbstractUdsPacket):
         """
         self.__validate_data_single_frame(dlc=dlc,
                                           payload=payload,
-                                          filler_byte=filler_byte)
+                                          filler_byte=filler_byte)  # TODO: refine
         self.__raw_frame_data = self.create_can_frame_data_single_frame(addressing_format=self.addressing_format,
                                                                         target_address=self.target_address,
                                                                         address_extension=self.address_extension,
@@ -968,6 +1035,37 @@ class CanPacket(AbstractUdsPacket):
         """
         # TODO: implementation and tests
 
+    @staticmethod
+    def __get_can_frame_data_beginning(addressing_format: CanAddressingFormatTyping,
+                                       target_address: Optional[RawByte] = None,
+                                       address_extension: Optional[RawByte] = None) -> RawBytes:
+        """
+        Get the beginning of CAN frame data field.
+
+        :param addressing_format: CAN addressing format used by considered CAN packet.
+        :param target_address: Target Address value carried by this CAN Packet.
+            The value must only be provided if `addressing_format` uses Target Address parameter.
+        :param address_extension: Address Extension value carried by this CAN packet.
+            The value must only be provided if `addressing_format` uses Address Extension parameter.
+
+        :raise NotImplementedError: Valid arguments were provided, but the implementation is missing.
+
+        :return: The first bytes of CAN frame data field that are occupied by Addressing Information.
+        """
+        CanAddressingFormat.validate_member(addressing_format)
+        addressing_format_instance = CanAddressingFormat(addressing_format)
+        ai_data_bytes = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format_instance)
+        if ai_data_bytes == 0:
+            return []
+        if ai_data_bytes == 1:
+            if addressing_format_instance == CanAddressingFormat.EXTENDED_ADDRESSING:
+                validate_raw_byte(target_address)
+                return [target_address]
+            if addressing_format_instance == CanAddressingFormat.MIXED_11BIT_ADDRESSING \
+                    or addressing_format_instance == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+                validate_raw_byte(address_extension)
+                return [address_extension]
+        raise NotImplementedError("Missing implementation")
 
     # TODO: review whether the rest is needed
 
@@ -1051,41 +1149,43 @@ class CanPacket(AbstractUdsPacket):
         """
         can_addressing_format_instance = CanAddressingFormat(addressing_format)
         if can_addressing_format_instance == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
-            cls.__validate_ai_consistency_normal_11bit(can_id=can_id,
-                                                       target_address=target_address,
-                                                       source_address=source_address,
-                                                       address_extension=address_extension)
+            cls.__validate_ai_normal_11bit(can_id=can_id,
+                                           target_address=target_address,
+                                           source_address=source_address,
+                                           address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
-            cls.__validate_ai_consistency_normal_fixed(addressing=addressing,
-                                                       can_id=can_id,
-                                                       target_address=target_address,
-                                                       source_address=source_address,
-                                                       address_extension=address_extension)
+            cls.__validate_ai_normal_fixed(addressing=addressing,
+                                           can_id=can_id,
+                                           target_address=target_address,
+                                           source_address=source_address,
+                                           address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.EXTENDED_ADDRESSING:
-            cls.__validate_ai_consistency_extended(can_id=can_id,
-                                                   target_address=target_address,
-                                                   source_address=source_address,
-                                                   address_extension=address_extension)
+            cls.__validate_ai_extended(can_id=can_id,
+                                       target_address=target_address,
+                                       source_address=source_address,
+                                       address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
-            cls.__validate_ai_consistency_mixed_11bit(can_id=can_id,
-                                                      target_address=target_address,
-                                                      source_address=source_address,
-                                                      address_extension=address_extension)
+            cls.__validate_ai_mixed_11bit(can_id=can_id,
+                                          target_address=target_address,
+                                          source_address=source_address,
+                                          address_extension=address_extension)
         elif can_addressing_format_instance == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
-            cls.__validate_ai_consistency_mixed_29bit(addressing=addressing,
-                                                      can_id=can_id,
-                                                      target_address=target_address,
-                                                      source_address=source_address,
-                                                      address_extension=address_extension)
+            cls.__validate_ai_mixed_29bit(addressing=addressing,
+                                          can_id=can_id,
+                                          target_address=target_address,
+                                          source_address=source_address,
+                                          address_extension=address_extension)
         else:
             raise NotImplementedError(f"Unknown CAN Addressing Format value was provided: "
                                       f"{can_addressing_format_instance}")
 
     @staticmethod
-    def __validate_ai_consistency_normal_11bit(can_id: Optional[int],
-                                               target_address: Optional[RawByte],
-                                               source_address: Optional[RawByte],
-                                               address_extension: Optional[RawByte]) -> None:
+    def __validate_ai_normal_11bit(addressing: AddressingTypeMemberTyping,
+                                   can_id: Optional[int],
+                                   target_address: Optional[RawByte],
+                                   source_address: Optional[RawByte],
+                                   address_extension: Optional[RawByte]) -> None:
+        # TODO: update docstring (same for siblings)
         """
         Validate consistency of Address Information arguments when Normal 11-bit Addressing Format is used.
 
@@ -1098,6 +1198,7 @@ class CanPacket(AbstractUdsPacket):
             was provided.
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
         """
+        # TODO: refactor the code and test it (same for siblings)
         if (target_address, source_address, address_extension) != (None, None, None):
             raise UnusedArgumentError(f"Either target_address, source_address or address_extension argument was "
                                       f"provided for Normal 11-bit Addressing Format. Actual values: "
@@ -1109,11 +1210,11 @@ class CanPacket(AbstractUdsPacket):
                                              f"Normal 11-bit Addressing Format. Actual value: {can_id}")
 
     @staticmethod
-    def __validate_ai_consistency_normal_fixed(addressing: AddressingTypeMemberTyping,
-                                               can_id: Optional[int],
-                                               target_address: Optional[RawByte],
-                                               source_address: Optional[RawByte],
-                                               address_extension: Optional[RawByte]) -> None:
+    def __validate_ai_normal_fixed(addressing: AddressingTypeMemberTyping,
+                                   can_id: Optional[int],
+                                   target_address: Optional[RawByte],
+                                   source_address: Optional[RawByte],
+                                   address_extension: Optional[RawByte]) -> None:
         """
         Validate consistency of Address Information arguments when Normal Fixed Addressing Format is used.
 
@@ -1149,10 +1250,11 @@ class CanPacket(AbstractUdsPacket):
                                                  f"Normal Fixed Addressing Format. Actual value: {can_id}")
 
     @staticmethod
-    def __validate_ai_consistency_extended(can_id: Optional[int],
-                                           target_address: Optional[RawByte],
-                                           source_address: Optional[RawByte],
-                                           address_extension: Optional[RawByte]) -> None:
+    def __validate_ai_extended(addressing: AddressingTypeMemberTyping,
+                               can_id: Optional[int],
+                               target_address: Optional[RawByte],
+                               source_address: Optional[RawByte],
+                               address_extension: Optional[RawByte]) -> None:
         """
         Validate consistency of Address Information arguments when Extended Addressing Format is used.
 
@@ -1176,10 +1278,11 @@ class CanPacket(AbstractUdsPacket):
         validate_raw_byte(target_address)
 
     @staticmethod
-    def __validate_ai_consistency_mixed_11bit(can_id: Optional[int],
-                                              target_address: Optional[RawByte],
-                                              source_address: Optional[RawByte],
-                                              address_extension: Optional[RawByte]) -> None:
+    def __validate_ai_mixed_11bit(addressing: AddressingTypeMemberTyping,
+                                  can_id: Optional[int],
+                                  target_address: Optional[RawByte],
+                                  source_address: Optional[RawByte],
+                                  address_extension: Optional[RawByte]) -> None:
         """
         Validate consistency of Address Information arguments when Mixed 11-bit Addressing Format is used.
 
@@ -1203,11 +1306,11 @@ class CanPacket(AbstractUdsPacket):
         validate_raw_byte(address_extension)
 
     @staticmethod
-    def __validate_ai_consistency_mixed_29bit(addressing: AddressingTypeMemberTyping,
-                                              can_id: Optional[int],
-                                              target_address: Optional[RawByte],
-                                              source_address: Optional[RawByte],
-                                              address_extension: Optional[RawByte]) -> None:
+    def __validate_ai_mixed_29bit(addressing: AddressingTypeMemberTyping,
+                                  can_id: Optional[int],
+                                  target_address: Optional[RawByte],
+                                  source_address: Optional[RawByte],
+                                  address_extension: Optional[RawByte]) -> None:
         """
         Validate consistency of Address Information arguments when Mixed 29-bit Addressing Format is used.
 
@@ -1338,7 +1441,9 @@ class CanPacket(AbstractUdsPacket):
             self.__validate_data_flow_control(dlc=dlc, **packet_type_specific_kwargs)
         raise NotImplementedError(f"Unknown CAN Packet Type value was provided: {packet_type_instance}")
 
-    def __validate_data_single_frame(self, dlc: Optional[int], payload: RawBytes) -> None:
+    @classmethod
+    def __validate_data_single_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: Optional[int], payload: RawBytes, filler_byte: RawByte) -> None:
+        # TODO: update docstring and code
         """
         Validate data parameters of single frame packet.
 
@@ -1348,11 +1453,11 @@ class CanPacket(AbstractUdsPacket):
         :raise InconsistentArgumentsError: Value of payload is not compatible with values of other parameters.
         """
         validate_raw_bytes(payload)
-        required_dlc = self.get_can_frame_dlc_single_frame(addressing_format=self.addressing_format, payload_length=len(payload))
+        required_dlc = cls.get_can_frame_dlc_single_frame(addressing_format=addressing_format, payload_length=len(payload))
         current_dlc = dlc or CanDlcHandler.MAX_DLC_VALUE
         if current_dlc < required_dlc:
             raise InconsistentArgumentsError(f"Provided value of payload is not compatible with dlc and "
-                                             f"addressing_format values. Addressing format: {self.addressing_format}. "
+                                             f"addressing_format values. Addressing format: {addressing_format}. "
                                              f"DLC value: {current_dlc}. Actual payload length: {len(payload)}.")
 
     def __validate_data_first_frame(self, dlc: int, data_length: int, payload: RawBytes) -> None:
