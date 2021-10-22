@@ -1,6 +1,7 @@
 """Module with all common types (and its aliases) used in the package and helper functions for these types."""
 
-__all__ = ["RawByte", "RawBytes", "RawBytesTuple", "RawBytesSet", "validate_raw_byte", "validate_raw_bytes",
+__all__ = ["RawByte", "RawBytes", "RawBytesTuple", "RawBytesList", "RawBytesSet",
+           "validate_raw_byte", "validate_raw_bytes",
            "TimeMilliseconds", "TimeStamp"]
 
 from typing import Union, Tuple, List, Set, Any
@@ -12,7 +13,9 @@ RawBytesTuple = Tuple[RawByte, ...]
 """Typing alias of a tuple filled with byte values."""
 RawBytesSet = Set[RawByte]
 """Typing alias of a set filled with byte values."""
-RawBytes = Union[RawBytesTuple, List[RawByte]]
+RawBytesList = List[RawByte]
+"""Typing alias of a list filled with byte values."""
+RawBytes = Union[RawBytesTuple, RawBytesList]
 """Typing alias of a sequence filled with byte values."""
 TimeMilliseconds = Union[int, float]
 """Typing alias of an amount of time in milliseconds."""

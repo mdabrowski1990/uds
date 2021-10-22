@@ -437,6 +437,10 @@ class CanPacket(AbstractUdsPacket):
         frame_dlc = dlc or cls.get_can_frame_dlc_single_frame(addressing_format=addressing_format,
                                                               payload_length=len(payload))
         data_bytes_number = CanDlcHandler.decode(frame_dlc)
+        if dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL:
+            ...  # TODO: put single frame N_PCI and short SF_DL
+        else:
+            ...  # TODO: put single frame N_PCI and long SF_DL
         frame_data_bytes = list(ai_data_bytes) + list(payload)
         frame_data_bytes += (data_bytes_number - len(frame_data_bytes)) * [filler_byte]
         return tuple(frame_data_bytes)
@@ -463,6 +467,10 @@ class CanPacket(AbstractUdsPacket):
 
         :return: Raw bytes of CAN frame data for the provided First Frame packet information.
         """
+        cls.__validate_data_first_frame(addressing_format=addressing_format,
+                                        payload=payload,
+                                        dlc=dlc,
+                                        data_length=data_length)
         # TODO: tests and implementation
 
     @classmethod
@@ -1460,7 +1468,9 @@ class CanPacket(AbstractUdsPacket):
                                              f"addressing_format values. Addressing format: {addressing_format}. "
                                              f"DLC value: {current_dlc}. Actual payload length: {len(payload)}.")
 
-    def __validate_data_first_frame(self, dlc: int, data_length: int, payload: RawBytes) -> None:
+    @classmethod
+    def __validate_data_first_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: int, data_length: int, payload: RawBytes) -> None:
+        # TODO: update docstring and code
         """
         Validate data parameters of single frame packet.
 
@@ -1470,7 +1480,7 @@ class CanPacket(AbstractUdsPacket):
         :raise InconsistentArgumentsError: Value of payload is not compatible with values of other parameters.
         """
         validate_raw_bytes(payload)
-        required_dlc = self.get_can_frame_dlc_first_frame(addressing_format=self.addressing_format,
+        required_dlc = cls.get_can_frame_dlc_first_frame(addressing_format=addressing_format,
                                                           data_length=data_length,
                                                           payload_length=len(payload))
         if dlc != required_dlc:
@@ -1478,7 +1488,8 @@ class CanPacket(AbstractUdsPacket):
                                              f"addressing_format values. Expected dlc value: {required_dlc}. "
                                              f"Actual dlc: {dlc}")
 
-    def __validate_data_consecutive_frame(self, dlc: Optional[int], sequence_number: int, payload: RawBytes) -> None:
+    @classmethod
+    def __validate_data_consecutive_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: Optional[int], sequence_number: int, payload: RawBytes) -> None:
         """
         Validate data parameters of single frame packet.
 
@@ -1488,20 +1499,23 @@ class CanPacket(AbstractUdsPacket):
 
         :raise InconsistentArgumentsError: Value of payload is not compatible with values of other parameters.
         """
+        # TODO: update docstring and code
         validate_raw_bytes(payload)
         if not isinstance(sequence_number, int):
             raise TypeError(f"Provided sequence_number value is not int type. Actual type: {type(sequence_number)}")
-        if not self.MIN_SEQUENCE_NUMBER <= sequence_number <= self.MAX_SEQUENCE_NUMBER:
+        if not cls.MIN_SEQUENCE_NUMBER <= sequence_number <= cls.MAX_SEQUENCE_NUMBER:
             raise ValueError(f"Provided sequence_number sequence_number is out of range. "
                              f"Actual value: {sequence_number}")
-        required_dlc = self.get_can_frame_dlc_consecutive_frame(addressing_format=self.addressing_format,
+        required_dlc = cls.get_can_frame_dlc_consecutive_frame(addressing_format=addressing_format,
                                                                 payload_length=len(payload))
         if dlc < required_dlc:
             raise InconsistentArgumentsError(f"Provided value of dlc is not compatible with payload, and "
                                              f"addressing_format values. Expected dlc value: {required_dlc}. "
                                              f"Actual dlc: {dlc}")
 
-    def __validate_data_flow_control(self,
+    @classmethod
+    def __validate_data_flow_control(cls,
+                                     addressing_format: CanAddressingFormatTyping,
                                      dlc: Optional[int],
                                      flow_status: CanFlowStatusTyping,
                                      block_size: Optional[RawByte] = None,
@@ -1514,6 +1528,7 @@ class CanPacket(AbstractUdsPacket):
         :param block_size: Block Size value to validate.
         :param stmin: STmin value to validate.
         """
+        # TODO: update docstring and code
         CanFlowStatus.validate_member(flow_status)
         flow_status_instance = CanFlowStatus(flow_status)
         if flow_status_instance == CanFlowStatus.ContinueToSend:
@@ -1525,7 +1540,7 @@ class CanPacket(AbstractUdsPacket):
                                              f"Actual values: block_size={block_size}, stmin={stmin}")
         if dlc is not None:
             CanDlcHandler.validate_dlc(dlc)
-            minimum_dlc = self.get_can_frame_dlc_flow_control(addressing_format=self.addressing_format)
+            minimum_dlc = cls.get_can_frame_dlc_flow_control(addressing_format=addressing_format)
             if dlc < minimum_dlc:
                 raise InconsistentArgumentsError(f"Provided value of dlc is not compatible with flow status and "
                                                  f"addressing_format values. Minimum dlc value: {minimum_dlc}. "
