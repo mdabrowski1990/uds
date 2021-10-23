@@ -8,11 +8,12 @@ __all__ = ["AddressingType", "AddressingTypeMemberTyping"]
 
 from typing import Union
 
-from aenum import StrEnum
+from aenum import StrEnum, unique
 
 from uds.utilities import ValidatedEnum
 
 
+@unique
 class AddressingType(StrEnum, ValidatedEnum):
     """
     Addressing types values defined by UDS protocol.

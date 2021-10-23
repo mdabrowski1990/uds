@@ -86,8 +86,8 @@ class TestCanPacketClassMethods:
 
     @pytest.mark.parametrize("packet_type", [CanPacketType.FLOW_CONTROL, CanPacketType.FLOW_CONTROL.value])
     @patch(f"{SCRIPT_LOCATION}.CanPacket.get_can_frame_dlc_flow_control")
-    def test_get_can_frame_dlc__consecutive_frame(self, mock_get_can_frame_dlc_flow_control,
-                                                  example_can_addressing_format, packet_type):
+    def test_get_can_frame_dlc__flow_control(self, mock_get_can_frame_dlc_flow_control,
+                                             example_can_addressing_format, packet_type):
         assert CanPacket.get_can_frame_dlc(addressing_format=example_can_addressing_format,
                                            packet_type=packet_type) is mock_get_can_frame_dlc_flow_control.return_value
         mock_get_can_frame_dlc_flow_control.assert_called_once_with(addressing_format=example_can_addressing_format)
@@ -356,7 +356,7 @@ class TestCanPacketClassMethods:
         (100, 0),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_payload_length")
-    def test_get_single_frame_dlc__inconsistency_error(self, mock_validate_payload_length,
+    def test_get_can_frame_dlc_single_frame__inconsistency_error(self, mock_validate_payload_length,
                                                        example_can_addressing_format, payload_length, ai_bytes):
         self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
         with pytest.raises(InconsistentArgumentsError):
@@ -374,7 +374,7 @@ class TestCanPacketClassMethods:
     ])
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_payload_length")
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
-    def test_get_single_frame_dlc__short_dlc(self, mock_get_min_dlc, mock_validate_payload_length,
+    def test_get_can_frame_dlc_single_frame__short_dlc(self, mock_get_min_dlc, mock_validate_payload_length,
                                              example_can_addressing_format, payload_length, ai_bytes):
         self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
         assert CanPacket.get_can_frame_dlc_single_frame(addressing_format=example_can_addressing_format,
@@ -392,7 +392,7 @@ class TestCanPacketClassMethods:
     ])
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_payload_length")
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
-    def test_get_single_frame_dlc__long_dlc(self, mock_get_min_dlc, mock_validate_payload_length,
+    def test_get_can_frame_dlc_single_frame__long_dlc(self, mock_get_min_dlc, mock_validate_payload_length,
                                             example_can_addressing_format, payload_length, ai_bytes):
         self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
         assert CanPacket.get_can_frame_dlc_single_frame(addressing_format=example_can_addressing_format,
@@ -412,7 +412,7 @@ class TestCanPacketClassMethods:
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.encode")
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_ff_dl")
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_payload_length")
-    def test_get_first_frame_dlc__inconsistency_error(self, mock_validate_payload_length, mock_validate_ff_dl,
+    def test_get_can_frame_dlc_first_frame__inconsistency_error(self, mock_validate_payload_length, mock_validate_ff_dl,
                                                       mock_encode_dlc,
                                                       example_can_addressing_format, data_length, payload_length, dlc):
         mock_encode_dlc.return_value = dlc
@@ -434,7 +434,7 @@ class TestCanPacketClassMethods:
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.encode")
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_ff_dl")
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_payload_length")
-    def test_get_first_frame_dlc__valid(self, mock_validate_payload_length, mock_validate_ff_dl,
+    def test_get_can_frame_dlc_first_frame__valid(self, mock_validate_payload_length, mock_validate_ff_dl,
                                         mock_encode_dlc,
                                         example_can_addressing_format, data_length, payload_length, dlc):
         mock_encode_dlc.return_value = dlc
@@ -458,7 +458,7 @@ class TestCanPacketClassMethods:
     ])
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_payload_length")
-    def test_get_consecutive_frame_dlc(self, mock_validate_payload_length, mock_get_min_dlc,
+    def test_get_can_frame_dlc_consecutive_frame(self, mock_validate_payload_length, mock_get_min_dlc,
                                        example_can_addressing_format, payload_length, ai_bytes):
         self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
         assert CanPacket.get_can_frame_dlc_consecutive_frame(addressing_format=example_can_addressing_format,
@@ -472,7 +472,7 @@ class TestCanPacketClassMethods:
 
     @pytest.mark.parametrize("ai_bytes", [0, 1, 2, 3])
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
-    def test_get_consecutive_frame_dlc(self, mock_get_min_dlc, example_can_addressing_format, ai_bytes):
+    def test_get_can_frame_dlc_flow_control(self, mock_get_min_dlc, example_can_addressing_format, ai_bytes):
         self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes
         assert CanPacket.get_can_frame_dlc_flow_control(addressing_format=example_can_addressing_format) \
                == mock_get_min_dlc.return_value
@@ -516,6 +516,7 @@ class TestCanPacketClassMethods:
         mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
                                                                   target_address=target_address,
                                                                   address_extension=address_extension)
+        mock_get_can_frame_dlc_single_frame.assert_not_called()
         mock_decode_dlc.assert_called_once_with(dlc)
         assert isinstance(data, tuple)
         assert len(data) == data_bytes_number
@@ -563,45 +564,248 @@ class TestCanPacketClassMethods:
 
     # create_can_frame_data_first_frame
 
-    # TODO
-    # @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
-    #     (None, "TA", "AE"),
-    #     ("some addressing format", 0x9A, 0x0B),
-    # ])
-    # @pytest.mark.parametrize("payload, data_length, dlc, payload, data_bytes_number, ai_bytes", [
-    #
-    # ])
-    # @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode")
-    # @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__get_can_frame_data_beginning")
-    # @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_data_first_frame")
-    # def test_create_can_frame_data_first_frame__short_ff_dlc(self, mock_validate_data_first_frame,
-    #                                                          mock_get_can_frame_data_beginning,mock_decode_dlc,
-    #                                                          dlc, payload, data_length, data_bytes_number, ai_bytes,
-    #                                                          addressing_format, target_address, address_extension):
-    #     data = CanPacket.create_can_frame_data_first_frame(addressing_format=addressing_format,
-    #                                                        payload=payload,
-    #                                                        dlc=dlc,
-    #                                                        data_length=data_length,
-    #                                                        target_address=target_address,
-    #                                                        address_extension=address_extension)
-    #     mock_validate_data_first_frame.assert_called_once_with(addressing_format=addressing_format,
-    #                                                            dlc=dlc,
-    #                                                            payload=payload,
-    #                                                            data_length=data_length)
-    #     mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
-    #                                                               target_address=target_address,
-    #                                                               address_extension=address_extension)
-    #     mock_decode_dlc.assert_called_once_with(dlc)
-    #     assert isinstance(data, tuple)
-    #     assert len(data) == data_bytes_number
+    @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
+        (None, "TA", "AE"),
+        ("some addressing format", 0x9A, 0x0B),
+    ])
+    @pytest.mark.parametrize("dlc, data_length, payload, ai_bytes", [
+        (8, CanPacket.MAX_SHORT_FF_DL_VALUE, range(6), []),
+        (8, 15, range(5), [0xCC]),
+        (9, 8, range(6), [0xAA]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__get_can_frame_data_beginning")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_data_first_frame")
+    def test_create_can_frame_data_first_frame__short_ff_dl(self, mock_validate_data_first_frame,
+                                                            mock_get_can_frame_data_beginning,
+                                                            dlc, data_length, payload, ai_bytes,
+                                                            addressing_format, target_address, address_extension):
+        mock_get_can_frame_data_beginning.return_value = ai_bytes
+        data = CanPacket.create_can_frame_data_first_frame(addressing_format=addressing_format,
+                                                           payload=payload,
+                                                           dlc=dlc,
+                                                           data_length=data_length,
+                                                           target_address=target_address,
+                                                           address_extension=address_extension)
+        mock_validate_data_first_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                               dlc=dlc,
+                                                               payload=payload,
+                                                               data_length=data_length)
+        mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+        assert isinstance(data, tuple)
+        assert len(data) == len(ai_bytes) + len(payload) + CanPacket.SHORT_FF_DL_BYTES_USED
+
+    @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
+        (None, "TA", "AE"),
+        ("some addressing format", 0x9A, 0x0B),
+    ])
+    @pytest.mark.parametrize("dlc, data_length, payload, ai_bytes", [
+        (8, CanPacket.MAX_SHORT_FF_DL_VALUE + 1, [0x55], [0xAA]),
+        (15, CanPacket.MAX_LONG_FF_DL_VALUE, range(58), []),
+        (15, CanPacket.MAX_LONG_FF_DL_VALUE, range(57), [0x12]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__get_can_frame_data_beginning")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_data_first_frame")
+    def test_create_can_frame_data_first_frame__long_ff_dl(self, mock_validate_data_first_frame,
+                                                           mock_get_can_frame_data_beginning,
+                                                           dlc, data_length, payload, ai_bytes,
+                                                           addressing_format, target_address, address_extension):
+        mock_get_can_frame_data_beginning.return_value = ai_bytes
+        data = CanPacket.create_can_frame_data_first_frame(addressing_format=addressing_format,
+                                                           payload=payload,
+                                                           dlc=dlc,
+                                                           data_length=data_length,
+                                                           target_address=target_address,
+                                                           address_extension=address_extension)
+        mock_validate_data_first_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                               dlc=dlc,
+                                                               payload=payload,
+                                                               data_length=data_length)
+        mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+        assert isinstance(data, tuple)
+        assert len(data) == len(ai_bytes) + len(payload) + CanPacket.LONG_FF_DL_BYTES_USED
 
     # create_can_frame_data_consecutive_frame
 
-    # TODO
+    @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
+        (None, "TA", "AE"),
+        ("some addressing format", 0x9A, 0x0B),
+    ])
+    @pytest.mark.parametrize("dlc, data_bytes_number, payload, filler_byte, sequence_number", [
+        (8, 8, range(2), 0xBB, 0x5),
+        (4, 4, [0xFB], 0x00, 0xF),
+        (9, 9, range(7), 0x1F, 0x9),
+        (15, 64, range(20, 40), 0x00, 0xF),
+    ])
+    @pytest.mark.parametrize("ai_bytes", [[], [0xC1]])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_can_frame_dlc_consecutive_frame")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__get_can_frame_data_beginning")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_data_consecutive_frame")
+    def test_create_can_frame_data_consecutive_frame__dlc(self, mock_validate_data_consecutive_frame,
+                                                          mock_get_can_frame_data_beginning,
+                                                          mock_get_can_frame_dlc_consecutive_frame, mock_decode_dlc,
+                                                          dlc, data_bytes_number, payload, filler_byte, sequence_number,
+                                                          addressing_format, target_address, address_extension, ai_bytes):
+        mock_decode_dlc.return_value = data_bytes_number
+        mock_get_can_frame_data_beginning.return_value = ai_bytes
+        data = CanPacket.create_can_frame_data_consecutive_frame(addressing_format=addressing_format,
+                                                                 payload=payload,
+                                                                 dlc=dlc,
+                                                                 sequence_number=sequence_number,
+                                                                 filler_byte=filler_byte,
+                                                                 target_address=target_address,
+                                                                 address_extension=address_extension)
+        mock_validate_data_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                                     dlc=dlc,
+                                                                     sequence_number=sequence_number,
+                                                                     payload=payload,
+                                                                     filler_byte=filler_byte)
+        mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+        mock_get_can_frame_dlc_consecutive_frame.assert_not_called()
+        mock_decode_dlc.assert_called_once_with(dlc)
+        assert isinstance(data, tuple)
+        assert len(data) == data_bytes_number
+
+    @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
+        (None, "TA", "AE"),
+        ("some addressing format", 0x9A, 0x0B),
+    ])
+    @pytest.mark.parametrize("dlc, data_bytes_number, payload, filler_byte, sequence_number", [
+        (8, 8, range(2), 0xBB, 0x5),
+        (4, 4, [0xFB], 0x00, 0xF),
+        (9, 9, range(7), 0x1F, 0x9),
+        (15, 64, range(20, 40), 0x00, 0xF),
+    ])
+    @pytest.mark.parametrize("ai_bytes", [[], [0xC1]])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_can_frame_dlc_consecutive_frame")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__get_can_frame_data_beginning")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_data_consecutive_frame")
+    def test_create_can_frame_data_consecutive_frame__no_dlc(self, mock_validate_data_consecutive_frame,
+                                                             mock_get_can_frame_data_beginning,
+                                                             mock_get_can_frame_dlc_consecutive_frame, mock_decode_dlc,
+                                                             dlc, data_bytes_number, payload, filler_byte, sequence_number,
+                                                             addressing_format, target_address, address_extension, ai_bytes):
+        mock_decode_dlc.return_value = data_bytes_number
+        mock_get_can_frame_data_beginning.return_value = ai_bytes
+        mock_get_can_frame_dlc_consecutive_frame.return_value = dlc
+        data = CanPacket.create_can_frame_data_consecutive_frame(addressing_format=addressing_format,
+                                                                 payload=payload,
+                                                                 dlc=None,
+                                                                 sequence_number=sequence_number,
+                                                                 filler_byte=filler_byte,
+                                                                 target_address=target_address,
+                                                                 address_extension=address_extension)
+        mock_validate_data_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                                     dlc=None,
+                                                                     sequence_number=sequence_number,
+                                                                     payload=payload,
+                                                                     filler_byte=filler_byte)
+        mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+        mock_get_can_frame_dlc_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                                         payload_length=len(payload))
+        mock_decode_dlc.assert_called_once_with(dlc)
+        assert isinstance(data, tuple)
+        assert len(data) == data_bytes_number
 
     # create_can_frame_data_flow_control
 
-    # TODO
+    @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
+        (None, "TA", "AE"),
+        ("some addressing format", 0x9A, 0x0B),
+    ])
+    @pytest.mark.parametrize("dlc, data_bytes_number, filler_byte, flow_status, block_size, stmin", [
+        (8, 8, 0x12, CanFlowStatus.ContinueToSend.value, 0x55, 0x33),
+        (4, 4, 0xAA, CanFlowStatus.Overflow, None, None),
+        (9, 9, 0x55, CanFlowStatus.Wait, None, None),
+        (15, 64, 0x66, CanFlowStatus.Overflow, "something", "else"),
+    ])
+    @pytest.mark.parametrize("ai_bytes", [[], [0xC1]])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_can_frame_dlc_flow_control")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__get_can_frame_data_beginning")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_data_flow_control")
+    def test_create_can_frame_data_consecutive_frame__dlc(self, mock_validate_data_flow_control,
+                                                          mock_get_can_frame_data_beginning,
+                                                          mock_get_can_frame_dlc_flow_control, mock_decode_dlc,
+                                                          dlc, data_bytes_number, filler_byte, flow_status, block_size, stmin,
+                                                          addressing_format, target_address, address_extension, ai_bytes):
+        mock_decode_dlc.return_value = data_bytes_number
+        mock_get_can_frame_data_beginning.return_value = ai_bytes
+        data = CanPacket.create_can_frame_data_flow_control(addressing_format=addressing_format,
+                                                            dlc=dlc,
+                                                            flow_status=flow_status,
+                                                            block_size=block_size,
+                                                            stmin=stmin,
+                                                            filler_byte=filler_byte,
+                                                            target_address=target_address,
+                                                            address_extension=address_extension)
+        mock_validate_data_flow_control.assert_called_once_with(addressing_format=addressing_format,
+                                                                dlc=dlc,
+                                                                flow_status=flow_status,
+                                                                block_size=block_size,
+                                                                stmin=stmin,
+                                                                filler_byte=filler_byte)
+        mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+        mock_get_can_frame_dlc_flow_control.assert_not_called()
+        mock_decode_dlc.assert_called_once_with(dlc)
+        assert isinstance(data, tuple)
+        assert len(data) == data_bytes_number
+
+    @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
+        (None, "TA", "AE"),
+        ("some addressing format", 0x9A, 0x0B),
+    ])
+    @pytest.mark.parametrize("dlc, data_bytes_number, filler_byte, flow_status, block_size, stmin", [
+        (8, 8, 0x12, CanFlowStatus.ContinueToSend.value, 0x55, 0x33),
+        (4, 4, 0xAA, CanFlowStatus.Overflow, None, None),
+        (9, 9, 0x55, CanFlowStatus.Wait, None, None),
+        (15, 64, 0x66, CanFlowStatus.Overflow, "something", "else"),
+    ])
+    @pytest.mark.parametrize("ai_bytes", [[], [0xC1]])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket.get_can_frame_dlc_flow_control")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__get_can_frame_data_beginning")
+    @patch(f"{SCRIPT_LOCATION}.CanPacket._CanPacket__validate_data_flow_control")
+    def test_create_can_frame_data_consecutive_frame__no_dlc(self, mock_validate_data_flow_control,
+                                                             mock_get_can_frame_data_beginning,
+                                                             mock_get_can_frame_dlc_flow_control, mock_decode_dlc,
+                                                             dlc, data_bytes_number, filler_byte, flow_status, block_size, stmin,
+                                                             addressing_format, target_address, address_extension, ai_bytes):
+        mock_decode_dlc.return_value = data_bytes_number
+        mock_get_can_frame_data_beginning.return_value = ai_bytes
+        mock_get_can_frame_dlc_flow_control.return_value = dlc
+        data = CanPacket.create_can_frame_data_flow_control(addressing_format=addressing_format,
+                                                            dlc=None,
+                                                            flow_status=flow_status,
+                                                            block_size=block_size,
+                                                            stmin=stmin,
+                                                            filler_byte=filler_byte,
+                                                            target_address=target_address,
+                                                            address_extension=address_extension)
+        mock_validate_data_flow_control.assert_called_once_with(addressing_format=addressing_format,
+                                                                dlc=None,
+                                                                flow_status=flow_status,
+                                                                block_size=block_size,
+                                                                stmin=stmin,
+                                                                filler_byte=filler_byte)
+        mock_get_can_frame_data_beginning.assert_called_once_with(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+        mock_get_can_frame_dlc_flow_control.assert_called_once_with(addressing_format=addressing_format)
+        mock_decode_dlc.assert_called_once_with(dlc)
+        assert isinstance(data, tuple)
+        assert len(data) == data_bytes_number
 
     # __get_can_frame_data_beginning
 
@@ -2218,3 +2422,151 @@ class TestPacketIntegration:
     # TODO: tests for validate_address_information
     # TODO: tests for CanPacket.__init__
 
+    # create_can_frame_data
+
+    @pytest.mark.parametrize("kwargs, expected_can_frame_data", [
+        # Single Frame
+        ({"packet_type": CanPacketType.SINGLE_FRAME,
+          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "payload": list(range(1, 8))},
+         (0x07, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07)),
+        ({"packet_type": CanPacketType.SINGLE_FRAME.value,
+          "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING.value,
+          "payload": [0xF0, 0xE1, 0xD2],
+          "target_address": 0x00,
+          "address_extension": 0xCD},
+         (0xCD, 0x03, 0xF0, 0xE1, 0xD2)),
+        ({"packet_type": CanPacketType.SINGLE_FRAME,
+          "addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING.value,
+          "payload": tuple(range(100, 132)),
+          "target_address": 0xAF},
+         tuple([0xAF, 0x00, 0x20] + list(range(100, 132)) + [DEFAULT_FILLER_BYTE]*13)),
+        ({"packet_type": CanPacketType.SINGLE_FRAME,
+          "addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value,
+          "payload": [0xB4, 0xC2, 0xE8],
+          "dlc": 0xF,
+          "filler_byte": 0x67,
+          "target_address": 0xFE},
+         tuple([0x00, 0x03, 0xB4, 0xC2, 0xE8] + [0x67] * 59)),
+        # First Frame
+        ({"packet_type": CanPacketType.FIRST_FRAME,
+          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "payload": (0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54),
+          "dlc": 8,
+          "data_length": 0x175
+          }, (0x11, 0x75, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54)),
+        ({"packet_type": CanPacketType.FIRST_FRAME.value,
+          "addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING.value,
+          "payload": [0x67],
+          "dlc": 8,
+          "data_length": 0x380B21FC,
+          "address_extension": 0xA1
+          }, (0xA1, 0x10, 0x00, 0x38, 0x0B, 0x21, 0xFC, 0x67)),
+        ({"packet_type": CanPacketType.FIRST_FRAME,
+          "addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+          "payload": list(range(120, 182)),
+          "dlc": 15,
+          "data_length": 0x987,
+          "target_address": 0x55,
+          }, tuple([0x19, 0x87] + list(range(120, 182)))),
+        # Consecutive Frame
+        ({"packet_type": CanPacketType.CONSECUTIVE_FRAME,
+          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "payload": [0x9B],
+          "sequence_number": 0x1
+          }, (0x21, 0x9B)),
+        ({"packet_type": CanPacketType.CONSECUTIVE_FRAME.value,
+          "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING.value,
+          "payload": [0x9B, 0x8C],
+          "dlc": 8,
+          "sequence_number": 0x0,
+          "target_address": 0x12,
+          "address_extension": 0x34,
+          }, (0x34, 0x20, 0x9B, 0x8C, 0xCC, 0xCC, 0xCC, 0xCC)),
+        ({"packet_type": CanPacketType.CONSECUTIVE_FRAME.value,
+          "addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING.value,
+          "payload": tuple(range(5, 35)),
+          "dlc": 0xE,
+          "sequence_number": 0xF,
+          "target_address": 0xFF,
+          "filler_byte": 0x54,
+          }, tuple([0xFF, 0x2F] + list(range(5, 35)) + [0x54]*16)),
+        # Flow Control
+        ({"packet_type": CanPacketType.FLOW_CONTROL,
+          "addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+          "flow_status": CanFlowStatus.ContinueToSend,
+          "block_size": 0x09,
+          "stmin": 0xAB,
+          "target_address": 0xFA},
+         (0x30, 0x09, 0xAB)),
+        ({"packet_type": CanPacketType.FLOW_CONTROL.value,
+          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING.value,
+          "flow_status": CanFlowStatus.Overflow.value},
+         (0x32, 0xCC, 0xCC)),
+        ({"packet_type": CanPacketType.FLOW_CONTROL.value,
+          "addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING.value,
+          "flow_status": CanFlowStatus.Overflow.value,
+          "dlc": 8,
+          "filler_byte": 0x66,
+          "address_extension": 0x9E},
+         (0x9E, 0x32, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66)),
+    ])
+    def test_create_can_frame_data__valid(self, kwargs, expected_can_frame_data):
+        assert CanPacket.create_can_frame_data(**kwargs) == expected_can_frame_data
+
+    @pytest.mark.parametrize("kwargs", [
+        # Single Frame
+        {"packet_type": CanPacketType.SINGLE_FRAME,
+         "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "dlc": 8,
+         "payload": list(range(8))},
+        {"packet_type": CanPacketType.SINGLE_FRAME,
+         "addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+         "dlc": 4,
+         "payload": [0x12, 0x34, 0x56],
+         "target_address": 0x01},
+        {"packet_type": CanPacketType.SINGLE_FRAME,
+         "addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         "payload": list(range(62)),
+         "address_extension": 0xFF},
+        # First Frame
+        {"packet_type": CanPacketType.FIRST_FRAME,
+         "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "dlc": 7,
+         "payload": list(range(5)),
+         "data_length": 0x123},
+        {"packet_type": CanPacketType.FIRST_FRAME,
+         "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "dlc": 8,
+         "payload": list(range(5)),
+         "data_length": 0x123},
+        {"packet_type": CanPacketType.FIRST_FRAME,
+         "addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+         "dlc": 15,
+         "payload": list(range(58)),
+         "data_length": 0x1000,
+         "target_address": 0x01},
+        # Consecutive Frame
+        {"packet_type": CanPacketType.CONSECUTIVE_FRAME,
+         "addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+         "payload": tuple(range(5, 52)),
+         "dlc": 0xE,
+         "sequence_number": 0xF,
+         "target_address": 0xFF,
+         "filler_byte": 0x54},
+        # Flow Control
+        {"packet_type": CanPacketType.FLOW_CONTROL,
+         "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "flow_status": CanFlowStatus.Overflow,
+         "dlc": 2},
+        {"packet_type": CanPacketType.FLOW_CONTROL,
+         "addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         "flow_status": CanFlowStatus.ContinueToSend,
+         "block_size": 0x09,
+         "stmin": 0xAB,
+         "dlc": 3,
+         "address_extension": 0xFA},
+    ])
+    def test_create_can_frame_data__invalid(self, kwargs):
+        with pytest.raises(ValueError):
+            CanPacket.create_can_frame_data(**kwargs)

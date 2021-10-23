@@ -14,7 +14,8 @@ from typing import Optional, Any
 from warnings import warn
 
 from uds.transmission_attributes import AddressingType, AddressingTypeMemberTyping
-from uds.utilities import RawByte, RawBytes, RawBytesTuple, validate_raw_byte, validate_raw_bytes, \
+from uds.utilities import RawByte, RawBytes, RawBytesTuple, RawBytesList, validate_raw_byte, validate_raw_bytes, \
+    int_to_bytes_list, \
     InconsistentArgumentsError, AmbiguityError, UnusedArgumentError, UnusedArgumentWarning
 
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord
@@ -121,6 +122,7 @@ class CanPacket(AbstractUdsPacket):
              - :parameter stmin: (optional for: FC)
                  Separation Time minimum information carried by this Flow Control frame.
         """
+        # TODO: get rid of it (leave only necessary assignments)
         self.__raw_frame_data: RawBytesTuple = None  # type: ignore
         self.__addressing: AddressingType = None  # type: ignore
         self.__addressing_format: CanAddressingFormat = None  # type: ignore
@@ -333,10 +335,10 @@ class CanPacket(AbstractUdsPacket):
         CanAddressingFormat.validate_member(addressing_format)
         cls.__validate_payload_length(payload_length)
         ai_data_bytes = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
-        data_bytes_number_short_dlc = ai_data_bytes + payload_length + cls.SHORT_SF_DL_BYTES_USED
+        data_bytes_number_short_dlc = ai_data_bytes + cls.SHORT_SF_DL_BYTES_USED + payload_length
         if data_bytes_number_short_dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL:
             return CanDlcHandler.get_min_dlc(data_bytes_number_short_dlc)
-        data_bytes_number_long_dlc = ai_data_bytes + payload_length + cls.LONG_SF_DL_BYTES_USED
+        data_bytes_number_long_dlc = ai_data_bytes + cls.LONG_SF_DL_BYTES_USED + payload_length
         if data_bytes_number_long_dlc <= CanDlcHandler.MAX_DATA_BYTES_NUMBER:
             return CanDlcHandler.get_min_dlc(data_bytes_number_long_dlc)
         raise InconsistentArgumentsError(f"Provided payload_length cannot fit into a Single Frame when "
@@ -434,15 +436,16 @@ class CanPacket(AbstractUdsPacket):
         ai_data_bytes = cls.__get_can_frame_data_beginning(addressing_format=addressing_format,
                                                            target_address=target_address,
                                                            address_extension=address_extension)
+        payload_length = len(payload)
         frame_dlc = dlc or cls.get_can_frame_dlc_single_frame(addressing_format=addressing_format,
-                                                              payload_length=len(payload))
+                                                              payload_length=payload_length)
         data_bytes_number = CanDlcHandler.decode(frame_dlc)
-        if dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL:
-            ...  # TODO: put single frame N_PCI and short SF_DL
-        else:
-            ...  # TODO: put single frame N_PCI and long SF_DL
-        frame_data_bytes = list(ai_data_bytes) + list(payload)
-        frame_data_bytes += (data_bytes_number - len(frame_data_bytes)) * [filler_byte]
+        sf_dl_bytes = int_to_bytes_list(int_value=payload_length,
+                                        list_size=cls.SHORT_SF_DL_BYTES_USED
+                                        if frame_dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.LONG_SF_DL_BYTES_USED)
+        sf_dl_bytes[0] += (CanPacketType.SINGLE_FRAME.value << 4)
+        frame_data_bytes = list(ai_data_bytes) + list(sf_dl_bytes) + list(payload)
+        frame_data_bytes += (data_bytes_number - len(frame_data_bytes)) * [filler_byte]  # CAN Frame Data Padding
         return tuple(frame_data_bytes)
 
     @classmethod
@@ -471,7 +474,15 @@ class CanPacket(AbstractUdsPacket):
                                         payload=payload,
                                         dlc=dlc,
                                         data_length=data_length)
-        # TODO: tests and implementation
+        ai_data_bytes = cls.__get_can_frame_data_beginning(addressing_format=addressing_format,
+                                                           target_address=target_address,
+                                                           address_extension=address_extension)
+        ff_dl_bytes = int_to_bytes_list(int_value=data_length,
+                                        list_size=cls.SHORT_FF_DL_BYTES_USED
+                                        if data_length <= cls.MAX_SHORT_FF_DL_VALUE else cls.LONG_FF_DL_BYTES_USED)
+        ff_dl_bytes[0] += (CanPacketType.FIRST_FRAME.value << 4)
+        frame_data_bytes = list(ai_data_bytes) + list(ff_dl_bytes) + list(payload)
+        return tuple(frame_data_bytes)
 
     @classmethod
     def create_can_frame_data_consecutive_frame(cls,
@@ -500,7 +511,22 @@ class CanPacket(AbstractUdsPacket):
 
         :return: Raw bytes of CAN frame data for the provided Consecutive Frame packet information.
         """
-        # TODO: tests and implementation
+        cls.__validate_data_consecutive_frame(addressing_format=addressing_format,
+                                              payload=payload,
+                                              dlc=dlc,
+                                              sequence_number=sequence_number,
+                                              filler_byte=filler_byte)
+        ai_data_bytes = cls.__get_can_frame_data_beginning(addressing_format=addressing_format,
+                                                           target_address=target_address,
+                                                           address_extension=address_extension)
+        payload_length = len(payload)
+        frame_dlc = dlc or cls.get_can_frame_dlc_consecutive_frame(addressing_format=addressing_format,
+                                                                   payload_length=payload_length)
+        data_bytes_number = CanDlcHandler.decode(frame_dlc)
+        sn_byte = (CanPacketType.CONSECUTIVE_FRAME.value << 4) + sequence_number
+        frame_data_bytes = list(ai_data_bytes) + [sn_byte] + list(payload)
+        frame_data_bytes += (data_bytes_number - len(frame_data_bytes)) * [filler_byte]  # CAN Frame Data Padding
+        return tuple(frame_data_bytes)
 
     @classmethod
     def create_can_frame_data_flow_control(cls,
@@ -531,7 +557,26 @@ class CanPacket(AbstractUdsPacket):
 
         :return: Raw bytes of CAN frame data for the provided Flow Control packet information.
         """
-        # TODO: tests and implementation
+        cls.__validate_data_flow_control(addressing_format=addressing_format,
+                                         dlc=dlc,
+                                         flow_status=flow_status,
+                                         block_size=block_size,
+                                         stmin=stmin,
+                                         filler_byte=filler_byte)
+        ai_data_bytes = cls.__get_can_frame_data_beginning(addressing_format=addressing_format,
+                                                           target_address=target_address,
+                                                           address_extension=address_extension)
+        frame_dlc = dlc or cls.get_can_frame_dlc_flow_control(addressing_format=addressing_format)
+        data_bytes_number = CanDlcHandler.decode(frame_dlc)
+        flow_status_instance = CanFlowStatus(flow_status)
+        fs_bytes = [(CanPacketType.FLOW_CONTROL.value << 4) + flow_status_instance.value]
+        if flow_status_instance == CanFlowStatus.ContinueToSend:
+            fs_bytes.extend([block_size, stmin])
+        else:
+            fs_bytes.extend([filler_byte, filler_byte])
+        frame_data_bytes = list(ai_data_bytes) + fs_bytes
+        frame_data_bytes += (data_bytes_number - len(frame_data_bytes)) * [filler_byte]  # CAN Frame Data Padding
+        return tuple(frame_data_bytes)
 
     def set_address_information(self, *,
                                 addressing: AddressingTypeMemberTyping,
@@ -1046,7 +1091,7 @@ class CanPacket(AbstractUdsPacket):
     @staticmethod
     def __get_can_frame_data_beginning(addressing_format: CanAddressingFormatTyping,
                                        target_address: Optional[RawByte] = None,
-                                       address_extension: Optional[RawByte] = None) -> RawBytes:
+                                       address_extension: Optional[RawByte] = None) -> RawBytesList:
         """
         Get the beginning of CAN frame data field.
 
@@ -1489,7 +1534,7 @@ class CanPacket(AbstractUdsPacket):
                                              f"Actual dlc: {dlc}")
 
     @classmethod
-    def __validate_data_consecutive_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: Optional[int], sequence_number: int, payload: RawBytes) -> None:
+    def __validate_data_consecutive_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: Optional[int], sequence_number: int, payload: RawBytes, filler_byte: RawByte) -> None:
         """
         Validate data parameters of single frame packet.
 
@@ -1508,16 +1553,17 @@ class CanPacket(AbstractUdsPacket):
                              f"Actual value: {sequence_number}")
         required_dlc = cls.get_can_frame_dlc_consecutive_frame(addressing_format=addressing_format,
                                                                 payload_length=len(payload))
-        if dlc < required_dlc:
-            raise InconsistentArgumentsError(f"Provided value of dlc is not compatible with payload, and "
-                                             f"addressing_format values. Expected dlc value: {required_dlc}. "
-                                             f"Actual dlc: {dlc}")
+        # if dlc < required_dlc:
+        #     raise InconsistentArgumentsError(f"Provided value of dlc is not compatible with payload, and "
+        #                                      f"addressing_format values. Expected dlc value: {required_dlc}. "
+        #                                      f"Actual dlc: {dlc}")
 
     @classmethod
     def __validate_data_flow_control(cls,
                                      addressing_format: CanAddressingFormatTyping,
                                      dlc: Optional[int],
                                      flow_status: CanFlowStatusTyping,
+                                     filler_byte: RawByte,
                                      block_size: Optional[RawByte] = None,
                                      stmin: Optional[RawByte] = None) -> None:
         """
