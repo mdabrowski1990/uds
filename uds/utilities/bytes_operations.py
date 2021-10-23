@@ -1,4 +1,4 @@
-"""Module with bytes list operations."""
+"""Module with bytes list operations implementation."""
 
 __all__ = ["Endianness", "EndiannessMemberTyping", "bytes_list_to_int", "int_to_bytes_list"]
 
@@ -14,13 +14,13 @@ from .custom_exceptions import InconsistentArgumentsError
 
 class Endianness(StrEnum, ValidatedEnum):
     """
-    Enum with bytes Endianness definitions.
+    Endianness values definitions.
 
-    `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ defines order of bytes.
+    `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
     """
 
     LITTLE_ENDIAN = "Little Endian"
-    """Little Endian stores the most significant byte the largest memory address and the least significant byte 
+    """Little Endian stores the most significant byte at the largest memory address and the least significant byte 
     at the smallest."""
     BIG_ENDIAN = "Big Endian"
     """Big Endian stores the most significant byte at the smallest memory address and the least significant byte 
@@ -66,7 +66,7 @@ def int_to_bytes_list(int_value: int,
 
     :raise TypeError: At least one provided value has invalid type.
     :raise ValueError: At least one provided value is out of range.
-    :raise InconsistentArgumentsError: Provided value of `list_size` is too small to contain all `int_value` bytes.
+    :raise InconsistentArgumentsError: Provided value of `list_size` is too small to contain entire `int_value`.
     :raise NotImplementedError: A valid endianness was provided, but the implementation for it is missing.
         Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
         whenever you see this error.
