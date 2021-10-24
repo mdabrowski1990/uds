@@ -657,7 +657,7 @@ class CanPacket(AbstractUdsPacket):
                         filler_byte: RawByte = DEFAULT_FILLER_BYTE,
                         **packet_type_specific_kwargs: Any) -> None:
         """
-        Change packet type and data field for this CAN packet.
+        Change packet type and data field of this CAN packet.
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
@@ -714,7 +714,7 @@ class CanPacket(AbstractUdsPacket):
                               dlc: Optional[int] = None,
                               filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
         """
-        Change packet type (to Single Frame) and data field for this CAN packet.
+        Change packet type (to Single Frame) and data field of this CAN packet.
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
@@ -727,14 +727,15 @@ class CanPacket(AbstractUdsPacket):
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
-        self.__validate_data_single_frame(dlc=dlc,
+        self.__validate_data_single_frame(addressing_format=self.addressing_format,
                                           payload=payload,
-                                          filler_byte=filler_byte)  # TODO: refine
+                                          dlc=dlc,
+                                          filler_byte=filler_byte)
         self.__raw_frame_data = self.create_can_frame_data_single_frame(addressing_format=self.addressing_format,
                                                                         target_address=self.target_address,
                                                                         address_extension=self.address_extension,
-                                                                        dlc=dlc,
                                                                         payload=payload,
+                                                                        dlc=dlc,
                                                                         filler_byte=filler_byte)
         self.__dlc = dlc or self.get_can_frame_dlc_single_frame(addressing_format=self.addressing_format,
                                                                 payload_length=len(payload))
@@ -745,7 +746,7 @@ class CanPacket(AbstractUdsPacket):
                              payload: RawBytes,
                              data_length: int) -> None:
         """
-        Change packet type (to First Frame) and data field for this CAN packet.
+        Change packet type (to First Frame) and data field of this CAN packet.
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
@@ -755,13 +756,16 @@ class CanPacket(AbstractUdsPacket):
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param data_length: Number of payload bytes of a diagnostic message initiated by this First Frame packet.
         """
-        self.__validate_data_first_frame(dlc=dlc,
+        self.__validate_data_first_frame(addressing_format=self.addressing_format,
                                          payload=payload,
-                                         data_length=data_length)
+                                         data_length=data_length,
+                                         dlc=dlc)
         self.__raw_frame_data = self.create_can_frame_data_first_frame(addressing_format=self.addressing_format,
-                                                                       dlc=dlc,
+                                                                       target_address=self.target_address,
+                                                                       address_extension=self.address_extension,
                                                                        payload=payload,
-                                                                       data_length=data_length)
+                                                                       data_length=data_length,
+                                                                       dlc=dlc)
         self.__dlc = dlc
         self.__packet_type = CanPacketType.FIRST_FRAME
 
@@ -771,7 +775,7 @@ class CanPacket(AbstractUdsPacket):
                                    dlc: Optional[int] = None,
                                    filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
         """
-        Change packet type (to Consecutive Frame) and data field for this CAN packet.
+        Change packet type (to Consecutive Frame) and data field of this CAN packet.
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
@@ -785,11 +789,21 @@ class CanPacket(AbstractUdsPacket):
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
-        self.__validate_data_consecutive_frame(payload=payload,
+        self.__validate_data_consecutive_frame(addressing_format=self.addressing_format,
+                                               payload=payload,
                                                sequence_number=sequence_number,
                                                dlc=dlc,
                                                filler_byte=filler_byte)
-        # TODO: tests and further implementation
+        self.__raw_frame_data = self.create_can_frame_data_consecutive_frame(addressing_format=self.addressing_format,
+                                                                             target_address=self.target_address,
+                                                                             address_extension=self.address_extension,
+                                                                             sequence_number=sequence_number,
+                                                                             payload=payload,
+                                                                             dlc=dlc,
+                                                                             filler_byte=filler_byte)
+        self.__dlc = dlc or self.get_can_frame_dlc_consecutive_frame(addressing_format=self.addressing_format,
+                                                                     payload_length=len(payload))
+        self.__packet_type = CanPacketType.CONSECUTIVE_FRAME
 
     def set_flow_control_data(self,
                               flow_status: CanFlowStatusTyping,
@@ -798,7 +812,7 @@ class CanPacket(AbstractUdsPacket):
                               dlc: Optional[int] = None,
                               filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
         """
-        Change packet type (to Flow Control) and data field for this CAN packet.
+        Change packet type (to Flow Control) and data field of this CAN packet.
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
@@ -813,7 +827,22 @@ class CanPacket(AbstractUdsPacket):
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
-        # TODO: tests and further implementation
+        self.__validate_data_flow_control(addressing_format=self.addressing_format,
+                                          flow_status=flow_status,
+                                          block_size=block_size,
+                                          stmin=stmin,
+                                          dlc=dlc,
+                                          filler_byte=filler_byte)
+        self.__raw_frame_data = self.create_can_frame_data_flow_control(addressing_format=self.addressing_format,
+                                                                        target_address=self.target_address,
+                                                                        address_extension=self.address_extension,
+                                                                        flow_status=flow_status,
+                                                                        block_size=block_size,
+                                                                        stmin=stmin,
+                                                                        dlc=dlc,
+                                                                        filler_byte=filler_byte)
+        self.__dlc = dlc or self.get_can_frame_dlc_flow_control(addressing_format=self.addressing_format)
+        self.__packet_type = CanPacketType.FLOW_CONTROL
 
     def set_address_information_normal_11bit(self, addressing: AddressingType, can_id: int) -> None:
         """
