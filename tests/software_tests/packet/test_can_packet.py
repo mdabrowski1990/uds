@@ -1077,32 +1077,35 @@ class TestCanPacket:
         self.mock_can_packet.packet_type = packet_type
         assert CanPacket.payload.fget(self=self.mock_can_packet) is None
 
-    @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
-        ([0x01, 0x54], 0),
-        ([0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1),
-        ((0xA1, 0xB2, 0xC3), 1),
+    @pytest.mark.parametrize("raw_frame_data, ai_bytes_number, data_length", [
+        ([0x01, 0x54], 0, 1),
+        ([0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1, 6),
+        ((0xA1, 0xB2, 0xC3, 0x55), 1, 2),
+        (tuple(range(8)), 0, 7),
     ])
-    def test_payload__single_frame_short_sf_dl(self, raw_frame_data, ai_bytes_number):
+    def test_payload__single_frame_short_sf_dl(self, raw_frame_data, ai_bytes_number, data_length):
         self.mock_can_packet.packet_type = CanPacketType.SINGLE_FRAME
         self.mock_can_packet.dlc = len(raw_frame_data)
         self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_can_packet.data_length = data_length
         self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
         payload_offset = ai_bytes_number+CanPacket.SHORT_SF_DL_BYTES_USED
-        assert CanPacket.payload.fget(self=self.mock_can_packet) == raw_frame_data[payload_offset:]
+        assert CanPacket.payload.fget(self=self.mock_can_packet) == raw_frame_data[payload_offset:payload_offset+data_length]
         self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(self.mock_can_packet.addressing_format)
 
-    @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
-        (list(range(64)), 0),
-        (list(range(0xF0, 0x10, -5)), 1),
-        ((0xA1, 0xB2, 0xC3, 0xD4, 0xE5, 0xF6, 0x07, 0x18, 0x29), 1),
+    @pytest.mark.parametrize("raw_frame_data, ai_bytes_number, data_length", [
+        (list(range(64)), 0, 62),
+        (list(range(0xF0, 0x10, -5)), 1, 3),
+        ((0xA1, 0xB2, 0xC3, 0xD4, 0xE5, 0xF6, 0x07, 0x18, 0x29), 1, 7),
     ])
-    def test_payload__single_frame_long_sf_dl(self, raw_frame_data, ai_bytes_number):
+    def test_payload__single_frame_long_sf_dl(self, raw_frame_data, ai_bytes_number, data_length):
         self.mock_can_packet.packet_type = CanPacketType.SINGLE_FRAME
         self.mock_can_packet.dlc = len(raw_frame_data)
         self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_can_packet.data_length = data_length
         self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
         payload_offset = ai_bytes_number+CanPacket.LONG_SF_DL_BYTES_USED
-        assert CanPacket.payload.fget(self=self.mock_can_packet) == raw_frame_data[payload_offset:]
+        assert CanPacket.payload.fget(self=self.mock_can_packet) == raw_frame_data[payload_offset:payload_offset+data_length]
         self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(
             self.mock_can_packet.addressing_format)
 

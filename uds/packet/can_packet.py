@@ -1065,7 +1065,7 @@ class CanPacket(AbstractUdsPacket):
             ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
             payload_offset = ai_bytes_number + self.SHORT_SF_DL_BYTES_USED \
                 if self.dlc <= self.MAX_DLC_VALUE_SHORT_SF_DL else ai_bytes_number + self.LONG_SF_DL_BYTES_USED
-            return self.raw_frame_data[payload_offset:]
+            return self.raw_frame_data[payload_offset:payload_offset+self.data_length]
         if self.packet_type == CanPacketType.FIRST_FRAME:
             ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
             payload_offset = ai_bytes_number + self.SHORT_FF_DL_BYTES_USED \
