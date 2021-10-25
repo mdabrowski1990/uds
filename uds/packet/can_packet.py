@@ -15,7 +15,7 @@ from warnings import warn
 
 from uds.transmission_attributes import AddressingType, AddressingTypeMemberTyping
 from uds.utilities import RawByte, RawBytes, RawBytesTuple, RawBytesList, validate_raw_byte, validate_raw_bytes, \
-    int_to_bytes_list, \
+    int_to_bytes_list, bytes_list_to_int, \
     InconsistentArgumentsError, AmbiguityError, UnusedArgumentError, UnusedArgumentWarning
 
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord
@@ -1061,7 +1061,21 @@ class CanPacket(AbstractUdsPacket):
             The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
             cannot be determined basing solely on the information contained in this packet object.
         """
-        # TODO: implementation and tests
+        if self.packet_type == CanPacketType.SINGLE_FRAME:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            payload_offset = ai_bytes_number + self.SHORT_SF_DL_BYTES_USED \
+                if self.dlc <= self.MAX_DLC_VALUE_SHORT_SF_DL else ai_bytes_number + self.LONG_SF_DL_BYTES_USED
+            return self.raw_frame_data[payload_offset:]
+        if self.packet_type == CanPacketType.FIRST_FRAME:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            payload_offset = ai_bytes_number + self.SHORT_FF_DL_BYTES_USED \
+                if self.data_length <= self.MAX_SHORT_FF_DL_VALUE else ai_bytes_number + self.LONG_FF_DL_BYTES_USED
+            return self.raw_frame_data[payload_offset:]
+        if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            payload_offset = ai_bytes_number + self.SN_BYTES_USED
+            return self.raw_frame_data[payload_offset:]
+        return None
 
     @property
     def data_length(self) -> Optional[int]:
@@ -1091,7 +1105,7 @@ class CanPacket(AbstractUdsPacket):
         # TODO: implementation and tests
 
     @property
-    def flow_status(self) -> Optional[CanFlowStatus]:
+    def flow_status(self) -> Optional[RawByte]:
         """
         Flow Status carried by this CAN packet.
 
