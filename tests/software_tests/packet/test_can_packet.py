@@ -1155,23 +1155,147 @@ class TestCanPacket:
 
     # data_length
 
-    # TODO
+    @pytest.mark.parametrize("packet_type", [None, CanPacketType.FLOW_CONTROL, CanPacketType.CONSECUTIVE_FRAME,
+                                             "something new"])
+    def test_data_length__none(self, packet_type):
+        self.mock_can_packet.packet_type = packet_type
+        assert CanPacket.data_length.fget(self=self.mock_can_packet) is None
+
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data, expected_data_length", [
+        (0, (0x02, 0x12, 0x34, 0x56, 0x78, 0x9A), 2),
+        (0, [0x00, 0x12] + list(range(62)), 0x12),
+        (1, [0x02, 0x05, 0x08, 0x0A, 0xFE, 0xDC, 0xBA, 0x98], 5),
+        (1, [0x02, 0x00, 0x3D] + list(range(100, 163)), 0x3D),
+    ])
+    def test_data_length__single_frame(self, ai_bytes_number, raw_frame_data, expected_data_length):
+        self.mock_can_packet.packet_type = CanPacketType.SINGLE_FRAME
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_can_packet.dlc = len(raw_frame_data)
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
+        assert CanPacket.data_length.fget(self=self.mock_can_packet) == expected_data_length
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(
+            self.mock_can_packet.addressing_format)
+
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data, expected_data_length", [
+        (0, (0x10, 0x0A, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC), 10),
+        (0, [0x1F, 0xFF] + list(range(62)), 0xFFF),
+        (1, [0x1F, 0x1D, 0xAB] + list(range(100, 161)), 0xDAB),
+        (1, [0x10, 0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF] + list(range(100, 157)), 0xFFFFFFFF),
+        (1, (0xAA, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0xAA), 0x1000),
+        (1, (0xF0, 0x10, 0x00, 0xF1, 0xE2, 0xD3, 0xC4, 0xAA), 0xF1E2D3C4),
+    ])
+    def test_data_length__first_frame(self, ai_bytes_number, raw_frame_data, expected_data_length):
+        self.mock_can_packet.packet_type = CanPacketType.FIRST_FRAME
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
+        assert CanPacket.data_length.fget(self=self.mock_can_packet) == expected_data_length
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(
+            self.mock_can_packet.addressing_format)
 
     # sequence_number
 
-    # TODO
+    @pytest.mark.parametrize("packet_type", [None, CanPacketType.FLOW_CONTROL, CanPacketType.FIRST_FRAME,
+                                             CanPacketType.SINGLE_FRAME, "something new"])
+    def test_sequence_number__none(self, packet_type):
+        self.mock_can_packet.packet_type = packet_type
+        assert CanPacket.sequence_number.fget(self=self.mock_can_packet) is None
+
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data, expected_sequence_number", [
+        (0, (0x20, 0xFE), 0),
+        (0, [0x2F, 0x91, 0xDC, 0xBA] + list(range(50, 110)), 0xF),
+        (1, (0x2F, 0x2A, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25), 0xA),
+        (1, [0x55, 0x23] + list(range(30)), 0x3),
+    ])
+    def test_sequence_number__consecutive_frame(self, ai_bytes_number, raw_frame_data, expected_sequence_number):
+        self.mock_can_packet.packet_type = CanPacketType.CONSECUTIVE_FRAME
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
+        assert CanPacket.sequence_number.fget(self=self.mock_can_packet) == expected_sequence_number
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(
+            self.mock_can_packet.addressing_format)
 
     # flow_status
 
-    # TODO
+    @pytest.mark.parametrize("packet_type", [None, CanPacketType.CONSECUTIVE_FRAME, CanPacketType.FIRST_FRAME,
+                                             CanPacketType.SINGLE_FRAME, "something new"])
+    def test_flow_status__none(self, packet_type):
+        self.mock_can_packet.packet_type = packet_type
+        assert CanPacket.flow_status.fget(self=self.mock_can_packet) is None
+
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data, expected_flow_status", [
+        (0, (0x30, 0x12, 0x34), 0),
+        (0, (0x3F, 0xED, 0xCB), 0xF),
+        (1, (0x3F, 0x3B, 0x3A, 0x39, 0x38, 0x37, 0x36, 0x35), 0xB),
+        (1, [0x33, 0x34] + list(range(62)), 0x4),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanFlowStatus")
+    def test_flow_status__flow_control(self, mock_flow_status_class,
+                                       ai_bytes_number, raw_frame_data, expected_flow_status):
+        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
+        assert CanPacket.flow_status.fget(self=self.mock_can_packet) == mock_flow_status_class.return_value
+        mock_flow_status_class.assert_called_once_with(expected_flow_status)
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(
+            self.mock_can_packet.addressing_format)
 
     # block_size
 
-    # TODO
+    @pytest.mark.parametrize("packet_type", [None, CanPacketType.CONSECUTIVE_FRAME, CanPacketType.FIRST_FRAME,
+                                             CanPacketType.SINGLE_FRAME, "something new"])
+    def test_block_size__none(self, packet_type):
+        self.mock_can_packet.packet_type = packet_type
+        assert CanPacket.block_size.fget(self=self.mock_can_packet) is None
+
+    @pytest.mark.parametrize("flow_status", [CanFlowStatus.Wait.value, CanFlowStatus.Overflow.value, "something", None])
+    def test_block_size__flow_control_not_cts(self, flow_status):
+        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
+        self.mock_can_packet.flow_status = flow_status
+        assert CanPacket.block_size.fget(self=self.mock_can_packet) is None
+
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data, expected_block_size", [
+        (0, (0x30, 0x12, 0x34), 0x12),
+        (0, (0x3F, 0xED, 0xCB), 0xED),
+        (1, (0x3F, 0x3B, 0x3A, 0x39, 0x38, 0x37, 0x36, 0x35), 0x3A),
+        (1, [0x33, 0x34] + list(range(62)), 0),
+    ])
+    def test_block_size__flow_control_cts(self, ai_bytes_number, raw_frame_data, expected_block_size):
+        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
+        self.mock_can_packet.flow_status = CanFlowStatus.ContinueToSend
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
+        assert CanPacket.block_size.fget(self=self.mock_can_packet) == expected_block_size
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(
+            self.mock_can_packet.addressing_format)
 
     # stmin
 
-    # TODO
+    @pytest.mark.parametrize("packet_type", [None, CanPacketType.CONSECUTIVE_FRAME, CanPacketType.FIRST_FRAME,
+                                             CanPacketType.SINGLE_FRAME, "something new"])
+    def test_stmin__none(self, packet_type):
+        self.mock_can_packet.packet_type = packet_type
+        assert CanPacket.stmin.fget(self=self.mock_can_packet) is None
+
+    @pytest.mark.parametrize("flow_status", [CanFlowStatus.Wait.value, CanFlowStatus.Overflow.value, "something", None])
+    def test_stmin__flow_control_not_cts(self, flow_status):
+        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
+        self.mock_can_packet.flow_status = flow_status
+        assert CanPacket.stmin.fget(self=self.mock_can_packet) is None
+
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data, expected_stmin", [
+        (0, (0x30, 0x12, 0x34), 0x34),
+        (0, (0x3F, 0xED, 0xCB), 0xCB),
+        (1, (0x3F, 0x3B, 0x3A, 0x39, 0x38, 0x37, 0x36, 0x35), 0x39),
+        (1, [0x33, 0x34] + list(range(62)), 1),
+    ])
+    def test_stmin__flow_control_cts(self, ai_bytes_number, raw_frame_data, expected_stmin):
+        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
+        self.mock_can_packet.flow_status = CanFlowStatus.ContinueToSend
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        self.mock_get_data_bytes_used_by_can_addressing_format.return_value = ai_bytes_number
+        assert CanPacket.stmin.fget(self=self.mock_can_packet) == expected_stmin
+        self.mock_get_data_bytes_used_by_can_addressing_format.assert_called_once_with(
+            self.mock_can_packet.addressing_format)
 
     # set_address_information
 

@@ -1090,7 +1090,23 @@ class CanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
-        # TODO: implementation and tests
+        if self.packet_type == CanPacketType.SINGLE_FRAME:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            if self.dlc <= self.MAX_DLC_VALUE_SHORT_SF_DL:
+                return self.raw_frame_data[ai_bytes_number] & 0xF
+            return self.raw_frame_data[ai_bytes_number+1]
+        if self.packet_type == CanPacketType.FIRST_FRAME:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            short_ff_dl_bytes = list(self.raw_frame_data[ai_bytes_number:ai_bytes_number+self.SHORT_FF_DL_BYTES_USED])
+            short_ff_dl_bytes[0] ^= CanPacketType.FIRST_FRAME.value << 4
+            short_ff_dl = bytes_list_to_int(short_ff_dl_bytes)
+            if short_ff_dl > 0:
+                return short_ff_dl
+            long_ff_dl_bytes = self.raw_frame_data[ai_bytes_number+self.SHORT_FF_DL_BYTES_USED:
+                                                   ai_bytes_number+self.LONG_FF_DL_BYTES_USED]
+            long_ff_dl = bytes_list_to_int(long_ff_dl_bytes)
+            return long_ff_dl
+        return None
 
     @property
     def sequence_number(self) -> Optional[int]:
@@ -1102,10 +1118,13 @@ class CanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
-        # TODO: implementation and tests
+        if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            return self.raw_frame_data[ai_bytes_number] & 0xF
+        return None
 
     @property
-    def flow_status(self) -> Optional[RawByte]:
+    def flow_status(self) -> Optional[CanFlowStatus]:
         """
         Flow Status carried by this CAN packet.
 
@@ -1114,7 +1133,10 @@ class CanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
-        # TODO: implementation and tests
+        if self.packet_type == CanPacketType.FLOW_CONTROL:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            return CanFlowStatus(self.raw_frame_data[ai_bytes_number] & 0xF)
+        return None
 
     @property
     def block_size(self) -> Optional[RawByte]:
@@ -1126,7 +1148,10 @@ class CanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
-        # TODO: implementation and tests
+        if self.packet_type == CanPacketType.FLOW_CONTROL and self.flow_status == CanFlowStatus.ContinueToSend:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            return self.raw_frame_data[ai_bytes_number + 1]
+        return None
 
     @property
     def stmin(self) -> Optional[RawByte]:
@@ -1138,7 +1163,10 @@ class CanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
-        # TODO: implementation and tests
+        if self.packet_type == CanPacketType.FLOW_CONTROL and self.flow_status == CanFlowStatus.ContinueToSend:
+            ai_bytes_number = CanAddressingFormat.get_number_of_data_bytes_used(self.addressing_format)
+            return self.raw_frame_data[ai_bytes_number + 2]
+        return None
 
     @staticmethod
     def __get_can_frame_data_beginning(addressing_format: CanAddressingFormatTyping,
