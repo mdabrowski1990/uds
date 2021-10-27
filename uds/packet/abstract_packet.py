@@ -16,7 +16,7 @@ from typing import Union, Tuple, List, Any
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawBytesTuple, ReassignmentError, TimeStamp
 from uds.transmission_attributes.addressing import AddressingType
-from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionTyping
+from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionMemberAlias
 
 
 class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
@@ -64,7 +64,7 @@ class AbstractUdsPacketRecord(ABC):
     """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
-    def __init__(self, frame: object, direction: TransmissionDirectionTyping) -> None:
+    def __init__(self, frame: object, direction: TransmissionDirectionMemberAlias) -> None:
         """
         Create a record of a historic information about a packet that was either received or transmitted.
 
@@ -91,7 +91,7 @@ class AbstractUdsPacketRecord(ABC):
         return self.__frame
 
     @frame.setter
-    def frame(self, value: TransmissionDirectionTyping):
+    def frame(self, value: TransmissionDirectionMemberAlias):
         """
         Set value of frame attribute.
 
@@ -113,7 +113,7 @@ class AbstractUdsPacketRecord(ABC):
         return self.__direction
 
     @direction.setter
-    def direction(self, value: TransmissionDirectionTyping):
+    def direction(self, value: TransmissionDirectionMemberAlias):
         """
         Set value of direction attribute.
 

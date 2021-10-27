@@ -2141,129 +2141,129 @@ class TestCanPacket:
     #                                                                      source_address=source_address,
     #                                                                      address_extension=address_extension)
     #
-    # # __validate_ai_consistency_normal_11bit
-    #
-    # @pytest.mark.parametrize("can_id", [0x1234, 0x98FA])
-    # @pytest.mark.parametrize("target_address, source_address, address_extension", [
-    #     (0, 0, 0),
-    #     (0x05, None, None),
-    #     (None, 0xFB, None),
-    #     (None, None, 0x9C),
-    # ])
-    # @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_11bit_addressed_can_id")
-    # def test_validate_ai_consistency_normal_11bit__unused_args(self, mock_is_normal_11bit_addressed_can_id,
-    #                                                            can_id, target_address, source_address,
-    #                                                            address_extension):
-    #     mock_is_normal_11bit_addressed_can_id.return_value = True
-    #     with pytest.raises(UnusedArgumentError):
-    #         CanPacket._CanPacket__validate_ai_consistency_normal_11bit(can_id=can_id,
-    #                                                                    target_address=target_address,
-    #                                                                    source_address=source_address,
-    #                                                                    address_extension=address_extension)
-    #
-    # @pytest.mark.parametrize("can_id", [0x1234, 0x98FA])
-    # @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_11bit_addressed_can_id")
-    # def test_validate_ai_consistency_normal_11bit__invalid_can_id(self, mock_is_normal_11bit_addressed_can_id, can_id):
-    #     mock_is_normal_11bit_addressed_can_id.return_value = False
-    #     with pytest.raises(InconsistentArgumentsError):
-    #         CanPacket._CanPacket__validate_ai_consistency_normal_11bit(can_id=can_id,
-    #                                                                    target_address=None,
-    #                                                                    source_address=None,
-    #                                                                    address_extension=None)
-    #
-    # @pytest.mark.parametrize("can_id", [0x1234, 0x98FA])
-    # @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_11bit_addressed_can_id")
-    # def test_validate_ai_consistency_normal_11bit__valid(self, mock_is_normal_11bit_addressed_can_id, can_id):
-    #     mock_is_normal_11bit_addressed_can_id.return_value = True
-    #     CanPacket._CanPacket__validate_ai_consistency_normal_11bit(can_id=can_id,
-    #                                                                target_address=None,
-    #                                                                source_address=None,
-    #                                                                address_extension=None)
-    #
-    # # __validate_ai_consistency_normal_fixed
-    #
-    # @pytest.mark.parametrize("can_id, target_address, source_address", [
-    #     (0xABCDEF, None, None),
-    #     (None, 0x12, 0x98),
-    # ])
-    # @pytest.mark.parametrize("address_extension", [0x00, 0x55, 0xFF])
-    # def test_validate_ai_consistency_normal_fixed__unused_args(self, example_addressing_type,
-    #                                                            can_id, target_address, source_address,
-    #                                                            address_extension):
-    #     with pytest.raises(UnusedArgumentError):
-    #         CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
-    #                                                                    can_id=can_id,
-    #                                                                    target_address=target_address,
-    #                                                                    source_address=source_address,
-    #                                                                    address_extension=address_extension)
-    #
-    # @pytest.mark.parametrize("can_id, target_address, source_address", [
-    #     (0xABCDEF, 0x09, None),
-    #     (0x727384, None, 0xB1),
-    #     (0xABCDEF, 0x9E, 0xFD),
-    # ])
-    # def test_validate_ai_consistency_normal_fixed__redundant_args(self, example_addressing_type,
-    #                                                               can_id, target_address, source_address):
-    #     with pytest.raises(InconsistentArgumentsError):
-    #         CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
-    #                                                                    can_id=can_id,
-    #                                                                    target_address=target_address,
-    #                                                                    source_address=source_address,
-    #                                                                    address_extension=None)
-    #
-    # @pytest.mark.parametrize("can_id, target_address, source_address", [
-    #     (None, 0x09, None),
-    #     (None, None, 0xB1),
-    #     (None, None, None),
-    # ])
-    # def test_validate_ai_consistency_normal_fixed__missing_args(self, example_addressing_type,
-    #                                                             can_id, target_address, source_address):
-    #     with pytest.raises(InconsistentArgumentsError):
-    #         CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
-    #                                                                    can_id=can_id,
-    #                                                                    target_address=target_address,
-    #                                                                    source_address=source_address,
-    #                                                                    address_extension=None)
-    #
-    # @pytest.mark.parametrize("target_address", [0x00, 0x55, 0xFF])
-    # @pytest.mark.parametrize("source_address", [0x00, 0xAA, 0xFF])
-    # def test_validate_ai_consistency_normal_fixed__byte_params_validation(self, example_addressing_type,
-    #                                                                       target_address, source_address):
-    #     CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
-    #                                                                can_id=None,
-    #                                                                target_address=target_address,
-    #                                                                source_address=source_address,
-    #                                                                address_extension=None)
-    #     self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address)])
-    #
-    # @pytest.mark.parametrize("can_id", [0, "some CAN ID", 0x12343])
-    # @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_fixed_addressed_can_id")
-    # def test_validate_ai_consistency_normal_fixed__invalid_can_id(self, mock_is_normal_fixed_addressed_can_id,
-    #                                                               example_addressing_type, can_id):
-    #     mock_is_normal_fixed_addressed_can_id.return_value = False
-    #     with pytest.raises(InconsistentArgumentsError):
-    #         CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
-    #                                                                    can_id=can_id,
-    #                                                                    target_address=None,
-    #                                                                    source_address=None,
-    #                                                                    address_extension=None)
-    #     self.mock_validate_can_id.assert_called_once_with(can_id)
-    #     mock_is_normal_fixed_addressed_can_id.assert_called_once_with(can_id=can_id,
-    #                                                                   addressing=example_addressing_type)
-    #
-    # @pytest.mark.parametrize("can_id", [0, "some CAN ID", 0x12343])
-    # @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_fixed_addressed_can_id")
-    # def test_validate_ai_consistency_normal_fixed__valid(self, mock_is_normal_fixed_addressed_can_id,
-    #                                                      example_addressing_type, can_id):
-    #     mock_is_normal_fixed_addressed_can_id.return_value = True
-    #     CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
-    #                                                                can_id=can_id,
-    #                                                                target_address=None,
-    #                                                                source_address=None,
-    #                                                                address_extension=None)
-    #     self.mock_validate_can_id.assert_called_once_with(can_id)
-    #     mock_is_normal_fixed_addressed_can_id.assert_called_once_with(can_id=can_id,
-    #                                                                   addressing=example_addressing_type)
+    # __validate_ai_consistency_normal_11bit
+
+    @pytest.mark.parametrize("can_id", [0x1234, 0x98FA])
+    @pytest.mark.parametrize("target_address, source_address, address_extension", [
+        (0, 0, 0),
+        (0x05, None, None),
+        (None, 0xFB, None),
+        (None, None, 0x9C),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_11bit_addressed_can_id")
+    def test_validate_ai_consistency_normal_11bit__unused_args(self, mock_is_normal_11bit_addressed_can_id,
+                                                               can_id, target_address, source_address,
+                                                               address_extension):
+        mock_is_normal_11bit_addressed_can_id.return_value = True
+        with pytest.raises(UnusedArgumentError):
+            CanPacket._CanPacket__validate_ai_consistency_normal_11bit(can_id=can_id,
+                                                                       target_address=target_address,
+                                                                       source_address=source_address,
+                                                                       address_extension=address_extension)
+
+    @pytest.mark.parametrize("can_id", [0x1234, 0x98FA])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_11bit_addressed_can_id")
+    def test_validate_ai_consistency_normal_11bit__invalid_can_id(self, mock_is_normal_11bit_addressed_can_id, can_id):
+        mock_is_normal_11bit_addressed_can_id.return_value = False
+        with pytest.raises(InconsistentArgumentsError):
+            CanPacket._CanPacket__validate_ai_consistency_normal_11bit(can_id=can_id,
+                                                                       target_address=None,
+                                                                       source_address=None,
+                                                                       address_extension=None)
+
+    @pytest.mark.parametrize("can_id", [0x1234, 0x98FA])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_11bit_addressed_can_id")
+    def test_validate_ai_consistency_normal_11bit__valid(self, mock_is_normal_11bit_addressed_can_id, can_id):
+        mock_is_normal_11bit_addressed_can_id.return_value = True
+        CanPacket._CanPacket__validate_ai_consistency_normal_11bit(can_id=can_id,
+                                                                   target_address=None,
+                                                                   source_address=None,
+                                                                   address_extension=None)
+
+    # __validate_ai_consistency_normal_fixed
+
+    @pytest.mark.parametrize("can_id, target_address, source_address", [
+        (0xABCDEF, None, None),
+        (None, 0x12, 0x98),
+    ])
+    @pytest.mark.parametrize("address_extension", [0x00, 0x55, 0xFF])
+    def test_validate_ai_consistency_normal_fixed__unused_args(self, example_addressing_type,
+                                                               can_id, target_address, source_address,
+                                                               address_extension):
+        with pytest.raises(UnusedArgumentError):
+            CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
+                                                                       can_id=can_id,
+                                                                       target_address=target_address,
+                                                                       source_address=source_address,
+                                                                       address_extension=address_extension)
+
+    @pytest.mark.parametrize("can_id, target_address, source_address", [
+        (0xABCDEF, 0x09, None),
+        (0x727384, None, 0xB1),
+        (0xABCDEF, 0x9E, 0xFD),
+    ])
+    def test_validate_ai_consistency_normal_fixed__redundant_args(self, example_addressing_type,
+                                                                  can_id, target_address, source_address):
+        with pytest.raises(InconsistentArgumentsError):
+            CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
+                                                                       can_id=can_id,
+                                                                       target_address=target_address,
+                                                                       source_address=source_address,
+                                                                       address_extension=None)
+
+    @pytest.mark.parametrize("can_id, target_address, source_address", [
+        (None, 0x09, None),
+        (None, None, 0xB1),
+        (None, None, None),
+    ])
+    def test_validate_ai_consistency_normal_fixed__missing_args(self, example_addressing_type,
+                                                                can_id, target_address, source_address):
+        with pytest.raises(InconsistentArgumentsError):
+            CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
+                                                                       can_id=can_id,
+                                                                       target_address=target_address,
+                                                                       source_address=source_address,
+                                                                       address_extension=None)
+
+    @pytest.mark.parametrize("target_address", [0x00, 0x55, 0xFF])
+    @pytest.mark.parametrize("source_address", [0x00, 0xAA, 0xFF])
+    def test_validate_ai_consistency_normal_fixed__byte_params_validation(self, example_addressing_type,
+                                                                          target_address, source_address):
+        CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
+                                                                   can_id=None,
+                                                                   target_address=target_address,
+                                                                   source_address=source_address,
+                                                                   address_extension=None)
+        self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address)])
+
+    @pytest.mark.parametrize("can_id", [0, "some CAN ID", 0x12343])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_fixed_addressed_can_id")
+    def test_validate_ai_consistency_normal_fixed__invalid_can_id(self, mock_is_normal_fixed_addressed_can_id,
+                                                                  example_addressing_type, can_id):
+        mock_is_normal_fixed_addressed_can_id.return_value = False
+        with pytest.raises(InconsistentArgumentsError):
+            CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
+                                                                       can_id=can_id,
+                                                                       target_address=None,
+                                                                       source_address=None,
+                                                                       address_extension=None)
+        self.mock_validate_can_id.assert_called_once_with(can_id)
+        mock_is_normal_fixed_addressed_can_id.assert_called_once_with(can_id=can_id,
+                                                                      addressing=example_addressing_type)
+
+    @pytest.mark.parametrize("can_id", [0, "some CAN ID", 0x12343])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_normal_fixed_addressed_can_id")
+    def test_validate_ai_consistency_normal_fixed__valid(self, mock_is_normal_fixed_addressed_can_id,
+                                                         example_addressing_type, can_id):
+        mock_is_normal_fixed_addressed_can_id.return_value = True
+        CanPacket._CanPacket__validate_ai_consistency_normal_fixed(addressing=example_addressing_type,
+                                                                   can_id=can_id,
+                                                                   target_address=None,
+                                                                   source_address=None,
+                                                                   address_extension=None)
+        self.mock_validate_can_id.assert_called_once_with(can_id)
+        mock_is_normal_fixed_addressed_can_id.assert_called_once_with(can_id=can_id,
+                                                                      addressing=example_addressing_type)
     #
     # # __validate_ai_consistency_extended
     #

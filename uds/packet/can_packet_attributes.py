@@ -17,61 +17,11 @@ from bisect import bisect_left
 from aenum import unique, StrEnum
 
 from uds.utilities import RawByte, validate_raw_byte, ValidatedEnum
-from uds.transmission_attributes import AddressingType, AddressingTypeMemberTyping
+from uds.transmission_attributes import AddressingType, AddressingTypeMemberAlias
 from .abstract_packet import AbstractUdsPacketType
 
-DEFAULT_FILLER_BYTE: RawByte = 0xCC
-"""Default value of Filler Byte that is specified by ISO 15765-2:2016 (chapter 10.4.2.1).
-Filler Byte is used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`."""
 
 
-
-
-
-@unique
-class CanAddressingFormat(StrEnum, ValidatedEnum):
-    """
-    Definition of CAN addressing formats.
-
-    :ref:`CAN addressing formats <knowledge-base-can-addressing>` determines how
-    :ref:`Network Address Information (N_AI) <knowledge-base-n-ai>` is provided in a CAN packet.
-    """
-
-    NORMAL_11BIT_ADDRESSING = "Normal 11-bit Addressing"
-    """:ref:`Normal addressing <knowledge-base-can-normal-addressing>` that uses 11-bit CAN Identifiers."""
-    NORMAL_FIXED_ADDRESSING = "Normal Fixed Addressing"
-    """:ref:`Normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` format.
-    It uses 29-bit CAN Identifiers only."""
-    EXTENDED_ADDRESSING = "Extended Addressing"
-    """:ref:`Extended addressing <knowledge-base-can-extended-addressing>` format that uses either 11-bit or 29-bit
-    CAN Identifiers."""
-    MIXED_11BIT_ADDRESSING = "Mixed 11-bit Addressing"
-    """:ref:`Mixed addressing with 11-bit CAN ID <knowledge-base-can-mixed-11-bit-addressing>`. It is a subformat
-    of :ref:`mixed addressing <knowledge-base-can-mixed-addressing>` that uses 11-bit CAN Identifiers."""
-    MIXED_29BIT_ADDRESSING = "Mixed 29-bit Addressing"
-    """:ref:`Mixed addressing with 29-bit CAN ID <knowledge-base-can-mixed-29-bit-addressing>`. It is a subformat
-    of :ref:`mixed addressing <knowledge-base-can-mixed-addressing>` that uses 29-bit CAN Identifiers."""
-
-    @classmethod
-    def get_number_of_data_bytes_used(cls, addressing_format: "CanAddressingFormat") -> int:
-        """
-        Get number of data bytes that are used by CAN Addressing Format.
-
-        :param addressing_format: CAN Addressing Format for which value to be provided.
-
-        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
-            CAN Addressing Format.
-        """
-        cls.validate_member(addressing_format)
-        return {cls.NORMAL_11BIT_ADDRESSING: 0,
-                cls.NORMAL_FIXED_ADDRESSING: 0,
-                cls.EXTENDED_ADDRESSING: 1,
-                cls.MIXED_11BIT_ADDRESSING: 1,
-                cls.MIXED_29BIT_ADDRESSING: 1}[cls(addressing_format)]
-
-
-CanAddressingFormatTyping = Union[CanAddressingFormat, str]
-"""Typing alias that describes :class:`~uds.packet.can_packet_attributes.CanAddressingFormat` member."""
 
 
 class CanIdHandler:
@@ -497,3 +447,7 @@ class CanDlcHandler:
         else:
             if not cls.MIN_DATA_BYTES_NUMBER <= value <= cls.MAX_DATA_BYTES_NUMBER:
                 raise ValueError(f"Provided value is out of CAN Frame data bytes number range. Actual value: {value}")
+
+
+
+

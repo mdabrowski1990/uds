@@ -632,24 +632,3 @@ class TestCanDlcHandler:
 
 
 
-class TestCanAddressingFormat:
-    """Tests for `CanAddressingFormat` class."""
-
-    SCRIPT_LOCATION = TestCanDlcHandler.SCRIPT_LOCATION
-
-    def test_inheritance__validated_enum(self):
-        assert issubclass(CanAddressingFormat, ValidatedEnum)
-
-    # get_number_of_data_bytes_used
-
-    @pytest.mark.parametrize("addressing_format, expected_result", [
-        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, 0),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value, 0),
-        (CanAddressingFormat.EXTENDED_ADDRESSING, 1),
-        (CanAddressingFormat.MIXED_11BIT_ADDRESSING.value, 1),
-        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, 1),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
-    def test_get_number_of_data_bytes_used(self, mock_validate_member, addressing_format, expected_result):
-        assert CanAddressingFormat.get_number_of_data_bytes_used(addressing_format) == expected_result
-        mock_validate_member.assert_called_once_with(addressing_format)
