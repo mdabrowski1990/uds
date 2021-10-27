@@ -7,6 +7,7 @@ __all__ = ["Nibble", "RawByte", "RawBytes", "RawBytesTuple", "RawBytesList", "Ra
 from typing import Union, Tuple, List, Set, Any
 from datetime import datetime
 
+
 Nibble = int
 """Alias of a `nibble <https://en.wikipedia.org/wiki/Nibble>`_ value (integer in range 0x0-0xF)."""
 RawByte = int
