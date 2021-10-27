@@ -1,10 +1,26 @@
 import pytest
 
-from uds.utilities.common_types import validate_raw_bytes, validate_raw_byte
+from uds.utilities.common_types import validate_raw_bytes, validate_raw_byte, validate_nibble
 
 
 class TestFunctions:
     """Test of all functions in this scope."""
+
+    # validate_raw_byte
+
+    @pytest.mark.parametrize("value", [0x0, 0x1, 0x2, 0xA, 0xF])
+    def test_validate_nibble__valid(self, value):
+        assert validate_nibble(value=value) is None
+
+    @pytest.mark.parametrize("value", [None, float("inf"), 0.0, "5"])
+    def test_validate_nibble__invalid_type(self, value):
+        with pytest.raises(TypeError):
+            validate_nibble(value=value)
+
+    @pytest.mark.parametrize("value", [-3298761, -1, 0x10, 99999])
+    def test_validate_nibble__invalid_value(self, value):
+        with pytest.raises(ValueError):
+            validate_nibble(value=value)
 
     # validate_raw_byte
 

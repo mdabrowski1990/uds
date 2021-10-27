@@ -8,7 +8,7 @@ This module contains implementation of :ref:`CAN packet <knowledge-base-uds-can-
  - :ref:`CAN packet type <knowledge-base-can-n-pci>`
 """
 
-__all__ = ["CanPacketType", "CanPacketTypeMemberTyping", "CanAddressingFormat", "CanAddressingFormatTyping",
+__all__ = ["CanAddressingFormat", "CanAddressingFormatTyping",
            "CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
 from typing import Optional, Union, Any, Tuple, Dict, Set
@@ -25,39 +25,7 @@ DEFAULT_FILLER_BYTE: RawByte = 0xCC
 Filler Byte is used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`."""
 
 
-@unique
-class CanPacketType(AbstractUdsPacketType):
-    """
-    Definition of CAN packet types.
 
-    :ref:`CAN packet types <knowledge-base-can-n-pci>` are
-    :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` values that are specific for CAN bus.
-    """
-
-    SINGLE_FRAME = 0x0
-    """:ref:`Single Frame (SF) <knowledge-base-can-single-frame>` CAN packet type."""
-    FIRST_FRAME = 0x1
-    """:ref:`First Frame (FF) <knowledge-base-can-first-frame>` CAN packet type."""
-    CONSECUTIVE_FRAME = 0x2  # noqa: F841
-    """:ref:`Consecutive Frame (CF) <knowledge-base-can-consecutive-frame>` CAN packet type."""
-    FLOW_CONTROL = 0x3  # noqa: F841
-    """:ref:`Flow Control (FC) <knowledge-base-can-flow-control>` CAN packet type."""
-
-    @classmethod
-    def is_initial_packet_type(cls, value: Any) -> bool:
-        """
-        Check whether given argument is a member or a value of a packet type that initiates a diagnostic message.
-
-        :param value: Value to check.
-
-        :return: True if given argument is a packet type that initiates a diagnostic message, else False.
-        """
-        cls.validate_member(value)
-        return cls(value) in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
-
-
-CanPacketTypeMemberTyping = Union[CanPacketType, int]
-"""Typing alias that describes :class:`~uds.packet.can_packet_attributes.CanPacketType` member."""
 
 
 @unique

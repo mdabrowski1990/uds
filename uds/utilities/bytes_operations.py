@@ -1,6 +1,6 @@
 """Module with bytes list operations implementation."""
 
-__all__ = ["Endianness", "EndiannessMemberTyping", "bytes_list_to_int", "int_to_bytes_list"]
+__all__ = ["Endianness", "EndiannessMemberAlias", "bytes_list_to_int", "int_to_bytes_list"]
 
 from typing import Union, Optional
 from functools import reduce
@@ -20,25 +20,25 @@ class Endianness(StrEnum, ValidatedEnum):
     """
 
     LITTLE_ENDIAN = "Little Endian"
-    """Little Endian stores the most significant byte at the largest memory address and the least significant byte 
+    """Little Endian stores the most significant byte at the largest memory address and the least significant byte
     at the smallest."""
     BIG_ENDIAN = "Big Endian"
-    """Big Endian stores the most significant byte at the smallest memory address and the least significant byte 
+    """Big Endian stores the most significant byte at the smallest memory address and the least significant byte
     at the largest."""
 
 
-EndiannessMemberTyping = Union[Endianness, str]
-"""Typing alias that describes :class:`~uds.utilities.bytes_operations.Endianness` member."""
+EndiannessMemberAlias = Union[Endianness, str]
+"""Alias that describes :class:`~uds.utilities.bytes_operations.Endianness` member type."""
 
 
-def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessMemberTyping = Endianness.BIG_ENDIAN) -> int:
+def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessMemberAlias = Endianness.BIG_ENDIAN) -> int:
     """
     Convert a list of bytes to integer value.
 
     :param bytes_list: List of bytes to convert.
     :param endianness: Order of bytes to use.
 
-    :raise NotImplementedError: A valid endianness was provided, but the implementation for it is missing.
+    :raise NotImplementedError: A valid value of endianness was provided, but the implementation is missing.
         Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
         whenever you see this error.
 
@@ -56,7 +56,7 @@ def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessMemberTyping =
 
 def int_to_bytes_list(int_value: int,
                       list_size: Optional[int] = None,
-                      endianness: EndiannessMemberTyping = Endianness.BIG_ENDIAN) -> RawBytesList:
+                      endianness: EndiannessMemberAlias = Endianness.BIG_ENDIAN) -> RawBytesList:
     """
     Convert integer value to a list of bytes.
 
@@ -89,7 +89,7 @@ def int_to_bytes_list(int_value: int,
     if list_size < bytes_number:
         raise InconsistentArgumentsError(f"Provided value of `list_size` is too small to contain all byte of int_value."
                                          f"Actual values: int_value={int_value}, list_size={list_size}")
-    bytes_list = [(int_value >> (8*byte_index)) & 0xFF for byte_index in range(list_size)]
+    bytes_list = [(int_value >> (8 * byte_index)) & 0xFF for byte_index in range(list_size)]
     if endianness_instance == Endianness.BIG_ENDIAN:
         return bytes_list[::-1]
     if endianness_instance == Endianness.LITTLE_ENDIAN:

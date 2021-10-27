@@ -6,4 +6,4 @@ from .common_types import RawByte, RawBytes, RawBytesTuple, RawBytesList, RawByt
     TimeMilliseconds, TimeStamp
 from .custom_exceptions import ReassignmentError, InconsistentArgumentsError, AmbiguityError, \
     UnusedArgumentError, UnusedArgumentWarning
-from .bytes_operations import Endianness, EndiannessMemberTyping, int_to_bytes_list, bytes_list_to_int
+from .bytes_operations import Endianness, EndiannessMemberAlias, int_to_bytes_list, bytes_list_to_int

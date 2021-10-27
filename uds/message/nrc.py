@@ -5,11 +5,13 @@ Module with an entire Negative Response Code (NRC) data parameters implementatio
     ISO 14229-1 standard.
 """
 
-__all__ = ["NRC"]
+__all__ = ["NRC", "NRCMemberAlias"]
+
+from typing import Union
 
 from aenum import unique
 
-from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum, RawByte
 
 
 @unique

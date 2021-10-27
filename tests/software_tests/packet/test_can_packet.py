@@ -2793,7 +2793,7 @@ class TestCanPacket:
 
 
 @pytest.mark.integration
-class TestPacketIntegration:
+class TestCanPacketIntegration:
     """Integration tests for `CanPacket` class."""
 
     # TODO: tests for get_can_frame_dlc

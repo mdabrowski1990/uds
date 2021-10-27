@@ -52,7 +52,7 @@ class AbstractUdsPacket(ABC):
     @property
     @abstractmethod
     def raw_frame_data(self) -> RawBytesTuple:
-        """Raw bytes of data of a frame that carries this packet."""
+        """Raw data bytes of a frame that carries this CAN packet."""
 
     @property
     @abstractmethod
@@ -131,8 +131,8 @@ class AbstractUdsPacketRecord(ABC):
 
     @property
     @abstractmethod
-    def raw_data(self) -> RawBytesTuple:
-        """Raw bytes of data that this packet carried."""
+    def raw_frame_data(self) -> RawBytesTuple:
+        """Raw data bytes of a frame that carried this CAN packet."""
 
     @property
     @abstractmethod

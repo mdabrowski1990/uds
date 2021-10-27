@@ -1200,6 +1200,36 @@ class CanPacket(AbstractUdsPacket):
                 return [address_extension]
         raise NotImplementedError("Missing implementation")
 
+    @staticmethod
+    def __validate_ai_normal_11bit(addressing: AddressingTypeMemberTyping,
+                                   can_id: int,
+                                   target_address: Optional[RawByte] = None,
+                                   source_address: Optional[RawByte] = None,
+                                   address_extension: Optional[RawByte] = None) -> None:
+        """
+        Validate consistency of Address Information arguments when Normal 11-bit Addressing Format is used.
+
+        :param addressing: Addressing type to validate.
+        :param can_id: CAN Identifier value to validate.
+        :param target_address: Target Address value to validate.
+        :param source_address: Source Address value to validate.
+        :param address_extension: Address Extension value to validate.
+
+        :raise UnusedArgumentError: Value for at least one unused argument (not relevant for this can addressing format)
+            was provided.
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
+        """
+        AddressingType.validate_member(addressing)
+        if (target_address, source_address, address_extension) != (None, None, None):
+            raise UnusedArgumentError(f"Either target_address, source_address or address_extension argument was "
+                                      f"provided for Normal 11-bit Addressing Format. Actual values: "
+                                      f"target_address={target_address}, source_address={source_address}, "
+                                      f"address_extension={address_extension}")
+        CanIdHandler.validate_can_id(can_id)
+        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):
+            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
+                                             f"Normal 11-bit Addressing Format. Actual value: {can_id}")
+
     # TODO: review whether the rest is needed
 
 
@@ -1209,50 +1239,6 @@ class CanPacket(AbstractUdsPacket):
 
 
 
-
-
-
-
-    # @classmethod
-    # def get_payload_length(cls,
-    #                        addressing_format: CanAddressingFormatTyping,
-    #                        packet_type: CanPacketType,
-    #                        dlc: Optional[int] = None) -> int:
-    #     # TODO
-    #     ...
-    #
-    # @classmethod
-    # def get_max_payload_length_single_frame(cls,  # TODO: get rid of it or transform to private
-    #                                         addressing_format: CanAddressingFormatTyping,
-    #                                         dlc: Optional[int] = None) -> int:
-    #     """
-    #     Get maximal value of Single Frame Data Length (SF_DL) for a CAN packet.
-    #
-    #     :param addressing_format: CAN addressing format to use in considered CAN Packet.
-    #     :param dlc: Value of DLC value in a CAN frame.
-    #         Leave None to use maximal value.
-    #
-    #     :return: Maximal value of SF_DL that UDS Packet with provided Addressing Format and DLC can fit in.
-    #         If negative, then a greater value of DLC must be used.
-    #     """
-    #     frame_data_bytes_number = CanDlcHandler.MAX_DATA_BYTES_NUMBER if dlc is None else CanDlcHandler.decode(dlc)
-    #     data_bytes_used_for_ai = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
-    #     data_bytes_used_for_sfdl_and_npci = cls.DATA_BYTES_SHORT_SF_DL \
-    #         if dlc is not None and dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.DATA_BYTES_LONG_SF_DL
-    #     return frame_data_bytes_number - data_bytes_used_for_ai - data_bytes_used_for_sfdl_and_npci
-    #
-    # @classmethod
-    # def get_payload_length_first_frame(cls,  # TODO: get rid of it or transform to private
-    #                                    addressing_format: CanAddressingFormatTyping,
-    #                                    data_length: int,
-    #                                    dlc: int) -> int:
-    #     ...  # TODO
-    #
-    # @classmethod
-    # def get_max_payload_length_consecutive_frame(cls,  # TODO: get rid of it or transform to private
-    #                                              addressing_format: CanAddressingFormatTyping,
-    #                                              dlc: Optional[int] = None) -> int:
-    #     ...  # TODO
 
 
 
@@ -1312,35 +1298,7 @@ class CanPacket(AbstractUdsPacket):
             raise NotImplementedError(f"Unknown CAN Addressing Format value was provided: "
                                       f"{can_addressing_format_instance}")
 
-    @staticmethod
-    def __validate_ai_normal_11bit(addressing: AddressingTypeMemberTyping,
-                                   can_id: int,
-                                   target_address: Optional[RawByte] = None,
-                                   source_address: Optional[RawByte] = None,
-                                   address_extension: Optional[RawByte] = None) -> None:
-        # TODO: update docstring (same for siblings)
-        """
-        Validate consistency of Address Information arguments when Normal 11-bit Addressing Format is used.
 
-        :param can_id: CAN Identifier value to validate.
-        :param target_address: Target Address value to validate.
-        :param source_address: Source Address value to validate.
-        :param address_extension: Address Extension value to validate.
-
-        :raise UnusedArgumentError: Value for at least one unused argument (not relevant for this can addressing format)
-            was provided.
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
-        """
-        # TODO: refactor the code and test it (same for siblings)
-        if (target_address, source_address, address_extension) != (None, None, None):
-            raise UnusedArgumentError(f"Either target_address, source_address or address_extension argument was "
-                                      f"provided for Normal 11-bit Addressing Format. Actual values: "
-                                      f"target_address={target_address}, source_address={source_address}, "
-                                      f"address_extension={address_extension}")
-        CanIdHandler.validate_can_id(can_id)
-        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):
-            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
-                                             f"Normal 11-bit Addressing Format. Actual value: {can_id}")
 
     @staticmethod
     def __validate_ai_normal_fixed(addressing: AddressingTypeMemberTyping,
