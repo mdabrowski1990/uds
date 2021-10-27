@@ -10,7 +10,7 @@ class UnusedArgumentWarning(Warning):
     Example:
         A function takes two parameters: a, b
 
-        Let's assume that parameter a must always be provided. Parameter b is used only when a == 1.
+        Let's assume that parameter `a` must always be provided. Parameter `b` is used only when `a == 1`.
 
-        The function would warn (with this warning) for following parameters: a=0, b=10.
+        The function would warn (using this warning) when both parameters are provided but `a != 1`.
     """

@@ -11,6 +11,8 @@ from typing import Any
 
 from aenum import Enum, IntEnum, extend_enum
 
+from .common_types import validate_nibble, validate_raw_byte
+
 
 class ExtendableEnum(Enum):
     """Enum that supports new members adding."""
@@ -75,16 +77,10 @@ class ByteEnum(IntEnum):
         Creation of a new member.
 
         :param value: One byte integer.
-
-        :raise TypeError: Provided value is not int type.
-        :raise ValueError: Provided value is not in inclusive range 0x00-0xFF.
         """
-        if not isinstance(value, int):
-            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}")
-        if not 0x00 <= value <= 0xFF:
-            raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}")
+        validate_raw_byte(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa: F841
+        member._value_ = value
         return member
 
 
@@ -96,14 +92,8 @@ class NibbleEnum(IntEnum):
         Creation of a new member.
 
         :param value: One nibble (4 bits) integer.
-
-        :raise TypeError: Provided value is not int type.
-        :raise ValueError: Provided value is not in inclusive range 0x0-0xF.
         """
-        if not isinstance(value, int):
-            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}")
-        if not 0x0 <= value <= 0xF:
-            raise ValueError(f"Provided 'value' is not in range 0x0-0xF. Actual value = {value}")
+        validate_nibble(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa: F841
+        member._value_ = value
         return member
