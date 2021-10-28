@@ -3,7 +3,6 @@
 __all__ = ["Endianness", "EndiannessMemberAlias", "bytes_list_to_int", "int_to_bytes_list"]
 
 from typing import Union, Optional
-from functools import reduce
 
 from aenum import StrEnum
 
@@ -19,10 +18,10 @@ class Endianness(StrEnum, ValidatedEnum):
     `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
     """
 
-    LITTLE_ENDIAN = "Little Endian"
+    LITTLE_ENDIAN = "little"
     """Little Endian stores the most significant byte at the largest memory address and the least significant byte
     at the smallest."""
-    BIG_ENDIAN = "Big Endian"
+    BIG_ENDIAN = "big"
     """Big Endian stores the most significant byte at the smallest memory address and the least significant byte
     at the largest."""
 
@@ -38,20 +37,11 @@ def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessMemberAlias = 
     :param bytes_list: List of bytes to convert.
     :param endianness: Order of bytes to use.
 
-    :raise NotImplementedError: A valid value of endianness was provided, but the implementation is missing.
-        Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-        whenever you see this error.
-
     :return: The integer value represented by provided list of bytes.
     """
     validate_raw_bytes(bytes_list)
     Endianness.validate_member(endianness)
-    endianness_instance = Endianness(endianness)
-    if endianness_instance == Endianness.BIG_ENDIAN:
-        return reduce(lambda total_value, new_value: (total_value << 8) + new_value, bytes_list)
-    if endianness_instance == Endianness.LITTLE_ENDIAN:
-        return reduce(lambda total_value, new_value: (total_value << 8) + new_value, reversed(bytes_list))
-    raise NotImplementedError(f"Implementation missing for: {endianness_instance}.")
+    return int.from_bytes(bytes=bytes_list, byteorder=endianness)
 
 
 def int_to_bytes_list(int_value: int,
@@ -83,15 +73,15 @@ def int_to_bytes_list(int_value: int,
         if list_size <= 0:
             raise ValueError(f"Provided `list_size` is not greater than zero. Actual value: {list_size}")
     Endianness.validate_member(endianness)
-    endianness_instance = Endianness(endianness)
     bytes_number = max(1, (int_value.bit_length() + 7) // 8)
     list_size = list_size or bytes_number
     if list_size < bytes_number:
         raise InconsistentArgumentsError(f"Provided value of `list_size` is too small to contain all byte of int_value."
                                          f"Actual values: int_value={int_value}, list_size={list_size}")
-    bytes_list = [(int_value >> (8 * byte_index)) & 0xFF for byte_index in range(list_size)]
-    if endianness_instance == Endianness.BIG_ENDIAN:
-        return bytes_list[::-1]
-    if endianness_instance == Endianness.LITTLE_ENDIAN:
-        return bytes_list
-    raise NotImplementedError(f"Implementation missing for: {endianness_instance}.")
+    hex_value = ("{:0%dX}" % (2*bytes_number)).format(int_value)
+    bytes_list = list(bytes.fromhex(hex_value))
+    if endianness == Endianness.BIG_ENDIAN:
+        return [0]*(list_size - len(bytes_list)) + bytes_list
+    if endianness == Endianness.LITTLE_ENDIAN:
+        return bytes_list[::-1] + [0]*(list_size - len(bytes_list))
+    raise NotImplementedError(f"Implementation missing for: {endianness}.")

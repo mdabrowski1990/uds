@@ -30,14 +30,6 @@ class TestFunctions:
 
     # bytes_list_to_int
 
-    @pytest.mark.parametrize("endianness", [None, "some unknown endianness"])
-    @pytest.mark.parametrize("bytes_list", [[0], [0xF0, 0xE1]])
-    @patch(f"{SCRIPT_LOCATION}.Endianness")
-    def test_bytes_list_to_int__unknown_endianness(self, mock_endianness_class, bytes_list, endianness):
-        with pytest.raises(NotImplementedError):
-            bytes_list_to_int(bytes_list=bytes_list, endianness=endianness)
-        mock_endianness_class.assert_called_once_with(endianness)
-
     @pytest.mark.parametrize("bytes_list, endianness, expected_output", [
         ([0xF0], Endianness.BIG_ENDIAN, 0xF0),
         ([0xF0], Endianness.LITTLE_ENDIAN, 0xF0),
@@ -54,38 +46,32 @@ class TestFunctions:
     # int_to_bytes_list
 
     @pytest.mark.parametrize("int_value", [None, 5., "not an integer value"])
-    @patch(f"{SCRIPT_LOCATION}.Endianness")
-    def test_int_to_bytes_list__int_value_type_error(self, mock_endianness_class, int_value):
+    def test_int_to_bytes_list__int_value_type_error(self, int_value):
         with pytest.raises(TypeError):
             int_to_bytes_list(int_value=int_value)
 
     @pytest.mark.parametrize("int_value", [0, 100])
     @pytest.mark.parametrize("list_size", [5., "not an integer value"])
-    @patch(f"{SCRIPT_LOCATION}.Endianness")
-    def test_int_to_bytes_list__list_size_type_error(self, mock_endianness_class, int_value, list_size):
+    def test_int_to_bytes_list__list_size_type_error(self, int_value, list_size):
         with pytest.raises(TypeError):
             int_to_bytes_list(int_value=int_value, list_size=list_size)
 
     @pytest.mark.parametrize("int_value", [-99, -1])
-    @patch(f"{SCRIPT_LOCATION}.Endianness")
-    def test_int_to_bytes_list__int_value_value_error(self, mock_endianness_class, int_value):
+    def test_int_to_bytes_list__int_value_value_error(self, int_value):
         with pytest.raises(ValueError):
             int_to_bytes_list(int_value=int_value)
 
     @pytest.mark.parametrize("int_value", [0, 100])
     @pytest.mark.parametrize("list_size", [-99, -1])
-    @patch(f"{SCRIPT_LOCATION}.Endianness")
-    def test_int_to_bytes_list__list_size_value_error(self, mock_endianness_class, int_value, list_size):
+    def test_int_to_bytes_list__list_size_value_error(self, int_value, list_size):
         with pytest.raises(ValueError):
             int_to_bytes_list(int_value=int_value, list_size=list_size)
 
     @pytest.mark.parametrize("endianness", [None, "some unknown endianness"])
     @pytest.mark.parametrize("int_value", [0, 0xF0E1])
-    @patch(f"{SCRIPT_LOCATION}.Endianness")
-    def test_int_to_bytes_list__unknown_endianness(self, mock_endianness_class, int_value, endianness):
+    def test_int_to_bytes_list__unknown_endianness(self, int_value, endianness):
         with pytest.raises(NotImplementedError):
             int_to_bytes_list(int_value=int_value, endianness=endianness)
-        mock_endianness_class.assert_called_once_with(endianness)
 
     @pytest.mark.parametrize("endianness, int_value, list_size", [
         (Endianness.BIG_ENDIAN, 0xF0E1, 1),
@@ -121,7 +107,7 @@ class TestFunctions:
         ([0, 0x98, 0x76, 0x54, 0x32, 0x1F], Endianness.BIG_ENDIAN, 0x987654321F, 6),
         ([0x98, 0x76, 0x54, 0x32, 0x1F, 0], Endianness.LITTLE_ENDIAN, 0x1F32547698, 6),
     ])
-    def test_int_to_bytes_list__with_list(self, int_value, endianness, list_size, expected_output):
+    def test_int_to_bytes_list__with_list_size(self, int_value, endianness, list_size, expected_output):
         assert int_to_bytes_list(int_value=int_value, endianness=endianness, list_size=list_size) == expected_output
         self.mock_validate_endianness.assert_called_once_with(endianness)
 
