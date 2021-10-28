@@ -443,6 +443,29 @@ class TestCanIdHandler:
                == (addressing_type, target_address, source_address)
 
 
+@pytest.mark.integration
+class TestTestCanIdHandlerIntegration:
+    """Integration tests for `TestCanIdHandler` class."""
+
+    @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
+    @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
+    def test_encode_decode_normal_fixed_can_id(self, example_addressing_type, target_address, source_address):
+        can_id = CanIdHandler.get_normal_fixed_addressed_can_id(addressing_type=example_addressing_type,
+                                                                target_address=target_address,
+                                                                source_address=source_address)
+        assert CanIdHandler.decode_normal_fixed_addressed_can_id(can_id) == \
+               (example_addressing_type, target_address, source_address)
+
+    @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
+    @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
+    def test_encode_decode_mixed_29bit_can_id(self, example_addressing_type, target_address, source_address):
+        can_id = CanIdHandler.get_mixed_addressed_29bit_can_id(addressing_type=example_addressing_type,
+                                                               target_address=target_address,
+                                                               source_address=source_address)
+        assert CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id) == \
+               (example_addressing_type, target_address, source_address)
+
+
 class TestCanDlcHandler:
     """Tests for `CanDlcHandler` class."""
 
