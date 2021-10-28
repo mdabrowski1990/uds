@@ -4,7 +4,7 @@ Implementation of diagnostic messages addressing.
 :ref:`Addressing <knowledge-base-addressing>` describes a communication model that is used during UDS communication.
 """
 
-__all__ = ["AddressingType", "AddressingTypeMemberAlias"]
+__all__ = ["AddressingType", "AddressingTypeAlias"]
 
 from typing import Union
 
@@ -28,5 +28,5 @@ class AddressingType(StrEnum, ValidatedEnum):
     communication."""
 
 
-AddressingTypeMemberAlias = Union[AddressingType, str]
+AddressingTypeAlias = Union[AddressingType, str]
 """Alias that describes :class:`~uds.transmission_attributes.addressing.AddressingType` member."""

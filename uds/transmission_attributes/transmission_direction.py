@@ -1,6 +1,6 @@
 """Definition of communication direction."""
 
-__all__ = ["TransmissionDirection", "TransmissionDirectionMemberAlias"]
+__all__ = ["TransmissionDirection", "TransmissionDirectionAlias"]
 
 from typing import Union
 
@@ -19,5 +19,5 @@ class TransmissionDirection(StrEnum, ValidatedEnum):
     """Outcoming transmission from the perspective of the code."""
 
 
-TransmissionDirectionMemberAlias = Union[TransmissionDirection, str]
+TransmissionDirectionAlias = Union[TransmissionDirection, str]
 """Alias that describes :class:`~uds.transmission_attributes.transmission_direction.TransmissionDirection` member."""

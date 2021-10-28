@@ -12,7 +12,7 @@ __all__ = ["CanIdHandler", "CanDlcHandler"]
 from typing import Any, Optional, Tuple, Set, Dict
 from bisect import bisect_left
 
-from uds.transmission_attributes import AddressingType, AddressingTypeMemberAlias
+from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.utilities import RawByte, validate_raw_byte
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
@@ -112,7 +112,7 @@ class CanIdHandler:
     def is_compatible_can_id(cls,
                              can_id: int,
                              addressing_format: CanAddressingFormatAlias,
-                             addressing: Optional[AddressingTypeMemberAlias] = None) -> bool:
+                             addressing: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if provided value of CAN ID is compatible with addressing format used.
 
@@ -154,7 +154,7 @@ class CanIdHandler:
 
     @classmethod
     def is_normal_fixed_addressed_can_id(cls, can_id: int,
-                                         addressing: Optional[AddressingTypeMemberAlias] = None) -> bool:
+                                         addressing: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if provided value of CAN ID uses Normal Fixed Addressing format.
 
@@ -201,7 +201,7 @@ class CanIdHandler:
 
     @classmethod
     def is_mixed_29bit_addressed_can_id(cls, can_id: int,
-                                        addressing: Optional[AddressingTypeMemberAlias] = None) -> bool:
+                                        addressing: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if provided value of CAN ID uses Mixed 29-bit Addressing format.
 
@@ -225,7 +225,7 @@ class CanIdHandler:
 
     @classmethod
     def get_normal_fixed_addressed_can_id(cls,
-                                          addressing_type: AddressingTypeMemberAlias,
+                                          addressing_type: AddressingTypeAlias,
                                           target_address: RawByte,
                                           source_address: RawByte) -> int:
         """
@@ -252,7 +252,7 @@ class CanIdHandler:
 
     @classmethod
     def get_mixed_addressed_29bit_can_id(cls,
-                                         addressing_type: AddressingTypeMemberAlias,
+                                         addressing_type: AddressingTypeAlias,
                                          target_address: RawByte,
                                          source_address: RawByte) -> int:
         """

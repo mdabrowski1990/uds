@@ -5,7 +5,7 @@ Implementation of UDS packets that is common for all bus types.
 """
 
 __all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
-           "PacketTyping", "PacketsTuple", "PacketsSequence",
+           "PacketAlias", "PacketsTuple", "PacketsSequence",
            "PacketsDefinitionTuple", "PacketsDefinitionSequence",
            "PacketsRecordsTuple", "PacketsRecordsSequence",
            "PacketTypesTuple"]
@@ -16,7 +16,7 @@ from typing import Union, Tuple, List, Any
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
     RawBytesTuple, ReassignmentError, TimeStamp
 from uds.transmission_attributes.addressing import AddressingType
-from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionMemberAlias
+from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionAlias
 
 
 class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
@@ -64,7 +64,7 @@ class AbstractUdsPacketRecord(ABC):
     """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
-    def __init__(self, frame: object, direction: TransmissionDirectionMemberAlias) -> None:
+    def __init__(self, frame: object, direction: TransmissionDirectionAlias) -> None:
         """
         Create a record of a historic information about a packet that was either received or transmitted.
 
@@ -91,7 +91,7 @@ class AbstractUdsPacketRecord(ABC):
         return self.__frame
 
     @frame.setter
-    def frame(self, value: TransmissionDirectionMemberAlias):
+    def frame(self, value: TransmissionDirectionAlias):
         """
         Set value of frame attribute.
 
@@ -113,7 +113,7 @@ class AbstractUdsPacketRecord(ABC):
         return self.__direction
 
     @direction.setter
-    def direction(self, value: TransmissionDirectionMemberAlias):
+    def direction(self, value: TransmissionDirectionAlias):
         """
         Set value of direction attribute.
 
@@ -163,7 +163,7 @@ PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
 PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
 """Typing alias of a sequence filled with :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` instances."""
 
-PacketTyping = Union[AbstractUdsPacket, AbstractUdsPacketRecord]
+PacketAlias = Union[AbstractUdsPacket, AbstractUdsPacketRecord]
 """Typing alias of UDS packet."""
 PacketsTuple = Union[PacketsDefinitionTuple, PacketsRecordsTuple]  # noqa: F841
 """Typing alias of a tuple filled with UDS packets."""

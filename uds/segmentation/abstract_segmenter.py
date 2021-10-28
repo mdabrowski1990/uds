@@ -6,7 +6,7 @@ from typing import Tuple, Union, Any
 from abc import ABC, abstractmethod
 
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import PacketTyping, PacketsSequence, PacketsDefinitionTuple
+from uds.packet import PacketAlias, PacketsSequence, PacketsDefinitionTuple
 
 
 class SegmentationError(ValueError):
@@ -90,7 +90,7 @@ class AbstractSegmenter(ABC):
             self.get_consecutive_packets_number(packets[0]) == len(packets)
 
     @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # noqa: F841
+    def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:  # noqa: F841
         """
         Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
 

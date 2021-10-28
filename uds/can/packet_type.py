@@ -1,6 +1,6 @@
 """CAN packet types definitions."""
 
-__all__ = ["CanPacketType", "CanPacketTypeMemberAlias"]
+__all__ = ["CanPacketType", "CanPacketTypeAlias"]
 
 from typing import Any, Union
 
@@ -40,5 +40,5 @@ class CanPacketType(AbstractUdsPacketType):
         return cls(value) in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
 
 
-CanPacketTypeMemberAlias = Union[CanPacketType, int]
+CanPacketTypeAlias = Union[CanPacketType, int]
 """Alias that describes :class:`~uds.can.packet_type.CanPacketType` member type."""

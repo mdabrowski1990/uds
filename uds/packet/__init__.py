@@ -9,7 +9,7 @@ It provides tools for:
 """
 
 from .abstract_packet import AbstractUdsPacketType, AbstractUdsPacket, AbstractUdsPacketRecord, \
-    PacketTyping, PacketsTuple, PacketsSequence, \
+    PacketAlias, PacketsTuple, PacketsSequence, \
     PacketsDefinitionTuple, PacketsDefinitionSequence, \
     PacketsRecordsTuple, PacketsRecordsSequence, \
     PacketTypesTuple  # TODO: review

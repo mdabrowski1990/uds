@@ -1,6 +1,6 @@
 """Module with bytes list operations implementation."""
 
-__all__ = ["Endianness", "EndiannessMemberAlias", "bytes_list_to_int", "int_to_bytes_list"]
+__all__ = ["Endianness", "EndiannessAlias", "bytes_list_to_int", "int_to_bytes_list"]
 
 from typing import Union, Optional
 
@@ -26,11 +26,11 @@ class Endianness(StrEnum, ValidatedEnum):
     at the largest."""
 
 
-EndiannessMemberAlias = Union[Endianness, str]
+EndiannessAlias = Union[Endianness, str]
 """Alias that describes :class:`~uds.utilities.bytes_operations.Endianness` member type."""
 
 
-def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessMemberAlias = Endianness.BIG_ENDIAN) -> int:
+def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessAlias = Endianness.BIG_ENDIAN) -> int:
     """
     Convert a list of bytes to integer value.
 
@@ -46,7 +46,7 @@ def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessMemberAlias = 
 
 def int_to_bytes_list(int_value: int,
                       list_size: Optional[int] = None,
-                      endianness: EndiannessMemberAlias = Endianness.BIG_ENDIAN) -> RawBytesList:
+                      endianness: EndiannessAlias = Endianness.BIG_ENDIAN) -> RawBytesList:
     """
     Convert integer value to a list of bytes.
 

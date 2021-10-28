@@ -13,7 +13,7 @@ __all__ = ["CanPacket", "CanPacketRecord"]
 from typing import Optional, Any
 from warnings import warn
 
-from uds.transmission_attributes import AddressingType, AddressingTypeMemberAlias
+from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.utilities import RawByte, RawBytes, RawBytesTuple, RawBytesList, validate_raw_byte, validate_raw_bytes, \
     int_to_bytes_list, bytes_list_to_int, \
     InconsistentArgumentsError, AmbiguityError, UnusedArgumentError, UnusedArgumentWarning
@@ -77,7 +77,7 @@ class CanPacket(AbstractUdsPacket):
     def __init__(self, *,
                  packet_type: CanPacketTypeMemberTyping,
                  addressing_format: CanAddressingFormatTyping,
-                 addressing: AddressingTypeMemberAlias,
+                 addressing: AddressingTypeAlias,
                  can_id: Optional[int] = None,
                  target_address: Optional[RawByte] = None,
                  source_address: Optional[RawByte] = None,
@@ -259,7 +259,7 @@ class CanPacket(AbstractUdsPacket):
     @classmethod
     def validate_address_information(cls,
                                      addressing_format: CanAddressingFormatTyping,
-                                     addressing: AddressingTypeMemberAlias,
+                                     addressing: AddressingTypeAlias,
                                      can_id: Optional[int] = None,
                                      target_address: Optional[RawByte] = None,
                                      source_address: Optional[RawByte] = None,
@@ -577,7 +577,7 @@ class CanPacket(AbstractUdsPacket):
         return tuple(frame_data_bytes)
 
     def set_address_information(self, *,
-                                addressing: AddressingTypeMemberAlias,
+                                addressing: AddressingTypeAlias,
                                 addressing_format: CanAddressingFormatTyping,
                                 can_id: Optional[int] = None,
                                 target_address: Optional[RawByte] = None,
@@ -1201,7 +1201,7 @@ class CanPacket(AbstractUdsPacket):
         raise NotImplementedError("Missing implementation")
 
     @staticmethod
-    def __validate_ai_normal_11bit(addressing: AddressingTypeMemberAlias,
+    def __validate_ai_normal_11bit(addressing: AddressingTypeAlias,
                                    can_id: int,
                                    target_address: Optional[RawByte] = None,
                                    source_address: Optional[RawByte] = None,
@@ -1246,7 +1246,7 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def __validate_ai_consistency(cls,
-                                  addressing: AddressingTypeMemberAlias,
+                                  addressing: AddressingTypeAlias,
                                   addressing_format: CanAddressingFormatTyping,
                                   can_id: Optional[int],
                                   target_address: Optional[RawByte],
@@ -1301,7 +1301,7 @@ class CanPacket(AbstractUdsPacket):
 
 
     @staticmethod
-    def __validate_ai_normal_fixed(addressing: AddressingTypeMemberAlias,
+    def __validate_ai_normal_fixed(addressing: AddressingTypeAlias,
                                    can_id: Optional[int] = None,
                                    target_address: Optional[RawByte] = None,
                                    source_address: Optional[RawByte] = None,
@@ -1341,7 +1341,7 @@ class CanPacket(AbstractUdsPacket):
                                                  f"Normal Fixed Addressing Format. Actual value: {can_id}")
 
     @staticmethod
-    def __validate_ai_extended(addressing: AddressingTypeMemberAlias,
+    def __validate_ai_extended(addressing: AddressingTypeAlias,
                                can_id: int,
                                target_address: RawByte,
                                source_address: Optional[RawByte] = None,
@@ -1369,7 +1369,7 @@ class CanPacket(AbstractUdsPacket):
         validate_raw_byte(target_address)
 
     @staticmethod
-    def __validate_ai_mixed_11bit(addressing: AddressingTypeMemberAlias,
+    def __validate_ai_mixed_11bit(addressing: AddressingTypeAlias,
                                   can_id: Optional[int],
                                   target_address: Optional[RawByte],
                                   source_address: Optional[RawByte],
@@ -1397,7 +1397,7 @@ class CanPacket(AbstractUdsPacket):
         validate_raw_byte(address_extension)
 
     @staticmethod
-    def __validate_ai_mixed_29bit(addressing: AddressingTypeMemberAlias,
+    def __validate_ai_mixed_29bit(addressing: AddressingTypeAlias,
                                   can_id: Optional[int],
                                   target_address: Optional[RawByte],
                                   source_address: Optional[RawByte],
