@@ -4,41 +4,19 @@ Implementation of UDS packets that is common for all bus types.
 :ref:`UDS packets <knowledge-base-uds-packet>` are defined on middle layers of UDS OSI Model.
 """
 
-__all__ = ["AbstractUdsPacketType", "AbstractUdsPacket", "AbstractUdsPacketRecord",
+__all__ = ["AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketAlias", "PacketsTuple", "PacketsSequence",
            "PacketsDefinitionTuple", "PacketsDefinitionSequence",
            "PacketsRecordsTuple", "PacketsRecordsSequence",
            "PacketTypesTuple"]
 
 from abc import ABC, abstractmethod
-from typing import Union, Tuple, List, Any
+from typing import Union, Optional, Any, Tuple, List
 
-from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, \
-    RawBytesTuple, ReassignmentError, TimeStamp
+from uds.utilities import RawBytesTuple, ReassignmentError, TimeStamp
 from uds.transmission_attributes.addressing import AddressingType
 from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionAlias
-
-
-class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
-    """
-    Abstract definition of UDS packet type.
-
-    Packet type information is carried by :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`.
-    Enums with packet types (N_PCI) values for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.
-
-    .. note:: There are differences in values for each bus (e.g. LIN does not use Flow Control).
-    """
-
-    @classmethod
-    @abstractmethod
-    def is_initial_packet_type(cls, value: Any) -> bool:
-        """
-        Check whether given argument is a member or a value of packet type that initiates a diagnostic message.
-
-        :param value: Value to check.
-
-        :return: True if given argument is a packet type that initiates a diagnostic message, else False.
-        """
+from .abstract_packet_type import AbstractUdsPacketType
 
 
 class AbstractUdsPacket(ABC):
@@ -52,12 +30,22 @@ class AbstractUdsPacket(ABC):
     @property
     @abstractmethod
     def raw_frame_data(self) -> RawBytesTuple:
-        """Raw data bytes of a frame that carries this CAN packet."""
+        """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
         """UDS packet type value - N_PCI value of this N_PDU."""
+
+    @property
+    @abstractmethod
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Diagnostic message payload carried by this packet."""  # TODO: update
+
+    @property
+    @abstractmethod
+    def data_length(self) -> Optional[int]:
+        """Payload bytes number of a diagnostic message that is carried by this this packet."""  # TODO: update
 
 
 class AbstractUdsPacketRecord(ABC):
@@ -149,7 +137,18 @@ class AbstractUdsPacketRecord(ABC):
     def packet_type(self) -> AbstractUdsPacketType:
         """UDS packet type value - N_PCI value of this N_PDU."""
 
+    @property
+    @abstractmethod
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Diagnostic message payload carried by this packet."""  # TODO: update
 
+    @property
+    @abstractmethod
+    def data_length(self) -> Optional[int]:
+        """Payload bytes number of a diagnostic message that is carried by this this packet."""  # TODO: update 
+
+
+# TODO: get rid of these if possible
 PacketTypesTuple = Tuple[AbstractUdsPacketType, ...]
 """Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacketType` members."""
 

@@ -4,6 +4,11 @@ Implementation of CAN Addressing Information.
 This module contains helper class and methods for managing CAN :ref:`Addressing Information <knowledge-base-n-ai>`.
 """
 
+from typing import Tuple
+
+from uds.utilities import RawByte
+from uds.transmission_attributes import AddressingType
+
 
 class CanAddressingInformationHandler:
     """

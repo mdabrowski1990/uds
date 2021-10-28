@@ -135,3 +135,5 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 # extend 'ResponseSID' with members that were defined in RequestSID
 for request_sid_member in RequestSID:  # type: ignore
     ResponseSID.add_member(request_sid_member.name, request_sid_member.value + 0x40)
+
+# TODO: add aliases

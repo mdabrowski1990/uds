@@ -5,7 +5,7 @@ Module with an entire Negative Response Code (NRC) data parameters implementatio
     ISO 14229-1 standard.
 """
 
-__all__ = ["NRC", "NRCMemberAlias"]
+__all__ = ["NRC"]
 
 from typing import Union
 
@@ -230,3 +230,5 @@ class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):
     information is temporality not available. This NRC is in general supported by each diagnostic service, as not
     otherwise stated in the data link specific implementation document, therefore it is not listed in the list of
     applicable response codes of the diagnostic services."""
+
+# TODO: add alias

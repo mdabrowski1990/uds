@@ -2,28 +2,14 @@ import pytest
 from mock import Mock, patch
 
 from uds.packet.abstract_packet import AbstractUdsPacket, AbstractUdsPacketType, AbstractUdsPacketRecord, \
-    AddressingType, NibbleEnum, ValidatedEnum, ExtendableEnum, TransmissionDirection, ReassignmentError
+    AddressingType, TransmissionDirection, ReassignmentError
 
 
-class TestAbstractPacketType:
-    """Tests for 'AbstractPacketType' class."""
+
+class TestAbstractUdsPacket:
+    """Tests for 'AbstractUdsPacket' class."""
 
     SCRIPT_LOCATION = "uds.packet.abstract_packet"
-
-    def test_inheritance__nibble_enum(self):
-        assert issubclass(AbstractUdsPacketType, NibbleEnum)
-
-    def test_inheritance__validated_enum(self):
-        assert issubclass(AbstractUdsPacketType, ValidatedEnum)
-
-    def test_inheritance__extendable_enum(self):
-        assert issubclass(AbstractUdsPacketType, ExtendableEnum)
-
-
-# class TestAbstractUdsPacket:
-#     """Tests for 'AbstractUdsPacket' class."""
-#
-#     SCRIPT_LOCATION = TestAbstractPacketType.SCRIPT_LOCATION
 #
 #     def setup(self):
 #         self.mock_abstract_packet = Mock(spec=AbstractUdsPacket)
@@ -87,7 +73,7 @@ class TestAbstractPacketType:
 class TestAbstractUdsPacketRecord:
     """Tests for 'AbstractUdsPacketRecord' class."""
 
-    SCRIPT_LOCATION = TestAbstractPacketType.SCRIPT_LOCATION
+    SCRIPT_LOCATION = TestAbstractUdsPacket.SCRIPT_LOCATION
 
     def setup(self):
         self.mock_packet_record = Mock(spec=AbstractUdsPacketRecord)

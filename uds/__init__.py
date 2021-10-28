@@ -28,5 +28,5 @@ __license__ = "MIT"
 import uds.transmission_attributes
 import uds.packet
 import uds.message
-import uds.segmentation
 import uds.transport_interface
+import uds.can

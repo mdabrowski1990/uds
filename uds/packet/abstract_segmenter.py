@@ -1,4 +1,10 @@
-"""Definition of API for segmentation and desegmentation strategies."""
+"""
+Definition of API for segmentation and desegmentation strategies.
+
+:ref:`Segmentation <knowledge-base-segmentation>` defines two processes:
+ - :ref:`diagnostic message segmentation <knowledge-base-message-segmentation>`
+ - :ref:`packets desegmentation <knowledge-base-packets-desegmentation>`
+"""
 
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
@@ -6,7 +12,7 @@ from typing import Tuple, Union, Any
 from abc import ABC, abstractmethod
 
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import PacketAlias, PacketsSequence, PacketsDefinitionTuple
+from .abstract_packet import PacketAlias, PacketsSequence, PacketsDefinitionTuple
 
 
 class SegmentationError(ValueError):

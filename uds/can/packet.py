@@ -8,7 +8,7 @@ This module contains implementation of :ref:`CAN packets <knowledge-base-uds-can
  - :ref:`Flow Control <knowledge-base-can-flow-control>`
 """
 
-__all__ = ["CanPacket", "CanPacketRecord"]
+__all__ = ["CanPacket"]
 
 from typing import Optional, Any
 from warnings import warn
@@ -18,10 +18,11 @@ from uds.utilities import RawByte, RawBytes, RawBytesTuple, RawBytesList, valida
     int_to_bytes_list, bytes_list_to_int, \
     InconsistentArgumentsError, AmbiguityError, UnusedArgumentError, UnusedArgumentWarning
 
-from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord
-from .can_packet_attributes import DEFAULT_FILLER_BYTE, CanAddressingFormat, CanAddressingFormatTyping, \
-    CanPacketType, CanPacketTypeMemberTyping, CanIdHandler, CanDlcHandler
-from .can_flow_control import CanFlowStatus, CanFlowStatusTyping, CanSTminTranslator
+from uds.packet.abstract_packet import AbstractUdsPacket
+from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .can_frame_fields import CanIdHandler, CanDlcHandler, DEFAULT_FILLER_BYTE
+from .flow_control import CanFlowStatus, CanFlowStatusAlias, CanSTminTranslator
+from .packet_type import CanPacketType, CanPacketTypeAlias
 
 
 class CanPacket(AbstractUdsPacket):
@@ -75,8 +76,8 @@ class CanPacket(AbstractUdsPacket):
     packets."""
 
     def __init__(self, *,
-                 packet_type: CanPacketTypeMemberTyping,
-                 addressing_format: CanAddressingFormatTyping,
+                 packet_type: CanPacketTypeAlias,
+                 addressing_format: CanAddressingFormatAlias,
                  addressing: AddressingTypeAlias,
                  can_id: Optional[int] = None,
                  target_address: Optional[RawByte] = None,
@@ -143,7 +144,7 @@ class CanPacket(AbstractUdsPacket):
     @classmethod
     def get_can_frame_dlc(cls,
                           packet_type: CanPacketType,
-                          addressing_format: CanAddressingFormatTyping,
+                          addressing_format: CanAddressingFormatAlias,
                           payload_length: Optional[int] = None,
                           data_length: Optional[int] = None) -> int:
         """
@@ -182,8 +183,8 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def create_can_frame_data(cls, *,
-                              packet_type: CanPacketTypeMemberTyping,
-                              addressing_format: CanAddressingFormatTyping,
+                              packet_type: CanPacketTypeAlias,
+                              addressing_format: CanAddressingFormatAlias,
                               dlc: Optional[int] = None,
                               filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE,
                               target_address: Optional[RawByte] = None,
@@ -258,7 +259,7 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def validate_address_information(cls,
-                                     addressing_format: CanAddressingFormatTyping,
+                                     addressing_format: CanAddressingFormatAlias,
                                      addressing: AddressingTypeAlias,
                                      can_id: Optional[int] = None,
                                      target_address: Optional[RawByte] = None,
@@ -318,7 +319,7 @@ class CanPacket(AbstractUdsPacket):
             raise NotImplementedError(f"Missing implementation for: {addressing_format_instance}")
 
     @classmethod
-    def get_can_frame_dlc_single_frame(cls, addressing_format: CanAddressingFormatTyping, payload_length: int) -> int:
+    def get_can_frame_dlc_single_frame(cls, addressing_format: CanAddressingFormatAlias, payload_length: int) -> int:
         """
         Get the value of a CAN frame DLC that carries a Single Frame packet.
 
@@ -344,7 +345,7 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def get_can_frame_dlc_first_frame(cls,
-                                      addressing_format: CanAddressingFormatTyping,
+                                      addressing_format: CanAddressingFormatAlias,
                                       data_length: int,
                                       payload_length: int) -> int:
         """
@@ -374,7 +375,7 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def get_can_frame_dlc_consecutive_frame(cls,
-                                            addressing_format: CanAddressingFormatTyping,
+                                            addressing_format: CanAddressingFormatAlias,
                                             payload_length: int) -> int:
         """
         Get value of a CAN frame DLC that carries a Consecutive Frame packet.
@@ -390,7 +391,7 @@ class CanPacket(AbstractUdsPacket):
         return CanDlcHandler.get_min_dlc(ai_data_bytes + cls.SN_BYTES_USED + payload_length)
 
     @classmethod
-    def get_can_frame_dlc_flow_control(cls, addressing_format: CanAddressingFormatTyping) -> int:
+    def get_can_frame_dlc_flow_control(cls, addressing_format: CanAddressingFormatAlias) -> int:
         """
         Get the value of a CAN frame DLC that carries a Flow Control packet.
 
@@ -404,7 +405,7 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def create_can_frame_data_single_frame(cls,
-                                           addressing_format: CanAddressingFormatTyping,
+                                           addressing_format: CanAddressingFormatAlias,
                                            payload: RawBytes,
                                            dlc: Optional[int] = None,
                                            filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE,
@@ -448,7 +449,7 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def create_can_frame_data_first_frame(cls,
-                                          addressing_format: CanAddressingFormatTyping,
+                                          addressing_format: CanAddressingFormatAlias,
                                           payload: RawBytes,
                                           dlc: int,
                                           data_length: int,
@@ -484,7 +485,7 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def create_can_frame_data_consecutive_frame(cls,
-                                                addressing_format: CanAddressingFormatTyping,
+                                                addressing_format: CanAddressingFormatAlias,
                                                 payload: RawBytes,
                                                 sequence_number: int,
                                                 dlc: Optional[int] = None,
@@ -528,8 +529,8 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def create_can_frame_data_flow_control(cls,
-                                           addressing_format: CanAddressingFormatTyping,
-                                           flow_status: CanFlowStatusTyping,
+                                           addressing_format: CanAddressingFormatAlias,
+                                           flow_status: CanFlowStatusAlias,
                                            block_size: Optional[RawByte] = None,
                                            stmin: Optional[RawByte] = None,
                                            dlc: Optional[int] = None,
@@ -578,7 +579,7 @@ class CanPacket(AbstractUdsPacket):
 
     def set_address_information(self, *,
                                 addressing: AddressingTypeAlias,
-                                addressing_format: CanAddressingFormatTyping,
+                                addressing_format: CanAddressingFormatAlias,
                                 can_id: Optional[int] = None,
                                 target_address: Optional[RawByte] = None,
                                 source_address: Optional[RawByte] = None,
@@ -650,7 +651,7 @@ class CanPacket(AbstractUdsPacket):
             raise NotImplementedError(f"Missing implementation for: {can_addressing_format_instance}")
 
     def set_packet_data(self, *,
-                        packet_type: CanPacketTypeMemberTyping,
+                        packet_type: CanPacketTypeAlias,
                         dlc: Optional[int] = None,
                         filler_byte: RawByte = DEFAULT_FILLER_BYTE,
                         **packet_type_specific_kwargs: Any) -> None:
@@ -804,7 +805,7 @@ class CanPacket(AbstractUdsPacket):
         self.__packet_type = CanPacketType.CONSECUTIVE_FRAME
 
     def set_flow_control_data(self,
-                              flow_status: CanFlowStatusTyping,
+                              flow_status: CanFlowStatusAlias,
                               block_size: Optional[RawByte] = None,
                               stmin: Optional[RawByte] = None,
                               dlc: Optional[int] = None,
@@ -1169,7 +1170,7 @@ class CanPacket(AbstractUdsPacket):
         return None
 
     @staticmethod
-    def __get_can_frame_data_beginning(addressing_format: CanAddressingFormatTyping,
+    def __get_can_frame_data_beginning(addressing_format: CanAddressingFormatAlias,
                                        target_address: Optional[RawByte] = None,
                                        address_extension: Optional[RawByte] = None) -> RawBytesList:
         """
@@ -1247,7 +1248,7 @@ class CanPacket(AbstractUdsPacket):
     @classmethod
     def __validate_ai_consistency(cls,
                                   addressing: AddressingTypeAlias,
-                                  addressing_format: CanAddressingFormatTyping,
+                                  addressing_format: CanAddressingFormatAlias,
                                   can_id: Optional[int],
                                   target_address: Optional[RawByte],
                                   source_address: Optional[RawByte],
@@ -1481,7 +1482,7 @@ class CanPacket(AbstractUdsPacket):
                              f"Actual value: {ff_dl}")
 
     def __validate_data(self,
-                        packet_type: CanPacketTypeMemberTyping,
+                        packet_type: CanPacketTypeAlias,
                         dlc: Optional[int],
                         filler_byte: RawByte,
                         **packet_type_specific_kwargs: Any) -> None:
@@ -1507,7 +1508,7 @@ class CanPacket(AbstractUdsPacket):
                                          **packet_type_specific_kwargs)
 
     def __validate_data_consistency(self,
-                                    packet_type: CanPacketTypeMemberTyping,
+                                    packet_type: CanPacketTypeAlias,
                                     dlc: Optional[int],
                                     **packet_type_specific_kwargs: Any) -> None:
         """
@@ -1533,7 +1534,7 @@ class CanPacket(AbstractUdsPacket):
         raise NotImplementedError(f"Unknown CAN Packet Type value was provided: {packet_type_instance}")
 
     @classmethod
-    def __validate_data_single_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: Optional[int], payload: RawBytes, filler_byte: RawByte) -> None:
+    def __validate_data_single_frame(cls, addressing_format: CanAddressingFormatAlias, dlc: Optional[int], payload: RawBytes, filler_byte: RawByte) -> None:
         # TODO: update docstring and code
         """
         Validate data parameters of single frame packet.
@@ -1552,7 +1553,7 @@ class CanPacket(AbstractUdsPacket):
                                              f"DLC value: {current_dlc}. Actual payload length: {len(payload)}.")
 
     @classmethod
-    def __validate_data_first_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: int, data_length: int, payload: RawBytes) -> None:
+    def __validate_data_first_frame(cls, addressing_format: CanAddressingFormatAlias, dlc: int, data_length: int, payload: RawBytes) -> None:
         # TODO: update docstring and code
         """
         Validate data parameters of single frame packet.
@@ -1572,7 +1573,7 @@ class CanPacket(AbstractUdsPacket):
                                              f"Actual dlc: {dlc}")
 
     @classmethod
-    def __validate_data_consecutive_frame(cls, addressing_format: CanAddressingFormatTyping, dlc: Optional[int], sequence_number: int, payload: RawBytes, filler_byte: RawByte) -> None:
+    def __validate_data_consecutive_frame(cls, addressing_format: CanAddressingFormatAlias, dlc: Optional[int], sequence_number: int, payload: RawBytes, filler_byte: RawByte) -> None:
         """
         Validate data parameters of single frame packet.
 
@@ -1598,9 +1599,9 @@ class CanPacket(AbstractUdsPacket):
 
     @classmethod
     def __validate_data_flow_control(cls,
-                                     addressing_format: CanAddressingFormatTyping,
+                                     addressing_format: CanAddressingFormatAlias,
                                      dlc: Optional[int],
-                                     flow_status: CanFlowStatusTyping,
+                                     flow_status: CanFlowStatusAlias,
                                      filler_byte: RawByte,
                                      block_size: Optional[RawByte] = None,
                                      stmin: Optional[RawByte] = None) -> None:
@@ -1630,8 +1631,3 @@ class CanPacket(AbstractUdsPacket):
                                                  f"addressing_format values. Minimum dlc value: {minimum_dlc}. "
                                                  f"Actual payload length: {dlc}")
 
-
-
-
-class CanPacketRecord(AbstractUdsPacketRecord):
-    ...
