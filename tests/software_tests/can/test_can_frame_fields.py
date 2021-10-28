@@ -1,7 +1,7 @@
 import pytest
 from mock import patch, call
 
-from uds.can.can_frame_fields import CanIdHandler, \
+from uds.can.can_frame_fields import CanIdHandler, CanDlcHandler, \
     AddressingType, CanAddressingFormat
 
 
@@ -441,3 +441,161 @@ class TestCanIdHandler:
     def test_decode_mixed_addressed_29bit_can_id(self, can_id, addressing_type, target_address, source_address):
         assert CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id=can_id) \
                == (addressing_type, target_address, source_address)
+
+
+class TestCanDlcHandler:
+    """Tests for `CanDlcHandler` class."""
+
+    SCRIPT_LOCATION = TestCanIdHandler.SCRIPT_LOCATION
+
+    # decode
+
+    @pytest.mark.parametrize("dlc, data_bytes_number", [
+        (0, 0),
+        (8, 8),
+        (9, 12),
+        (10, 16),
+        (11, 20),
+        (12, 24),
+        (13, 32),
+        (14, 48),
+        (15, 64),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.validate_dlc")
+    def test_decode(self, mock_validate_dlc, dlc, data_bytes_number):
+        assert CanDlcHandler.decode(dlc) == data_bytes_number
+        mock_validate_dlc.assert_called_once_with(dlc)
+
+    # encode
+
+    @pytest.mark.parametrize("dlc, data_bytes_number", [
+        (0, 0),
+        (8, 8),
+        (9, 12),
+        (10, 16),
+        (11, 20),
+        (12, 24),
+        (13, 32),
+        (14, 48),
+        (15, 64),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.validate_data_bytes_number")
+    def test_encode(self, mock_validate_data_bytes_number, dlc, data_bytes_number):
+        assert CanDlcHandler.encode(data_bytes_number) == dlc
+        mock_validate_data_bytes_number.assert_called_once_with(data_bytes_number, True)
+
+    # get_min_dlc
+
+    @pytest.mark.parametrize("data_bytes_number, min_dlc", [
+        (64, 0xF),
+        (63, 0xF),
+        (49, 0xF),
+        (48, 0xE),
+        (33, 0xE),
+        (32, 0xD),
+        (25, 0xD),
+        (24, 0xC),
+        (21, 0xC),
+        (20, 0xB),
+        (17, 0xB),
+        (16, 0xA),
+        (13, 0xA),
+        (12, 0x9),
+        (9, 0x9),
+        (8, 0x8),
+        (7, 0x7),
+        (6, 0x6),
+        (5, 0x5),
+        (4, 0x4),
+        (3, 0x3),
+        (2, 0x2),
+        (1, 0x1),
+        (0, 0x0),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.validate_data_bytes_number")
+    def test_get_min_dlc(self, mock_validate_data_bytes_number, data_bytes_number, min_dlc):
+        assert CanDlcHandler.get_min_dlc(data_bytes_number) == min_dlc
+        mock_validate_data_bytes_number.assert_called_once_with(data_bytes_number, False)
+
+    # is_can_fd_specific_value
+
+    @pytest.mark.parametrize("value", range(9, 16))
+    def test_is_can_fd_specific_value__true(self, value):
+        assert CanDlcHandler.is_can_fd_specific_dlc(value) is True
+
+    @pytest.mark.parametrize("value", range(9))
+    def test_is_can_fd_specific_value__false(self, value):
+        assert CanDlcHandler.is_can_fd_specific_dlc(value) is False
+
+    # validate_dlc
+
+    @pytest.mark.parametrize("value", [None, 2., "not a DLC"])
+    def test_validate_dlc__type_error(self, value):
+        with pytest.raises(TypeError):
+            CanDlcHandler.validate_dlc(value)
+
+    @pytest.mark.parametrize("value", [-321, -1, 0x10, 99999])
+    def test_validate_dlc__value_error(self, value):
+        with pytest.raises(ValueError):
+            CanDlcHandler.validate_dlc(value)
+
+    @pytest.mark.parametrize("value", range(16))
+    def test_validate_dlc__valid(self, value):
+        assert CanDlcHandler.validate_dlc(value) is None
+
+    # validate_data_bytes_number
+
+    @pytest.mark.parametrize("value", [None, 2., "not a number of bytes"])
+    def test_validate_data_bytes_number__type_error(self, value):
+        with pytest.raises(TypeError):
+            CanDlcHandler.validate_data_bytes_number(value)
+
+    @pytest.mark.parametrize("value, exact_match", [
+        (-1, True),
+        (-1, False),
+        (9, True),
+        (19, True),
+        (23, True),
+        (41, True),
+        (63, True),
+        (65, True),
+        (65, False),
+        (128, True),
+        (128, False),
+    ])
+    def test_validate_data_bytes_number__value_error(self, value, exact_match):
+        with pytest.raises(ValueError):
+            CanDlcHandler.validate_data_bytes_number(value, exact_match)
+
+    @pytest.mark.parametrize("value, exact_match", [
+        (0, True),
+        (0, False),
+        (1, True),
+        (1, False),
+        (8, True),
+        (8, False),
+        (9, False),
+        (19, False),
+        (23, False),
+        (41, False),
+        (63, False),
+        (64, True),
+        (64, False),
+    ])
+    def test_validate_dlc__valid(self, value, exact_match):
+        assert CanDlcHandler.validate_data_bytes_number(value, exact_match) is None
+
+
+@pytest.mark.integration
+class TestCanDlcHandlerIntegration:
+    """Integration tests for `CanDlcHandler` class."""
+
+    @pytest.mark.parametrize("data_bytes_number", [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64])
+    def test_encode_decode(self, data_bytes_number):
+        dlc_value = CanDlcHandler.encode(data_bytes_number)
+        assert CanDlcHandler.decode(dlc_value) == data_bytes_number
+
+    @pytest.mark.parametrize("dlc", range(0xF))
+    def test_decode_encode(self, dlc):
+        data_bytes_number = CanDlcHandler.decode(dlc)
+        assert CanDlcHandler.encode(data_bytes_number) == dlc
