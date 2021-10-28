@@ -1,14 +1,14 @@
 import pytest
 from mock import Mock, patch, MagicMock
 
-from uds.packet.abstract_segmenter import AbstractSegmenter
+from uds.segmentation.abstract_segmenter import AbstractSegmenter
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 
 
 class TestAbstractSegmenter:
     """Tests for `AbstractSegmenter` class."""
 
-    SCRIPT_PATH = "uds.packet.abstract_segmenter"
+    SCRIPT_PATH = "uds.segmentation.abstract_segmenter"
 
     def setup(self):
         self.mock_abstract_segmenter = Mock(spec=AbstractSegmenter)

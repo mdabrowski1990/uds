@@ -1,7 +1,19 @@
-# TODO: docstring
+"""
+A subpackage with CAN bus specific implementation.
 
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
-from .addressing_information import CanAddressingInformationHandler
+It provides tools for:
+ - creating new CAN packets
+ - storing historic information about CAN packet that was either received or transmitted
+ - definition of CAN specific attributes:
+   - Packet Types
+   - CAN Addressing Formats
+   - Flow Status
+ - handlers for CAN frame fields:
+   - DLC
+   - CAN ID
+"""
+
+from .addressing_information import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler
 from .can_frame_fields import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler
 from .flow_control import CanFlowStatus, CanFlowStatusAlias, CanSTminTranslator, UnrecognizedSTminWarning
 from .packet_type import CanPacketType, CanPacketTypeAlias

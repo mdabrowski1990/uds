@@ -7,11 +7,9 @@ Module with an entire Negative Response Code (NRC) data parameters implementatio
 
 __all__ = ["NRC"]
 
-from typing import Union
-
 from aenum import unique
 
-from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum, RawByte
+from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum
 
 
 @unique

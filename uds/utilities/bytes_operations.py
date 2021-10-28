@@ -78,10 +78,11 @@ def int_to_bytes_list(int_value: int,
     if list_size < bytes_number:
         raise InconsistentArgumentsError(f"Provided value of `list_size` is too small to contain all byte of int_value."
                                          f"Actual values: int_value={int_value}, list_size={list_size}")
-    hex_value = ("{:0%dX}" % (2*bytes_number)).format(int_value)
+    hex_value = "".join(["{", f":0{2 * bytes_number}X", "}"]).format(int_value)
     bytes_list = list(bytes.fromhex(hex_value))
+    bytes_list = ([0] * (list_size - len(bytes_list))) + bytes_list
     if endianness == Endianness.BIG_ENDIAN:
-        return [0]*(list_size - len(bytes_list)) + bytes_list
+        return bytes_list
     if endianness == Endianness.LITTLE_ENDIAN:
-        return bytes_list[::-1] + [0]*(list_size - len(bytes_list))
+        return bytes_list[::-1]
     raise NotImplementedError(f"Implementation missing for: {endianness}.")

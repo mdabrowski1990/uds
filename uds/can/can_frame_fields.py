@@ -14,12 +14,17 @@ from bisect import bisect_left
 
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.utilities import RawByte, validate_raw_byte
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_information import CanAddressingFormat, CanAddressingFormatAlias
 
 
 DEFAULT_FILLER_BYTE: RawByte = 0xCC
 """Default value of Filler Byte that is specified by ISO 15765-2:2016 (chapter 10.4.2.1).
 Filler Byte is used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`."""
+
+NormalFixedCanIdInfoAlias = Tuple[AddressingType, RawByte, RawByte]
+"""Typing alias of information carried by CAN ID in Normal Fixed Addressing format."""
+Mixed29BitCanIdInfoAlias = Tuple[AddressingType, RawByte, RawByte]
+"""Typing alias of information carried by CAN ID in Mixed 29-bit Addressing format."""
 
 
 class CanIdHandler:
@@ -54,11 +59,6 @@ class CanIdHandler:
     MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18CD0000
     """Minimum value of Functional CAN ID (with Target Address and Source Address information erased) that is compatible
     with :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
-
-    NORMAL_FIXED_CAN_ID_INFO_TYPING = Tuple[AddressingType, RawByte, RawByte]
-    """Typing alias of information carried by CAN ID in Normal Fixed Addressing format."""
-    MIXED_29BIT_CAN_ID_INFO_TYPING = Tuple[AddressingType, RawByte, RawByte]
-    """Typing alias of information carried by CAN ID in Mixed 29-bit Addressing format."""
 
     @classmethod
     def validate_can_id(cls, value: Any) -> None:
@@ -278,7 +278,7 @@ class CanIdHandler:
         raise NotImplementedError(f"Unknown addressing type value was provided: {addressing_type}")
 
     @classmethod
-    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> NORMAL_FIXED_CAN_ID_INFO_TYPING:
+    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> NormalFixedCanIdInfoAlias:
         """
         Extract information out of CAN ID using Normal Fixed Addressing format.
 
@@ -308,7 +308,7 @@ class CanIdHandler:
                                   f"Actual value: {can_id}")
 
     @classmethod
-    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> MIXED_29BIT_CAN_ID_INFO_TYPING:
+    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> Mixed29BitCanIdInfoAlias:
         """
         Extract information out of CAN ID using Normal Fixed Addressing format.
 
@@ -424,7 +424,7 @@ class CanDlcHandler:
         """
         if not isinstance(value, int):
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
-        if cls.__DLC_MAPPING.get(value, None) is None:
+        if not cls.MIN_DLC_VALUE <= value <= cls.MAX_DLC_VALUE:
             raise ValueError(f"Provided value is out of DLC values range. Actual value: {value}")
 
     @classmethod

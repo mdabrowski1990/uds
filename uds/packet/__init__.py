@@ -10,5 +10,5 @@ It provides tools for:
 
 from .abstract_packet_type import AbstractUdsPacketType
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord, \
-    PacketsRecordsTuple, PacketsRecordsSequence
-from .abstract_segmenter import AbstractSegmenter, SegmentationError
+    PacketsRecordsTuple, PacketsRecordsSequence, \
+    PacketAlias, PacketsSequence, PacketsDefinitionTuple

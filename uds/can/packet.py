@@ -19,9 +19,9 @@ from uds.utilities import RawByte, RawBytes, RawBytesTuple, RawBytesList, valida
     InconsistentArgumentsError, AmbiguityError, UnusedArgumentError, UnusedArgumentWarning
 
 from uds.packet.abstract_packet import AbstractUdsPacket
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_information import CanAddressingFormat, CanAddressingFormatAlias
 from .can_frame_fields import CanIdHandler, CanDlcHandler, DEFAULT_FILLER_BYTE
-from .flow_control import CanFlowStatus, CanFlowStatusAlias, CanSTminTranslator
+from .flow_control import CanFlowStatus, CanFlowStatusAlias
 from .packet_type import CanPacketType, CanPacketTypeAlias
 
 

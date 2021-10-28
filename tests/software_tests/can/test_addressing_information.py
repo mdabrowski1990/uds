@@ -1,6 +1,6 @@
 from mock import patch
 
-from uds.can.addressing_format import CanAddressingFormat
+from uds.can.addressing_information import CanAddressingFormat
 from uds.utilities import ValidatedEnum
 
 

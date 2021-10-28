@@ -145,7 +145,7 @@ class AbstractUdsPacketRecord(ABC):
     @property
     @abstractmethod
     def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message that is carried by this this packet."""  # TODO: update 
+        """Payload bytes number of a diagnostic message that is carried by this this packet."""  # TODO: update
 
 
 # TODO: get rid of these if possible
