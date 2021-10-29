@@ -14,7 +14,9 @@ from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import TimeMilliseconds, RawByte, validate_raw_byte, NibbleEnum, ValidatedEnum
+from uds.utilities import NibbleEnum, ValidatedEnum, TimeMilliseconds, \
+    RawByte, RawBytes, RawBytesList, validate_raw_byte
+from .addressing_format import CanAddressingFormat
 
 
 class UnrecognizedSTminWarning(Warning):
@@ -156,3 +158,19 @@ class CanSTminTranslator:
         if not cls.MIN_TIME_VALUE_100US_RANGE <= value <= cls.MAX_TIME_VALUE_100US_RANGE:
             return False
         return round(value % 0.1, cls._FLOATING_POINT_ACCURACY) in (0, 0.1)
+
+
+class FlowControlHandler:
+    # TODO
+
+    @classmethod
+    def is_flow_control(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
+        ...
+
+    @classmethod
+    def validate_flow_control(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
+        ...
+
+    @classmethod
+    def generate_can_frame_data(cls) -> RawBytesList:
+        ...

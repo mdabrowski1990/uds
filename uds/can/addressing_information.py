@@ -8,7 +8,7 @@ __all__ = ["CanAddressingInformationHandler"]
 
 from typing import Optional
 
-from uds.utilities import RawByte, validate_raw_byte, InconsistentArgumentsError, UnusedArgumentError
+from uds.utilities import RawByte, RawBytesTuple, validate_raw_byte, InconsistentArgumentsError, UnusedArgumentError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .can_frame_fields import CanIdHandler
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
@@ -22,7 +22,7 @@ class CanAddressingInformationHandler:
     """
 
     @classmethod
-    def get_data_bytes_used_for_ai(cls, addressing_format: CanAddressingFormatAlias) -> int:
+    def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormatAlias) -> int:
         """
         Get number of data bytes that are used to carry Addressing Information.
 
@@ -39,6 +39,12 @@ class CanAddressingInformationHandler:
                 CanAddressingFormat.EXTENDED_ADDRESSING: 1,
                 CanAddressingFormat.MIXED_11BIT_ADDRESSING: 1,
                 CanAddressingFormat.MIXED_29BIT_ADDRESSING: 1}[addressing_format]
+
+    @classmethod
+    def generate_ai_data_bytes(cls, addressing_format: CanAddressingFormatAlias,
+                               target_address: Optional[RawByte] = None,
+                               address_extension: Optional[RawByte] = None) -> RawBytesTuple:
+        ...  # TODO
 
     @classmethod
     def validate_ai(cls,

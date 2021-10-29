@@ -35,7 +35,7 @@ class TestCanAddressingInformationHandler:
                                                    CanAddressingFormat.MIXED_11BIT_ADDRESSING.value,
                                                    CanAddressingFormat.MIXED_29BIT_ADDRESSING])
     def test_get_data_bytes_used_for_ai(self, addressing_format):
-        value = CanAddressingInformationHandler.get_data_bytes_used_for_ai(addressing_format)
+        value = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
         assert isinstance(value, int)
         assert value >= 0
         self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
@@ -485,8 +485,8 @@ class TestCanAddressingInformationHandlerIntegration:
     # get_data_bytes_used_for_ai
 
     def test_get_data_bytes_used_for_ai(self, example_can_addressing_format):
-        assert CanAddressingInformationHandler.get_data_bytes_used_for_ai(example_can_addressing_format) == \
-               CanAddressingInformationHandler.get_data_bytes_used_for_ai(example_can_addressing_format.value)
+        assert CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format) == \
+               CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format.value)
 
     # validate_ai
 
