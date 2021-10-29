@@ -9,7 +9,7 @@ Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
 
 __all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
-from typing import Any, Optional, Tuple, Set, Dict
+from typing import Any, Optional, Union, Tuple, Set, Dict
 from bisect import bisect_left
 
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
@@ -21,10 +21,8 @@ DEFAULT_FILLER_BYTE: RawByte = 0xCC
 """Default value of Filler Byte that is specified by ISO 15765-2:2016 (chapter 10.4.2.1).
 Filler Byte is used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`."""
 
-NormalFixedCanIdInfoAlias = Tuple[AddressingType, RawByte, RawByte]
-"""Typing alias of information carried by CAN ID in Normal Fixed Addressing format."""
-Mixed29BitCanIdInfoAlias = Tuple[AddressingType, RawByte, RawByte]
-"""Typing alias of information carried by CAN ID in Mixed 29-bit Addressing format."""
+CanIdInfoAlias = Dict[str, Optional[Union[AddressingType, RawByte]]]
+"""Typing alias of Addressing Information carried by CAN ID."""
 
 
 class CanIdHandler:
@@ -59,6 +57,14 @@ class CanIdHandler:
     MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18CD0000
     """Minimum value of Functional CAN ID (with Target Address and Source Address information erased) that is compatible
     with :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
+
+    ADDRESSING_TYPE_NAME = "addressing"
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` key that is used as in dictionary with 
+    decoded CAN ID information."""
+    TARGET_ADDRESS_NAME = "target_address"
+    """Name of Target Address key that is used as in dictionary with decoded CAN ID information."""
+    SOURCE_ADDRESS_NAME = "source_address"
+    """Name of Source Address key that is used as in dictionary with decoded CAN ID information."""
 
     @classmethod
     def validate_can_id(cls, value: Any) -> None:
@@ -278,7 +284,35 @@ class CanIdHandler:
         raise NotImplementedError(f"Unknown addressing type value was provided: {addressing_type}")
 
     @classmethod
-    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> NormalFixedCanIdInfoAlias:
+    def decode_can_id(cls, addressing_format: CanAddressingFormat, can_id: int) -> CanIdInfoAlias:
+        """
+        Extract information out of CAN ID.
+
+        :param addressing_format: Addressing format used.
+        :param can_id: CAN ID from which data to be extracted.
+
+        :raise ValueError: Provided CAN ID is not compatible with Addressing format.
+        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
+            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            whenever you see this error.
+
+        :return: Dictionary with Addressing Type, Target Address and Source Address values decoded out of CAN ID.
+        """
+        CanAddressingFormat.validate_member(addressing_format)
+        if addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+            return cls.decode_normal_fixed_addressed_can_id(can_id)
+        if addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+            return cls.decode_mixed_addressed_29bit_can_id(can_id)
+        if addressing_format in (CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                 CanAddressingFormat.EXTENDED_ADDRESSING,
+                                 CanAddressingFormat.MIXED_11BIT_ADDRESSING):
+            return {cls.ADDRESSING_TYPE_NAME: None,
+                    cls.TARGET_ADDRESS_NAME: None,
+                    cls.SOURCE_ADDRESS_NAME: None}  # information cannot be decoded
+        raise NotImplementedError(f"Unknown addressing format value was provided: {addressing_format}")
+
+    @classmethod
+    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> CanIdInfoAlias:
         """
         Extract information out of CAN ID using Normal Fixed Addressing format.
 
@@ -289,7 +323,7 @@ class CanIdHandler:
             Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
             whenever you see this error.
 
-        :return: Tuple with [Addressing Type], [Target Address] and [Source Address] values decoded out of CAN ID.
+        :return: Dictionary with Addressing Type, Target Address and Source Address values decoded out of CAN ID.
         """
         cls.validate_can_id(can_id)
         if not cls.is_normal_fixed_addressed_can_id(can_id):
@@ -300,15 +334,19 @@ class CanIdHandler:
         can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
         if can_id_offset == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET:
             addressing_type = AddressingType(AddressingType.PHYSICAL)
-            return addressing_type, target_address, source_address
+            return {cls.ADDRESSING_TYPE_NAME: addressing_type,
+                    cls.TARGET_ADDRESS_NAME: target_address,
+                    cls.SOURCE_ADDRESS_NAME: source_address}
         if can_id_offset == cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET:
             addressing_type = AddressingType(AddressingType.FUNCTIONAL)
-            return addressing_type, target_address, source_address
+            return {cls.ADDRESSING_TYPE_NAME: addressing_type,
+                    cls.TARGET_ADDRESS_NAME: target_address,
+                    cls.SOURCE_ADDRESS_NAME: source_address}
         raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
                                   f"Actual value: {can_id}")
 
     @classmethod
-    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> Mixed29BitCanIdInfoAlias:
+    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> CanIdInfoAlias:
         """
         Extract information out of CAN ID using Normal Fixed Addressing format.
 
@@ -319,7 +357,7 @@ class CanIdHandler:
             Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
             whenever you see this error.
 
-        :return: Tuple with [Addressing Type], [Target Address] and [Source Address] values decoded out of CAN ID.
+        :return: Dictionary with Addressing Type, Target Address and Source Address values decoded out of CAN ID.
         """
         cls.validate_can_id(can_id)
         if not cls.is_mixed_29bit_addressed_can_id(can_id):
@@ -330,10 +368,14 @@ class CanIdHandler:
         can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
         if can_id_offset == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET:
             addressing_type = AddressingType(AddressingType.PHYSICAL)
-            return addressing_type, target_address, source_address
+            return {cls.ADDRESSING_TYPE_NAME: addressing_type,
+                    cls.TARGET_ADDRESS_NAME: target_address,
+                    cls.SOURCE_ADDRESS_NAME: source_address}
         if can_id_offset == cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET:
             addressing_type = AddressingType(AddressingType.FUNCTIONAL)
-            return addressing_type, target_address, source_address
+            return {cls.ADDRESSING_TYPE_NAME: addressing_type,
+                    cls.TARGET_ADDRESS_NAME: target_address,
+                    cls.SOURCE_ADDRESS_NAME: source_address}
         raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
                                   f"Actual value: {can_id}")
 
