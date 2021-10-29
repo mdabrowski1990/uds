@@ -14,7 +14,7 @@ from bisect import bisect_left
 
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.utilities import RawByte, validate_raw_byte
-from .addressing_information import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 
 DEFAULT_FILLER_BYTE: RawByte = 0xCC
