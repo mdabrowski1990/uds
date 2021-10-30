@@ -1,9 +1,4 @@
-"""
-Implementation of CAN Addressing Formats.
-
-ref:`CAN addressing formats <knowledge-base-can-addressing>` determines how (in which fields of a CAN Packet)
-:ref:`Network Address Information (N_AI) <knowledge-base-n-ai>` is provided.
-"""
+"""Implementation of CAN Addressing Formats."""
 
 __all__ = ["CanAddressingFormat", "CanAddressingFormatAlias"]
 
@@ -19,7 +14,7 @@ class CanAddressingFormat(StrEnum, ValidatedEnum):
     """
     Definition of CAN addressing formats.
 
-    ref:`CAN addressing formats <knowledge-base-can-addressing>` determines how (in which fields of a CAN Packet)
+    :ref:`CAN addressing formats <knowledge-base-can-addressing>` determines how (in which fields of a CAN Packet)
     :ref:`Network Address Information (N_AI) <knowledge-base-n-ai>` is provided.
     """
 

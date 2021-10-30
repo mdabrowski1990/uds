@@ -1,10 +1,10 @@
 """
 Implementation of CAN Addressing Information.
 
-This module contains helper class and methods for managing CAN :ref:`Addressing Information <knowledge-base-n-ai>`.
+This module contains helper class for managing :ref:`Addressing Information <knowledge-base-n-ai>` on CAN bus.
 """
 
-__all__ = ["CanAddressingInformationHandler"]
+__all__ = ["CanAddressingInformationHandler", "AIDataBytesInfoAlias", "AIInfoAlias"]
 
 from typing import Optional, Union, Dict
 
@@ -14,28 +14,35 @@ from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .can_frame_fields import CanIdHandler
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
+
 AIDataBytesInfoAlias = Dict[str, Optional[RawByte]]
-"""Typing alias of Addressing Information carried by Data bytes."""
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by 
+:ref:`CAN frame <knowledge-base-can-frame>` data bytes."""
 AIInfoAlias = Dict[str, Optional[Union[RawByte, AddressingType]]]
-"""Typing alias of Addressing Information carried by Data bytes."""
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by 
+:ref:`CAN frame <knowledge-base-can-frame>`."""
 
 
 class CanAddressingInformationHandler:
     """
     Helper class that provides utilities for CAN Addressing Information.
 
-    CAN :ref:`Addressing Information <knowledge-base-n-ai>` depends on
+    .. note:: CAN :ref:`Addressing Information <knowledge-base-n-ai>` and its providing depends on
+        :ref:`CAN addressing formats <knowledge-base-can-addressing>` used.
+
+    .. warning:: This class contains only implementation that is consistent with ISO 15765 and
+        **it does not take into account system specific requirements.**
     """
 
     ADDRESSING_TYPE_NAME = "addressing"
-    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` key that is used as in dictionary with 
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with 
     decoded Addressing Information."""
     TARGET_ADDRESS_NAME = "target_address"
-    """Name of Target Address key that is used as in dictionary with decoded Addressing Information."""
+    """Name of Target Address which is used as a key in dictionary with decoded Addressing Information."""
     SOURCE_ADDRESS_NAME = "source_address"
-    """Name of Source Address key that is used as in dictionary with decoded Addressing Information."""
+    """Name of Source Address which is used as a key in dictionary with decoded Addressing Information."""
     ADDRESS_EXTENSION_NAME = "address_extension"
-    """Name of Address Extension key that is used as in dictionary with decoded Addressing Information."""
+    """Name of Address Extension which is used as a key in dictionary with decoded Addressing Information."""
 
     @classmethod
     def decode_ai(cls,
@@ -45,16 +52,21 @@ class CanAddressingInformationHandler:
         """
         Decode Addressing Information from CAN ID and data bytes.
 
-        .. warning:: This methods will not extract project specific Addressing Information from provided data.
+        .. warning:: This methods might not extract full Addressing Information from the provided data as some of these
+            information are system specific.
 
-            For example, Addressing Type will not be decoded when Normal 11bit, Extended or Mixed 11bit addressing
-            is used.
+            For example, Addressing Type will not be decoded when either Normal 11bit, Extended or Mixed 11bit
+            addressing format is used as the Addressing Type (in such case) depends on system specific behaviour.
 
         :param addressing_format: CAN Addressing Format used.
         :param can_id: Value of CAN Identifier.
         :param ai_data_bytes: Data bytes containing Addressing Information.
+            This is usually 0 or 1 data byte located at the beginning of a CAN frame.
+            Number and content of these bytes  depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>`
+            used.
 
-        :return: Dictionary with Addressing Information decoded out of CAN ID and Addressing Information data bytes.
+        :return: Dictionary with Addressing Information decoded out of the provided CAN ID and Addressing Information
+            data bytes.
         """
         from_data_bytes = cls.decode_ai_data_bytes(addressing_format=addressing_format, ai_data_bytes=ai_data_bytes)
         from_can_id = CanIdHandler.decode_can_id(addressing_format=addressing_format, can_id=can_id)
@@ -62,67 +74,17 @@ class CanAddressingInformationHandler:
         return {name: from_data_bytes.get(name, None) or from_can_id.get(name, None) for name in names}
 
     @classmethod
-    def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormatAlias) -> int:
-        """
-        Get number of data bytes that are used to carry Addressing Information.
-
-        Depending on addressing
-
-        :param addressing_format: CAN Addressing Format for which the value to be provided.
-
-        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
-            CAN Addressing Format.
-        """
-        CanAddressingFormat.validate_member(addressing_format)
-        return {CanAddressingFormat.NORMAL_11BIT_ADDRESSING: 0,
-                CanAddressingFormat.NORMAL_FIXED_ADDRESSING: 0,
-                CanAddressingFormat.EXTENDED_ADDRESSING: 1,
-                CanAddressingFormat.MIXED_11BIT_ADDRESSING: 1,
-                CanAddressingFormat.MIXED_29BIT_ADDRESSING: 1}[addressing_format]
-
-    @classmethod
-    def generate_ai_data_bytes(cls,
-                               addressing_format: CanAddressingFormatAlias,
-                               target_address: Optional[RawByte] = None,
-                               address_extension: Optional[RawByte] = None) -> RawBytesList:
-        """
-        Generate a list of data bytes that carry Addressing Information.
-
-        .. note:: The number of bytes and their values depends on
-            :ref:`CAN Addressing Format <knowledge-base-can-addressing>` used.
-
-        :param addressing_format: CAN Addressing Format for which the value to be generated.
-        :param target_address: Target Address value used.
-        :param address_extension: Source Address value used.
-
-        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
-
-        :return: List of data bytes that carry Addressing Information in CAN frame Data field.
-        """
-        CanAddressingFormat.validate_member(addressing_format)
-        if addressing_format in (CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                                 CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
-            return []
-        if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            validate_raw_byte(target_address)
-            return [target_address]
-        if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-                                 CanAddressingFormat.MIXED_29BIT_ADDRESSING):
-            validate_raw_byte(address_extension)
-            return [address_extension]
-        raise NotImplementedError(f"Missing implementation for: {addressing_format}")
-
-    @classmethod
     def decode_ai_data_bytes(cls,
                              addressing_format: CanAddressingFormatAlias,
                              ai_data_bytes: RawBytes) -> AIDataBytesInfoAlias:
         """
-        Decode Addressing Information from data bytes.
+        Decode Addressing Information from CAN data bytes.
 
         :param addressing_format: CAN Addressing Format used.
         :param ai_data_bytes: Data bytes containing Addressing Information.
+            This is usually 0 or 1 data byte located at the beginning of a CAN frame.
+            Number and content of these bytes  depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>`
+            used.
 
         :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
             Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
@@ -144,6 +106,54 @@ class CanAddressingInformationHandler:
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING}:
             return {cls.TARGET_ADDRESS_NAME: None,
                     cls.ADDRESS_EXTENSION_NAME:  ai_data_bytes[0]}
+        raise NotImplementedError(f"Missing implementation for: {addressing_format}")
+
+    @classmethod
+    def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormatAlias) -> int:
+        """
+        Get number of data bytes that are used to carry Addressing Information.
+
+        :param addressing_format: CAN Addressing Format used.
+
+        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
+            CAN Addressing Format.
+        """
+        CanAddressingFormat.validate_member(addressing_format)
+        return {CanAddressingFormat.NORMAL_11BIT_ADDRESSING: 0,
+                CanAddressingFormat.NORMAL_FIXED_ADDRESSING: 0,
+                CanAddressingFormat.EXTENDED_ADDRESSING: 1,
+                CanAddressingFormat.MIXED_11BIT_ADDRESSING: 1,
+                CanAddressingFormat.MIXED_29BIT_ADDRESSING: 1}[addressing_format]
+
+    @classmethod
+    def generate_ai_data_bytes(cls,
+                               addressing_format: CanAddressingFormatAlias,
+                               target_address: Optional[RawByte] = None,
+                               address_extension: Optional[RawByte] = None) -> RawBytesList:
+        """
+        Generate a list of data bytes that carry Addressing Information.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param target_address: Target Address value used.
+        :param address_extension: Source Address value used.
+
+        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
+            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            whenever you see this error.
+
+        :return: List of data bytes that carry Addressing Information in CAN frame Data field.
+        """
+        CanAddressingFormat.validate_member(addressing_format)
+        if addressing_format in (CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                 CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
+            return []
+        if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
+            validate_raw_byte(target_address)
+            return [target_address]
+        if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+                                 CanAddressingFormat.MIXED_29BIT_ADDRESSING):
+            validate_raw_byte(address_extension)
+            return [address_extension]
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod
@@ -221,12 +231,13 @@ class CanAddressingInformationHandler:
     def validate_ai_normal_11bit(addressing: AddressingTypeAlias,
                                  can_id: int) -> None:
         """
-        Validate Addressing Information in Normal 11-bit Addressing format.
+        Validate Addressing Information parameters for Normal 11-bit CAN Addressing format.
 
         :param addressing: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
+            or with the Normal 11-bit Addressing format.
         """
         AddressingType.validate_member(addressing)
         CanIdHandler.validate_can_id(can_id)
@@ -240,14 +251,15 @@ class CanAddressingInformationHandler:
                                  target_address: Optional[RawByte] = None,
                                  source_address: Optional[RawByte] = None) -> None:
         """
-        Validate consistency of Address Information arguments when Normal Fixed Addressing Format is used.
+        Validate Addressing Information parameters for Normal Fixed CAN Addressing format.
 
         :param addressing: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
+            or with the Normal Fixed Addressing format.
         """
         AddressingType.validate_member(addressing)
         if can_id is None:
@@ -275,13 +287,14 @@ class CanAddressingInformationHandler:
                              can_id: int,
                              target_address: RawByte) -> None:
         """
-        Validate consistency of Address Information arguments when Extended Addressing Format is used.
+        Validate Addressing Information parameters for Extended CAN Addressing format.
 
         :param addressing: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
+            or with the Extended Addressing format.
         """
         AddressingType.validate_member(addressing)
         CanIdHandler.validate_can_id(can_id)
@@ -295,13 +308,14 @@ class CanAddressingInformationHandler:
                                 can_id: int,
                                 address_extension: RawByte) -> None:
         """
-        Validate consistency of Address Information arguments when Mixed 11-bit Addressing Format is used.
+        Validate Addressing Information parameters for Mixed 11-bit CAN Addressing format.
 
         :param addressing: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param address_extension: Address Extension value to validate.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
+            or with the Mixed 11-bit Addressing format.
         """
         AddressingType.validate_member(addressing)
         CanIdHandler.validate_can_id(can_id)
@@ -317,7 +331,7 @@ class CanAddressingInformationHandler:
                                 source_address: Optional[RawByte],
                                 address_extension: RawByte) -> None:
         """
-        Validate consistency of Address Information arguments when Mixed 29-bit Addressing Format is used.
+        Validate Addressing Information parameters for Mixed 29-bit CAN Addressing format.
 
         :param addressing: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
@@ -325,7 +339,8 @@ class CanAddressingInformationHandler:
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together).
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
+            or with the Mixed 29-bit Addressing format.
         """
         AddressingType.validate_member(addressing)
         validate_raw_byte(address_extension)
@@ -352,10 +367,10 @@ class CanAddressingInformationHandler:
     @classmethod
     def validate_ai_data_bytes(cls, addressing_format: CanAddressingFormatAlias, ai_data_bytes: RawBytes) -> None:
         """
-        Validate Addressing Information data bytes.
+        Validate Addressing Information stored in CAN data bytes.
 
         :param addressing_format: CAN Addressing Format used.
-        :param ai_data_bytes: Data bytes containing Addressing Information.
+        :param ai_data_bytes: Data bytes to validate.
 
         :raise InconsistentArgumentsError: Provided number of Addressing Information data bytes does not match
             Addressing Format used.
