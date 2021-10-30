@@ -45,6 +45,11 @@ class CanAddressingInformationHandler:
         """
         Decode Addressing Information from CAN ID and data bytes.
 
+        .. warning:: This methods will not extract project specific Addressing Information from provided data.
+
+            For example, Addressing Type will not be decoded when Normal 11bit, Extended or Mixed 11bit addressing
+            is used.
+
         :param addressing_format: CAN Addressing Format used.
         :param can_id: Value of CAN Identifier.
         :param ai_data_bytes: Data bytes containing Addressing Information.
@@ -254,15 +259,14 @@ class CanAddressingInformationHandler:
             validate_raw_byte(target_address)
             validate_raw_byte(source_address)
         else:
-            decoded_addressing, decoded_target_address, decoded_source_address = \
-                CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
-            if addressing != decoded_addressing:
+            decoded_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
+            if addressing != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
                                                  f"Actual values: can_id={can_id}, addressing={addressing}")
-            if target_address not in (decoded_target_address, None):
+            if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
                                                  f"Actual values: can_id={can_id}, target_address={target_address}")
-            if source_address not in (decoded_source_address, None):
+            if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
                                                  f"Actual values: can_id={can_id}, source_address={source_address}")
 
@@ -334,15 +338,14 @@ class CanAddressingInformationHandler:
             validate_raw_byte(target_address)
             validate_raw_byte(source_address)
         else:
-            decoded_addressing, decoded_target_address, decoded_source_address = \
-                CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
-            if addressing != decoded_addressing:
+            decoded_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
+            if addressing != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
                                                  f"Actual values: can_id={can_id}, addressing={addressing}")
-            if target_address not in (decoded_target_address, None):
+            if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
                                                  f"Actual values: can_id={can_id}, target_address={target_address}")
-            if source_address not in (decoded_source_address, None):
+            if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
                                                  f"Actual values: can_id={can_id}, source_address={source_address}")
 

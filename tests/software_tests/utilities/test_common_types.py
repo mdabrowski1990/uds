@@ -49,7 +49,7 @@ class TestFunctions:
             validate_raw_bytes(value=value)
 
     @pytest.mark.parametrize("value", [tuple(), []])
-    def test_validate_raw_bytes__invalid_empty(self, value):
+    def test_validate_raw_bytes__valid_empty(self, value):
         validate_raw_bytes(value=value, allow_empty=True)
 
     @pytest.mark.parametrize("invalid_raw_bytes", [None, "abc", {1, 2, 3}, 5, 76.5, False])
