@@ -14,8 +14,10 @@ It provides tools for:
 """
 
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
-from .can_frame_fields import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler
 from .addressing_information import CanAddressingInformationHandler
+
+from .can_frame_fields import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler
+
 from .flow_control import CanFlowStatus, CanFlowStatusAlias, CanSTminTranslator, UnrecognizedSTminWarning
 from .packet_type import CanPacketType, CanPacketTypeAlias
 from .packet import CanPacket

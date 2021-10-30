@@ -34,7 +34,7 @@ class CanAddressingInformationHandler:
         **it does not take into account system specific requirements.**
     """
 
-    ADDRESSING_TYPE_NAME = "addressing"
+    ADDRESSING_TYPE_NAME = "addressing"  # TODO: convert to `addressing_type` everywhere (consistency)
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with 
     decoded Addressing Information."""
     TARGET_ADDRESS_NAME = "target_address"

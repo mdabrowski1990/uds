@@ -880,9 +880,9 @@ class CanPacket(AbstractUdsPacket):
                                         source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
         if can_id is None:
-            self.__can_id = CanIdHandler.get_normal_fixed_addressed_can_id(addressing_type=addressing,
-                                                                           target_address=target_address,
-                                                                           source_address=source_address)
+            self.__can_id = CanIdHandler.generate_normal_fixed_addressed_can_id(addressing_type=addressing,
+                                                                                target_address=target_address,
+                                                                                source_address=source_address)
             self.__target_address = target_address
         else:
             self.__can_id = can_id
@@ -958,9 +958,9 @@ class CanPacket(AbstractUdsPacket):
                                        source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_29BIT_ADDRESSING)
         if can_id is None:
-            self.__can_id = CanIdHandler.get_mixed_addressed_29bit_can_id(addressing_type=addressing,
-                                                                          target_address=target_address,
-                                                                          source_address=source_address)
+            self.__can_id = CanIdHandler.generate_mixed_addressed_29bit_can_id(addressing_type=addressing,
+                                                                               target_address=target_address,
+                                                                               source_address=source_address)
             self.__target_address = target_address
         else:
             self.__can_id = can_id
