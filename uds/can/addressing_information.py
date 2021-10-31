@@ -34,7 +34,7 @@ class CanAddressingInformationHandler:
         **it does not take into account system specific requirements.**
     """
 
-    ADDRESSING_TYPE_NAME = "addressing"  # TODO: convert to `addressing_type` everywhere (consistency)
+    ADDRESSING_TYPE_NAME = "addressing_type"
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with 
     decoded Addressing Information."""
     TARGET_ADDRESS_NAME = "target_address"
@@ -159,7 +159,7 @@ class CanAddressingInformationHandler:
     @classmethod
     def validate_ai(cls,
                     addressing_format: CanAddressingFormatAlias,
-                    addressing: AddressingTypeAlias,
+                    addressing_type: AddressingTypeAlias,
                     can_id: Optional[int] = None,
                     target_address: Optional[RawByte] = None,
                     source_address: Optional[RawByte] = None,
@@ -172,7 +172,7 @@ class CanAddressingInformationHandler:
         :ref:`CAN Addressing Format <knowledge-base-can-addressing>`.
 
         :param addressing_format: CAN addressing format value to validate.
-        :param addressing: Addressing type value to validate.
+        :param addressing_type: Addressing type value to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
@@ -191,14 +191,14 @@ class CanAddressingInformationHandler:
                                           f"provided for {addressing_format}. Actual values: "
                                           f"target_address={target_address}, source_address={source_address}, "
                                           f"address_extension={address_extension}")
-            cls.validate_ai_normal_11bit(addressing=addressing,
+            cls.validate_ai_normal_11bit(addressing_type=addressing_type,
                                          can_id=can_id)
         elif addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
             if address_extension is not None:
                 raise UnusedArgumentError(f"Value of Address Extension must not be provided for "
                                           f"{addressing_format}. Actual value: "
                                           f"address_extension={address_extension}")
-            cls.validate_ai_normal_fixed(addressing=addressing,
+            cls.validate_ai_normal_fixed(addressing_type=addressing_type,
                                          can_id=can_id,
                                          target_address=target_address,
                                          source_address=source_address)
@@ -207,7 +207,7 @@ class CanAddressingInformationHandler:
                 raise UnusedArgumentError(f"Values of Source Address and Address Extension must not be provided for "
                                           f"{addressing_format}. Actual values: "
                                           f"source_address={source_address}, address_extension={address_extension}")
-            cls.validate_ai_extended(addressing=addressing,
+            cls.validate_ai_extended(addressing_type=addressing_type,
                                      can_id=can_id,
                                      target_address=target_address)
         elif addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
@@ -215,11 +215,11 @@ class CanAddressingInformationHandler:
                 raise UnusedArgumentError(f"Values of Target Address and Source Address must not be provided for "
                                           f"{addressing_format}. Actual values: "
                                           f"target_address={target_address}, source_address={source_address}")
-            cls.validate_ai_mixed_11bit(addressing=addressing,
+            cls.validate_ai_mixed_11bit(addressing_type=addressing_type,
                                         can_id=can_id,
                                         address_extension=address_extension)
         elif addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
-            cls.validate_ai_mixed_29bit(addressing=addressing,
+            cls.validate_ai_mixed_29bit(addressing_type=addressing_type,
                                         can_id=can_id,
                                         target_address=target_address,
                                         source_address=source_address,
@@ -228,32 +228,32 @@ class CanAddressingInformationHandler:
             raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @staticmethod
-    def validate_ai_normal_11bit(addressing: AddressingTypeAlias,
+    def validate_ai_normal_11bit(addressing_type: AddressingTypeAlias,
                                  can_id: int) -> None:
         """
         Validate Addressing Information parameters for Normal 11-bit CAN Addressing format.
 
-        :param addressing: Addressing type to validate.
+        :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
             or with the Normal 11-bit Addressing format.
         """
-        AddressingType.validate_member(addressing)
+        AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)
         if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Normal 11-bit Addressing Format. Actual value: {can_id}")
 
     @staticmethod
-    def validate_ai_normal_fixed(addressing: AddressingTypeAlias,
+    def validate_ai_normal_fixed(addressing_type: AddressingTypeAlias,
                                  can_id: Optional[int] = None,
                                  target_address: Optional[RawByte] = None,
                                  source_address: Optional[RawByte] = None) -> None:
         """
         Validate Addressing Information parameters for Normal Fixed CAN Addressing format.
 
-        :param addressing: Addressing type to validate.
+        :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
@@ -261,7 +261,7 @@ class CanAddressingInformationHandler:
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
             or with the Normal Fixed Addressing format.
         """
-        AddressingType.validate_member(addressing)
+        AddressingType.validate_member(addressing_type)
         if can_id is None:
             if None in (target_address, source_address):
                 raise InconsistentArgumentsError(f"Values of target_address and source_address must be provided,"
@@ -272,9 +272,9 @@ class CanAddressingInformationHandler:
             validate_raw_byte(source_address)
         else:
             decoded_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
-            if addressing != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
+            if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
-                                                 f"Actual values: can_id={can_id}, addressing={addressing}")
+                                                 f"Actual values: can_id={can_id}, addressing={addressing_type}")
             if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
                                                  f"Actual values: can_id={can_id}, target_address={target_address}")
@@ -283,20 +283,20 @@ class CanAddressingInformationHandler:
                                                  f"Actual values: can_id={can_id}, source_address={source_address}")
 
     @staticmethod
-    def validate_ai_extended(addressing: AddressingTypeAlias,
+    def validate_ai_extended(addressing_type: AddressingTypeAlias,
                              can_id: int,
                              target_address: RawByte) -> None:
         """
         Validate Addressing Information parameters for Extended CAN Addressing format.
 
-        :param addressing: Addressing type to validate.
+        :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
             or with the Extended Addressing format.
         """
-        AddressingType.validate_member(addressing)
+        AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)
         validate_raw_byte(target_address)
         if not CanIdHandler.is_extended_addressed_can_id(can_id):
@@ -304,20 +304,20 @@ class CanAddressingInformationHandler:
                                              f"Extended Addressing Format. Actual value: {can_id}")
 
     @staticmethod
-    def validate_ai_mixed_11bit(addressing: AddressingTypeAlias,
+    def validate_ai_mixed_11bit(addressing_type: AddressingTypeAlias,
                                 can_id: int,
                                 address_extension: RawByte) -> None:
         """
         Validate Addressing Information parameters for Mixed 11-bit CAN Addressing format.
 
-        :param addressing: Addressing type to validate.
+        :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param address_extension: Address Extension value to validate.
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
             or with the Mixed 11-bit Addressing format.
         """
-        AddressingType.validate_member(addressing)
+        AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)
         validate_raw_byte(address_extension)
         if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):
@@ -325,7 +325,7 @@ class CanAddressingInformationHandler:
                                              f"Mixed 11-bit Addressing Format. Actual value: {can_id}")
 
     @staticmethod
-    def validate_ai_mixed_29bit(addressing: AddressingTypeAlias,
+    def validate_ai_mixed_29bit(addressing_type: AddressingTypeAlias,
                                 can_id: Optional[int],
                                 target_address: Optional[RawByte],
                                 source_address: Optional[RawByte],
@@ -333,7 +333,7 @@ class CanAddressingInformationHandler:
         """
         Validate Addressing Information parameters for Mixed 29-bit CAN Addressing format.
 
-        :param addressing: Addressing type to validate.
+        :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
@@ -342,7 +342,7 @@ class CanAddressingInformationHandler:
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
             or with the Mixed 29-bit Addressing format.
         """
-        AddressingType.validate_member(addressing)
+        AddressingType.validate_member(addressing_type)
         validate_raw_byte(address_extension)
         if can_id is None:
             if None in (target_address, source_address):
@@ -354,9 +354,9 @@ class CanAddressingInformationHandler:
             validate_raw_byte(source_address)
         else:
             decoded_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
-            if addressing != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
+            if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
-                                                 f"Actual values: can_id={can_id}, addressing={addressing}")
+                                                 f"Actual values: can_id={can_id}, addressing={addressing_type}")
             if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
                                                  f"Actual values: can_id={can_id}, target_address={target_address}")

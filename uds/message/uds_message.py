@@ -25,15 +25,15 @@ class UdsMessage:
     :class:`~uds.message.uds_message.UdsMessageRecord`.
     """
 
-    def __init__(self, payload: RawBytes, addressing: AddressingTypeAlias) -> None:
+    def __init__(self, payload: RawBytes, addressing_type: AddressingTypeAlias) -> None:
         """
         Create a storage for a single diagnostic message.
 
         :param payload: Raw bytes of payload that this diagnostic message carries.
-        :param addressing: Addressing type for which this message is relevant.
+        :param addressing_type: Addressing type for which this message is relevant.
         """
         self.payload = payload  # type: ignore
-        self.addressing = addressing  # type: ignore
+        self.addressing_type = addressing_type  # type: ignore
 
     @property
     def payload(self) -> RawBytesTuple:
@@ -51,19 +51,19 @@ class UdsMessage:
         self.__payload = tuple(value)
 
     @property
-    def addressing(self) -> AddressingType:
+    def addressing_type(self) -> AddressingType:
         """Addressing type for which this message is relevant."""
-        return self.__addressing
+        return self.__addressing_type
 
-    @addressing.setter
-    def addressing(self, value: AddressingTypeAlias):
+    @addressing_type.setter
+    def addressing_type(self, value: AddressingTypeAlias):
         """
         Set value of addressing type for which this diagnostic message is relevant.
 
         :param value: Addressing value to set.
         """
         AddressingType.validate_member(value)
-        self.__addressing = AddressingType(value)
+        self.__addressing_type = AddressingType(value)
 
 
 class UdsMessageRecord:
@@ -151,9 +151,9 @@ class UdsMessageRecord:
             raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
 
     @property
-    def addressing(self) -> AddressingType:
+    def addressing_type(self) -> AddressingType:
         """Addressing type which was used to transmit this message."""
-        return self.packets_records[0].addressing
+        return self.packets_records[0].addressing_type
 
     @property
     def direction(self) -> TransmissionDirection:

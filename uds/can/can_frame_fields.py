@@ -63,7 +63,7 @@ class CanIdHandler:
     :ref:`functionally addressed <knowledge-base-functional-addressing>` CAN Packet that uses 
     :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
 
-    ADDRESSING_TYPE_NAME = "addressing"  # TODO: convert to `addressing_type` everywhere (consistency)
+    ADDRESSING_TYPE_NAME = "addressing_type"
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with 
     decoded Addressing Information."""
     TARGET_ADDRESS_NAME = "target_address"
@@ -233,13 +233,13 @@ class CanIdHandler:
     def is_compatible_can_id(cls,
                              can_id: int,
                              addressing_format: CanAddressingFormatAlias,
-                             addressing: Optional[AddressingTypeAlias] = None) -> bool:
+                             addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with addressing format used.
 
         :param can_id: Value to check.
         :param addressing_format: Addressing format used.
-        :param addressing: Addressing type for which consistency check to be performed.
+        :param addressing_type: Addressing type for which consistency check to be performed.
             Leave None to not perform consistency check with Addressing Type.
 
         :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
@@ -253,13 +253,13 @@ class CanIdHandler:
         if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
             return cls.is_normal_11bit_addressed_can_id(can_id=can_id)
         if addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
-            return cls.is_normal_fixed_addressed_can_id(can_id=can_id, addressing=addressing)
+            return cls.is_normal_fixed_addressed_can_id(can_id=can_id, addressing_type=addressing_type)
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
             return cls.is_extended_addressed_can_id(can_id=can_id)
         if addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
             return cls.is_mixed_11bit_addressed_can_id(can_id=can_id)
         if addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
-            return cls.is_mixed_29bit_addressed_can_id(can_id=can_id, addressing=addressing)
+            return cls.is_mixed_29bit_addressed_can_id(can_id=can_id, addressing_type=addressing_type)
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod
@@ -275,24 +275,24 @@ class CanIdHandler:
 
     @classmethod
     def is_normal_fixed_addressed_can_id(cls, can_id: int,
-                                         addressing: Optional[AddressingTypeAlias] = None) -> bool:
+                                         addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with Normal Fixed Addressing format.
 
         :param can_id: Value to check.
-        :param addressing: Addressing type for which consistency check to be performed.
+        :param addressing_type: Addressing type for which consistency check to be performed.
             Leave None to not perform consistency check with Addressing Type.
 
         :return: True if value is a valid CAN ID for Normal Fixed Addressing format and consistent with the provided
             Addressing Type, False otherwise.
         """
-        if addressing is not None:
-            AddressingType.validate_member(addressing)
-        if (addressing is None or addressing == AddressingType.PHYSICAL) and \
+        if addressing_type is not None:
+            AddressingType.validate_member(addressing_type)
+        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) and \
                 cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
-        if (addressing is None or addressing == AddressingType.FUNCTIONAL) and \
+        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) and \
                 cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
@@ -322,24 +322,24 @@ class CanIdHandler:
 
     @classmethod
     def is_mixed_29bit_addressed_can_id(cls, can_id: int,
-                                        addressing: Optional[AddressingTypeAlias] = None) -> bool:
+                                        addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with Mixed 29-bit Addressing format.
 
         :param can_id: Value to check.
-        :param addressing: Addressing type for which consistency check to be performed.
+        :param addressing_type: Addressing type for which consistency check to be performed.
             Leave None to not perform consistency check with Addressing Type.
 
         :return: True if value is a valid CAN ID for Mixed 29-bit Addressing format and consistent with the provided
             Addressing Type, False otherwise.
         """
-        if addressing is not None:
-            AddressingType.validate_member(addressing)
-        if (addressing is None or addressing == AddressingType.PHYSICAL) and \
+        if addressing_type is not None:
+            AddressingType.validate_member(addressing_type)
+        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) and \
                 cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
-        if (addressing is None or addressing == AddressingType.FUNCTIONAL) and \
+        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) and \
                 cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF:
             return True

@@ -25,11 +25,11 @@ class TestUdsMessage:
     # __init__
 
     @pytest.mark.parametrize("payload", [None, [0x1, 0x02], "some message"])
-    @pytest.mark.parametrize("addressing", ["Physical", 0, False, AddressingType.FUNCTIONAL])
-    def test_init(self, payload, addressing):
-        UdsMessage.__init__(self=self.mock_uds_message, payload=payload, addressing=addressing)
+    @pytest.mark.parametrize("addressing_type", ["Physical", 0, False, AddressingType.FUNCTIONAL])
+    def test_init(self, payload, addressing_type):
+        UdsMessage.__init__(self=self.mock_uds_message, payload=payload, addressing_type=addressing_type)
         assert self.mock_uds_message.payload == payload
-        assert self.mock_uds_message.addressing == addressing
+        assert self.mock_uds_message.addressing_type == addressing_type
 
     # payload
 
@@ -47,26 +47,26 @@ class TestUdsMessage:
         self.mock_uds_message._UdsMessage__payload = "some value"
         self.test_payload__set(example_raw_bytes=example_raw_bytes)
 
-    # addressing
+    # addressing_type
 
     @pytest.mark.parametrize("value", [None, AddressingType.PHYSICAL, "some addressing"])
-    def test_addressing__get(self, value):
-        self.mock_uds_message._UdsMessage__addressing = value
-        assert UdsMessage.addressing.fget(self=self.mock_uds_message) is value
+    def test_addressing_type__get(self, value):
+        self.mock_uds_message._UdsMessage__addressing_type = value
+        assert UdsMessage.addressing_type.fget(self=self.mock_uds_message) is value
 
-    def test_addressing__set_instance(self, example_addressing_type):
-        UdsMessage.addressing.fset(self=self.mock_uds_message, value=example_addressing_type)
-        assert self.mock_uds_message._UdsMessage__addressing == example_addressing_type
+    def test_addressing_type__set_instance(self, example_addressing_type):
+        UdsMessage.addressing_type.fset(self=self.mock_uds_message, value=example_addressing_type)
+        assert self.mock_uds_message._UdsMessage__addressing_type == example_addressing_type
         self.mock_validate_addressing.assert_called_once_with(example_addressing_type)
 
-    def test_addressing__set_value(self, example_addressing_type):
-        UdsMessage.addressing.fset(self=self.mock_uds_message, value=example_addressing_type.value)
-        assert self.mock_uds_message._UdsMessage__addressing == example_addressing_type
+    def test_addressing_type__set_value(self, example_addressing_type):
+        UdsMessage.addressing_type.fset(self=self.mock_uds_message, value=example_addressing_type.value)
+        assert self.mock_uds_message._UdsMessage__addressing_type == example_addressing_type
         self.mock_validate_addressing.assert_called_once_with(example_addressing_type.value)
 
-    def test_addressing__set_second_call(self, example_addressing_type):
-        self.mock_uds_message._UdsMessage__addressing = "some value"
-        self.test_addressing__set_instance(example_addressing_type=example_addressing_type)
+    def test_addressing_type__set_second_call(self, example_addressing_type):
+        self.mock_uds_message._UdsMessage__addressing_type = "some value"
+        self.test_addressing_type__set_instance(example_addressing_type=example_addressing_type)
 
 
 class TestUdsMessageRecord:
@@ -163,16 +163,16 @@ class TestUdsMessageRecord:
         assert self.mock_uds_message_record._UdsMessageRecord__packets_records == old_value
         self.mock_uds_message_record._UdsMessageRecord__validate_packets_records.assert_not_called()
 
-    # addressing
+    # addressing_type
 
     @pytest.mark.parametrize("packets_records", [
-        (Mock(spec=AbstractUdsPacketRecord, addressing=AddressingType.PHYSICAL),),
-        (Mock(spec=AbstractUdsPacketRecord, addressing=AddressingType.FUNCTIONAL),
-         Mock(spec=AbstractUdsPacketRecord, addressing=AddressingType.PHYSICAL)),
+        (Mock(spec=AbstractUdsPacketRecord, addressing_type=AddressingType.PHYSICAL),),
+        (Mock(spec=AbstractUdsPacketRecord, addressing_type=AddressingType.FUNCTIONAL),
+         Mock(spec=AbstractUdsPacketRecord, addressing_type=AddressingType.PHYSICAL)),
     ])
-    def test_addressing__get(self, packets_records):
+    def test_addressing_type__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.addressing.fget(self=self.mock_uds_message_record) == packets_records[0].addressing
+        assert UdsMessageRecord.addressing_type.fget(self=self.mock_uds_message_record) == packets_records[0].addressing_type
 
     # direction
 

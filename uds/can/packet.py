@@ -78,7 +78,7 @@ class CanPacket(AbstractUdsPacket):
     def __init__(self, *,
                  packet_type: CanPacketTypeAlias,
                  addressing_format: CanAddressingFormatAlias,
-                 addressing: AddressingTypeAlias,
+                 addressing: AddressingTypeAlias,  # TODO: refactor to addressing_type in the entire file
                  can_id: Optional[int] = None,
                  target_address: Optional[RawByte] = None,
                  source_address: Optional[RawByte] = None,
@@ -1337,7 +1337,7 @@ class CanPacket(AbstractUdsPacket):
                                                  f"Actual values: "
                                                  f"target_address={target_address}, source_address={source_address}")
             CanIdHandler.validate_can_id(can_id)
-            if not CanIdHandler.is_normal_fixed_addressed_can_id(can_id=can_id, addressing=addressing):
+            if not CanIdHandler.is_normal_fixed_addressed_can_id(can_id=can_id, addressing_type=addressing):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                                  f"Normal Fixed Addressing Format. Actual value: {can_id}")
 
@@ -1429,7 +1429,7 @@ class CanPacket(AbstractUdsPacket):
                                                  f"Actual values: "
                                                  f"target_address={target_address}, source_address={source_address}")
             CanIdHandler.validate_can_id(can_id)
-            if not CanIdHandler.is_mixed_29bit_addressed_can_id(can_id=can_id, addressing=addressing):
+            if not CanIdHandler.is_mixed_29bit_addressed_can_id(can_id=can_id, addressing_type=addressing):
                 raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                                  f"Mixed 29-bit Addressing Format. Actual value: {can_id}")
 
