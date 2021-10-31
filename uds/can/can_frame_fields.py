@@ -47,24 +47,24 @@ class CanIdHandler:
     """Maximum value of Extended (29-bit) CAN ID."""
 
     NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET: int = 0x18DA0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for 
-    :ref:`physically addressed <knowledge-base-physical-addressing>` CAN Packet that uses 
+    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
+    :ref:`physically addressed <knowledge-base-physical-addressing>` CAN Packet that uses
     :ref:`Normal Fixed Addressing Format <knowledge-base-can-normal-fixed-addressing>.`"""
     NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18DB0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for 
-    :ref:`functionally addressed <knowledge-base-functional-addressing>` CAN Packet that uses 
+    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
+    :ref:`functionally addressed <knowledge-base-functional-addressing>` CAN Packet that uses
     :ref:`Normal Fixed Addressing Format <knowledge-base-can-normal-fixed-addressing>.`"""
     MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET: int = 0x18CE0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for 
-    :ref:`physically addressed <knowledge-base-physical-addressing>` CAN Packet that uses 
+    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
+    :ref:`physically addressed <knowledge-base-physical-addressing>` CAN Packet that uses
     :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
     MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18CD0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for 
-    :ref:`functionally addressed <knowledge-base-functional-addressing>` CAN Packet that uses 
+    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
+    :ref:`functionally addressed <knowledge-base-functional-addressing>` CAN Packet that uses
     :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
 
     ADDRESSING_TYPE_NAME = "addressing_type"
-    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with 
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with
     decoded Addressing Information."""
     TARGET_ADDRESS_NAME = "target_address"
     """Name of Target Address which is used as a key in dictionary with decoded Addressing Information."""
@@ -72,7 +72,7 @@ class CanIdHandler:
     """Name of Source Address which is used as a key in dictionary with decoded Addressing Information."""
 
     @classmethod
-    def decode_can_id(cls, addressing_format: CanAddressingFormat, can_id: int) -> CanIdInfoAlias:
+    def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> CanIdInfoAlias:
         """
         Extract Addressing Information out of CAN ID.
 

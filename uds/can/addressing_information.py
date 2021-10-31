@@ -16,10 +16,10 @@ from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 
 AIDataBytesInfoAlias = Dict[str, Optional[RawByte]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by 
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by
 :ref:`CAN frame <knowledge-base-can-frame>` data bytes."""
 AIInfoAlias = Dict[str, Optional[Union[RawByte, AddressingType]]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by 
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by
 :ref:`CAN frame <knowledge-base-can-frame>`."""
 
 
@@ -35,7 +35,7 @@ class CanAddressingInformationHandler:
     """
 
     ADDRESSING_TYPE_NAME = "addressing_type"
-    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with 
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with
     decoded Addressing Information."""
     TARGET_ADDRESS_NAME = "target_address"
     """Name of Target Address which is used as a key in dictionary with decoded Addressing Information."""
@@ -326,10 +326,10 @@ class CanAddressingInformationHandler:
 
     @staticmethod
     def validate_ai_mixed_29bit(addressing_type: AddressingTypeAlias,
-                                can_id: Optional[int],
-                                target_address: Optional[RawByte],
-                                source_address: Optional[RawByte],
-                                address_extension: RawByte) -> None:
+                                address_extension: RawByte,
+                                can_id: Optional[int] = None,
+                                target_address: Optional[RawByte] = None,
+                                source_address: Optional[RawByte] = None) -> None:
         """
         Validate Addressing Information parameters for Mixed 29-bit CAN Addressing format.
 

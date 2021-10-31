@@ -975,7 +975,7 @@ class CanPacket(AbstractUdsPacket):
         return self.__raw_frame_data
 
     @property
-    def addressing(self) -> AddressingType:
+    def addressing_type(self) -> AddressingType:
         """Addressing type for which this CAN packet is relevant."""
         return self.__addressing
 

@@ -24,7 +24,7 @@ class AbstractUdsPacket(ABC):
 
     @property
     @abstractmethod
-    def addressing(self) -> AddressingType:
+    def addressing_type(self) -> AddressingType:
         """Addressing type for which this packet is relevant."""
 
     @property
@@ -124,7 +124,7 @@ class AbstractUdsPacketRecord(ABC):
 
     @property
     @abstractmethod
-    def addressing(self) -> AddressingType:
+    def addressing_type(self) -> AddressingType:
         """Addressing type over which this packet was transmitted."""
 
     @property  # noqa: F841
