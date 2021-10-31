@@ -15,6 +15,8 @@ class TestCanPacketType:
     def teardown(self):
         self._patcher_validate_member.stop()
 
+    # inheritance
+
     def test_inheritance__abstract_packet_type(self):
         assert issubclass(CanPacketType, AbstractUdsPacketType)
 

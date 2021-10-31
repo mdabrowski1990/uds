@@ -7,6 +7,7 @@ from typing import Any, Union
 from aenum import unique
 
 from uds.packet import AbstractUdsPacketType
+from uds.utilities import Nibble
 
 
 @unique
@@ -30,15 +31,15 @@ class CanPacketType(AbstractUdsPacketType):
     @classmethod
     def is_initial_packet_type(cls, value: Any) -> bool:
         """
-        Check whether given argument is a member or a value of a CAN packet type that initiates a diagnostic message.
+        Check whether given argument is a CAN packet type that initiates a diagnostic message.
 
         :param value: Value to check.
 
         :return: True if given argument is a packet type that initiates a diagnostic message, else False.
         """
         cls.validate_member(value)
-        return cls(value) in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
+        return value in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
 
 
-CanPacketTypeAlias = Union[CanPacketType, int]
+CanPacketTypeAlias = Union[CanPacketType, Nibble]
 """Alias that describes :class:`~uds.can.packet_type.CanPacketType` member type."""
