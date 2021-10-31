@@ -394,15 +394,15 @@ class CanIdHandler:
             raise ValueError(f"Provided value is out of CAN Identifier values range. Actual value: {value}")
 
 
-class CanDlcHandler:  # TODO: review
+class CanDlcHandler:
     """
     Helper class that provides utilities for CAN Data Length Code field.
 
-    CAN Data Length Code (CAN DLC) is a CAN frame field that informs about number of data bytes carried in CAN frames.
+    CAN Data Length Code (DLC) is a CAN frame field that informs about number of data bytes carried by CAN frames.
 
-    CAN DLC supports two value ranges:
-     - 0x0-0x8 - supported by CLASSICAL CAN and CAN FD
-     - 0x9-0xF - supported by CAN FD only
+    CAN DLC supports two values ranges:
+     - 0x0-0x8 - linear range which is supported by CLASSICAL CAN and CAN FD
+     - 0x9-0xF - discrete range which is supported by CAN FD only
     """
 
     __DLC_VALUES: Tuple[int, ...] = tuple(range(0x10))
@@ -423,9 +423,9 @@ class CanDlcHandler:  # TODO: review
     @classmethod
     def decode(cls, dlc: int) -> int:
         """
-        Map raw value of CAN DLC into number of data bytes.
+        Map a value of CAN DLC into a number of data bytes.
 
-        :param dlc: Raw value of CAN DLC.
+        :param dlc: Value of CAN DLC.
 
         :return: Number of data bytes in a CAN frame that is represented by provided DLC value.
         """
@@ -435,7 +435,7 @@ class CanDlcHandler:  # TODO: review
     @classmethod
     def encode(cls, data_bytes_number: int) -> int:
         """
-        Map number of data bytes in a CAN frame into DLC value.
+        Map a number of data bytes in a CAN frame into DLC value.
 
         :param data_bytes_number: Number of data bytes in a CAN frame.
 
@@ -447,11 +447,11 @@ class CanDlcHandler:  # TODO: review
     @classmethod
     def get_min_dlc(cls, data_bytes_number: int) -> int:
         """
-        Get minimum value of CAN DLC that enables carrying provided number of CAN data bytes.
+        Get a minimum value of CAN DLC that is required to carry the provided number of data bytes in a CAN frame.
 
-        :param data_bytes_number: Number of payload data bytes in a CAN frame.
+        :param data_bytes_number: Number of data bytes in a CAN frame.
 
-        :return: Minimum CAN DLC value that enables carrying provided number of CAN data bytes.
+        :return: Minimum CAN DLC value that is required to carry provided number of data bytes in a CAN frame.
         """
         cls.validate_data_bytes_number(data_bytes_number, False)
         index = bisect_left(a=cls.__DATA_BYTES_NUMBERS, x=data_bytes_number)
@@ -460,7 +460,7 @@ class CanDlcHandler:  # TODO: review
     @classmethod
     def is_can_fd_specific_dlc(cls, dlc: int) -> bool:
         """
-        Check whether provided DLC value is applicable for CAN FD only.
+        Check whether the provided DLC value is CAN FD specific.
 
         :param dlc: Value of DLC to check.
 
@@ -471,7 +471,7 @@ class CanDlcHandler:  # TODO: review
     @classmethod
     def validate_dlc(cls, value: Any) -> None:
         """
-        Validate whether provided value is a valid CAN DLC value.
+        Validate whether the provided value is a valid value of CAN DLC.
 
         :param value: Value to validate.
 
@@ -489,10 +489,11 @@ class CanDlcHandler:  # TODO: review
         Validate whether provided value is a valid number of data bytes that might be carried a CAN frame.
 
         :param value: Value to validate.
-        :param exact_value: Informs whether the value must be the exact number of CAN frame data bytes or number.
-            - True - provided value must be the exact number of data bytes that might be carried by a CAN frame
-            - False - provided value must be a number of data bytes that in range of minimum and maximum data bytes
-              that CAN frame contain
+        :param exact_value: Informs whether the value must be the exact number of data bytes in a CAN frame.
+            Possible values:
+             - True - provided value must be the exact number of data bytes to be carried by a CAN frame.
+             - False - provided value must be a number of data bytes that could be carried by a CAN frame
+               (:ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed).
 
         :raise TypeError: Provided values is not int type.
         :raise ValueError: Provided value is not number of data bytes that matches the criteria.

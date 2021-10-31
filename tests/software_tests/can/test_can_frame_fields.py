@@ -503,37 +503,6 @@ class TestCanIdHandler:
         mock_is_can_id.assert_called_once_with(value)
 
 
-@pytest.mark.integration
-class TestCanIdHandlerIntegration:
-    """Integration tests for `TestCanIdHandler` class."""
-
-    @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
-    @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
-    def test_encode_decode_normal_fixed_can_id(self, example_addressing_type, target_address, source_address):
-        can_id = CanIdHandler.generate_normal_fixed_addressed_can_id(addressing_type=example_addressing_type,
-                                                                     target_address=target_address,
-                                                                     source_address=source_address)
-        assert CanIdHandler.decode_can_id(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                          can_id=can_id) == {
-            CanIdHandler.ADDRESSING_TYPE_NAME: example_addressing_type,
-            CanIdHandler.TARGET_ADDRESS_NAME: target_address,
-            CanIdHandler.SOURCE_ADDRESS_NAME: source_address
-        }
-
-    @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
-    @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
-    def test_encode_decode_mixed_29bit_can_id(self, example_addressing_type, target_address, source_address):
-        can_id = CanIdHandler.generate_mixed_addressed_29bit_can_id(addressing_type=example_addressing_type,
-                                                                    target_address=target_address,
-                                                                    source_address=source_address)
-        assert CanIdHandler.decode_can_id(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                                          can_id=can_id) == {
-            CanIdHandler.ADDRESSING_TYPE_NAME: example_addressing_type,
-            CanIdHandler.TARGET_ADDRESS_NAME: target_address,
-            CanIdHandler.SOURCE_ADDRESS_NAME: source_address
-        }
-
-
 class TestCanDlcHandler:
     """Tests for `CanDlcHandler` class."""
 
@@ -675,6 +644,37 @@ class TestCanDlcHandler:
     ])
     def test_validate_dlc__valid(self, value, exact_match):
         assert CanDlcHandler.validate_data_bytes_number(value, exact_match) is None
+
+
+@pytest.mark.integration
+class TestCanIdHandlerIntegration:
+    """Integration tests for `TestCanIdHandler` class."""
+
+    @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
+    @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
+    def test_encode_decode_normal_fixed_can_id(self, example_addressing_type, target_address, source_address):
+        can_id = CanIdHandler.generate_normal_fixed_addressed_can_id(addressing_type=example_addressing_type,
+                                                                     target_address=target_address,
+                                                                     source_address=source_address)
+        assert CanIdHandler.decode_can_id(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                          can_id=can_id) == {
+            CanIdHandler.ADDRESSING_TYPE_NAME: example_addressing_type,
+            CanIdHandler.TARGET_ADDRESS_NAME: target_address,
+            CanIdHandler.SOURCE_ADDRESS_NAME: source_address
+        }
+
+    @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
+    @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
+    def test_encode_decode_mixed_29bit_can_id(self, example_addressing_type, target_address, source_address):
+        can_id = CanIdHandler.generate_mixed_addressed_29bit_can_id(addressing_type=example_addressing_type,
+                                                                    target_address=target_address,
+                                                                    source_address=source_address)
+        assert CanIdHandler.decode_can_id(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                          can_id=can_id) == {
+            CanIdHandler.ADDRESSING_TYPE_NAME: example_addressing_type,
+            CanIdHandler.TARGET_ADDRESS_NAME: target_address,
+            CanIdHandler.SOURCE_ADDRESS_NAME: source_address
+        }
 
 
 @pytest.mark.integration
