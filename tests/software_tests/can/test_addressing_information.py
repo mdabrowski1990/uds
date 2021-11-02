@@ -111,6 +111,68 @@ class TestCanAddressingInformationHandler:
         mock_validate_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                             ai_data_bytes=ai_data_bytes)
 
+    # encode_ai_data_bytes
+
+    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                                   CanAddressingFormat.NORMAL_11BIT_ADDRESSING.value,
+                                                   CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value])
+    @pytest.mark.parametrize("target_address, address_extension", [
+        (None, None),
+        ("ta", "ae"),
+        (0x5B, 0x9E),
+    ])
+    def test_generate_ai_data_bytes__normal(self, addressing_format, target_address, address_extension):
+        assert CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                    address_extension=address_extension,
+                                                                    target_address=target_address) == []
+        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
+        self.mock_validate_raw_byte.assert_not_called()
+
+    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.EXTENDED_ADDRESSING,
+                                                   CanAddressingFormat.EXTENDED_ADDRESSING.value])
+    @pytest.mark.parametrize("target_address, address_extension", [
+        (None, None),
+        ("ta", "ae"),
+        (0x5B, 0x9E),
+    ])
+    def test_generate_ai_data_bytes__extended(self, addressing_format, target_address, address_extension):
+        assert CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                    address_extension=address_extension,
+                                                                    target_address=target_address) == [
+                   target_address]
+        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
+        self.mock_validate_raw_byte.assert_called_once_with(target_address)
+
+    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+                                                   CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                                   CanAddressingFormat.MIXED_29BIT_ADDRESSING.value])
+    @pytest.mark.parametrize("target_address, address_extension", [
+        (None, None),
+        ("ta", "ae"),
+        (0x5B, 0x9E),
+    ])
+    def test_generate_ai_data_bytes__mixed(self, addressing_format, target_address, address_extension):
+        assert CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                    address_extension=address_extension,
+                                                                    target_address=target_address) == [
+                   address_extension]
+        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
+        self.mock_validate_raw_byte.assert_called_once_with(address_extension)
+
+    @pytest.mark.parametrize("addressing_format", [None, "something else"])
+    @pytest.mark.parametrize("target_address, address_extension", [
+        (None, None),
+        ("ta", "ae"),
+        (0x5B, 0x9E),
+    ])
+    def test_generate_ai_data_bytes__unknown(self, addressing_format, target_address, address_extension):
+        with pytest.raises(NotImplementedError):
+            CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                 address_extension=address_extension,
+                                                                 target_address=target_address)
+        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
+        self.mock_validate_raw_byte.assert_not_called()
+
     # get_ai_data_bytes_number
 
     @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
@@ -125,69 +187,7 @@ class TestCanAddressingInformationHandler:
         assert value >= 0
         self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
 
-    # generate_ai_data_bytes
-
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                                                   CanAddressingFormat.NORMAL_11BIT_ADDRESSING.value,
-                                                   CanAddressingFormat.NORMAL_FIXED_ADDRESSING.value])
-    @pytest.mark.parametrize("target_address, address_extension", [
-        (None, None),
-        ("ta", "ae"),
-        (0x5B, 0x9E),
-    ])
-    def test_generate_ai_data_bytes__normal(self, addressing_format, target_address, address_extension):
-        assert CanAddressingInformationHandler.generate_ai_data_bytes(addressing_format=addressing_format,
-                                                                      address_extension=address_extension,
-                                                                      target_address=target_address) == []
-        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
-        self.mock_validate_raw_byte.assert_not_called()
-
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.EXTENDED_ADDRESSING,
-                                                   CanAddressingFormat.EXTENDED_ADDRESSING.value])
-    @pytest.mark.parametrize("target_address, address_extension", [
-        (None, None),
-        ("ta", "ae"),
-        (0x5B, 0x9E),
-    ])
-    def test_generate_ai_data_bytes__extended(self, addressing_format, target_address, address_extension):
-        assert CanAddressingInformationHandler.generate_ai_data_bytes(addressing_format=addressing_format,
-                                                                      address_extension=address_extension,
-                                                                      target_address=target_address) == [
-                   target_address]
-        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
-        self.mock_validate_raw_byte.assert_called_once_with(target_address)
-
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-                                                   CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                                                   CanAddressingFormat.MIXED_29BIT_ADDRESSING.value])
-    @pytest.mark.parametrize("target_address, address_extension", [
-        (None, None),
-        ("ta", "ae"),
-        (0x5B, 0x9E),
-    ])
-    def test_generate_ai_data_bytes__mixed(self, addressing_format, target_address, address_extension):
-        assert CanAddressingInformationHandler.generate_ai_data_bytes(addressing_format=addressing_format,
-                                                                      address_extension=address_extension,
-                                                                      target_address=target_address) == [
-                   address_extension]
-        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
-        self.mock_validate_raw_byte.assert_called_once_with(address_extension)
-
-    @pytest.mark.parametrize("addressing_format", [None, "something else"])
-    @pytest.mark.parametrize("target_address, address_extension", [
-        (None, None),
-        ("ta", "ae"),
-        (0x5B, 0x9E),
-    ])
-    def test_generate_ai_data_bytes__unknown(self, addressing_format, target_address, address_extension):
-        with pytest.raises(NotImplementedError):
-            CanAddressingInformationHandler.generate_ai_data_bytes(addressing_format=addressing_format,
-                                                                   address_extension=address_extension,
-                                                                   target_address=target_address)
-        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
-        self.mock_validate_raw_byte.assert_not_called()
-
-        # validate_ai
+    # validate_ai
 
     @pytest.mark.parametrize("addressing_format", [None, "unknown addressing format"])
     @pytest.mark.parametrize("addressing_type, can_id, target_address, source_address, address_extension", [
@@ -736,13 +736,7 @@ class TestCanAddressingInformationHandlerIntegration:
                                                          can_id=can_id,
                                                          ai_data_bytes=ai_data_bytes) == expected_output
 
-    # get_ai_data_bytes_number
-
-    def test_get_ai_data_bytes_number(self, example_can_addressing_format):
-        assert CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format) == \
-               CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format.value)
-
-    # generate_ai_data_bytes
+    # encode_ai_data_bytes
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
         (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, None, None),
@@ -752,10 +746,16 @@ class TestCanAddressingInformationHandlerIntegration:
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, 0x2F, 0xEA),
     ])
     def test_generate_ai_data_bytes(self, addressing_format, target_address, address_extension):
-        ai_data_bytes = CanAddressingInformationHandler.generate_ai_data_bytes(addressing_format=addressing_format,
-                                                                               target_address=target_address,
-                                                                               address_extension=address_extension)
+        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                             target_address=target_address,
+                                                                             address_extension=address_extension)
         assert len(ai_data_bytes) == CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+
+    # get_ai_data_bytes_number
+
+    def test_get_ai_data_bytes_number(self, example_can_addressing_format):
+        assert CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format) == \
+               CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format.value)
 
     # validate_ai
 

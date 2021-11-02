@@ -109,27 +109,10 @@ class CanAddressingInformationHandler:
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod
-    def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormatAlias) -> int:
-        """
-        Get number of data bytes that are used to carry Addressing Information.
-
-        :param addressing_format: CAN Addressing Format used.
-
-        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
-            CAN Addressing Format.
-        """
-        CanAddressingFormat.validate_member(addressing_format)
-        return {CanAddressingFormat.NORMAL_11BIT_ADDRESSING: 0,
-                CanAddressingFormat.NORMAL_FIXED_ADDRESSING: 0,
-                CanAddressingFormat.EXTENDED_ADDRESSING: 1,
-                CanAddressingFormat.MIXED_11BIT_ADDRESSING: 1,
-                CanAddressingFormat.MIXED_29BIT_ADDRESSING: 1}[addressing_format]
-
-    @classmethod
-    def generate_ai_data_bytes(cls,
-                               addressing_format: CanAddressingFormatAlias,
-                               target_address: Optional[RawByte] = None,
-                               address_extension: Optional[RawByte] = None) -> RawBytesList:
+    def encode_ai_data_bytes(cls,
+                             addressing_format: CanAddressingFormatAlias,
+                             target_address: Optional[RawByte] = None,
+                             address_extension: Optional[RawByte] = None) -> RawBytesList:
         """
         Generate a list of data bytes that carry Addressing Information.
 
@@ -155,6 +138,23 @@ class CanAddressingInformationHandler:
             validate_raw_byte(address_extension)
             return [address_extension]
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
+
+    @classmethod
+    def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormatAlias) -> int:
+        """
+        Get number of data bytes that are used to carry Addressing Information.
+
+        :param addressing_format: CAN Addressing Format used.
+
+        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
+            CAN Addressing Format.
+        """
+        CanAddressingFormat.validate_member(addressing_format)
+        return {CanAddressingFormat.NORMAL_11BIT_ADDRESSING: 0,
+                CanAddressingFormat.NORMAL_FIXED_ADDRESSING: 0,
+                CanAddressingFormat.EXTENDED_ADDRESSING: 1,
+                CanAddressingFormat.MIXED_11BIT_ADDRESSING: 1,
+                CanAddressingFormat.MIXED_29BIT_ADDRESSING: 1}[addressing_format]
 
     @classmethod
     def validate_ai(cls,

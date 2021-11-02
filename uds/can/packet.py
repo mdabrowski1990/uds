@@ -366,7 +366,7 @@ class CanPacket(AbstractUdsPacket):
         ai_data_bytes = CanAddressingFormat.get_number_of_data_bytes_used(addressing_format)
         ff_dl_bytes = cls.SHORT_FF_DL_BYTES_USED if data_length <= cls.MAX_SHORT_FF_DL_VALUE \
             else cls.LONG_FF_DL_BYTES_USED
-        dlc = CanDlcHandler.encode(data_bytes_number=ai_data_bytes + ff_dl_bytes + payload_length)
+        dlc = CanDlcHandler.encode_dlc(data_bytes_number=ai_data_bytes + ff_dl_bytes + payload_length)
         if dlc < cls.MIN_DLC_VALUE_FF:
             raise InconsistentArgumentsError(f"Provided payload_length requires DLC value that is invalid for "
                                              f"First Frame packet. Actual values: payload_length={payload_length},"
@@ -438,7 +438,7 @@ class CanPacket(AbstractUdsPacket):
         payload_length = len(payload)
         frame_dlc = dlc or cls.get_can_frame_dlc_single_frame(addressing_format=addressing_format,
                                                               payload_length=payload_length)
-        data_bytes_number = CanDlcHandler.decode(frame_dlc)
+        data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
         sf_dl_bytes = int_to_bytes_list(int_value=payload_length,
                                         list_size=cls.SHORT_SF_DL_BYTES_USED
                                         if frame_dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.LONG_SF_DL_BYTES_USED)
@@ -521,7 +521,7 @@ class CanPacket(AbstractUdsPacket):
         payload_length = len(payload)
         frame_dlc = dlc or cls.get_can_frame_dlc_consecutive_frame(addressing_format=addressing_format,
                                                                    payload_length=payload_length)
-        data_bytes_number = CanDlcHandler.decode(frame_dlc)
+        data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
         sn_byte = (CanPacketType.CONSECUTIVE_FRAME.value << 4) + sequence_number
         frame_data_bytes = list(ai_data_bytes) + [sn_byte] + list(payload)
         frame_data_bytes += (data_bytes_number - len(frame_data_bytes)) * [filler_byte]  # CAN Frame Data Padding
@@ -566,7 +566,7 @@ class CanPacket(AbstractUdsPacket):
                                                            target_address=target_address,
                                                            address_extension=address_extension)
         frame_dlc = dlc or cls.get_can_frame_dlc_flow_control(addressing_format=addressing_format)
-        data_bytes_number = CanDlcHandler.decode(frame_dlc)
+        data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
         flow_status_instance = CanFlowStatus(flow_status)
         fs_bytes = [(CanPacketType.FLOW_CONTROL.value << 4) + flow_status_instance.value]
         if flow_status_instance == CanFlowStatus.ContinueToSend:
@@ -880,9 +880,9 @@ class CanPacket(AbstractUdsPacket):
                                         source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
         if can_id is None:
-            self.__can_id = CanIdHandler.generate_normal_fixed_addressed_can_id(addressing_type=addressing,
-                                                                                target_address=target_address,
-                                                                                source_address=source_address)
+            self.__can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(addressing_type=addressing,
+                                                                              target_address=target_address,
+                                                                              source_address=source_address)
             self.__target_address = target_address
         else:
             self.__can_id = can_id
@@ -958,9 +958,9 @@ class CanPacket(AbstractUdsPacket):
                                        source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_29BIT_ADDRESSING)
         if can_id is None:
-            self.__can_id = CanIdHandler.generate_mixed_addressed_29bit_can_id(addressing_type=addressing,
-                                                                               target_address=target_address,
-                                                                               source_address=source_address)
+            self.__can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(addressing_type=addressing,
+                                                                             target_address=target_address,
+                                                                             source_address=source_address)
             self.__target_address = target_address
         else:
             self.__can_id = can_id

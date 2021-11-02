@@ -174,10 +174,10 @@ class CanIdHandler:
                                   f"Actual value: {can_id}")
 
     @classmethod
-    def generate_normal_fixed_addressed_can_id(cls,
-                                               addressing_type: AddressingTypeAlias,
-                                               target_address: RawByte,
-                                               source_address: RawByte) -> int:
+    def encode_normal_fixed_addressed_can_id(cls,
+                                             addressing_type: AddressingTypeAlias,
+                                             target_address: RawByte,
+                                             source_address: RawByte) -> int:
         """
         Generate CAN ID value for Normal Fixed CAN Addressing format.
 
@@ -202,10 +202,10 @@ class CanIdHandler:
         raise NotImplementedError(f"Unknown addressing type value was provided: {addressing_type}")
 
     @classmethod
-    def generate_mixed_addressed_29bit_can_id(cls,
-                                              addressing_type: AddressingTypeAlias,
-                                              target_address: RawByte,
-                                              source_address: RawByte) -> int:
+    def encode_mixed_addressed_29bit_can_id(cls,
+                                            addressing_type: AddressingTypeAlias,
+                                            target_address: RawByte,
+                                            source_address: RawByte) -> int:
         """
         Generate CAN ID value for Mixed 29-bit CAN Addressing format.
 
@@ -421,7 +421,7 @@ class CanDlcHandler:
     """Maximum value of a CAN Frame DLC parameter."""
 
     @classmethod
-    def decode(cls, dlc: int) -> int:
+    def decode_dlc(cls, dlc: int) -> int:
         """
         Map a value of CAN DLC into a number of data bytes.
 
@@ -433,7 +433,7 @@ class CanDlcHandler:
         return cls.__DLC_MAPPING[dlc]
 
     @classmethod
-    def encode(cls, data_bytes_number: int) -> int:
+    def encode_dlc(cls, data_bytes_number: int) -> int:
         """
         Map a number of data bytes in a CAN frame into DLC value.
 

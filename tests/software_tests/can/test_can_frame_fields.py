@@ -152,16 +152,16 @@ class TestCanIdHandler:
         assert decoded_values[CanIdHandler.TARGET_ADDRESS_NAME] == target_address
         assert decoded_values[CanIdHandler.SOURCE_ADDRESS_NAME] == source_address
 
-    # generate_normal_fixed_addressed_can_id
+    # encode_normal_fixed_addressed_can_id
 
     @pytest.mark.parametrize("addressing_type", [None, True, "some addressing"])
     @pytest.mark.parametrize("target_address, source_address", [(0, 0), (0xFF, 0xFF), (0xAA, 0x55)])
     def test_generate_normal_fixed_addressed_can_id__not_implemented(self, addressing_type, target_address,
                                                                      source_address):
         with pytest.raises(NotImplementedError):
-            CanIdHandler.generate_normal_fixed_addressed_can_id(addressing_type=addressing_type,
-                                                                target_address=target_address,
-                                                                source_address=source_address)
+            CanIdHandler.encode_normal_fixed_addressed_can_id(addressing_type=addressing_type,
+                                                              target_address=target_address,
+                                                              source_address=source_address)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
 
     @pytest.mark.parametrize("addressing_type, target_address, source_address, expected_can_id", [
@@ -174,22 +174,22 @@ class TestCanIdHandler:
     ])
     def test_generate_normal_fixed_addressed_can_id__valid(self, addressing_type, target_address, source_address,
                                                            expected_can_id):
-        assert CanIdHandler.generate_normal_fixed_addressed_can_id(addressing_type=addressing_type,
-                                                                   target_address=target_address,
-                                                                   source_address=source_address) == expected_can_id
+        assert CanIdHandler.encode_normal_fixed_addressed_can_id(addressing_type=addressing_type,
+                                                                 target_address=target_address,
+                                                                 source_address=source_address) == expected_can_id
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address)], any_order=True)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
 
-    # generate_mixed_addressed_29bit_can_id
+    # encode_mixed_addressed_29bit_can_id
 
     @pytest.mark.parametrize("addressing_type", [None, True, "some addressing"])
     @pytest.mark.parametrize("target_address, source_address", [(0, 0), (0xFF, 0xFF), (0xAA, 0x55)])
     def test_generate_mixed_addressed_29bit_can_id__not_implemented(self, addressing_type, target_address,
                                                                     source_address):
         with pytest.raises(NotImplementedError):
-            CanIdHandler.generate_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
-                                                               target_address=target_address,
-                                                               source_address=source_address)
+            CanIdHandler.encode_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
+                                                             target_address=target_address,
+                                                             source_address=source_address)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
 
     @pytest.mark.parametrize("addressing_type, target_address, source_address, expected_can_id", [
@@ -202,9 +202,9 @@ class TestCanIdHandler:
     ])
     def test_generate_mixed_addressed_29bit_can_id__valid(self, addressing_type, target_address, source_address,
                                                           expected_can_id):
-        assert CanIdHandler.generate_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
-                                                                  target_address=target_address,
-                                                                  source_address=source_address) == expected_can_id
+        assert CanIdHandler.encode_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
+                                                                target_address=target_address,
+                                                                source_address=source_address) == expected_can_id
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address)], any_order=True)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
 
@@ -508,7 +508,7 @@ class TestCanDlcHandler:
 
     SCRIPT_LOCATION = TestCanIdHandler.SCRIPT_LOCATION
 
-    # decode
+    # decode_dlc
 
     @pytest.mark.parametrize("dlc, data_bytes_number", [
         (0, 0),
@@ -523,10 +523,10 @@ class TestCanDlcHandler:
     ])
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.validate_dlc")
     def test_decode(self, mock_validate_dlc, dlc, data_bytes_number):
-        assert CanDlcHandler.decode(dlc) == data_bytes_number
+        assert CanDlcHandler.decode_dlc(dlc) == data_bytes_number
         mock_validate_dlc.assert_called_once_with(dlc)
 
-    # encode
+    # encode_dlc
 
     @pytest.mark.parametrize("dlc, data_bytes_number", [
         (0, 0),
@@ -541,7 +541,7 @@ class TestCanDlcHandler:
     ])
     @patch(f"{SCRIPT_LOCATION}.CanDlcHandler.validate_data_bytes_number")
     def test_encode(self, mock_validate_data_bytes_number, dlc, data_bytes_number):
-        assert CanDlcHandler.encode(data_bytes_number) == dlc
+        assert CanDlcHandler.encode_dlc(data_bytes_number) == dlc
         mock_validate_data_bytes_number.assert_called_once_with(data_bytes_number, True)
 
     # get_min_dlc
@@ -653,9 +653,9 @@ class TestCanIdHandlerIntegration:
     @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
     @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
     def test_encode_decode_normal_fixed_can_id(self, example_addressing_type, target_address, source_address):
-        can_id = CanIdHandler.generate_normal_fixed_addressed_can_id(addressing_type=example_addressing_type,
-                                                                     target_address=target_address,
-                                                                     source_address=source_address)
+        can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(addressing_type=example_addressing_type,
+                                                                   target_address=target_address,
+                                                                   source_address=source_address)
         assert CanIdHandler.decode_can_id(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
                                           can_id=can_id) == {
             CanIdHandler.ADDRESSING_TYPE_NAME: example_addressing_type,
@@ -666,9 +666,9 @@ class TestCanIdHandlerIntegration:
     @pytest.mark.parametrize("target_address", [0x00, 0x1A, 0xFF])
     @pytest.mark.parametrize("source_address", [0x9C, 0xB2, 0xFE])
     def test_encode_decode_mixed_29bit_can_id(self, example_addressing_type, target_address, source_address):
-        can_id = CanIdHandler.generate_mixed_addressed_29bit_can_id(addressing_type=example_addressing_type,
-                                                                    target_address=target_address,
-                                                                    source_address=source_address)
+        can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(addressing_type=example_addressing_type,
+                                                                  target_address=target_address,
+                                                                  source_address=source_address)
         assert CanIdHandler.decode_can_id(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                           can_id=can_id) == {
             CanIdHandler.ADDRESSING_TYPE_NAME: example_addressing_type,
@@ -683,10 +683,10 @@ class TestCanDlcHandlerIntegration:
 
     @pytest.mark.parametrize("data_bytes_number", [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64])
     def test_encode_decode(self, data_bytes_number):
-        dlc_value = CanDlcHandler.encode(data_bytes_number)
-        assert CanDlcHandler.decode(dlc_value) == data_bytes_number
+        dlc_value = CanDlcHandler.encode_dlc(data_bytes_number)
+        assert CanDlcHandler.decode_dlc(dlc_value) == data_bytes_number
 
     @pytest.mark.parametrize("dlc", range(0xF))
     def test_decode_encode(self, dlc):
-        data_bytes_number = CanDlcHandler.decode(dlc)
-        assert CanDlcHandler.encode(data_bytes_number) == dlc
+        data_bytes_number = CanDlcHandler.decode_dlc(dlc)
+        assert CanDlcHandler.encode_dlc(data_bytes_number) == dlc
