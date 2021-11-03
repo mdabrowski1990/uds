@@ -86,8 +86,8 @@ class AbstractSegmenter(ABC):
         :return: True if the packets form exactly one diagnostic message.
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
         """
-        return self.is_following_packets_sequence(packets) and \
-            self.get_consecutive_packets_number(packets[0]) == len(packets)
+        return self.is_following_packets_sequence(packets) \
+            and self.get_consecutive_packets_number(packets[0]) == len(packets)
 
     @abstractmethod
     def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:  # noqa: F841

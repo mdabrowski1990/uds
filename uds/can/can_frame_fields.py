@@ -288,12 +288,12 @@ class CanIdHandler:
         """
         if addressing_type is not None:
             AddressingType.validate_member(addressing_type)
-        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) and \
-                cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET <= can_id \
+        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) \
+                and cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
-        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) and \
-                cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
+        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) \
+                and cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
         return False
@@ -335,12 +335,12 @@ class CanIdHandler:
         """
         if addressing_type is not None:
             AddressingType.validate_member(addressing_type)
-        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) and \
-                cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET <= can_id \
+        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) \
+                and cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
-        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) and \
-                cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
+        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) \
+                and cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
                 <= cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF:
             return True
         return False

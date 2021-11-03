@@ -754,8 +754,8 @@ class TestCanAddressingInformationHandlerIntegration:
     # get_ai_data_bytes_number
 
     def test_get_ai_data_bytes_number(self, example_can_addressing_format):
-        assert CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format) == \
-               CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format.value)
+        assert CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format) \
+               == CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format.value)
 
     # validate_ai
 
