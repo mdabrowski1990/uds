@@ -1,7 +1,7 @@
 """
 Implementation specific for Single Frame CAN packets.
 
-This module contains implementation specific for :ref:`Single Frame <knowledge-base-can-single-frame>` packet - that
+This module contains implementation specific for :ref:`Single Frame <knowledge-base-can-single-frame>` packets - that
 includes :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameter.
 """
 
@@ -24,12 +24,12 @@ class CanSingleFrameHandler:
     """Maximum value of DLC for which short
     :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` format shall be used."""
     SHORT_SF_DL_BYTES_USED: int = 1
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` 
-    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameters in 
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`
+    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameters in
     :ref:`Single Frame <knowledge-base-can-single-frame>` packets when short SF_DL format is used."""
     LONG_SF_DL_BYTES_USED: int = 2
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` 
-    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameters in 
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`
+    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameters in
     :ref:`Single Frame <knowledge-base-can-single-frame>` packets when long SF_DL format is used."""
 
     @classmethod
@@ -159,7 +159,7 @@ class CanSingleFrameHandler:
         ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         sf_dl_bytes_number = cls.get_sf_dl_bytes_number(dlc)
-        return list(raw_frame_data[ai_data_bytes_number+sf_dl_bytes_number:][:sf_dl])
+        return list(raw_frame_data[ai_data_bytes_number + sf_dl_bytes_number:][:sf_dl])
 
     @classmethod
     def decode_sf_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
@@ -294,14 +294,13 @@ class CanSingleFrameHandler:
     def __validate_sf_dl_data_bytes(cls,
                                     sf_dl_bytes: RawBytes,
                                     dlc: int,
-                                    addressing_format: Optional[CanAddressingFormatAlias] = None) -> None:
+                                    addressing_format: CanAddressingFormatAlias) -> None:
         """
         Validate data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
         :param sf_dl_bytes: Data bytes with CAN Packet Type and Single Frame Data Length to validate.
         :param dlc: DLC value used by a CAN Frame.
         :param addressing_format: Value of CAN Addressing Format to use for Single Frame Data Length value validation.
-            Leave None if you do not want to validate whether payload can fit into a CAN Frame with considered DLC.
 
         :raise ValueError: The first byte of of Single Frame Data Length is not equal 0 when long format (for DLC > 8)
             is used.
@@ -374,7 +373,7 @@ class CanSingleFrameHandler:
     def __encode_sf_dl(cls,
                        sf_dl: int,
                        dlc: int,
-                       addressing_format: Optional[CanAddressingFormatAlias] = None) -> RawBytesList:
+                       addressing_format: CanAddressingFormatAlias) -> RawBytesList:
         """
         Generate Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
@@ -385,7 +384,6 @@ class CanSingleFrameHandler:
         :param sf_dl: Number of payload bytes carried by a considered Single Frame.
         :param dlc: DLC value of a CAN Frame to carry this information.
         :param addressing_format: Value of CAN Addressing Format to use for Single Frame Data Length value validation.
-            Leave None if you do not want to validate whether payload can fit into a CAN Frame with considered DLC.
 
         :return: Single Frame data bytes containing CAN Packet Type and Single Frame Data Length parameters.
         """
