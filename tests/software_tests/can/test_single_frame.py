@@ -58,7 +58,7 @@ class TestCanSingleFrameHandler:
         ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.encode_sf_dl")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__encode_sf_dl")
     def test_create_frame_data__valid_with_dlc(self, mock_encode_sf_dl,
                                                addressing_format, target_address, address_extension,
                                                payload, dlc, filler_byte,
@@ -97,15 +97,15 @@ class TestCanSingleFrameHandler:
         ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_dlc")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.encode_sf_dl")
-    def test_create_frame_data__valid_without_dlc(self, mock_encode_sf_dl, mock_get_dlc,
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_min_dlc")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__encode_sf_dl")
+    def test_create_frame_data__valid_without_dlc(self, mock_encode_sf_dl, mock_get_min_dlc,
                                                   addressing_format, target_address, address_extension,
                                                   payload, dlc, filler_byte, data_bytes_number, ai_bytes, sf_dl_bytes):
         self.mock_encode_ai_data_bytes.return_value = ai_bytes
         self.mock_decode_dlc.return_value = data_bytes_number
         mock_encode_sf_dl.return_value = sf_dl_bytes
-        mock_get_dlc.return_value = dlc
+        mock_get_min_dlc.return_value = dlc
         sf_frame_data = CanSingleFrameHandler.create_frame_data(addressing_format=addressing_format,
                                                                 payload=payload,
                                                                 dlc=None,
@@ -117,7 +117,7 @@ class TestCanSingleFrameHandler:
         self.mock_encode_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                                target_address=target_address,
                                                                address_extension=address_extension)
-        mock_get_dlc.assert_called_once_with(addressing_format=addressing_format,
+        mock_get_min_dlc.assert_called_once_with(addressing_format=addressing_format,
                                              payload_length=len(payload))
         self.mock_decode_dlc.assert_called_once_with(dlc)
         mock_encode_sf_dl.assert_called_once_with(sf_dl=len(payload),
@@ -139,7 +139,7 @@ class TestCanSingleFrameHandler:
         (range(10), 8, [0xAB], [0x0C]),
         (range(50, 112), 64, [0x98], [0x12, 0x34]),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.encode_sf_dl")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__encode_sf_dl")
     def test_create_frame_data__inconsistent_args(self, mock_encode_sf_dl,
                                                   addressing_format, target_address, address_extension,
                                                   payload, dlc, filler_byte,
@@ -164,7 +164,7 @@ class TestCanSingleFrameHandler:
                                                   dlc=dlc,
                                                   addressing_format=addressing_format)
 
-    # create_any_frame_data  TODO
+    # create_any_frame_data
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
         ("some format", "TA", "SA"),
@@ -179,16 +179,18 @@ class TestCanSingleFrameHandler:
         ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_dlc")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.encode_sf_dl")
-    def test_create_any_frame_data__valid(self, mock_encode_sf_dl, mock_get_dlc,
+    @pytest.mark.parametrize("sf_dl_short, sf_dl_long", [
+        (5, None),
+        ("short", "long"),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__create_sf_dl_data_bytes")
+    def test_create_any_frame_data__valid(self, mock_create_sf_dl_data_bytes,
                                           addressing_format, target_address, address_extension,
                                           payload, dlc, filler_byte, sf_dl_short, sf_dl_long,
                                           data_bytes_number, ai_bytes, sf_dl_bytes):
         self.mock_encode_ai_data_bytes.return_value = ai_bytes
         self.mock_decode_dlc.return_value = data_bytes_number
-        # mock_encode_sf_dl.return_value = sf_dl_bytes
-        # mock_get_dlc.return_value = dlc
+        mock_create_sf_dl_data_bytes.return_value = sf_dl_bytes
         sf_frame_data = CanSingleFrameHandler.create_any_frame_data(addressing_format=addressing_format,
                                                                     payload=payload,
                                                                     dlc=dlc,
@@ -202,52 +204,54 @@ class TestCanSingleFrameHandler:
         self.mock_encode_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                                target_address=target_address,
                                                                address_extension=address_extension)
-        # mock_get_dlc.assert_called_once_with(addressing_format=addressing_format,
-        #                                      payload_length=len(payload))
-        # self.mock_decode_dlc.assert_called_once_with(dlc)
-        # mock_encode_sf_dl.assert_called_once_with(sf_dl=len(payload),
-        #                                           dlc=dlc,
-        #                                           addressing_format=addressing_format)
+        self.mock_decode_dlc.assert_called_once_with(dlc)
+        mock_create_sf_dl_data_bytes.assert_called_once_with(sf_dl_short=sf_dl_short,
+                                                             sf_dl_long=sf_dl_long)
         assert isinstance(sf_frame_data, list)
         assert len(sf_frame_data) == data_bytes_number
 
-    # @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
-    #     ("some format", "TA", "SA"),
-    #     ("another format", None, None),
-    # ])
-    # @pytest.mark.parametrize("dlc, filler_byte", [
-    #     ("some DLC", 0x66),
-    #     (8, 0x99),
-    # ])
-    # @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
-    #     ([0x54], 1, [], [0xFA]),
-    #     (range(10), 8, [0xAB], [0x0C]),
-    #     (range(50, 112), 64, [0x98], [0x12, 0x34]),
-    # ])
-    # @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.encode_sf_dl")
-    # def test_create_frame_data__inconsistent_args(self, mock_encode_sf_dl,
-    #                                               addressing_format, target_address, address_extension,
-    #                                               payload, dlc, filler_byte,
-    #                                               data_bytes_number, ai_bytes, sf_dl_bytes):
-    #     self.mock_encode_ai_data_bytes.return_value = ai_bytes
-    #     self.mock_decode_dlc.return_value = data_bytes_number
-    #     mock_encode_sf_dl.return_value = sf_dl_bytes
-    #     with pytest.raises(InconsistentArgumentsError):
-    #         CanSingleFrameHandler.create_frame_data(addressing_format=addressing_format,
-    #                                                 payload=payload,
-    #                                                 dlc=dlc,
-    #                                                 filler_byte=filler_byte,
-    #                                                 target_address=target_address,
-    #                                                 address_extension=address_extension)
-    #     self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
-    #     self.mock_validate_raw_byte.assert_called_once_with(filler_byte)
-    #     self.mock_encode_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
-    #                                                            target_address=target_address,
-    #                                                            address_extension=address_extension)
-    #     self.mock_decode_dlc.assert_called_once_with(dlc)
-    #     mock_encode_sf_dl.assert_called_once_with(sf_dl=len(payload),
-    #                                               dlc=dlc,
-    #                                               addressing_format=addressing_format)
+    @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
+        ("some format", "TA", "SA"),
+        ("another format", None, None),
+    ])
+    @pytest.mark.parametrize("dlc, filler_byte", [
+        ("some DLC", 0x66),
+        (8, 0x99),
+    ])
+    @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
+        ([0x54], 2, [0x11], [0xFA]),
+        (list(range(16)), 8, [], [0x0C]),
+        (range(50, 112), 64, [0x98], [0x12, 0x34]),
+    ])
+    @pytest.mark.parametrize("sf_dl_short, sf_dl_long", [
+        (5, None),
+        ("short", "long"),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__create_sf_dl_data_bytes")
+    def test_create_any_frame_data__inconsistent_args(self, mock_create_sf_dl_data_bytes,
+                                                      addressing_format, target_address, address_extension,
+                                                      payload, dlc, filler_byte, sf_dl_short, sf_dl_long,
+                                                      data_bytes_number, ai_bytes, sf_dl_bytes):
+        self.mock_encode_ai_data_bytes.return_value = ai_bytes
+        self.mock_decode_dlc.return_value = data_bytes_number
+        mock_create_sf_dl_data_bytes.return_value = sf_dl_bytes
+        with pytest.raises(InconsistentArgumentsError):
+            CanSingleFrameHandler.create_any_frame_data(addressing_format=addressing_format,
+                                                        payload=payload,
+                                                        dlc=dlc,
+                                                        sf_dl_short=sf_dl_short,
+                                                        sf_dl_long=sf_dl_long,
+                                                        filler_byte=filler_byte,
+                                                        target_address=target_address,
+                                                        address_extension=address_extension)
+        self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=True)
+        self.mock_validate_raw_byte.assert_called_once_with(filler_byte)
+        self.mock_encode_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
+                                                               target_address=target_address,
+                                                               address_extension=address_extension)
+        self.mock_decode_dlc.assert_called_once_with(dlc)
+        mock_create_sf_dl_data_bytes.assert_called_once_with(sf_dl_short=sf_dl_short,
+                                                             sf_dl_long=sf_dl_long)
 
     # is_single_frame
 
@@ -257,7 +261,7 @@ class TestCanSingleFrameHandler:
         ("Mixed", range(20), [0x00, 0x12]),
         ("Extended", [0x10, 0x20, 0x30], [0x0F, 0xED]),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.extract_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     def test_is_single_frame__true(self, mock_extract_sf_dl_data_bytes,
                                    addressing_format, raw_frame_data, sf_dl_data_bytes):
         mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
@@ -272,7 +276,7 @@ class TestCanSingleFrameHandler:
         ("Mixed", range(20), [0xF0, 0x12]),
         ("Extended", [0x10, 0x20, 0x30], [0x8F, 0xED]),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.extract_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     def test_is_single_frame__false(self, mock_extract_sf_dl_data_bytes,
                                     addressing_format, raw_frame_data, sf_dl_data_bytes):
         mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
@@ -281,7 +285,82 @@ class TestCanSingleFrameHandler:
         mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                               raw_frame_data=raw_frame_data)
 
-    # get_dlc
+    # decode_payload
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data, sf_dl, sf_dl_bytes_number, ai_bytes_number", [
+        (range(8), 4, 1, 0),
+        (tuple(range(10, 74)), 20, 2, 1),
+        (list(range(5, 25)), 18, 2, 0),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_sf_dl_bytes_number")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.decode_sf_dl")
+    def test_decode_payload(self, mock_decode_sf_dl, mock_get_sf_dl_bytes_number,
+                            addressing_format, raw_frame_data,
+                            sf_dl, sf_dl_bytes_number, ai_bytes_number):
+        mock_decode_sf_dl.return_value = sf_dl
+        mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
+        self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
+        payload = CanSingleFrameHandler.decode_payload(addressing_format=addressing_format,
+                                                       raw_frame_data=raw_frame_data)
+        mock_decode_sf_dl.assert_called_once_with(addressing_format=addressing_format,
+                                                  raw_frame_data=raw_frame_data)
+        self.mock_encode_dlc.assert_called_once_with(len(raw_frame_data))
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+        mock_get_sf_dl_bytes_number.assert_called_once_with(self.mock_encode_dlc.return_value)
+        assert isinstance(payload, list)
+        assert len(payload) == sf_dl
+        assert payload == list(raw_frame_data)[ai_bytes_number+sf_dl_bytes_number:][:sf_dl]
+
+    # decode_sf_dl
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
+    @pytest.mark.parametrize("expected_sf_dl", [1, 4, 7])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_frame_data")
+    def test_decode_sf_dl__valid_short(self, mock_validate_frame_data, mock_extract_sf_dl_data_bytes,
+                                       addressing_format, raw_frame_data, expected_sf_dl):
+        mock_extract_sf_dl_data_bytes.return_value = [(CanPacketType.SINGLE_FRAME.value << 4) ^ expected_sf_dl]
+        assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
+                                                  raw_frame_data=raw_frame_data) == expected_sf_dl
+        mock_validate_frame_data.assert_called_once_with(addressing_format=addressing_format,
+                                                         raw_frame_data=raw_frame_data)
+        mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
+                                                              raw_frame_data=raw_frame_data)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
+    @pytest.mark.parametrize("expected_sf_dl", [8, 0x15, 0x3E])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_frame_data")
+    def test_decode_sf_dl__valid_long(self, mock_validate_frame_data, mock_extract_sf_dl_data_bytes,
+                                      addressing_format, raw_frame_data, expected_sf_dl):
+        mock_extract_sf_dl_data_bytes.return_value = [(CanPacketType.SINGLE_FRAME.value << 4), expected_sf_dl]
+        assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
+                                                  raw_frame_data=raw_frame_data) == expected_sf_dl
+        mock_validate_frame_data.assert_called_once_with(addressing_format=addressing_format,
+                                                         raw_frame_data=raw_frame_data)
+        mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
+                                                              raw_frame_data=raw_frame_data)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
+    @pytest.mark.parametrize("sf_dl_data_bytes", [[], [0x00, 0x00, 0x01]])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_frame_data")
+    def test_decode_sf_dl__not_implemented(self, mock_validate_frame_data, mock_extract_sf_dl_data_bytes,
+                                           addressing_format, raw_frame_data, sf_dl_data_bytes):
+        mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
+        with pytest.raises(NotImplementedError):
+            CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
+                                               raw_frame_data=raw_frame_data)
+        mock_validate_frame_data.assert_called_once_with(addressing_format=addressing_format,
+                                                         raw_frame_data=raw_frame_data)
+        mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
+                                                              raw_frame_data=raw_frame_data)
+
+    # get_min_dlc
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("ai_data_bytes, payload_length", [
@@ -293,13 +372,13 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("decoded_dlc", [CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL,
                                              CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL - 2])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__validate_payload_length")
-    def test_get_dlc__short_dlc(self, mock_validate_payload_length,
+    def test_get_min_dlc__short_dlc(self, mock_validate_payload_length,
                                 addressing_format, payload_length, ai_data_bytes,
                                 decoded_dlc):
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
         self.mock_get_min_dlc.return_value = decoded_dlc
-        assert CanSingleFrameHandler.get_dlc(addressing_format=addressing_format,
-                                             payload_length=payload_length) == self.mock_get_min_dlc.return_value
+        assert CanSingleFrameHandler.get_min_dlc(addressing_format=addressing_format,
+                                                 payload_length=payload_length) == self.mock_get_min_dlc.return_value
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         mock_validate_payload_length.assert_called_once_with(ai_data_bytes_number=ai_data_bytes,
                                                              payload_length=payload_length)
@@ -321,8 +400,8 @@ class TestCanSingleFrameHandler:
                                                       decoded_dlc):
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
         self.mock_get_min_dlc.return_value = decoded_dlc
-        assert CanSingleFrameHandler.get_dlc(addressing_format=addressing_format,
-                                             payload_length=payload_length) == self.mock_get_min_dlc.return_value
+        assert CanSingleFrameHandler.get_min_dlc(addressing_format=addressing_format,
+                                                 payload_length=payload_length) == self.mock_get_min_dlc.return_value
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         mock_validate_payload_length.assert_called_once_with(ai_data_bytes_number=ai_data_bytes,
                                                              payload_length=payload_length)
@@ -362,127 +441,6 @@ class TestCanSingleFrameHandler:
         assert isinstance(max_value, int)
         assert max_value == CanDlcHandler.MAX_DATA_BYTES_NUMBER - CanSingleFrameHandler.LONG_SF_DL_BYTES_USED
 
-    # encode_sf_dl
-
-    @pytest.mark.parametrize("sf_dl", [0, 8, 0xF])
-    @pytest.mark.parametrize("dlc", [CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL,
-                                     CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL - 1])
-    @pytest.mark.parametrize("addressing_format", [None, "some addressing format"])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.create_sf_dl_data_bytes")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_sf_dl")
-    def test_encode_sf_dl__short(self, mock_validate_sf_dl, mock_generate_sf_dl_data_bytes,
-                                 sf_dl, dlc, addressing_format):
-        assert CanSingleFrameHandler.encode_sf_dl(sf_dl=sf_dl,
-                                                  addressing_format=addressing_format,
-                                                  dlc=dlc) == mock_generate_sf_dl_data_bytes.return_value
-        mock_validate_sf_dl.assert_called_once_with(sf_dl=sf_dl,
-                                                    dlc=dlc,
-                                                    addressing_format=addressing_format)
-        mock_generate_sf_dl_data_bytes.assert_called_once_with(sf_dl_short=sf_dl)
-
-    @pytest.mark.parametrize("sf_dl", [0, 8, 0xF])
-    @pytest.mark.parametrize("dlc", [CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL + 1,
-                                     CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL + 2])
-    @pytest.mark.parametrize("addressing_format", [None, "some addressing format"])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.create_sf_dl_data_bytes")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_sf_dl")
-    def test_encode_sf_dl__long(self, mock_validate_sf_dl, mock_generate_sf_dl_data_bytes,
-                                sf_dl, dlc, addressing_format):
-        assert CanSingleFrameHandler.encode_sf_dl(sf_dl=sf_dl,
-                                                  addressing_format=addressing_format,
-                                                  dlc=dlc) == mock_generate_sf_dl_data_bytes.return_value
-        mock_validate_sf_dl.assert_called_once_with(sf_dl=sf_dl,
-                                                    dlc=dlc,
-                                                    addressing_format=addressing_format)
-        mock_generate_sf_dl_data_bytes.assert_called_once_with(sf_dl_long=sf_dl)
-
-    # create_sf_dl_data_bytes
-
-    @pytest.mark.parametrize("sf_dl_short", [0, 7, 0xF])
-    def test_create_sf_dl_data_bytes__short(self, sf_dl_short):
-        assert CanSingleFrameHandler.create_sf_dl_data_bytes(sf_dl_short=sf_dl_short) \
-               == [(CanPacketType.SINGLE_FRAME.value << 4) + sf_dl_short]
-        self.mock_validate_nibble.assert_called_once_with(sf_dl_short)
-        self.mock_validate_raw_byte.assert_not_called()
-
-    @pytest.mark.parametrize("sf_dl_short", [0, 7, 0xF])
-    @pytest.mark.parametrize("sf_dl_long", [0, 7, 0xF])
-    def test_create_sf_dl_data_bytes__long(self, sf_dl_short, sf_dl_long):
-        assert CanSingleFrameHandler.create_sf_dl_data_bytes(sf_dl_short=sf_dl_short, sf_dl_long=sf_dl_long) \
-               == [(CanPacketType.SINGLE_FRAME.value << 4) + sf_dl_short, sf_dl_long]
-        self.mock_validate_nibble.assert_called_once_with(sf_dl_short)
-        self.mock_validate_raw_byte.assert_called_once_with(sf_dl_long)
-
-    # decode_sf_dl
-
-    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
-    @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
-    @pytest.mark.parametrize("expected_sf_dl", [1, 4, 7])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.extract_sf_dl_data_bytes")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_frame_data")
-    def test_decode_sf_dl__valid_short(self, mock_validate_frame_data, mock_extract_sf_dl_data_bytes,
-                                       addressing_format, raw_frame_data, expected_sf_dl):
-        mock_extract_sf_dl_data_bytes.return_value = [(CanPacketType.SINGLE_FRAME.value << 4) ^ expected_sf_dl]
-        assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
-                                                  raw_frame_data=raw_frame_data) == expected_sf_dl
-        mock_validate_frame_data.assert_called_once_with(addressing_format=addressing_format,
-                                                         raw_frame_data=raw_frame_data)
-        mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
-                                                              raw_frame_data=raw_frame_data)
-
-    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
-    @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
-    @pytest.mark.parametrize("expected_sf_dl", [8, 0x15, 0x3E])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.extract_sf_dl_data_bytes")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_frame_data")
-    def test_decode_sf_dl__valid_long(self, mock_validate_frame_data, mock_extract_sf_dl_data_bytes,
-                                      addressing_format, raw_frame_data, expected_sf_dl):
-        mock_extract_sf_dl_data_bytes.return_value = [(CanPacketType.SINGLE_FRAME.value << 4), expected_sf_dl]
-        assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
-                                                  raw_frame_data=raw_frame_data) == expected_sf_dl
-        mock_validate_frame_data.assert_called_once_with(addressing_format=addressing_format,
-                                                         raw_frame_data=raw_frame_data)
-        mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
-                                                              raw_frame_data=raw_frame_data)
-
-    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
-    @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
-    @pytest.mark.parametrize("sf_dl_data_bytes", [[], [0x00, 0x00, 0x01]])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.extract_sf_dl_data_bytes")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_frame_data")
-    def test_decode_sf_dl__not_implemented(self, mock_validate_frame_data, mock_extract_sf_dl_data_bytes,
-                                           addressing_format, raw_frame_data, sf_dl_data_bytes):
-        mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
-        with pytest.raises(NotImplementedError):
-            CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
-                                               raw_frame_data=raw_frame_data)
-        mock_validate_frame_data.assert_called_once_with(addressing_format=addressing_format,
-                                                         raw_frame_data=raw_frame_data)
-        mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
-                                                              raw_frame_data=raw_frame_data)
-
-    # extract_sf_dl_data_bytes
-
-    @pytest.mark.parametrize("addressing_format, ai_data_bytes", [
-        ("some addressing format", 0),
-        ("another format", 1),
-    ])
-    @pytest.mark.parametrize("raw_frame_data", [range(10), range(10, 16)])
-    @pytest.mark.parametrize("sf_dl_bytes_number", [1, 2])
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_sf_dl_bytes_number")
-    def test_extract_sf_dl_data_bytes__short(self, mock_get_sf_dl_bytes_number,
-                                             addressing_format, raw_frame_data, sf_dl_bytes_number, ai_data_bytes):
-        mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
-        self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
-        sf_dl_bytes = CanSingleFrameHandler.extract_sf_dl_data_bytes(addressing_format=addressing_format,
-                                                                     raw_frame_data=raw_frame_data)
-        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
-        self.mock_encode_dlc.assert_called_once_with(len(raw_frame_data))
-        mock_get_sf_dl_bytes_number.assert_called_once_with(self.mock_encode_dlc.return_value)
-        assert isinstance(sf_dl_bytes, list)
-        assert len(sf_dl_bytes) == sf_dl_bytes_number
-        assert sf_dl_bytes == list(raw_frame_data)[ai_data_bytes:][:sf_dl_bytes_number]
-
     # get_sf_dl_bytes_number
 
     @pytest.mark.parametrize("dlc, expected_sf_dl_bytes_number", [
@@ -500,8 +458,8 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("raw_frame_data", ["some raw bbytes", range(6)])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.decode_sf_dl")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.extract_sf_dl_data_bytes")
-    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__validate_sf_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.is_single_frame")
     def test_validate_frame_data__valid(self, mock_is_single_frame, mock_validate_sf_dl_data_bytes,
                                         mock_extract_sf_dl_data_bytes, mock_decode_sf_dl,
@@ -557,7 +515,7 @@ class TestCanSingleFrameHandler:
                                           sf_dl, dlc, addressing_format, max_sf_dl):
         mock_get_max_payload_size.return_value = max_sf_dl
         with pytest.raises(InconsistentArgumentsError):
-            CanSingleFrameHandler.validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)#
+            CanSingleFrameHandler.validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)  #
         mock_get_max_payload_size.assert_called_once_with(addressing_format=addressing_format, dlc=dlc)
 
     @pytest.mark.parametrize("sf_dl, max_sf_dl", [
@@ -574,7 +532,7 @@ class TestCanSingleFrameHandler:
         CanSingleFrameHandler.validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)
         mock_get_max_payload_size.assert_called_once_with(addressing_format=addressing_format, dlc=dlc)
 
-    # validate_sf_dl_data_bytes
+    # __validate_sf_dl_data_bytes
 
     @pytest.mark.parametrize("sf_dl_bytes, sf_dl", [
         ([0x01], 1),
@@ -589,9 +547,9 @@ class TestCanSingleFrameHandler:
     def test_validate_sf_dl_data_bytes__valid(self, mock_validate_sf_dl, mock_get_sf_dl_bytes_number,
                                               sf_dl_bytes, sf_dl, dlc, addressing_format):
         mock_get_sf_dl_bytes_number.return_value = len(sf_dl_bytes)
-        CanSingleFrameHandler.validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
-                                                        dlc=dlc,
-                                                        addressing_format=addressing_format)
+        CanSingleFrameHandler._CanSingleFrameHandler__validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
+                                                                                dlc=dlc,
+                                                                                addressing_format=addressing_format)
         self.mock_validate_raw_bytes.assert_called_once_with(sf_dl_bytes)
         mock_get_sf_dl_bytes_number.assert_called_once_with(dlc)
         mock_validate_sf_dl.assert_called_once_with(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)
@@ -604,13 +562,14 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("dlc", ["some DLC", 8])
     @pytest.mark.parametrize("addressing_format", [None, "some addressing format"])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_sf_dl_bytes_number")
-    def test_validate_sf_dl_data_bytes__invalid_length(self, mock_get_sf_dl_bytes_number, expected_sf_dl_bytes_number,
+    def test_validate_sf_dl_data_bytes__invalid_length(self, mock_get_sf_dl_bytes_number,
+                                                       expected_sf_dl_bytes_number,
                                                        sf_dl_bytes, dlc, addressing_format):
         mock_get_sf_dl_bytes_number.return_value = expected_sf_dl_bytes_number
         with pytest.raises(InconsistentArgumentsError):
-            CanSingleFrameHandler.validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
-                                                            dlc=dlc,
-                                                            addressing_format=addressing_format)
+            CanSingleFrameHandler._CanSingleFrameHandler__validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
+                                                                                    dlc=dlc,
+                                                                                    addressing_format=addressing_format)
         self.mock_validate_raw_bytes.assert_called_once_with(sf_dl_bytes)
         mock_get_sf_dl_bytes_number.assert_called_once_with(dlc)
 
@@ -625,9 +584,9 @@ class TestCanSingleFrameHandler:
                                                           sf_dl_bytes, dlc, addressing_format):
         mock_get_sf_dl_bytes_number.return_value = len(sf_dl_bytes)
         with pytest.raises(ValueError):
-            CanSingleFrameHandler.validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
-                                                            dlc=dlc,
-                                                            addressing_format=addressing_format)
+            CanSingleFrameHandler._CanSingleFrameHandler__validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
+                                                                                    dlc=dlc,
+                                                                                    addressing_format=addressing_format)
         self.mock_validate_raw_bytes.assert_called_once_with(sf_dl_bytes)
         mock_get_sf_dl_bytes_number.assert_called_once_with(dlc)
 
@@ -639,9 +598,9 @@ class TestCanSingleFrameHandler:
                                                         sf_dl_bytes, dlc, addressing_format):
         mock_get_sf_dl_bytes_number.return_value = len(sf_dl_bytes)
         with pytest.raises(NotImplementedError):
-            CanSingleFrameHandler.validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
-                                                            dlc=dlc,
-                                                            addressing_format=addressing_format)
+            CanSingleFrameHandler._CanSingleFrameHandler__validate_sf_dl_data_bytes(sf_dl_bytes=sf_dl_bytes,
+                                                                                    dlc=dlc,
+                                                                                    addressing_format=addressing_format)
         self.mock_validate_raw_bytes.assert_called_once_with(sf_dl_bytes)
         mock_get_sf_dl_bytes_number.assert_called_once_with(dlc)
 
@@ -679,6 +638,82 @@ class TestCanSingleFrameHandler:
     def test_validate_payload_length__valid(self, payload_length, ai_data_bytes_number):
         CanSingleFrameHandler._CanSingleFrameHandler__validate_payload_length(payload_length=payload_length,
                                                                               ai_data_bytes_number=ai_data_bytes_number)
+
+    # __extract_sf_dl_data_bytes
+
+    @pytest.mark.parametrize("addressing_format, ai_data_bytes", [
+        ("some addressing format", 0),
+        ("another format", 1),
+    ])
+    @pytest.mark.parametrize("raw_frame_data", [range(10), range(10, 16)])
+    @pytest.mark.parametrize("sf_dl_bytes_number", [1, 2])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_sf_dl_bytes_number")
+    def test_extract_sf_dl_data_bytes(self, mock_get_sf_dl_bytes_number,
+                                      addressing_format, raw_frame_data, sf_dl_bytes_number, ai_data_bytes):
+        mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
+        self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
+        sf_dl_bytes = CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes(
+            addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+        self.mock_encode_dlc.assert_called_once_with(len(raw_frame_data))
+        mock_get_sf_dl_bytes_number.assert_called_once_with(self.mock_encode_dlc.return_value)
+        assert isinstance(sf_dl_bytes, list)
+        assert len(sf_dl_bytes) == sf_dl_bytes_number
+        assert sf_dl_bytes == list(raw_frame_data)[ai_data_bytes:][:sf_dl_bytes_number]
+
+    # __encode_sf_dl
+
+    @pytest.mark.parametrize("sf_dl", [0, 8, 0xF])
+    @pytest.mark.parametrize("dlc", [CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL,
+                                     CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL - 1])
+    @pytest.mark.parametrize("addressing_format", [None, "some addressing format"])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__create_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_sf_dl")
+    def test_encode_sf_dl__short(self, mock_validate_sf_dl, mock_generate_sf_dl_data_bytes,
+                                 sf_dl, dlc, addressing_format):
+        assert CanSingleFrameHandler._CanSingleFrameHandler__encode_sf_dl(
+            sf_dl=sf_dl,
+            addressing_format=addressing_format,
+            dlc=dlc) == mock_generate_sf_dl_data_bytes.return_value
+        mock_validate_sf_dl.assert_called_once_with(sf_dl=sf_dl,
+                                                    dlc=dlc,
+                                                    addressing_format=addressing_format)
+        mock_generate_sf_dl_data_bytes.assert_called_once_with(sf_dl_short=sf_dl)
+
+    @pytest.mark.parametrize("sf_dl", [0, 8, 0xF])
+    @pytest.mark.parametrize("dlc", [CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL + 1,
+                                     CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL + 2])
+    @pytest.mark.parametrize("addressing_format", [None, "some addressing format"])
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__create_sf_dl_data_bytes")
+    @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.validate_sf_dl")
+    def test_encode_sf_dl__long(self, mock_validate_sf_dl, mock_generate_sf_dl_data_bytes,
+                                sf_dl, dlc, addressing_format):
+        assert CanSingleFrameHandler._CanSingleFrameHandler__encode_sf_dl(
+            sf_dl=sf_dl,
+            addressing_format=addressing_format,
+            dlc=dlc) == mock_generate_sf_dl_data_bytes.return_value
+        mock_validate_sf_dl.assert_called_once_with(sf_dl=sf_dl,
+                                                    dlc=dlc,
+                                                    addressing_format=addressing_format)
+        mock_generate_sf_dl_data_bytes.assert_called_once_with(sf_dl_long=sf_dl)
+
+    # __create_sf_dl_data_bytes
+
+    @pytest.mark.parametrize("sf_dl_short", [0, 7, 0xF])
+    def test_create_sf_dl_data_bytes__short(self, sf_dl_short):
+        assert CanSingleFrameHandler._CanSingleFrameHandler__create_sf_dl_data_bytes(sf_dl_short=sf_dl_short) \
+               == [(CanPacketType.SINGLE_FRAME.value << 4) + sf_dl_short]
+        self.mock_validate_nibble.assert_called_once_with(sf_dl_short)
+        self.mock_validate_raw_byte.assert_not_called()
+
+    @pytest.mark.parametrize("sf_dl_short", [0, 7, 0xF])
+    @pytest.mark.parametrize("sf_dl_long", [0, 7, 0xF])
+    def test_create_sf_dl_data_bytes__long(self, sf_dl_short, sf_dl_long):
+        assert CanSingleFrameHandler._CanSingleFrameHandler__create_sf_dl_data_bytes(
+            sf_dl_short=sf_dl_short,
+            sf_dl_long=sf_dl_long) == [(CanPacketType.SINGLE_FRAME.value << 4) + sf_dl_short, sf_dl_long]
+        self.mock_validate_nibble.assert_called_once_with(sf_dl_short)
+        self.mock_validate_raw_byte.assert_called_once_with(sf_dl_long)
 
 
 @pytest.mark.integration
@@ -726,6 +761,10 @@ class TestCanSingleFrameHandlerIntegration:
         {"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
          "payload": list(range(50, 112)),
          "target_address": 0xF2},
+        {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         "payload": list(range(10)),
+         "dlc": 8,
+         "address_extension": 0x12},
         {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
          "payload": [],
          "target_address": 0xF2,
@@ -734,6 +773,74 @@ class TestCanSingleFrameHandlerIntegration:
     def test_create_frame_data__invalid(self, kwargs):
         with pytest.raises(ValueError):
             CanSingleFrameHandler.create_frame_data(**kwargs)
+
+    # create_any_frame_data
+
+    @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
+        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "payload": [0x3E],
+          "dlc": 2,
+          "sf_dl_short": 0xF},
+         [0x0F, 0x3E]),
+        ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+          "payload": [0x3E],
+          "dlc": 8,
+          "target_address": 0xFF,
+          "sf_dl_short": 0x0,
+          "sf_dl_long": 0xAB},
+         [0x00, 0xAB, 0x3E] + ([DEFAULT_FILLER_BYTE] * 5)),
+        ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+          "payload": [],
+          "dlc": 0xF,
+          "filler_byte": 0x66,
+          "target_address": 0xF2,
+          "sf_dl_short": 0xE},
+         [0xF2, 0x0E] + ([0x66] * 62)),
+        ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+          "payload": [0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00],
+          "dlc": 8,
+          "filler_byte": 0x66,
+          "address_extension": 0x12,
+          "sf_dl_short": 0x5},
+         [0x12, 0x05, 0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00]),
+        ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+          "payload": [0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00, 0x01],
+          "dlc": 9,
+          "filler_byte": 0x99,
+          "target_address": 0xF2,
+          "address_extension": 0x12,
+          "sf_dl_short": 0x5,
+          "sf_dl_long": 0x67},
+         [0x12, 0x05, 0x67, 0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00, 0x01, 0x99, 0x99]),
+    ])
+    def test_create_any_frame_data__valid(self, kwargs, expected_raw_frame_data):
+        assert CanSingleFrameHandler.create_any_frame_data(**kwargs) == expected_raw_frame_data
+
+    @pytest.mark.parametrize("kwargs", [
+        {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "payload": [0x3E],
+         "dlc": 1,
+         "sf_dl_short": 0xF},
+        {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+         "payload": list(range(63)),
+         "dlc": 0xF,
+         "sf_dl_short": 0x0,
+         "sf_dl_long": 0xAB},
+        {"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+         "payload": [],
+         "dlc": 0xF,
+         "target_address": 0xF2,
+         "sf_dl_short": 0x10},
+        {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         "payload": list(range(5)),
+         "dlc": 8,
+         "address_extension": 0x12,
+         "sf_dl_short": 0,
+         "sf_dl_long": 0x100},
+    ])
+    def test_create_any_frame_data__invalid(self, kwargs):
+        with pytest.raises(ValueError):
+            CanSingleFrameHandler.create_any_frame_data(**kwargs)
 
     # decode_sf_dl
 
