@@ -1,8 +1,8 @@
 """
 Implementation specific for Single Frame CAN packets.
 
-This module contains implementation of :ref:`Single Frame <knowledge-base-can-single-frame>` packet attributes:
- - :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>`
+This module contains implementation specific for :ref:`Single Frame <knowledge-base-can-single-frame>` packet - that
+includes :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameter.
 """
 
 __all__ = ["CanSingleFrameHandler"]
@@ -18,13 +18,7 @@ from .packet_type import CanPacketType
 
 
 class CanSingleFrameHandler:
-    """
-    Helper class that provides utilities for CAN Packets of Single Frame type.
-
-    This class contains implementation specific for :ref:`Single Frame <knowledge-base-can-single-frame>`.
-    That includes :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameter
-    which is used to inform about number of diagnostic message payload bytes.
-    """
+    """Helper class that provides utilities for Single Frame CAN Packets."""
 
     MAX_DLC_VALUE_SHORT_SF_DL: int = 8
     """Maximum value of DLC for which short
@@ -47,11 +41,11 @@ class CanSingleFrameHandler:
                           target_address: Optional[RawByte] = None,
                           address_extension: Optional[RawByte] = None) -> RawBytesList:
         """
-        Create data field of a CAN frame that carries a valid Single Frame packet.
+        Create a data field of a CAN frame that carries a valid Single Frame packet.
 
         .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
-            Use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_any_frame_data` to create any
-            (also incompatible with ISO 15765) output.
+            Use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_any_frame_data` to create data bytes
+            for a Single Frame with any (also incompatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Single Frame.
         :param payload: Payload of a diagnostic message that is carried by a considered CAN packet.
@@ -65,8 +59,8 @@ class CanSingleFrameHandler:
         :param address_extension: Address Extension value carried by this CAN packet.
             The value must only be provided if `addressing_format` uses Address Extension parameter.
 
-        :raise InconsistentArgumentsError: Provided payload contains of too many bytes to fit it into a Single Frame
-            data.
+        :raise InconsistentArgumentsError: Provided `payload` contains too many bytes to fit it into a Single Frame
+            data field.
 
         :return: Raw bytes of CAN frame data for the provided Single Frame packet information.
         """
@@ -101,9 +95,10 @@ class CanSingleFrameHandler:
         """
         Create data field of a CAN frame that carries a Single Frame packet.
 
-        .. note:: You can use this method to create any (also invalid) value of frame data bytes for a Single Frame.
-            Use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_frame_data` to create a valid
-            (compatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: You can use this method to create Single Frame data bytes with any (also inconsistent with ISO 15765)
+            parameters values.
+            It is recommended to use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_any_frame_data` to
+            create data bytes for a Single Frame with valid parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Single Frame.
         :param payload: Payload of a diagnostic message that is carried by a considered CAN packet.
@@ -153,7 +148,7 @@ class CanSingleFrameHandler:
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
         """
-        Extract payload bytes from a Single Frame packet.
+        Extract diagnostic message payload from Single Frame data bytes.
 
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a considered CAN frame.
@@ -169,7 +164,7 @@ class CanSingleFrameHandler:
     @classmethod
     def decode_sf_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
         """
-        Extract a value of Single Frame Data Length out of data of a CAN frame.
+        Extract a value of Single Frame Data Length from Single Frame data bytes.
 
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a considered CAN frame.
@@ -215,15 +210,15 @@ class CanSingleFrameHandler:
                              addressing_format: Optional[CanAddressingFormatAlias] = None,
                              dlc: Optional[int] = None) -> int:
         """
-        Get the maximum size of the payload that can fit into a Single Frame packet.
+        Get the maximum size of a payload that can fit into Single Frame data bytes.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
-            Leave None to get the result for CAN addressing format that does not carry addressing information in
-            data bytes.
+            Leave None to get the result for CAN addressing format that does not use data bytes for carrying
+            addressing information.
         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
             Leave None to get the result for the greatest possible DLC value.
 
-        :return: The maximum number of payload bytes that could fit into a Single Frame with considered parameters.
+        :return: The maximum number of payload bytes that could fit into a considered Single Frame.
         """
         if dlc is not None:
             frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
@@ -242,7 +237,7 @@ class CanSingleFrameHandler:
 
         :param dlc: DLC value of a considered CAN frame.
 
-        :return: The number of bytes to use for carrying CAN Packet Type and Single Frame Data Length parameters.
+        :return: The number of bytes used for carrying CAN Packet Type and Single Frame Data Length parameters.
         """
         CanDlcHandler.validate_dlc(dlc)
         return cls.SHORT_SF_DL_BYTES_USED if dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.LONG_SF_DL_BYTES_USED
@@ -278,10 +273,10 @@ class CanSingleFrameHandler:
         :param addressing_format: Value of CAN Addressing Format to use for Single Frame Data Length value validation.
             Leave None if you do not want to validate whether payload can fit into a CAN Frame with considered DLC.
 
-        :raise TypeError: Provided value is not integer.
-        :raise ValueError: Provided value is too small.
+        :raise TypeError: Provided value of Single Frame Data Length is not integer.
+        :raise ValueError: Provided value of Single Frame Data Length is too small.
         :raise InconsistentArgumentsError: It is impossible for a Single Frame with provided DLC to contain as many
-            diagnostic message payload bytes as the provided value of Single Frame Data Length.
+            payload bytes as the provided value of Single Frame Data Length.
         """
         if not isinstance(sf_dl, int):
             raise TypeError(f"Provided value of Single Frame Data Length is not int type. Actual type: {type(sf_dl)}")
@@ -308,7 +303,8 @@ class CanSingleFrameHandler:
         :param addressing_format: Value of CAN Addressing Format to use for Single Frame Data Length value validation.
             Leave None if you do not want to validate whether payload can fit into a CAN Frame with considered DLC.
 
-        :raise ValueError: Byte 0 of of Single Frame Data Length is not 0 when long format (for DLC > 8) is used.
+        :raise ValueError: The first byte of of Single Frame Data Length is not equal 0 when long format (for DLC > 8)
+            is used.
         :raise InconsistentArgumentsError: Format of Single Frame Data Length does not match DLC value.
         :raise NotImplementedError: The provided data of Single Frame packet are valid, but the format of Single Frame
             Data Length is missing the implementation.
@@ -341,9 +337,9 @@ class CanSingleFrameHandler:
         :param payload_length: Value to validate.
         :param ai_data_bytes_number: Number of data byte that carry Addressing Information.
 
-        :raise TypeError: Provided value of `payload_length` is not int type.
-        :raise ValueError: Provided value of `payload_length` is less than 0.
-        :raise InconsistentArgumentsError: Provided value of `payload_length` is greater than maximum value.
+        :raise TypeError: Provided value of payload length is not integer.
+        :raise ValueError: Provided value of  payload length is less than 0.
+        :raise InconsistentArgumentsError: Provided value of payload length is greater than maximum value.
         """
         if not isinstance(payload_length, int):
             raise TypeError(f"Provided payload_length value is not int type. Actual type: {type(payload_length)}")
