@@ -5,7 +5,7 @@ This module contains implementation specific for :ref:`First Frame <knowledge-ba
 includes :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` parameter.
 """
 
-__all__ = ["FirstFrameHandler"]
+__all__ = ["CanFirstFrameHandler"]
 
 from typing import Optional
 
@@ -17,7 +17,7 @@ from .can_frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 from .packet_type import CanPacketType
 
 
-class FirstFrameHandler:
+class CanFirstFrameHandler:
     """Helper class that provides utilities for First Frame CAN Packets."""
 
     @classmethod
@@ -26,7 +26,6 @@ class FirstFrameHandler:
                           payload: RawBytes,
                           dlc: int,
                           ff_dl: int,
-                          filler_byte: RawByte = DEFAULT_FILLER_BYTE,
                           target_address: Optional[RawByte] = None,
                           address_extension: Optional[RawByte] = None) -> RawBytesList:
         ...
@@ -38,14 +37,25 @@ class FirstFrameHandler:
                               dlc: int,
                               ff_dl: int,
                               use_long_ff_dl_format: bool = False,
-                              filler_byte: RawByte = DEFAULT_FILLER_BYTE,
                               target_address: Optional[RawByte] = None,
                               address_extension: Optional[RawByte] = None) -> RawBytesList:
         ...
 
     @classmethod
     def is_first_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
-        ...
+        """
+        Check if provided data bytes encodes a First Frame packet.
+
+        .. warning:: The method does not validate the content (e.g. FF_DL parameter) of the packet.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a CAN frame to check.
+
+        :return: True if provided data bytes carries First Frame, False otherwise.
+        """
+        ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        return (ff_dl_data_bytes[0] >> 4) == CanPacketType.FIRST_FRAME.value
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
@@ -72,5 +82,9 @@ class FirstFrameHandler:
         ...
 
     @classmethod
-    def __encode_ff_dl(cls, ff_dl: int, dlc: int) -> RawBytesList:
+    def __encode_ff_dl(cls, ff_dl: int) -> RawBytesList:
+        ...
+
+    @staticmethod
+    def __create_ff_dl_data_bytes(ff_dl: int, use_long_ff_dl_format: bool = False) -> RawBytesList:
         ...
