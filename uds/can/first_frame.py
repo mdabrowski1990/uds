@@ -101,12 +101,29 @@ class CanFirstFrameHandler:
 
     @classmethod
     def __create_ff_dl_data_bytes(cls, ff_dl: int, long_ff_dl_format: bool = False) -> RawBytesList:
-        # TODO: docstring and ff_dl validation
+        """
+        Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
+
+        .. note:: You can use this method to create any (also invalid) value of First Frame Data Length data bytes.
+            Use :meth:`~uds.can.first_frame.CanFirstFrameHandler.decode_ff_dl` to create a valid
+            (compatible with ISO 15765 - Diagnostic on CAN) output.
+
+        :param ff_dl: Value
+        :param long_ff_dl_format: TODO
+
+        :return: TODO
+        """
+        if not 0 <= ff_dl <= cls.MAX_LONG_FF_DL_VALUE:
+            raise ValueError(f"Provided value of First Frame Data Length is out of range. "
+                             f"Expected: 0 <= ff_dl <= {cls.MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")
         if long_ff_dl_format:
             ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.LONG_FF_DL_BYTES_USED)
             ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
             return ff_dl_bytes
-        else:
-            ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.SHORT_FF_DL_BYTES_USED)
-            ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
-            return ff_dl_bytes
+        if ff_dl > cls.MAX_SHORT_FF_DL_VALUE:
+            raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is too big for the short "
+                                             f"FF_DL format. Use lower FF_DL value or change to long format. "
+                                             f"Actual value: {ff_dl}")
+        ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.SHORT_FF_DL_BYTES_USED)
+        ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
+        return ff_dl_bytes

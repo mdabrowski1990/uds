@@ -1,7 +1,8 @@
 import pytest
 from mock import patch
 
-from uds.can.first_frame import CanFirstFrameHandler
+from uds.can.first_frame import CanFirstFrameHandler, \
+    InconsistentArgumentsError
 
 
 class TestCanFirstFrameHandler:
@@ -55,11 +56,23 @@ class TestCanFirstFrameHandler:
         assert CanFirstFrameHandler._CanFirstFrameHandler__create_ff_dl_data_bytes(long_ff_dl_format=long_ff_dl_format,
                                                                                    ff_dl=ff_dl) == expected_ff_dl_bytes
 
+    @pytest.mark.parametrize("ff_dl", [None, 2., "something not right"])
+    @pytest.mark.parametrize("long_ff_dl_format", [True, False])
     def test_create_ff_dl_data_bytes__type_error(self, ff_dl, long_ff_dl_format):
-        ...
+        with pytest.raises(TypeError):
+            CanFirstFrameHandler._CanFirstFrameHandler__create_ff_dl_data_bytes(long_ff_dl_format=long_ff_dl_format,
+                                                                                ff_dl=ff_dl)
 
+    @pytest.mark.parametrize("ff_dl", [-1, CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE + 1])
+    @pytest.mark.parametrize("long_ff_dl_format", [True, False])
     def test_create_ff_dl_data_bytes__value_error(self, ff_dl, long_ff_dl_format):
-        ...
+        with pytest.raises(ValueError):
+            CanFirstFrameHandler._CanFirstFrameHandler__create_ff_dl_data_bytes(long_ff_dl_format=long_ff_dl_format,
+                                                                                ff_dl=ff_dl)
 
-    def test_create_ff_dl_data_bytes__inconsistent_value(self, ff_dl, long_ff_dl_format):
-        ...
+    @pytest.mark.parametrize("ff_dl", [CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE,
+                                       CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE + 1])
+    def test_create_ff_dl_data_bytes__inconsistent_value(self, ff_dl):
+        with pytest.raises(InconsistentArgumentsError):
+            CanFirstFrameHandler._CanFirstFrameHandler__create_ff_dl_data_bytes(long_ff_dl_format=False,
+                                                                                ff_dl=ff_dl)

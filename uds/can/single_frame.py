@@ -33,13 +33,13 @@ class CanSingleFrameHandler:
     :ref:`Single Frame <knowledge-base-can-single-frame>` packets when long SF_DL format is used."""
 
     @classmethod
-    def create_frame_data(cls, *,
-                          addressing_format: CanAddressingFormatAlias,
-                          payload: RawBytes,
-                          dlc: Optional[int] = None,
-                          filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                          target_address: Optional[RawByte] = None,
-                          address_extension: Optional[RawByte] = None) -> RawBytesList:
+    def create_valid_frame_data(cls, *,
+                                addressing_format: CanAddressingFormatAlias,
+                                payload: RawBytes,
+                                dlc: Optional[int] = None,
+                                filler_byte: RawByte = DEFAULT_FILLER_BYTE,
+                                target_address: Optional[RawByte] = None,
+                                address_extension: Optional[RawByte] = None) -> RawBytesList:
         """
         Create a data field of a CAN frame that carries a valid Single Frame packet.
 
@@ -72,9 +72,9 @@ class CanSingleFrameHandler:
         frame_dlc = dlc or cls.get_min_dlc(addressing_format=addressing_format,
                                            payload_length=len(payload))
         frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
-        sf_dl_bytes = cls.__encode_sf_dl(sf_dl=len(payload),
-                                         dlc=frame_dlc,
-                                         addressing_format=addressing_format)
+        sf_dl_bytes = cls.__encode_valid_sf_dl(sf_dl=len(payload),
+                                               dlc=frame_dlc,
+                                               addressing_format=addressing_format)
         sf_bytes = ai_data_bytes + sf_dl_bytes + list(payload)
         if len(sf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
@@ -120,8 +120,8 @@ class CanSingleFrameHandler:
                                                                              target_address=target_address,
                                                                              address_extension=address_extension)
         frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
-        sf_dl_bytes = cls.__create_sf_dl_data_bytes(sf_dl_short=sf_dl_short,
-                                                    sf_dl_long=sf_dl_long)
+        sf_dl_bytes = cls.__encode_any_sf_dl(sf_dl_short=sf_dl_short,
+                                             sf_dl_long=sf_dl_long)
         sf_bytes = ai_data_bytes + sf_dl_bytes + list(payload)
         if len(sf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
@@ -370,12 +370,12 @@ class CanSingleFrameHandler:
         return list(raw_frame_data[ai_bytes_number:])[:cls.get_sf_dl_bytes_number(dlc)]
 
     @classmethod
-    def __encode_sf_dl(cls,
-                       sf_dl: int,
-                       dlc: int,
-                       addressing_format: CanAddressingFormatAlias) -> RawBytesList:
+    def __encode_valid_sf_dl(cls,
+                             sf_dl: int,
+                             dlc: int,
+                             addressing_format: CanAddressingFormatAlias) -> RawBytesList:
         """
-        Generate Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
+        Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
         .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
             Use :meth:`~uds.can.single_frame.CanSingleFrameHandler.generate_sf_dl_data_bytes` to create any
@@ -389,11 +389,11 @@ class CanSingleFrameHandler:
         """
         cls.validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)
         if dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL:
-            return cls.__create_sf_dl_data_bytes(sf_dl_short=sf_dl)
-        return cls.__create_sf_dl_data_bytes(sf_dl_long=sf_dl)
+            return cls.__encode_any_sf_dl(sf_dl_short=sf_dl)
+        return cls.__encode_any_sf_dl(sf_dl_long=sf_dl)
 
     @staticmethod
-    def __create_sf_dl_data_bytes(sf_dl_short: Nibble = 0, sf_dl_long: Optional[RawByte] = None) -> RawBytesList:
+    def __encode_any_sf_dl(sf_dl_short: Nibble = 0, sf_dl_long: Optional[RawByte] = None) -> RawBytesList:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
