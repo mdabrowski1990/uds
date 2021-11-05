@@ -40,3 +40,26 @@ class TestCanFirstFrameHandler:
                                                    raw_frame_data=raw_frame_data) is False
         mock_extract_ff_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                               raw_frame_data=raw_frame_data)
+
+    # __create_ff_dl_data_bytes
+
+    @pytest.mark.parametrize("ff_dl, long_ff_dl_format, expected_ff_dl_bytes", [
+        (0x0, False, [0x10, 0x00]),
+        (0x0, True, [0x10, 0x00, 0x00, 0x00, 0x00, 0x00]),
+        (0xFFF, False, [0x1F, 0xFF]),
+        (0xFFFFFFFF, True, [0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF]),
+        (0xF4A, False, [0x1F, 0x4A]),
+        (0x9BE08721, True, [0x10, 0x00, 0x9B, 0xE0, 0x87, 0x21]),
+    ])
+    def test_create_ff_dl_data_bytes__valid(self, ff_dl, long_ff_dl_format, expected_ff_dl_bytes):
+        assert CanFirstFrameHandler._CanFirstFrameHandler__create_ff_dl_data_bytes(long_ff_dl_format=long_ff_dl_format,
+                                                                                   ff_dl=ff_dl) == expected_ff_dl_bytes
+
+    def test_create_ff_dl_data_bytes__type_error(self, ff_dl, long_ff_dl_format):
+        ...
+
+    def test_create_ff_dl_data_bytes__value_error(self, ff_dl, long_ff_dl_format):
+        ...
+
+    def test_create_ff_dl_data_bytes__inconsistent_value(self, ff_dl, long_ff_dl_format):
+        ...

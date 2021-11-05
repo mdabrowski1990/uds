@@ -9,7 +9,7 @@ __all__ = ["CanFirstFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
+from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, \
     validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
@@ -19,6 +19,20 @@ from .packet_type import CanPacketType
 
 class CanFirstFrameHandler:
     """Helper class that provides utilities for First Frame CAN Packets."""
+
+    MAX_SHORT_FF_DL_VALUE: int = 0xFFF
+    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` for which
+    short format of FF_DL is used."""
+    MAX_LONG_FF_DL_VALUE: int = 0xFFFFFFFF
+    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
+    SHORT_FF_DL_BYTES_USED: int = 2
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and 
+    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in 
+    :ref:`First Frame <knowledge-base-can-first-frame>` when FF_DL <= 4095."""
+    LONG_FF_DL_BYTES_USED: int = 6
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and 
+    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in 
+    :ref:`First Frame <knowledge-base-can-first-frame>` when FF_DL > 4095."""
 
     @classmethod
     def create_frame_data(cls, *,
@@ -36,7 +50,7 @@ class CanFirstFrameHandler:
                               payload: RawBytes,
                               dlc: int,
                               ff_dl: int,
-                              use_long_ff_dl_format: bool = False,
+                              long_ff_dl_format: bool = False,
                               target_address: Optional[RawByte] = None,
                               address_extension: Optional[RawByte] = None) -> RawBytesList:
         ...
@@ -85,6 +99,14 @@ class CanFirstFrameHandler:
     def __encode_ff_dl(cls, ff_dl: int) -> RawBytesList:
         ...
 
-    @staticmethod
-    def __create_ff_dl_data_bytes(ff_dl: int, use_long_ff_dl_format: bool = False) -> RawBytesList:
-        ...
+    @classmethod
+    def __create_ff_dl_data_bytes(cls, ff_dl: int, long_ff_dl_format: bool = False) -> RawBytesList:
+        # TODO: docstring and ff_dl validation
+        if long_ff_dl_format:
+            ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.LONG_FF_DL_BYTES_USED)
+            ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
+            return ff_dl_bytes
+        else:
+            ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.SHORT_FF_DL_BYTES_USED)
+            ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
+            return ff_dl_bytes
