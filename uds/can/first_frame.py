@@ -35,13 +35,13 @@ class CanFirstFrameHandler:
     :ref:`First Frame <knowledge-base-can-first-frame>` when FF_DL > 4095."""
 
     @classmethod
-    def create_frame_data(cls, *,
-                          addressing_format: CanAddressingFormatAlias,
-                          payload: RawBytes,
-                          dlc: int,
-                          ff_dl: int,
-                          target_address: Optional[RawByte] = None,
-                          address_extension: Optional[RawByte] = None) -> RawBytesList:
+    def create_valid_frame_data(cls, *,
+                                addressing_format: CanAddressingFormatAlias,
+                                payload: RawBytes,
+                                dlc: int,
+                                ff_dl: int,
+                                target_address: Optional[RawByte] = None,
+                                address_extension: Optional[RawByte] = None) -> RawBytesList:
         ...
 
     @classmethod
@@ -96,19 +96,19 @@ class CanFirstFrameHandler:
         ...
 
     @classmethod
-    def __encode_ff_dl(cls, ff_dl: int) -> RawBytesList:
+    def __encode_valid_ff_dl(cls, ff_dl: int) -> RawBytesList:
         ...
 
     @classmethod
-    def __create_ff_dl_data_bytes(cls, ff_dl: int, long_ff_dl_format: bool = False) -> RawBytesList:
+    def __encode_any_ff_dl(cls, ff_dl: int, long_ff_dl_format: bool = False) -> RawBytesList:
         """
         Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 
         .. note:: You can use this method to create any (also invalid) value of First Frame Data Length data bytes.
-            Use :meth:`~uds.can.first_frame.CanFirstFrameHandler.decode_ff_dl` to create a valid
+            Use :meth:`~uds.can.first_frame.CanFirstFrameHandler.__encode_valid_ff_dl` to create a valid
             (compatible with ISO 15765 - Diagnostic on CAN) output.
 
-        :param ff_dl: Value
+        :param ff_dl: TODO
         :param long_ff_dl_format: TODO
 
         :return: TODO

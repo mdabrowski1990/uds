@@ -93,12 +93,12 @@ class CanSingleFrameHandler:
                               target_address: Optional[RawByte] = None,
                               address_extension: Optional[RawByte] = None) -> RawBytesList:
         """
-        Create data field of a CAN frame that carries a Single Frame packet.
+        Create a data field of a CAN frame that carries a Single Frame packet.
 
         .. note:: You can use this method to create Single Frame data bytes with any (also inconsistent with ISO 15765)
             parameters values.
-            It is recommended to use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_any_frame_data` to
-            create data bytes for a Single Frame with valid parameters values.
+            It is recommended to use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_valid_frame_data` to
+            create data bytes for a Single Frame with valid (compatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Single Frame.
         :param payload: Payload of a diagnostic message that is carried by a considered CAN packet.
@@ -134,7 +134,7 @@ class CanSingleFrameHandler:
         """
         Check if provided data bytes encodes a Single Frame packet.
 
-        .. warning:: The method does not validate the content (e.g. SF_DL parameter) of the packet.
+        .. warning:: The method does not validate the content (e.g. SF_DL parameter) of the data bytes.
 
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a CAN frame to check.
@@ -378,8 +378,6 @@ class CanSingleFrameHandler:
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
         .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
-            Use :meth:`~uds.can.single_frame.CanSingleFrameHandler.generate_sf_dl_data_bytes` to create any
-            (also incompatible with ISO 15765) output.
 
         :param sf_dl: Number of payload bytes carried by a considered Single Frame.
         :param dlc: DLC value of a CAN Frame to carry this information.
@@ -397,9 +395,7 @@ class CanSingleFrameHandler:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
-        .. note:: You can use this method to create any (also invalid) value of Single Frame Data Length data bytes.
-            Use :meth:`~uds.can.single_frame.CanSingleFrameHandler.encode_sf_dl` to create a valid
-            (compatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method can be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
 
         :param sf_dl_short: Value to put into a slot of Single Frame Data Length in short format.
         :param sf_dl_long: Value to put into a slot of Single Frame Data Length in long format.
