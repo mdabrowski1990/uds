@@ -15,6 +15,7 @@ from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .can_frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 from .packet_type import CanPacketType
+from .single_frame import CanSingleFrameHandler
 
 
 class CanFirstFrameHandler:
@@ -88,34 +89,84 @@ class CanFirstFrameHandler:
         ...
 
     @classmethod
-    def validate_ff_dl(cls, ff_dl: int, dlc: int, addressing_format: CanAddressingFormatAlias) -> None:
-        ...
+    def validate_ff_dl(cls,
+                       ff_dl: int,
+                       dlc: Optional[int] = None,
+                       addressing_format: Optional[CanAddressingFormatAlias] = None) -> None:
+        """
+        Validate a value of First Frame Data Length.
+
+        :param ff_dl: First Frame Data Length value to validate.
+        :param dlc: Value of DLC to use for First Frame Data Length value validation.
+            Leave None if you do not want to validate whether First Frame shall be used in this case.
+        :param addressing_format: Value of CAN Addressing Format to use for First Frame Data Length value validation.
+            Leave None if you do not want to validate whether First Frame shall be used in this case.
+
+        :raise TypeError: Provided value of First Frame Data Length is not integer.
+        :raise ValueError: Provided value of First Frame Data Length is out of range.
+        :raise InconsistentArgumentsError: Single Frame shall be used instead of First Frame to transmit provided
+            number of payload bytes represented by FF_DL value.
+        """
+        if not isinstance(ff_dl, int):
+            raise TypeError(f"Provided value of First Frame Data Length is not integer. Actual type: {type(ff_dl)}")
+        if not 0 < ff_dl <= cls.MAX_LONG_FF_DL_VALUE:
+            raise ValueError(f"Provided value of First Frame Data Length is out of range. "
+                             f"Expected: 0 <= ff_dl <= {cls.MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")
+        if dlc is not None and addressing_format is not None:
+            max_sf_dl = CanSingleFrameHandler.get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
+            if ff_dl <= max_sf_dl:
+                raise InconsistentArgumentsError
 
     @classmethod
-    def __extract_ff_dl_data_bytes(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
-        ...
+    def __extract_ff_dl_data_bytes(cls,
+                                   addressing_format: CanAddressingFormat,
+                                   raw_frame_data: RawBytes) -> RawBytesList:
+        """
+        Extract data bytes that carries CAN Packet Type and First Frame Data Length parameters.
+
+        .. warning:: This method does not check whether provided `raw_frame_data` actually contains First Frame.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a considered CAN frame.
+
+        :return: Extracted data bytes with CAN Packet Type and First Frame Data Length parameters.
+        """
+        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ff_dl_short = list(raw_frame_data[ai_bytes_number:][:cls.SHORT_FF_DL_BYTES_USED])
+        if ff_dl_short[0] & 0xF != 0 or ff_dl_short[1] != 0:
+            return ff_dl_short
+        ff_dl_long = list(raw_frame_data[ai_bytes_number:][:cls.LONG_FF_DL_BYTES_USED])
+        return ff_dl_long
 
     @classmethod
     def __encode_valid_ff_dl(cls, ff_dl: int) -> RawBytesList:
-        ...
+        """
+        Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
+
+        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+
+        :param ff_dl: Value to put into a slot of First Frame Data Length.
+
+        :return: First Frame data bytes containing CAN Packet Type and First Frame Data Length parameters.
+        """
+        return cls.__encode_any_ff_dl(ff_dl=ff_dl, long_ff_dl_format=ff_dl > cls.MAX_SHORT_FF_DL_VALUE)
 
     @classmethod
     def __encode_any_ff_dl(cls, ff_dl: int, long_ff_dl_format: bool = False) -> RawBytesList:
         """
         Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 
-        .. note:: You can use this method to create any (also invalid) value of First Frame Data Length data bytes.
-            Use :meth:`~uds.can.first_frame.CanFirstFrameHandler.__encode_valid_ff_dl` to create a valid
-            (compatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method can be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
 
-        :param ff_dl: TODO
-        :param long_ff_dl_format: TODO
+        :param ff_dl: Value to put into a slot of First Frame Data Length.
+        :param long_ff_dl_format: Information whether to use long or short format of First Frame Data Length.
 
-        :return: TODO
+        :raise ValueError: Provided First Frame Data Length value is out of the parameter values range.
+        :raise InconsistentArgumentsError: Provided First Frame Data Length value cannot fit into the short format.
+
+        :return: First Frame data bytes containing CAN Packet Type and First Frame Data Length parameters.
         """
-        if not 0 <= ff_dl <= cls.MAX_LONG_FF_DL_VALUE:
-            raise ValueError(f"Provided value of First Frame Data Length is out of range. "
-                             f"Expected: 0 <= ff_dl <= {cls.MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")
+        cls.validate_ff_dl(ff_dl=ff_dl)
         if long_ff_dl_format:
             ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.LONG_FF_DL_BYTES_USED)
             ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
