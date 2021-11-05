@@ -70,7 +70,7 @@ class CanFirstFrameHandler:
         """
         ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
-        return (ff_dl_data_bytes[0] >> 4) == CanPacketType.FIRST_FRAME.value
+        return ff_dl_data_bytes[0] >> 4 == CanPacketType.FIRST_FRAME.value
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
@@ -86,17 +86,34 @@ class CanFirstFrameHandler:
 
     @classmethod
     def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> None:
-        ...
+        """
+        Validate whether data field of a CAN Packet carries a properly encoded First Frame.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a CAN frame to validate.
+
+        :raise ValueError: Provided frame data of a CAN frames does not carry a First Frame CAN packet.
+        """
+        if not cls.is_first_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
+            raise ValueError(f"Provided `raw_frame_data` value does not carry a First Frame packet. "
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+        # TODO: check FF_DL
 
     @classmethod
     def validate_ff_dl(cls,
                        ff_dl: int,
+                       long_ff_dl_format: Optional[bool] = None,
                        dlc: Optional[int] = None,
                        addressing_format: Optional[CanAddressingFormatAlias] = None) -> None:
         """
         Validate a value of First Frame Data Length.
 
         :param ff_dl: First Frame Data Length value to validate.
+        :param long_ff_dl_format: Information whether long or short format of First Frame Data Length is used.
+            Possible values:
+             - None - do not perform compatibility check with the FF_DL format
+             - True - perform compatibility check with long FF_DL format
+             - False - perform compatibility check with short FF_DL format
         :param dlc: Value of DLC to use for First Frame Data Length value validation.
             Leave None if you do not want to validate whether First Frame shall be used in this case.
         :param addressing_format: Value of CAN Addressing Format to use for First Frame Data Length value validation.
@@ -115,7 +132,14 @@ class CanFirstFrameHandler:
         if dlc is not None and addressing_format is not None:
             max_sf_dl = CanSingleFrameHandler.get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
             if ff_dl <= max_sf_dl:
-                raise InconsistentArgumentsError
+                raise InconsistentArgumentsError(f"Single Frame shall be used instead of First Frame to carry payload "
+                                                 f"consisting of {ff_dl} data bytes.")
+        if long_ff_dl_format is not None:
+            if (long_ff_dl_format and ff_dl <= cls.MAX_SHORT_FF_DL_VALUE) \
+                    or (not long_ff_dl_format and ff_dl > cls.MAX_SHORT_FF_DL_VALUE):
+                raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is not compatible with "
+                                                 f"the format used. Actual values: ff_dl={ff_dl}, "
+                                                 f"long_ff_dl_format={long_ff_dl_format}")
 
     @classmethod
     def __extract_ff_dl_data_bytes(cls,
@@ -144,6 +168,8 @@ class CanFirstFrameHandler:
         Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 
         .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+            First Frame Data Length value validation (whether it is too low according to ISO 15765) is not performed
+            though.
 
         :param ff_dl: Value to put into a slot of First Frame Data Length.
 

@@ -53,6 +53,18 @@ class TestCanFirstFrameHandler:
         mock_extract_ff_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                               raw_frame_data=raw_frame_data)
 
+    # validate_frame_data
+
+    @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data", [range(10), list(range(20, 25))])
+    @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler.is_first_frame")
+    def test_validate_frame_data__value_error(self, mock_is_first_frame,
+                                              addressing_format, raw_frame_data):
+        mock_is_first_frame.return_value = False
+        with pytest.raises(ValueError):
+            CanFirstFrameHandler.validate_frame_data(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        mock_is_first_frame.assert_called_once_with(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+
     # validate_ff_dl
 
     @pytest.mark.parametrize("ff_dl", [None, "something", 2.])
@@ -76,22 +88,37 @@ class TestCanFirstFrameHandler:
     ])
     @pytest.mark.parametrize("dlc", ["anything", "something else"])
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    def test_validate_ff_dl__inconsistent(self, ff_dl, dlc, addressing_format, sf_dl):
+    def test_validate_ff_dl__inconsistent_sf(self, ff_dl, dlc, addressing_format, sf_dl):
         self.mock_get_max_sf_dl.return_value = sf_dl
         with pytest.raises(InconsistentArgumentsError):
             CanFirstFrameHandler.validate_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
         self.mock_get_max_sf_dl.assert_called_once_with(dlc=dlc, addressing_format=addressing_format)
 
-    @pytest.mark.parametrize("ff_dl, sf_dl", [
-        (6, 5),
-        (25, 5),
-        (101, 100),
+    @pytest.mark.parametrize("ff_dl, long_ff_dl_format", [
+        (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE - 1, True),
+        (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE, True),
+        (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE + 1, False),
+        (CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE, False),
+    ])
+    def test_validate_ff_dl__inconsistent_format(self, ff_dl, long_ff_dl_format):
+        with pytest.raises(InconsistentArgumentsError):
+            CanFirstFrameHandler.validate_ff_dl(ff_dl=ff_dl, long_ff_dl_format=long_ff_dl_format)
+
+    @pytest.mark.parametrize("ff_dl, sf_dl, long_ff_dl_format", [
+        (6, 5, False),
+        (25, 5, False),
+        (101, 100, False),
+        (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE + 1, 100, True),
+        (CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE, 100, True),
     ])
     @pytest.mark.parametrize("dlc", ["anything", "something else"])
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    def test_validate_ff_dl__valid_with_args(self, ff_dl, dlc, addressing_format, sf_dl):
+    def test_validate_ff_dl__valid_with_args(self, ff_dl, long_ff_dl_format, dlc, addressing_format, sf_dl):
         self.mock_get_max_sf_dl.return_value = sf_dl
-        CanFirstFrameHandler.validate_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
+        CanFirstFrameHandler.validate_ff_dl(ff_dl=ff_dl,
+                                            dlc=dlc,
+                                            addressing_format=addressing_format,
+                                            long_ff_dl_format=long_ff_dl_format)
         self.mock_get_max_sf_dl.assert_called_once_with(dlc=dlc, addressing_format=addressing_format)
 
     @pytest.mark.parametrize("ff_dl", [1, 100, CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE])
