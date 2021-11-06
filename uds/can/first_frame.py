@@ -9,8 +9,8 @@ __all__ = ["CanFirstFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
-    validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
+from uds.utilities import RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
+    validate_raw_bytes, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .can_frame_fields import CanDlcHandler
@@ -142,12 +142,27 @@ class CanFirstFrameHandler:
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
-        ...
+        """
+        Extract a value of payload from First Frame data bytes.
+
+        .. warning:: This method does not check whether `raw_frame_data` carries properly encoded First Frame.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a considered CAN frame.
+
+        :return: Payload bytes of a diagnostic message carried by a considered First Frame.
+        """
+        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        return list(raw_frame_data[ai_bytes_number + len(ff_dl_data_bytes):])
 
     @classmethod
     def decode_ff_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
         """
         Extract a value of First Frame Data Length from First Frame data bytes.
+
+        .. warning:: This method does not check whether `raw_frame_data` carries properly encoded First Frame.
 
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a considered CAN frame.
@@ -196,10 +211,15 @@ class CanFirstFrameHandler:
 
         :raise ValueError: Provided frame data of a CAN frames does not carry a First Frame CAN packet.
         """
+        dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
+        if dlc < cls.MIN_DLC_VALUE_FF:
+            raise ValueError(f"Provided `raw_frame_data` value is too short to carry First Frame packet. "
+                             f"Expected: dlc>={cls.MIN_DLC_VALUE_FF}. Actual value: raw_frame_data={raw_frame_data}")
         if not cls.is_first_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a First Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
-        # TODO: extract and validate FF_DL Bytes
+        ff_dl = cls.decode_ff_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        cls.validate_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
 
     @classmethod
     def validate_ff_dl(cls,
@@ -245,10 +265,6 @@ class CanFirstFrameHandler:
                 raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is not compatible with "
                                                  f"the format used. Actual values: ff_dl={ff_dl}, "
                                                  f"long_ff_dl_format={long_ff_dl_format}")
-
-    @staticmethod
-    def __validate_ff_dl_data_bytes(ff_dl_data_bytes: RawBytesList) -> None:
-        ...
 
     @classmethod
     def __extract_ff_dl_data_bytes(cls,

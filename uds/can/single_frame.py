@@ -166,6 +166,8 @@ class CanSingleFrameHandler:
         """
         Extract a value of Single Frame Data Length from Single Frame data bytes.
 
+        TODO: rework to not validate data (the same thing is done twice)
+
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a considered CAN frame.
 
