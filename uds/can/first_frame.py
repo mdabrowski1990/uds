@@ -9,11 +9,11 @@ __all__ = ["CanFirstFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, \
+from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
     validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
-from .can_frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
+from .can_frame_fields import CanDlcHandler
 from .packet_type import CanPacketType
 from .single_frame import CanSingleFrameHandler
 
@@ -146,11 +146,45 @@ class CanFirstFrameHandler:
 
     @classmethod
     def decode_ff_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
-        ...
+        """
+        Extract a value of First Frame Data Length from First Frame data bytes.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a considered CAN frame.
+
+        :raise NotImplementedError: The provided data of First Frame packet are valid, but the format of First Frame
+            Data Length is missing the implementation.
+            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            whenever you see this error.
+
+        :return: Extracted value of First Frame Data Length.
+        """
+        ff_dl_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        if len(ff_dl_bytes) == cls.SHORT_FF_DL_BYTES_USED:
+            ff_dl_bytes[0] = ff_dl_bytes[0] & 0xF
+            return bytes_list_to_int(ff_dl_bytes[-4:])
+        if len(ff_dl_bytes) == cls.LONG_FF_DL_BYTES_USED:
+            return bytes_list_to_int(ff_dl_bytes[-4:])
+        raise NotImplementedError("Unknown format of First Frame Data Length was found.")
 
     @classmethod
-    def get_payload_size(cls, addressing_format: CanAddressingFormatAlias, dlc: int) -> int:
-        ...
+    def get_payload_size(cls,
+                         addressing_format: CanAddressingFormatAlias,
+                         dlc: int,
+                         long_ff_dl_format: bool = False) -> int:
+        """
+        Get the size of a payload that can fit into First Frame data bytes.
+
+        :param addressing_format: CAN addressing format that considered CAN packet uses.
+        :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
+        :param long_ff_dl_format: Information whether to use long or short format of First Frame Data Length.
+
+        :return: The maximum number of payload bytes that could fit into a considered First Frame.
+        """
+        data_bytes_number = CanDlcHandler.decode_dlc(dlc)
+        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ff_dl_data_bytes_number = cls.LONG_FF_DL_BYTES_USED if long_ff_dl_format else cls.SHORT_FF_DL_BYTES_USED
+        return data_bytes_number - ai_data_bytes_number - ff_dl_data_bytes_number
 
     @classmethod
     def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> None:
@@ -165,7 +199,7 @@ class CanFirstFrameHandler:
         if not cls.is_first_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a First Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
-        # TODO: check FF_DL
+        # TODO: extract and validate FF_DL Bytes
 
     @classmethod
     def validate_ff_dl(cls,
@@ -211,6 +245,10 @@ class CanFirstFrameHandler:
                 raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is not compatible with "
                                                  f"the format used. Actual values: ff_dl={ff_dl}, "
                                                  f"long_ff_dl_format={long_ff_dl_format}")
+
+    @staticmethod
+    def __validate_ff_dl_data_bytes(ff_dl_data_bytes: RawBytesList) -> None:
+        ...
 
     @classmethod
     def __extract_ff_dl_data_bytes(cls,

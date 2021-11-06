@@ -183,7 +183,7 @@ class CanSingleFrameHandler:
         if len(sf_dl_data_bytes) == cls.SHORT_SF_DL_BYTES_USED:
             return sf_dl_data_bytes[0] & 0xF
         if len(sf_dl_data_bytes) == cls.LONG_SF_DL_BYTES_USED:
-            return sf_dl_data_bytes[-1]
+            return sf_dl_data_bytes[1]
         raise NotImplementedError("Unknown format of Single Frame Data Length was found.")
 
     @classmethod
