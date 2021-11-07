@@ -159,10 +159,10 @@ class TestCanFirstFrameHandler:
         ([0x9F], [0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98], list(range(90, 142)), 64),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler._CanFirstFrameHandler__encode_any_ff_dl")
-    def test_create_valid_frame_data__inconsistent_length(self, mock_encode_any_ff_dl,
-                                                          addressing_format, target_address, address_extension,
-                                                          payload, dlc, ff_dl, long_ff_dl_format,
-                                                          ai_data_bytes, ff_dl_data_bytes, expected_frame_length):
+    def test_create_any_frame_data__inconsistent_length(self, mock_encode_any_ff_dl,
+                                                        addressing_format, target_address, address_extension,
+                                                        payload, dlc, ff_dl, long_ff_dl_format,
+                                                        ai_data_bytes, ff_dl_data_bytes, expected_frame_length):
         self.mock_encode_ai_data_bytes.return_value = ai_data_bytes
         mock_encode_any_ff_dl.return_value = ff_dl_data_bytes
         self.mock_decode_dlc.return_value = expected_frame_length

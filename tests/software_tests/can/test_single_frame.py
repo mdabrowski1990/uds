@@ -50,8 +50,8 @@ class TestCanSingleFrameHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte", [
-        ("some DLC", 0x66),
-        (8, 0x99),
+        (CanSingleFrameHandler.MIN_DLC_DATA_PADDING, 0x66),
+        (CanSingleFrameHandler.MIN_DLC_DATA_PADDING + 2, 0x99),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
         ([0x54], 2, [], [0xFA]),
@@ -131,14 +131,12 @@ class TestCanSingleFrameHandler:
         ("some format", "TA", "SA"),
         ("another format", None, None),
     ])
-    @pytest.mark.parametrize("dlc, filler_byte", [
-        ("some DLC", 0x66),
-        (8, 0x99),
-    ])
-    @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
-        ([0x54], 1, [], [0xFA]),
-        (range(10), 8, [0xAB], [0x0C]),
-        (range(50, 112), 64, [0x98], [0x12, 0x34]),
+    @pytest.mark.parametrize("filler_byte", [0x66, 0x99])
+    @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
+        (CanSingleFrameHandler.MIN_DLC_DATA_PADDING - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
+        (CanSingleFrameHandler.MIN_DLC_DATA_PADDING - 2, [0x3E], 7, [], [0x01]),
+        (CanSingleFrameHandler.MIN_DLC_DATA_PADDING, [0x20, 0x30, 0x44], 3, [], [0x03]),
+        (CanSingleFrameHandler.MIN_DLC_DATA_PADDING + 1, range(20), 21, [0xAA], [0x03]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__encode_valid_sf_dl")
     def test_create_valid_frame_data__inconsistent_args(self, mock_encode_sf_dl,
@@ -808,8 +806,8 @@ class TestCanSingleFrameHandlerIntegration:
          "payload": list(range(50, 112)),
          "target_address": 0xF2},
         {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         "payload": list(range(10)),
-         "dlc": 8,
+         "payload": [0xAB],
+         "dlc": 7,
          "address_extension": 0x12},
         {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
          "payload": [],
@@ -850,14 +848,13 @@ class TestCanSingleFrameHandlerIntegration:
           "sf_dl_short": 0x5},
          [0x12, 0x05, 0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00]),
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-          "payload": [0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00, 0x01],
-          "dlc": 9,
+          "payload": [0x9A, 0xB8],
+          "dlc": 7,
           "filler_byte": 0x99,
           "target_address": 0xF2,
           "address_extension": 0x12,
-          "sf_dl_short": 0x5,
-          "sf_dl_long": 0x67},
-         [0x12, 0x05, 0x67, 0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00, 0x01, 0x99, 0x99]),
+          "sf_dl_short": 0x2},
+         [0x12, 0x02, 0x9A, 0xB8, 0x99, 0x99, 0x99]),
     ])
     def test_create_any_frame_data__valid(self, kwargs, expected_raw_frame_data):
         assert CanSingleFrameHandler.create_any_frame_data(**kwargs) == expected_raw_frame_data
@@ -925,26 +922,4 @@ class TestCanSingleFrameHandlerIntegration:
         with pytest.raises(ValueError):
             CanSingleFrameHandler.validate_frame_data(addressing_format=addressing_format,
                                                       raw_frame_data=raw_frame_data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
