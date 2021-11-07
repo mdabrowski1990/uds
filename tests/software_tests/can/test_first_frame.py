@@ -183,35 +183,31 @@ class TestCanFirstFrameHandler:
 
     # is_first_frame
 
-    @pytest.mark.parametrize("addressing_format, raw_frame_data, ff_dl_data_bytes", [
-        ("some addressing", "some raw frame", [0x10, 0x06]),
-        ("some other addressing", "some other raw frame", [0x10, 0x00, 0x12, 0x34, 0x56]),
-        ("Mixed", range(20), [0x1F, 0xED]),
-        ("Extended", [0x10, 0x20, 0x30], [0x10]),
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
+        ([0x10, 0xFE, 0xDC], 0),
+        ([0xFE, 0x1F, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1),
+        ([0x1F, 0xFF, 0xFF, 0xFF] + list(range(20)), 0),
+        ([0xFF, 0x1F, 0xFF, 0xFF] + list(range(60)), 1),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler._CanFirstFrameHandler__extract_ff_dl_data_bytes")
-    def test_is_first_frame__true(self, mock_extract_ff_dl_data_bytes,
-                                  addressing_format, raw_frame_data, ff_dl_data_bytes):
-        mock_extract_ff_dl_data_bytes.return_value = ff_dl_data_bytes
+    def test_is_first_frame__true(self, addressing_format, raw_frame_data, ai_bytes_number):
+        self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
         assert CanFirstFrameHandler.is_first_frame(addressing_format=addressing_format,
                                                    raw_frame_data=raw_frame_data) is True
-        mock_extract_ff_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
-                                                              raw_frame_data=raw_frame_data)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
 
-    @pytest.mark.parametrize("addressing_format, raw_frame_data, ff_dl_data_bytes", [
-        ("some addressing", "some raw frame", [0x80, 0x06]),
-        ("some other addressing", "some other raw frame", [0x40, 0x00, 0x12, 0x34, 0x56]),
-        ("Mixed", range(20), [0x2F, 0xED]),
-        ("Extended", [0x10, 0x20, 0x30], [0xF0]),
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
+        ([0x20, 0xFE, 0xDC], 0),
+        ([0xFE, 0x4F, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1),
+        ([0x8F, 0xFF, 0xFF, 0xFF] + list(range(20)), 0),
+        ([0xFF, 0xFF, 0xFF, 0xFF] + list(range(60)), 1),
     ])
-    @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler._CanFirstFrameHandler__extract_ff_dl_data_bytes")
-    def test_is_first_frame__false(self, mock_extract_ff_dl_data_bytes,
-                                   addressing_format, raw_frame_data, ff_dl_data_bytes):
-        mock_extract_ff_dl_data_bytes.return_value = ff_dl_data_bytes
+    def test_is_first_frame__false(self, addressing_format, raw_frame_data, ai_bytes_number):
+        self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
         assert CanFirstFrameHandler.is_first_frame(addressing_format=addressing_format,
                                                    raw_frame_data=raw_frame_data) is False
-        mock_extract_ff_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
-                                                              raw_frame_data=raw_frame_data)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
 
     # decode_payload
 
@@ -297,7 +293,18 @@ class TestCanFirstFrameHandler:
     # get_payload_size
 
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    @pytest.mark.parametrize("dlc", ["some DLC value", 8])
+    @pytest.mark.parametrize("dlc", [CanFirstFrameHandler.MIN_DLC_VALUE_FF-1, CanFirstFrameHandler.MIN_DLC_VALUE_FF-2])
+    @pytest.mark.parametrize("long_ff_dl_format", [True, False])
+    def test_get_payload_size__too_short_dlc(self, addressing_format, dlc, long_ff_dl_format):
+        with pytest.raises(ValueError):
+            CanFirstFrameHandler.get_payload_size(addressing_format=addressing_format,
+                                                  dlc=dlc,
+                                                  long_ff_dl_format=long_ff_dl_format)
+        self.mock_decode_dlc.assert_not_called()
+        self.mock_get_ai_data_bytes_number.assert_not_called()
+
+    @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
+    @pytest.mark.parametrize("dlc", [CanFirstFrameHandler.MIN_DLC_VALUE_FF, CanFirstFrameHandler.MIN_DLC_VALUE_FF+1])
     @pytest.mark.parametrize("data_bytes_number, ai_bytes_number", [
         (8, 0),
         (8, 1),
@@ -317,7 +324,7 @@ class TestCanFirstFrameHandler:
         assert payload_size == data_bytes_number - ai_bytes_number - CanFirstFrameHandler.SHORT_FF_DL_BYTES_USED
 
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    @pytest.mark.parametrize("dlc", ["some DLC value", 8])
+    @pytest.mark.parametrize("dlc", [CanFirstFrameHandler.MIN_DLC_VALUE_FF, CanFirstFrameHandler.MIN_DLC_VALUE_FF+1])
     @pytest.mark.parametrize("data_bytes_number, ai_bytes_number", [
         (8, 0),
         (8, 1),
@@ -341,42 +348,39 @@ class TestCanFirstFrameHandler:
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
     @pytest.mark.parametrize("raw_frame_data", [range(10), list(range(20, 25))])
     @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler.is_first_frame")
-    def test_validate_frame_data__value_error__type(self, mock_is_first_frame,
-                                                    addressing_format, raw_frame_data):
-        self.mock_encode_dlc.return_value = CanFirstFrameHandler.MIN_DLC_VALUE_FF
+    def test_validate_frame_data__value_error(self, mock_is_first_frame,
+                                              addressing_format, raw_frame_data):
         mock_is_first_frame.return_value = False
         with pytest.raises(ValueError):
             CanFirstFrameHandler.validate_frame_data(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data)
         mock_is_first_frame.assert_called_once_with(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
 
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
     @pytest.mark.parametrize("raw_frame_data", [range(10), list(range(20, 25))])
-    @pytest.mark.parametrize("dlc", [0, CanFirstFrameHandler.MIN_DLC_VALUE_FF - 1])
-    @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler.is_first_frame")
-    def test_validate_frame_data__value_error__dlc(self, mock_is_first_frame,
-                                                   addressing_format, raw_frame_data, dlc):
-        mock_is_first_frame.return_value = True
-        self.mock_encode_dlc.return_value = dlc
-        with pytest.raises(ValueError):
-            CanFirstFrameHandler.validate_frame_data(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-        self.mock_encode_dlc.assert_called_once_with(len(raw_frame_data))
-
-    @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    @pytest.mark.parametrize("raw_frame_data", [range(10), list(range(20, 25))])
-    @pytest.mark.parametrize("dlc", [CanFirstFrameHandler.MIN_DLC_VALUE_FF, CanFirstFrameHandler.MIN_DLC_VALUE_FF + 10])
+    @pytest.mark.parametrize("ff_dl_data_bytes, long_ff_dl_format", [
+        ([0x10, 0x3E], False),
+        ([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98], True),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler._CanFirstFrameHandler__extract_ff_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler.validate_ff_dl")
     @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler.decode_ff_dl")
     @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler.is_first_frame")
     def test_validate_frame_data__valid(self, mock_is_first_frame, mock_decode_ff_dl, mock_validate_ff_dl,
-                                        addressing_format, raw_frame_data, dlc):
+                                        mock_extract_ff_dl_data_bytes,
+                                        addressing_format, raw_frame_data, ff_dl_data_bytes, long_ff_dl_format):
         mock_is_first_frame.return_value = True
-        self.mock_encode_dlc.return_value = dlc
+        mock_extract_ff_dl_data_bytes.return_value = ff_dl_data_bytes
         CanFirstFrameHandler.validate_frame_data(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data)
         mock_is_first_frame.assert_called_once_with(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-        self.mock_encode_dlc.assert_called_once_with(len(raw_frame_data))
         mock_decode_ff_dl.assert_called_once_with(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        self.mock_encode_dlc.assert_called_once_with(len(raw_frame_data))
+        mock_extract_ff_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
+                                                              raw_frame_data=raw_frame_data)
         mock_validate_ff_dl.assert_called_once_with(ff_dl=mock_decode_ff_dl.return_value,
-                                                    dlc=dlc,
+                                                    dlc=self.mock_encode_dlc.return_value,
+                                                    long_ff_dl_format=long_ff_dl_format,
                                                     addressing_format=addressing_format)
 
     # validate_ff_dl
@@ -672,3 +676,46 @@ class TestCanFirstFrameHandlerIntegration:
     def test_decode_ff_dl(self, addressing_format, raw_frame_data, expected_ff_dl):
         assert CanFirstFrameHandler.decode_ff_dl(addressing_format=addressing_format,
                                                  raw_frame_data=raw_frame_data) == expected_ff_dl
+
+    # validate_frame_data
+
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, (0x10, 0x08, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54)),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0x00, 0x00, 0x10, 0x00] + list(range(58))),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x1F, 0xFF] + list(range(100, 121))),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0x0F, 0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x0F, 0x10, 0x3E] + list(range(50, 111))),
+    ])
+    def test_validate_frame_data__valid(self, addressing_format, raw_frame_data):
+        assert CanFirstFrameHandler.validate_frame_data(addressing_format=addressing_format,
+                                                        raw_frame_data=raw_frame_data) is None
+
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, (0x10, 0x07, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54)),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0x00, 0x00, 0x0F, 0xFF] + list(range(58))),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x10, 0x15] + list(range(100, 121))),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0x0F, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x0F, 0x10, 0x3D] + list(range(50, 111))),
+    ])
+    def test_validate_frame_data__invalid(self, addressing_format, raw_frame_data):
+        with pytest.raises(ValueError):
+            CanFirstFrameHandler.validate_frame_data(addressing_format=addressing_format,
+                                                     raw_frame_data=raw_frame_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

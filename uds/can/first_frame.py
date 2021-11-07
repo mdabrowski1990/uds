@@ -29,12 +29,12 @@ class CanFirstFrameHandler:
     MAX_LONG_FF_DL_VALUE: int = 0xFFFFFFFF
     """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
     SHORT_FF_DL_BYTES_USED: int = 2
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and 
-    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in 
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and
+    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in
     :ref:`First Frame <knowledge-base-can-first-frame>` when FF_DL <= 4095."""
     LONG_FF_DL_BYTES_USED: int = 6
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and 
-    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in 
+    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and
+    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in
     :ref:`First Frame <knowledge-base-can-first-frame>` when FF_DL > 4095."""
 
     @classmethod
@@ -136,16 +136,17 @@ class CanFirstFrameHandler:
 
         :return: True if provided data bytes carries First Frame, False otherwise.
         """
-        ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
-                                                          raw_frame_data=raw_frame_data)
-        return ff_dl_data_bytes[0] >> 4 == CanPacketType.FIRST_FRAME.value
+        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        return raw_frame_data[ai_bytes_number] >> 4 == CanPacketType.FIRST_FRAME
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
         """
         Extract a value of payload from First Frame data bytes.
 
-        .. warning:: This method does not check whether `raw_frame_data` carries properly encoded First Frame.
+        .. warning:: The method does not validate the content of the provided frame data bytes.
+            There is no guarantee of the proper output when frame data in invalid format (incompatible with
+            ISO 15765) is provided.
 
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a considered CAN frame.
@@ -162,7 +163,9 @@ class CanFirstFrameHandler:
         """
         Extract a value of First Frame Data Length from First Frame data bytes.
 
-        .. warning:: This method does not check whether `raw_frame_data` carries properly encoded First Frame.
+        .. warning:: The method does not validate the content of the provided frame data bytes.
+            There is no guarantee of the proper output when frame data in invalid format (incompatible with
+            ISO 15765) is provided.
 
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a considered CAN frame.
@@ -194,8 +197,12 @@ class CanFirstFrameHandler:
         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
         :param long_ff_dl_format: Information whether to use long or short format of First Frame Data Length.
 
+        :raise ValueError: First Frame packet cannot use provided attributes according to ISO 15765.
+
         :return: The maximum number of payload bytes that could fit into a considered First Frame.
         """
+        if dlc < cls.MIN_DLC_VALUE_FF:
+            raise ValueError(f"First Frame must use DLC >= {cls.MIN_DLC_VALUE_FF}. Actual value: dlc={dlc}")
         data_bytes_number = CanDlcHandler.decode_dlc(dlc)
         ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
         ff_dl_data_bytes_number = cls.LONG_FF_DL_BYTES_USED if long_ff_dl_format else cls.SHORT_FF_DL_BYTES_USED
@@ -211,15 +218,19 @@ class CanFirstFrameHandler:
 
         :raise ValueError: Provided frame data of a CAN frames does not carry a First Frame CAN packet.
         """
-        dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
-        if dlc < cls.MIN_DLC_VALUE_FF:
-            raise ValueError(f"Provided `raw_frame_data` value is too short to carry First Frame packet. "
-                             f"Expected: dlc>={cls.MIN_DLC_VALUE_FF}. Actual value: raw_frame_data={raw_frame_data}")
+        validate_raw_bytes(raw_frame_data)
         if not cls.is_first_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a First Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
         ff_dl = cls.decode_ff_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-        cls.validate_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
+        ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        is_long_ff_dl_used = len(ff_dl_data_bytes) == cls.LONG_FF_DL_BYTES_USED
+        dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
+        cls.validate_ff_dl(ff_dl=ff_dl,
+                           long_ff_dl_format=is_long_ff_dl_used,
+                           dlc=dlc,
+                           addressing_format=addressing_format)
 
     @classmethod
     def validate_ff_dl(cls,
@@ -282,7 +293,7 @@ class CanFirstFrameHandler:
         """
         ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
         ff_dl_short = list(raw_frame_data[ai_bytes_number:][:cls.SHORT_FF_DL_BYTES_USED])
-        if ff_dl_short[0] & 0xF != 0 or ff_dl_short[1] != 0:
+        if ff_dl_short[0] & 0xF != 0 or ff_dl_short[1] != 0x00:
             return ff_dl_short
         ff_dl_long = list(raw_frame_data[ai_bytes_number:][:cls.LONG_FF_DL_BYTES_USED])
         return ff_dl_long
@@ -326,12 +337,12 @@ class CanFirstFrameHandler:
         cls.validate_ff_dl(ff_dl=ff_dl)
         if long_ff_dl_format:
             ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.LONG_FF_DL_BYTES_USED)
-            ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
+            ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME << 4)
             return ff_dl_bytes
         if ff_dl > cls.MAX_SHORT_FF_DL_VALUE:
             raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is too big for the short "
                                              f"FF_DL format. Use lower FF_DL value or change to long format. "
                                              f"Actual value: {ff_dl}")
         ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.SHORT_FF_DL_BYTES_USED)
-        ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME.value << 4)
+        ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME << 4)
         return ff_dl_bytes

@@ -144,7 +144,7 @@ class CanSingleFrameHandler:
         :return: True if provided data bytes carries Single Frame, False otherwise.
         """
         ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-        return (raw_frame_data[ai_bytes_number] >> 4) == CanPacketType.SINGLE_FRAME.value
+        return (raw_frame_data[ai_bytes_number] >> 4) == CanPacketType.SINGLE_FRAME
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
@@ -152,7 +152,7 @@ class CanSingleFrameHandler:
         Extract diagnostic message payload from Single Frame data bytes.
 
         .. warning:: The method does not validate the content of the provided frame data bytes.
-            Though, it does not guarantee the proper output when frame data in invalid format (incompatible with
+            There is no guarantee of the proper output when frame data in invalid format (incompatible with
             ISO 15765) is provided.
 
         :param addressing_format: CAN Addressing Format used.
@@ -172,7 +172,7 @@ class CanSingleFrameHandler:
         Extract a value of Single Frame Data Length from Single Frame data bytes.
 
         .. warning:: The method does not validate the content of the provided frame data bytes.
-            Though, it does not guarantee the proper output when frame data in invalid format (incompatible with
+            There is no guarantee of the proper output when frame data in invalid format (incompatible with
             ISO 15765) is provided.
 
         :param addressing_format: CAN Addressing Format used.
@@ -397,7 +397,7 @@ class CanSingleFrameHandler:
         :return: Single Frame data bytes containing CAN Packet Type and Single Frame Data Length parameters.
         """
         validate_nibble(sf_dl_short)
-        sf_dl_byte_0 = sf_dl_short ^ (CanPacketType.SINGLE_FRAME.value << 4)
+        sf_dl_byte_0 = sf_dl_short ^ (CanPacketType.SINGLE_FRAME << 4)
         if sf_dl_long is None:
             return [sf_dl_byte_0]
         validate_raw_byte(sf_dl_long)
