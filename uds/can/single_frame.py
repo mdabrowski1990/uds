@@ -62,8 +62,8 @@ class CanSingleFrameHandler:
         :param address_extension: Address Extension value carried by this CAN packet.
             The value must only be provided if `addressing_format` uses Address Extension parameter.
 
-        :raise InconsistentArgumentsError: Provided `payload` contains too many bytes to fit it into a Single Frame
-            data field.
+        :raise InconsistentArgumentsError: Provided `payload` contains invalid number of bytes to fit it into
+            a properly defined Single Frame data field.
 
         :return: Raw bytes of CAN frame data for the provided Single Frame packet information.
         """
@@ -120,6 +120,9 @@ class CanSingleFrameHandler:
             The value must only be provided if `addressing_format` uses Target Address parameter.
         :param address_extension: Address Extension value carried by this CAN packet.
             The value must only be provided if `addressing_format` uses Address Extension parameter.
+
+        :raise InconsistentArgumentsError: Provided `payload` contains too many bytes to fit it into a Single Frame
+            data field.
 
         :return: Raw bytes of CAN frame data for the provided Single Frame packet information.
         """

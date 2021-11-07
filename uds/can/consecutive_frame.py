@@ -54,10 +54,10 @@ class CanConsecutiveFrameHandler:
         :param address_extension: Address Extension value carried by this CAN packet.
             The value must only be provided if `addressing_format` uses Address Extension parameter.
 
-        # :raise InconsistentArgumentsError: Provided `payload` contains too many bytes to fit it into a Consecutive Frame
-        #     data field.
+        :raise InconsistentArgumentsError: Provided `payload` contains invalid number of bytes to fit it into
+            a properly defined Consecutive Frame data field.
 
-        :return: Raw bytes of CAN frame data for the provided Single Frame packet information.
+        :return: Raw bytes of CAN frame data for the provided Consecutive Frame packet information.
         """
 
     @classmethod
@@ -78,7 +78,7 @@ class CanConsecutiveFrameHandler:
             :meth:`~uds.can.consecutive_frame.CanConsecutiveFrameHandler.create_valid_frame_data` to create data bytes
             for a Consecutive Frame with valid (compatible with ISO 15765) parameters values.
 
-        :param addressing_format: CAN addressing format used by a considered Single Frame.
+        :param addressing_format: CAN addressing format used by a considered Consecutive Frame.
         :param payload: Payload of a diagnostic message that is carried by a considered CAN packet.
         :param sequence_number: Value of Sequence Number parameter.
         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
@@ -88,37 +88,117 @@ class CanConsecutiveFrameHandler:
         :param address_extension: Address Extension value carried by this CAN packet.
             The value must only be provided if `addressing_format` uses Address Extension parameter.
 
-        :return: Raw bytes of CAN frame data for the provided Single Frame packet information.
+        :raise InconsistentArgumentsError: Provided `payload` contains too many bytes to fit it into a Consecutive Frame
+            data field.
+
+        :return: Raw bytes of CAN frame data for the provided Consecutive Frame packet information.
         """
 
     @classmethod
     def is_consecutive_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
-        ...
+        """
+        Check if provided data bytes encodes a Consecutive Frame packet.
+
+        .. warning:: The method does not validate the content of the provided frame data bytes.
+            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-can-n-pci>` parameter is checked whether contain
+            Consecutive Frame N_PCI value.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a CAN frame to check.
+
+        :return: True if provided data bytes carries Consecutive Frame, False otherwise.
+        """
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
-        ...
+        """
+        Extract diagnostic message payload from Consecutive Frame data bytes.
+
+        .. warning:: The output might contain additional filler bytes (they are not part of diagnostic message payload)
+            that were added during :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
+            The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+            cannot be determined basing solely on the information contained in a Consecutive Frame data bytes.
+
+        .. warning:: The method does not validate the content of the provided frame data bytes.
+            There is no guarantee of the proper output when frame data in invalid format (incompatible with
+            ISO 15765) is provided.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a considered CAN frame.
+
+        :return: Payload bytes (with potential Filler Bytes) of a diagnostic message carried by a considered
+            Consecutive Frame.
+        """
 
     @classmethod
     def decode_sn(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
-        ...
+        """
+        Extract a value of Sequence Number from Consecutive Frame data bytes.
+
+        .. warning:: The method does not validate the content of the provided frame data bytes.
+            There is no guarantee of the proper output when frame data in invalid format (incompatible with
+            ISO 15765) is provided.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a considered CAN frame.
+
+        :return: Extracted value of Sequence Number.
+        """
 
     @classmethod
     def get_min_dlc(cls, addressing_format: CanAddressingFormatAlias, payload_length: int) -> int:
-        ...
+        """
+        Get the minimum value of a CAN frame DLC to carry a Consecutive Frame packet.
+
+        :param addressing_format: CAN addressing format that considered CAN packet uses.
+        :param payload_length: Number of payload bytes that considered CAN packet carries.
+
+        :return: The lowest value of DLC that enables to fit in provided Consecutive Frame packet data.
+        """
 
     @classmethod
     def get_max_payload_size(cls,
                              addressing_format: Optional[CanAddressingFormatAlias] = None,
                              dlc: Optional[int] = None) -> int:
-        ...
+        """
+        Get the maximum size of a payload that can fit into Consecutive Frame data bytes.
+
+        :param addressing_format: CAN addressing format that considered CAN packet uses.
+            Leave None to get the result for CAN addressing format that does not use data bytes for carrying
+            addressing information.
+        :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
+            Leave None to get the result for the greatest possible DLC value.
+
+        :raise InconsistentArgumentsError: Consecutive Frame packet cannot use provided attributes according to
+            ISO 15765.
+
+        :return: The maximum number of payload bytes that could fit into a considered Consecutive Frame.
+        """
 
     @classmethod
     def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> None:
-        ...
+        """
+        Validate whether data field of a CAN Packet carries a properly encoded Consecutive Frame.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a CAN frame to validate.
+
+        :raise ValueError: Provided frame data of a CAN frames does not carry a Consecutive Frame CAN packet.
+        :raise InconsistentArgumentsError: Provided frame data of a CAN frames does not carry a properly encoded
+            Consecutive Frame CAN packet.
+        """
 
     @classmethod
     def __extract_sn_data_bytes(cls,
                                 addressing_format: CanAddressingFormat,
                                 raw_frame_data: RawBytes) -> RawBytesList:
-        ...
+        """
+        Extract data bytes that carries CAN Packet Type and Sequence Number parameters.
+
+        .. warning:: This method does not check whether provided `raw_frame_data` actually contains Consecutive Frame.
+
+        :param addressing_format: CAN Addressing Format used.
+        :param raw_frame_data: Raw data bytes of a considered CAN frame.
+
+        :return: Extracted data bytes with CAN Packet Type and Sequence Number parameters.
+        """
