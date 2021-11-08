@@ -82,12 +82,12 @@ class CanSingleFrameHandler:
         if len(sf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
                                              "Consider increasing DLC value.")
-        date_bytes_to_pad = frame_data_bytes_number - len(sf_bytes)
-        if date_bytes_to_pad > 0:
+        data_bytes_to_pad = frame_data_bytes_number - len(sf_bytes)
+        if data_bytes_to_pad > 0:
             if dlc is not None and dlc < cls.MIN_DLC_DATA_PADDING:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {cls.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
-            data_padding = date_bytes_to_pad * [filler_byte]
+            data_padding = data_bytes_to_pad * [filler_byte]
             return sf_bytes + data_padding
         return sf_bytes
 

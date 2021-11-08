@@ -20,6 +20,9 @@ from .packet_type import CanPacketType
 class CanConsecutiveFrameHandler:
     """Helper class that provides utilities for Consecutive Frame CAN Packets."""
 
+    MIN_DLC_DATA_PADDING: int = 8
+    """Minimum value of DLC for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` 
+    is allowed."""
     SN_BYTES_USED: int = 1
     """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`
     and :ref:`Sequence Number <knowledge-base-can-sequence-number>` values in
@@ -59,6 +62,27 @@ class CanConsecutiveFrameHandler:
 
         :return: Raw bytes of CAN frame data for the provided Consecutive Frame packet information.
         """
+        validate_raw_byte(filler_byte)
+        validate_raw_bytes(payload, allow_empty=False)
+        frame_dlc = cls.get_min_dlc(addressing_format=addressing_format, payload_length=len(payload)) \
+            if dlc is None else dlc
+        frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
+        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                             target_address=target_address,
+                                                                             address_extension=address_extension)
+        sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
+        cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
+        if len(cf_bytes) > frame_data_bytes_number:
+            raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
+                                             "Consider increasing DLC value.")
+        data_bytes_to_pad = frame_data_bytes_number - len(cf_bytes)
+        if data_bytes_to_pad > 0:
+            if dlc is not None and dlc < cls.MIN_DLC_DATA_PADDING:
+                raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
+                                                 f"DLC < {cls.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
+            data_padding = data_bytes_to_pad * [filler_byte]
+            return cf_bytes + data_padding
+        return cf_bytes
 
     @classmethod
     def create_any_frame_data(cls, *,
@@ -93,6 +117,19 @@ class CanConsecutiveFrameHandler:
 
         :return: Raw bytes of CAN frame data for the provided Consecutive Frame packet information.
         """
+        validate_raw_byte(filler_byte)
+        validate_raw_bytes(payload, allow_empty=True)
+        frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
+        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                             target_address=target_address,
+                                                                             address_extension=address_extension)
+        sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
+        cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
+        if len(cf_bytes) > frame_data_bytes_number:
+            raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
+                                             "Consider increasing DLC value.")
+        data_padding = ((frame_data_bytes_number - len(cf_bytes)) * [filler_byte])
+        return cf_bytes + data_padding
 
     @classmethod
     def is_consecutive_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
@@ -202,3 +239,17 @@ class CanConsecutiveFrameHandler:
 
         :return: Extracted data bytes with CAN Packet Type and Sequence Number parameters.
         """
+        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        return list(raw_frame_data[ai_bytes_number:][:cls.SN_BYTES_USED])
+
+    @staticmethod
+    def __encode_sn(sequence_number: Nibble) -> RawBytesList:
+        """
+        Create Consecutive Frame data bytes with CAN Packet Type and Sequence Number parameters.
+
+        :param sequence_number: Value of the sequence number parameter.
+
+        :return: Consecutive Frame data bytes containing CAN Packet Type and Sequence Number parameters.
+        """
+        validate_nibble(sequence_number)
+        return [(CanPacketType.CONSECUTIVE_FRAME << 4) ^ sequence_number]
