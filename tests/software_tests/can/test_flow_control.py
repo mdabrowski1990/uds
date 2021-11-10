@@ -132,3 +132,31 @@ class TestCanSTminIntegration:
     def test_encode_and_decode(self, time_value):
         raw_value = CanSTminTranslator.encode(time_value)
         assert CanSTminTranslator.decode(raw_value) == time_value
+
+
+class TestCanFlowControlHandler:
+    """Tests for `CanFlowControlHandler` class."""
+
+    SCRIPT_LOCATION = TestCanSTmin.SCRIPT_LOCATION
+
+
+class TestCanFlowControlHandlerIntegration:
+    """Integration tests for `CanFlowControlHandler` class."""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
