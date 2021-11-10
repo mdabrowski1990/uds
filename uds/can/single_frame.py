@@ -21,7 +21,7 @@ class CanSingleFrameHandler:
     """Helper class that provides utilities for Single Frame CAN Packets."""
 
     MIN_DLC_DATA_PADDING: int = 8
-    """Minimum value of DLC for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` 
+    """Minimum value of DLC for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
     is allowed."""
     MAX_DLC_VALUE_SHORT_SF_DL: int = 8
     """Maximum value of DLC for which short
@@ -342,13 +342,13 @@ class CanSingleFrameHandler:
         :param ai_data_bytes_number: Number of data byte that carry Addressing Information.
 
         :raise TypeError: Provided value of payload length is not integer.
-        :raise ValueError: Provided value of  payload length is less than 0.
+        :raise ValueError: Provided value of payload length is less or equal to 0.
         :raise InconsistentArgumentsError: Provided value of payload length is greater than maximum value.
         """
         if not isinstance(payload_length, int):
-            raise TypeError(f"Provided payload_length value is not int type. Actual type: {type(payload_length)}")
-        if payload_length < 0:
-            raise ValueError(f"Provided payload_length value is a negative number. Actual value: {payload_length}")
+            raise TypeError(f"Provided `payload_length` value is not int type. Actual type: {type(payload_length)}")
+        if payload_length <= 0:
+            raise ValueError(f"Provided `payload_length` value is not a positive value. Actual value: {payload_length}")
         max_payload_length = CanDlcHandler.MAX_DATA_BYTES_NUMBER - ai_data_bytes_number - cls.LONG_SF_DL_BYTES_USED
         if payload_length > max_payload_length:
             raise InconsistentArgumentsError(f"Provided payload_length value is too big and it would not be able"

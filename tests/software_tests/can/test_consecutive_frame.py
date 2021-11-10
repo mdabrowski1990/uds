@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 
 from uds.can.consecutive_frame import CanConsecutiveFrameHandler, \
-    InconsistentArgumentsError, CanPacketType, CanAddressingFormat, DEFAULT_FILLER_BYTE
+    InconsistentArgumentsError, CanPacketType, CanAddressingFormat, CanDlcHandler, DEFAULT_FILLER_BYTE
 
 
 class TestCanConsecutiveFrameHandler:
@@ -21,6 +21,8 @@ class TestCanConsecutiveFrameHandler:
         self.mock_encode_dlc = self._patcher_encode_dlc.start()
         self._patcher_decode_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.decode_dlc")
         self.mock_decode_dlc = self._patcher_decode_dlc.start()
+        self._patcher_get_min_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
+        self.mock_get_min_dlc = self._patcher_get_min_dlc.start()
         self._patcher_encode_ai_data_bytes = \
             patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformationHandler.encode_ai_data_bytes")
         self.mock_encode_ai_data_bytes = self._patcher_encode_ai_data_bytes.start()
@@ -34,6 +36,7 @@ class TestCanConsecutiveFrameHandler:
         self._patcher_validate_raw_bytes.stop()
         self._patcher_encode_dlc.stop()
         self._patcher_decode_dlc.stop()
+        self._patcher_get_min_dlc.stop()
         self._patcher_encode_ai_data_bytes.stop()
         self._patcher_get_ai_data_bytes_number.stop()
 
@@ -173,10 +176,10 @@ class TestCanConsecutiveFrameHandler:
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
-    def test_create_valid_frame_data__valid_with_dlc(self, mock_encode_sn,
-                                                     addressing_format, target_address, address_extension,
-                                                     payload, sequence_number, dlc, filler_byte,
-                                                     data_bytes_number, ai_data_bytes, sn_data_bytes):
+    def test_create_any_frame_data__valid_with_dlc(self, mock_encode_sn,
+                                                   addressing_format, target_address, address_extension,
+                                                   payload, sequence_number, dlc, filler_byte,
+                                                   data_bytes_number, ai_data_bytes, sn_data_bytes):
         self.mock_decode_dlc.return_value = data_bytes_number
         self.mock_encode_ai_data_bytes.return_value = ai_data_bytes
         mock_encode_sn.return_value = sn_data_bytes
@@ -211,10 +214,10 @@ class TestCanConsecutiveFrameHandler:
         (CanConsecutiveFrameHandler.MIN_DLC_DATA_PADDING, [0x20, 0x30, 0x44], 3, [], [0x03]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
-    def test_create_valid_frame_data__inconsistent_args(self, mock_encode_sn,
-                                                        addressing_format, target_address, address_extension,
-                                                        payload, sequence_number, dlc, filler_byte,
-                                                        data_bytes_number, ai_data_bytes, sn_data_bytes):
+    def test_create_any_frame_data__inconsistent_args(self, mock_encode_sn,
+                                                      addressing_format, target_address, address_extension,
+                                                      payload, sequence_number, dlc, filler_byte,
+                                                      data_bytes_number, ai_data_bytes, sn_data_bytes):
         self.mock_decode_dlc.return_value = data_bytes_number
         self.mock_encode_ai_data_bytes.return_value = ai_data_bytes
         mock_encode_sn.return_value = sn_data_bytes
@@ -234,19 +237,261 @@ class TestCanConsecutiveFrameHandler:
                                                                address_extension=address_extension)
         mock_encode_sn.assert_called_once_with(sequence_number=sequence_number)
 
-    # __extract_sn_data_bytes
+    # is_consecutive_frame
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
-    @pytest.mark.parametrize("raw_frame_data, ai_bytes_number, expected_output", [
-        ([0x12, 0x34, 0x45, 0x67, 0x89], 0, [0x12]),
-        ([0x12, 0x34, 0x45, 0x67, 0x89], 1, [0x34]),
-        (range(30, 94), 0, [30]),
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
+        (0, (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76)),
+        (1, [0x01, 0x20] + list(range(46))),
+        (0, [0x25] + list(range(47))),
+        (1, (0x13, 0x2E, 0x21)),
     ])
-    def test_extract_sn_data_bytes(self, addressing_format, raw_frame_data, ai_bytes_number, expected_output):
+    def test_is_consecutive_frame__true(self, addressing_format, raw_frame_data,
+                                        ai_bytes_number):
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
-        assert CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__extract_sn_data_bytes(
-            addressing_format=addressing_format, raw_frame_data=raw_frame_data) == expected_output
+        assert CanConsecutiveFrameHandler.is_consecutive_frame(addressing_format=addressing_format,
+                                                               raw_frame_data=raw_frame_data) is True
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
+        (0, (0x0F, 0xFE, 0xDC, 0xBA, 0x98, 0x76)),
+        (1, [0x01, 0x10] + list(range(46))),
+        (0, [0x35] + list(range(47))),
+        (1, (0x13, 0xFE, 0x21)),
+    ])
+    def test_is_consecutive_frame__false(self, addressing_format, raw_frame_data, ai_bytes_number):
+        self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
+        assert CanConsecutiveFrameHandler.is_consecutive_frame(addressing_format=addressing_format,
+                                                               raw_frame_data=raw_frame_data) is False
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+
+    # decode_payload
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
+        (0, (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76)),
+        (2, [0x01, 0x20] + list(range(46))),
+        (0, [0x25] + list(range(47))),
+        (1, (0x13, 0x2E, 0x21)),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
+    def test_decode_payload(self, mock_is_consecutive_frame,
+                            addressing_format, raw_frame_data, ai_bytes_number):
+        mock_is_consecutive_frame.return_value = True
+        self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
+        payload = CanConsecutiveFrameHandler.decode_payload(addressing_format=addressing_format,
+                                                            raw_frame_data=raw_frame_data)
+        assert isinstance(payload, list)
+        assert payload == list(raw_frame_data)[ai_bytes_number + CanConsecutiveFrameHandler.SN_BYTES_USED:]
+        mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data", [
+        (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76),
+        [0x01, 0x20] + list(range(46)),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
+    def test_decode_payload__value_error(self, mock_is_consecutive_frame,
+                                         addressing_format, raw_frame_data):
+        mock_is_consecutive_frame.return_value = False
+        with pytest.raises(ValueError):
+            CanConsecutiveFrameHandler.decode_payload(addressing_format=addressing_format,
+                                                      raw_frame_data=raw_frame_data)
+        mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        self.mock_get_ai_data_bytes_number.assert_not_called()
+
+    # decode_sequence_number
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
+        (0, (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76)),
+        (2, [0x01, 0x20] + list(range(46))),
+        (0, [0x25] + list(range(47))),
+        (1, (0x13, 0x2E, 0x21)),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
+    def test_decode_sequence_number(self, mock_is_consecutive_frame,
+                                    addressing_format, raw_frame_data, ai_bytes_number):
+        mock_is_consecutive_frame.return_value = True
+        self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
+        sequence_number = CanConsecutiveFrameHandler.decode_sequence_number(addressing_format=addressing_format,
+                                                                            raw_frame_data=raw_frame_data)
+        assert isinstance(sequence_number, int)
+        assert sequence_number == raw_frame_data[ai_bytes_number] & 0xF
+        mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
+    @pytest.mark.parametrize("raw_frame_data", [
+        (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76),
+        [0x01, 0x20] + list(range(46)),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
+    def test_decode_sequence_number__value_error(self, mock_is_consecutive_frame,
+                                                 addressing_format, raw_frame_data):
+        mock_is_consecutive_frame.return_value = False
+        with pytest.raises(ValueError):
+            CanConsecutiveFrameHandler.decode_sequence_number(addressing_format=addressing_format,
+                                                              raw_frame_data=raw_frame_data)
+        mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        self.mock_get_ai_data_bytes_number.assert_not_called()
+
+    # get_min_dlc
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
+    @pytest.mark.parametrize("ai_data_bytes, payload_length", [
+        (0, 1),
+        (1, 7),
+        (0, 62),
+    ])
+    @pytest.mark.parametrize("decoded_dlc", [1, 8, 0xF])
+    def test_get_min_dlc(self, addressing_format, payload_length, ai_data_bytes, decoded_dlc):
+        self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
+        self.mock_get_min_dlc.return_value = decoded_dlc
+        assert CanConsecutiveFrameHandler.get_min_dlc(
+            addressing_format=addressing_format, payload_length=payload_length) == self.mock_get_min_dlc.return_value
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+        data_bytes_number = payload_length + CanConsecutiveFrameHandler.SN_BYTES_USED + ai_data_bytes
+        self.mock_get_min_dlc.assert_called_once_with(data_bytes_number)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
+    @pytest.mark.parametrize("payload_length", [None, "not a payload", 5.])
+    def test_get_min_dlc__type_error(self, addressing_format, payload_length):
+        with pytest.raises(TypeError):
+            CanConsecutiveFrameHandler.get_min_dlc(addressing_format=addressing_format, payload_length=payload_length)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
+    @pytest.mark.parametrize("payload_length", [0, 64])
+    def test_get_min_dlc__value_error(self, addressing_format, payload_length):
+        with pytest.raises(ValueError):
+            CanConsecutiveFrameHandler.get_min_dlc(addressing_format=addressing_format, payload_length=payload_length)
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
+    @pytest.mark.parametrize("ai_data_bytes, payload_length", [
+        (1, 63),
+        (2, 62),
+    ])
+    def test_get_min_dlc__inconsistent_args(self, addressing_format, payload_length, ai_data_bytes):
+        self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
+        with pytest.raises(InconsistentArgumentsError):
+            CanConsecutiveFrameHandler.get_min_dlc(addressing_format=addressing_format, payload_length=payload_length)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+
+    # get_max_payload_size
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
+    @pytest.mark.parametrize("dlc", ["some DLC", 8])
+    @pytest.mark.parametrize("frame_data_bytes_number, ai_data_bytes_number", [
+        (10, 1),
+        (6, 0),
+        (64, 1),
+        (2, 0),
+    ])
+    def test_get_max_payload_size__with_addressing_dlc(self, addressing_format, dlc,
+                                                       frame_data_bytes_number, ai_data_bytes_number):
+        self.mock_decode_dlc.return_value = frame_data_bytes_number
+        self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
+        max_value = CanConsecutiveFrameHandler.get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
+        self.mock_decode_dlc.assert_called_once_with(dlc)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+        assert isinstance(max_value, int)
+        assert max_value == frame_data_bytes_number - ai_data_bytes_number - CanConsecutiveFrameHandler.SN_BYTES_USED
+
+    @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
+    @pytest.mark.parametrize("dlc", ["some DLC", 8])
+    @pytest.mark.parametrize("frame_data_bytes_number, ai_data_bytes_number", [
+        (2, 2),
+        (1, 1),
+        (1, 2),
+    ])
+    def test_get_max_payload_size__too_short(self, addressing_format, dlc,
+                                             frame_data_bytes_number, ai_data_bytes_number):
+        self.mock_decode_dlc.return_value = frame_data_bytes_number
+        self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
+        with pytest.raises(InconsistentArgumentsError):
+            CanConsecutiveFrameHandler.get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
+        self.mock_decode_dlc.assert_called_once_with(dlc)
+        self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+
+    def test_get_max_payload_size__without_args(self):
+        max_value = CanConsecutiveFrameHandler.get_max_payload_size()
+        self.mock_decode_dlc.assert_not_called()
+        self.mock_get_ai_data_bytes_number.assert_not_called()
+        assert isinstance(max_value, int)
+        assert max_value == CanDlcHandler.MAX_DATA_BYTES_NUMBER - CanConsecutiveFrameHandler.SN_BYTES_USED
+
+    # validate_frame_data
+
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        ("some addressing format", "some raw frame data"),
+        ("another format", range(5)),
+    ])
+    @pytest.mark.parametrize("min_dlc, decoded_dlc", [
+        (0, 0),
+        (8, 8),
+        (13, 15),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.get_min_dlc")
+    def test_validate_frame_data__valid(self, mock_get_min_dlc, mock_is_consecutive_frame,
+                                        addressing_format, raw_frame_data,
+                                        decoded_dlc, min_dlc):
+        mock_is_consecutive_frame.return_value = True
+        mock_get_min_dlc.return_value = min_dlc
+        self.mock_encode_dlc.return_value = decoded_dlc
+        CanConsecutiveFrameHandler.validate_frame_data(addressing_format=addressing_format,
+                                                       raw_frame_data=raw_frame_data)
+        self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data)
+        mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        mock_get_min_dlc.assert_called_once_with(addressing_format=addressing_format,
+                                                 payload_length=1)
+
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        ("some addressing format", "some raw frame data"),
+        ("another format", range(5)),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
+    def test_validate_frame_data__value_error(self, mock_is_consecutive_frame,
+                                                      addressing_format, raw_frame_data):
+        mock_is_consecutive_frame.return_value = False
+        with pytest.raises(ValueError):
+            CanConsecutiveFrameHandler.validate_frame_data(addressing_format=addressing_format,
+                                                           raw_frame_data=raw_frame_data)
+        mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        ("some addressing format", "some raw frame data"),
+        ("another format", range(5)),
+    ])
+    @pytest.mark.parametrize("min_dlc, decoded_dlc", [
+        (1, 0),
+        (15, 8),
+        (13, 12),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
+    @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.get_min_dlc")
+    def test_validate_frame_data__inconsistent_error(self, mock_get_min_dlc, mock_is_consecutive_frame,
+                                                     addressing_format, raw_frame_data,
+                                                     decoded_dlc, min_dlc):
+        mock_is_consecutive_frame.return_value = True
+        mock_get_min_dlc.return_value = min_dlc
+        self.mock_encode_dlc.return_value = decoded_dlc
+        with pytest.raises(InconsistentArgumentsError):
+            CanConsecutiveFrameHandler.validate_frame_data(addressing_format=addressing_format,
+                                                           raw_frame_data=raw_frame_data)
+        self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data)
+        mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
+                                                          raw_frame_data=raw_frame_data)
+        mock_get_min_dlc.assert_called_once_with(addressing_format=addressing_format,
+                                                 payload_length=1)
 
     # __encode_sn
 
@@ -287,7 +532,7 @@ class TestCanSingleFrameHandlerIntegration:
           "address_extension": 0xDC,
           "payload": tuple(range(50, 96)),
           "sequence_number": 0x1,
-          "filler_byte": 0xD9}, [0xFE, 0x21] + list(range(50, 96))),
+          "filler_byte": 0xD9}, [0xDC, 0x21] + list(range(50, 96))),
     ])
     def test_create_valid_frame_data__valid(self, kwargs, expected_raw_frame_data):
         assert CanConsecutiveFrameHandler.create_valid_frame_data(**kwargs) == expected_raw_frame_data
@@ -370,3 +615,27 @@ class TestCanSingleFrameHandlerIntegration:
     def test_create_any_frame_data__invalid(self, kwargs):
         with pytest.raises(ValueError):
             CanConsecutiveFrameHandler.create_any_frame_data(**kwargs)
+
+    # validate_frame_data
+
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, (0x20, 0x12, 0x34, 0x45, 0x67, 0x89, 0x9A, 0xBC)),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, (0x2F, 0x2F)),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, (0xF0, 0x26, 0x00)),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING, [0x30, 0x21] + (46 * [0xFF])),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, (0x8B, 0x2E, 0x9B)),
+    ])
+    def test_validate_frame_data__valid(self, addressing_format, raw_frame_data):
+        assert CanConsecutiveFrameHandler.validate_frame_data(addressing_format=addressing_format,
+                                                              raw_frame_data=raw_frame_data) is None
+
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, [0x20]),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, tuple([0x2F] + ([0xFF] * 64))),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x2F, 0x2F]),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, (0x8B, 0x2E)),
+    ])
+    def test_validate_frame_data__invalid(self, addressing_format, raw_frame_data):
+        with pytest.raises(ValueError):
+            CanConsecutiveFrameHandler.validate_frame_data(addressing_format=addressing_format,
+                                                           raw_frame_data=raw_frame_data)
