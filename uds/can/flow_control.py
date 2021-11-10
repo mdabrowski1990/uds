@@ -7,7 +7,8 @@ This module contains implementation of :ref:`Flow Control <knowledge-base-can-fl
  - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
 """
 
-__all__ = ["CanFlowStatus", "CanFlowStatusAlias", "CanSTminTranslator", "UnrecognizedSTminWarning"]
+__all__ = ["CanFlowStatus", "CanFlowStatusAlias", "CanSTminTranslator", "CanFlowControlHandler",
+           "UnrecognizedSTminWarning"]
 
 from typing import Union, Optional, Any
 from warnings import warn
@@ -224,9 +225,9 @@ class CanFlowControlHandler:
         :param addressing_format: CAN addressing format used by a considered Flow Control.
         :param flow_status: Value of Flow Status parameter.
         :param st_min: Value of Separation Time minimum (STmin) parameter.
-            This parameter is only required with ContinueToSend Flow Status, leave None otherwise.
+            Leave None to not insert this parameter in a Flow Control data bytes.
         :param block_size: Value of Block Size parameter.
-            This parameter is only required with ContinueToSend Flow Status, leave None otherwise.
+            Leave None to not insert this parameter in a Flow Control data bytes.
         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param target_address: Target Address value carried by this CAN Packet.

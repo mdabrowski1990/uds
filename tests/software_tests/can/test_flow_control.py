@@ -1,7 +1,8 @@
 import pytest
 from mock import patch
 
-from uds.can.flow_control import CanSTminTranslator, CanFlowStatus
+from uds.can.flow_control import CanSTminTranslator, CanFlowStatus, CanFlowControlHandler, \
+    CanAddressingFormat
 from uds.utilities import ValidatedEnum, NibbleEnum
 
 
@@ -143,20 +144,147 @@ class TestCanFlowControlHandler:
 class TestCanFlowControlHandlerIntegration:
     """Integration tests for `CanFlowControlHandler` class."""
 
+    # create_valid_frame_data
 
+    @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
+        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "flow_status": CanFlowStatus.Overflow}, [0x32, 0xCC, 0xCC]),
+        ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+          "flow_status": CanFlowStatus.ContinueToSend,
+          "block_size": 0x00,
+          "st_min": 0xFF,
+          "dlc": 0xF,
+          "filler_byte": 0x9B,
+          "target_address": 0xA1}, [0x30, 0x00, 0xFF] + ([0x98] * 61)),
+        ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+          "flow_status": CanFlowStatus.ContinueToSend,
+          "block_size": 0xFF,
+          "st_min": 0x00,
+          "dlc": 8,
+          "filler_byte": 0x85,
+          "target_address": 0xA1}, [0xA1, 0x30, 0xFF, 0x00, 0x85, 0x85, 0x85, 0x85]),
+        ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+          "flow_status": CanFlowStatus.Wait,
+          "filler_byte": 0x39,
+          "dlc": 4,
+          "address_extension": 0x0B}, [0x0B, 0x31, 0x39, 0x39]),
+        ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+          "flow_status": 1,
+          "filler_byte": 0x99,
+          "target_address": 0x9A,
+          "address_extension": 0xFF}, [0xFF, 0x31, 0x99, 0x99]),
+    ])
+    def test_create_valid_frame_data__valid(self, kwargs, expected_raw_frame_data):
+        assert CanFlowControlHandler.create_valid_frame_data(**kwargs) == expected_raw_frame_data
 
+    @pytest.mark.parametrize("kwargs", [
+        {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "flow_status": CanFlowStatus.Overflow,
+         "dlc": 4},
+        {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+         "flow_status": 4},
+        {"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+         "flow_status": CanFlowStatus.ContinueToSend,
+         "block_size": 0xFF,
+         "st_min": 0x00,
+         "dlc": 3,
+         "target_address": 0xA1},
+        {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         "flow_status": CanFlowStatus.Wait,
+         "dlc": 3,
+         "address_extension": 0x0B},
+        {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+         "flow_status": CanFlowStatus.ContinueToSend,
+         "block_size": 0x100,
+         "st_min": 0x100,
+         "target_address": 0x9A,
+         "address_extension": 0xFF}
+    ])
+    def test_create_valid_frame_data__invalid(self, kwargs):
+        with pytest.raises(ValueError):
+            CanFlowControlHandler.create_valid_frame_data(**kwargs)
 
+    # create_any_frame_data
 
+    @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
+        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "flow_status": CanFlowStatus.ContinueToSend,
+          "dlc": 1}, [0x30]),
+        ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+          "flow_status": 0xF,
+          "dlc": 0xF,
+          "filler_byte": 0x9B,
+          "target_address": 0xA1}, [0x3F] + ([0x98] * 63)),
+        ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+          "flow_status": CanFlowStatus.Wait,
+          "block_size": 0xFF,
+          "st_min": 0x00,
+          "dlc": 8,
+          "filler_byte": 0x85,
+          "target_address": 0xA1}, [0xA1, 0x31, 0xFF, 0x00, 0x85, 0x85, 0x85, 0x85]),
+        ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+          "flow_status": 5,
+          "filler_byte": 0x39,
+          "dlc": 6,
+          "address_extension": 0x0B}, [0x0B, 0x35, 0x39, 0x39, 0x39, 0x39]),
+        ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+          "flow_status": 3,
+          "filler_byte": 0x99,
+          "target_address": 0x9A,
+          "address_extension": 0xFF}, [0xFF, 0x30, 0x99]),
+    ])
+    def test_create_any_frame_data__valid(self, kwargs, expected_raw_frame_data):
+        assert CanFlowControlHandler.create_any_frame_data(**kwargs) == expected_raw_frame_data
 
+    @pytest.mark.parametrize("kwargs", [
+        {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "flow_status": 0x10,
+         "dlc": 3},
+        {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+         "flow_status": CanFlowStatus.Overflow,
+         "dlc": 0},
+        {"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
+         "flow_status": CanFlowStatus.ContinueToSend,
+         "block_size": 0xFF,
+         "st_min": 0x00,
+         "dlc": 3,
+         "target_address": 0xA1},
+        {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         "flow_status": CanFlowStatus.Wait,
+         "dlc": 1,
+         "address_extension": 0x0B},
+        {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+         "flow_status": CanFlowStatus.ContinueToSend,
+         "block_size": 0x100,
+         "target_address": 0x9A,
+         "address_extension": 0xFF}
+    ])
+    def test_create_any_frame_data__invalid(self, kwargs):
+        with pytest.raises(ValueError):
+            CanFlowControlHandler.create_any_frame_data(**kwargs)
 
+    # validate_frame_data
 
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, [0x30, 0x12, 0x34]),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, (0x31, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA)),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, (0xA1, 0x32, 0xCC, 0xCC)),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0xBC, 0x30, 0xCC, 0xCC)),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x90, 0x30, 0x17, 0xFE] + ([0xCC] * 60)),
+    ])
+    def test_validate_frame_data__valid(self, addressing_format, raw_frame_data):
+        assert CanFlowControlHandler.validate_frame_data(addressing_format=addressing_format,
+                                                         raw_frame_data=raw_frame_data) is None
 
-
-
-
-
-
-
-
-
+    @pytest.mark.parametrize("addressing_format, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, [0x30, 0x12]),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, (0x31, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA)),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, (0xA1, 0x32, 0xCC)),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0xBC, 0x34, 0xCC, 0xCC)),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x90, 0x30, 0x17, 0xFE] + ([0xCC] * 59)),
+    ])
+    def test_validate_frame_data__invalid(self, addressing_format, raw_frame_data):
+        with pytest.raises(ValueError):
+            CanFlowControlHandler.validate_frame_data(addressing_format=addressing_format,
+                                                      raw_frame_data=raw_frame_data)
 
