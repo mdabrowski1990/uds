@@ -80,8 +80,7 @@ class CanConsecutiveFrameHandler:
             if dlc is not None and dlc < cls.MIN_DLC_DATA_PADDING:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {cls.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
-            data_padding = data_bytes_to_pad * [filler_byte]
-            return cf_bytes + data_padding
+            return cf_bytes + data_bytes_to_pad * [filler_byte]
         return cf_bytes
 
     @classmethod
@@ -199,7 +198,7 @@ class CanConsecutiveFrameHandler:
         return raw_frame_data[ai_bytes_number] & 0xF
 
     @classmethod
-    def get_min_dlc(cls, addressing_format: CanAddressingFormatAlias, payload_length: int) -> int:
+    def get_min_dlc(cls, addressing_format: CanAddressingFormatAlias, payload_length: int = 1) -> int:
         """
         Get the minimum value of a CAN frame DLC to carry a Consecutive Frame packet.
 
@@ -272,7 +271,7 @@ class CanConsecutiveFrameHandler:
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
-        min_dlc = cls.get_min_dlc(addressing_format=addressing_format, payload_length=1)
+        min_dlc = cls.get_min_dlc(addressing_format=addressing_format)
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         if min_dlc > dlc:
             raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")

@@ -176,10 +176,10 @@ class TestCanConsecutiveFrameHandler:
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
-    def test_create_any_frame_data__valid_with_dlc(self, mock_encode_sn,
-                                                   addressing_format, target_address, address_extension,
-                                                   payload, sequence_number, dlc, filler_byte,
-                                                   data_bytes_number, ai_data_bytes, sn_data_bytes):
+    def test_create_any_frame_data__valid(self, mock_encode_sn,
+                                          addressing_format, target_address, address_extension,
+                                          payload, sequence_number, dlc, filler_byte,
+                                          data_bytes_number, ai_data_bytes, sn_data_bytes):
         self.mock_decode_dlc.return_value = data_bytes_number
         self.mock_encode_ai_data_bytes.return_value = ai_data_bytes
         mock_encode_sn.return_value = sn_data_bytes
@@ -450,8 +450,7 @@ class TestCanConsecutiveFrameHandler:
         self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data)
         mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
-        mock_get_min_dlc.assert_called_once_with(addressing_format=addressing_format,
-                                                 payload_length=1)
+        mock_get_min_dlc.assert_called_once_with(addressing_format=addressing_format)
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
         ("some addressing format", "some raw frame data"),
@@ -490,8 +489,7 @@ class TestCanConsecutiveFrameHandler:
         self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data)
         mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
-        mock_get_min_dlc.assert_called_once_with(addressing_format=addressing_format,
-                                                 payload_length=1)
+        mock_get_min_dlc.assert_called_once_with(addressing_format=addressing_format)
 
     # __encode_sn
 

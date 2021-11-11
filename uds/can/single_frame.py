@@ -87,8 +87,7 @@ class CanSingleFrameHandler:
             if dlc is not None and dlc < cls.MIN_DLC_DATA_PADDING:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {cls.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
-            data_padding = data_bytes_to_pad * [filler_byte]
-            return sf_bytes + data_padding
+            return sf_bytes + data_bytes_to_pad * [filler_byte]
         return sf_bytes
 
     @classmethod
