@@ -132,11 +132,11 @@ class CanAddressingInformationHandler:
             return []
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
             validate_raw_byte(target_address)
-            return [target_address]
+            return [target_address]  # type: ignore
         if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING):
             validate_raw_byte(address_extension)
-            return [address_extension]
+            return [address_extension]  # type: ignore
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod
@@ -191,8 +191,7 @@ class CanAddressingInformationHandler:
                                           f"provided for {addressing_format}. Actual values: "
                                           f"target_address={target_address}, source_address={source_address}, "
                                           f"address_extension={address_extension}")
-            cls.validate_ai_normal_11bit(addressing_type=addressing_type,
-                                         can_id=can_id)
+            cls.validate_ai_normal_11bit(addressing_type=addressing_type, can_id=can_id)  # type: ignore
         elif addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
             if address_extension is not None:
                 raise UnusedArgumentError(f"Value of Address Extension must not be provided for "

@@ -168,9 +168,6 @@ class CanSTminTranslator:
 class CanFlowControlHandler:
     """Helper class that provides utilities for Flow Control CAN Packets."""
 
-    MIN_DLC_DATA_PADDING: int = 8
-    """Minimum value of DLC for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
-    is allowed."""
     FS_BYTES_USED: int = 3
     """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`,
     :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>` and
@@ -232,9 +229,9 @@ class CanFlowControlHandler:
             raise InconsistentArgumentsError("Provided value of `dlc` is too small.")
         data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
         if data_bytes_to_pad > 0:
-            if dlc is not None and dlc < cls.MIN_DLC_DATA_PADDING:
+            if dlc is not None and dlc < CanDlcHandler.MIN_DLC_DATA_PADDING:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
-                                                 f"DLC < {cls.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
+                                                 f"DLC < {CanDlcHandler.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
             return fc_bytes + data_bytes_to_pad * [filler_byte]
         return fc_bytes
 
@@ -407,7 +404,7 @@ class CanFlowControlHandler:
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         if min_dlc > dlc:
             raise ValueError("Provided `raw_frame_data` is too short.")
-        if dlc < cls.MIN_DLC_DATA_PADDING and dlc != min_dlc:
+        if dlc < CanDlcHandler.MIN_DLC_DATA_PADDING and dlc != min_dlc:
             raise ValueError("Provided `raw_frame_data` has improper length (incorrect Data Length Optimization).")
 
     @classmethod

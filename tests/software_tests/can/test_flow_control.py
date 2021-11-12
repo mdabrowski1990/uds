@@ -2,7 +2,7 @@ import pytest
 from mock import patch, call
 
 from uds.can.flow_control import CanSTminTranslator, CanFlowStatus, CanFlowControlHandler, \
-    CanAddressingFormat, InconsistentArgumentsError
+    CanAddressingFormat, InconsistentArgumentsError, CanDlcHandler
 from uds.utilities import ValidatedEnum, NibbleEnum
 
 
@@ -180,8 +180,8 @@ class TestCanFlowControlHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, flow_status, block_size, st_min", [
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING, 0x66, "some flow status", "some block size", "some STmin"),
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING, 0x66, "some flow status", "some block size", "some STmin"),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
         (3, [], [0x30, 0x12, 0x56]),
@@ -221,8 +221,8 @@ class TestCanFlowControlHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, flow_status, block_size, st_min", [
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING, 0x66, "some flow status", "some block size", "some STmin"),
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING, 0x66, "some flow status", "some block size", "some STmin"),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
         (3, [], [0x30, 0x12, 0x56]),
@@ -265,8 +265,8 @@ class TestCanFlowControlHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, data_bytes_number, ai_data_bytes, fs_data_bytes", [
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING - 2, 0x66, 4, [], [0x30, 0x12, 0x56]),
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING - 1, 0x99, 5, [0xFF], [0x31, 0x00, 0x00]),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING - 2, 0x66, 4, [], [0x30, 0x12, 0x56]),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, 0x99, 5, [0xFF], [0x31, 0x00, 0x00]),
     ])
     @pytest.mark.parametrize("flow_status, block_size, st_min", [
         (CanFlowStatus.ContinueToSend, 0x00, 0xFF),
@@ -305,8 +305,8 @@ class TestCanFlowControlHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, flow_status, block_size, st_min", [
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING - 1, 0x66, "some flow status", "some block size", "some STmin"),
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, 0x66, "some flow status", "some block size", "some STmin"),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
         (3, [], [0x30, 0x12, 0x56]),
@@ -345,8 +345,8 @@ class TestCanFlowControlHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, flow_status, block_size, st_min", [
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING - 1, 0x66, "some flow status", "some block size", "some STmin"),
-        (CanFlowControlHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, 0x66, "some flow status", "some block size", "some STmin"),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
         (2, [], [0x30, 0x12, 0x56]),

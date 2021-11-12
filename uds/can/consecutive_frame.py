@@ -20,9 +20,6 @@ from .packet_type import CanPacketType
 class CanConsecutiveFrameHandler:
     """Helper class that provides utilities for Consecutive Frame CAN Packets."""
 
-    MIN_DLC_DATA_PADDING: int = 8
-    """Minimum value of DLC for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
-    is allowed."""
     SN_BYTES_USED: int = 1
     """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`
     and :ref:`Sequence Number <knowledge-base-can-sequence-number>` values in
@@ -77,9 +74,9 @@ class CanConsecutiveFrameHandler:
                                              "Consider increasing DLC value.")
         data_bytes_to_pad = frame_data_bytes_number - len(cf_bytes)
         if data_bytes_to_pad > 0:
-            if dlc is not None and dlc < cls.MIN_DLC_DATA_PADDING:
+            if dlc is not None and dlc < CanDlcHandler.MIN_DLC_DATA_PADDING:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
-                                                 f"DLC < {cls.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
+                                                 f"DLC < {CanDlcHandler.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
             return cf_bytes + data_bytes_to_pad * [filler_byte]
         return cf_bytes
 

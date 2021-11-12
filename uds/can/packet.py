@@ -168,7 +168,7 @@ class CanPacket(AbstractUdsPacket):
         else:
             raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
-    def set_address_information_normal_11bit(self, addressing_type: AddressingType, can_id: int) -> None:
+    def set_address_information_normal_11bit(self, addressing_type: AddressingTypeAlias, can_id: int) -> None:
         """
         Change addressing information for this CAN packet to use Normal 11-bit Addressing format.
 
@@ -185,7 +185,7 @@ class CanPacket(AbstractUdsPacket):
         self.__address_extension = None
 
     def set_address_information_normal_fixed(self,
-                                             addressing_type: AddressingType,
+                                             addressing_type: AddressingTypeAlias,
                                              can_id: Optional[int] = None,
                                              target_address: Optional[RawByte] = None,
                                              source_address: Optional[RawByte] = None) -> None:
@@ -213,15 +213,15 @@ class CanPacket(AbstractUdsPacket):
             self.__target_address = target_address
         else:
             self.__can_id = can_id
-            ai = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
-            self.__source_address = ai[CanIdHandler.SOURCE_ADDRESS_NAME]
-            self.__target_address = ai[CanIdHandler.TARGET_ADDRESS_NAME]
+            ai_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
+            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]
+            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]
         self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
-        self.__addressing_type = addressing_type
+        self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = None
 
     def set_address_information_extended(self,
-                                         addressing_type: AddressingType,
+                                         addressing_type: AddressingTypeAlias,
                                          can_id: int,
                                          target_address: RawByte) -> None:
         """
@@ -231,9 +231,19 @@ class CanPacket(AbstractUdsPacket):
         :param can_id: CAN Identifier value that is used by this packet.
         :param target_address: Target Address value carried by this CAN Packet.
         """
+        CanAddressingInformationHandler.validate_ai_extended(addressing_type=addressing_type,
+                                                             can_id=can_id,
+                                                             target_address=target_address)
+        self.__validate_unambiguous_ai_change(CanAddressingFormat.EXTENDED_ADDRESSING)
+        self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING
+        self.__addressing_type = AddressingType(addressing_type)
+        self.__can_id = can_id
+        self.__target_address = target_address
+        self.__source_address = None
+        self.__address_extension = None
 
     def set_address_information_mixed_11bit(self,
-                                            addressing_type: AddressingType,
+                                            addressing_type: AddressingTypeAlias,
                                             can_id: int,
                                             address_extension: RawByte) -> None:
         """
@@ -243,9 +253,19 @@ class CanPacket(AbstractUdsPacket):
         :param can_id: CAN Identifier value that is used by this packet.
         :param address_extension: Address Extension value carried by this CAN packet.
         """
+        CanAddressingInformationHandler.validate_ai_mixed_11bit(addressing_type=addressing_type,
+                                                                can_id=can_id,
+                                                                address_extension=address_extension)
+        self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_11BIT_ADDRESSING)
+        self.__addressing_format = CanAddressingFormat.MIXED_11BIT_ADDRESSING
+        self.__addressing_type = AddressingType(addressing_type)
+        self.__can_id = can_id
+        self.__target_address = None
+        self.__source_address = None
+        self.__address_extension = address_extension
 
     def set_address_information_mixed_29bit(self,
-                                            addressing_type: AddressingType,
+                                            addressing_type: AddressingTypeAlias,
                                             address_extension: RawByte,
                                             can_id: Optional[int] = None,
                                             target_address: Optional[RawByte] = None,
@@ -262,6 +282,26 @@ class CanPacket(AbstractUdsPacket):
             Leave None if the value of `can_id` parameter is provided.
         :param address_extension: Address Extension value carried by this CAN packet.
         """
+        CanAddressingInformationHandler.validate_ai_mixed_29bit(addressing_type=addressing_type,
+                                                                can_id=can_id,
+                                                                target_address=target_address,
+                                                                source_address=source_address,
+                                                                address_extension=address_extension)
+        self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_29BIT_ADDRESSING)
+        if can_id is None:
+            self.__can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
+                                                                             target_address=target_address,
+                                                                             source_address=source_address)
+            self.__source_address = source_address
+            self.__target_address = target_address
+        else:
+            self.__can_id = can_id
+            ai_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
+            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]
+            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]
+        self.__addressing_format = CanAddressingFormat.MIXED_29BIT_ADDRESSING  # type: ignore
+        self.__addressing_type = AddressingType(addressing_type)
+        self.__address_extension = address_extension
 
     def set_packet_data(self, *,
                         packet_type: CanPacketTypeAlias,
@@ -301,11 +341,22 @@ class CanPacket(AbstractUdsPacket):
             Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
             whenever you see this error.
         """
+        CanPacketType.validate_member(packet_type)
+        if packet_type == CanPacketType.SINGLE_FRAME:
+            self.set_single_frame_data(dlc=dlc, **packet_type_specific_kwargs)
+        elif packet_type == CanPacketType.FIRST_FRAME:
+            self.set_first_frame_data(dlc=dlc, **packet_type_specific_kwargs)
+        elif packet_type == CanPacketType.CONSECUTIVE_FRAME:
+            self.set_consecutive_frame_data(dlc=dlc, **packet_type_specific_kwargs)
+        elif packet_type == CanPacketType.FLOW_CONTROL:
+            self.set_flow_control_data(dlc=dlc, **packet_type_specific_kwargs)
+        else:
+            raise NotImplementedError(f"Missing implementation for: {packet_type}")
 
     def set_single_frame_data(self,
                               payload: RawBytes,
                               dlc: Optional[int] = None,
-                              filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
+                              filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
         """
         Change packet type (to Single Frame) and data field of this CAN packet.
 
@@ -320,6 +371,15 @@ class CanPacket(AbstractUdsPacket):
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
+        raw_frame_data = CanSingleFrameHandler.create_valid_frame_data(addressing_format=self.addressing_format,
+                                                                       target_address=self.target_address,
+                                                                       address_extension=self.address_extension,
+                                                                       dlc=dlc,
+                                                                       payload=payload,
+                                                                       filler_byte=filler_byte)
+        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
+        self.__packet_type = CanPacketType.SINGLE_FRAME  # type: ignore
 
     def set_first_frame_data(self,
                              dlc: int,
@@ -336,12 +396,21 @@ class CanPacket(AbstractUdsPacket):
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param data_length: Number of payload bytes of a diagnostic message initiated by this First Frame packet.
         """
+        raw_frame_data = CanFirstFrameHandler.create_valid_frame_data(addressing_format=self.addressing_format,
+                                                                      target_address=self.target_address,
+                                                                      address_extension=self.address_extension,
+                                                                      dlc=dlc,
+                                                                      payload=payload,
+                                                                      ff_dl=data_length)
+        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__dlc = dlc
+        self.__packet_type = CanPacketType.FIRST_FRAME  # type: ignore
 
     def set_consecutive_frame_data(self,
                                    payload: RawBytes,
                                    sequence_number: int,
                                    dlc: Optional[int] = None,
-                                   filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
+                                   filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
         """
         Change packet type (to Consecutive Frame) and data field of this CAN packet.
 
@@ -357,13 +426,23 @@ class CanPacket(AbstractUdsPacket):
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
+        raw_frame_data = CanConsecutiveFrameHandler.create_valid_frame_data(addressing_format=self.addressing_format,
+                                                                            target_address=self.target_address,
+                                                                            address_extension=self.address_extension,
+                                                                            dlc=dlc,
+                                                                            payload=payload,
+                                                                            sequence_number=sequence_number,
+                                                                            filler_byte=filler_byte)
+        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
+        self.__packet_type = CanPacketType.CONSECUTIVE_FRAME  # type: ignore
 
     def set_flow_control_data(self,
                               flow_status: CanFlowStatusAlias,
                               block_size: Optional[RawByte] = None,
                               st_min: Optional[RawByte] = None,
                               dlc: Optional[int] = None,
-                              filler_byte: Optional[RawByte] = DEFAULT_FILLER_BYTE) -> None:
+                              filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
         """
         Change packet type (to Flow Control) and data field of this CAN packet.
 
@@ -380,6 +459,17 @@ class CanPacket(AbstractUdsPacket):
              - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
+        raw_frame_data = CanFlowControlHandler.create_valid_frame_data(addressing_format=self.addressing_format,
+                                                                       target_address=self.target_address,
+                                                                       address_extension=self.address_extension,
+                                                                       dlc=dlc,
+                                                                       flow_status=flow_status,
+                                                                       block_size=block_size,
+                                                                       st_min=st_min,
+                                                                       filler_byte=filler_byte)
+        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
+        self.__packet_type = CanPacketType.FLOW_CONTROL  # type: ignore
 
     @property
     def raw_frame_data(self) -> RawBytesTuple:
@@ -562,7 +652,7 @@ class CanPacket(AbstractUdsPacket):
                                                        raw_frame_data=self.raw_frame_data)
         return None
 
-    def __validate_unambiguous_ai_change(self, addressing_format: CanAddressingFormat) -> None:
+    def __validate_unambiguous_ai_change(self, addressing_format: CanAddressingFormatAlias) -> None:
         """
         Validate whether CAN Addressing Format change to provided value is ambiguous.
 
