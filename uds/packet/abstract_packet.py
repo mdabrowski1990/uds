@@ -40,19 +40,19 @@ class AbstractUdsPacket(ABC):
     @property
     @abstractmethod
     def payload(self) -> Optional[RawBytesTuple]:
-        """Diagnostic message payload carried by this packet."""  # TODO: update
+        """Payload bytes of a diagnostic message carried by this packet."""
 
     @property
     @abstractmethod
     def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message that is carried by this this packet."""  # TODO: update
+        """Payload bytes number of a diagnostic message which is carried by this packet."""
 
 
 class AbstractUdsPacketRecord(ABC):
     """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
-    def __init__(self, frame: object, direction: TransmissionDirectionAlias) -> None:
+    def __init__(self, frame: Any, direction: TransmissionDirectionAlias) -> None:
         """
         Create a record of a historic information about a packet that was either received or transmitted.
 
@@ -74,7 +74,7 @@ class AbstractUdsPacketRecord(ABC):
         """
 
     @property
-    def frame(self) -> object:
+    def frame(self) -> Any:
         """Frame that carried this packet."""
         return self.__frame
 
@@ -127,12 +127,12 @@ class AbstractUdsPacketRecord(ABC):
     def addressing_type(self) -> AddressingType:
         """Addressing type over which this packet was transmitted."""
 
-    @property  # noqa: F841
+    @property
     @abstractmethod
     def transmission_time(self) -> TimeStamp:
         """Time stamp when this packet was fully transmitted on a bus."""
 
-    @property  # noqa: F841
+    @property
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
         """UDS packet type value - N_PCI value of this N_PDU."""
@@ -140,12 +140,12 @@ class AbstractUdsPacketRecord(ABC):
     @property
     @abstractmethod
     def payload(self) -> Optional[RawBytesTuple]:
-        """Diagnostic message payload carried by this packet."""  # TODO: update
+        """Payload bytes of a diagnostic message carried by this packet."""
 
     @property
     @abstractmethod
     def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message that is carried by this this packet."""  # TODO: update
+        """Payload bytes number of a diagnostic message which was carried by this packet."""
 
 
 # TODO: get rid of these if possible
