@@ -2,7 +2,7 @@
 
 UDS Packets
 ===========
-Implementation related to diagnostic messages and packets is located in :mod:`uds.packet` sub-package.
+Common implementation of UDS packets is located in :mod:`uds.packet` sub-package.
 
 :ref:`UDS packets <knowledge-base-uds-packet>` implementation is divided into three parts:
  - `UDS Packet Type`_ - enums with :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`
@@ -16,10 +16,10 @@ Implementation related to diagnostic messages and packets is located in :mod:`ud
 UDS Packet Type
 ---------------
 UDS packet types are supposed to be understood as values of
-:ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`.
-Supported values of UDS packet types are defined in specially designed for this purpose enum classes.
+:ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` that informs about format and information
+carried in :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-n-pdu>`.
 
-Enum classes that implements UDS packet types:
+Supported values of UDS packet types are defined in following enum classes:
  - `AbstractUdsPacketType`_
 
 
@@ -29,15 +29,15 @@ AbstractUdsPacketType
 UDS packet types enum classes. It **provides common API and values restriction** (UDS packet type values must be
 4-bit integer) **for all children classes**.
 
-A **user shall not use** :class:`~uds.packet.abstract_packet.AbstractUdsPacketType` **directly**, but one is able
-(and encouraged) to use :class:`~uds.packet.abstract_packet.AbstractUdsPacketType` implementation with any of its
-children classes.
+.. warning:: A **user shall not use** :class:`~uds.packet.abstract_packet.AbstractUdsPacketType` **directly**,
+    but one is able (and encouraged) to use :class:`~uds.packet.abstract_packet.AbstractUdsPacketType` implementation
+    with any of its children classes.
 
 Methods implemented in :class:`~uds.packet.abstract_packet.AbstractUdsPacketType` class:
  - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
  - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
  - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
-
+ - :meth:`~uds.packet.abstract_packet_type.AbstractUdsPacketType.is_initial_packet_type` - abstract
 
 UDS Packet
 ----------
