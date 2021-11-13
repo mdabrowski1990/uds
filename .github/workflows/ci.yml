@@ -30,13 +30,13 @@ jobs:
         run: |
           pip install -r tests/requirements_for_software_tests.txt
 
-      - name: Execute unit tests [pytest]
+      - name: Execute unit tests with coverage report [pytest]
         run: |
           pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
 
-      - name: Execute integration tests [pytest]
+      - name: Execute integration tests with coverage report [pytest]
         run: |
-          pytest tests/software_tests -m integration
+          pytest --cov-report term-missing --cov=uds tests/software_tests -m "integration"
         
         
   static_code_analysis:
@@ -62,10 +62,6 @@ jobs:
       - name: Install external packages used for static tests
         run: |
           pip install -r tests/requirements_for_static_code_analysis.txt
-
-      - name: Uninstall pylint-django (due to issue https://github.com/PyCQA/prospector/issues/443)
-        run: |
-          pip uninstall pylint-django -y
 
       - name: Execute static code analysis [prospector]
         run: |
