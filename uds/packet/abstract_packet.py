@@ -65,11 +65,11 @@ class AbstractUdsPacketRecord(ABC):
     @abstractmethod
     def __validate_frame(self, value: Any) -> None:
         """
-        Validate whether the argument contains value with a frame object.
+        Validate a frame argument.
 
         :param value: Value to validate.
 
-        :raise TypeError: The frame argument has other type than expected.
+        :raise TypeError: The frame argument has unsupported.
         :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
         """
 
@@ -120,7 +120,7 @@ class AbstractUdsPacketRecord(ABC):
     @property
     @abstractmethod
     def raw_frame_data(self) -> RawBytesTuple:
-        """Raw data bytes of a frame that carried this CAN packet."""
+        """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
