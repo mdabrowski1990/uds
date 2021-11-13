@@ -128,7 +128,7 @@ class CanPacket(AbstractUdsPacket):
         CanAddressingFormat.validate_member(addressing_format)
         if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
             self.set_address_information_normal_11bit(addressing_type=addressing_type,
-                                                      can_id=can_id)
+                                                      can_id=can_id)  # type: ignore
             if (target_address, source_address, address_extension) != (None, None, None):
                 warn(message=f"Unused arguments were provided to {CanPacket.set_address_information}. Expected: None."
                              f"Actual values: target_address={target_address}, source_address={source_address}, "
@@ -145,16 +145,16 @@ class CanPacket(AbstractUdsPacket):
                      category=UnusedArgumentWarning)
         elif addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
             self.set_address_information_extended(addressing_type=addressing_type,
-                                                  can_id=can_id,
-                                                  target_address=target_address)
+                                                  can_id=can_id,  # type: ignore
+                                                  target_address=target_address)  # type: ignore
             if (source_address, address_extension) != (None, None):
                 warn(message=f"Unused arguments were provided to {CanPacket.set_address_information}. Expected: None."
                              f"Actual values: source_address={source_address}, address_extension={address_extension}",
                      category=UnusedArgumentWarning)
         elif addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
             self.set_address_information_mixed_11bit(addressing_type=addressing_type,
-                                                     can_id=can_id,
-                                                     address_extension=address_extension)
+                                                     can_id=can_id,  # type: ignore
+                                                     address_extension=address_extension)  # type: ignore
             if (target_address, source_address) != (None, None):
                 warn(message=f"Unused arguments were provided to {CanPacket.set_address_information}. Expected: None."
                              f"Actual values: target_address={target_address}, source_address={source_address}, ",
@@ -164,7 +164,7 @@ class CanPacket(AbstractUdsPacket):
                                                      can_id=can_id,
                                                      target_address=target_address,
                                                      source_address=source_address,
-                                                     address_extension=address_extension)
+                                                     address_extension=address_extension)  # type: ignore
         else:
             raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
@@ -177,7 +177,7 @@ class CanPacket(AbstractUdsPacket):
         """
         CanAddressingInformationHandler.validate_ai_normal_11bit(addressing_type=addressing_type, can_id=can_id)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING  # type: ignore
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = None
@@ -206,9 +206,10 @@ class CanPacket(AbstractUdsPacket):
                                                                  source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
         if can_id is None:
-            self.__can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(addressing_type=addressing_type,
-                                                                              target_address=target_address,
-                                                                              source_address=source_address)
+            self.__can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(
+                addressing_type=addressing_type,
+                target_address=target_address,  # type: ignore
+                source_address=source_address)  # type: ignore
             self.__source_address = source_address
             self.__target_address = target_address
         else:
@@ -216,7 +217,7 @@ class CanPacket(AbstractUdsPacket):
             ai_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
             self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]
             self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]
-        self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+        self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING  # type: ignore
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = None
 
@@ -235,7 +236,7 @@ class CanPacket(AbstractUdsPacket):
                                                              can_id=can_id,
                                                              target_address=target_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.EXTENDED_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING
+        self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING  # type: ignore
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = target_address
@@ -257,7 +258,7 @@ class CanPacket(AbstractUdsPacket):
                                                                 can_id=can_id,
                                                                 address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_11BIT_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.MIXED_11BIT_ADDRESSING
+        self.__addressing_format = CanAddressingFormat.MIXED_11BIT_ADDRESSING  # type: ignore
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = None
@@ -289,9 +290,10 @@ class CanPacket(AbstractUdsPacket):
                                                                 address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_29BIT_ADDRESSING)
         if can_id is None:
-            self.__can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
-                                                                             target_address=target_address,
-                                                                             source_address=source_address)
+            self.__can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(
+                addressing_type=addressing_type,
+                target_address=target_address,  # type: ignore
+                source_address=source_address)  # type: ignore
             self.__source_address = source_address
             self.__target_address = target_address
         else:
@@ -345,7 +347,7 @@ class CanPacket(AbstractUdsPacket):
         if packet_type == CanPacketType.SINGLE_FRAME:
             self.set_single_frame_data(dlc=dlc, **packet_type_specific_kwargs)
         elif packet_type == CanPacketType.FIRST_FRAME:
-            self.set_first_frame_data(dlc=dlc, **packet_type_specific_kwargs)
+            self.set_first_frame_data(dlc=dlc, **packet_type_specific_kwargs)  # type: ignore
         elif packet_type == CanPacketType.CONSECUTIVE_FRAME:
             self.set_consecutive_frame_data(dlc=dlc, **packet_type_specific_kwargs)
         elif packet_type == CanPacketType.FLOW_CONTROL:

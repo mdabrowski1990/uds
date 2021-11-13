@@ -49,11 +49,9 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         self.__addressing_type = AddressingType(addressing_type)
         self.__addressing_format = CanAddressingFormat(addressing_format)
         self.__packet_type: CanPacketType
-        self.__dlc: int
         self.__target_address: Optional[RawByte]
         self.__source_address: Optional[RawByte]
         self.__address_extension: Optional[RawByte]
-        self.__transmission_time: Optional[RawByte]
         self.__assess_packet_type()
         self.__assess_ai_attributes()
 
@@ -61,7 +59,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
     def raw_frame_data(self) -> RawBytesTuple:
         """Raw data bytes of a frame that carried this CAN packet."""
         if isinstance(self.frame, PythonCanMessage):
-            return self.frame.data
+            return tuple(self.frame.data)
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
@@ -82,12 +80,12 @@ class CanPacketRecord(AbstractUdsPacketRecord):
     @property
     def payload(self) -> Optional[RawBytesTuple]:
         """Payload bytes of a diagnostic message carried by this CAN packet."""
-        return CanPacket.payload.fget(self)
+        return CanPacket.payload.fget(self)  # type: ignore
 
     @property
     def data_length(self) -> Optional[int]:
         """Payload bytes number of a diagnostic message which was carried by this CAN packet."""
-        return CanPacket.data_length.fget(self)
+        return CanPacket.data_length.fget(self)  # type: ignore
 
     @property
     def can_id(self) -> int:
@@ -152,7 +150,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        return CanPacket.sequence_number.fget(self)
+        return CanPacket.sequence_number.fget(self)  # type: ignore
 
     @property
     def flow_status(self) -> Optional[CanFlowStatus]:
@@ -164,7 +162,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        return CanPacket.flow_status.fget(self)
+        return CanPacket.flow_status.fget(self)  # type: ignore
 
     @property
     def block_size(self) -> Optional[RawByte]:
@@ -176,7 +174,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        return CanPacket.block_size.fget(self)
+        return CanPacket.block_size.fget(self)  # type: ignore
 
     @property
     def st_min(self) -> Optional[RawByte]:
@@ -188,7 +186,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        return CanPacket.st_min.fget(self)
+        return CanPacket.st_min.fget(self)  # type: ignore
 
     @staticmethod
     def _validate_frame(value: Any) -> None:

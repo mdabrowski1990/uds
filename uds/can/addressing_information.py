@@ -207,28 +207,27 @@ class CanAddressingInformationHandler:
                                           f"{addressing_format}. Actual values: "
                                           f"source_address={source_address}, address_extension={address_extension}")
             cls.validate_ai_extended(addressing_type=addressing_type,
-                                     can_id=can_id,
-                                     target_address=target_address)
+                                     can_id=can_id,  # type: ignore
+                                     target_address=target_address)  # type: ignore
         elif addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
             if (target_address, source_address) != (None, None):
                 raise UnusedArgumentError(f"Values of Target Address and Source Address must not be provided for "
                                           f"{addressing_format}. Actual values: "
                                           f"target_address={target_address}, source_address={source_address}")
             cls.validate_ai_mixed_11bit(addressing_type=addressing_type,
-                                        can_id=can_id,
-                                        address_extension=address_extension)
+                                        can_id=can_id,  # type: ignore
+                                        address_extension=address_extension)  # type: ignore
         elif addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
             cls.validate_ai_mixed_29bit(addressing_type=addressing_type,
                                         can_id=can_id,
                                         target_address=target_address,
                                         source_address=source_address,
-                                        address_extension=address_extension)
+                                        address_extension=address_extension)  # type: ignore
         else:
             raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @staticmethod
-    def validate_ai_normal_11bit(addressing_type: AddressingTypeAlias,
-                                 can_id: int) -> None:
+    def validate_ai_normal_11bit(addressing_type: AddressingTypeAlias, can_id: int) -> None:
         """
         Validate Addressing Information parameters for Normal 11-bit CAN Addressing format.
 
@@ -282,9 +281,7 @@ class CanAddressingInformationHandler:
                                                  f"Actual values: can_id={can_id}, source_address={source_address}")
 
     @staticmethod
-    def validate_ai_extended(addressing_type: AddressingTypeAlias,
-                             can_id: int,
-                             target_address: RawByte) -> None:
+    def validate_ai_extended(addressing_type: AddressingTypeAlias, can_id: int, target_address: RawByte) -> None:
         """
         Validate Addressing Information parameters for Extended CAN Addressing format.
 
@@ -303,9 +300,7 @@ class CanAddressingInformationHandler:
                                              f"Extended Addressing Format. Actual value: {can_id}")
 
     @staticmethod
-    def validate_ai_mixed_11bit(addressing_type: AddressingTypeAlias,
-                                can_id: int,
-                                address_extension: RawByte) -> None:
+    def validate_ai_mixed_11bit(addressing_type: AddressingTypeAlias, can_id: int, address_extension: RawByte) -> None:
         """
         Validate Addressing Information parameters for Mixed 11-bit CAN Addressing format.
 

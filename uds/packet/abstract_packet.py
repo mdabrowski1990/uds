@@ -7,8 +7,7 @@ Implementation of UDS packets that is common for all bus types.
 __all__ = ["AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketAlias", "PacketsTuple", "PacketsSequence",
            "PacketsDefinitionTuple", "PacketsDefinitionSequence",
-           "PacketsRecordsTuple", "PacketsRecordsSequence",
-           "PacketTypesTuple"]
+           "PacketsRecordsTuple", "PacketsRecordsSequence"]
 
 from abc import ABC, abstractmethod
 from typing import Union, Optional, Any, Tuple, List
@@ -130,7 +129,7 @@ class AbstractUdsPacketRecord(ABC):
             self.__getattribute__("_AbstractUdsPacketRecord__transmission_time")
         except AttributeError:
             if not isinstance(value, TimeStamp):
-                raise TypeError(f"Provided value has invalid type: {type(value)}")
+                raise TypeError(f"Provided value has invalid type: {type(value)}")  # pylint: disable=raise-missing-from
             self.__transmission_time = value
         else:
             raise ReassignmentError("You cannot change value of 'transmission_time' attribute once it is assigned.")
@@ -172,10 +171,6 @@ class AbstractUdsPacketRecord(ABC):
         :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
         """
 
-
-# TODO: get rid of these if possible
-PacketTypesTuple = Tuple[AbstractUdsPacketType, ...]
-"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacketType` members."""
 
 PacketsDefinitionTuple = Tuple[AbstractUdsPacket, ...]
 """Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacket` instances."""

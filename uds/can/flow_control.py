@@ -46,9 +46,9 @@ class CanFlowStatus(NibbleEnum, ValidatedEnum):
 
     ContinueToSend = 0x0
     """Asks to resume Consecutive Frames transmission."""
-    Wait = 0x1
+    Wait = 0x1  # noqa: F841
     """Asks to pause Consecutive Frames transmission."""
-    Overflow = 0x2
+    Overflow = 0x2  # noqa: F841
     """Asks to abort transmission of a diagnostic message."""
 
 

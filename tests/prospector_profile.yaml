@@ -3,7 +3,7 @@
 strictness: veryhigh
 output-format: grouped
 doc-warnings: true
-autodetect: true
+autodetect: false
 test-warnings: true
 
 # default tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#defaults
