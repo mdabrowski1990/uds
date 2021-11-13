@@ -6,7 +6,7 @@ from uds.can.addressing_information import CanAddressingInformationHandler, \
 
 
 class TestCanAddressingInformationHandler:
-    """Tests for `CanAddressingInformationHandler` class."""
+    """Unit tests for `CanAddressingInformationHandler` class."""
 
     SCRIPT_LOCATION = "uds.can.addressing_information"
 

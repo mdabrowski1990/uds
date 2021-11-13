@@ -7,7 +7,7 @@ from uds.utilities import ValidatedEnum, NibbleEnum
 
 
 class TestCanFlowStatus:
-    """Tests for 'CanFlowStatus' class."""
+    """Unit tests for 'CanFlowStatus' class."""
 
     def test_inheritance__validated_enum(self):
         assert issubclass(CanFlowStatus, ValidatedEnum)
@@ -17,7 +17,7 @@ class TestCanFlowStatus:
 
 
 class TestCanSTmin:
-    """Tests for 'CanSTmin' class."""
+    """Unit tests for 'CanSTmin' class."""
 
     SCRIPT_LOCATION = "uds.can.flow_control"
 
@@ -136,7 +136,7 @@ class TestCanSTminIntegration:
 
 
 class TestCanFlowControlHandler:
-    """Tests for `CanFlowControlHandler` class."""
+    """Unit tests for `CanFlowControlHandler` class."""
 
     SCRIPT_LOCATION = TestCanSTmin.SCRIPT_LOCATION
 

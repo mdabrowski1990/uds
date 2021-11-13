@@ -6,7 +6,7 @@ from uds.can.can_frame_fields import CanIdHandler, CanDlcHandler, \
 
 
 class TestCanIdHandler:
-    """Tests for `CanIdHandler` class."""
+    """Unit tests for `CanIdHandler` class."""
 
     SCRIPT_LOCATION = "uds.can.can_frame_fields"
 
@@ -483,28 +483,63 @@ class TestCanIdHandler:
     # validate_can_id
 
     @pytest.mark.parametrize("value", [None, 5., "not a CAN ID", (0,)])
-    def test_validate_can_id__type_error(self, value):
+    @pytest.mark.parametrize("extended_can_id", [None, True, False])
+    def test_validate_can_id__type_error(self, value, extended_can_id):
         with pytest.raises(TypeError):
-            CanIdHandler.validate_can_id(value)
+            CanIdHandler.validate_can_id(value, extended_can_id=extended_can_id)
 
     @pytest.mark.parametrize("value", [-100, 1, 5000, 1234567, 9999999999])
+    @pytest.mark.parametrize("extended_can_id", [None, True, False])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_extended_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_standard_can_id")
     @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_can_id")
-    def test_validate_can_id__value_error(self, mock_is_can_id, value):
+    def test_validate_can_id__value_error(self, mock_is_can_id, mock_is_standard_can_id, mock_is_extended_can_id,
+                                          value, extended_can_id):
         mock_is_can_id.return_value = False
+        mock_is_standard_can_id.return_value = False
+        mock_is_extended_can_id.return_value = False
         with pytest.raises(ValueError):
-            CanIdHandler.validate_can_id(value)
-        mock_is_can_id.assert_called_once_with(value)
+            CanIdHandler.validate_can_id(value, extended_can_id=extended_can_id)
+        if extended_can_id is None:
+            mock_is_can_id.assert_called_once_with(value)
+            mock_is_standard_can_id.assert_not_called()
+            mock_is_extended_can_id.assert_not_called()
+        elif extended_can_id:
+            mock_is_can_id.assert_not_called()
+            mock_is_standard_can_id.assert_not_called()
+            mock_is_extended_can_id.assert_called_once_with(value)
+        else:
+            mock_is_can_id.assert_not_called()
+            mock_is_standard_can_id.assert_called_once_with(value)
+            mock_is_extended_can_id.assert_not_called()
 
     @pytest.mark.parametrize("value", [-100, 1, 5000, 1234567, 9999999999])
+    @pytest.mark.parametrize("extended_can_id", [None, True, False])
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_extended_can_id")
+    @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_standard_can_id")
     @patch(f"{SCRIPT_LOCATION}.CanIdHandler.is_can_id")
-    def test_validate_can_id__valid(self, mock_is_can_id, value):
+    def test_validate_can_id__valid(self, mock_is_can_id, mock_is_standard_can_id, mock_is_extended_can_id,
+                                    value, extended_can_id):
         mock_is_can_id.return_value = True
-        assert CanIdHandler.validate_can_id(value) is None
-        mock_is_can_id.assert_called_once_with(value)
+        mock_is_standard_can_id.return_value = True
+        mock_is_extended_can_id.return_value = True
+        assert CanIdHandler.validate_can_id(value, extended_can_id=extended_can_id) is None
+        if extended_can_id is None:
+            mock_is_can_id.assert_called_once_with(value)
+            mock_is_standard_can_id.assert_not_called()
+            mock_is_extended_can_id.assert_not_called()
+        elif extended_can_id:
+            mock_is_can_id.assert_not_called()
+            mock_is_standard_can_id.assert_not_called()
+            mock_is_extended_can_id.assert_called_once_with(value)
+        else:
+            mock_is_can_id.assert_not_called()
+            mock_is_standard_can_id.assert_called_once_with(value)
+            mock_is_extended_can_id.assert_not_called()
 
 
 class TestCanDlcHandler:
-    """Tests for `CanDlcHandler` class."""
+    """Unit tests for `CanDlcHandler` class."""
 
     SCRIPT_LOCATION = TestCanIdHandler.SCRIPT_LOCATION
 

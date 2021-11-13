@@ -6,7 +6,7 @@ from uds.can.packet import CanPacket, \
 
 
 class TestCanPacket:
-    """Tests for 'CanPacket' class."""
+    """Unit tests for 'CanPacket' class."""
 
     SCRIPT_LOCATION = "uds.can.packet"
 

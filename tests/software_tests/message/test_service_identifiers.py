@@ -6,7 +6,7 @@ from uds.message.service_identifiers import RequestSID, ResponseSID, \
 
 
 class TestRequestSID:
-    """Tests for 'RequestSID' enum."""
+    """Unit tests for 'RequestSID' enum."""
 
     SCRIPT_LOCATION = "uds.message.service_identifiers"
 
@@ -60,7 +60,7 @@ class TestRequestSID:
 
 
 class TestResponseSID:
-    """Tests for 'ResponseSID' enum."""
+    """Unit tests for 'ResponseSID' enum."""
 
     SCRIPT_LOCATION = TestRequestSID.SCRIPT_LOCATION
 

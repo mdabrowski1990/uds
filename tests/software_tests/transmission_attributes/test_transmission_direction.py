@@ -5,7 +5,7 @@ from uds.utilities import ValidatedEnum
 
 
 class TestTransmissionDirection:
-    """Tests for 'TransmissionDirection' class."""
+    """Unit tests for 'TransmissionDirection' class."""
 
     def test_inheritance__enum_str(self):
         assert issubclass(TransmissionDirection, StrEnum)

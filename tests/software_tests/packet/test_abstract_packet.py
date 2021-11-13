@@ -7,7 +7,7 @@ from uds.packet.abstract_packet import AbstractUdsPacket, AbstractUdsPacketType,
 
 
 class TestAbstractUdsPacket:
-    """Tests for 'AbstractUdsPacket' class."""
+    """Unit tests for 'AbstractUdsPacket' class."""
 
     SCRIPT_LOCATION = "uds.packet.abstract_packet"
 #
@@ -71,7 +71,7 @@ class TestAbstractUdsPacket:
 
 
 class TestAbstractUdsPacketRecord:
-    """Tests for 'AbstractUdsPacketRecord' class."""
+    """Unit tests for 'AbstractUdsPacketRecord' class."""
 
     SCRIPT_LOCATION = TestAbstractUdsPacket.SCRIPT_LOCATION
 

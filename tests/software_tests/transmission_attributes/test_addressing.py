@@ -5,7 +5,7 @@ from uds.utilities import ValidatedEnum
 
 
 class TestAddressingType:
-    """Tests for 'AddressingType' class."""
+    """Unit tests for 'AddressingType' class."""
 
     def test_inheritance__enum_str(self):
         assert issubclass(AddressingType, StrEnum)

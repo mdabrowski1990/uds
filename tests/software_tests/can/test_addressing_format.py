@@ -4,7 +4,7 @@ from aenum import StrEnum
 
 
 class TestCanAddressingFormat:
-    """Tests for `CanAddressingFormat` class."""
+    """Unit tests for `CanAddressingFormat` class."""
 
     # inheritance
 

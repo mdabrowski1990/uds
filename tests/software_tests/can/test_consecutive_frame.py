@@ -6,7 +6,7 @@ from uds.can.consecutive_frame import CanConsecutiveFrameHandler, \
 
 
 class TestCanConsecutiveFrameHandler:
-    """Tests for `CanConsecutiveFrameHandler` class."""
+    """Unit tests for `CanConsecutiveFrameHandler` class."""
 
     SCRIPT_LOCATION = "uds.can.consecutive_frame"
 

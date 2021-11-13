@@ -3,7 +3,7 @@ from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum
 
 
 class TestAbstractPacketType:
-    """Tests for 'AbstractPacketType' class."""
+    """Unit tests for 'AbstractPacketType' class."""
 
     SCRIPT_LOCATION = "uds.packet.abstract_packet"
 

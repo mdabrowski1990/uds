@@ -5,7 +5,7 @@ from uds.message.nrc import NRC, \
 
 
 class TestNRC:
-    """Tests for 'NRC' enum"""
+    """Unit tests for 'NRC' enum"""
 
     def test_inheritance__byte_enum(self):
         assert issubclass(NRC, ByteEnum)

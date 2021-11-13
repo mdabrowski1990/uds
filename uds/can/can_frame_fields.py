@@ -379,19 +379,33 @@ class CanIdHandler:
         return isinstance(can_id, int) and cls.MIN_EXTENDED_VALUE <= can_id <= cls.MAX_EXTENDED_VALUE
 
     @classmethod
-    def validate_can_id(cls, value: Any) -> None:
+    def validate_can_id(cls, value: Any, extended_can_id: Optional[bool] = None) -> None:
         """
         Validate whether provided value is either Standard or Extended CAN ID.
 
         :param value: Value to validate.
+        :param extended_can_id: Flag whether to perform consistency check with CAN ID format.
+            Possible values:
+             - None - does not check the format of the value
+             - True - verify that the value uses Extended (29-bit) CAN ID format
+             - False - verify that the value uses Standard (11-bit) CAN ID format
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Provided value is out of CAN Identifier values range.
         """
         if not isinstance(value, int):
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
-        if not cls.is_can_id(value):
-            raise ValueError(f"Provided value is out of CAN Identifier values range. Actual value: {value}")
+        if extended_can_id is None:
+            if not cls.is_can_id(value):
+                raise ValueError(f"Provided value is out of CAN Identifier values range. Actual value: {value}")
+        elif extended_can_id:
+            if not cls.is_extended_can_id(value):
+                raise ValueError(f"Provided value is out of Extended (29-bit) CAN Identifier values range. "
+                                 f"Actual value: {value}")
+        else:
+            if not cls.is_standard_can_id(value):
+                raise ValueError(f"Provided value is out of Standard (11-bit) CAN Identifier values range. "
+                                 f"Actual value: {value}")
 
 
 class CanDlcHandler:

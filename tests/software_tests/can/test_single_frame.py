@@ -6,7 +6,7 @@ from uds.can.single_frame import CanSingleFrameHandler, \
 
 
 class TestCanSingleFrameHandler:
-    """Tests for `CanSingleFrameHandler` class."""
+    """Unit tests for `CanSingleFrameHandler` class."""
 
     SCRIPT_LOCATION = "uds.can.single_frame"
 

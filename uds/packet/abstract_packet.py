@@ -62,17 +62,6 @@ class AbstractUdsPacketRecord(ABC):
         self.frame = frame
         self.direction = direction  # type: ignore
 
-    @abstractmethod
-    def __validate_frame(self, value: Any) -> None:
-        """
-        Validate a frame argument.
-
-        :param value: Value to validate.
-
-        :raise TypeError: The frame argument has unsupported.
-        :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
-        """
-
     @property
     def frame(self) -> Any:
         """Frame that carried this packet."""
@@ -90,7 +79,7 @@ class AbstractUdsPacketRecord(ABC):
         try:
             self.__getattribute__("_AbstractUdsPacketRecord__frame")
         except AttributeError:
-            self.__validate_frame(value)
+            self._validate_frame(value)
             self.__frame = value
         else:
             raise ReassignmentError("You cannot change value of 'frame' attribute once it is assigned.")
@@ -146,6 +135,18 @@ class AbstractUdsPacketRecord(ABC):
     @abstractmethod
     def data_length(self) -> Optional[int]:
         """Payload bytes number of a diagnostic message which was carried by this packet."""
+
+    @staticmethod
+    @abstractmethod
+    def _validate_frame(value: Any) -> None:
+        """
+        Validate a frame argument.
+
+        :param value: Value to validate.
+
+        :raise TypeError: The frame argument has unsupported.
+        :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
+        """
 
 
 # TODO: get rid of these if possible

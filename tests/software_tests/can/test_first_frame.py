@@ -6,7 +6,7 @@ from uds.can.first_frame import CanFirstFrameHandler, \
 
 
 class TestCanFirstFrameHandler:
-    """Tests for `CanFirstFrameHandler` class."""
+    """Unit tests for `CanFirstFrameHandler` class."""
 
     SCRIPT_LOCATION = "uds.can.first_frame"
 

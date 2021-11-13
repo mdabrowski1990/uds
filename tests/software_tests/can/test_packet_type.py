@@ -6,7 +6,7 @@ from uds.packet import AbstractUdsPacketType
 
 
 class TestCanPacketType:
-    """Tests for `CanPacketType` class."""
+    """Unit tests for `CanPacketType` class."""
 
     def setup(self):
         self._patcher_validate_member = patch("uds.utilities.ValidatedEnum.validate_member")

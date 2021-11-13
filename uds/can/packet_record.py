@@ -1,10 +1,12 @@
+"""CAN bus specific implementation of UDS packets records."""
+
 __all__ = ["CanPacketRecord"]
 
 from typing import Union, Any, Optional
 
 from can import Message as PythonCanMessage
 
-from uds.utilities import RawByte, RawBytesTuple, TimeStamp
+from uds.utilities import RawByte, RawBytesTuple, validate_raw_bytes, TimeStamp
 from uds.packet import AbstractUdsPacketRecord
 from uds.transmission_attributes import TransmissionDirectionAlias, TransmissionDirection, \
     AddressingType, AddressingTypeAlias
@@ -12,6 +14,7 @@ from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .packet_type import CanPacketType
 from .flow_control import CanFlowStatus
 from .packet import CanPacket
+from .can_frame_fields import CanDlcHandler, CanIdHandler
 
 
 CanFrameAlias = Union[PythonCanMessage]
@@ -40,17 +43,6 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         """
         # TODO
 
-    def __validate_frame(self, value: Any) -> None:
-        """
-        Validate a CAN frame argument.
-
-        :param value: Value to validate.
-
-        :raise TypeError: The frame argument has unsupported.
-        :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
-        """
-        # TODO
-
     @property
     def raw_frame_data(self) -> RawBytesTuple:
         """Raw data bytes of a frame that carried this CAN packet."""
@@ -74,12 +66,12 @@ class CanPacketRecord(AbstractUdsPacketRecord):
     @property
     def payload(self) -> Optional[RawBytesTuple]:
         """Payload bytes of a diagnostic message carried by this CAN packet."""
-        # TODO: CanPacket.payload
+        return CanPacket.payload.fget(self)
 
     @property
     def data_length(self) -> Optional[int]:
         """Payload bytes number of a diagnostic message which was carried by this CAN packet."""
-        # TODO: CanPacket.data_length
+        return CanPacket.data_length.fget(self)
 
     @property
     def can_id(self) -> int:
@@ -142,7 +134,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        # TODO: use CanPacket.sequence_number
+        return CanPacket.sequence_number.fget(self)
 
     @property
     def flow_status(self) -> Optional[CanFlowStatus]:
@@ -154,7 +146,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        # TODO: use CanPacket.flow_status
+        return CanPacket.flow_status.fget(self)
 
     @property
     def block_size(self) -> Optional[RawByte]:
@@ -166,7 +158,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        # TODO: use CanPacket.block_size
+        return CanPacket.block_size.fget(self)
 
     @property
     def st_min(self) -> Optional[RawByte]:
@@ -178,4 +170,20 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        # TODO: use CanPacket.st_min
+        return CanPacket.st_min.fget(self)
+
+    @staticmethod
+    def _validate_frame(value: Any) -> None:
+        """
+        Validate a CAN frame argument.
+
+        :param value: Value to validate.
+
+        :raise TypeError: The frame argument has unsupported.
+        :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
+        """
+        if isinstance(value, PythonCanMessage):
+            CanIdHandler.validate_can_id(value.arbitration_id, extended_can_id=value.is_extended_id)
+            CanDlcHandler.validate_data_bytes_number(len(value.data))
+            return None
+        raise TypeError(f"Unsupported CAN Frame type was provided. Actual type: {type(value)}")

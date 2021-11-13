@@ -7,14 +7,14 @@ from uds.utilities.bytes_operations import Endianness, bytes_list_to_int, int_to
 
 
 class TestEndianness:
-    """Tests for `Endianness` class."""
+    """Unit tests for `Endianness` class."""
 
     def test_inheritance_validated_enum(self):
         assert issubclass(Endianness, ValidatedEnum)
 
 
 class TestFunctions:
-    """Tests for module functions."""
+    """Unit tests for module functions."""
 
     SCRIPT_LOCATION = "uds.utilities.bytes_operations"
 

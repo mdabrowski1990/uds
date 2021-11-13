@@ -6,7 +6,7 @@ from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 
 
 class TestAbstractSegmenter:
-    """Tests for `AbstractSegmenter` class."""
+    """Unit tests for `AbstractSegmenter` class."""
 
     SCRIPT_PATH = "uds.segmentation.abstract_segmenter"
 
