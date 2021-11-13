@@ -52,15 +52,20 @@ class AbstractUdsPacketRecord(ABC):
     """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
-    def __init__(self, frame: Any, direction: TransmissionDirectionAlias) -> None:
+    def __init__(self,
+                 frame: Any,
+                 direction: TransmissionDirectionAlias,
+                 transmission_time: TimeStamp) -> None:
         """
         Create a record of a historic information about a packet that was either received or transmitted.
 
         :param frame: Frame that carried this UDS packet.
         :param direction: Information whether this packet was transmitted or received.
+        :param transmission_time: Time stamp when this packet was fully transmitted on a bus.
         """
         self.frame = frame
         self.direction = direction  # type: ignore
+        self.transmission_time = transmission_time
 
     @property
     def frame(self) -> Any:
@@ -68,7 +73,7 @@ class AbstractUdsPacketRecord(ABC):
         return self.__frame
 
     @frame.setter
-    def frame(self, value: TransmissionDirectionAlias):
+    def frame(self, value: Any):
         """
         Set value of frame attribute.
 
@@ -107,6 +112,30 @@ class AbstractUdsPacketRecord(ABC):
             raise ReassignmentError("You cannot change value of 'direction' attribute once it is assigned.")
 
     @property
+    def transmission_time(self) -> TimeStamp:
+        """Time stamp when this packet was fully transmitted on a bus."""
+        return self.__transmission_time
+
+    @transmission_time.setter
+    def transmission_time(self, value: TimeStamp):
+        """
+        Set value of transmission_time attribute.
+
+        :param value: Direction value to set.
+
+        :raise TypeError: Provided value has unexpected type.
+        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        """
+        try:
+            self.__getattribute__("_AbstractUdsPacketRecord__transmission_time")
+        except AttributeError:
+            if not isinstance(value, TimeStamp):
+                raise TypeError(f"Provided value has invalid type: {type(value)}")
+            self.__transmission_time = value
+        else:
+            raise ReassignmentError("You cannot change value of 'transmission_time' attribute once it is assigned.")
+
+    @property
     @abstractmethod
     def raw_frame_data(self) -> RawBytesTuple:
         """Raw data bytes of a frame that carries this packet."""
@@ -115,11 +144,6 @@ class AbstractUdsPacketRecord(ABC):
     @abstractmethod
     def addressing_type(self) -> AddressingType:
         """Addressing type over which this packet was transmitted."""
-
-    @property
-    @abstractmethod
-    def transmission_time(self) -> TimeStamp:
-        """Time stamp when this packet was fully transmitted on a bus."""
 
     @property
     @abstractmethod

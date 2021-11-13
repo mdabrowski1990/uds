@@ -274,7 +274,8 @@ class CanIdHandler:
         return cls.is_standard_can_id(can_id)
 
     @classmethod
-    def is_normal_fixed_addressed_can_id(cls, can_id: int,
+    def is_normal_fixed_addressed_can_id(cls,
+                                         can_id: int,
                                          addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with Normal Fixed Addressing format.
@@ -321,7 +322,8 @@ class CanIdHandler:
         return cls.is_standard_can_id(can_id)
 
     @classmethod
-    def is_mixed_29bit_addressed_can_id(cls, can_id: int,
+    def is_mixed_29bit_addressed_can_id(cls,
+                                        can_id: int,
                                         addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with Mixed 29-bit Addressing format.

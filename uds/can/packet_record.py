@@ -6,11 +6,11 @@ from typing import Union, Any, Optional
 
 from can import Message as PythonCanMessage
 
-from uds.utilities import RawByte, RawBytesTuple, validate_raw_bytes, TimeStamp
+from uds.utilities import RawByte, RawBytesTuple, TimeStamp, InconsistentArgumentsError
 from uds.packet import AbstractUdsPacketRecord
-from uds.transmission_attributes import TransmissionDirectionAlias, TransmissionDirection, \
-    AddressingType, AddressingTypeAlias
+from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_information import CanAddressingInformationHandler
 from .packet_type import CanPacketType
 from .flow_control import CanFlowStatus
 from .packet import CanPacket
@@ -32,7 +32,8 @@ class CanPacketRecord(AbstractUdsPacketRecord):
                  frame: CanFrameAlias,
                  direction: TransmissionDirectionAlias,
                  addressing_type: AddressingTypeAlias,
-                 addressing_format: CanAddressingFormatAlias) -> None:
+                 addressing_format: CanAddressingFormatAlias,
+                 transmission_time: TimeStamp) -> None:
         """
         Create a record of a historic information about a CAN packet that was either received or transmitted.
 
@@ -40,28 +41,43 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         :param direction: Information whether this packet was transmitted or received.
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param addressing_format: CAN addressing format that this CAN packet used.
+        :param transmission_time: Time stamp when this packet was fully transmitted on a CAN bus.
         """
-        # TODO
+        AddressingType.validate_member(addressing_type)
+        CanAddressingFormat.validate_member(addressing_format)
+        super().__init__(frame=frame, direction=direction, transmission_time=transmission_time)
+        self.__addressing_type = AddressingType(addressing_type)
+        self.__addressing_format = CanAddressingFormat(addressing_format)
+        self.__packet_type: CanPacketType
+        self.__dlc: int
+        self.__target_address: Optional[RawByte]
+        self.__source_address: Optional[RawByte]
+        self.__address_extension: Optional[RawByte]
+        self.__transmission_time: Optional[RawByte]
+        self.__assess_packet_type()
+        self.__assess_ai_attributes()
 
     @property
     def raw_frame_data(self) -> RawBytesTuple:
         """Raw data bytes of a frame that carried this CAN packet."""
-        # TODO: PythonCanMessage.data
+        if isinstance(self.frame, PythonCanMessage):
+            return self.frame.data
+        raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
     def addressing_type(self) -> AddressingType:
         """Addressing type over which this CAN packet was transmitted."""
-        # TODO: provided in init
+        return self.__addressing_type
 
     @property
-    def transmission_time(self) -> TimeStamp:
-        """Time stamp when this CAN packet was fully transmitted on a bus."""
-        # TODO: ?? PythonCanMessage.timestamp + offset?
+    def addressing_format(self) -> CanAddressingFormat:
+        """CAN addressing format used by this CAN packet."""
+        return self.__addressing_format
 
     @property
     def packet_type(self) -> CanPacketType:
         """CAN packet type value - N_PCI value of this N_PDU."""
-        # TODO: extract from raw_frame_data
+        return self.__packet_type
 
     @property
     def payload(self) -> Optional[RawBytesTuple]:
@@ -76,12 +92,14 @@ class CanPacketRecord(AbstractUdsPacketRecord):
     @property
     def can_id(self) -> int:
         """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
-        # TODO: PythonCanMessage.arbitration_id
+        if isinstance(self.frame, PythonCanMessage):
+            return self.frame.arbitration_id
+        raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
     def dlc(self) -> int:
         """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
-        # TODO: PythonCanMessage.dlc
+        return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
 
     @property
     def target_address(self) -> Optional[RawByte]:
@@ -95,7 +113,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        # TODO: extract from raw_frame_data / can_id
+        return self.__target_address
 
     @property
     def source_address(self) -> Optional[RawByte]:
@@ -108,7 +126,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        # TODO: extract from can_id
+        return self.__source_address
 
     @property
     def address_extension(self) -> Optional[RawByte]:
@@ -122,7 +140,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
 
         None in other cases.
         """
-        # TODO: extract from raw_frame_data / can_id
+        return self.__address_extension
 
     @property
     def sequence_number(self) -> Optional[int]:
@@ -187,3 +205,26 @@ class CanPacketRecord(AbstractUdsPacketRecord):
             CanDlcHandler.validate_data_bytes_number(len(value.data))
             return None
         raise TypeError(f"Unsupported CAN Frame type was provided. Actual type: {type(value)}")
+
+    def __assess_packet_type(self) -> None:
+        """Assess and set value of Packet Type attribute."""
+        ai_data_bytes = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
+        n_pci_value = self.raw_frame_data[ai_data_bytes] >> 4
+        CanPacketType.validate_member(n_pci_value)
+        self.__packet_type = CanPacketType(n_pci_value)
+
+    def __assess_ai_attributes(self) -> None:
+        """
+        Assess and set values of attributes with Addressing Information.
+
+        :raise InconsistentArgumentsError: Value of Addressing Type that is already set does not match decoded one.
+        """
+        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
+        ai_info = CanAddressingInformationHandler.decode_ai(addressing_format=self.addressing_format,
+                                                            can_id=self.can_id,
+                                                            ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])
+        self.__target_address = ai_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
+        self.__source_address = ai_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
+        self.__address_extension = ai_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
+        if ai_info[CanAddressingInformationHandler.ADDRESSING_TYPE_NAME] not in (self.addressing_type, None):
+            raise InconsistentArgumentsError("Decoded Addressing Type does not match the one that is already set.")
