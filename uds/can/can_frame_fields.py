@@ -47,29 +47,20 @@ class CanIdHandler:
     """Maximum value of Extended (29-bit) CAN ID."""
 
     NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET: int = 0x18DA0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
-    :ref:`physically addressed <knowledge-base-physical-addressing>` CAN Packet that uses
-    :ref:`Normal Fixed Addressing Format <knowledge-base-can-normal-fixed-addressing>.`"""
+    """Minimum value of physically addressed CAN ID in Normal Fixed Addressing format."""
     NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18DB0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
-    :ref:`functionally addressed <knowledge-base-functional-addressing>` CAN Packet that uses
-    :ref:`Normal Fixed Addressing Format <knowledge-base-can-normal-fixed-addressing>.`"""
+    """Minimum value of functionally addressed CAN ID in Normal Fixed Addressing format."""
     MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET: int = 0x18CE0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
-    :ref:`physically addressed <knowledge-base-physical-addressing>` CAN Packet that uses
-    :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
+    """Minimum value of physically addressed CAN ID in Mixed 29-bit Addressing format."""
     MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18CD0000
-    """Minimum value of CAN ID (with Target Address and Source Address information erased) for
-    :ref:`functionally addressed <knowledge-base-functional-addressing>` CAN Packet that uses
-    :ref:`Mixed 29-bit Addressing Format <knowledge-base-can-mixed-29-bit-addressing>.`"""
+    """Minimum value of functionally addressed CAN ID in Mixed 29-bit Addressing format."""
 
     ADDRESSING_TYPE_NAME = "addressing_type"
-    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with
-    decoded Addressing Information."""
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
     TARGET_ADDRESS_NAME = "target_address"
-    """Name of Target Address which is used as a key in dictionary with decoded Addressing Information."""
+    """Name of Target Address parameter in Addressing Information."""
     SOURCE_ADDRESS_NAME = "source_address"
-    """Name of Source Address which is used as a key in dictionary with decoded Addressing Information."""
+    """Name of Source Address parameter in Addressing Information."""
 
     @classmethod
     def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> CanIdInfoAlias:
@@ -437,8 +428,7 @@ class CanDlcHandler:
     """Maximum value of a CAN Frame DLC parameter."""
 
     MIN_DLC_DATA_PADDING: int = 8
-    """Minimum value of DLC for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
-    is allowed."""
+    """Minimum DLC value for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed."""
 
     @classmethod
     def decode_dlc(cls, dlc: int) -> int:

@@ -14,16 +14,15 @@ from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .can_frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
-from .packet_type import CanPacketType
 
 
 class CanConsecutiveFrameHandler:
     """Helper class that provides utilities for Consecutive Frame CAN Packets."""
 
+    CONSECUTIVE_FRAME_N_PCI: Nibble = 0x2
+    """N_PCI value of Consecutive Frame."""
     SN_BYTES_USED: int = 1
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`
-    and :ref:`Sequence Number <knowledge-base-can-sequence-number>` values in
-    :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`."""
+    """Number of CAN Frame data bytes used to carry CAN Packet Type and Sequence Number in Consecutive Frame"""
 
     @classmethod
     def create_valid_frame_data(cls, *,
@@ -142,7 +141,7 @@ class CanConsecutiveFrameHandler:
         :return: True if provided data bytes carries Consecutive Frame, False otherwise.
         """
         ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-        return raw_frame_data[ai_bytes_number] >> 4 == CanPacketType.CONSECUTIVE_FRAME
+        return raw_frame_data[ai_bytes_number] >> 4 == cls.CONSECUTIVE_FRAME_N_PCI
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
@@ -273,8 +272,8 @@ class CanConsecutiveFrameHandler:
         if min_dlc > dlc:
             raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
 
-    @staticmethod
-    def __encode_sn(sequence_number: Nibble) -> RawBytesList:
+    @classmethod
+    def __encode_sn(cls, sequence_number: Nibble) -> RawBytesList:
         """
         Create Consecutive Frame data bytes with CAN Packet Type and Sequence Number parameters.
 
@@ -283,4 +282,4 @@ class CanConsecutiveFrameHandler:
         :return: Consecutive Frame data bytes containing CAN Packet Type and Sequence Number parameters.
         """
         validate_nibble(sequence_number)
-        return [(CanPacketType.CONSECUTIVE_FRAME << 4) ^ sequence_number]
+        return [(cls.CONSECUTIVE_FRAME_N_PCI << 4) ^ sequence_number]

@@ -3,7 +3,7 @@ from mock import Mock, patch
 
 from datetime import datetime
 
-from uds.can.packet_record import CanPacketRecord, \
+from uds.packet.packet_record import CanPacketRecord, \
     PythonCanMessage, CanAddressingInformationHandler, InconsistentArgumentsError, CanAddressingFormat, CanPacketType, \
     CanFlowStatus
 from uds.transmission_attributes import TransmissionDirection, AddressingType

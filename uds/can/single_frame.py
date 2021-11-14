@@ -14,12 +14,13 @@ from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .can_frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
-from .packet_type import CanPacketType
 
 
 class CanSingleFrameHandler:
     """Helper class that provides utilities for Single Frame CAN Packets."""
 
+    SINGLE_FRAME_N_PCI: Nibble = 0
+    """N_PCI value of Single Frame."""
     MAX_DLC_VALUE_SHORT_SF_DL: int = 8
     """Maximum value of DLC for which short
     :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` format shall be used."""
@@ -137,8 +138,8 @@ class CanSingleFrameHandler:
         data_padding = ((frame_data_bytes_number - len(sf_bytes)) * [filler_byte])
         return sf_bytes + data_padding
 
-    @staticmethod
-    def is_single_frame(addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
+    @classmethod
+    def is_single_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
         """
         Check if provided data bytes encodes a Single Frame packet.
 
@@ -152,7 +153,7 @@ class CanSingleFrameHandler:
         :return: True if provided data bytes carries Single Frame, False otherwise.
         """
         ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-        return (raw_frame_data[ai_bytes_number] >> 4) == CanPacketType.SINGLE_FRAME
+        return (raw_frame_data[ai_bytes_number] >> 4) == cls.SINGLE_FRAME_N_PCI
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
@@ -391,8 +392,8 @@ class CanSingleFrameHandler:
             return cls.__encode_any_sf_dl(sf_dl_short=sf_dl)
         return cls.__encode_any_sf_dl(sf_dl_long=sf_dl)
 
-    @staticmethod
-    def __encode_any_sf_dl(sf_dl_short: Nibble = 0, sf_dl_long: Optional[RawByte] = None) -> RawBytesList:
+    @classmethod
+    def __encode_any_sf_dl(cls, sf_dl_short: Nibble = 0, sf_dl_long: Optional[RawByte] = None) -> RawBytesList:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
@@ -405,7 +406,7 @@ class CanSingleFrameHandler:
         :return: Single Frame data bytes containing CAN Packet Type and Single Frame Data Length parameters.
         """
         validate_nibble(sf_dl_short)
-        sf_dl_byte_0 = sf_dl_short ^ (CanPacketType.SINGLE_FRAME << 4)
+        sf_dl_byte_0 = sf_dl_short ^ (cls.SINGLE_FRAME_N_PCI << 4)
         if sf_dl_long is None:
             return [sf_dl_byte_0]
         validate_raw_byte(sf_dl_long)

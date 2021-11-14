@@ -16,11 +16,9 @@ from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 
 AIDataBytesInfoAlias = Dict[str, Optional[RawByte]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by
-:ref:`CAN frame <knowledge-base-can-frame>` data bytes."""
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in data bytes."""
 AIInfoAlias = Dict[str, Optional[Union[RawByte, AddressingType]]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by
-:ref:`CAN frame <knowledge-base-can-frame>`."""
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>`."""
 
 
 class CanAddressingInformationHandler:
@@ -34,15 +32,14 @@ class CanAddressingInformationHandler:
         **it does not take into account system specific requirements.**
     """
 
-    ADDRESSING_TYPE_NAME = "addressing_type"
-    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` which is used as a key in dictionary with
-    decoded Addressing Information."""
-    TARGET_ADDRESS_NAME = "target_address"
-    """Name of Target Address which is used as a key in dictionary with decoded Addressing Information."""
-    SOURCE_ADDRESS_NAME = "source_address"
-    """Name of Source Address which is used as a key in dictionary with decoded Addressing Information."""
+    ADDRESSING_TYPE_NAME = CanIdHandler.ADDRESSING_TYPE_NAME
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
+    TARGET_ADDRESS_NAME = CanIdHandler.TARGET_ADDRESS_NAME
+    """Name of Target Address parameter in Addressing Information."""
+    SOURCE_ADDRESS_NAME = CanIdHandler.SOURCE_ADDRESS_NAME
+    """Name of Source Address parameter in Addressing Information."""
     ADDRESS_EXTENSION_NAME = "address_extension"
-    """Name of Address Extension which is used as a key in dictionary with decoded Addressing Information."""
+    """Name of Address Extension parameter in Addressing Information."""
 
     @classmethod
     def decode_ai(cls,

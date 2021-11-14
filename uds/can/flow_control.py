@@ -21,7 +21,6 @@ from uds.utilities import NibbleEnum, ValidatedEnum, TimeMilliseconds, \
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .can_frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
-from .packet_type import CanPacketType
 
 
 class UnrecognizedSTminWarning(Warning):
@@ -168,6 +167,8 @@ class CanSTminTranslator:
 class CanFlowControlHandler:
     """Helper class that provides utilities for Flow Control CAN Packets."""
 
+    FLOW_CONTROL_N_PCI: Nibble = 0x2
+    """N_PCI value of Flow Control."""
     FS_BYTES_USED: int = 3
     """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`,
     :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>` and
@@ -301,7 +302,7 @@ class CanFlowControlHandler:
         :return: True if provided data bytes carries Flow Control, False otherwise.
         """
         ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-        return raw_frame_data[ai_bytes_number] >> 4 == CanPacketType.FLOW_CONTROL
+        return raw_frame_data[ai_bytes_number] >> 4 == cls.FLOW_CONTROL_N_PCI
 
     @classmethod
     def decode_flow_status(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> CanFlowStatus:
@@ -436,7 +437,7 @@ class CanFlowControlHandler:
                 validate_raw_byte(block_size)
             if st_min is not None:
                 validate_raw_byte(st_min)
-        return [(CanPacketType.FLOW_CONTROL << 4) ^ flow_status,
+        return [(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status,
                 block_size if block_size is not None else filler_byte,
                 st_min if st_min is not None else filler_byte]
 
@@ -460,7 +461,7 @@ class CanFlowControlHandler:
             Some of the parameters might be missing if certain arguments were provided.
         """
         validate_nibble(flow_status)
-        output = [(CanPacketType.FLOW_CONTROL << 4) ^ flow_status]
+        output = [(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status]
         if block_size is not None:
             validate_raw_byte(block_size)
             output.append(block_size)

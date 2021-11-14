@@ -9,12 +9,12 @@ from can import Message as PythonCanMessage
 from uds.utilities import RawByte, RawBytesTuple, TimeStamp, InconsistentArgumentsError
 from uds.packet import AbstractUdsPacketRecord
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
-from .addressing_information import CanAddressingInformationHandler
-from .packet_type import CanPacketType
-from .flow_control import CanFlowStatus
+from uds.can.addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from uds.can.addressing_information import CanAddressingInformationHandler
+from uds.packet.packet_type import CanPacketType
+from uds.can.flow_control import CanFlowStatus
 from .packet import CanPacket
-from .can_frame_fields import CanDlcHandler, CanIdHandler
+from uds.can.can_frame_fields import CanDlcHandler, CanIdHandler
 
 
 CanFrameAlias = Union[PythonCanMessage]

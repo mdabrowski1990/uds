@@ -9,18 +9,19 @@ __all__ = ["CanFirstFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
+from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
     validate_raw_bytes, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .can_frame_fields import CanDlcHandler
-from .packet_type import CanPacketType
 from .single_frame import CanSingleFrameHandler
 
 
 class CanFirstFrameHandler:
     """Helper class that provides utilities for First Frame CAN Packets."""
 
+    FIRST_FRAME_N_PCI: Nibble = 0x1
+    """N_PCI value of First Frame."""
     MIN_DLC_VALUE_FF: int = 8
     """Minimum value of DLC for :ref:`First Frame <knowledge-base-can-first-frame>` Packet Type."""
     MAX_SHORT_FF_DL_VALUE: int = 0xFFF
@@ -137,7 +138,7 @@ class CanFirstFrameHandler:
         :return: True if provided data bytes carries First Frame, False otherwise.
         """
         ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-        return raw_frame_data[ai_bytes_number] >> 4 == CanPacketType.FIRST_FRAME
+        return raw_frame_data[ai_bytes_number] >> 4 == cls.FIRST_FRAME_N_PCI
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
@@ -337,12 +338,12 @@ class CanFirstFrameHandler:
         cls.validate_ff_dl(ff_dl=ff_dl)
         if long_ff_dl_format:
             ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.LONG_FF_DL_BYTES_USED)
-            ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME << 4)
+            ff_dl_bytes[0] ^= (cls.FIRST_FRAME_N_PCI << 4)
             return ff_dl_bytes
         if ff_dl > cls.MAX_SHORT_FF_DL_VALUE:
             raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is too big for the short "
                                              f"FF_DL format. Use lower FF_DL value or change to long format. "
                                              f"Actual value: {ff_dl}")
         ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.SHORT_FF_DL_BYTES_USED)
-        ff_dl_bytes[0] ^= (CanPacketType.FIRST_FRAME << 4)
+        ff_dl_bytes[0] ^= (cls.FIRST_FRAME_N_PCI << 4)
         return ff_dl_bytes
