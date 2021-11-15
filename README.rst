@@ -28,7 +28,7 @@ UDS
 
 .. image:: https://coveralls.io/repos/github/mdabrowski1990/uds/badge.svg?branch=main
    :target: https://coveralls.io/github/mdabrowski1990/uds?branch=main
-   :alt: Coverage
+   :alt: Unit Tests Coverage
 
 .. image:: https://img.shields.io/pypi/v/py-uds.svg
    :target: https://pypi.python.org/pypi/py-uds
@@ -45,6 +45,10 @@ UDS
 .. image:: https://pepy.tech/badge/py-uds
    :target: https://pepy.tech/project/py-uds
    :alt: Total PyPI downloads
+
+.. image:: https://pepy.tech/badge/py-uds/month
+   :target: https://pepy.tech/project/py-uds
+   :alt: Monthly PyPI downloads
 
 .. image:: https://img.shields.io/badge/License-MIT-blue.svg
    :target: https://lbesson.mit-license.org/
