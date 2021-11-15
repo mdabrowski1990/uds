@@ -21,7 +21,7 @@ class CanFirstFrameHandler:
     """Helper class that provides utilities for First Frame CAN Packets."""
 
     FIRST_FRAME_N_PCI: Nibble = 0x1
-    """N_PCI value of First Frame."""
+    """First Frame N_PCI value."""
     MIN_DLC_VALUE_FF: int = 8
     """Minimum value of DLC for :ref:`First Frame <knowledge-base-can-first-frame>` Packet Type."""
     MAX_SHORT_FF_DL_VALUE: int = 0xFFF
@@ -30,13 +30,11 @@ class CanFirstFrameHandler:
     MAX_LONG_FF_DL_VALUE: int = 0xFFFFFFFF
     """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
     SHORT_FF_DL_BYTES_USED: int = 2
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and
-    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in
-    :ref:`First Frame <knowledge-base-can-first-frame>` when FF_DL <= 4095."""
+    """Number of CAN Frame data bytes used to carry CAN Packet Type and First Frame Data Length (FF_DL).
+    This value is valid only for the short format using FF_DL <= 4095."""
     LONG_FF_DL_BYTES_USED: int = 6
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>` and
-    :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` values in
-    :ref:`First Frame <knowledge-base-can-first-frame>` when FF_DL > 4095."""
+    """Number of CAN Frame data bytes used to carry CAN Packet Type and First Frame Data Length (FF_DL).
+    This value is valid only for the long format using FF_DL > 4095."""
 
     @classmethod
     def create_valid_frame_data(cls, *,

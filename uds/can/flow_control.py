@@ -167,12 +167,10 @@ class CanSTminTranslator:
 class CanFlowControlHandler:
     """Helper class that provides utilities for Flow Control CAN Packets."""
 
-    FLOW_CONTROL_N_PCI: Nibble = 0x2
+    FLOW_CONTROL_N_PCI: Nibble = 0x3
     """N_PCI value of Flow Control."""
     FS_BYTES_USED: int = 3
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`,
-    :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>` and
-    :ref:`STmin <knowledge-base-can-st-min>` values in :ref:`Flow Control <knowledge-base-can-flow-control>`."""
+    """Number of CAN Frame data bytes used to carry CAN Packet Type, Flow Status, Block Size and STmin."""
     BS_BYTE: int = 1
     """Position of a data byte with :ref:`Block Size <knowledge-base-can-block-size>` parameter."""
     STMIN_BYTE: int = 2

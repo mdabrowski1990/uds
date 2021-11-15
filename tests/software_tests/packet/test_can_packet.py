@@ -1,14 +1,14 @@
 import pytest
 from mock import patch, Mock, call
 
-from uds.can.packet import CanPacket, \
+from uds.packet.can_packet import CanPacket, \
     CanPacketType, CanAddressingFormat, AddressingType, CanFlowStatus, CanIdHandler, DEFAULT_FILLER_BYTE, AmbiguityError
 
 
 class TestCanPacket:
     """Unit tests for 'CanPacket' class."""
 
-    SCRIPT_LOCATION = "uds.can.packet"
+    SCRIPT_LOCATION = "uds.packet.can_packet"
 
     def setup(self):
         self.mock_can_packet = Mock(spec=CanPacket)

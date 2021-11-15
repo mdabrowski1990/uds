@@ -7,7 +7,7 @@ Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
  - Data
 """
 
-__all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE", "CanIdInfoAlias"]
+__all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE", "AICanIdAlias"]
 
 from typing import Any, Optional, Union, Tuple, Set, Dict
 from bisect import bisect_left
@@ -18,12 +18,12 @@ from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 
 DEFAULT_FILLER_BYTE: RawByte = 0xCC
-"""Default value of Filler Byte that is specified by ISO 15765-2:2016 (chapter 10.4.2.1).
-Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`."""
+"""Default value of Filler Byte.
+Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
+.. note:: The value is specified by ISO 15765-2:2016 (chapter 10.4.2.1)."""
 
-CanIdInfoAlias = Dict[str, Optional[Union[AddressingType, RawByte]]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by CAN ID field of
-:ref:`CAN frame <knowledge-base-can-frame>`."""
+AICanIdAlias = Dict[str, Optional[Union[AddressingType, RawByte]]]
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in CAN Identifier."""
 
 
 class CanIdHandler:
@@ -63,7 +63,7 @@ class CanIdHandler:
     """Name of Source Address parameter in Addressing Information."""
 
     @classmethod
-    def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> CanIdInfoAlias:
+    def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> AICanIdAlias:
         """
         Extract Addressing Information out of CAN ID.
 
@@ -97,7 +97,7 @@ class CanIdHandler:
         raise NotImplementedError(f"Unknown addressing format value was provided: {addressing_format}")
 
     @classmethod
-    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> CanIdInfoAlias:
+    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> AICanIdAlias:
         """
         Extract Addressing Information out of CAN ID for Normal Fixed CAN Addressing format.
 
@@ -131,7 +131,7 @@ class CanIdHandler:
                                   f"Actual value: {can_id}")
 
     @classmethod
-    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> CanIdInfoAlias:
+    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> AICanIdAlias:
         """
         Extract Addressing Information out of CAN ID for Mixed 29-bit CAN Addressing format.
 
@@ -423,9 +423,9 @@ class CanDlcHandler:
     MAX_DATA_BYTES_NUMBER: int = max(__DATA_BYTES_NUMBERS)
     """Maximum number of data bytes in a CAN frame."""
     MIN_DLC_VALUE: int = min(__DLC_VALUES)
-    """Minimum value of a CAN Frame DLC parameter."""
+    """Minimum value of DLC parameter."""
     MAX_DLC_VALUE: int = max(__DLC_VALUES)
-    """Maximum value of a CAN Frame DLC parameter."""
+    """Maximum value of DLC parameter."""
 
     MIN_DLC_DATA_PADDING: int = 8
     """Minimum DLC value for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed."""

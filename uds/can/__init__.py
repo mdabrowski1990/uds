@@ -19,4 +19,4 @@ from .can_frame_fields import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler
 from .single_frame import CanSingleFrameHandler
 from .first_frame import CanFirstFrameHandler
 from .consecutive_frame import CanConsecutiveFrameHandler
-from .flow_control import CanFlowControlHandler, CanFlowStatus, CanFlowStatusAlias
+from .flow_control import CanFlowControlHandler, CanFlowStatus, CanFlowStatusAlias, CanSTminTranslator

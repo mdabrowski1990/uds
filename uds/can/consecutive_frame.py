@@ -20,9 +20,9 @@ class CanConsecutiveFrameHandler:
     """Helper class that provides utilities for Consecutive Frame CAN Packets."""
 
     CONSECUTIVE_FRAME_N_PCI: Nibble = 0x2
-    """N_PCI value of Consecutive Frame."""
+    """Consecutive Frame N_PCI value."""
     SN_BYTES_USED: int = 1
-    """Number of CAN Frame data bytes used to carry CAN Packet Type and Sequence Number in Consecutive Frame"""
+    """Number of CAN Frame data bytes used to carry CAN Packet Type and Sequence Number in Consecutive Frame."""
 
     @classmethod
     def create_valid_frame_data(cls, *,

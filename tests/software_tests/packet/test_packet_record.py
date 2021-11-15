@@ -3,7 +3,7 @@ from mock import Mock, patch
 
 from datetime import datetime
 
-from uds.packet.packet_record import CanPacketRecord, \
+from uds.packet.can_packet_record import CanPacketRecord, \
     PythonCanMessage, CanAddressingInformationHandler, InconsistentArgumentsError, CanAddressingFormat, CanPacketType, \
     CanFlowStatus
 from uds.transmission_attributes import TransmissionDirection, AddressingType
@@ -12,7 +12,7 @@ from uds.transmission_attributes import TransmissionDirection, AddressingType
 class TestCanPacketRecord:
     """Unit tests for `CanPacketRecord` class."""
 
-    SCRIPT_LOCATION = "uds.can.packet_record"
+    SCRIPT_LOCATION = "uds.packet.can_packet_record"
 
     def setup(self):
         self.mock_can_packet_record = Mock(spec=CanPacketRecord)

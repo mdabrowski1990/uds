@@ -2,7 +2,8 @@ import setuptools
 import re
 
 install_requires = [
-    "aenum"
+    "aenum",
+    "python-can",
 ]
 
 with open("uds/__init__.py", "r", encoding="utf-8") as init_file:

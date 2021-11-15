@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 
 from uds.can.first_frame import CanFirstFrameHandler, \
-    InconsistentArgumentsError, CanAddressingFormat, CanPacketType
+    InconsistentArgumentsError, CanAddressingFormat
 
 
 class TestCanFirstFrameHandler:

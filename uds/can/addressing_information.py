@@ -4,7 +4,7 @@ Implementation of CAN Addressing Information.
 This module contains helper class for managing :ref:`Addressing Information <knowledge-base-n-ai>` on CAN bus.
 """
 
-__all__ = ["CanAddressingInformationHandler", "AIDataBytesInfoAlias", "AIInfoAlias"]
+__all__ = ["CanAddressingInformationHandler", "AIDataBytesAlias", "AIAlias"]
 
 from typing import Optional, Union, Dict
 
@@ -15,9 +15,9 @@ from .can_frame_fields import CanIdHandler
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 
-AIDataBytesInfoAlias = Dict[str, Optional[RawByte]]
+AIDataBytesAlias = Dict[str, Optional[RawByte]]
 """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in data bytes."""
-AIInfoAlias = Dict[str, Optional[Union[RawByte, AddressingType]]]
+AIAlias = Dict[str, Optional[Union[RawByte, AddressingType]]]
 """Alias of :ref:`Addressing Information <knowledge-base-n-ai>`."""
 
 
@@ -45,7 +45,7 @@ class CanAddressingInformationHandler:
     def decode_ai(cls,
                   addressing_format: CanAddressingFormatAlias,
                   can_id: int,
-                  ai_data_bytes: RawBytes) -> AIInfoAlias:
+                  ai_data_bytes: RawBytes) -> AIAlias:
         """
         Decode Addressing Information from CAN ID and data bytes.
 
@@ -73,7 +73,7 @@ class CanAddressingInformationHandler:
     @classmethod
     def decode_ai_data_bytes(cls,
                              addressing_format: CanAddressingFormatAlias,
-                             ai_data_bytes: RawBytes) -> AIDataBytesInfoAlias:
+                             ai_data_bytes: RawBytes) -> AIDataBytesAlias:
         """
         Decode Addressing Information from CAN data bytes.
 

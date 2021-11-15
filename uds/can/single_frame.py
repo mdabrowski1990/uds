@@ -25,13 +25,11 @@ class CanSingleFrameHandler:
     """Maximum value of DLC for which short
     :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` format shall be used."""
     SHORT_SF_DL_BYTES_USED: int = 1
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`
-    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameters in
-    :ref:`Single Frame <knowledge-base-can-single-frame>` packets when short SF_DL format is used."""
+    """Number of CAN Frame data bytes used to carry CAN Packet Type and Single Frame Data Length (SF_DL).
+    This value is valid only for the short format using DLC <= 8."""
     LONG_SF_DL_BYTES_USED: int = 2
-    """Number of CAN Frame data bytes used to carry :ref:`CAN Packet Type <knowledge-base-can-n-pci>`
-    and :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameters in
-    :ref:`Single Frame <knowledge-base-can-single-frame>` packets when long SF_DL format is used."""
+    """Number of CAN Frame data bytes used to carry CAN Packet Type and Single Frame Data Length (SF_DL).
+    This value is valid only for the long format using DLC > 8."""
 
     @classmethod
     def create_valid_frame_data(cls, *,

@@ -7,17 +7,16 @@ from typing import Union, Any, Optional
 from can import Message as PythonCanMessage
 
 from uds.utilities import RawByte, RawBytesTuple, TimeStamp, InconsistentArgumentsError
-from uds.packet import AbstractUdsPacketRecord
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
-from uds.can.addressing_format import CanAddressingFormat, CanAddressingFormatAlias
-from uds.can.addressing_information import CanAddressingInformationHandler
-from uds.packet.packet_type import CanPacketType
-from uds.can.flow_control import CanFlowStatus
-from .packet import CanPacket
-from uds.can.can_frame_fields import CanDlcHandler, CanIdHandler
+from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
+    CanDlcHandler, CanIdHandler, CanFlowStatus
+from .can_packet import CanPacket
+from .can_packet_type import CanPacketType
+from .abstract_packet import AbstractUdsPacketRecord
 
 
 CanFrameAlias = Union[PythonCanMessage]
+"""Alias of supported CAN frames objects."""
 
 
 class CanPacketRecord(AbstractUdsPacketRecord):

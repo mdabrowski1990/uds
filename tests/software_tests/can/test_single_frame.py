@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 
 from uds.can.single_frame import CanSingleFrameHandler, \
-    CanPacketType, CanAddressingFormat, InconsistentArgumentsError, CanDlcHandler, DEFAULT_FILLER_BYTE
+    CanAddressingFormat, InconsistentArgumentsError, CanDlcHandler, DEFAULT_FILLER_BYTE
 
 
 class TestCanSingleFrameHandler:
@@ -315,7 +315,7 @@ class TestCanSingleFrameHandler:
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     def test_decode_sf_dl__valid_short(self, mock_extract_sf_dl_data_bytes,
                                        addressing_format, raw_frame_data, expected_sf_dl):
-        mock_extract_sf_dl_data_bytes.return_value = [(CanPacketType.SINGLE_FRAME.value << 4) ^ expected_sf_dl]
+        mock_extract_sf_dl_data_bytes.return_value = [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4) ^ expected_sf_dl]
         assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
                                                   raw_frame_data=raw_frame_data) == expected_sf_dl
         mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
@@ -327,7 +327,7 @@ class TestCanSingleFrameHandler:
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     def test_decode_sf_dl__valid_long(self, mock_extract_sf_dl_data_bytes,
                                       addressing_format, raw_frame_data, expected_sf_dl):
-        mock_extract_sf_dl_data_bytes.return_value = [(CanPacketType.SINGLE_FRAME.value << 4), expected_sf_dl]
+        mock_extract_sf_dl_data_bytes.return_value = [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4), expected_sf_dl]
         assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
                                                   raw_frame_data=raw_frame_data) == expected_sf_dl
         mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
@@ -675,7 +675,7 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("sf_dl_short", [0, 7, 0xF])
     def test_encode_any_sf_dl__short(self, sf_dl_short):
         assert CanSingleFrameHandler._CanSingleFrameHandler__encode_any_sf_dl(sf_dl_short=sf_dl_short) \
-               == [(CanPacketType.SINGLE_FRAME.value << 4) + sf_dl_short]
+               == [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4) + sf_dl_short]
         self.mock_validate_nibble.assert_called_once_with(sf_dl_short)
         self.mock_validate_raw_byte.assert_not_called()
 
@@ -684,7 +684,7 @@ class TestCanSingleFrameHandler:
     def test_encode_any_sf_dl__long(self, sf_dl_short, sf_dl_long):
         assert CanSingleFrameHandler._CanSingleFrameHandler__encode_any_sf_dl(
             sf_dl_short=sf_dl_short,
-            sf_dl_long=sf_dl_long) == [(CanPacketType.SINGLE_FRAME.value << 4) + sf_dl_short, sf_dl_long]
+            sf_dl_long=sf_dl_long) == [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4) + sf_dl_short, sf_dl_long]
         self.mock_validate_nibble.assert_called_once_with(sf_dl_short)
         self.mock_validate_raw_byte.assert_called_once_with(sf_dl_long)
 

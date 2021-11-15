@@ -22,7 +22,8 @@ class CanAddressingFormat(StrEnum, ValidatedEnum):
     """:ref:`Normal addressing <knowledge-base-can-normal-addressing>` format that uses 11-bit CAN Identifiers."""
     NORMAL_FIXED_ADDRESSING = "Normal Fixed Addressing"
     """:ref:`Normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` format.
-    It uses 29-bit CAN Identifiers only."""
+    It is a subformat of :ref:`Normal addressing <knowledge-base-can-normal-addressing>` which uses 29-bit
+    CAN Identifiers only."""
     EXTENDED_ADDRESSING = "Extended Addressing"
     """:ref:`Extended addressing <knowledge-base-can-extended-addressing>` format."""
     MIXED_11BIT_ADDRESSING = "Mixed 11-bit Addressing"

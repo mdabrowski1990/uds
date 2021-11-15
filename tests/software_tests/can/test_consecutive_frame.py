@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 
 from uds.can.consecutive_frame import CanConsecutiveFrameHandler, \
-    InconsistentArgumentsError, CanPacketType, CanAddressingFormat, CanDlcHandler, DEFAULT_FILLER_BYTE
+    InconsistentArgumentsError, CanAddressingFormat, CanDlcHandler, DEFAULT_FILLER_BYTE
 
 
 class TestCanConsecutiveFrameHandler:
@@ -496,7 +496,7 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("sequence_number", [0, 5, 0xF])
     def test_encode_sn(self, sequence_number):
         assert CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn(sequence_number=sequence_number) \
-               == [(CanPacketType.CONSECUTIVE_FRAME.value << 4) + sequence_number]
+               == [(CanConsecutiveFrameHandler.CONSECUTIVE_FRAME_N_PCI << 4) + sequence_number]
         self.mock_validate_nibble.assert_called_once_with(sequence_number)
 
 
