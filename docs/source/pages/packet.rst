@@ -21,6 +21,7 @@ carried in :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
 
 Supported values of UDS packet types are defined in following enum classes:
  - `AbstractUdsPacketType`_
+ - `CanPacketType`_
 
 
 AbstractUdsPacketType

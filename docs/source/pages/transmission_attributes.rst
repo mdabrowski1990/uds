@@ -10,11 +10,11 @@ We distinguish following transmission attributes:
 
 Transmission Direction
 ----------------------
-Enum :class:`~uds.transmission_attributes.transmission_direction.TransmissionDirection` was implemented to provide
-standard values of communication directions.
+Enum :class:`~uds.transmission_attributes.transmission_direction.TransmissionDirection` provides standard values
+for communication directions.
 
 
 Addressing Type
 ---------------
-Enum :class:`~uds.transmission_attributes.addressing.AddressingType` was implemented to define all possible values of
+Enum :class:`~uds.transmission_attributes.addressing.AddressingType` defines all possible values of
 :ref:`addressing <knowledge-base-addressing>` that can be used for UDS communication.
