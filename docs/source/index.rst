@@ -7,6 +7,7 @@ Welcome to UDS documentation!
     pages/installation.rst
     pages/transmission_attributes.rst
     pages/message.rst
+    pages/can.rst
     pages/packet.rst
     pages/segmentation.rst
     pages/transport.rst

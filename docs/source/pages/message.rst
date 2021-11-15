@@ -25,10 +25,6 @@ such as diagnostic messages transmission or segmentation.
     therefore a user will face an exception if one tries to set an invalid (e.g. incompatible with the annotation)
     value to any of these attributes.
 
-Attributes implemented in :class:`~uds.message.uds_message.UdsMessage` class:
- - :attr:`~uds.message.uds_message.UdsMessage.payload` - settable
- - :attr:`~uds.message.uds_message.UdsMessage.addressing` - settable
-
 **Example code:**
 
     .. code-block::  python
@@ -37,21 +33,13 @@ Attributes implemented in :class:`~uds.message.uds_message.UdsMessage` class:
 
         # example how to create an object
         uds_message = uds.message.UdsMessage(payload=[0x10, 0x03],
-                                             addressing=uds.transmission_attributes.AddressingType.PHYSICAL)
+                                             addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL)
 
-        # raw message attribute
-        print(uds_message.payload)
+        # raw message attribute reassignment
         uds_message.payload = (0x62, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF)
-        print(uds_message.payload)
-        uds_message.payload = [0x3E, 0x80]
-        print(uds_message.payload)
 
-        # addressing attribute
-        print(uds_message.addressing)
-        uds_message.addressing = uds.transmission_attributes.AddressingType.FUNCTIONAL
-        print(uds_message.addressing)
-        uds_message.addressing = uds.transmission_attributes.AddressingType.PHYSICAL.value
-        print(uds_message.addressing)
+        # addressing attribute reassignment
+        uds_message.addressing_type = uds.transmission_attributes.AddressingType.FUNCTIONAL
 
 
 UDS Message Record
@@ -67,15 +55,6 @@ of :ref:`diagnostic messages <knowledge-base-diagnostic-message>` that were eith
     (*can't it, right?*).
 
     A user will face an exception if one tries to modify any attribute.
-
-
-Attributes implemented in :class:`~uds.message.uds_message.UdsMessageRecord` class:
- - :attr:`~uds.message.uds_message.UdsMessageRecord.payload` - readable
- - :attr:`~uds.message.uds_message.UdsMessageRecord.addressing` - readable
- - :attr:`~uds.message.uds_message.UdsMessageRecord.direction` - readable
- - :attr:`~uds.message.uds_message.UdsMessageRecord.packets_records` - readable
- - :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start` - readable
- - :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end` - readable
 
 
 UDS Messages Data
@@ -120,13 +99,6 @@ Enum :class:`~uds.message.service_identifiers.RequestSID` contains definitions o
     :class:`~uds.message.service_identifiers.RequestSID` class to add Request SID value that is specific for the system
     that you communicate with.
 
-
-Methods implemented in :class:`~uds.message.service_identifiers.RequestSID` class:
- - :meth:`~uds.message.service_identifiers.RequestSID.is_request_sid`
- - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
- - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
- - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
-
 **Example code:**
 
     .. code-block::  python
@@ -144,7 +116,7 @@ Methods implemented in :class:`~uds.message.service_identifiers.RequestSID` clas
 
         # check if the value was added as a new member
         uds.message.RequestSID.is_member(new_member)
-        uds.message.ResponseSID.is_member(0xBA)
+        uds.message.RequestSID.is_member(0xBA)
 
 
 POSSIBLE_RESPONSE_SIDS
@@ -165,12 +137,6 @@ Enum :class:`~uds.message.service_identifiers.ResponseSID` contains definitions 
 .. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method on
     :class:`~uds.message.service_identifiers.ResponseSID` class to add Response SID value that is specific for the system
     that you communicate with.
-
-Methods implemented in :class:`~uds.message.service_identifiers.ResponseSID` class:
- - :meth:`~uds.message.service_identifiers.ResponseSID.is_response_sid`
- - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
- - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
- - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
 **Example code:**
 
@@ -203,11 +169,6 @@ Enum :class:`~uds.message.nrc.NRC` contains definitions of all common (defined b
 .. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method on
     :class:`~uds.message.nrc.NRC` class to add NRC value that is specific for the system that you communicate with.
 
-Methods implemented in :class:`~uds.message.nrc.NRC` class:
- - :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
- - :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
- - :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
-
 **Example code:**
 
     .. code-block::  python
@@ -223,4 +184,3 @@ Methods implemented in :class:`~uds.message.nrc.NRC` class:
         # check if the value was added as a new member
         uds.message.NRC.is_member(new_member)
         uds.message.NRC.is_member(0xF0)
-
