@@ -12,3 +12,6 @@ from .abstract_packet_type import AbstractUdsPacketType
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord, \
     PacketsRecordsTuple, PacketsRecordsSequence, \
     PacketAlias, PacketsSequence, PacketsDefinitionTuple
+from .can_packet_type import CanPacketType, CanPacketTypeAlias
+from .can_packet import CanPacket
+from .can_packet_record import CanPacketRecord

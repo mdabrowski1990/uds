@@ -242,10 +242,10 @@ class CanFirstFrameHandler:
 
         :param ff_dl: First Frame Data Length value to validate.
         :param long_ff_dl_format: Information whether long or short format of First Frame Data Length is used.
-            Possible values:
-             - None - do not perform compatibility check with the FF_DL format
-             - True - perform compatibility check with long FF_DL format
-             - False - perform compatibility check with short FF_DL format
+
+            - None - do not perform compatibility check with the FF_DL format
+            - True - perform compatibility check with long FF_DL format
+            - False - perform compatibility check with short FF_DL format
         :param dlc: Value of DLC to use for First Frame Data Length value validation.
             Leave None if you do not want to validate whether First Frame shall be used in this case.
         :param addressing_format: Value of CAN Addressing Format to use for First Frame Data Length value validation.

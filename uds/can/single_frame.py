@@ -49,9 +49,9 @@ class CanSingleFrameHandler:
         :param addressing_format: CAN addressing format used by a considered Single Frame.
         :param payload: Payload of a diagnostic message that is carried by a considered CAN packet.
         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
-            Possible values:
-             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-             - int type value - DLC value to set. CAN Data Padding will be used to fill the unused data bytes.
+
+            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+            - int type value - DLC value to set. CAN Data Padding will be used to fill the unused data bytes.
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param target_address: Target Address value carried by this CAN Packet.
             The value must only be provided if `addressing_format` uses Target Address parameter.

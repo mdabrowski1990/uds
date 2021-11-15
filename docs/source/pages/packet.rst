@@ -17,7 +17,7 @@ UDS Packet Type
 ---------------
 UDS packet types are supposed to be understood as values of
 :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` that informs about format and information
-carried in :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-n-pdu>`.
+carried in :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`.
 
 Supported values of UDS packet types are defined in following enum classes:
  - `AbstractUdsPacketType`_

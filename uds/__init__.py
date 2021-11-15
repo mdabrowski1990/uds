@@ -25,11 +25,10 @@ __credits__ = ["Maciej Dąbrowski (https://www.linkedin.com/in/maciej-dabrowski-
 __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"
 
-__all__ = ["transmission_attributes", "packet", "message", "segmentation", "transport_interface", "can"]
 
 import uds.transmission_attributes
+import uds.can
 import uds.packet
 import uds.message
 import uds.segmentation
 import uds.transport_interface
-import uds.can

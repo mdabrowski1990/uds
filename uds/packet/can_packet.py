@@ -50,26 +50,28 @@ class CanPacket(AbstractUdsPacket):
         :param address_extension: Address Extension value carried by this CAN packet.
             Leave None if provided `addressing_format` does not use Address Extension parameter.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-            Possible values:
-             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-             - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
-            You have to provide DLC value for packets of First Frame type.
+
+            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+            - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
+            .. warning:: You have to provide DLC value for packets of First Frame type.
+
         :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
-            Possible parameters:
-             - :parameter filler_byte: (optional for: SF, CF and FC)
-                 Filler Byte value to use for CAN Frame Data Padding.
-             - :parameter payload: (required for: SF, FF and CF)
-                 Payload of a diagnostic message that is carried by this CAN packet.
-             - :parameter data_length: (required for: FF)
-                 Number of payload bytes of a diagnostic message initiated by this First Frame packet.
-             - :parameter sequence_number: (required for: CF)
-                 Sequence number value of this Consecutive Frame.
-             - :parameter flow_status: (required for: FC)
-                 Flow status information carried by this Flow Control frame.
-             - :parameter block_size: (required for: FC ContinueToSend Flow Status)
-                 Block size information carried by this Flow Control frame.
-             - :parameter st_min: (required for: FC ContinueToSend Flow Status)
-                 Separation Time minimum information carried by this Flow Control frame.
+
+            - :parameter filler_byte: (optional for: SF, CF and FC)
+                Filler Byte value to use for CAN Frame Data Padding.
+            - :parameter payload: (required for: SF, FF and CF)
+                Payload of a diagnostic message that is carried by this CAN packet.
+            - :parameter data_length: (required for: FF)
+                Number of payload bytes of a diagnostic message initiated by this First Frame packet.
+            - :parameter sequence_number: (required for: CF)
+                Sequence number value of this Consecutive Frame.
+            - :parameter flow_status: (required for: FC)
+                Flow status information carried by this Flow Control frame.
+            - :parameter block_size: (required for: FC with ContinueToSend Flow Status)
+                Block size information carried by this Flow Control frame.
+            - :parameter st_min: (required for: FC with ContinueToSend Flow Status)
+                Separation Time minimum information carried by this Flow Control frame.
         """
         # initialize the variables
         self.__raw_frame_data: RawBytesTuple = None  # type: ignore
@@ -315,26 +317,28 @@ class CanPacket(AbstractUdsPacket):
 
         :param packet_type: Type of this CAN packet.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-            Possible values:
-             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-             - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
-            You have to provide DLC value for packets of First Frame type.
+
+            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+            - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
+            .. warning:: You have to provide DLC value for packets of First Frame type.
+
         :param packet_type_specific_kwargs: Arguments that are specific for provided CAN Packet Type.
-            Possible parameters:
-             - :parameter filler_byte: (optional for: SF, CF and FC)
-                 Filler Byte value to use for CAN Frame Data Padding.
-             - :parameter payload: (required for: SF, FF and CF)
-                 Payload of a diagnostic message that is carried by this CAN packet.
-             - :parameter data_length: (required for: FF)
-                 Number of payload bytes of a diagnostic message initiated by this First Frame packet.
-             - :parameter sequence_number: (required for: CF)
-                 Sequence number value of this Consecutive Frame.
-             - :parameter flow_status: (required for: FC)
-                 Flow status information carried by this Flow Control frame.
-             - :parameter block_size: (required for: FC ContinueToSend Flow Status)
-                 Block size information carried by this Flow Control frame.
-             - :parameter st_min: (required for: FC ContinueToSend Flow Status)
-                 Separation Time minimum information carried by this Flow Control frame.
+
+            - :parameter filler_byte: (optional for: SF, CF and FC)
+                Filler Byte value to use for CAN Frame Data Padding.
+            - :parameter payload: (required for: SF, FF and CF)
+                Payload of a diagnostic message that is carried by this CAN packet.
+            - :parameter data_length: (required for: FF)
+                Number of payload bytes of a diagnostic message initiated by this First Frame packet.
+            - :parameter sequence_number: (required for: CF)
+                Sequence number value of this Consecutive Frame.
+            - :parameter flow_status: (required for: FC)
+                Flow status information carried by this Flow Control frame.
+            - :parameter block_size: (required for: FC with ContinueToSend Flow Status)
+                Block size information carried by this Flow Control frame.
+            - :parameter st_min: (required for: FC with ContinueToSend Flow Status)
+                Separation Time minimum information carried by this Flow Control frame.
 
         :raise NotImplementedError: A valid packet type was provided, but the implementation for it is missing.
             Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
@@ -365,9 +369,10 @@ class CanPacket(AbstractUdsPacket):
 
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-            Possible values:
-             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-             - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
+            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+            - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
         raw_frame_data = CanSingleFrameHandler.create_valid_frame_data(addressing_format=self.addressing_format,
@@ -420,9 +425,10 @@ class CanPacket(AbstractUdsPacket):
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param sequence_number: Sequence number value of this Consecutive Frame.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-            Possible values:
-             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-             - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
+            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+            - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
         raw_frame_data = CanConsecutiveFrameHandler.create_valid_frame_data(addressing_format=self.addressing_format,
@@ -453,9 +459,10 @@ class CanPacket(AbstractUdsPacket):
         :param block_size: Block size information carried by this Flow Control frame.
         :param st_min: Separation Time minimum information carried by this Flow Control frame.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
-            Possible values:
-             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
-             - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
+            - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
+            - int type value - DLC value to set. CAN Data Padding will be used to fill unused data bytes.
+
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
         raw_frame_data = CanFlowControlHandler.create_valid_frame_data(addressing_format=self.addressing_format,

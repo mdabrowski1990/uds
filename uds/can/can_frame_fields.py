@@ -378,10 +378,10 @@ class CanIdHandler:
 
         :param value: Value to validate.
         :param extended_can_id: Flag whether to perform consistency check with CAN ID format.
-            Possible values:
-             - None - does not check the format of the value
-             - True - verify that the value uses Extended (29-bit) CAN ID format
-             - False - verify that the value uses Standard (11-bit) CAN ID format
+
+            - None - does not check the format of the value
+            - True - verify that the value uses Extended (29-bit) CAN ID format
+            - False - verify that the value uses Standard (11-bit) CAN ID format
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Provided value is out of CAN Identifier values range.
@@ -500,10 +500,10 @@ class CanDlcHandler:
 
         :param value: Value to validate.
         :param exact_value: Informs whether the value must be the exact number of data bytes in a CAN frame.
-            Possible values:
-             - True - provided value must be the exact number of data bytes to be carried by a CAN frame.
-             - False - provided value must be a number of data bytes that could be carried by a CAN frame
-               (:ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed).
+
+            - True - provided value must be the exact number of data bytes to be carried by a CAN frame.
+            - False - provided value must be a number of data bytes that could be carried by a CAN frame
+              (:ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed).
 
         :raise TypeError: Provided values is not int type.
         :raise ValueError: Provided value is not number of data bytes that matches the criteria.
