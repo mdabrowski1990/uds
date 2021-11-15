@@ -22,8 +22,6 @@ class CanFirstFrameHandler:
 
     FIRST_FRAME_N_PCI: Nibble = 0x1
     """First Frame N_PCI value."""
-    MIN_DLC_VALUE_FF: int = 8
-    """Minimum value of DLC for :ref:`First Frame <knowledge-base-can-first-frame>` Packet Type."""
     MAX_SHORT_FF_DL_VALUE: int = 0xFFF
     """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` for which
     short format of FF_DL is used."""
@@ -200,8 +198,9 @@ class CanFirstFrameHandler:
 
         :return: The maximum number of payload bytes that could fit into a considered First Frame.
         """
-        if dlc < cls.MIN_DLC_VALUE_FF:
-            raise ValueError(f"First Frame must use DLC >= {cls.MIN_DLC_VALUE_FF}. Actual value: dlc={dlc}")
+        if dlc < CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION:
+            raise ValueError(f"First Frame must use DLC >= {CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION}. "
+                             f"Actual value: dlc={dlc}")
         data_bytes_number = CanDlcHandler.decode_dlc(dlc)
         ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
         ff_dl_data_bytes_number = cls.LONG_FF_DL_BYTES_USED if long_ff_dl_format else cls.SHORT_FF_DL_BYTES_USED
@@ -262,9 +261,10 @@ class CanFirstFrameHandler:
             raise ValueError(f"Provided value of First Frame Data Length is out of range. "
                              f"Expected: 0 <= ff_dl <= {cls.MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")
         if dlc is not None and addressing_format is not None:
-            if dlc < cls.MIN_DLC_VALUE_FF:
+            if dlc < CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION:
                 raise ValueError(f"Provided value of DLC cannot be used with First Frame. "
-                                 f"Expected: dlc >= {cls.MIN_DLC_VALUE_FF}. Actual value: {dlc}")
+                                 f"Expected: dlc >= {CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION}. "
+                                 f"Actual value: {dlc}")
             max_sf_dl = CanSingleFrameHandler.get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
             if ff_dl <= max_sf_dl:
                 raise InconsistentArgumentsError(f"Single Frame shall be used instead of First Frame to carry payload "

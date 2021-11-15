@@ -429,6 +429,8 @@ class CanDlcHandler:
 
     MIN_DLC_DATA_PADDING: int = 8
     """Minimum DLC value for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed."""
+    MIN_DLC_WITHOUT_DATA_OPTIMIZATION: int = 8
+    """Minimum DLC value without applying :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`."""
 
     @classmethod
     def decode_dlc(cls, dlc: int) -> int:
