@@ -108,7 +108,7 @@ To make things simpler for the users and our developers, in the implementation w
 
   - :ref:`knowledge base section - UDS packet <knowledge-base-uds-packet>`
 
-  - :ref:`implementation section - UDS packet <implementation-uds-packet>`
+  - implementation - :mod:`uds.packet`
 
 - Data Protocol Data Unit (D_PDU) - called `frame` in the implementation and documentation.
   We do not have any internal `frames <https://en.wikipedia.org/wiki/Frame_(networking)>`_ documentation.

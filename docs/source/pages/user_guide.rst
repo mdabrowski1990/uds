@@ -10,5 +10,3 @@ User Guide
     user_guide/message.rst
     user_guide/transport.rst
     user_guide/segmentation.rst
-    user_guide/packet.rst
-    user_guide/can.rst
