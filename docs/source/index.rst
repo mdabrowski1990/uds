@@ -5,14 +5,7 @@ Welcome to UDS documentation!
 
     Home <self>
     pages/installation.rst
-    pages/transmission_attributes.rst
-    pages/message.rst
-    pages/can.rst
-    pages/packet.rst
-    pages/segmentation.rst
-    pages/transport.rst
-    pages/client_simulation.rst
-    pages/server_simulation.rst
+    pages/user_guide.rst
     autoapi/index.rst
     pages/knowledge_base.rst
     pages/contribution.rst

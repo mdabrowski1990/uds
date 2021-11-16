@@ -5,19 +5,18 @@ UDS Packets
 Common implementation of UDS packets is located in :mod:`uds.packet` sub-package.
 
 :ref:`UDS packets <knowledge-base-uds-packet>` implementation is divided into three parts:
- - `UDS Packet Type`_ - enums with :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`
-   values definitions
+ - `UDS Packet Type`_ - :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` values definitions
  - `UDS Packet`_ - storages for a temporary :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
    definition on the user side
- - `UDS Packet Record`_ - storages for historic information of a :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`
-   that was either received or transmitted
+ - `UDS Packet Record`_ - storages for historic information of
+   :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>` that was either received or transmitted
 
 
 UDS Packet Type
 ---------------
 UDS packet types are supposed to be understood as values of
 :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` that informs about format and information
-carried in :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`.
+carried by :ref:`Network Protocol Data Unit (N_PDU) <knowledge-base-uds-packet>`.
 
 Supported values of UDS packet types are defined in following enum classes:
  - `AbstractUdsPacketType`_
@@ -46,14 +45,14 @@ CanPacketType
 
         import uds
 
-        # check if value is defined
+        # check if value is defined as CAN Packet Type
         uds.packet.CanPacketType.is_member(uds.packet.CanPacketType.SINGLE_FRAME)
         uds.packet.CanPacketType.is_member(0xF)
 
-        # add new member
+        # add CAN Packet Type
         uds.packet.CanPacketType.add_member("NewMember", 0xF)
 
-        # check if member was added
+        # check if CAN Packet Type was added
         uds.packet.CanPacketType.is_member(0xF)
 
 
@@ -86,6 +85,18 @@ CanPacket
 :class:`~uds.packet.can_packet.CanPacket` class contains CAN specific implementation of
 :ref:`UDS packets <knowledge-base-uds-packet>`.
 
+One is able to change attributes of :class:`~uds.packet.can_packet.CanPacket` objects using following methods:
+ - :meth:`uds.packet.can_packet.CanPacket.set_address_information`
+ - :meth:`uds.packet.can_packet.CanPacket.set_address_information_normal_11bit`
+ - :meth:`uds.packet.can_packet.CanPacket.set_address_information_normal_fixed`
+ - :meth:`uds.packet.can_packet.CanPacket.set_address_information_extended`
+ - :meth:`uds.packet.can_packet.CanPacket.set_address_information_mixed_11bit`
+ - :meth:`uds.packet.can_packet.CanPacket.set_address_information_mixed_29bit`
+ - :meth:`uds.packet.can_packet.CanPacket.set_packet_data`
+ - :meth:`uds.packet.can_packet.CanPacket.set_single_frame_data`
+ - :meth:`uds.packet.can_packet.CanPacket.set_first_frame_data`
+ - :meth:`uds.packet.can_packet.CanPacket.set_consecutive_frame_data`
+ - :meth:`uds.packet.can_packet.CanPacket.set_flow_control_data`
 
 **Example code:**
 

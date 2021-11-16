@@ -47,7 +47,7 @@ UDS Message Record
 :class:`~uds.message.uds_message.UdsMessageRecord` class is meant to provide containers for historic information
 of :ref:`diagnostic messages <knowledge-base-diagnostic-message>` that were either transmitted or received.
 
-.. note:: A **user shall not create objects of this class** in normal cases, but one would probably use them quite
+.. note:: A **user should not create objects of this class** in normal cases, but one would probably use them quite
     often as they are returned by other layers of :mod:`uds` package.
 
 .. warning:: All :class:`~uds.message.uds_message.UdsMessageRecord` **attributes are read only**
@@ -64,11 +64,7 @@ Implementation of data parameters that are part of diagnostic messages data.
 UDS data parameters:
  - `Service Identifiers`_ - are implemented by:
 
-   - `POSSIBLE_REQUEST_SIDS`_
-
    - `RequestSID`_
-
-   - `POSSIBLE_RESPONSE_SIDS`_
 
    - `ResponseSID`_
 
@@ -78,12 +74,6 @@ UDS data parameters:
 Service Identifiers
 ```````````````````
 Implementation of :ref:`Service Identifier (SID) <knowledge-base-sid>` values.
-
-
-POSSIBLE_REQUEST_SIDS
-'''''''''''''''''''''
-:attr:`~uds.message.service_identifiers.POSSIBLE_REQUEST_SIDS` is a set with all possible values of
-:ref:`Service Identifier <knowledge-base-sid>` data parameter in a :ref:`request message <knowledge-base-request-message>`.
 
 
 RequestSID
@@ -96,8 +86,7 @@ Enum :class:`~uds.message.service_identifiers.RequestSID` contains definitions o
     further extension by UDS specification and others are ECU specific (defined by ECU's manufacturer).
 
 .. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method on
-    :class:`~uds.message.service_identifiers.RequestSID` class to add Request SID value that is specific for the system
-    that you communicate with.
+    :class:`~uds.message.service_identifiers.RequestSID` class to add Request SID value.
 
 **Example code:**
 
@@ -119,12 +108,6 @@ Enum :class:`~uds.message.service_identifiers.RequestSID` contains definitions o
         uds.message.RequestSID.is_member(0xBA)
 
 
-POSSIBLE_RESPONSE_SIDS
-''''''''''''''''''''''
-:attr:`~uds.message.service_identifiers.POSSIBLE_RESPONSE_SIDS` is a set with all possible values of
-:ref:`Service Identifier <knowledge-base-sid>` data parameter in a :ref:`response message <knowledge-base-response-message>`.
-
-
 ResponseSID
 '''''''''''
 Enum :class:`~uds.message.service_identifiers.ResponseSID` contains definitions of response
@@ -135,8 +118,7 @@ Enum :class:`~uds.message.service_identifiers.ResponseSID` contains definitions 
     further extension by UDS specification and other are ECU specific (defined by ECU's manufacturer).
 
 .. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method on
-    :class:`~uds.message.service_identifiers.ResponseSID` class to add Response SID value that is specific for the system
-    that you communicate with.
+    :class:`~uds.message.service_identifiers.ResponseSID` class to add Response SID.
 
 **Example code:**
 
