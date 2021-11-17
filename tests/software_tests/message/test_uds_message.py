@@ -61,7 +61,7 @@ class TestUdsMessage:
 
     def test_addressing_type__set_second_call(self, example_addressing_type):
         self.mock_uds_message._UdsMessage__addressing_type = "some value"
-        self.test_addressing_type__set_instance(example_addressing_type=example_addressing_type)
+        self.test_addressing_type__set(example_addressing_type=example_addressing_type)
 
 
 class TestUdsMessageRecord:
