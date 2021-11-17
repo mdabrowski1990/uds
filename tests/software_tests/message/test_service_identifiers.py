@@ -125,7 +125,7 @@ class TestSIDIntegration:
 
     @pytest.mark.parametrize("request_sid_member", list(RequestSID))
     def test_rsid_members(self, request_sid_member):
-        assert ResponseSID[request_sid_member.name] == request_sid_member.value + 0x40, \
+        assert ResponseSID[request_sid_member.name] == request_sid_member + 0x40, \
             "Verify each ResponseSID member has correct value (SID + 0x40)."
 
     @pytest.mark.parametrize("undefined_value", SYSTEM_SPECIFIC_REQUEST_SID_VALUES)

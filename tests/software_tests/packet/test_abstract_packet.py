@@ -65,7 +65,7 @@ class TestAbstractUdsPacketRecord:
     def test_direction__set(self, example_transmission_direction):
         AbstractUdsPacketRecord.direction.fset(self=self.mock_packet_record, value=example_transmission_direction)
         assert self.mock_packet_record._AbstractUdsPacketRecord__direction == example_transmission_direction
-        self.mock_validate_direction.assert_called_once_with(example_transmission_direction.value)
+        self.mock_validate_direction.assert_called_once_with(example_transmission_direction)
 
     @pytest.mark.parametrize("old_value", [None, 0, "some direction"])
     @pytest.mark.parametrize("new_value", [None, True, "some direction"])

@@ -20,7 +20,7 @@ from uds.utilities import NibbleEnum, ValidatedEnum, TimeMilliseconds, \
     InconsistentArgumentsError
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
-from .can_frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
+from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
 class UnrecognizedSTminWarning(Warning):

@@ -10,7 +10,7 @@ other packets.
 
 UDS packet consists of following fields:
  - `Network Address Information`_ (N_AI) - packet addressing
- - `Network Data Field`_ (N_Data) - packet date
+ - `Network Data Field`_ (N_Data) - packet data
  - `Network Protocol Control Information`_ (N_PCI) - packet type
 
 
@@ -54,8 +54,8 @@ In this chapter you will find information about UDS packets that are specific fo
 CAN Frame
 `````````
 `CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frames that are used
-during normal UDS communication. CAN data frames are made up of many different fields, but the key (that are influenced
-by UDS protocol) are listed below:
+during normal UDS communication. CAN data frames are made up of many different fields, but the key in our case (these
+influenced by UDS protocol) are listed below:
 
 - CAN Identifier (CAN ID)
 
@@ -401,7 +401,7 @@ Number of payload bytes carried by SF is specified by
 
 Single Frame Data Length
 ........................
-Single Frame Data Length (SF_DL) is 4-bit (for CAN packets with DLC=8) or 8-bit (for CAN packets with DLC>8) value
+Single Frame Data Length (SF_DL) is 4-bit (for CAN packets with DLC<=8) or 8-bit (for CAN packets with DLC>8) value
 carried by every Single Frame as presented in :ref:`the table with CAN packet formats<knowledge-base-can-packets-format>`.
 SF_DL specifies number of diagnostic message payload bytes transmitted in a Single Frame.
 

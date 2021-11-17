@@ -11,7 +11,7 @@ from typing import Optional, Union, Dict
 from uds.utilities import RawByte, RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, \
     InconsistentArgumentsError, UnusedArgumentError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
-from .can_frame_fields import CanIdHandler
+from .frame_fields import CanIdHandler
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 

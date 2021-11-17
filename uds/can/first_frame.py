@@ -13,7 +13,7 @@ from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_
     validate_raw_bytes, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
-from .can_frame_fields import CanDlcHandler
+from .frame_fields import CanDlcHandler
 from .single_frame import CanSingleFrameHandler
 
 
