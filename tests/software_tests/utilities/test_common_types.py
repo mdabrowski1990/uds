@@ -43,12 +43,12 @@ class TestFunctions:
     def test_validate_raw_bytes__valid(self, example_raw_bytes):
         assert validate_raw_bytes(value=example_raw_bytes) is None
 
-    @pytest.mark.parametrize("value", [tuple(), []])
+    @pytest.mark.parametrize("value", [tuple(), [], bytearray()])
     def test_validate_raw_bytes__invalid_empty(self, value):
         with pytest.raises(ValueError):
             validate_raw_bytes(value=value)
 
-    @pytest.mark.parametrize("value", [tuple(), []])
+    @pytest.mark.parametrize("value", [tuple(), [], bytearray()])
     def test_validate_raw_bytes__valid_empty(self, value):
         validate_raw_bytes(value=value, allow_empty=True)
 

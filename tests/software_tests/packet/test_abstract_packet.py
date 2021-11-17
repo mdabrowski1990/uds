@@ -62,13 +62,8 @@ class TestAbstractUdsPacketRecord:
         self.mock_packet_record._AbstractUdsPacketRecord__direction = direction
         assert AbstractUdsPacketRecord.direction.fget(self=self.mock_packet_record) == direction
 
-    def test_direction__set_instance(self, example_transmission_direction):
+    def test_direction__set(self, example_transmission_direction):
         AbstractUdsPacketRecord.direction.fset(self=self.mock_packet_record, value=example_transmission_direction)
-        assert self.mock_packet_record._AbstractUdsPacketRecord__direction == example_transmission_direction
-        self.mock_validate_direction.assert_called_once_with(example_transmission_direction)
-
-    def test_direction__set_value(self, example_transmission_direction):
-        AbstractUdsPacketRecord.direction.fset(self=self.mock_packet_record, value=example_transmission_direction.value)
         assert self.mock_packet_record._AbstractUdsPacketRecord__direction == example_transmission_direction
         self.mock_validate_direction.assert_called_once_with(example_transmission_direction.value)
 

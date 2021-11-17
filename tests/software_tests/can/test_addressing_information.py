@@ -701,7 +701,7 @@ class TestCanAddressingInformationHandlerIntegration:
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
         (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, None, None),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, None, None),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, 0xFF, None),
         (CanAddressingFormat.EXTENDED_ADDRESSING, 0x8C, None),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, None, 0x08),
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, 0x2F, 0xEA),
@@ -711,12 +711,6 @@ class TestCanAddressingInformationHandlerIntegration:
                                                                              target_address=target_address,
                                                                              address_extension=address_extension)
         assert len(ai_data_bytes) == CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-
-    # get_ai_data_bytes_number
-
-    def test_get_ai_data_bytes_number(self, example_can_addressing_format):
-        assert CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format) \
-               == CanAddressingInformationHandler.get_ai_data_bytes_number(example_can_addressing_format.value)
 
     # validate_ai
 

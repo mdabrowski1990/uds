@@ -1,5 +1,5 @@
 """
-Module with common implementation of all diagnostic message (requests and responses).
+Module with common implementation of all diagnostic messages (requests and responses).
 
 :ref:`Diagnostic message <knowledge-base-diagnostic-message>` are defined on upper layers of UDS OSI Model.
 """
@@ -8,10 +8,9 @@ __all__ = ["UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 
-from uds.transmission_attributes.transmission_direction import TransmissionDirection
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
+from uds.transmission_attributes import TransmissionDirection, AddressingType, AddressingTypeAlias
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
-from uds.transmission_attributes.addressing import AddressingType, AddressingTypeAlias
 
 
 class UdsMessage:

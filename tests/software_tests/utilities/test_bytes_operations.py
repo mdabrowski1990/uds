@@ -33,8 +33,8 @@ class TestFunctions:
     @pytest.mark.parametrize("bytes_list, endianness, expected_output", [
         ([0xF0], Endianness.BIG_ENDIAN, 0xF0),
         ([0xF0], Endianness.LITTLE_ENDIAN, 0xF0),
-        ([0xF0, 0xE1], Endianness.BIG_ENDIAN, 0xF0E1),
-        ([0xF0, 0xE1], Endianness.LITTLE_ENDIAN, 0xE1F0),
+        ((0xF0, 0xE1), Endianness.BIG_ENDIAN, 0xF0E1),
+        (bytearray([0xF0, 0xE1]), Endianness.LITTLE_ENDIAN, 0xE1F0),
         ([0x98, 0x76, 0x54, 0x32, 0x1F], Endianness.BIG_ENDIAN, 0x987654321F),
         ([0x98, 0x76, 0x54, 0x32, 0x1F], Endianness.LITTLE_ENDIAN, 0x1F32547698),
     ])

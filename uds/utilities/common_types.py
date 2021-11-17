@@ -18,7 +18,7 @@ RawBytesSet = Set[RawByte]
 """Alias of a set filled with byte values."""
 RawBytesList = List[RawByte]
 """Alias of a list filled with byte values."""
-RawBytes = Union[RawBytesTuple, RawBytesList]
+RawBytes = Union[RawBytesTuple, RawBytesList, bytearray]
 """Alias of a sequence filled with byte values."""
 TimeMilliseconds = Union[int, float]
 """Alias of a time value in milliseconds."""
@@ -66,7 +66,7 @@ def validate_raw_bytes(value: Any, allow_empty: bool = False) -> None:
     :raise TypeError: Value is not tuple or list type.
     :raise ValueError: Value does not contain raw bytes (int value between 0x00-0xFF) only.
     """
-    if not isinstance(value, (tuple, list)):
+    if not isinstance(value, (tuple, list, bytearray)):
         raise TypeError(f"Provided value is not list or tuple type. Actual type: {type(value)}")
     if not allow_empty and not value:
         raise ValueError("Provided values is empty sequence.")

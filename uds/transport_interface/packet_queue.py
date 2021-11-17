@@ -18,7 +18,7 @@ class ReceivedPacketsQueue:
             One can use this parameter to restrict packets managed by this queue.
 
         :raise TypeError: Provided packet_class argument is not a class that inherits after
-            :class:"uds.message.uds_packet.AbstractUdsPacketRecord".
+            :class:"uds.packet.abstract_packet.AbstractUdsPacketRecord".
         """
         raise NotImplementedError
 

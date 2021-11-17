@@ -54,15 +54,10 @@ class TestUdsMessage:
         self.mock_uds_message._UdsMessage__addressing_type = value
         assert UdsMessage.addressing_type.fget(self=self.mock_uds_message) is value
 
-    def test_addressing_type__set_instance(self, example_addressing_type):
+    def test_addressing_type__set(self, example_addressing_type):
         UdsMessage.addressing_type.fset(self=self.mock_uds_message, value=example_addressing_type)
         assert self.mock_uds_message._UdsMessage__addressing_type == example_addressing_type
         self.mock_validate_addressing.assert_called_once_with(example_addressing_type)
-
-    def test_addressing_type__set_value(self, example_addressing_type):
-        UdsMessage.addressing_type.fset(self=self.mock_uds_message, value=example_addressing_type.value)
-        assert self.mock_uds_message._UdsMessage__addressing_type == example_addressing_type
-        self.mock_validate_addressing.assert_called_once_with(example_addressing_type.value)
 
     def test_addressing_type__set_second_call(self, example_addressing_type):
         self.mock_uds_message._UdsMessage__addressing_type = "some value"
