@@ -35,12 +35,10 @@ class TestCanSTmin:
 
     @pytest.mark.parametrize("raw_value, time_value", [
         (0x00, 0),
-        (0x01, 1),
-        (0x7E, 126),
+        (0x2A, 42),
         (0x7F, 127),
         (0xF1, 0.1),
-        (0xF2, 0.2),
-        (0xF8, 0.8),
+        (0xF4, 0.4),
         (0xF9, 0.9),
     ])
     def test_decode__valid(self, raw_value, time_value):
@@ -56,24 +54,22 @@ class TestCanSTmin:
 
     # encode
 
-    @pytest.mark.parametrize("value", [None, "1 ms", [1, 1]])
+    @pytest.mark.parametrize("value", [None, "1 ms"])
     def test_encode__type_error(self, value):
         with pytest.raises(TypeError):
             CanSTminTranslator.encode(value)
 
-    @pytest.mark.parametrize("value", [128, -1, 0.15, 0.11, 0.95])
+    @pytest.mark.parametrize("value", [128, -1, 0.15])
     def test_encode__value_error(self, value):
         with pytest.raises(ValueError):
             CanSTminTranslator.encode(value)
 
     @pytest.mark.parametrize("raw_value, time_value", [
         (0x00, 0),
-        (0x01, 1),
-        (0x7E, 126),
+        (0x2A, 42),
         (0x7F, 127),
         (0xF1, 0.1),
-        (0xF2, 0.2),
-        (0xF8, 0.8),
+        (0xF4, 0.4),
         (0xF9, 0.9),
     ])
     def test_encode__valid(self, raw_value, time_value):
@@ -85,37 +81,37 @@ class TestCanSTmin:
     def test_is_time_value__invalid_type(self, value):
         assert CanSTminTranslator.is_time_value(value) is False
 
-    @pytest.mark.parametrize("value", [1, 0.1, 0.5, 999])
-    @pytest.mark.parametrize("is_ms_value, is_100us_value, result", [
-        (True, False, True),
-        (False, True, True),
-        (False, False, False),
+    @pytest.mark.parametrize("value", [1, 0.5])
+    @pytest.mark.parametrize("is_ms_value, is_100us_value", [
+        (True, False),
+        (False, True),
+        (False, False),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSTminTranslator._is_ms_value")
     @patch(f"{SCRIPT_LOCATION}.CanSTminTranslator._is_100us_value")
-    def test_is_time_value__result(self, mock_is_100us_value, mock_is_ms_value, is_ms_value, is_100us_value, result,
+    def test_is_time_value__result(self, mock_is_100us_value, mock_is_ms_value, is_ms_value, is_100us_value,
                                    value):
         mock_is_100us_value.return_value = is_100us_value
         mock_is_ms_value.return_value = is_ms_value
-        assert CanSTminTranslator.is_time_value(value) is result
+        assert CanSTminTranslator.is_time_value(value) is (is_ms_value or is_100us_value)
 
     # _is_ms_value
 
-    @pytest.mark.parametrize("value", [0, 0., 1, 30, 59, 65., 99, 101, 126, 127, 127.])
+    @pytest.mark.parametrize("value", [0, 0., 59, 65., 127, 127.])
     def test_is_ms_value__true(self, value):
         assert CanSTminTranslator._is_ms_value(value) is True
 
-    @pytest.mark.parametrize("value", [-1, 128, 1.1, 6.0001, 99.9999])
+    @pytest.mark.parametrize("value", [-1, 128, 1.1, 99.9999])
     def test_is_ms_value__false(self, value):
         assert CanSTminTranslator._is_ms_value(value) is False
 
     # _is_100us_value
 
-    @pytest.mark.parametrize("value", [0.1*v for v in range(1, 10)])
+    @pytest.mark.parametrize("value", [0.1, 0.7, 0.9])
     def test_is_100us_value__true(self, value):
         assert CanSTminTranslator._is_100us_value(value) is True
 
-    @pytest.mark.parametrize("value", [0, 0.0, 0.10001, 0.75, 0.89999, 1])
+    @pytest.mark.parametrize("value", [0, 0.0, 0.10001, 1])
     def test_is_100us_value__false(self, value):
         assert CanSTminTranslator._is_100us_value(value) is False
 
@@ -413,7 +409,6 @@ class TestCanFlowControlHandler:
     @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
         (0, [0x30, 0x12, 0x34]),
         (1, (0x31, 0x3F, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55)),
-        (2, list(range(0x31, 0x71))),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowStatus")
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler.is_flow_control")
@@ -432,7 +427,6 @@ class TestCanFlowControlHandler:
     @pytest.mark.parametrize("raw_frame_data", [
         [0x30, 0x12, 0x34],
         (0x31, 0x3F, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55),
-        list(range(0x31, 0x71)),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler.is_flow_control")
     def test_decode_flow_status__value_error(self, mock_is_flow_control,
@@ -451,7 +445,6 @@ class TestCanFlowControlHandler:
     @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
         (0, [0x30, 0x12, 0x34]),
         (1, (0x31, 0x3F, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55)),
-        (2, list(range(0x31, 0x71))),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler.decode_flow_status")
     def test_decode_block_size(self, mock_decode_flow_status,
@@ -488,7 +481,6 @@ class TestCanFlowControlHandler:
     @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
         (0, [0x30, 0x12, 0x34]),
         (1, (0x31, 0x3F, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55)),
-        (2, list(range(0x31, 0x71))),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler.decode_flow_status")
     def test_decode_st_min(self, mock_decode_flow_status,
@@ -537,7 +529,6 @@ class TestCanFlowControlHandler:
         ("another format", range(5)),
     ])
     @pytest.mark.parametrize("min_dlc, decoded_dlc", [
-        (0, 0),
         (7, 8),
         (13, 15),
     ])
@@ -560,10 +551,8 @@ class TestCanFlowControlHandler:
         ("another format", range(5)),
     ])
     @pytest.mark.parametrize("min_dlc, decoded_dlc", [
-        (1, 0),
-        (0, 7),
+        (4, 7),
         (9, 8),
-        (16, 15),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler.decode_flow_status")
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler.get_min_dlc")
@@ -620,7 +609,7 @@ class TestCanFlowControlHandler:
 
     # __encode_any_flow_status
 
-    @pytest.mark.parametrize("flow_status, block_size, st_min", [  # TODO
+    @pytest.mark.parametrize("flow_status, block_size, st_min", [
         (CanFlowStatus.ContinueToSend, 0x12, 0x34),
         (0xD, 0xF0, 0xA6),
         (0x9, 0xD8, 0x7E),
