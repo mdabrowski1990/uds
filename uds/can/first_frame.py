@@ -167,10 +167,9 @@ class CanFirstFrameHandler:
         :param addressing_format: CAN Addressing Format used.
         :param raw_frame_data: Raw data bytes of a considered CAN frame.
 
-        :raise NotImplementedError: The provided data of First Frame packet are valid, but the format of First Frame
-            Data Length is missing the implementation.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided First Frame Data Length format.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: Extracted value of First Frame Data Length.
         """

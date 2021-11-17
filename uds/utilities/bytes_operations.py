@@ -57,9 +57,9 @@ def int_to_bytes_list(int_value: int,
     :raise TypeError: At least one provided value has invalid type.
     :raise ValueError: At least one provided value is out of range.
     :raise InconsistentArgumentsError: Provided value of `list_size` is too small to contain entire `int_value`.
-    :raise NotImplementedError: A valid endianness was provided, but the implementation for it is missing.
-        Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-        whenever you see this error.
+    :raise NotImplementedError: There is missing implementation for the provided Endianness.
+        Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+        with detailed description if you face this error.
 
     :return: The value of bytes list that represents the provided integer value.
     """

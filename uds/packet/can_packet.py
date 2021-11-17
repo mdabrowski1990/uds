@@ -120,9 +120,9 @@ class CanPacket(AbstractUdsPacket):
         :param address_extension: Address Extension value carried by this CAN packet.
             Leave None if provided `addressing_format` does not use Address Extension parameter.
 
-        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
         """
         CanAddressingFormat.validate_member(addressing_format)
         if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
@@ -340,9 +340,9 @@ class CanPacket(AbstractUdsPacket):
             - :parameter st_min: (required for: FC with ContinueToSend Flow Status)
                 Separation Time minimum information carried by this Flow Control frame.
 
-        :raise NotImplementedError: A valid packet type was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided CAN Packet Type.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
         """
         CanPacketType.validate_member(packet_type)
         if packet_type == CanPacketType.SINGLE_FRAME:

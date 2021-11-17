@@ -58,8 +58,8 @@ class CanAddressingInformationHandler:
         :param addressing_format: CAN Addressing Format used.
         :param can_id: Value of CAN Identifier.
         :param ai_data_bytes: Data bytes containing Addressing Information.
-            This is usually 0 or 1 data byte located at the beginning of a CAN frame.
-            Number and content of these bytes  depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>`
+            This shall be either 0 or 1 byte located at the beginning of a CAN frame data field.
+            Number and content of these bytes depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>`
             used.
 
         :return: Dictionary with Addressing Information decoded out of the provided CAN ID and Addressing Information
@@ -79,13 +79,13 @@ class CanAddressingInformationHandler:
 
         :param addressing_format: CAN Addressing Format used.
         :param ai_data_bytes: Data bytes containing Addressing Information.
-            This is usually 0 or 1 data byte located at the beginning of a CAN frame.
-            Number and content of these bytes  depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>`
+            This shall be either 0 or 1 byte located at the beginning of a CAN frame data field.
+            Number and content of these bytes depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>`
             used.
 
-        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: Dictionary with Target Address and Address Extension values decoded out of Addressing Information
             data bytes.
@@ -117,9 +117,9 @@ class CanAddressingInformationHandler:
         :param target_address: Target Address value used.
         :param address_extension: Source Address value used.
 
-        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: List of data bytes that carry Addressing Information in CAN frame Data field.
         """
@@ -177,9 +177,9 @@ class CanAddressingInformationHandler:
 
         :raise UnusedArgumentError: Value for at least one unused argument (not relevant for this can addressing format)
             was provided.
-        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
         """
         CanAddressingFormat.validate_member(addressing_format)
         if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:

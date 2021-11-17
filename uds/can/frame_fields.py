@@ -77,9 +77,9 @@ class CanIdHandler:
         :param addressing_format: Addressing format used.
         :param can_id: CAN ID from which Addressing Information to be extracted.
 
-        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: Dictionary with Addressing Information decoded out of the provided CAN ID.
         """
@@ -104,9 +104,9 @@ class CanIdHandler:
         :param can_id: CAN ID from which Addressing Information to be extracted.
 
         :raise ValueError: Provided CAN ID is not compatible with Normal Fixed Addressing format.
-        :raise NotImplementedError: A valid addressing type was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided CAN ID.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: Dictionary with Addressing Information decoded out of the provided CAN ID.
         """
@@ -138,9 +138,9 @@ class CanIdHandler:
         :param can_id: CAN ID from which Addressing Information to be extracted.
 
         :raise ValueError: Provided CAN ID is not compatible with Mixed 29-bit Addressing format.
-        :raise NotImplementedError: A valid addressing type was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided CAN ID.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: Dictionary with Addressing Information decoded out of the provided CAN ID.
         """
@@ -176,9 +176,9 @@ class CanIdHandler:
         :param target_address: Target address value to use.
         :param source_address: Source address value to use.
 
-        :raise NotImplementedError: A valid addressing type was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Type.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: Value of CAN ID (compatible with Normal Fixed Addressing Format) that was generated from
             the provided values.
@@ -204,9 +204,9 @@ class CanIdHandler:
         :param target_address: Target address value to use.
         :param source_address: Source address value to use.
 
-        :raise NotImplementedError: A valid addressing type was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Type.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: Value of CAN ID (compatible with Mixed 29-bit Addressing Format) that was generated from
             the provided values.
@@ -233,9 +233,9 @@ class CanIdHandler:
         :param addressing_type: Addressing type for which consistency check to be performed.
             Leave None to not perform consistency check with Addressing Type.
 
-        :raise NotImplementedError: A valid addressing format was provided, but the implementation for it is missing.
-            Please raise an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            whenever you see this error.
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: True if CAN ID value is compatible with provided addressing values, False otherwise.
         """
