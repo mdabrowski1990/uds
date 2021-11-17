@@ -187,8 +187,6 @@ class TestCanFirstFrameHandler:
     @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
         ([0x10, 0xFE, 0xDC], 0),
         ([0xFE, 0x1F, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1),
-        ([0x1F, 0xFF, 0xFF, 0xFF] + list(range(20)), 0),
-        ([0xFF, 0x1F, 0xFF, 0xFF] + list(range(60)), 1),
     ])
     def test_is_first_frame__true(self, addressing_format, raw_frame_data, ai_bytes_number):
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
@@ -199,8 +197,6 @@ class TestCanFirstFrameHandler:
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
     @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
         ([0x20, 0xFE, 0xDC], 0),
-        ([0xFE, 0x4F, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1),
-        ([0x8F, 0xFF, 0xFF, 0xFF] + list(range(20)), 0),
         ([0xFF, 0xFF, 0xFF, 0xFF] + list(range(60)), 1),
     ])
     def test_is_first_frame__false(self, addressing_format, raw_frame_data, ai_bytes_number):
@@ -215,7 +211,7 @@ class TestCanFirstFrameHandler:
         ("some addressing", tuple(range(20, 84))),
         ("another addressing", range(8)),
     ])
-    @pytest.mark.parametrize("ff_dl_data_bytes", [[0x10], [0x1F, 0xFF], (0x10, 0x20, 0x30, 0xF2, 0xE7)])
+    @pytest.mark.parametrize("ff_dl_data_bytes", [[0x1F, 0xFF], (0x10, 0x20, 0x30, 0xF2, 0xE7)])
     @pytest.mark.parametrize("ai_bytes_number", [0, 1])
     @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler._CanFirstFrameHandler__extract_ff_dl_data_bytes")
     def test_decode_payload(self, mock_extract_ff_dl_data_bytes,
@@ -240,7 +236,6 @@ class TestCanFirstFrameHandler:
     @pytest.mark.parametrize("ff_dl_data_bytes", [
         [0x10, 0x06],
         [0x1F, 0xFF],
-        [0x15, 0x65],
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler._CanFirstFrameHandler__extract_ff_dl_data_bytes")
     def test_decode_ff_dl__short(self, mock_extract_ff_dl_data_bytes,
@@ -309,8 +304,6 @@ class TestCanFirstFrameHandler:
                                      CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION+1])
     @pytest.mark.parametrize("data_bytes_number, ai_bytes_number", [
         (8, 0),
-        (8, 1),
-        (48, 0),
         (64, 1),
     ])
     def test_get_payload_size__short(self, addressing_format, dlc,
@@ -330,8 +323,6 @@ class TestCanFirstFrameHandler:
                                      CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION+1])
     @pytest.mark.parametrize("data_bytes_number, ai_bytes_number", [
         (8, 0),
-        (8, 1),
-        (48, 0),
         (64, 1),
     ])
     def test_get_payload_size__long(self, addressing_format, dlc,
@@ -412,7 +403,6 @@ class TestCanFirstFrameHandler:
             CanFirstFrameHandler.validate_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
 
     @pytest.mark.parametrize("ff_dl, sf_dl", [
-        (5, 5),
         (2, 5),
         (100, 100),
     ])
@@ -437,10 +427,8 @@ class TestCanFirstFrameHandler:
 
     @pytest.mark.parametrize("ff_dl, sf_dl, long_ff_dl_format", [
         (6, 5, False),
-        (25, 5, False),
         (101, 100, False),
         (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE + 1, 100, True),
-        (CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE, 100, True),
     ])
     @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION,
                                      CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION + 2])
@@ -464,11 +452,8 @@ class TestCanFirstFrameHandler:
     @pytest.mark.parametrize("raw_frame_data, ai_data_bytes, ff_dl_bytes", [
         ((0x10, 0x01), 0, [0x10, 0x01]),
         ([0x11, 0x11, 0x23, 0xEF, 0xCD, 0xAB, 0x89], 1, [0x11, 0x23]),
-        ((0xFE, 0x1F, 0xFF, 0xEF, 0xCD, 0xAB, 0x89, 0x67), 1, [0x1F, 0xFF]),
         ([0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x89, 0x67], 0, [0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF]),
-        ([0x10, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x89, 0x67] + list(range(50)), 1,
-         [0x10, 0x00, 0x00, 0x00, 0x00, 0x00]),
-        ([0x10, 0x10, 0x00, 0xF0, 0xE1, 0xD2, 0xC3, 0x89, 0x67], 1, [0x10, 0x00, 0xF0, 0xE1, 0xD2, 0xC3]),
+        ([0x10, 0x10, 0x00, 0x00, 0xE1, 0xD2, 0xC3, 0x89, 0x67], 1, [0x10, 0x00, 0x00, 0xE1, 0xD2, 0xC3]),
     ])
     def test_extract_ff_dl_data_bytes(self, addressing_format, raw_frame_data,
                                       ai_data_bytes, ff_dl_bytes):
@@ -480,11 +465,9 @@ class TestCanFirstFrameHandler:
     # __encode_valid_ff_dl
 
     @pytest.mark.parametrize("ff_dl, long_format", [
-        (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE - 99999, False),
         (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE - 1, False),
         (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE, False),
         (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE + 1, True),
-        (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE + 100, True),
         (CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE, True),
     ])
     @pytest.mark.parametrize("dlc, addressing_format", [
@@ -507,8 +490,6 @@ class TestCanFirstFrameHandler:
     @pytest.mark.parametrize("ff_dl, long_ff_dl_format, expected_ff_dl_bytes", [
         (0x0, False, [0x10, 0x00]),
         (0x0, True, [0x10, 0x00, 0x00, 0x00, 0x00, 0x00]),
-        (0xFFF, False, [0x1F, 0xFF]),
-        (0xFFFFFFFF, True, [0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF]),
         (0xF4A, False, [0x1F, 0x4A]),
         (0x9BE08721, True, [0x10, 0x00, 0x9B, 0xE0, 0x87, 0x21]),
     ])
