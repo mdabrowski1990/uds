@@ -135,7 +135,6 @@ class TestCanPacketRecord:
                == self.mock_can_packet_record.frame.arbitration_id
 
     def test_can_id__not_implemented(self):
-        self.mock_can_packet_record.frame = None
         with pytest.raises(NotImplementedError):
             CanPacketRecord.can_id.fget(self=self.mock_can_packet_record)
 
