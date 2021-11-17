@@ -52,7 +52,6 @@ class TestCanConsecutiveFrameHandler:
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
         ([0x54], 2, [], [0xFA]),
-        ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
@@ -90,7 +89,6 @@ class TestCanConsecutiveFrameHandler:
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
         ([0x54], 2, [], [0xFA]),
-        ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.get_min_dlc")
@@ -133,8 +131,7 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
         (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
         (CanDlcHandler.MIN_DLC_DATA_PADDING - 2, [0x3E], 7, [], [0x01]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING, [0x20, 0x30, 0x44], 3, [], [0x03]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 1, range(20), 21, [0xAA], [0x03]),
+        (CanDlcHandler.MIN_DLC_DATA_PADDING + 1, [0x20, 0x30, 0x44], 4, [0xAA], [0x03]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
     def test_create_valid_frame_data__inconsistent_args(self, mock_encode_sn,
@@ -171,7 +168,6 @@ class TestCanConsecutiveFrameHandler:
         (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, 0xF),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        ([0x54], 2, [], [0xFA]),
         ([], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
@@ -210,7 +206,6 @@ class TestCanConsecutiveFrameHandler:
     ])
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
         (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, range(60), 62, [0xFF], [0x00, 0xFA]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 1, range(20), 21, [0xAA], [0x03]),
         (CanDlcHandler.MIN_DLC_DATA_PADDING, [0x20, 0x30, 0x44], 3, [], [0x03]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
@@ -243,8 +238,6 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
         (0, (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76)),
         (1, [0x01, 0x20] + list(range(46))),
-        (0, [0x25] + list(range(47))),
-        (1, (0x13, 0x2E, 0x21)),
     ])
     def test_is_consecutive_frame__true(self, addressing_format, raw_frame_data,
                                         ai_bytes_number):
@@ -270,8 +263,6 @@ class TestCanConsecutiveFrameHandler:
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
     @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
-        (0, (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76)),
-        (2, [0x01, 0x20] + list(range(46))),
         (0, [0x25] + list(range(47))),
         (1, (0x13, 0x2E, 0x21)),
     ])
@@ -308,8 +299,6 @@ class TestCanConsecutiveFrameHandler:
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
     @pytest.mark.parametrize("ai_bytes_number, raw_frame_data", [
-        (0, (0x2F, 0xFE, 0xDC, 0xBA, 0x98, 0x76)),
-        (2, [0x01, 0x20] + list(range(46))),
         (0, [0x25] + list(range(47))),
         (1, (0x13, 0x2E, 0x21)),
     ])
@@ -347,10 +336,9 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("ai_data_bytes, payload_length", [
         (0, 1),
-        (1, 7),
         (0, 62),
     ])
-    @pytest.mark.parametrize("decoded_dlc", [1, 8, 0xF])
+    @pytest.mark.parametrize("decoded_dlc", [8, 0xF])
     def test_get_min_dlc(self, addressing_format, payload_length, ai_data_bytes, decoded_dlc):
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
         self.mock_get_min_dlc.return_value = decoded_dlc
@@ -389,9 +377,7 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("dlc", ["some DLC", 8])
     @pytest.mark.parametrize("frame_data_bytes_number, ai_data_bytes_number", [
         (10, 1),
-        (6, 0),
         (64, 1),
-        (2, 0),
     ])
     def test_get_max_payload_size__with_addressing_dlc(self, addressing_format, dlc,
                                                        frame_data_bytes_number, ai_data_bytes_number):
@@ -406,9 +392,8 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("dlc", ["some DLC", 8])
     @pytest.mark.parametrize("frame_data_bytes_number, ai_data_bytes_number", [
-        (2, 2),
         (1, 1),
-        (1, 2),
+        (0, 0),
     ])
     def test_get_max_payload_size__too_short(self, addressing_format, dlc,
                                              frame_data_bytes_number, ai_data_bytes_number):
@@ -433,7 +418,6 @@ class TestCanConsecutiveFrameHandler:
         ("another format", range(5)),
     ])
     @pytest.mark.parametrize("min_dlc, decoded_dlc", [
-        (0, 0),
         (8, 8),
         (13, 15),
     ])
@@ -473,7 +457,6 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("min_dlc, decoded_dlc", [
         (1, 0),
         (15, 8),
-        (13, 12),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.is_consecutive_frame")
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.get_min_dlc")
@@ -493,7 +476,7 @@ class TestCanConsecutiveFrameHandler:
 
     # __encode_sn
 
-    @pytest.mark.parametrize("sequence_number", [0, 5, 0xF])
+    @pytest.mark.parametrize("sequence_number", [0, 0xF])
     def test_encode_sn(self, sequence_number):
         assert CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn(sequence_number=sequence_number) \
                == [(CanConsecutiveFrameHandler.CONSECUTIVE_FRAME_N_PCI << 4) + sequence_number]
