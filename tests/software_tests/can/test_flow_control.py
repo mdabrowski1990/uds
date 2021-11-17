@@ -460,7 +460,7 @@ class TestCanFlowControlHandler:
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
         block_size = CanFlowControlHandler.decode_block_size(addressing_format=addressing_format,
                                                              raw_frame_data=raw_frame_data)
-        assert block_size == raw_frame_data[ai_bytes_number + CanFlowControlHandler.BS_BYTE]
+        assert block_size == raw_frame_data[ai_bytes_number + CanFlowControlHandler.BS_BYTE_POSITION]
         mock_decode_flow_status.assert_called_once_with(addressing_format=addressing_format,
                                                         raw_frame_data=raw_frame_data)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
@@ -497,7 +497,7 @@ class TestCanFlowControlHandler:
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
         block_size = CanFlowControlHandler.decode_st_min(addressing_format=addressing_format,
                                                          raw_frame_data=raw_frame_data)
-        assert block_size == raw_frame_data[ai_bytes_number + CanFlowControlHandler.STMIN_BYTE]
+        assert block_size == raw_frame_data[ai_bytes_number + CanFlowControlHandler.STMIN_BYTE_POSITION]
         mock_decode_flow_status.assert_called_once_with(addressing_format=addressing_format,
                                                         raw_frame_data=raw_frame_data)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)

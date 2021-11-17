@@ -80,8 +80,8 @@ class CanSTminTranslator:
     MAX_TIME_VALUE_100US_RANGE: TimeMilliseconds = 0.9
     """Maximal time value (in milliseconds) of STmin in 100 microseconds range."""
 
-    _FLOATING_POINT_ACCURACY: int = 10
-    """Accuracy of floating point values - when rounding is necessary due to float operation in python."""
+    __FLOATING_POINT_ACCURACY: int = 10
+    """Accuracy used for floating point values (rounding is necessary due to float operation in python)."""
 
     @classmethod
     def decode(cls, raw_value: RawByte) -> TimeMilliseconds:
@@ -161,7 +161,7 @@ class CanSTminTranslator:
         """
         if not cls.MIN_TIME_VALUE_100US_RANGE <= value <= cls.MAX_TIME_VALUE_100US_RANGE:
             return False
-        return round(value % 0.1, cls._FLOATING_POINT_ACCURACY) in (0, 0.1)
+        return round(value % 0.1, cls.__FLOATING_POINT_ACCURACY) in (0, 0.1)
 
 
 class CanFlowControlHandler:
@@ -171,9 +171,9 @@ class CanFlowControlHandler:
     """N_PCI value of Flow Control."""
     FS_BYTES_USED: int = 3
     """Number of CAN Frame data bytes used to carry CAN Packet Type, Flow Status, Block Size and STmin."""
-    BS_BYTE: int = 1
+    BS_BYTE_POSITION: int = 1
     """Position of a data byte with :ref:`Block Size <knowledge-base-can-block-size>` parameter."""
-    STMIN_BYTE: int = 2
+    STMIN_BYTE_POSITION: int = 2
     """Position of a data byte with  :ref:`STmin <knowledge-base-can-st-min>` parameter."""
 
     @classmethod
@@ -203,6 +203,7 @@ class CanFlowControlHandler:
 
             - None - use CAN Data Frame Optimization (CAN ID value will be automatically determined)
             - int type value - DLC value to set. CAN Data Padding will be used to fill the unused data bytes.
+
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         :param target_address: Target Address value carried by this CAN Packet.
             The value must only be provided if `addressing_format` uses Target Address parameter.
@@ -347,7 +348,7 @@ class CanFlowControlHandler:
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
                              f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-        return raw_frame_data[ai_data_bytes_number + cls.BS_BYTE]
+        return raw_frame_data[ai_data_bytes_number + cls.BS_BYTE_POSITION]
 
     @classmethod
     def decode_st_min(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawByte:
@@ -372,7 +373,7 @@ class CanFlowControlHandler:
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
                              f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
-        return raw_frame_data[ai_data_bytes_number + cls.STMIN_BYTE]
+        return raw_frame_data[ai_data_bytes_number + cls.STMIN_BYTE_POSITION]
 
     @classmethod
     def get_min_dlc(cls, addressing_format: CanAddressingFormatAlias) -> int:

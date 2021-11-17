@@ -89,7 +89,6 @@ class TestCanPacketRecord:
                == tuple(self.mock_can_packet_record.frame.data)
 
     def test_raw_frame_data__not_implemented(self):
-        self.mock_can_packet_record.frame = None
         with pytest.raises(NotImplementedError):
             CanPacketRecord.raw_frame_data.fget(self=self.mock_can_packet_record)
 
