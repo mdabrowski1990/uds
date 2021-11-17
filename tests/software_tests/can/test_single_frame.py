@@ -55,7 +55,6 @@ class TestCanSingleFrameHandler:
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
         ([0x54], 2, [], [0xFA]),
-        ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__encode_valid_sf_dl")
@@ -94,7 +93,6 @@ class TestCanSingleFrameHandler:
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
         ([0x54], 2, [], [0xFA]),
-        ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_min_dlc")
@@ -134,7 +132,6 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("filler_byte", [0x66, 0x99])
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
         (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING - 2, [0x3E], 7, [], [0x01]),
         (CanDlcHandler.MIN_DLC_DATA_PADDING, [0x20, 0x30, 0x44], 3, [], [0x03]),
         (CanDlcHandler.MIN_DLC_DATA_PADDING + 1, range(20), 21, [0xAA], [0x03]),
     ])
@@ -175,7 +172,6 @@ class TestCanSingleFrameHandler:
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
         ([0x54], 2, [], [0xFA]),
-        ([0x3E], 8, [], [0x0C]),
         (range(50, 110), 64, [0x98], [0x12, 0x34]),
     ])
     @pytest.mark.parametrize("sf_dl_short, sf_dl_long", [
@@ -219,7 +215,6 @@ class TestCanSingleFrameHandler:
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
         ([0x54], 2, [0x11], [0xFA]),
-        (list(range(16)), 8, [], [0x0C]),
         (range(50, 112), 64, [0x98], [0x12, 0x34]),
     ])
     @pytest.mark.parametrize("sf_dl_short, sf_dl_long", [
@@ -258,8 +253,6 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
         ([0x01, 0xFE, 0xDC], 0),
         ([0xFE, 0x05, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1),
-        ([0x0F, 0xFF, 0xFF, 0xFF], 0),
-        ([0xFF, 0x0F, 0xFF, 0xFF], 1),
     ])
     def test_is_single_frame__true(self, addressing_format, raw_frame_data, ai_bytes_number):
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
@@ -271,8 +264,6 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("raw_frame_data, ai_bytes_number", [
         ([0x01, 0xFE, 0xDC], 1),
         ([0xFE, 0x15, 0xDC, 0xBA, 0x98, 0x76, 0x54], 1),
-        ([0x2F, 0xFF, 0xFF, 0xFF], 0),
-        ([0xFF, 0x8F, 0xFF, 0xFF], 1),
     ])
     def test_is_single_frame__false(self, addressing_format, raw_frame_data, ai_bytes_number):
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
@@ -286,7 +277,6 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("raw_frame_data, sf_dl, sf_dl_bytes_number, ai_bytes_number", [
         (range(8), 4, 1, 0),
         (tuple(range(10, 74)), 20, 2, 1),
-        (list(range(5, 25)), 18, 2, 0),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_sf_dl_bytes_number")
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.decode_sf_dl")
@@ -311,25 +301,25 @@ class TestCanSingleFrameHandler:
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
     @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
-    @pytest.mark.parametrize("expected_sf_dl", [1, 4, 7])
+    @pytest.mark.parametrize("sf_dl", [1, 7])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     def test_decode_sf_dl__valid_short(self, mock_extract_sf_dl_data_bytes,
-                                       addressing_format, raw_frame_data, expected_sf_dl):
-        mock_extract_sf_dl_data_bytes.return_value = [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4) ^ expected_sf_dl]
+                                       addressing_format, raw_frame_data, sf_dl):
+        mock_extract_sf_dl_data_bytes.return_value = [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4) ^ sf_dl]
         assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
-                                                  raw_frame_data=raw_frame_data) == expected_sf_dl
+                                                  raw_frame_data=raw_frame_data) == sf_dl
         mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                               raw_frame_data=raw_frame_data)
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "another format"])
     @pytest.mark.parametrize("raw_frame_data", [list(range(64)), (0x12, 0x34, 0x56)])
-    @pytest.mark.parametrize("expected_sf_dl", [8, 0x15, 0x3E])
+    @pytest.mark.parametrize("sf_dl", [8, 0x3E])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     def test_decode_sf_dl__valid_long(self, mock_extract_sf_dl_data_bytes,
-                                      addressing_format, raw_frame_data, expected_sf_dl):
-        mock_extract_sf_dl_data_bytes.return_value = [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4), expected_sf_dl]
+                                      addressing_format, raw_frame_data, sf_dl):
+        mock_extract_sf_dl_data_bytes.return_value = [(CanSingleFrameHandler.SINGLE_FRAME_N_PCI << 4), sf_dl]
         assert CanSingleFrameHandler.decode_sf_dl(addressing_format=addressing_format,
-                                                  raw_frame_data=raw_frame_data) == expected_sf_dl
+                                                  raw_frame_data=raw_frame_data) == sf_dl
         mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                               raw_frame_data=raw_frame_data)
 
@@ -350,17 +340,15 @@ class TestCanSingleFrameHandler:
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("ai_data_bytes, payload_length", [
-        (0, 0),
         (1, 7),
-        (0, 15),
         (0, 62),
     ])
     @pytest.mark.parametrize("decoded_dlc", [CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL,
                                              CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL - 2])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__validate_payload_length")
     def test_get_min_dlc__short_dlc(self, mock_validate_payload_length,
-                                addressing_format, payload_length, ai_data_bytes,
-                                decoded_dlc):
+                                    addressing_format, payload_length, ai_data_bytes,
+                                    decoded_dlc):
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
         self.mock_get_min_dlc.return_value = decoded_dlc
         assert CanSingleFrameHandler.get_min_dlc(addressing_format=addressing_format,
@@ -373,9 +361,7 @@ class TestCanSingleFrameHandler:
 
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("ai_data_bytes, payload_length", [
-        (0, 0),
         (1, 7),
-        (0, 15),
         (0, 62),
     ])
     @pytest.mark.parametrize("decoded_dlc", [CanSingleFrameHandler.MAX_DLC_VALUE_SHORT_SF_DL + 1,
@@ -464,8 +450,6 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("raw_frame_data, dlc, ai_bytes_number, sf_dl_data_bytes", [
         (list(range(8)), 8, 0, [0x07]),
-        (list(range(5)), 7, 1, [0x03]),
-        (list(range(9)), 9, 1, [0x00, 0x05]),
         (list(range(64)), 10, 0, [0x00, 0x3E]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
@@ -502,9 +486,7 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("addressing_format", ["some addressing format", "something else"])
     @pytest.mark.parametrize("raw_frame_data, dlc, ai_bytes_number, sf_dl_data_bytes", [
         (list(range(7)), 8, 0, [0x07]),
-        (list(range(4)), 7, 1, [0x03]),
         (list(range(9)), 9, 1, [0x00, 0x08]),
-        (list(range(16)), 9, 0, [0x03, 0x05]),
         (list(range(64)), 10, 0, [0x00, 0x3F]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
@@ -679,7 +661,7 @@ class TestCanSingleFrameHandler:
         self.mock_validate_nibble.assert_called_once_with(sf_dl_short)
         self.mock_validate_raw_byte.assert_not_called()
 
-    @pytest.mark.parametrize("sf_dl_short", [0, 7, 0xF])
+    @pytest.mark.parametrize("sf_dl_short", [0, 5, 0xF])
     @pytest.mark.parametrize("sf_dl_long", [0, 7, 0xF])
     def test_encode_any_sf_dl__long(self, sf_dl_short, sf_dl_long):
         assert CanSingleFrameHandler._CanSingleFrameHandler__encode_any_sf_dl(
