@@ -643,6 +643,7 @@ class TestCanFlowControlHandler:
         self.mock_validate_raw_byte.assert_not_called()
 
 
+@pytest.mark.integration
 class TestCanFlowControlHandlerIntegration:
     """Integration tests for `CanFlowControlHandler` class."""
 

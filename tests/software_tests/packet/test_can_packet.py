@@ -1,7 +1,7 @@
 import pytest
 from mock import patch, Mock, call
 
-from uds.packet.can_packet import CanPacket, \
+from uds.packet.can_packet import CanPacket, AnyCanPacket, \
     CanPacketType, CanAddressingFormat, AddressingType, CanIdHandler, DEFAULT_FILLER_BYTE, AmbiguityError
 from uds.can import CanFlowStatus
 
@@ -981,6 +981,31 @@ class TestCanPacket:
             address_extension=self.mock_can_packet.address_extension)
 
 
+class TestAnyCanPacket:
+    """Unit tests for `AnyCanPacket` class."""
+
+    def setup(self):
+        self.mock_any_can_packet = Mock(spec=CanPacket)
+
+    # __init__
+
+    @pytest.mark.parametrize("raw_frame_data, addressing_format, addressing_type, can_id", [
+        ("some data", "some format", "some addressing type", "some CAN ID"),
+        (range(10), CanAddressingFormat.EXTENDED_ADDRESSING, AddressingType.FUNCTIONAL, 0x987)
+    ])
+    def test_init(self, raw_frame_data, addressing_format, addressing_type, can_id):
+        AnyCanPacket(self=self.mock_any_can_packet,
+                     raw_frame_data=raw_frame_data,
+                     addressing_format=addressing_format,
+                     addressing_type=addressing_type,
+                     can_id=can_id)
+        assert self.mock_any_can_packet.raw_frame_data == raw_frame_data
+        assert self.mock_any_can_packet.addressing_format == addressing_format
+        assert self.mock_any_can_packet.addressing_type == addressing_type
+        assert self.mock_any_can_packet.can_id == can_id
+
+
+@pytest.mark.integration
 class TestCanPacketIntegration:
     """Integration tests for `CanPacket` class."""
 

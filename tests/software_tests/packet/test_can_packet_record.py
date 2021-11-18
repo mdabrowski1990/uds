@@ -289,6 +289,7 @@ class TestCanPacketRecord:
                                                                          ai_data_bytes=raw_frame_data[:ai_data_bytes_number])
 
 
+@pytest.mark.integration
 class TestCanPacketRecordIntegration:
     """Integration tests for `CanPacketRecord` class."""
 

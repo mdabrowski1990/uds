@@ -710,35 +710,69 @@ class AnyCanPacket(AbstractUdsPacket):
             If you want to create a valid CAN Packet, use :class:`~uds.packet.can_packet.CanPacket` instead.
 
         :param raw_frame_data: Raw data bytes of a CAN frame that carries this CAN packet.
+
             .. note:: One can use :meth:`uds.can.single_frame.CanSingleFrameHandler.create_any_frame_data`,
                 :meth:`uds.can.first_frame.CanFirstFrameHandler.create_any_frame_data`,
                 :meth:`uds.can.consecutive_frame.CanConsecutiveFrameHandler.create_any_frame_data` or
-                :meth:`uds.can.flow_control.CanFlowControlHandler.create_any_frame_data` to generate this value.
+                :meth:`uds.can.flow_control.CanFlowControlHandler.create_any_frame_data`
+                to create input (also incompatible with ISO 15765) for this parameter.
+
         :param addressing_format: CAN addressing format that this CAN packet uses.
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
-            Leave None if other arguments unambiguously determine CAN ID value.
         """
+        self.raw_frame_data = raw_frame_data
+        self.addressing_format = addressing_format
+        self.addressing_type = addressing_type
+        self.can_id = can_id
 
     @property
     def raw_frame_data(self) -> RawBytesTuple:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
-        return self.__raw_frame_data
+
+    @raw_frame_data.setter
+    def raw_frame_data(self, value: RawBytes):
+        """
+        Set value of raw data bytes that carries this CAN packet.
+
+        :param value: Raw data bytes value to set.
+        """
 
     @property
-    def addressing_type(self) -> AddressingType:
+    def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type for which this CAN packet is relevant."""
-        return self.__addressing_type
+
+    @addressing_type.setter
+    def addressing_type(self, value: AddressingTypeAlias):
+        """
+        Set value of addressing type for which this CAN packet is relevant.
+
+        :param value: Addressing type value to set.
+        """
 
     @property
-    def addressing_format(self) -> CanAddressingFormat:
+    def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN addressing format used by this CAN packet."""
-        return self.__addressing_format
+
+    @addressing_format.setter
+    def addressing_format(self, value: CanAddressingFormatAlias):
+        """
+        Set value of CAN addressing format used by this CAN packet.
+
+        :param value: CAN addressing format value to set.
+        """
 
     @property
     def can_id(self) -> int:
         """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
-        return self.__can_id
+
+    @can_id.setter
+    def can_id(self, value: int):
+        """
+        Set CAN Identifier (CAN ID) value of a CAN Frame that carries this CAN packet.
+
+        :param value: CAN ID value to set.
+        """
 
     @property
     def packet_type(self) -> Optional[Nibble]:
