@@ -17,7 +17,7 @@ from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 AIDataBytesAlias = Dict[str, Optional[RawByte]]
 """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in data bytes."""
-AIAlias = Dict[str, Optional[Union[RawByte, AddressingType]]]
+AIAlias = Dict[str, Optional[Union[RawByte, AddressingTypeAlias]]]
 """Alias of :ref:`Addressing Information <knowledge-base-n-ai>`."""
 
 

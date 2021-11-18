@@ -8,7 +8,7 @@ It provides tools for:
  - storing historic information about packets that were either received or transmitted
 """
 
-from .abstract_packet_type import AbstractUdsPacketType
+from .abstract_packet_type import AbstractUdsPacketType, AbstractUdsPacketTypeAlias
 from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord, \
     PacketsRecordsTuple, PacketsRecordsSequence, \
     PacketAlias, PacketsSequence, PacketsDefinitionTuple

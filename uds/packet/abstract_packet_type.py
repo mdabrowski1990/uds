@@ -1,11 +1,11 @@
 """Common (abstract) implementation of UDS Packet Types."""
 
-__all__ = ["AbstractUdsPacketType"]
+__all__ = ["AbstractUdsPacketType", "AbstractUdsPacketTypeAlias"]
 
-from typing import Any
+from typing import Any, Union
 from abc import abstractmethod
 
-from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, Nibble
 
 
 class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
@@ -28,3 +28,7 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
 
         :return: True if given argument is a packet type that initiates a diagnostic message, else False.
         """
+
+
+AbstractUdsPacketTypeAlias = Union[AbstractUdsPacketType, Nibble]
+"""Alias that describes :class:`~uds.packet.abstract_packet_type.AbstractUdsPacketType` member."""

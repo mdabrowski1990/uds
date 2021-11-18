@@ -22,7 +22,7 @@ DEFAULT_FILLER_BYTE: RawByte = 0xCC
 Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
 .. note:: The value is specified by ISO 15765-2:2016 (chapter 10.4.2.1)."""
 
-AICanIdAlias = Dict[str, Optional[Union[AddressingType, RawByte]]]
+AICanIdAlias = Dict[str, Optional[Union[AddressingTypeAlias, RawByte]]]
 """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in CAN Identifier."""
 
 

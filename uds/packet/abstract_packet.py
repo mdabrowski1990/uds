@@ -13,9 +13,9 @@ from abc import ABC, abstractmethod
 from typing import Union, Optional, Any, Tuple, List
 
 from uds.utilities import RawBytesTuple, ReassignmentError, TimeStamp
-from uds.transmission_attributes.addressing import AddressingType
+from uds.transmission_attributes.addressing import AddressingTypeAlias
 from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionAlias
-from .abstract_packet_type import AbstractUdsPacketType
+from .abstract_packet_type import AbstractUdsPacketTypeAlias
 
 
 class AbstractUdsPacket(ABC):
@@ -23,7 +23,7 @@ class AbstractUdsPacket(ABC):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingType:
+    def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type for which this packet is relevant."""
 
     @property
@@ -33,7 +33,7 @@ class AbstractUdsPacket(ABC):
 
     @property
     @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketType:
+    def packet_type(self) -> AbstractUdsPacketTypeAlias:
         """UDS packet type value - N_PCI value of this N_PDU."""
 
     @property
@@ -63,7 +63,7 @@ class AbstractUdsPacketRecord(ABC):
         :param transmission_time: Time stamp when this packet was fully transmitted on a bus.
         """
         self.frame = frame
-        self.direction = direction  # type: ignore
+        self.direction = direction
         self.transmission_time = transmission_time
 
     @property
@@ -89,7 +89,7 @@ class AbstractUdsPacketRecord(ABC):
             raise ReassignmentError("You cannot change value of 'frame' attribute once it is assigned.")
 
     @property
-    def direction(self) -> TransmissionDirection:
+    def direction(self) -> TransmissionDirectionAlias:
         """Information whether this packet was transmitted or received."""
         return self.__direction
 
@@ -141,12 +141,12 @@ class AbstractUdsPacketRecord(ABC):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingType:
+    def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type over which this packet was transmitted."""
 
     @property
     @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketType:
+    def packet_type(self) -> AbstractUdsPacketTypeAlias:
         """UDS packet type value - N_PCI value of this N_PDU."""
 
     @property

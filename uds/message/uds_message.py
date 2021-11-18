@@ -9,7 +9,7 @@ __all__ = ["UdsMessage", "UdsMessageRecord"]
 from typing import Any
 
 from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
-from uds.transmission_attributes import TransmissionDirection, AddressingType, AddressingTypeAlias
+from uds.transmission_attributes import TransmissionDirectionAlias, AddressingType, AddressingTypeAlias
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
 
@@ -32,7 +32,7 @@ class UdsMessage:
         :param addressing_type: Addressing type for which this message is relevant.
         """
         self.payload = payload  # type: ignore
-        self.addressing_type = addressing_type  # type: ignore
+        self.addressing_type = addressing_type
 
     @property
     def payload(self) -> RawBytesTuple:
@@ -50,7 +50,7 @@ class UdsMessage:
         self.__payload = tuple(value)
 
     @property
-    def addressing_type(self) -> AddressingType:
+    def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type for which this message is relevant."""
         return self.__addressing_type
 
@@ -150,12 +150,12 @@ class UdsMessageRecord:
             raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
 
     @property
-    def addressing_type(self) -> AddressingType:
+    def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type which was used to transmit this message."""
         return self.packets_records[0].addressing_type
 
     @property
-    def direction(self) -> TransmissionDirection:
+    def direction(self) -> TransmissionDirectionAlias:
         """Information whether this message was received or sent by the code."""
         return self.packets_records[0].direction
 

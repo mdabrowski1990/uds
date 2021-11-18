@@ -304,7 +304,7 @@ class CanFlowControlHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.FLOW_CONTROL_N_PCI
 
     @classmethod
-    def decode_flow_status(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> CanFlowStatus:
+    def decode_flow_status(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> CanFlowStatusAlias:
         """
         Extract Flow Status value from Flow Control data bytes.
 

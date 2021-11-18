@@ -1,16 +1,16 @@
 """CAN bus specific implementation of UDS packets."""
 
-__all__ = ["CanPacket"]
+__all__ = ["CanPacket", "AnyCanPacket"]
 
 from typing import Optional, Any
 from warnings import warn
 
-from uds.utilities import RawByte, RawBytes, RawBytesTuple, AmbiguityError, UnusedArgumentWarning
+from uds.utilities import Nibble, RawByte, RawBytes, RawBytesTuple, AmbiguityError, UnusedArgumentWarning
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler, \
     CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
     CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, \
-    CanFlowControlHandler, CanFlowStatus, CanFlowStatusAlias
+    CanFlowControlHandler, CanFlowStatusAlias
 from .abstract_packet import AbstractUdsPacket
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
 
@@ -483,17 +483,17 @@ class CanPacket(AbstractUdsPacket):
         return self.__raw_frame_data
 
     @property
-    def addressing_type(self) -> AddressingType:
+    def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type for which this CAN packet is relevant."""
         return self.__addressing_type
 
     @property
-    def addressing_format(self) -> CanAddressingFormat:
+    def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN addressing format used by this CAN packet."""
         return self.__addressing_format
 
     @property
-    def packet_type(self) -> CanPacketType:
+    def packet_type(self) -> CanPacketTypeAlias:
         """Type (N_PCI value) of this CAN packet."""
         return self.__packet_type
 
@@ -614,7 +614,7 @@ class CanPacket(AbstractUdsPacket):
         return None
 
     @property
-    def flow_status(self) -> Optional[CanFlowStatus]:
+    def flow_status(self) -> Optional[CanFlowStatusAlias]:
         """
         Flow Status carried by this CAN packet.
 
@@ -672,3 +672,179 @@ class CanPacket(AbstractUdsPacket):
             raise AmbiguityError(f"Cannot change CAN Addressing Format from {self.addressing_format} to "
                                  f"{addressing_format} as such operation provides ambiguity. "
                                  f"Create a new CAN Packet object instead.")
+
+
+class AnyCanPacket(AbstractUdsPacket):
+    """
+    Definition of a CAN packet in any format (mainly incompatible with ISO 15765 standard).
+
+    Objects of this class act as a storage for all relevant attributes of a
+    :ref:`CAN packet <knowledge-base-uds-can-packet>`.
+    """
+
+    def __init__(self, *,
+                 raw_frame_data: RawBytes,
+                 addressing_format: CanAddressingFormatAlias,
+                 addressing_type: AddressingTypeAlias,
+                 can_id: int) -> None:
+        """
+        Create a storage for a single CAN packet.
+
+        .. note:: Intention of this of this method is to create a CAN Packet that is incompatible with ISO 15765,
+            therefore any parameter validation is restricted to sanity check (whether the data can be converted into
+            a CAN Frame).
+            If you want to create a valid CAN Packet, use :class:`~uds.packet.can_packet.CanPacket` instead.
+
+        :param raw_frame_data: Raw data bytes of a CAN frame that carries this CAN packet.
+            .. note:: One can use :meth:`uds.can.single_frame.CanSingleFrameHandler.create_any_frame_data`,
+                :meth:`uds.can.first_frame.CanFirstFrameHandler.create_any_frame_data`,
+                :meth:`uds.can.consecutive_frame.CanConsecutiveFrameHandler.create_any_frame_data` or
+                :meth:`uds.can.flow_control.CanFlowControlHandler.create_any_frame_data` to generate this value.
+        :param addressing_format: CAN addressing format that this CAN packet uses.
+        :param addressing_type: Addressing type for which this CAN packet is relevant.
+        :param can_id: CAN Identifier value that is used by this packet.
+            Leave None if other arguments unambiguously determine CAN ID value.
+        """
+
+    @property
+    def raw_frame_data(self) -> RawBytesTuple:
+        """Raw data bytes of a CAN frame that carries this CAN packet."""
+        return self.__raw_frame_data
+
+    @property
+    def addressing_type(self) -> AddressingType:
+        """Addressing type for which this CAN packet is relevant."""
+        return self.__addressing_type
+
+    @property
+    def addressing_format(self) -> CanAddressingFormat:
+        """CAN addressing format used by this CAN packet."""
+        return self.__addressing_format
+
+    @property
+    def can_id(self) -> int:
+        """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
+        return self.__can_id
+
+    @property
+    def packet_type(self) -> Optional[Nibble]:
+        """Type (N_PCI value) of this CAN packet."""
+
+    @property
+    def dlc(self) -> int:
+        """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
+
+    @property
+    def target_address(self) -> Optional[RawByte]:
+        """
+        Target Address (TA) value of this CAN Packet.
+
+        Target Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
+         - :ref:`Extended Addressing <knowledge-base-can-extended-addressing>`
+         - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
+
+        None in other cases.
+        """
+
+    @property
+    def source_address(self) -> Optional[RawByte]:
+        """
+        Source Address (SA) value of this CAN Packet.
+
+        Source Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
+         - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
+
+        None in other cases.
+        """
+
+    @property
+    def address_extension(self) -> Optional[RawByte]:
+        """
+        Address Extension (AE) value of this CAN Packet.
+
+        Address Extension is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Mixed Addressing <knowledge-base-can-mixed-addressing>` - either:
+           - :ref:`Mixed 11-bit Addressing <knowledge-base-can-mixed-11-bit-addressing>`
+           - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
+
+        None in other cases.
+        """
+
+    @property
+    def payload(self) -> Optional[RawBytesTuple]:
+        """
+        Diagnostic message payload carried by this CAN packet.
+
+        Payload is only provided by packets of following types:
+         - :ref:`Single Frame <knowledge-base-can-single-frame>`
+         - :ref:`First Frame <knowledge-base-can-first-frame>`
+         - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+        None in other cases.
+
+        .. warning:: For :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` this value might contain
+            additional filler bytes (they are not part of diagnostic message payload) that were added during
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
+            The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+            cannot be determined basing solely on the information contained in this packet object.
+        """
+
+    @property
+    def data_length(self) -> Optional[int]:
+        """
+        Payload bytes number of a diagnostic message that is carried by this CAN packet.
+
+        Data length is only provided by packets of following types:
+         - :ref:`Single Frame <knowledge-base-can-single-frame>` -
+           :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
+         - :ref:`First Frame <knowledge-base-can-first-frame>` -
+           :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
+
+        None in other cases.
+        """
+
+    @property
+    def sequence_number(self) -> Optional[int]:
+        """
+        Sequence Number carried by this CAN packet.
+
+        :ref:`Sequence Number <knowledge-base-can-sequence-number>` is only provided by packets of following types:
+         - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+        None in other cases.
+        """
+
+    @property
+    def flow_status(self) -> Optional[Nibble]:
+        """
+        Flow Status carried by this CAN packet.
+
+        :ref:`Flow Status <knowledge-base-can-flow-status>` is only provided by packets of following types:
+         - :ref:`Flow Control <knowledge-base-can-flow-control>`
+
+        None in other cases.
+        """
+
+    @property
+    def block_size(self) -> Optional[RawByte]:
+        """
+        Block Size value carried by this CAN packet.
+
+        :ref:`Block Size <knowledge-base-can-flow-status>` is only provided by packets of following types:
+         - :ref:`Flow Control <knowledge-base-can-block-size>`
+
+        None in other cases.
+        """
+
+    @property
+    def st_min(self) -> Optional[RawByte]:
+        """
+        Separation Time minimum (STmin) value carried by this CAN packet.
+
+        :ref:`STmin <knowledge-base-can-st-min>` is only provided by packets of following types:
+         - :ref:`Flow Control <knowledge-base-can-block-size>`
+
+        None in other cases.
+        """
