@@ -182,6 +182,7 @@ class CanPacket(AbstractUdsPacket):
         self.__target_address = None
         self.__source_address = None
         self.__address_extension = None
+        self.__update_ai_data_byte()
 
     def set_address_information_normal_fixed(self,
                                              addressing_type: AddressingTypeAlias,
@@ -219,6 +220,7 @@ class CanPacket(AbstractUdsPacket):
         self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = None
+        self.__update_ai_data_byte()
 
     def set_address_information_extended(self,
                                          addressing_type: AddressingTypeAlias,
@@ -241,6 +243,7 @@ class CanPacket(AbstractUdsPacket):
         self.__target_address = target_address
         self.__source_address = None
         self.__address_extension = None
+        self.__update_ai_data_byte()
 
     def set_address_information_mixed_11bit(self,
                                             addressing_type: AddressingTypeAlias,
@@ -263,6 +266,7 @@ class CanPacket(AbstractUdsPacket):
         self.__target_address = None
         self.__source_address = None
         self.__address_extension = address_extension
+        self.__update_ai_data_byte()
 
     def set_address_information_mixed_29bit(self,
                                             addressing_type: AddressingTypeAlias,
@@ -303,6 +307,7 @@ class CanPacket(AbstractUdsPacket):
         self.__addressing_format = CanAddressingFormat.MIXED_29BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = address_extension
+        self.__update_ai_data_byte()
 
     def set_packet_data(self, *,
                         packet_type: CanPacketTypeAlias,
@@ -672,6 +677,15 @@ class CanPacket(AbstractUdsPacket):
             raise AmbiguityError(f"Cannot change CAN Addressing Format from {self.addressing_format} to "
                                  f"{addressing_format} as such operation provides ambiguity. "
                                  f"Create a new CAN Packet object instead.")
+
+    def __update_ai_data_byte(self) -> None:
+        """Update the value of `raw_frame_data` attribute after Addressing Information change."""
+        if self.__raw_frame_data is not None:
+            ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(
+                addressing_format=self.addressing_format,
+                target_address=self.target_address,
+                address_extension=self.address_extension)
+            self.__raw_frame_data = tuple(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))
 
 
 class AnyCanPacket(AbstractUdsPacket):
