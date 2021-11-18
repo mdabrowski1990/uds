@@ -2,7 +2,8 @@ import pytest
 from mock import patch
 
 from uds.can.consecutive_frame import CanConsecutiveFrameHandler, \
-    InconsistentArgumentsError, CanAddressingFormat, CanDlcHandler, DEFAULT_FILLER_BYTE
+    InconsistentArgumentsError, CanDlcHandler, DEFAULT_FILLER_BYTE
+from uds.can import CanAddressingFormat
 
 
 class TestCanConsecutiveFrameHandler:

@@ -2,7 +2,8 @@ import pytest
 from mock import patch
 
 from uds.can.single_frame import CanSingleFrameHandler, \
-    CanAddressingFormat, InconsistentArgumentsError, CanDlcHandler, DEFAULT_FILLER_BYTE
+    InconsistentArgumentsError, CanDlcHandler, DEFAULT_FILLER_BYTE
+from uds.can import CanAddressingFormat
 
 
 class TestCanSingleFrameHandler:

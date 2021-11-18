@@ -4,9 +4,9 @@ from mock import Mock, patch
 from datetime import datetime
 
 from uds.packet.can_packet_record import CanPacketRecord, \
-    PythonCanMessage, CanAddressingInformationHandler, InconsistentArgumentsError, CanAddressingFormat, CanPacketType, \
-    CanFlowStatus
+    PythonCanMessage, CanAddressingInformationHandler, InconsistentArgumentsError, CanAddressingFormat, CanPacketType
 from uds.transmission_attributes import TransmissionDirection, AddressingType
+from uds.can import CanFlowStatus
 
 
 class TestCanPacketRecord:

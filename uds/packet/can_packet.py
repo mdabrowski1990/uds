@@ -75,9 +75,9 @@ class CanPacket(AbstractUdsPacket):
         """
         # initialize the variables
         self.__raw_frame_data: RawBytesTuple = None  # type: ignore
-        self.__addressing_type: AddressingType = None  # type: ignore
-        self.__addressing_format: CanAddressingFormat = None  # type: ignore
-        self.__packet_type: CanPacketType = None  # type: ignore
+        self.__addressing_type: AddressingTypeAlias = None  # type: ignore
+        self.__addressing_format: CanAddressingFormatAlias = None  # type: ignore
+        self.__packet_type: CanPacketTypeAlias = None  # type: ignore
         self.__can_id: int = None  # type: ignore
         self.__dlc: int = None  # type: ignore
         self.__target_address: Optional[RawByte] = None
@@ -176,7 +176,7 @@ class CanPacket(AbstractUdsPacket):
         """
         CanAddressingInformationHandler.validate_ai_normal_11bit(addressing_type=addressing_type, can_id=can_id)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING  # type: ignore
+        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = None
@@ -214,9 +214,9 @@ class CanPacket(AbstractUdsPacket):
         else:
             self.__can_id = can_id
             ai_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
-            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]
-            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]
-        self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING  # type: ignore
+            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]  # type: ignore
+            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = None
 
@@ -235,7 +235,7 @@ class CanPacket(AbstractUdsPacket):
                                                              can_id=can_id,
                                                              target_address=target_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.EXTENDED_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING  # type: ignore
+        self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = target_address
@@ -257,7 +257,7 @@ class CanPacket(AbstractUdsPacket):
                                                                 can_id=can_id,
                                                                 address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_11BIT_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.MIXED_11BIT_ADDRESSING  # type: ignore
+        self.__addressing_format = CanAddressingFormat.MIXED_11BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = None
@@ -298,9 +298,9 @@ class CanPacket(AbstractUdsPacket):
         else:
             self.__can_id = can_id
             ai_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
-            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]
-            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]
-        self.__addressing_format = CanAddressingFormat.MIXED_29BIT_ADDRESSING  # type: ignore
+            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]  # type: ignore
+            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__addressing_format = CanAddressingFormat.MIXED_29BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = address_extension
 
@@ -383,7 +383,7 @@ class CanPacket(AbstractUdsPacket):
                                                                        filler_byte=filler_byte)
         self.__raw_frame_data = tuple(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
-        self.__packet_type = CanPacketType.SINGLE_FRAME  # type: ignore
+        self.__packet_type = CanPacketType.SINGLE_FRAME
 
     def set_first_frame_data(self,
                              dlc: int,
@@ -408,7 +408,7 @@ class CanPacket(AbstractUdsPacket):
                                                                       ff_dl=data_length)
         self.__raw_frame_data = tuple(raw_frame_data)
         self.__dlc = dlc
-        self.__packet_type = CanPacketType.FIRST_FRAME  # type: ignore
+        self.__packet_type = CanPacketType.FIRST_FRAME
 
     def set_consecutive_frame_data(self,
                                    payload: RawBytes,
@@ -440,7 +440,7 @@ class CanPacket(AbstractUdsPacket):
                                                                             filler_byte=filler_byte)
         self.__raw_frame_data = tuple(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
-        self.__packet_type = CanPacketType.CONSECUTIVE_FRAME  # type: ignore
+        self.__packet_type = CanPacketType.CONSECUTIVE_FRAME
 
     def set_flow_control_data(self,
                               flow_status: CanFlowStatusAlias,
@@ -475,7 +475,7 @@ class CanPacket(AbstractUdsPacket):
                                                                        filler_byte=filler_byte)
         self.__raw_frame_data = tuple(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
-        self.__packet_type = CanPacketType.FLOW_CONTROL  # type: ignore
+        self.__packet_type = CanPacketType.FLOW_CONTROL
 
     @property
     def raw_frame_data(self) -> RawBytesTuple:

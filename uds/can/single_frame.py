@@ -11,7 +11,7 @@ from typing import Optional
 
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
     validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
@@ -138,7 +138,7 @@ class CanSingleFrameHandler:
         return sf_bytes + data_padding
 
     @classmethod
-    def is_single_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
+    def is_single_frame(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> bool:
         """
         Check if provided data bytes encodes a Single Frame packet.
 
@@ -155,7 +155,7 @@ class CanSingleFrameHandler:
         return (raw_frame_data[ai_bytes_number] >> 4) == cls.SINGLE_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
+    def decode_payload(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> RawBytesList:
         """
         Extract diagnostic message payload from Single Frame data bytes.
 
@@ -175,7 +175,7 @@ class CanSingleFrameHandler:
         return list(raw_frame_data[ai_data_bytes_number + sf_dl_bytes_number:][:sf_dl])
 
     @classmethod
-    def decode_sf_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
+    def decode_sf_dl(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> int:
         """
         Extract a value of Single Frame Data Length from Single Frame data bytes.
 
@@ -264,7 +264,7 @@ class CanSingleFrameHandler:
         return cls.SHORT_SF_DL_BYTES_USED if dlc <= cls.MAX_DLC_VALUE_SHORT_SF_DL else cls.LONG_SF_DL_BYTES_USED
 
     @classmethod
-    def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> None:
+    def validate_frame_data(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> None:
         """
         Validate whether data field of a CAN Packet carries a properly encoded Single Frame.
 
@@ -353,7 +353,7 @@ class CanSingleFrameHandler:
 
     @classmethod
     def __extract_sf_dl_data_bytes(cls,
-                                   addressing_format: CanAddressingFormat,
+                                   addressing_format: CanAddressingFormatAlias,
                                    raw_frame_data: RawBytes) -> RawBytesList:
         """
         Extract data bytes that carries CAN Packet Type and Single Frame Data Length parameters.

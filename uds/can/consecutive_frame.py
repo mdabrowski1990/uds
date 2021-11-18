@@ -11,7 +11,7 @@ from typing import Optional
 
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
     validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
@@ -128,7 +128,7 @@ class CanConsecutiveFrameHandler:
         return cf_bytes + data_padding
 
     @classmethod
-    def is_consecutive_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
+    def is_consecutive_frame(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> bool:
         """
         Check if provided data bytes encodes a Consecutive Frame packet.
 
@@ -145,7 +145,7 @@ class CanConsecutiveFrameHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.CONSECUTIVE_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
+    def decode_payload(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> RawBytesList:
         """
         Extract diagnostic message payload from Consecutive Frame data bytes.
 
@@ -173,7 +173,7 @@ class CanConsecutiveFrameHandler:
         return list(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
 
     @classmethod
-    def decode_sequence_number(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
+    def decode_sequence_number(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> int:
         """
         Extract a value of Sequence Number from Consecutive Frame data bytes.
 
@@ -253,7 +253,7 @@ class CanConsecutiveFrameHandler:
         return output
 
     @classmethod
-    def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> None:
+    def validate_frame_data(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> None:
         """
         Validate whether data field of a CAN Packet carries a properly encoded Consecutive Frame.
 

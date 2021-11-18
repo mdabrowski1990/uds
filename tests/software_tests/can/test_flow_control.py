@@ -2,7 +2,8 @@ import pytest
 from mock import patch, call
 
 from uds.can.flow_control import CanSTminTranslator, CanFlowStatus, CanFlowControlHandler, \
-    CanAddressingFormat, InconsistentArgumentsError, CanDlcHandler
+    InconsistentArgumentsError, CanDlcHandler
+from uds.can import CanAddressingFormat
 from uds.utilities import ValidatedEnum, NibbleEnum
 
 

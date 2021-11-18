@@ -2,7 +2,8 @@ import pytest
 from mock import patch, Mock, call
 
 from uds.packet.can_packet import CanPacket, \
-    CanPacketType, CanAddressingFormat, AddressingType, CanFlowStatus, CanIdHandler, DEFAULT_FILLER_BYTE, AmbiguityError
+    CanPacketType, CanAddressingFormat, AddressingType, CanIdHandler, DEFAULT_FILLER_BYTE, AmbiguityError
+from uds.can import CanFlowStatus
 
 
 class TestCanPacket:

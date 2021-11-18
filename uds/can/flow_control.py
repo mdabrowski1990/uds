@@ -18,7 +18,7 @@ from aenum import unique
 from uds.utilities import NibbleEnum, ValidatedEnum, TimeMilliseconds, \
     Nibble, RawByte, RawBytes, RawBytesList, validate_nibble, validate_raw_byte, validate_raw_bytes, \
     InconsistentArgumentsError
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
@@ -287,7 +287,7 @@ class CanFlowControlHandler:
         return fc_bytes
 
     @classmethod
-    def is_flow_control(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
+    def is_flow_control(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> bool:
         """
         Check if provided data bytes encodes a Flow Control packet.
 
@@ -304,7 +304,9 @@ class CanFlowControlHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.FLOW_CONTROL_N_PCI
 
     @classmethod
-    def decode_flow_status(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> CanFlowStatusAlias:
+    def decode_flow_status(cls,
+                           addressing_format: CanAddressingFormatAlias,
+                           raw_frame_data: RawBytes) -> CanFlowStatusAlias:
         """
         Extract Flow Status value from Flow Control data bytes.
 
@@ -326,7 +328,7 @@ class CanFlowControlHandler:
         return CanFlowStatus(raw_frame_data[ai_bytes_number] & 0xF)
 
     @classmethod
-    def decode_block_size(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawByte:
+    def decode_block_size(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> RawByte:
         """
         Extract Block Size value from Flow Control data bytes.
 
@@ -351,7 +353,7 @@ class CanFlowControlHandler:
         return raw_frame_data[ai_data_bytes_number + cls.BS_BYTE_POSITION]
 
     @classmethod
-    def decode_st_min(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawByte:
+    def decode_st_min(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> RawByte:
         """
         Extract STmin value from Flow Control data bytes.
 
@@ -388,7 +390,7 @@ class CanFlowControlHandler:
         return CanDlcHandler.get_min_dlc(ai_data_bytes_number + cls.FS_BYTES_USED)
 
     @classmethod
-    def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> None:
+    def validate_frame_data(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> None:
         """
         Validate whether data field of a CAN Packet carries a properly encoded Flow Control.
 
