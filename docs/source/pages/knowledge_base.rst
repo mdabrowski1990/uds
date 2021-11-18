@@ -6,9 +6,9 @@ UDS protocol itself.
 
 
 .. toctree::
-   :caption: Table of Content
+    :caption: Table of Content
 
-   knowledge_base/osi_model.rst
-   knowledge_base/diagnostic_message.rst
-   knowledge_base/packet.rst
-   knowledge_base/segmentation.rst
+    knowledge_base/osi_model.rst
+    knowledge_base/diagnostic_message.rst
+    knowledge_base/packet.rst
+    knowledge_base/segmentation.rst

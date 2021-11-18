@@ -3,7 +3,7 @@
 strictness: veryhigh
 output-format: grouped
 doc-warnings: true
-autodetect: true
+autodetect: false
 test-warnings: true
 
 # default tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#defaults
@@ -19,6 +19,8 @@ pylint:
     max-args: 10
     max-attributes: 15
     min-public-methods: 1
+    max-public-methods: 30
+    max-parents: 10
 
   disable:
     - django-not-available

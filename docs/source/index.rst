@@ -1,18 +1,14 @@
 Welcome to UDS documentation!
 =============================
 .. toctree::
-   :hidden:
+    :hidden:
 
-   Home <self>
-   pages/installation.rst
-   pages/message.rst
-   pages/segmentation.rst
-   pages/transport.rst
-   pages/client_simulation.rst
-   pages/server_simulation.rst
-   autoapi/index.rst
-   pages/knowledge_base.rst
-   pages/contribution.rst
+    Home <self>
+    pages/installation.rst
+    pages/user_guide.rst
+    autoapi/index.rst
+    pages/knowledge_base.rst
+    pages/contribution.rst
 
 
 Overview
@@ -38,25 +34,26 @@ Features
 ````````
 Current implementation status of package features:
 
-+----------------------------------------------+------------------------------+
-|                    Feature                   |     Implementation Status    |
-+==============================================+==============================+
-| UDS Messages and Packets                     | Implemented in version 0.0.2 |
-+----------------------------------------------+------------------------------+
-| UDS Packets Reception                        | Ongoing                      |
-+----------------------------------------------+------------------------------+
-| UDS Packets Transmission                     | Planned                      |
-+----------------------------------------------+------------------------------+
-| Segmentation                                 | Ongoing                      |
-+----------------------------------------------+------------------------------+
-| Support for Services with multiple responses | Planned                      |
-+----------------------------------------------+------------------------------+
-| Client Simulation                            | Ongoing                      |
-+----------------------------------------------+------------------------------+
-| Server Simulation                            | Planned                      |
-+----------------------------------------------+------------------------------+
-| Support for Messages Databases               | Planned                      |
-+----------------------------------------------+------------------------------+
++----------------------------------------------+--------------------------------------------+
+|                    Feature                   |            Implementation Status           |
++==============================================+============================================+
+| UDS Messages and Packets                     | Available since version `0.0.2             |
+|                                              | <https://pypi.org/project/py-uds/0.0.2/>`_ |
++----------------------------------------------+--------------------------------------------+
+| UDS Packets Reception                        | Ongoing                                    |
++----------------------------------------------+--------------------------------------------+
+| UDS Packets Transmission                     | Planned                                    |
++----------------------------------------------+--------------------------------------------+
+| Segmentation                                 | Ongoing                                    |
++----------------------------------------------+--------------------------------------------+
+| Support for Services with multiple responses | Planned                                    |
++----------------------------------------------+--------------------------------------------+
+| Client Simulation                            | Ongoing                                    |
++----------------------------------------------+--------------------------------------------+
+| Server Simulation                            | Planned                                    |
++----------------------------------------------+--------------------------------------------+
+| Support for Messages Databases               | Planned                                    |
++----------------------------------------------+--------------------------------------------+
 
 
 Buses supported

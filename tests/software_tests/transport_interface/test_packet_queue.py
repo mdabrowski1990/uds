@@ -5,7 +5,7 @@ from uds.transport_interface.packet_queue import ReceivedPacketsQueue
 
 
 class TestReceivedPacketsQueue:
-    """Tests for `ReceivedPacketsQueue class."""
+    """Unit tests for `ReceivedPacketsQueue class."""
 
     def setup(self):
         self.mock_received_packets_queue = Mock(spec=ReceivedPacketsQueue)

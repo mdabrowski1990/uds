@@ -51,8 +51,8 @@ An overview of features that are required to fully implement UDS protocol is pre
 
 +--------------+-------------------------------------------+----------------------------------------------+
 |   OSI Layer  |              Functionalities              |                Implementation                |
-+--------------+-------------------------------------------+----------------------------------------------+
-| Layer 7      | - diagnostic messages support             | - :mod:`uds.messages.uds_message`            |
++==============+===========================================+==============================================+
+| Layer 7      | - diagnostic messages support             | - :mod:`uds.message`                         |
 | Application  |                                           |                                              |
 +--------------+-------------------------------------------+----------------------------------------------+
 | Layer 6      | - diagnostic messages data interpretation | *To be provided with Database feature.*      |
@@ -65,23 +65,31 @@ An overview of features that are required to fully implement UDS protocol is pre
 | Session      |                                           |                                              |
 |              | - Server simulation                       | *To be provided with Server feature.*        |
 +--------------+-------------------------------------------+----------------------------------------------+
-| Layer 4      | - UDS packet support                      | - :mod:`uds.messages.uds_packet`             |
+| Layer 4      | - UDS packet support                      | - :mod:`uds.packet`                          |
 | Transport    |                                           |                                              |
-|              | - bus specific segmentation               |                                              |
-|              |                                           | *To be extended with features:*              |
-|              | - bus specific packets transmission       |                                              |
-+--------------+                                           | *- Segmentation*                             |
-| Layer 3      |                                           |                                              |
-| Network      |                                           | *- Transport Interface*                      |
+|              | - bus specific segmentation               | - :mod:`uds.segmentation`                    |
 |              |                                           |                                              |
-|              |                                           | *- support for each bus*                     |
+|              | - bus specific packets transmission       | - :mod:`uds.transport_interface`             |
+|              |                                           |                                              |
+|              |                                           | - :mod:`uds.can`                             |
+|              |                                           |                                              |
+|              |                                           | *Currently under development.*               |
++--------------+                                           |                                              |
+| Layer 3      |                                           | *To be extended with support for:*           |
+| Network      |                                           |                                              |
+|              |                                           | - *Ethernet*                                 |
+|              |                                           |                                              |
+|              |                                           | - *LIN*                                      |
+|              |                                           |                                              |
+|              |                                           | - *K-Line*                                   |
+|              |                                           |                                              |
+|              |                                           | - *FlexRay*                                  |
 +--------------+-------------------------------------------+----------------------------------------------+
 | Layer 2      | - frames transmission                     | External python packages for bus handling:   |
 | Data         |                                           |                                              |
-|              | - frames receiving                        | - `CAN <https://python-can.readthedocs.io>`_ |
-+--------------+                                           |                                              |
++--------------+ - frames receiving                        | - `CAN <https://python-can.readthedocs.io>`_ |
 | Layer 1      |                                           |                                              |
-| Physical     |                                           | *More driver packages to be decided.*        |
+| Physical     |                                           | *More packages to be decided.*               |
 +--------------+-------------------------------------------+----------------------------------------------+
 
 Where:
@@ -108,7 +116,7 @@ To make things simpler for the users and our developers, in the implementation w
 
   - :ref:`knowledge base section - UDS packet <knowledge-base-uds-packet>`
 
-  - :ref:`implementation section - UDS packet <implementation-uds-packet>`
+  - implementation - :mod:`uds.packet`
 
 - Data Protocol Data Unit (D_PDU) - called `frame` in the implementation and documentation.
   We do not have any internal `frames <https://en.wikipedia.org/wiki/Frame_(networking)>`_ documentation.

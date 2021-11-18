@@ -6,7 +6,7 @@ from uds.utilities.enums import ExtendableEnum, ValidatedEnum, ByteEnum, NibbleE
 
 
 class TestByteEnum:
-    """Tests for `ByteEnum` class."""
+    """Unit tests for `ByteEnum` class."""
 
     # __new__
 
@@ -31,7 +31,7 @@ class TestByteEnum:
 
 
 class TestNibbleEnum:
-    """Tests for `NibbleEnum` class."""
+    """Unit tests for `NibbleEnum` class."""
 
     # __new__
 
@@ -56,7 +56,7 @@ class TestNibbleEnum:
 
 
 class TestValidatedEnum:
-    """Tests for `ValidatedEnum` class."""
+    """Unit tests for `ValidatedEnum` class."""
 
     SCRIPT_LOCATION = "uds.utilities.enums"
 
@@ -115,7 +115,7 @@ class TestValidatedEnum:
 
 
 class TestExtendableEnum:
-    """Tests for 'ExtendableEnum' class."""
+    """Unit tests for 'ExtendableEnum' class."""
 
     class ExampleByteEnum1(ExtendableEnum):
         A = 0

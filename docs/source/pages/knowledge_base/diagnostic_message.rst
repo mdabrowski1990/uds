@@ -82,11 +82,11 @@ Where:
  - SID - `Service Identifier`_ value that was received in the request message to which the server responded
  - XX - any byte value
 
-Note: When positive diagnostic message is received, this equation is always true:
+.. note:: When positive diagnostic message is received, this equation is always true:
 
-.. code-block::
+    .. code-block::
 
-   RSID = SID + 0x40
+        RSID = SID + 0x40
 
 
 Negative Response Message
@@ -554,8 +554,8 @@ the server takes place. The server shall respond to a physically addressed reque
 an information that a response is not required (further explained in
 `response behaviour to physically addressed request`_ chapter).
 
-NOTE: You do not need a direct physical connection between a client and a server to have physically addressed
-communication as all messages shall be routed to a target of each message.
+.. note:: You do not need a direct physical connection between a client and a server to have physically addressed
+   communication as all messages shall be routed to a target of each message.
 
 
 Response behaviour to physically addressed request
@@ -632,8 +632,8 @@ When functionally addressed messages are sent, a one to many communication betwe
 takes place. A server shall only respond to certain functionally addressed requests (further explained in
 `response behaviour to functionally addressed request`_ chapter.
 
-NOTE: Some types of buses (e.g. LIN) might also support broadcast communication which slightly change expected
-server behaviour. When broadcast communication is used, then a server response is never expected by a client.
+.. note:: Some types of buses (e.g. LIN) might also support broadcast communication which slightly change expected
+   server behaviour. When broadcast communication is used, then a server response is never expected by a client.
 
 
 Response behaviour to functionally addressed request

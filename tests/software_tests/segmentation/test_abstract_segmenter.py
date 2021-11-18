@@ -1,13 +1,12 @@
 import pytest
 from mock import Mock, patch, MagicMock
 
-from uds.segmentation.abstract_segmenter import AbstractSegmenter, SegmentationError, \
-    UdsMessage, UdsMessageRecord
-from uds.messages import AbstractUdsPacket, AbstractUdsPacketRecord
+from uds.segmentation.abstract_segmenter import AbstractSegmenter
+from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 
 
 class TestAbstractSegmenter:
-    """Tests for `AbstractSegmenter` class."""
+    """Unit tests for `AbstractSegmenter` class."""
 
     SCRIPT_PATH = "uds.segmentation.abstract_segmenter"
 
@@ -66,33 +65,6 @@ class TestAbstractSegmenter:
         assert AbstractSegmenter.is_supported_packets_sequence(self=self.mock_abstract_segmenter, value=value) is True
         self.mock_abstract_segmenter.is_supported_packet.assert_called()
 
-    # is_following_packets_sequence
-
-    @pytest.mark.parametrize("packets", [
-        (1, 2, 3, 4),
-        (1, 2.1, 3, 4.4),
-        [2.2, 3.3, 4.4],
-        [None, True, False],
-        (True, False),
-    ])
-    def test_is_following_packets_sequence__value_error(self, packets):
-        self.mock_abstract_segmenter.is_supported_packets_sequence.return_value = False
-        with pytest.raises(ValueError):
-            AbstractSegmenter.is_following_packets_sequence(self=self.mock_abstract_segmenter, packets=packets)
-        self.mock_abstract_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
-
-    @pytest.mark.parametrize("packets", [
-        (1, 2, 3, 4),
-        (1, 2.1, 3, 4.4),
-        [2.2, 3.3, 4.4],
-        [None, True, False],
-        (True, False),
-    ])
-    def test_is_following_packets_sequence__valid_input(self, packets):
-        self.mock_abstract_segmenter.is_supported_packets_sequence.return_value = True
-        AbstractSegmenter.is_following_packets_sequence(self=self.mock_abstract_segmenter, packets=packets)
-        self.mock_abstract_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
-
     # is_complete_packets_sequence
 
     @pytest.mark.parametrize("packets", [
@@ -129,28 +101,3 @@ class TestAbstractSegmenter:
         assert AbstractSegmenter.is_complete_packets_sequence(self=self.mock_abstract_segmenter, packets=packets) is True
         self.mock_abstract_segmenter.is_following_packets_sequence.assert_called_once_with(packets)
         self.mock_abstract_segmenter.get_consecutive_packets_number.assert_called_once_with(packets[0])
-
-    # segmentation
-
-    @pytest.mark.parametrize("message", [None, False, Mock(spec=UdsMessageRecord), (0x1, 0x2, 0x3)])
-    def test_segmentation__type_error(self, message):
-        with pytest.raises(TypeError):
-            AbstractSegmenter.segmentation(self=self.mock_abstract_segmenter, message=message)
-
-    def test_segmentation__valid_input(self):
-        AbstractSegmenter.segmentation(self=self.mock_abstract_segmenter, message=Mock(spec=UdsMessage))
-
-    # desegmentation
-
-    @pytest.mark.parametrize("packets", [None, "some packets", [1, 2, 3]])
-    def test_desegmentation__segmentation_error(self, packets):
-        self.mock_abstract_segmenter.is_complete_packets_sequence.return_value = False
-        with pytest.raises(SegmentationError):
-            AbstractSegmenter.desegmentation(self=self.mock_abstract_segmenter, packets=packets)
-        self.mock_abstract_segmenter.is_complete_packets_sequence.assert_called_once_with(packets)
-
-    @pytest.mark.parametrize("packets", [None, "some packets", [1, 2, 3]])
-    def test_desegmentation__valid_input(self, packets):
-        self.mock_abstract_segmenter.is_complete_packets_sequence.return_value = True
-        AbstractSegmenter.desegmentation(self=self.mock_abstract_segmenter, packets=packets)
-        self.mock_abstract_segmenter.is_complete_packets_sequence.assert_called_once_with(packets)

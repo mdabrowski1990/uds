@@ -1,10 +1,17 @@
-"""Module with special `Enums <https://en.wikipedia.org/wiki/Enumerated_type#Python>`_ implementations."""
+"""
+Module with common and reused implementation of enums.
+
+`Enumerated types (enums) <https://en.wikipedia.org/wiki/Enumerated_type#Python>`_ are data types that consists of
+named values. This module provides extension to `aenum <https://pypi.org/project/aenum/>`_ package.
+"""
 
 __all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum"]
 
 from typing import Any
 
 from aenum import Enum, IntEnum, extend_enum
+
+from .common_types import validate_nibble, Nibble, validate_raw_byte, RawByte
 
 
 class ExtendableEnum(Enum):
@@ -56,28 +63,22 @@ class ValidatedEnum(Enum):
 
         :param value: Value to validate.
 
-        :raise TypeError: Provided value is not a member neither a value of this Enum.
+        :raise ValueError: Provided value is not a member neither a value of this Enum.
         """
         if not cls.is_member(value):
-            raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}.")
+            raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}")
 
 
 class ByteEnum(IntEnum):
     """Enum which members are one byte integers (0x00-0xFF) only."""
 
-    def __new__(cls, value: int):
+    def __new__(cls, value: RawByte):
         """
         Creation of a new member.
 
         :param value: One byte integer.
-
-        :raise TypeError: Provided value is not int type.
-        :raise ValueError: Provided value is not in inclusive range 0x00-0xFF.
         """
-        if not isinstance(value, int):
-            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
-        if not 0x00 <= value <= 0xFF:
-            raise ValueError(f"Provided 'value' is not in range 0x00-0xFF. Actual value = {value}.")
+        validate_raw_byte(value)
         member = int.__new__(cls, value)
         member._value_ = value  # noqa: F841
         return member
@@ -86,19 +87,13 @@ class ByteEnum(IntEnum):
 class NibbleEnum(IntEnum):
     """Enum which members are one nibble (4 bits) integers (0x0-0xF) only."""
 
-    def __new__(cls, value: int):
+    def __new__(cls, value: Nibble):
         """
         Creation of a new member.
 
         :param value: One nibble (4 bits) integer.
-
-        :raise TypeError: Provided value is not int type.
-        :raise ValueError: Provided value is not in inclusive range 0x0-0xF.
         """
-        if not isinstance(value, int):
-            raise TypeError(f"Provided 'value' is not int type. Actual type: {type(value)}.")
-        if not 0x0 <= value <= 0xF:
-            raise ValueError(f"Provided 'value' is not in range 0x0-0xF. Actual value = {value}.")
+        validate_nibble(value)
         member = int.__new__(cls, value)
         member._value_ = value  # noqa: F841
         return member

@@ -5,8 +5,8 @@ __all__ = ["SegmentationError", "AbstractSegmenter"]
 from typing import Tuple, Union, Any
 from abc import ABC, abstractmethod
 
-from uds.messages import UdsMessage, UdsMessageRecord, \
-    PacketTyping, PacketsSequence, PacketsDefinitionTuple, PacketTypesTuple
+from uds.message import UdsMessage, UdsMessageRecord
+from uds.packet import PacketAlias, PacketsSequence, PacketsDefinitionTuple
 
 
 class SegmentationError(ValueError):
@@ -22,18 +22,14 @@ class AbstractSegmenter(ABC):
     They contain helper methods that are essential for successful
     :ref:`segmentation <knowledge-base-message-segmentation>` and
     :ref:`desegmentation <knowledge-base-packets-desegmentation>` execution.
-    Each concrete segmenter class handles a single bus.
+
+    .. note:: Each concrete segmenter class handles exactly one bus.
     """
 
     @property
     @abstractmethod
     def supported_packet_classes(self) -> Tuple[type]:
         """Classes that define packet objects supported by this segmenter."""
-
-    @property  # noqa: F841
-    @abstractmethod
-    def initial_packet_types(self) -> PacketTypesTuple:
-        """Types of packets that initiates a diagnostic message transmission for the managed bus."""
 
     def is_supported_packet(self, value: Any) -> bool:
         """
@@ -63,15 +59,16 @@ class AbstractSegmenter(ABC):
         return len({type(element) for element in value}) == 1
 
     @abstractmethod
-    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:  # noqa
+    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
         Check whether provided packets are a sequence of following packets.
 
-        Note: This function will return True under following conditions:
-         - a sequence of packets was provided
-         - the first packet in the sequence is an initial packet
-         - no other packet in the sequence is an initial packet
-         - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
+        .. note:: This function will return True under following conditions:
+
+            - a sequence of packets was provided
+            - the first packet in the sequence is an initial packet
+            - no other packet in the sequence is an initial packet
+            - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
 
         :param packets: Packets sequence to check.
 
@@ -79,9 +76,6 @@ class AbstractSegmenter(ABC):
 
         :return: True if the provided packets are a sequence of following packets, otherwise False.
         """
-        if not self.is_supported_packets_sequence(packets):
-            raise ValueError(f"Provided value is not a packets sequence of a supported type."
-                             f"Actual value: {packets}.")
 
     def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
@@ -92,11 +86,11 @@ class AbstractSegmenter(ABC):
         :return: True if the packets form exactly one diagnostic message.
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
         """
-        return self.is_following_packets_sequence(packets) and \
-            self.get_consecutive_packets_number(packets[0]) == len(packets)
+        return self.is_following_packets_sequence(packets) \
+            and self.get_consecutive_packets_number(packets[0]) == len(packets)
 
     @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketTyping) -> int:  # noqa: F841
+    def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:  # noqa: F841
         """
         Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
 
@@ -108,21 +102,19 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # type: ignore
+    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # noqa: F841
         """
         Perform segmentation of a diagnostic message.
 
         :param message: UDS message to divide into UDS packets.
 
-        :raise TypeError: Provided 'message' argument is not :class:`~uds.messages.uds_message.UdsMessage` type.
+        :raise TypeError: Provided 'message' argument is not :class:`~uds.message.uds_message.UdsMessage` type.
 
         :return: UDS packets that are an outcome of UDS message segmentation.
         """
-        if not isinstance(message, UdsMessage):
-            raise TypeError(f"Provided value is not UdsMessage type. Actual value: {message}.")
 
     @abstractmethod
-    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:  # type: ignore
+    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
         Perform desegmentation of UDS packets.
 
@@ -132,6 +124,3 @@ class AbstractSegmenter(ABC):
 
         :return: A diagnostic message that is an outcome of UDS packets desegmentation.
         """
-        if not self.is_complete_packets_sequence(packets):
-            raise SegmentationError(f"Provided packets are not a complete that form a diagnostic message. "
-                                    f"Actual value: {packets}.")
