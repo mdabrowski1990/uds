@@ -5,7 +5,8 @@ __all__ = ["CanPacket", "AnyCanPacket"]
 from typing import Optional, Any
 from warnings import warn
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesTuple, AmbiguityError, UnusedArgumentWarning
+from uds.utilities import Nibble, RawByte, RawBytes, RawBytesTuple, validate_raw_bytes, \
+    AmbiguityError, UnusedArgumentWarning
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler, \
     CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
@@ -721,7 +722,7 @@ class AnyCanPacket(AbstractUdsPacket):
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
         """
-        self.raw_frame_data = raw_frame_data
+        self.raw_frame_data = raw_frame_data  # type: ignore
         self.addressing_format = addressing_format
         self.addressing_type = addressing_type
         self.can_id = can_id
@@ -729,6 +730,7 @@ class AnyCanPacket(AbstractUdsPacket):
     @property
     def raw_frame_data(self) -> RawBytesTuple:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
+        return self.__raw_frame_data
 
     @raw_frame_data.setter
     def raw_frame_data(self, value: RawBytes):
@@ -737,10 +739,14 @@ class AnyCanPacket(AbstractUdsPacket):
 
         :param value: Raw data bytes value to set.
         """
+        validate_raw_bytes(value, allow_empty=True)
+        CanDlcHandler.validate_data_bytes_number(len(value))
+        self.__raw_frame_data = tuple(value)
 
     @property
     def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type for which this CAN packet is relevant."""
+        return self.__addressing_type
 
     @addressing_type.setter
     def addressing_type(self, value: AddressingTypeAlias):
@@ -749,10 +755,13 @@ class AnyCanPacket(AbstractUdsPacket):
 
         :param value: Addressing type value to set.
         """
+        AddressingType.validate_member(value)
+        self.__addressing_type = AddressingType(value)
 
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN addressing format used by this CAN packet."""
+        return self.__addressing_format
 
     @addressing_format.setter
     def addressing_format(self, value: CanAddressingFormatAlias):
@@ -761,10 +770,13 @@ class AnyCanPacket(AbstractUdsPacket):
 
         :param value: CAN addressing format value to set.
         """
+        CanAddressingFormat.validate_member(value)
+        self.__addressing_format = CanAddressingFormat(value)
 
     @property
     def can_id(self) -> int:
         """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
+        return self.__can_id
 
     @can_id.setter
     def can_id(self, value: int):
@@ -773,14 +785,21 @@ class AnyCanPacket(AbstractUdsPacket):
 
         :param value: CAN ID value to set.
         """
+        CanIdHandler.validate_can_id(value)
+        self.__can_id = value
 
     @property
-    def packet_type(self) -> Optional[Nibble]:
+    def packet_type(self) -> Optional[Nibble]:  # type: ignore
         """Type (N_PCI value) of this CAN packet."""
+        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
+        if ai_data_bytes_number >= len(self.raw_frame_data):
+            return None
+        return self.raw_frame_data[ai_data_bytes_number] >> 4
 
     @property
     def dlc(self) -> int:
         """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
+        return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
 
     @property
     def target_address(self) -> Optional[RawByte]:
@@ -794,6 +813,8 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        addressing_info = self.__get_addressing_info()
+        return None if addressing_info is None else addressing_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
 
     @property
     def source_address(self) -> Optional[RawByte]:
@@ -806,6 +827,8 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        addressing_info = self.__get_addressing_info()
+        return None if addressing_info is None else addressing_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
 
     @property
     def address_extension(self) -> Optional[RawByte]:
@@ -819,6 +842,9 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        addressing_info = self.__get_addressing_info()
+        return None if addressing_info is None \
+            else addressing_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
 
     @property
     def payload(self) -> Optional[RawBytesTuple]:
@@ -838,6 +864,7 @@ class AnyCanPacket(AbstractUdsPacket):
             The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
             cannot be determined basing solely on the information contained in this packet object.
         """
+        return CanPacket.payload.fget(self)  # type: ignore
 
     @property
     def data_length(self) -> Optional[int]:
@@ -852,6 +879,7 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        return CanPacket.data_length.fget(self)  # type: ignore
 
     @property
     def sequence_number(self) -> Optional[int]:
@@ -863,6 +891,7 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        return CanPacket.sequence_number.fget(self)  # type: ignore
 
     @property
     def flow_status(self) -> Optional[Nibble]:
@@ -874,6 +903,7 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        return CanPacket.flow_status.fget(self)  # type: ignore
 
     @property
     def block_size(self) -> Optional[RawByte]:
@@ -885,6 +915,7 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        return CanPacket.block_size.fget(self)  # type: ignore
 
     @property
     def st_min(self) -> Optional[RawByte]:
@@ -896,3 +927,18 @@ class AnyCanPacket(AbstractUdsPacket):
 
         None in other cases.
         """
+        return CanPacket.st_min.fget(self)  # type: ignore
+
+    def __get_addressing_info(self) -> Optional[dict]:
+        """
+        Get Addressing Information carried by this packet.
+
+        :return: Addressing Information decoded from CAN ID and CAN Frame data of this packet.
+            None if Addressing Information cannot be decoded (invalid format of the CAN Packet).
+        """
+        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
+        if ai_data_bytes_number > len(self.raw_frame_data):
+            return None
+        return CanAddressingInformationHandler.decode_ai(addressing_format=self.addressing_format,
+                                                         can_id=self.can_id,
+                                                         ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])
