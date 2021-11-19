@@ -691,10 +691,17 @@ class CanPacket(AbstractUdsPacket):
 
 class AnyCanPacket(AbstractUdsPacket):
     """
-    Definition of a CAN packet in any format (mainly incompatible with ISO 15765 standard).
+    Definition of a CAN packet in any format.
 
     Objects of this class act as a storage for all relevant attributes of a
     :ref:`CAN packet <knowledge-base-uds-can-packet>`.
+
+    .. note:: This class is meant to provide option to create CAN Packets that are incompatible with with
+        ISO 15765 (Diagnostic on CAN) standard.
+
+        This class is not a replacer to :class:`~uds.packet.can_packet.CanPacket` and it is recommended to use
+        :class:`~uds.packet.can_packet.CanPacket` for all valid cases as it provides proper format validation and
+        other features that this class is missing.
     """
 
     def __init__(self, *,
