@@ -1,8 +1,7 @@
 import pytest
-from mock import Mock, patch, MagicMock
+from mock import Mock, patch
 
 from uds.segmentation.abstract_segmenter import AbstractSegmenter
-from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 
 
 class TestAbstractSegmenter:
@@ -64,40 +63,3 @@ class TestAbstractSegmenter:
         self.mock_abstract_segmenter.is_supported_packet.return_value = True
         assert AbstractSegmenter.is_supported_packets_sequence(self=self.mock_abstract_segmenter, value=value) is True
         self.mock_abstract_segmenter.is_supported_packet.assert_called()
-
-    # is_complete_packets_sequence
-
-    @pytest.mark.parametrize("packets", [
-        (Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacket)),
-        [Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord)],
-    ])
-    def test_is_complete_packets_sequence__not_a_sequence(self, packets):
-        self.mock_abstract_segmenter.is_following_packets_sequence.return_value = False
-        assert AbstractSegmenter.is_complete_packets_sequence(self=self.mock_abstract_segmenter, packets=packets) is False
-        self.mock_abstract_segmenter.is_following_packets_sequence.assert_called_once_with(packets)
-        self.mock_abstract_segmenter.get_consecutive_packets_number.assert_not_called()
-
-    @pytest.mark.parametrize("packets", [
-        (Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacket)),
-        [Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord)],
-    ])
-    def test_is_complete_packets_sequence__invalid_packets_number(self, packets):
-        mock_eq_false = MagicMock()
-        mock_eq_false.__eq__.return_value = False
-        self.mock_abstract_segmenter.is_following_packets_sequence.return_value = True
-        self.mock_abstract_segmenter.get_consecutive_packets_number.return_value = mock_eq_false
-        assert AbstractSegmenter.is_complete_packets_sequence(self=self.mock_abstract_segmenter, packets=packets) is False
-        self.mock_abstract_segmenter.is_following_packets_sequence.assert_called_once_with(packets)
-        self.mock_abstract_segmenter.get_consecutive_packets_number.assert_called_once_with(packets[0])
-        mock_eq_false.__eq__.assert_called_once_with(len(packets))
-
-    @pytest.mark.parametrize("packets", [
-        (Mock(spec=AbstractUdsPacket), Mock(spec=AbstractUdsPacket)),
-        [Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord)],
-    ])
-    def test_is_complete_packets_sequence__true(self, packets):
-        self.mock_abstract_segmenter.is_following_packets_sequence.return_value = True
-        self.mock_abstract_segmenter.get_consecutive_packets_number.return_value = len(packets)
-        assert AbstractSegmenter.is_complete_packets_sequence(self=self.mock_abstract_segmenter, packets=packets) is True
-        self.mock_abstract_segmenter.is_following_packets_sequence.assert_called_once_with(packets)
-        self.mock_abstract_segmenter.get_consecutive_packets_number.assert_called_once_with(packets[0])

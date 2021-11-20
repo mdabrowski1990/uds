@@ -68,6 +68,7 @@ class AbstractSegmenter(ABC):
             - the first packet in the sequence is an initial packet
             - no other packet in the sequence is an initial packet
             - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
+              or controlling the flow of packets
 
         :param packets: Packets sequence to check.
 
@@ -76,6 +77,7 @@ class AbstractSegmenter(ABC):
         :return: True if the provided packets are a sequence of following packets, otherwise False.
         """
 
+    @abstractmethod
     def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
@@ -85,8 +87,6 @@ class AbstractSegmenter(ABC):
         :return: True if the packets form exactly one diagnostic message.
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
         """
-        return self.is_following_packets_sequence(packets) \
-            and self.get_consecutive_packets_number(packets[0]) == len(packets)
 
     @abstractmethod
     def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:

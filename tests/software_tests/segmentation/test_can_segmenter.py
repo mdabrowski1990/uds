@@ -8,3 +8,4 @@ class TestCanSegmenter:
     """Unit tests for `CanSegmenter` class."""
 
     def test_init(self):
+        ...
