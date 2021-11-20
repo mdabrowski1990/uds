@@ -4,9 +4,9 @@ from mock import Mock, patch
 from datetime import datetime
 
 from uds.packet.can_packet_record import CanPacketRecord, \
-    PythonCanMessage, CanAddressingInformationHandler, InconsistentArgumentsError, CanAddressingFormat, CanPacketType, \
-    CanFlowStatus
+    PythonCanMessage, CanAddressingInformationHandler, InconsistentArgumentsError, CanAddressingFormat, CanPacketType
 from uds.transmission_attributes import TransmissionDirection, AddressingType
+from uds.can import CanFlowStatus
 
 
 class TestCanPacketRecord:
@@ -289,6 +289,7 @@ class TestCanPacketRecord:
                                                                          ai_data_bytes=raw_frame_data[:ai_data_bytes_number])
 
 
+@pytest.mark.integration
 class TestCanPacketRecordIntegration:
     """Integration tests for `CanPacketRecord` class."""
 

@@ -9,9 +9,9 @@ from can import Message as PythonCanMessage
 from uds.utilities import RawByte, RawBytesTuple, TimeStamp, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
 from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
-    CanDlcHandler, CanIdHandler, CanFlowStatus
+    CanDlcHandler, CanIdHandler, CanFlowStatusAlias
 from .can_packet import CanPacket
-from .can_packet_type import CanPacketType
+from .can_packet_type import CanPacketType, CanPacketTypeAlias
 from .abstract_packet import AbstractUdsPacketRecord
 
 
@@ -62,17 +62,17 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
-    def addressing_type(self) -> AddressingType:
+    def addressing_type(self) -> AddressingTypeAlias:
         """Addressing type over which this CAN packet was transmitted."""
         return self.__addressing_type
 
     @property
-    def addressing_format(self) -> CanAddressingFormat:
+    def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN addressing format used by this CAN packet."""
         return self.__addressing_format
 
     @property
-    def packet_type(self) -> CanPacketType:
+    def packet_type(self) -> CanPacketTypeAlias:
         """CAN packet type value - N_PCI value of this N_PDU."""
         return self.__packet_type
 
@@ -152,7 +152,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         return CanPacket.sequence_number.fget(self)  # type: ignore
 
     @property
-    def flow_status(self) -> Optional[CanFlowStatus]:
+    def flow_status(self) -> Optional[CanFlowStatusAlias]:
         """
         Flow Status carried by this CAN packet.
 
@@ -220,8 +220,8 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         ai_info = CanAddressingInformationHandler.decode_ai(addressing_format=self.addressing_format,
                                                             can_id=self.can_id,
                                                             ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])
-        self.__target_address = ai_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
-        self.__source_address = ai_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
-        self.__address_extension = ai_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
+        self.__target_address = ai_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__source_address = ai_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]  # type: ignore
+        self.__address_extension = ai_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]  # type: ignore
         if ai_info[CanAddressingInformationHandler.ADDRESSING_TYPE_NAME] not in (self.addressing_type, None):
             raise InconsistentArgumentsError("Decoded Addressing Type does not match the one that is already set.")

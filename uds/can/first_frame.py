@@ -11,7 +11,7 @@ from typing import Optional
 
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
     validate_raw_bytes, InconsistentArgumentsError
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformationHandler
 from .frame_fields import CanDlcHandler
 from .single_frame import CanSingleFrameHandler
@@ -122,7 +122,7 @@ class CanFirstFrameHandler:
         return ff_data_bytes
 
     @classmethod
-    def is_first_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> bool:
+    def is_first_frame(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> bool:
         """
         Check if provided data bytes encodes a First Frame packet.
 
@@ -137,7 +137,7 @@ class CanFirstFrameHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.FIRST_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> RawBytesList:
+    def decode_payload(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> RawBytesList:
         """
         Extract a value of payload from First Frame data bytes.
 
@@ -156,7 +156,7 @@ class CanFirstFrameHandler:
         return list(raw_frame_data[ai_bytes_number + len(ff_dl_data_bytes):])
 
     @classmethod
-    def decode_ff_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> int:
+    def decode_ff_dl(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> int:
         """
         Extract a value of First Frame Data Length from First Frame data bytes.
 
@@ -206,7 +206,7 @@ class CanFirstFrameHandler:
         return data_bytes_number - ai_data_bytes_number - ff_dl_data_bytes_number
 
     @classmethod
-    def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytes) -> None:
+    def validate_frame_data(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> None:
         """
         Validate whether data field of a CAN Packet carries a properly encoded First Frame.
 
@@ -278,7 +278,7 @@ class CanFirstFrameHandler:
 
     @classmethod
     def __extract_ff_dl_data_bytes(cls,
-                                   addressing_format: CanAddressingFormat,
+                                   addressing_format: CanAddressingFormatAlias,
                                    raw_frame_data: RawBytes) -> RawBytesList:
         """
         Extract data bytes that carries CAN Packet Type and First Frame Data Length parameters.

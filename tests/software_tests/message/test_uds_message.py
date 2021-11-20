@@ -2,7 +2,8 @@ import pytest
 from mock import Mock, patch
 
 from uds.message.uds_message import UdsMessage, UdsMessageRecord, \
-    AddressingType, TransmissionDirection, ReassignmentError, AbstractUdsPacketRecord
+    AddressingType, ReassignmentError, AbstractUdsPacketRecord
+from uds.transmission_attributes import TransmissionDirection
 
 
 class TestUdsMessage:
