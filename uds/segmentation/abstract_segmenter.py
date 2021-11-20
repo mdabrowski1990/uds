@@ -2,7 +2,7 @@
 
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
-from typing import Tuple, Union, Any
+from typing import Tuple, Type, Union, Any
 from abc import ABC, abstractmethod
 
 from uds.message import UdsMessage, UdsMessageRecord
@@ -17,8 +17,7 @@ class AbstractSegmenter(ABC):
     """
     Abstract definition of a segmenter class.
 
-    Segmenter classes defines UDS segmentation and desegmentation
-    `strategies <https://www.tutorialspoint.com/design_pattern/strategy_pattern.htm>`_.
+    Segmenter classes defines UDS segmentation and desegmentation duties.
     They contain helper methods that are essential for successful
     :ref:`segmentation <knowledge-base-message-segmentation>` and
     :ref:`desegmentation <knowledge-base-packets-desegmentation>` execution.
@@ -28,7 +27,7 @@ class AbstractSegmenter(ABC):
 
     @property
     @abstractmethod
-    def supported_packet_classes(self) -> Tuple[type]:
+    def supported_packet_classes(self) -> Tuple[Type[PacketAlias], ...]:
         """Classes that define packet objects supported by this segmenter."""
 
     def is_supported_packet(self, value: Any) -> bool:
@@ -90,7 +89,7 @@ class AbstractSegmenter(ABC):
             and self.get_consecutive_packets_number(packets[0]) == len(packets)
 
     @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:  # noqa: F841
+    def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:
         """
         Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
 
@@ -102,7 +101,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:  # noqa: F841
+    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
         """
         Perform segmentation of a diagnostic message.
 

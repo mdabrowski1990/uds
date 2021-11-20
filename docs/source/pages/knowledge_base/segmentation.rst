@@ -13,9 +13,18 @@ to divide :ref:`diagnostic message <knowledge-base-diagnostic-message>` into sma
 :ref:`UDS packets <knowledge-base-uds-packet>`.
 
 
+Segmentation on CAN
+```````````````````
+
+
 .. _knowledge-base-packets-desegmentation:
 
 Packets Desegmentation
 ----------------------
 Desegmentation is a reverse process to a `message segmentation`_. It transforms one or more
 :ref:`UDS packets <knowledge-base-uds-packet>` into a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+
+
+Desegmentation on CAN
+`````````````````````
+
