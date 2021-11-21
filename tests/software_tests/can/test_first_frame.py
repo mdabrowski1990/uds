@@ -289,8 +289,8 @@ class TestCanFirstFrameHandler:
     # get_payload_size
 
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION-1,
-                                     CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION-2])
+    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_BASE_UDS_DLC - 1,
+                                     CanDlcHandler.MIN_BASE_UDS_DLC - 2])
     @pytest.mark.parametrize("long_ff_dl_format", [True, False])
     def test_get_payload_size__too_short_dlc(self, addressing_format, dlc, long_ff_dl_format):
         with pytest.raises(ValueError):
@@ -301,8 +301,8 @@ class TestCanFirstFrameHandler:
         self.mock_get_ai_data_bytes_number.assert_not_called()
 
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION,
-                                     CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION+1])
+    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_BASE_UDS_DLC,
+                                     CanDlcHandler.MIN_BASE_UDS_DLC + 1])
     @pytest.mark.parametrize("data_bytes_number, ai_bytes_number", [
         (8, 0),
         (64, 1),
@@ -320,8 +320,8 @@ class TestCanFirstFrameHandler:
         assert payload_size == data_bytes_number - ai_bytes_number - CanFirstFrameHandler.SHORT_FF_DL_BYTES_USED
 
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
-    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION,
-                                     CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION+1])
+    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_BASE_UDS_DLC,
+                                     CanDlcHandler.MIN_BASE_UDS_DLC + 1])
     @pytest.mark.parametrize("data_bytes_number, ai_bytes_number", [
         (8, 0),
         (64, 1),
@@ -397,7 +397,7 @@ class TestCanFirstFrameHandler:
     @pytest.mark.parametrize("ff_dl", [0,
                                        CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE,
                                        CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE])
-    @pytest.mark.parametrize("dlc", [0, CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION - 1])
+    @pytest.mark.parametrize("dlc", [0, CanDlcHandler.MIN_BASE_UDS_DLC - 1])
     @pytest.mark.parametrize("addressing_format", ["any format", "something else"])
     def test_validate_ff_dl__value_error__dlc(self, ff_dl, dlc, addressing_format):
         with pytest.raises(ValueError):
@@ -407,8 +407,8 @@ class TestCanFirstFrameHandler:
         (2, 5),
         (100, 100),
     ])
-    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION,
-                                     CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION + 2])
+    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_BASE_UDS_DLC,
+                                     CanDlcHandler.MIN_BASE_UDS_DLC + 2])
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
     def test_validate_ff_dl__inconsistent_sf(self, ff_dl, dlc, addressing_format, sf_dl):
         self.mock_get_max_sf_dl.return_value = sf_dl
@@ -431,8 +431,8 @@ class TestCanFirstFrameHandler:
         (101, 100, False),
         (CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE + 1, 100, True),
     ])
-    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION,
-                                     CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION + 2])
+    @pytest.mark.parametrize("dlc", [CanDlcHandler.MIN_BASE_UDS_DLC,
+                                     CanDlcHandler.MIN_BASE_UDS_DLC + 2])
     @pytest.mark.parametrize("addressing_format", ["any format", "another format"])
     def test_validate_ff_dl__valid_with_args(self, ff_dl, long_ff_dl_format, dlc, addressing_format, sf_dl):
         self.mock_get_max_sf_dl.return_value = sf_dl

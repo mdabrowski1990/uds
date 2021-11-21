@@ -74,9 +74,9 @@ class CanConsecutiveFrameHandler:
                                              "Consider increasing DLC value.")
         data_bytes_to_pad = frame_data_bytes_number - len(cf_bytes)
         if data_bytes_to_pad > 0:
-            if dlc is not None and dlc < CanDlcHandler.MIN_DLC_DATA_PADDING:
+            if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
-                                                 f"DLC < {CanDlcHandler.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
+                                                 f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
             return cf_bytes + data_bytes_to_pad * [filler_byte]
         return cf_bytes
 

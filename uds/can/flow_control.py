@@ -229,9 +229,9 @@ class CanFlowControlHandler:
             raise InconsistentArgumentsError("Provided value of `dlc` is too small.")
         data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
         if data_bytes_to_pad > 0:
-            if dlc is not None and dlc < CanDlcHandler.MIN_DLC_DATA_PADDING:
+            if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
-                                                 f"DLC < {CanDlcHandler.MIN_DLC_DATA_PADDING}. Actual value: dlc={dlc}")
+                                                 f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
             return fc_bytes + data_bytes_to_pad * [filler_byte]
         return fc_bytes
 
@@ -406,7 +406,7 @@ class CanFlowControlHandler:
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         if min_dlc > dlc:
             raise ValueError("Provided `raw_frame_data` is too short.")
-        if dlc < CanDlcHandler.MIN_DLC_DATA_PADDING and dlc != min_dlc:
+        if dlc < CanDlcHandler.MIN_BASE_UDS_DLC and dlc != min_dlc:
             raise ValueError("Provided `raw_frame_data` has improper length (incorrect Data Length Optimization).")
 
     @classmethod

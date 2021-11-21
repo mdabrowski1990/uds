@@ -72,8 +72,6 @@ class AbstractSegmenter(ABC):
 
         :param packets: Packets sequence to check.
 
-        :raise ValueError: Provided value is not a packets sequence of a supported type.
-
         :return: True if the provided packets are a sequence of following packets, otherwise False.
         """
 
@@ -106,8 +104,6 @@ class AbstractSegmenter(ABC):
         Perform segmentation of a diagnostic message.
 
         :param message: UDS message to divide into UDS packets.
-
-        :raise TypeError: Provided 'message' argument is not :class:`~uds.message.uds_message.UdsMessage` type.
 
         :return: UDS packets that are an outcome of UDS message segmentation.
         """

@@ -48,8 +48,8 @@ class TestCanConsecutiveFrameHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, sequence_number", [
-        (CanDlcHandler.MIN_DLC_DATA_PADDING, 0x66, "some sequence number"),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, 0xF),
+        (CanDlcHandler.MIN_BASE_UDS_DLC, 0x66, "some sequence number"),
+        (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, 0xF),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
         ([0x54], 2, [], [0xFA]),
@@ -85,8 +85,8 @@ class TestCanConsecutiveFrameHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, sequence_number", [
-        (CanDlcHandler.MIN_DLC_DATA_PADDING, 0x66, "some sequence number"),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, 0xF),
+        (CanDlcHandler.MIN_BASE_UDS_DLC, 0x66, "some sequence number"),
+        (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, 0xF),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
         ([0x54], 2, [], [0xFA]),
@@ -130,9 +130,9 @@ class TestCanConsecutiveFrameHandler:
         (0x99, 0xF),
     ])
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING - 2, [0x3E], 7, [], [0x01]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 1, [0x20, 0x30, 0x44], 4, [0xAA], [0x03]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 2, [0x3E], 7, [], [0x01]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC + 1, [0x20, 0x30, 0x44], 4, [0xAA], [0x03]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
     def test_create_valid_frame_data__inconsistent_args(self, mock_encode_sn,
@@ -165,8 +165,8 @@ class TestCanConsecutiveFrameHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, sequence_number", [
-        (CanDlcHandler.MIN_DLC_DATA_PADDING - 2, 0x66, "some sequence number"),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99, 0xF),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 2, 0x66, "some sequence number"),
+        (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, 0xF),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
         ([], 8, [], [0x0C]),
@@ -206,8 +206,8 @@ class TestCanConsecutiveFrameHandler:
         (0x99, 0xF),
     ])
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, range(60), 62, [0xFF], [0x00, 0xFA]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING, [0x20, 0x30, 0x44], 3, [], [0x03]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 1, range(60), 62, [0xFF], [0x00, 0xFA]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC, [0x20, 0x30, 0x44], 3, [], [0x03]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
     def test_create_any_frame_data__inconsistent_args(self, mock_encode_sn,
