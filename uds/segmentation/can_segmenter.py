@@ -3,11 +3,13 @@
 __all__ = ["CanSegmenter"]
 
 from typing import Optional, Union, Tuple, Dict, Type
+from copy import copy
 
-from uds.utilities import RawByte, AmbiguityError
+from uds.utilities import RawByte, validate_raw_byte, AmbiguityError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
-from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanDlcHandler, CanIdHandler, DEFAULT_FILLER_BYTE
-from uds.packet import CanPacket, CanPacketRecord, PacketAlias, PacketsSequence, PacketsDefinitionTuple
+from uds.can import CanAddressingInformationHandler, CanAddressingFormat, CanAddressingFormatAlias, \
+    CanDlcHandler, CanIdHandler, DEFAULT_FILLER_BYTE
+from uds.packet import CanPacket, CanPacketRecord, CanPacketType, PacketAlias, PacketsSequence, PacketsDefinitionTuple
 from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
@@ -40,6 +42,13 @@ class CanSegmenter(AbstractSegmenter):
         :param use_data_optimization: Information whether to use CAN Frame Data Optimization during segmentation.
         :param filler_byte: Filler byte value to use for CAN Frame Data Padding during segmentation.
         """
+        CanAddressingFormat.validate_member(addressing_format)
+        self.__addressing_format: CanAddressingFormatAlias = CanAddressingFormat(addressing_format)
+        self.physical_ai = physical_ai
+        self.functional_ai = functional_ai
+        self.dlc = dlc
+        self.use_data_optimization = use_data_optimization
+        self.filler_byte = filler_byte
 
     @property
     def supported_packet_classes(self) -> tuple[Type[PacketAlias], ...]:
@@ -49,6 +58,7 @@ class CanSegmenter(AbstractSegmenter):
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
+        return self.__addressing_format
 
     @property
     def physical_ai(self) -> Optional[AIParamsAlias]:
@@ -57,6 +67,7 @@ class CanSegmenter(AbstractSegmenter):
 
         None if physically addressed communication parameters are not configured.
         """
+        return copy(self.__physical_ai)
 
     @physical_ai.setter
     def physical_ai(self, value: Optional[AIArgsAlias]):
@@ -65,6 +76,17 @@ class CanSegmenter(AbstractSegmenter):
 
         :param value: Value to set.
         """
+        if value is None:
+            self.__physical_ai: Optional[AIParamsAlias] = None
+        else:
+            CanAddressingInformationHandler.validate_ai(
+                addressing_format=self.addressing_format,
+                addressing_type=AddressingType.PHYSICAL,
+                **value)
+            self.__physical_ai: Optional[AIParamsAlias] = copy(value)
+            self.__physical_ai.update(
+                addressing_format=self.addressing_format,
+                **{CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL})
 
     @property
     def functional_ai(self) -> AIParamsAlias:
@@ -73,6 +95,7 @@ class CanSegmenter(AbstractSegmenter):
 
         None if functionally addressed communication parameters are not configured.
         """
+        return copy(self.__functional_ai)
 
     @functional_ai.setter
     def functional_ai(self, value: Optional[AIArgsAlias]):
@@ -81,6 +104,17 @@ class CanSegmenter(AbstractSegmenter):
 
         :param value: Value to set.
         """
+        if value is None:
+            self.__functional_ai: Optional[AIParamsAlias] = None
+        else:
+            CanAddressingInformationHandler.validate_ai(
+                addressing_format=self.addressing_format,
+                addressing_type=AddressingType.FUNCTIONAL,
+                **value)
+            self.__functional_ai: Optional[AIParamsAlias] = copy(value)
+            self.__functional_ai.update(
+                addressing_format=self.addressing_format,
+                **{CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL})
 
     @property
     def dlc(self) -> int:
@@ -91,6 +125,7 @@ class CanSegmenter(AbstractSegmenter):
             will have this DLC value set unless
             :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
         """
+        return self.__dlc
 
     @dlc.setter
     def dlc(self, value: int):
@@ -99,10 +134,13 @@ class CanSegmenter(AbstractSegmenter):
 
         :param value: Value to set.
         """
+        CanDlcHandler.validate_dlc(value)
+        self.__dlc: int = value
 
     @property
     def use_data_optimization(self) -> bool:
         """Information whether to use CAN Frame Data Optimization for CAN Packet created during segmentation."""
+        return self.__use_data_optimization
 
     @use_data_optimization.setter
     def use_data_optimization(self, value: bool):
@@ -111,10 +149,12 @@ class CanSegmenter(AbstractSegmenter):
 
         :param value: Value to set.
         """
+        self.__use_data_optimization: bool = bool(value)
 
     @property
     def filler_byte(self) -> RawByte:
         """Filler byte value to use for CAN Frame Data Padding during segmentation."""
+        return self.__filler_byte
 
     @filler_byte.setter
     def filler_byte(self, value: RawByte):
@@ -123,25 +163,29 @@ class CanSegmenter(AbstractSegmenter):
 
         :param value: Value to set.
         """
+        validate_raw_byte(value)
+        self.__filler_byte: RawByte = value
 
-    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:
-        """
-        Check whether provided packets are a sequence of following CAN packets.
+    # @classmethod
+    # def is_following_packets_sequence(cls, packets: PacketsSequence) -> bool:  # TODO: remove?
+    #     """
+    #     Check whether provided packets are a sequence of following CAN packets.
+    #
+    #     .. note:: This function will return True under following conditions:
+    #
+    #         - a sequence of packets was provided
+    #         - the first packet in the sequence is an initial packet
+    #         - no other packet in the sequence is an initial packet
+    #         - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
+    #           or controlling the flow of packets
+    #
+    #     :param packets: Packets sequence to check.
+    #
+    #     :return: True if the provided packets are a sequence of following packets, otherwise False.
+    #     """
 
-        .. note:: This function will return True under following conditions:
-
-            - a sequence of packets was provided
-            - the first packet in the sequence is an initial packet
-            - no other packet in the sequence is an initial packet
-            - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
-              or controlling the flow of packets
-
-        :param packets: Packets sequence to check.
-
-        :return: True if the provided packets are a sequence of following packets, otherwise False.
-        """
-
-    def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
+    @classmethod
+    def is_complete_packets_sequence(cls, packets: PacketsSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -151,15 +195,28 @@ class CanSegmenter(AbstractSegmenter):
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
         """
 
-    def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:
+    # @classmethod
+    # def get_consecutive_packets_number(cls, first_packet: PacketAlias) -> int:  # TODO: remove?
+    #     """
+    #     Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
+    #
+    #     :param first_packet: The first packet of a segmented diagnostic message.
+    #
+    #     :raise ValueError: Provided value is not an an initial packet.
+    #
+    #     :return: Number of following packets that together carry a diagnostic message.
+    #     """
+
+    @classmethod
+    def desegmentation(cls, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
-        Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
+        Perform desegmentation of CAN packets.
 
-        :param first_packet: The first packet of a segmented diagnostic message.
+        :param packets: CAN packets to desegment into UDS message.
 
-        :raise ValueError: Provided value is not an an initial packet.
+        :raise SegmentationError: Provided packets are not a complete packet sequence that form a diagnostic message.
 
-        :return: Number of following packets that together carry a diagnostic message.
+        :return: A diagnostic message that is an outcome of CAN packets desegmentation.
         """
 
     def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
@@ -172,15 +229,4 @@ class CanSegmenter(AbstractSegmenter):
         :raise AmbiguityError: Segmentation cannot be completed because CAN Segmenter is not configured.
 
         :return: CAN packets that are an outcome of UDS message segmentation.
-        """
-
-    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
-        """
-        Perform desegmentation of CAN packets.
-
-        :param packets: CAN packets to desegment into UDS message.
-
-        :raise SegmentationError: Provided packets are not a complete packet sequence that form a diagnostic message.
-
-        :return: A diagnostic message that is an outcome of CAN packets desegmentation.
         """

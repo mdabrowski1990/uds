@@ -57,26 +57,28 @@ class AbstractSegmenter(ABC):
         # check if all packets are the same type
         return len({type(element) for element in value}) == 1
 
+    # @classmethod
+    # @abstractmethod
+    # def is_following_packets_sequence(cls, packets: PacketsSequence) -> bool:  TODO: remove?
+    #     """
+    #     Check whether provided packets are a sequence of following packets.
+    #
+    #     .. note:: This function will return True under following conditions:
+    #
+    #         - a sequence of packets was provided
+    #         - the first packet in the sequence is an initial packet
+    #         - no other packet in the sequence is an initial packet
+    #         - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
+    #           or controlling the flow of packets
+    #
+    #     :param packets: Packets sequence to check.
+    #
+    #     :return: True if the provided packets are a sequence of following packets, otherwise False.
+    #     """
+
+    @classmethod
     @abstractmethod
-    def is_following_packets_sequence(self, packets: PacketsSequence) -> bool:
-        """
-        Check whether provided packets are a sequence of following packets.
-
-        .. note:: This function will return True under following conditions:
-
-            - a sequence of packets was provided
-            - the first packet in the sequence is an initial packet
-            - no other packet in the sequence is an initial packet
-            - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
-              or controlling the flow of packets
-
-        :param packets: Packets sequence to check.
-
-        :return: True if the provided packets are a sequence of following packets, otherwise False.
-        """
-
-    @abstractmethod
-    def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
+    def is_complete_packets_sequence(cls, packets: PacketsSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -86,16 +88,30 @@ class AbstractSegmenter(ABC):
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
         """
 
+    # @classmethod
+    # @abstractmethod
+    # def get_consecutive_packets_number(cls, first_packet: PacketAlias) -> int:  TODO: remove?
+    #     """
+    #     Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
+    #
+    #     :param first_packet: The first packet of a segmented diagnostic message.
+    #
+    #     :raise ValueError: Provided value is not an an initial packet.
+    #
+    #     :return: Number of following packets that together carry a diagnostic message.
+    #     """
+
+    @classmethod
     @abstractmethod
-    def get_consecutive_packets_number(self, first_packet: PacketAlias) -> int:
+    def desegmentation(cls, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
-        Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
+        Perform desegmentation of UDS packets.
 
-        :param first_packet: The first packet of a segmented diagnostic message.
+        :param packets: UDS packets to desegment into UDS message.
 
-        :raise ValueError: Provided value is not an an initial packet.
+        :raise SegmentationError: Provided packets are not a complete packet sequence that form a diagnostic message.
 
-        :return: Number of following packets that together carry a diagnostic message.
+        :return: A diagnostic message that is an outcome of UDS packets desegmentation.
         """
 
     @abstractmethod
@@ -106,16 +122,4 @@ class AbstractSegmenter(ABC):
         :param message: UDS message to divide into UDS packets.
 
         :return: UDS packets that are an outcome of UDS message segmentation.
-        """
-
-    @abstractmethod
-    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
-        """
-        Perform desegmentation of UDS packets.
-
-        :param packets: UDS packets to desegment into UDS message.
-
-        :raise SegmentationError: Provided packets are not a complete packet sequence that form a diagnostic message.
-
-        :return: A diagnostic message that is an outcome of UDS packets desegmentation.
         """

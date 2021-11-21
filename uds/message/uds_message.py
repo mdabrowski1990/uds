@@ -68,14 +68,13 @@ class UdsMessage:
 class UdsMessageRecord:
     """Storage for historic information about a diagnostic message that was either received or transmitted."""
 
-    def __init__(self, payload: RawBytes, packets_records: PacketsRecordsSequence) -> None:
+    def __init__(self, packets_records: PacketsRecordsSequence) -> None:
         """
         Create a record of a historic information about a diagnostic message that was either received or transmitted.
 
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
         """
-        self.payload = payload  # type: ignore
         self.packets_records = packets_records  # type: ignore
 
     @staticmethod
@@ -95,28 +94,6 @@ class UdsMessageRecord:
         if not value or any(not isinstance(element, AbstractUdsPacketRecord) for element in value):
             raise ValueError(f"Provided value must contain only instances of AbstractUdsPacketRecord class. "
                              f"Actual value: {value}")
-
-    @property
-    def payload(self) -> RawBytesTuple:
-        """Raw bytes of payload that this diagnostic message carried."""
-        return self.__payload
-
-    @payload.setter
-    def payload(self, value: RawBytes):
-        """
-        Set value of raw payload bytes which this diagnostic message carried.
-
-        :param value: Payload value to set.
-
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
-        """
-        try:
-            self.__getattribute__("_UdsMessageRecord__payload")
-        except AttributeError:
-            validate_raw_bytes(value)
-            self.__payload = tuple(value)
-        else:
-            raise ReassignmentError("You cannot change value of 'payload' attribute once it is assigned.")
 
     @property
     def packets_records(self) -> PacketsRecordsTuple:
@@ -148,6 +125,16 @@ class UdsMessageRecord:
             self.__packets_records = tuple(value)
         else:
             raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
+
+    @property
+    def payload(self) -> RawBytesTuple:
+        """Raw bytes of payload that this diagnostic message carried."""
+        number_of_bytes = self.packets_records[0].data_length
+        message_payload = []
+        for packet in self.packets_records:
+            if packet.payload is not None:
+                message_payload.extend(packet.payload)
+        return tuple(message_payload[:number_of_bytes])
 
     @property
     def addressing_type(self) -> AddressingTypeAlias:

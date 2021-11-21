@@ -84,12 +84,9 @@ class TestUdsMessageRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("payload", [None, [0x1, 0x02], "some message"])
     @pytest.mark.parametrize("packets_records", [False, [1, 2, 3, 4], "abcdef"])
-    def test_init(self, payload, packets_records):
-        UdsMessageRecord.__init__(self=self.mock_uds_message_record, payload=payload,
-                                  packets_records=packets_records)
-        assert self.mock_uds_message_record.payload == payload
+    def test_init(self, packets_records):
+        UdsMessageRecord.__init__(self=self.mock_uds_message_record, packets_records=packets_records)
         assert self.mock_uds_message_record.packets_records == packets_records
 
     # __validate_packets_records
@@ -114,24 +111,16 @@ class TestUdsMessageRecord:
 
     # payload
 
-    @pytest.mark.parametrize("value", [None, [0x1, 0x02], "some message"])
-    def test_payload__get(self, value):
-        self.mock_uds_message_record._UdsMessageRecord__payload = value
-        assert UdsMessageRecord.payload.fget(self=self.mock_uds_message_record) is value
-
-    def test_payload__set__first_call(self, example_raw_bytes):
-        UdsMessageRecord.payload.fset(self=self.mock_uds_message_record, value=example_raw_bytes)
-        assert self.mock_uds_message_record._UdsMessageRecord__payload == tuple(example_raw_bytes)
-        self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
-
-    @pytest.mark.parametrize("old_value", [None, [0x1, 0x02], "some message"])
-    @pytest.mark.parametrize("new_value", [None, [0x1, 0x02], "some message"])
-    def test_payload__set__second_call(self, old_value, new_value):
-        self.mock_uds_message_record._UdsMessageRecord__payload = old_value
-        with pytest.raises(ReassignmentError):
-            UdsMessageRecord.payload.fset(self=self.mock_uds_message_record, value=new_value)
-        assert self.mock_uds_message_record._UdsMessageRecord__payload == old_value
-        self.mock_validate_raw_bytes.assert_not_called()
+    @pytest.mark.parametrize("packets", [
+        [Mock(data_length=1, payload=[0x12])],
+        (Mock(data_length=30, payload=(0xFE, 0xDC)), Mock(payload=None), Mock(payload=list(range(28)))),
+        [Mock(data_length=10, payload=[0x1F, 0x2E, 0x3D, 0x4C]), Mock(payload=[0x5B, 0x6A, 0x79, 0x88, 0x97, 0xCC, 0xCC])]
+    ])
+    def test_payload__get(self, packets):
+        self.mock_uds_message_record.packets_records = packets
+        payload = UdsMessageRecord.payload.fget(self=self.mock_uds_message_record)
+        assert isinstance(payload, tuple)
+        assert len(payload) == self.mock_uds_message_record.packets_records[0].data_length
 
     # packets_records
 
