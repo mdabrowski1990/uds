@@ -8,7 +8,7 @@ __all__ = ["UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 
-from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
+from uds.utilities import RawBytes, RawBytesTuple, RawBytesList, validate_raw_bytes, ReassignmentError, TimeStamp
 from uds.transmission_attributes import TransmissionDirectionAlias, AddressingType, AddressingTypeAlias
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
@@ -130,7 +130,7 @@ class UdsMessageRecord:
     def payload(self) -> RawBytesTuple:
         """Raw bytes of payload that this diagnostic message carried."""
         number_of_bytes = self.packets_records[0].data_length
-        message_payload = []
+        message_payload: RawBytesList = []
         for packet in self.packets_records:
             if packet.payload is not None:
                 message_payload.extend(packet.payload)

@@ -166,49 +166,23 @@ class CanSegmenter(AbstractSegmenter):
         validate_raw_byte(value)
         self.__filler_byte: RawByte = value
 
-    # @classmethod
-    # def is_following_packets_sequence(cls, packets: PacketsSequence) -> bool:  # TODO: remove?
-    #     """
-    #     Check whether provided packets are a sequence of following CAN packets.
-    #
-    #     .. note:: This function will return True under following conditions:
-    #
-    #         - a sequence of packets was provided
-    #         - the first packet in the sequence is an initial packet
-    #         - no other packet in the sequence is an initial packet
-    #         - each packet (except the first one) is a consecutive packet for the previous packet in the sequence
-    #           or controlling the flow of packets
-    #
-    #     :param packets: Packets sequence to check.
-    #
-    #     :return: True if the provided packets are a sequence of following packets, otherwise False.
-    #     """
-
-    @classmethod
-    def is_complete_packets_sequence(cls, packets: PacketsSequence) -> bool:
+    def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
         :param packets: Packets sequence to check.
 
+        :raise ValueError: Provided value is not CAN packets sequence.
+
         :return: True if the packets form exactly one diagnostic message.
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
         """
+        if not self.is_supported_packets_sequence(packets):
+            raise ValueError("Provided packets are not consistent CAN Packets sequence.")
+        if not CanPacketType.is_initial_packet_type(packets[0].packet_type):
+            return False
 
-    # @classmethod
-    # def get_consecutive_packets_number(cls, first_packet: PacketAlias) -> int:  # TODO: remove?
-    #     """
-    #     Get number of consecutive packets that must follow this packet to fully store a diagnostic message.
-    #
-    #     :param first_packet: The first packet of a segmented diagnostic message.
-    #
-    #     :raise ValueError: Provided value is not an an initial packet.
-    #
-    #     :return: Number of following packets that together carry a diagnostic message.
-    #     """
-
-    @classmethod
-    def desegmentation(cls, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
         Perform desegmentation of CAN packets.
 

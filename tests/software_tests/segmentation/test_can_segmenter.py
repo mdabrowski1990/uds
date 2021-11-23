@@ -175,6 +175,32 @@ class TestCanSegmenter:
         self.mock_validate_raw_byte.assert_called_once_with(value)
         assert self.mock_can_segmenter._CanSegmenter__filler_byte == value
 
+    # is_complete_packets_sequence
+
+    @pytest.mark.parametrize("packets", ["some packets", range(4)])
+    def test_is_complete_packets_sequence__value_error(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = False
+        with pytest.raises(ValueError):
+            CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets)
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+
+    @pytest.mark.parametrize("packets", [
+        (Mock(packet_type="some type"), ),
+        [Mock(packet_type="othjer type"), Mock(), Mock()]
+    ])
+    def test_is_complete_packets_sequence__false__not_initial_packet(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
+        self.mock_can_packet_type_class.is_initial_packet_type.return_value = False
+        assert CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+        self.mock_can_packet_type_class.is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
+
+    # TODO: test two initial packets
+
+    # TODO: test too little payload bytes
+
+    # TODO: additional payload after full packets payload was provided
+
 
 @pytest.mark.integration
 class TestCanSegmenterIntegration:
