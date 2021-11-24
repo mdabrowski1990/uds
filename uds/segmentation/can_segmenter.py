@@ -8,7 +8,8 @@ from copy import copy
 from uds.utilities import RawByte, validate_raw_byte, AmbiguityError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import CanAddressingInformationHandler, CanAddressingFormat, CanAddressingFormatAlias, \
-    CanDlcHandler, CanIdHandler, DEFAULT_FILLER_BYTE
+    CanDlcHandler, CanIdHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, \
+    DEFAULT_FILLER_BYTE
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType, PacketAlias, PacketsSequence, PacketsDefinitionTuple
 from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
@@ -192,7 +193,7 @@ class CanSegmenter(AbstractSegmenter):
             for following_packet in packets[1:]:
                 if CanPacketType.is_initial_packet_type(following_packet.packet_type):
                     return False
-                if total_payload_size <= payload_bytes_found:
+                if payload_bytes_found >= total_payload_size:
                     return False
                 if following_packet.payload is not None:
                     payload_bytes_found += len(following_packet.payload)
@@ -216,8 +217,97 @@ class CanSegmenter(AbstractSegmenter):
 
         :param message: UDS message to divide into UDS packets.
 
-        :raise SegmentationError: Provided diagnostic message cannot be segmented.
-        :raise AmbiguityError: Segmentation cannot be completed because CAN Segmenter is not configured.
+        :raise TypeError: Provided value is not instance of UdsMessage class.
+        :raise AmbiguityError: Segmentation cannot be completed because CAN Segmenter is not properly configured.
+        :raise NotImplementedError: There is missing implementation for the Addressing Type used by provided message.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: CAN packets that are an outcome of UDS message segmentation.
         """
+        if not isinstance(message, UdsMessage):
+            raise TypeError(f"Provided value is not instance of UdsMessage class. Actual type: {type(message)}")
+        if message.addressing_type == AddressingType.PHYSICAL:
+            if self.physical_ai is None:
+                raise AmbiguityError("Provided diagnostic message cannot be segmented as physical addressing "
+                                     "information are not configured.")
+            return self.__physical_segmentation(message)
+        if message.addressing_type == AddressingType.FUNCTIONAL:
+            if self.functional_ai is None:
+                raise AmbiguityError("Provided diagnostic message cannot be segmented as functional addressing "
+                                     "information are not configured.")
+            return self.__functional_segmentation(message)
+        raise NotImplementedError(f"Unknown addressing type received: {message.addressing_type}")
+
+    def __functional_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+        """
+        Segment functionally addressed diagnostic message.
+
+        :param message: UDS message to divide into UDS packets.
+
+        :raise SegmentationError: Provided diagnostic message cannot be segmented.
+
+        :return: CAN packets that are an outcome of UDS message segmentation.
+        """
+        max_payload_size = CanSingleFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
+                                                                      dlc=self.dlc)
+        message_payload_size = len(message.payload)
+        if message_payload_size > max_payload_size:
+            raise SegmentationError("Provided diagnostic message cannot be segmented using functional addressing "
+                                    "as it will not fit into a Single Frame.")
+        sf = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
+                       payload=message.payload,
+                       filler_byte=self.filler_byte,
+                       dlc=None if self.use_data_optimization else self.dlc,
+                       **self.functional_ai)
+        return sf,
+
+    def __physical_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+        """
+        Segment physically addressed diagnostic message.
+
+        :param message: UDS message to divide into UDS packets.
+
+        :raise SegmentationError: Provided diagnostic message cannot be segmented.
+
+        :return: CAN packets that are an outcome of UDS message segmentation.
+        """
+        message_payload_size = len(message.payload)
+        if message_payload_size > CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE:
+            raise SegmentationError("Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
+                                    "to transmit it over CAN bus.")
+        max_sf_payload_size = CanSingleFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
+                                                                         dlc=self.dlc)
+        if message_payload_size <= max_sf_payload_size:
+            sf = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
+                           payload=message.payload,
+                           filler_byte=self.filler_byte,
+                           dlc=None if self.use_data_optimization else self.dlc,
+                           **self.physical_ai)
+
+            return sf,
+        is_long_ff_dl_format_used = message_payload_size > CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE
+        ff_payload_size = CanFirstFrameHandler.get_payload_size(addressing_format=self.addressing_format,
+                                                                dlc=self.dlc,
+                                                                long_ff_dl_format=is_long_ff_dl_format_used)
+        ff = CanPacket(packet_type=CanPacketType.FIRST_FRAME,
+                       payload=message.payload[:ff_payload_size],
+                       dlc=self.dlc,
+                       data_length=message_payload_size,
+                       **self.physical_ai)
+        cf_payload_size = CanConsecutiveFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
+                                                                          dlc=self.dlc)
+        total_cf_number = (message_payload_size - ff_payload_size + cf_payload_size - 1) // cf_payload_size
+        cfs = []
+        for cf_index in range(total_cf_number):
+            sequence_number = (cf_index + 1) % 0x10
+            payload_i_start = ff_payload_size + cf_index*cf_payload_size
+            payload_i_stop = payload_i_start + cf_payload_size
+            cf = CanPacket(packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                           payload=message.payload[payload_i_start: payload_i_stop],
+                           dlc=None if self.use_data_optimization and cf_index == total_cf_number-1 else self.dlc,
+                           sequence_number=sequence_number,
+                           filler_byte=self.filler_byte,
+                           **self.physical_ai)
+            cfs.append(cf)
+        return ff, *cfs

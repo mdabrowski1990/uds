@@ -86,5 +86,7 @@ class AbstractSegmenter(ABC):
 
         :param message: UDS message to divide into UDS packets.
 
+        :raise SegmentationError: Provided diagnostic message cannot be segmented.
+
         :return: UDS packets that are an outcome of UDS message segmentation.
         """
