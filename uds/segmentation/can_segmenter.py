@@ -173,6 +173,9 @@ class CanSegmenter(AbstractSegmenter):
         :param packets: Packets sequence to check.
 
         :raise ValueError: Provided value is not CAN packets sequence.
+        :raise NotImplementedError: There is missing implementation for the provided initial packet type.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
 
         :return: True if the packets form exactly one diagnostic message.
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
@@ -181,6 +184,20 @@ class CanSegmenter(AbstractSegmenter):
             raise ValueError("Provided packets are not consistent CAN Packets sequence.")
         if not CanPacketType.is_initial_packet_type(packets[0].packet_type):
             return False
+        if packets[0].packet_type == CanPacketType.SINGLE_FRAME:
+            return len(packets) == 1
+        if packets[0].packet_type == CanPacketType.FIRST_FRAME:
+            total_payload_size = packets[0].data_length
+            payload_bytes_found = len(packets[0].payload)
+            for following_packet in packets[1:]:
+                if CanPacketType.is_initial_packet_type(following_packet.packet_type):
+                    return False
+                if total_payload_size <= payload_bytes_found:
+                    return False
+                if following_packet.payload is not None:
+                    payload_bytes_found += len(following_packet.payload)
+            return payload_bytes_found >= total_payload_size
+        raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
 
     def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """

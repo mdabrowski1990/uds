@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock, patch
+from mock import Mock, patch, call
 
 from uds.segmentation.can_segmenter import CanSegmenter, \
     CanDlcHandler, CanAddressingInformationHandler, CanPacket, CanPacketRecord, CanPacketType, \
@@ -14,6 +14,10 @@ class TestCanSegmenter:
     def setup(self):
         self.mock_can_segmenter = Mock(spec=CanSegmenter)
         mock_can_ai_handler_class = Mock(ADDRESSING_TYPE_NAME=CanAddressingInformationHandler.ADDRESSING_TYPE_NAME)
+        mock_can_packet_type_class = Mock(SINGLE_FRAME=CanPacketType.SINGLE_FRAME,
+                                          FIRST_FRAME=CanPacketType.FIRST_FRAME,
+                                          CONSECUTIVE_FRAME=CanPacketType.CONSECUTIVE_FRAME,
+                                          FLOW_CONTROL=CanPacketType.FLOW_CONTROL)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
@@ -26,7 +30,7 @@ class TestCanSegmenter:
         self._patcher_can_ai_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformationHandler",
                                                    mock_can_ai_handler_class)
         self.mock_can_ai_handler_class = self._patcher_can_ai_handler_class.start()
-        self._patcher_can_packet_type_class = patch(f"{self.SCRIPT_LOCATION}.CanPacketType")
+        self._patcher_can_packet_type_class = patch(f"{self.SCRIPT_LOCATION}.CanPacketType", mock_can_packet_type_class)
         self.mock_can_packet_type_class = self._patcher_can_packet_type_class.start()
 
     def teardown(self):
@@ -185,8 +189,20 @@ class TestCanSegmenter:
         self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
 
     @pytest.mark.parametrize("packets", [
-        (Mock(packet_type="some type"), ),
-        [Mock(packet_type="othjer type"), Mock(), Mock()]
+        [Mock()],
+        (Mock(), Mock(), Mock()),
+    ])
+    def test_is_complete_packets_sequence__not_implemented_error(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
+        self.mock_can_packet_type_class.is_initial_packet_type.return_value = True
+        with pytest.raises(NotImplementedError):
+            CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets)
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+        self.mock_can_packet_type_class.is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock()],
+        (Mock(), Mock(), Mock()),
     ])
     def test_is_complete_packets_sequence__false__not_initial_packet(self, packets):
         self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
@@ -195,11 +211,70 @@ class TestCanSegmenter:
         self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
         self.mock_can_packet_type_class.is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
 
-    # TODO: test two initial packets
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.SINGLE_FRAME)],
+        [Mock(packet_type=CanPacketType.SINGLE_FRAME), Mock()],
+        (Mock(packet_type=CanPacketType.SINGLE_FRAME), Mock(), Mock()),
+    ])
+    def test_is_complete_packets_sequence__single_frame(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
+        self.mock_can_packet_type_class.is_initial_packet_type.return_value = True
+        assert CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets) \
+               is (len(packets) == 1)
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+        self.mock_can_packet_type_class.is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
 
-    # TODO: test too little payload bytes
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, payload=[]), Mock()],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, payload=range(5)), Mock(), Mock()),
+    ])
+    def test_is_complete_packets_sequence__first_frame__multiple_initial_packets(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
+        self.mock_can_packet_type_class.is_initial_packet_type.return_value = True
+        assert CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+        self.mock_can_packet_type_class.is_initial_packet_type.assert_has_calls(
+            [call(packets[0].packet_type), call(packets[1].packet_type)])
 
-    # TODO: additional payload after full packets payload was provided
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=11, payload=range(4)), Mock(payload=range(6))],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=143, payload=[0xFF]*10), Mock(payload=None),
+         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
+    ])
+    def test_is_complete_packets_sequence__first_frame__too_little_packets(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
+        self.mock_can_packet_type_class.is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
+        assert CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+        self.mock_can_packet_type_class.is_initial_packet_type.assert_has_calls(
+            [call(packet.packet_type) for packet in packets])
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=10, payload=range(4)), Mock(payload=range(6)),
+         Mock(payload=None)],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=54, payload=[0xFF]*10), Mock(payload=None),
+         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
+    ])
+    def test_is_complete_packets_sequence__first_frame__too_many_packets(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
+        self.mock_can_packet_type_class.is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
+        assert CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+        self.mock_can_packet_type_class.is_initial_packet_type.assert_has_calls(
+            [call(packet.packet_type) for packet in packets])
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=11, payload=range(4)), Mock(payload=range(7))],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=100, payload=[0xFF]*10), Mock(payload=None),
+         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
+    ])
+    def test_is_complete_packets_sequence__first_frame__true(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence.return_value = True
+        self.mock_can_packet_type_class.is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
+        assert CanSegmenter.is_complete_packets_sequence(self=self.mock_can_segmenter, packets=packets) is True
+        self.mock_can_segmenter.is_supported_packets_sequence.assert_called_once_with(packets)
+        self.mock_can_packet_type_class.is_initial_packet_type.assert_has_calls(
+            [call(packet.packet_type) for packet in packets])
 
 
 @pytest.mark.integration
