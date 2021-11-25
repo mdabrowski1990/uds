@@ -34,6 +34,18 @@ class UdsMessage:
         self.payload = payload  # type: ignore
         self.addressing_type = addressing_type
 
+    def __eq__(self, other: "UdsMessage") -> bool:
+        """
+        Compare with other diagnostic message.
+
+        :param other: Diagnostic message to compare.
+
+        :return: True if both messages carry the same Payload and uses the same Addressing Type, otherwise False.
+        """
+        if not isinstance(other, self.__class__):
+            raise TypeError("UDS Message can only be compared with another UDS Message")
+        return self.addressing_type == other.addressing_type and self.payload == other.payload
+
     @property
     def payload(self) -> RawBytesTuple:
         """Raw bytes of payload that this diagnostic message carries."""
@@ -76,6 +88,21 @@ class UdsMessageRecord:
             diagnostic message.
         """
         self.packets_records = packets_records  # type: ignore
+
+    def __eq__(self, other: "UdsMessage") -> bool:
+        """
+        Compare with other diagnostic message record.
+
+        :param other: Diagnostic message record to compare.
+
+        :return: True if both messages records carry the same Payload and uses the same Addressing Type and Direction,
+            otherwise False.
+        """
+        if not isinstance(other, self.__class__):
+            raise TypeError("UDS Message Record can only be compared with another UDS Message Record")
+        return self.addressing_type == other.addressing_type \
+            and self.payload == other.payload \
+            and self.direction == other.direction
 
     @staticmethod
     def __validate_packets_records(value: Any) -> None:

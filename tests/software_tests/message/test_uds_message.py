@@ -32,6 +32,26 @@ class TestUdsMessage:
         assert self.mock_uds_message.payload == payload
         assert self.mock_uds_message.addressing_type == addressing_type
 
+    # __eq__
+
+    @pytest.mark.parametrize("message1, message2", [
+        (Mock(spec=UdsMessage, payload=list(range(10)), addressing_type="some"),
+         Mock(spec=UdsMessage, payload=list(range(10)), addressing_type="some")),
+        (Mock(spec=UdsMessage, payload=list(range(10)), addressing_type="some"),
+         Mock(spec=UdsMessage, payload=list(range(11)), addressing_type="some")),
+        (Mock(spec=UdsMessage, payload=list(range(10)), addressing_type="some"),
+         Mock(spec=UdsMessage, payload=list(range(10)), addressing_type="something else")),
+        (Mock(spec=UdsMessage), Mock(spec=UdsMessage)),
+    ])
+    def test_eq(self, message1, message2):
+        assert UdsMessage.__eq__(self=message1, other=message2) \
+               is (message1.payload == message2.payload and message1.addressing_type == message2.addressing_type)
+
+    @pytest.mark.parametrize("other_message", [Mock(spec=UdsMessageRecord), 1, Mock()])
+    def test_eq__type_error(self, other_message):
+        with pytest.raises(TypeError):
+            UdsMessage.__eq__(self=self.mock_uds_message, other=other_message)
+
     # payload
 
     @pytest.mark.parametrize("value", [None, [0x1, 0x02], "some message"])
@@ -88,6 +108,30 @@ class TestUdsMessageRecord:
     def test_init(self, packets_records):
         UdsMessageRecord.__init__(self=self.mock_uds_message_record, packets_records=packets_records)
         assert self.mock_uds_message_record.packets_records == packets_records
+
+    # __eq__
+
+    @pytest.mark.parametrize("message1, message2", [
+        (Mock(spec=UdsMessageRecord, payload=list(range(10)), addressing_type="some", direction="tx"),
+         Mock(spec=UdsMessageRecord, payload=list(range(10)), addressing_type="some", direction="tx")),
+        (Mock(spec=UdsMessageRecord, payload=list(range(10)), addressing_type="some", direction="rx"),
+         Mock(spec=UdsMessageRecord, payload=list(range(11)), addressing_type="some", direction="rx")),
+        (Mock(spec=UdsMessageRecord, payload=list(range(10)), addressing_type="some", direction="tx"),
+         Mock(spec=UdsMessageRecord, payload=list(range(10)), addressing_type="something else", direction="tx")),
+        (Mock(spec=UdsMessageRecord, payload=list(range(10)), addressing_type="some", direction="tx"),
+         Mock(spec=UdsMessageRecord, payload=list(range(10)), addressing_type="some", direction="rx")),
+        (Mock(spec=UdsMessageRecord), Mock(spec=UdsMessageRecord)),
+    ])
+    def test_eq(self, message1, message2):
+        assert UdsMessageRecord.__eq__(self=message1, other=message2) \
+               is (message1.payload == message2.payload
+                   and message1.addressing_type == message2.addressing_type
+                   and message1.direction == message2.direction)
+
+    @pytest.mark.parametrize("other_message_record", [Mock(spec=UdsMessage), 1, Mock()])
+    def test_eq__type_error(self, other_message_record):
+        with pytest.raises(TypeError):
+            UdsMessageRecord.__eq__(self=self.mock_uds_message_record, other=other_message_record)
 
     # __validate_packets_records
 
