@@ -34,7 +34,7 @@ class UdsMessage:
         self.payload = payload  # type: ignore
         self.addressing_type = addressing_type
 
-    def __eq__(self, other: "UdsMessage") -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Compare with other diagnostic message.
 
@@ -89,7 +89,7 @@ class UdsMessageRecord:
         """
         self.packets_records = packets_records  # type: ignore
 
-    def __eq__(self, other: "UdsMessage") -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Compare with other diagnostic message record.
 

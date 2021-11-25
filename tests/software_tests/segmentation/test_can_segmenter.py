@@ -295,7 +295,9 @@ class TestCanSegmenter:
     # segmentation
 
     @pytest.mark.parametrize("message", [Mock(), "not a message"])
-    def test_segmentation__type_error(self, message):
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_segmentation__type_error(self, mock_isinstance, message):
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value, UdsMessage)
         with pytest.raises(TypeError):
             CanSegmenter.segmentation(self=self.mock_can_segmenter, message=message)
 

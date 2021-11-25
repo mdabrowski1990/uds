@@ -37,7 +37,7 @@ class AbstractSegmenter(ABC):
 
         :return: True if provided value is an object of a supported packet type, False otherwise.
         """
-        return isinstance(value, self.supported_packet_classes)
+        return isinstance(value, self.supported_packet_classes)  # type: ignore
 
     def is_supported_packets_sequence(self, value: Any) -> bool:
         """

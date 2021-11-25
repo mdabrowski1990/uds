@@ -45,8 +45,8 @@ class CanSegmenter(AbstractSegmenter):
         """
         CanAddressingFormat.validate_member(addressing_format)
         self.__addressing_format: CanAddressingFormatAlias = CanAddressingFormat(addressing_format)
-        self.physical_ai = physical_ai
-        self.functional_ai = functional_ai
+        self.physical_ai = physical_ai  # type: ignore
+        self.functional_ai = functional_ai  # type: ignore
         self.dlc = dlc
         self.use_data_optimization = use_data_optimization
         self.filler_byte = filler_byte
@@ -84,7 +84,7 @@ class CanSegmenter(AbstractSegmenter):
                 addressing_format=self.addressing_format,
                 addressing_type=AddressingType.PHYSICAL,
                 **value)
-            self.__physical_ai: Optional[AIParamsAlias] = copy(value)
+            self.__physical_ai = copy(value)
             self.__physical_ai.update(
                 addressing_format=self.addressing_format,
                 **{CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL})
