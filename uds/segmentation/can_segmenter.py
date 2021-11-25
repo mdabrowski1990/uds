@@ -167,6 +167,64 @@ class CanSegmenter(AbstractSegmenter):
         validate_raw_byte(value)
         self.__filler_byte: RawByte = value
 
+    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
+        """
+        Perform desegmentation of CAN packets.
+
+        :param packets: CAN packets to desegment into UDS message.
+
+        :raise SegmentationError: Provided packets are not a complete packets sequence that form a diagnostic message.
+        :raise NotImplementedError: There is missing implementation for the provided CAN Packets.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
+
+        :return: A diagnostic message that is an outcome of CAN packets desegmentation.
+        """
+        if not self.is_complete_packets_sequence(packets):
+            raise SegmentationError("Provided packets are not a complete packets sequence")
+        if isinstance(packets[0], CanPacketRecord):
+            return UdsMessageRecord(packets)
+        if isinstance(packets[0], CanPacket):
+            if packets[0].packet_type == CanPacketType.SINGLE_FRAME and len(packets) == 1:
+                return UdsMessage(payload=packets[0].payload, addressing_type=packets[0].addressing_type)
+            if packets[0].packet_type == CanPacketType.FIRST_FRAME:
+                payload_bytes = []
+                for packet in packets:
+                    if packet.payload is not None:
+                        payload_bytes.extend(packet.payload)
+                return UdsMessage(payload=payload_bytes[:packets[0].data_length],
+                                  addressing_type=packets[0].addressing_type)
+            raise SegmentationError("Unexpectedly, something went wrong...")
+        raise NotImplementedError(f"Missing implementation for provided CAN Packet: {type(packets[0])}")
+
+    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+        """
+        Perform segmentation of a diagnostic message.
+
+        :param message: UDS message to divide into UDS packets.
+
+        :raise TypeError: Provided value is not instance of UdsMessage class.
+        :raise AmbiguityError: Segmentation cannot be completed because CAN Segmenter is not properly configured.
+        :raise NotImplementedError: There is missing implementation for the Addressing Type used by provided message.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
+
+        :return: CAN packets that are an outcome of UDS message segmentation.
+        """
+        if not isinstance(message, UdsMessage):
+            raise TypeError(f"Provided value is not instance of UdsMessage class. Actual type: {type(message)}")
+        if message.addressing_type == AddressingType.PHYSICAL:
+            if self.physical_ai is None:
+                raise AmbiguityError("Provided diagnostic message cannot be segmented as physical addressing "
+                                     "information are not configured.")
+            return self.__physical_segmentation(message)
+        if message.addressing_type == AddressingType.FUNCTIONAL:
+            if self.functional_ai is None:
+                raise AmbiguityError("Provided diagnostic message cannot be segmented as functional addressing "
+                                     "information are not configured.")
+            return self.__functional_segmentation(message)
+        raise NotImplementedError(f"Unknown addressing type received: {message.addressing_type}")
+
     def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
@@ -199,68 +257,6 @@ class CanSegmenter(AbstractSegmenter):
                     payload_bytes_found += len(following_packet.payload)
             return payload_bytes_found >= total_payload_size
         raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
-
-    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
-        """
-        Perform desegmentation of CAN packets.
-
-        :param packets: CAN packets to desegment into UDS message.
-
-        :raise SegmentationError: Provided packets are not a complete packet sequence that form a diagnostic message.
-
-        :return: A diagnostic message that is an outcome of CAN packets desegmentation.
-        """
-
-    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
-        """
-        Perform segmentation of a diagnostic message.
-
-        :param message: UDS message to divide into UDS packets.
-
-        :raise TypeError: Provided value is not instance of UdsMessage class.
-        :raise AmbiguityError: Segmentation cannot be completed because CAN Segmenter is not properly configured.
-        :raise NotImplementedError: There is missing implementation for the Addressing Type used by provided message.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
-
-        :return: CAN packets that are an outcome of UDS message segmentation.
-        """
-        if not isinstance(message, UdsMessage):
-            raise TypeError(f"Provided value is not instance of UdsMessage class. Actual type: {type(message)}")
-        if message.addressing_type == AddressingType.PHYSICAL:
-            if self.physical_ai is None:
-                raise AmbiguityError("Provided diagnostic message cannot be segmented as physical addressing "
-                                     "information are not configured.")
-            return self.__physical_segmentation(message)
-        if message.addressing_type == AddressingType.FUNCTIONAL:
-            if self.functional_ai is None:
-                raise AmbiguityError("Provided diagnostic message cannot be segmented as functional addressing "
-                                     "information are not configured.")
-            return self.__functional_segmentation(message)
-        raise NotImplementedError(f"Unknown addressing type received: {message.addressing_type}")
-
-    def __functional_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
-        """
-        Segment functionally addressed diagnostic message.
-
-        :param message: UDS message to divide into UDS packets.
-
-        :raise SegmentationError: Provided diagnostic message cannot be segmented.
-
-        :return: CAN packets that are an outcome of UDS message segmentation.
-        """
-        max_payload_size = CanSingleFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
-                                                                      dlc=self.dlc)
-        message_payload_size = len(message.payload)
-        if message_payload_size > max_payload_size:
-            raise SegmentationError("Provided diagnostic message cannot be segmented using functional addressing "
-                                    "as it will not fit into a Single Frame.")
-        sf = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
-                       payload=message.payload,
-                       filler_byte=self.filler_byte,
-                       dlc=None if self.use_data_optimization else self.dlc,
-                       **self.functional_ai)
-        return sf,
 
     def __physical_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
         """
@@ -311,3 +307,26 @@ class CanSegmenter(AbstractSegmenter):
                            **self.physical_ai)
             cfs.append(cf)
         return ff, *cfs
+
+    def __functional_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+        """
+        Segment functionally addressed diagnostic message.
+
+        :param message: UDS message to divide into UDS packets.
+
+        :raise SegmentationError: Provided diagnostic message cannot be segmented.
+
+        :return: CAN packets that are an outcome of UDS message segmentation.
+        """
+        max_payload_size = CanSingleFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
+                                                                      dlc=self.dlc)
+        message_payload_size = len(message.payload)
+        if message_payload_size > max_payload_size:
+            raise SegmentationError("Provided diagnostic message cannot be segmented using functional addressing "
+                                    "as it will not fit into a Single Frame.")
+        sf = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
+                       payload=message.payload,
+                       filler_byte=self.filler_byte,
+                       dlc=None if self.use_data_optimization else self.dlc,
+                       **self.functional_ai)
+        return sf,
