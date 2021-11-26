@@ -5,11 +5,10 @@ __all__ = ["CanSegmenter"]
 from typing import Optional, Union, Tuple, Dict, Type
 from copy import copy
 
-from uds.utilities import RawByte, validate_raw_byte, AmbiguityError
+from uds.utilities import RawByte, RawBytesList, validate_raw_byte, AmbiguityError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import CanAddressingInformationHandler, CanAddressingFormat, CanAddressingFormatAlias, \
-    CanDlcHandler, CanIdHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, \
-    DEFAULT_FILLER_BYTE
+    CanDlcHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, DEFAULT_FILLER_BYTE
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType, PacketAlias, PacketsSequence, PacketsDefinitionTuple
 from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
@@ -17,7 +16,7 @@ from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 AIArgsAlias = Dict[str, Optional[Union[int, RawByte]]]
 """Alias of Addressing Information arguments to configure CAN Segmenter communication model."""
-AIParamsAlias = Dict[str, Optional[Union[int, RawByte, AddressingTypeAlias]]]
+AIParamsAlias = Dict[str, Optional[Union[int, AddressingTypeAlias]]]
 """Alias of Addressing Information parameters used by CAN Segmenter for each communication model."""
 
 
@@ -52,7 +51,7 @@ class CanSegmenter(AbstractSegmenter):
         self.filler_byte = filler_byte
 
     @property
-    def supported_packet_classes(self) -> tuple[Type[PacketAlias], ...]:
+    def supported_packet_classes(self) -> Tuple[Type[PacketAlias], ...]:
         """Classes that define packet objects supported by this segmenter."""
         return CanPacket, CanPacketRecord
 
@@ -84,10 +83,12 @@ class CanSegmenter(AbstractSegmenter):
                 addressing_format=self.addressing_format,
                 addressing_type=AddressingType.PHYSICAL,
                 **value)
-            self.__physical_ai = copy(value)
-            self.__physical_ai.update(
-                addressing_format=self.addressing_format,
-                **{CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL})
+            physical_ai = copy(value)
+            physical_ai.update({
+                "addressing_format": self.addressing_format,  # type: ignore
+                CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL  # type: ignore
+            })
+            self.__physical_ai = physical_ai  # type: ignore
 
     @property
     def functional_ai(self) -> AIParamsAlias:
@@ -96,7 +97,7 @@ class CanSegmenter(AbstractSegmenter):
 
         None if functionally addressed communication parameters are not configured.
         """
-        return copy(self.__functional_ai)
+        return copy(self.__functional_ai)  # type: ignore
 
     @functional_ai.setter
     def functional_ai(self, value: Optional[AIArgsAlias]):
@@ -112,10 +113,12 @@ class CanSegmenter(AbstractSegmenter):
                 addressing_format=self.addressing_format,
                 addressing_type=AddressingType.FUNCTIONAL,
                 **value)
-            self.__functional_ai: Optional[AIParamsAlias] = copy(value)
-            self.__functional_ai.update(
-                addressing_format=self.addressing_format,
-                **{CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL})
+            functional_ai = copy(value)
+            functional_ai.update({
+                "addressing_format": self.addressing_format,  # type: ignore
+                CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL  # type: ignore
+            })
+            self.__functional_ai = functional_ai  # type: ignore
 
     @property
     def dlc(self) -> int:
@@ -183,12 +186,13 @@ class CanSegmenter(AbstractSegmenter):
         if not self.is_complete_packets_sequence(packets):
             raise SegmentationError("Provided packets are not a complete packets sequence")
         if isinstance(packets[0], CanPacketRecord):
-            return UdsMessageRecord(packets)
+            return UdsMessageRecord(packets)  # type: ignore
         if isinstance(packets[0], CanPacket):
             if packets[0].packet_type == CanPacketType.SINGLE_FRAME and len(packets) == 1:
-                return UdsMessage(payload=packets[0].payload, addressing_type=packets[0].addressing_type)
+                return UdsMessage(payload=packets[0].payload,  # type: ignore
+                                  addressing_type=packets[0].addressing_type)
             if packets[0].packet_type == CanPacketType.FIRST_FRAME:
-                payload_bytes = []
+                payload_bytes: RawBytesList = []
                 for packet in packets:
                     if packet.payload is not None:
                         payload_bytes.extend(packet.payload)
@@ -247,15 +251,15 @@ class CanSegmenter(AbstractSegmenter):
             return len(packets) == 1
         if packets[0].packet_type == CanPacketType.FIRST_FRAME:
             total_payload_size = packets[0].data_length
-            payload_bytes_found = len(packets[0].payload)
+            payload_bytes_found = len(packets[0].payload)  # type: ignore
             for following_packet in packets[1:]:
                 if CanPacketType.is_initial_packet_type(following_packet.packet_type):
                     return False
-                if payload_bytes_found >= total_payload_size:
+                if payload_bytes_found >= total_payload_size:  # type: ignore
                     return False
                 if following_packet.payload is not None:
                     payload_bytes_found += len(following_packet.payload)
-            return payload_bytes_found >= total_payload_size
+            return payload_bytes_found >= total_payload_size  # type: ignore
         raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
 
     def __physical_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
@@ -272,41 +276,40 @@ class CanSegmenter(AbstractSegmenter):
         if message_payload_size > CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE:
             raise SegmentationError("Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
                                     "to transmit it over CAN bus.")
-        max_sf_payload_size = CanSingleFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
-                                                                         dlc=self.dlc)
-        if message_payload_size <= max_sf_payload_size:
-            sf = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
-                           payload=message.payload,
-                           filler_byte=self.filler_byte,
-                           dlc=None if self.use_data_optimization else self.dlc,
-                           **self.physical_ai)
-
-            return sf,
+        if message_payload_size <= CanSingleFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
+                                                                              dlc=self.dlc):
+            single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,  # type: ignore
+                                     payload=message.payload,
+                                     filler_byte=self.filler_byte,
+                                     dlc=None if self.use_data_optimization else self.dlc,
+                                     **self.physical_ai)
+            return (single_frame,)
         is_long_ff_dl_format_used = message_payload_size > CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE
         ff_payload_size = CanFirstFrameHandler.get_payload_size(addressing_format=self.addressing_format,
                                                                 dlc=self.dlc,
                                                                 long_ff_dl_format=is_long_ff_dl_format_used)
-        ff = CanPacket(packet_type=CanPacketType.FIRST_FRAME,
-                       payload=message.payload[:ff_payload_size],
-                       dlc=self.dlc,
-                       data_length=message_payload_size,
-                       **self.physical_ai)
+        first_frame = CanPacket(packet_type=CanPacketType.FIRST_FRAME,  # type: ignore
+                                payload=message.payload[:ff_payload_size],
+                                dlc=self.dlc,
+                                data_length=message_payload_size,
+                                **self.physical_ai)
         cf_payload_size = CanConsecutiveFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
                                                                           dlc=self.dlc)
-        total_cf_number = (message_payload_size - ff_payload_size + cf_payload_size - 1) // cf_payload_size
-        cfs = []
-        for cf_index in range(total_cf_number):
+        total_cfs_number = (message_payload_size - ff_payload_size + cf_payload_size - 1) // cf_payload_size
+        consecutive_frames = []
+        for cf_index in range(total_cfs_number):
             sequence_number = (cf_index + 1) % 0x10
-            payload_i_start = ff_payload_size + cf_index*cf_payload_size
+            payload_i_start = ff_payload_size + cf_index * cf_payload_size
             payload_i_stop = payload_i_start + cf_payload_size
-            cf = CanPacket(packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                           payload=message.payload[payload_i_start: payload_i_stop],
-                           dlc=None if self.use_data_optimization and cf_index == total_cf_number-1 else self.dlc,
-                           sequence_number=sequence_number,
-                           filler_byte=self.filler_byte,
-                           **self.physical_ai)
-            cfs.append(cf)
-        return ff, *cfs
+            consecutive_frame = CanPacket(packet_type=CanPacketType.CONSECUTIVE_FRAME,  # type: ignore
+                                          payload=message.payload[payload_i_start: payload_i_stop],
+                                          dlc=None if self.use_data_optimization and cf_index == total_cfs_number - 1
+                                          else self.dlc,
+                                          sequence_number=sequence_number,
+                                          filler_byte=self.filler_byte,
+                                          **self.physical_ai)
+            consecutive_frames.append(consecutive_frame)
+        return (first_frame, *consecutive_frames)
 
     def __functional_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
         """
@@ -324,9 +327,9 @@ class CanSegmenter(AbstractSegmenter):
         if message_payload_size > max_payload_size:
             raise SegmentationError("Provided diagnostic message cannot be segmented using functional addressing "
                                     "as it will not fit into a Single Frame.")
-        sf = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
-                       payload=message.payload,
-                       filler_byte=self.filler_byte,
-                       dlc=None if self.use_data_optimization else self.dlc,
-                       **self.functional_ai)
-        return sf,
+        single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
+                                 payload=message.payload,
+                                 filler_byte=self.filler_byte,
+                                 dlc=None if self.use_data_optimization else self.dlc,
+                                 **self.functional_ai)  # type: ignore
+        return (single_frame,)

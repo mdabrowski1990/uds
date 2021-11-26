@@ -25,6 +25,7 @@ class AbstractSegmenter(ABC):
     .. note:: Each concrete segmenter class handles exactly one bus.
     """
 
+    @property
     @abstractmethod
     def supported_packet_classes(self) -> Tuple[Type[PacketAlias], ...]:
         """Classes that define packet objects supported by this segmenter."""
