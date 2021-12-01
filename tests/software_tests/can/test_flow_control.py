@@ -262,7 +262,7 @@ class TestCanFlowControlHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte, data_bytes_number, ai_data_bytes, fs_data_bytes", [
-        (CanDlcHandler.MIN_BASE_UDS_DLC - 2, 0x66, 4, [], [0x30, 0x12, 0x56]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 2, 0x66, 2, [], [0x30, 0x12, 0x56]),
         (CanDlcHandler.MIN_BASE_UDS_DLC - 1, 0x99, 5, [0xFF], [0x31, 0x00, 0x00]),
     ])
     @pytest.mark.parametrize("flow_status, block_size, st_min", [

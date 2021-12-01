@@ -488,7 +488,7 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("raw_frame_data, dlc, ai_bytes_number, sf_dl_data_bytes", [
         (list(range(7)), 8, 0, [0x07]),
         (list(range(9)), 9, 1, [0x00, 0x08]),
-        (list(range(64)), 10, 0, [0x00, 0x3F]),
+        (list(range(64)), 10, 0, [0x0A, 0x3F]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.is_single_frame")
