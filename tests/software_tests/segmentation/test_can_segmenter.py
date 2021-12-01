@@ -3,7 +3,7 @@ from mock import MagicMock, Mock, patch, call
 
 from uds.segmentation.can_segmenter import CanSegmenter, \
     CanDlcHandler, CanAddressingInformationHandler, CanPacket, CanPacketRecord, CanPacketType, CanFirstFrameHandler, \
-    AddressingType, UdsMessage, UdsMessageRecord, DEFAULT_FILLER_BYTE, SegmentationError, AmbiguityError
+    AddressingType, UdsMessage, DEFAULT_FILLER_BYTE, SegmentationError, AmbiguityError
 
 
 class TestCanSegmenter:
@@ -22,6 +22,7 @@ class TestCanSegmenter:
                                                FUNCTIONAL=AddressingType.FUNCTIONAL)
         mock_first_frame_handler_class = MagicMock(MAX_LONG_FF_DL_VALUE=CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE,
                                                    MAX_SHORT_FF_DL_VALUE=CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE)
+        mock_can_dlc_handler_class = MagicMock(MIN_BASE_UDS_DLC=CanDlcHandler.MIN_BASE_UDS_DLC)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
@@ -31,7 +32,7 @@ class TestCanSegmenter:
         self.mock_uds_message_class = self._patcher_uds_message_class.start()
         self._patcher_uds_message_record_class = patch(f"{self.SCRIPT_LOCATION}.UdsMessageRecord")
         self.mock_uds_message_record_class = self._patcher_uds_message_record_class.start()
-        self._patcher_can_dlc_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler")
+        self._patcher_can_dlc_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler", mock_can_dlc_handler_class)
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
         self._patcher_can_addressing_format_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat")
         self.mock_can_addressing_format_class = self._patcher_can_addressing_format_class.start()
