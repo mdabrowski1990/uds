@@ -46,7 +46,7 @@ must be divided and transmitted by many CAN packets. The first packet to carry s
 :ref:`First Frame (CAN Packet) <knowledge-base-can-first-frame>` and its transmission is followed by
 :ref:`Consecutive Frames (CAN Packets) <knowledge-base-can-consecutive-frame>`.
 A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` by sending
-:ref:`Flow Controls (CAN Packets) <knowledge-base-can-flow-control>` after
+:ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` after
 :ref:`First Frame (CAN Packet) <knowledge-base-can-first-frame>` and each complete transmission of
 :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` block.
 
