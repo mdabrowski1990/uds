@@ -56,7 +56,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
     .. code-block::  python
 
-        # let's assume that we have `can_segmenter` already configured as presented above
+        # let's assume that we have `can_segmenter` already configured as presented in configuration example above
 
         # define diagnostic message to segment
         uds_message_1 = uds.message.UdsMessage(payload=[0x3E, 0x00],
@@ -68,8 +68,8 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         can_packets_1 = can_segmenter.segmentation(uds_message_1)  # output: Single Frame
         can_packets_2 = can_segmenter.segmentation(uds_message_2)  # output: First Frame with Consecutive Frame(s)
 
-  .. note:: You are unable to segment diagnostic message into First Frame and Consecutive Frame as this is not allowed
-      according to :ref:`UDS ISO Standards <knowledge-base-uds-standards>`.
+  .. note:: It is impossible to segment functionally addressed diagnostic message into First Frame and Consecutive Frame(s)
+      as such result is considered incorrect according to :ref:`UDS ISO Standards <knowledge-base-uds-standards>`.
 
 
 - CAN packets desegmentation:
@@ -83,7 +83,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
     .. code-block::  python
 
-        # let's assume that we have `can_segmenter` already configured as presented above
+        # let's assume that we have `can_segmenter` already configured as presented in configuration example above
 
         # define CAN packets to desegment
         can_packets_1 = [
@@ -125,6 +125,6 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         uds_message_1 = can_segmenter.desegmentation(can_packets_1)
         uds_message_2 = can_segmenter.desegmentation(can_packets_2)
 
-    .. warning:: Desegmentation performs only sanity check on CAN Packets (not full validation of CAN packets content),
-        therefore as long as a message can be decoded out of CAN packets (even if it is incompatible with
-        Diagnostic on CAN ISO standards) as long it will not raise an error.
+    .. warning:: Desegmentation performs only sanity check of CAN Packets content, therefore some inconsistencies
+        with Diagnostic on CAN standard might be silently accepted as long as a message can be decoded out of provided
+        CAN packets.

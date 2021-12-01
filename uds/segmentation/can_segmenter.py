@@ -137,8 +137,13 @@ class CanSegmenter(AbstractSegmenter):
         Set value of base CAN DLC to use for CAN Packets.
 
         :param value: Value to set.
+
+        :raise ValueError: Provided value is too small.
         """
         CanDlcHandler.validate_dlc(value)
+        if value < CanDlcHandler.MIN_BASE_UDS_DLC:
+            raise ValueError(f"Provided value is too small. Expected: DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. "
+                             f"Actual value: {value}")
         self.__dlc: int = value
 
     @property
@@ -284,10 +289,10 @@ class CanSegmenter(AbstractSegmenter):
                                      dlc=None if self.use_data_optimization else self.dlc,
                                      **self.physical_ai)
             return (single_frame,)
-        is_long_ff_dl_format_used = message_payload_size > CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE
-        ff_payload_size = CanFirstFrameHandler.get_payload_size(addressing_format=self.addressing_format,
-                                                                dlc=self.dlc,
-                                                                long_ff_dl_format=is_long_ff_dl_format_used)
+        ff_payload_size = CanFirstFrameHandler.get_payload_size(
+            addressing_format=self.addressing_format,
+            dlc=self.dlc,
+            long_ff_dl_format=message_payload_size > CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE)
         first_frame = CanPacket(packet_type=CanPacketType.FIRST_FRAME,  # type: ignore
                                 payload=message.payload[:ff_payload_size],
                                 dlc=self.dlc,

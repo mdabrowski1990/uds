@@ -143,6 +143,8 @@ class TestCanSegmenter:
                     for arg_name, arg_value in value.items()])
         assert self.mock_can_segmenter._CanSegmenter__physical_ai[self.mock_can_ai_handler_class.ADDRESSING_TYPE_NAME] \
                == self.mock_addressing_type_class.PHYSICAL
+        assert self.mock_can_segmenter._CanSegmenter__physical_ai["addressing_format"] \
+               == self.mock_can_segmenter.addressing_format
 
     # functional_ai
 
@@ -168,6 +170,8 @@ class TestCanSegmenter:
                     for arg_name, arg_value in value.items()])
         assert self.mock_can_segmenter._CanSegmenter__functional_ai[self.mock_can_ai_handler_class.ADDRESSING_TYPE_NAME] \
                == self.mock_addressing_type_class.FUNCTIONAL
+        assert self.mock_can_segmenter._CanSegmenter__functional_ai["addressing_format"] \
+               == self.mock_can_segmenter.addressing_format
 
     # dlc
 
@@ -176,7 +180,13 @@ class TestCanSegmenter:
         self.mock_can_segmenter._CanSegmenter__dlc = value
         assert CanSegmenter.dlc.fget(self=self.mock_can_segmenter) == value
 
-    @pytest.mark.parametrize("value", ["something", 5.5])
+    @pytest.mark.parametrize("value", [0, CanDlcHandler.MIN_BASE_UDS_DLC - 1])
+    def test_dlc__set__value_error(self, value):
+        with pytest.raises(ValueError):
+            CanSegmenter.dlc.fset(self=self.mock_can_segmenter, value=value)
+        self.mock_can_dlc_handler_class.validate_dlc.assert_called_once_with(value)
+
+    @pytest.mark.parametrize("value", [CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MIN_BASE_UDS_DLC+1])
     def test_dlc__set(self, value):
         CanSegmenter.dlc.fset(self=self.mock_can_segmenter, value=value)
         self.mock_can_dlc_handler_class.validate_dlc.assert_called_once_with(value)
