@@ -1,7 +1,7 @@
 codecov:
   archive:
     uploads: yes
-  bot: Integration Tests Coverage
+  bot: Integration-Tests-Coverage
 
 
 comment:
