@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from uds.packet.abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord, \
+from uds.packet.abstract_packet import AbstractUdsPacketRecord, \
     TransmissionDirection, ReassignmentError, TimeStamp
 
 

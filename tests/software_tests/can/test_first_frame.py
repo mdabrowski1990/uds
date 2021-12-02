@@ -498,7 +498,7 @@ class TestCanFirstFrameHandler:
     def test_encode_any_ff_dl__valid(self, mock_validate_ff_dl,
                                      ff_dl, long_ff_dl_format, expected_ff_dl_bytes):
         assert CanFirstFrameHandler._CanFirstFrameHandler__encode_any_ff_dl(
-            long_ff_dl_format=long_ff_dl_format, ff_dl=ff_dl) == expected_ff_dl_bytes == expected_ff_dl_bytes
+            long_ff_dl_format=long_ff_dl_format, ff_dl=ff_dl) == expected_ff_dl_bytes
         mock_validate_ff_dl.assert_called_once_with(ff_dl=ff_dl)
 
     @pytest.mark.parametrize("ff_dl", [CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE,
