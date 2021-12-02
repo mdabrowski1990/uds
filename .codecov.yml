@@ -1,0 +1,10 @@
+codecov:
+  archive:
+    uploads: yes
+  bot: Integration Tests Coverage
+
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
