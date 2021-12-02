@@ -36,9 +36,14 @@ jobs:
 
       - name: Execute integration tests with coverage report [pytest]
         run: |
-          pytest --cov-report term-missing --cov-fail-under=80 --cov=uds tests/software_tests -m "integration"
-        
-        
+          pytest --cov-report=xml --cov-fail-under=50 --cov=uds tests/software_tests -m "integration"
+
+      - name: Upload integration tests coverage report [CodeCov]
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
+
+
   static_code_analysis:
     runs-on: ubuntu-latest
     strategy:
