@@ -47,7 +47,7 @@ must be divided and transmitted by many CAN packets. The first packet to carry s
 :ref:`Consecutive Frames (CAN Packets) <knowledge-base-can-consecutive-frame>`.
 A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` by sending
 :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` after
-:ref:`First Frame (CAN Packet) <knowledge-base-can-first-frame>` and each complete transmission of
+:ref:`First Frame <knowledge-base-can-first-frame>` and each complete transmission of
 :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` block.
 
 .. note:: The size of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` block is determined by
@@ -73,12 +73,16 @@ A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-b
 
 .. seealso:: Only the typical use case of :ref:`Flow Control <knowledge-base-can-flow-control>` was described here.
     Check :ref:`Flow Status <knowledge-base-can-flow-status>` parameter and meaning of its values to study less likely
-    use case scenarios.
+    scenarios.
 
 
 .. _knowledge-base-packets-desegmentation:
 
 Packets Desegmentation
 ----------------------
-Desegmentation is a reverse process to a `message segmentation`_. It transforms one or more
-:ref:`UDS packets <knowledge-base-uds-packet>` into a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+Desegmentation is an unambiguous operation which is the reverse process to a `message segmentation`_.
+It transforms one or more :ref:`UDS packets <knowledge-base-uds-packet>` into
+a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+
+.. note:: There are many ways to segment a diagnostic message into CAN packets, but there is always only one correct way
+    to perform desegmentation and decode a diagnostic message out of CAN Packets.

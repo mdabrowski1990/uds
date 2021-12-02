@@ -22,7 +22,9 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
 - Configuration of the segmenter:
 
-  As a user, you are able to configure parameters of :class:`~uds.segmentation.can_segmenter.CanSegmenter`.
+  As a user, you are able to configure :class:`~uds.segmentation.can_segmenter.CanSegmenter` parameters which determines
+  the format (e.g. Addressing Format), the content (e.g. Filler Byte) of CAN Packets and how they are created
+  (e.g. whether to use CAN Frame Data Optimization).
 
   **Example code:**
 
@@ -77,7 +79,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
   As a user, you are able to :ref:`desegment CAN packets <knowledge-base-packets-desegmentation>`
   (either objects of :class:`~uds.packet.can_packet.CanPacket` or :class:`~uds.packet.can_packet_record.CanPacketRecord` class)
   into diagnostic messages (either objects of :class:`~uds.message.uds_message.UdsMessage` or
-  class:`~uds.message.uds_message.UdsMessageRecord` class).
+  :class:`~uds.message.uds_message.UdsMessageRecord` class).
 
   **Example code:**
 
@@ -126,5 +128,5 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         uds_message_2 = can_segmenter.desegmentation(can_packets_2)
 
     .. warning:: Desegmentation performs only sanity check of CAN Packets content, therefore some inconsistencies
-        with Diagnostic on CAN standard might be silently accepted as long as a message can be decoded out of provided
-        CAN packets.
+        with Diagnostic on CAN standard might be silently accepted as long as a message can be unambiguously decoded
+        out of provided CAN packets.
