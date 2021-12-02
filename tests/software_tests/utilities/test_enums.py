@@ -6,7 +6,12 @@ from uds.utilities.enums import ExtendableEnum, ValidatedEnum, ByteEnum, NibbleE
 
 
 class TestByteEnum:
-    """Unit tests for `ByteEnum` class."""
+    """
+    Tests for `ByteEnum` class.
+
+    Note:
+        In fact these are integration tests, but we were unable to effectively mock enum and it is not worth the effort.
+    """
 
     # __new__
 
@@ -31,8 +36,12 @@ class TestByteEnum:
 
 
 class TestNibbleEnum:
-    """Unit tests for `NibbleEnum` class."""
+    """
+    Tests for `NibbleEnum` class.
 
+    Note:
+        In fact these are integration tests, but we were unable to effectively mock enum and it is not worth the effort.
+    """
     # __new__
 
     @pytest.mark.parametrize("value", ["some text", 2.34, None, (0, 1)])
@@ -56,7 +65,12 @@ class TestNibbleEnum:
 
 
 class TestValidatedEnum:
-    """Unit tests for `ValidatedEnum` class."""
+    """
+    Tests for `ValidatedEnum` class.
+
+    Note:
+        In fact these are integration tests, but we were unable to effectively mock enum and it is not worth the effort.
+    """
 
     SCRIPT_LOCATION = "uds.utilities.enums"
 

@@ -3,6 +3,8 @@ UDS OSI Model
 Overview of UDS `OSI model <https://en.wikipedia.org/wiki/OSI_model>`_.
 
 
+.. _knowledge-base-uds-standards:
+
 UDS Standards
 -------------
 UDS is defined by multiple standards which are the main source of information and requirements about this protocol.

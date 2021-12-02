@@ -197,8 +197,8 @@ class CanFirstFrameHandler:
 
         :return: The maximum number of payload bytes that could fit into a considered First Frame.
         """
-        if dlc < CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION:
-            raise ValueError(f"First Frame must use DLC >= {CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION}. "
+        if dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
+            raise ValueError(f"First Frame must use DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. "
                              f"Actual value: dlc={dlc}")
         data_bytes_number = CanDlcHandler.decode_dlc(dlc)
         ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
@@ -261,9 +261,9 @@ class CanFirstFrameHandler:
             raise ValueError(f"Provided value of First Frame Data Length is out of range. "
                              f"Expected: 0 <= ff_dl <= {cls.MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")
         if dlc is not None and addressing_format is not None:
-            if dlc < CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION:
+            if dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise ValueError(f"Provided value of DLC cannot be used with First Frame. "
-                                 f"Expected: dlc >= {CanDlcHandler.MIN_DLC_WITHOUT_DATA_OPTIMIZATION}. "
+                                 f"Expected: dlc >= {CanDlcHandler.MIN_BASE_UDS_DLC}. "
                                  f"Actual value: {dlc}")
             max_sf_dl = CanSingleFrameHandler.get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
             if ff_dl <= max_sf_dl:

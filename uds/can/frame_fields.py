@@ -427,10 +427,10 @@ class CanDlcHandler:
     MAX_DLC_VALUE: int = max(__DLC_VALUES)
     """Maximum value of DLC parameter."""
 
-    MIN_DLC_DATA_PADDING: int = 8
-    """Minimum DLC value for which :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed."""
-    MIN_DLC_WITHOUT_DATA_OPTIMIZATION: int = 8
-    """Minimum DLC value without applying :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`."""
+    MIN_BASE_UDS_DLC: int = 8
+    """Minimum CAN DLC value that can be used for UDS communication.
+    Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+    is used."""
 
     @classmethod
     def decode_dlc(cls, dlc: int) -> int:

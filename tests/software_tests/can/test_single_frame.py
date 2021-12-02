@@ -51,8 +51,8 @@ class TestCanSingleFrameHandler:
         ("another format", None, None),
     ])
     @pytest.mark.parametrize("dlc, filler_byte", [
-        (CanDlcHandler.MIN_DLC_DATA_PADDING, 0x66),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 2, 0x99),
+        (CanDlcHandler.MIN_BASE_UDS_DLC, 0x66),
+        (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
         ([0x54], 2, [], [0xFA]),
@@ -132,9 +132,9 @@ class TestCanSingleFrameHandler:
     ])
     @pytest.mark.parametrize("filler_byte", [0x66, 0x99])
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_bytes, sf_dl_bytes", [
-        (CanDlcHandler.MIN_DLC_DATA_PADDING - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING, [0x20, 0x30, 0x44], 3, [], [0x03]),
-        (CanDlcHandler.MIN_DLC_DATA_PADDING + 1, range(20), 21, [0xAA], [0x03]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC, [0x20, 0x30, 0x44], 3, [], [0x03]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC + 1, range(20), 21, [0xAA], [0x03]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__encode_valid_sf_dl")
     def test_create_valid_frame_data__inconsistent_args(self, mock_encode_sf_dl,
@@ -488,7 +488,7 @@ class TestCanSingleFrameHandler:
     @pytest.mark.parametrize("raw_frame_data, dlc, ai_bytes_number, sf_dl_data_bytes", [
         (list(range(7)), 8, 0, [0x07]),
         (list(range(9)), 9, 1, [0x00, 0x08]),
-        (list(range(64)), 10, 0, [0x00, 0x3F]),
+        (list(range(64)), 10, 0, [0x0A, 0x3F]),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler._CanSingleFrameHandler__extract_sf_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.is_single_frame")

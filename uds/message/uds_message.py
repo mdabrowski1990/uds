@@ -8,7 +8,7 @@ __all__ = ["UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 
-from uds.utilities import RawBytes, RawBytesTuple, validate_raw_bytes, ReassignmentError, TimeStamp
+from uds.utilities import RawBytes, RawBytesTuple, RawBytesList, validate_raw_bytes, ReassignmentError, TimeStamp
 from uds.transmission_attributes import TransmissionDirectionAlias, AddressingType, AddressingTypeAlias
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
@@ -33,6 +33,18 @@ class UdsMessage:
         """
         self.payload = payload  # type: ignore
         self.addressing_type = addressing_type
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Compare with other diagnostic message.
+
+        :param other: Diagnostic message to compare.
+
+        :return: True if both messages carry the same Payload and uses the same Addressing Type, otherwise False.
+        """
+        if not isinstance(other, self.__class__):
+            raise TypeError("UDS Message can only be compared with another UDS Message")
+        return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
     def payload(self) -> RawBytesTuple:
@@ -68,15 +80,29 @@ class UdsMessage:
 class UdsMessageRecord:
     """Storage for historic information about a diagnostic message that was either received or transmitted."""
 
-    def __init__(self, payload: RawBytes, packets_records: PacketsRecordsSequence) -> None:
+    def __init__(self, packets_records: PacketsRecordsSequence) -> None:
         """
         Create a record of a historic information about a diagnostic message that was either received or transmitted.
 
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
         """
-        self.payload = payload  # type: ignore
         self.packets_records = packets_records  # type: ignore
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Compare with other diagnostic message record.
+
+        :param other: Diagnostic message record to compare.
+
+        :return: True if both messages records carry the same Payload and uses the same Addressing Type and Direction,
+            otherwise False.
+        """
+        if not isinstance(other, self.__class__):
+            raise TypeError("UDS Message Record can only be compared with another UDS Message Record")
+        return self.addressing_type == other.addressing_type \
+            and self.payload == other.payload \
+            and self.direction == other.direction
 
     @staticmethod
     def __validate_packets_records(value: Any) -> None:
@@ -95,28 +121,6 @@ class UdsMessageRecord:
         if not value or any(not isinstance(element, AbstractUdsPacketRecord) for element in value):
             raise ValueError(f"Provided value must contain only instances of AbstractUdsPacketRecord class. "
                              f"Actual value: {value}")
-
-    @property
-    def payload(self) -> RawBytesTuple:
-        """Raw bytes of payload that this diagnostic message carried."""
-        return self.__payload
-
-    @payload.setter
-    def payload(self, value: RawBytes):
-        """
-        Set value of raw payload bytes which this diagnostic message carried.
-
-        :param value: Payload value to set.
-
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
-        """
-        try:
-            self.__getattribute__("_UdsMessageRecord__payload")
-        except AttributeError:
-            validate_raw_bytes(value)
-            self.__payload = tuple(value)
-        else:
-            raise ReassignmentError("You cannot change value of 'payload' attribute once it is assigned.")
 
     @property
     def packets_records(self) -> PacketsRecordsTuple:
@@ -148,6 +152,16 @@ class UdsMessageRecord:
             self.__packets_records = tuple(value)
         else:
             raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
+
+    @property
+    def payload(self) -> RawBytesTuple:
+        """Raw bytes of payload that this diagnostic message carried."""
+        number_of_bytes = self.packets_records[0].data_length
+        message_payload: RawBytesList = []
+        for packet in self.packets_records:
+            if packet.payload is not None:
+                message_payload.extend(packet.payload)
+        return tuple(message_payload[:number_of_bytes])
 
     @property
     def addressing_type(self) -> AddressingTypeAlias:
