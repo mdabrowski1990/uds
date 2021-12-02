@@ -5,6 +5,6 @@ codecov:
 
 
 comment:
-  layout: "reach"
+  layout: "reach, diff, flags, files"
   behavior: default
   require_changes: false
