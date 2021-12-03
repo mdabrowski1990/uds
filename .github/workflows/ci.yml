@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@master
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v1
@@ -70,16 +70,26 @@ jobs:
           pytest --cov-report=xml --cov=uds tests/software_tests -m "not integration"
 
       - name: Upload unit tests report [CodeCov]
-        run: |
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: unit-tests
+#        run: |
+#          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests
 
       - name: Execute integration tests [pytest]
         run: |
           pytest --cov-report=xml --cov=uds tests/software_tests -m "integration"
 
       - name: Upload integration tests report [CodeCov]
-        run: |
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: integration-tests
+#        run: |
+#          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests
 
 
   static_code_analysis:
