@@ -32,17 +32,53 @@ jobs:
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
-          pytest --cov-report term-missing --cov-fail-under=100 --cov=uds tests/software_tests -m "not integration"
+          pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
 
       - name: Execute integration tests with coverage report [pytest]
         run: |
-          pytest --cov-report=xml --cov-fail-under=50 --cov=uds tests/software_tests -m "integration"
+          pytest --cov-report=xml --cov=uds tests/software_tests -m "integration"
 
-      - name: Upload integration tests coverage report [CodeCov]
-        uses: codecov/codecov-action@v1
+
+  code_coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v1
         with:
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          python-version: 3.9
+
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          pip install -r requirements.txt
+
+      - name: Install external packages used for dynamic tests
+        run: |
+          pip install -r tests/requirements_for_software_tests.txt
+
+      - name: Execute unit tests [pytest]
+        run: |
+          pytest --cov-report=xml --cov=uds tests/software_tests -m "not integration"
+
+      - name: Upload unit tests results [codecov]
+        run: |
+          curl -Os https://<your-codecov-self-hosted-url>/uploader/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests -f coverage.xml
+
+      - name: Execute integration tests [pytest]
+        run: |
+          pytest --cov-report=xml --cov=uds tests/software_tests -m "integration"
+
+      - name: Upload unit tests results [codecov]
+        run: |
+          curl -Os https://<your-codecov-self-hosted-url>/uploader/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests -f coverage.xml
 
 
   static_code_analysis:
