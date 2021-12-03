@@ -60,14 +60,17 @@ jobs:
         run: |
           pip install -r tests/requirements_for_software_tests.txt
 
+      - name: Prepare coverage uploader [CodeCov]
+        run: |
+          curl -Os https://app.codecov.io/gh/mdabrowski1990/uds/uploader/linux/codecov
+          chmod +x codecov
+
       - name: Execute unit tests [pytest]
         run: |
           pytest --cov-report=xml --cov=uds tests/software_tests -m "not integration"
 
       - name: Upload unit tests results [codecov]
         run: |
-          curl -Os https://<your-codecov-self-hosted-url>/uploader/linux/codecov
-          chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests -f coverage.xml
 
       - name: Execute integration tests [pytest]
@@ -76,8 +79,6 @@ jobs:
 
       - name: Upload unit tests results [codecov]
         run: |
-          curl -Os https://<your-codecov-self-hosted-url>/uploader/linux/codecov
-          chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests -f coverage.xml
 
 
