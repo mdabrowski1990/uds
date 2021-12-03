@@ -75,8 +75,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unit-tests
-#        run: |
-#          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests
 
       - name: Execute integration tests [pytest]
         run: |
@@ -88,8 +86,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: integration-tests
-#        run: |
-#          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests
 
 
   static_code_analysis:
