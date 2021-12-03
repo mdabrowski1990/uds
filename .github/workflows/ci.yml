@@ -32,7 +32,7 @@ jobs:
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
-          pytest --cov-report term-missing --cov=uds tests/software_tests -m "not integration"
+          pytest --cov-report term-missing --cov-fail-under=100 --cov=uds tests/software_tests -m "not integration"
 
       - name: Execute integration tests with coverage report [pytest]
         run: |

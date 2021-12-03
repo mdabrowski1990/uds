@@ -879,25 +879,6 @@ class TestCanPacket:
             addressing_format=self.mock_can_packet.addressing_format,
             raw_frame_data=self.mock_can_packet.raw_frame_data)
 
-    # block_size
-
-    @pytest.mark.parametrize("packet_type", [None,
-                                             CanPacketType.SINGLE_FRAME,
-                                             CanPacketType.FIRST_FRAME,
-                                             CanPacketType.CONSECUTIVE_FRAME,
-                                             "something new"])
-    def test_block_size__none(self, packet_type):
-        self.mock_can_packet.packet_type = packet_type
-        assert CanPacket.block_size.fget(self=self.mock_can_packet) is None
-
-    def test_block_size__flow_control(self):
-        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
-        assert CanPacket.block_size.fget(self=self.mock_can_packet) \
-               == self.mock_flow_control_handler_class.decode_block_size.return_value
-        self.mock_flow_control_handler_class.decode_block_size.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            raw_frame_data=self.mock_can_packet.raw_frame_data)
-
     # st_min
 
     @pytest.mark.parametrize("packet_type", [None,
