@@ -1,7 +1,6 @@
 codecov:
   archive:
-    uploads: yes
-  bot: mdabrowski1990
+    uploads: false
 
 coverage:
   range: 80...100
