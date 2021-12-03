@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload unit tests report [CodeCov]
         run: |
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests -f coverage.xml
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests
 
       - name: Execute integration tests [pytest]
         run: |
@@ -79,7 +79,7 @@ jobs:
 
       - name: Upload integration tests report [CodeCov]
         run: |
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests -f coverage.xml
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests
 
 
   static_code_analysis:
