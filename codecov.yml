@@ -1,7 +1,13 @@
 codecov:
   archive:
     uploads: yes
-  bot: Integration-Tests-Coverage
+  bot: mdabrowski1990
+
+
+coverage:
+  range: 80...100
+  round: nearest
+  precision: 2
 
 
 comment:
