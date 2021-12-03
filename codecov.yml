@@ -3,12 +3,10 @@ codecov:
     uploads: yes
   bot: mdabrowski1990
 
-
 coverage:
   range: 80...100
   round: nearest
   precision: 2
-
 
 comment:
   layout: "reach, diff, flags, files"
