@@ -69,15 +69,15 @@ jobs:
         run: |
           pytest --cov-report=xml --cov=uds tests/software_tests -m "not integration"
 
-      - name: Upload unit tests results [codecov]
+      - name: Upload unit tests report [CodeCov]
         run: |
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F unit-tests -f coverage.xml
 
       - name: Execute integration tests [pytest]
         run: |
           pytest --cov-report=xml --cov=uds tests/software_tests -m "integration"
 
-      - name: Upload unit tests results [codecov]
+      - name: Upload integration tests report [CodeCov]
         run: |
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --url https://app.codecov.io/gh/mdabrowski1990/uds/ -F integration-tests -f coverage.xml
 
