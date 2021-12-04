@@ -10,10 +10,6 @@ UDS
    :target: https://github.com/mdabrowski1990/uds/actions/workflows/codeql-analysis.yml
    :alt: Security Scan Status
 
-.. image:: https://travis-ci.com/mdabrowski1990/uds.svg?branch=main
-   :target: https://travis-ci.com/mdabrowski1990/uds
-   :alt: Build Status
-
 .. image:: https://readthedocs.org/projects/uds/badge/?version=latest
    :target: https://uds.readthedocs.io/
    :alt: Documentation
@@ -26,9 +22,9 @@ UDS
    :target: https://lgtm.com/projects/g/mdabrowski1990/uds/context:python
    :alt: LGTM assessment
 
-.. image:: https://coveralls.io/repos/github/mdabrowski1990/uds/badge.svg?branch=main
-   :target: https://coveralls.io/github/mdabrowski1990/uds?branch=main
-   :alt: Unit Tests Coverage
+.. image:: https://codecov.io/gh/mdabrowski1990/uds/branch/main/graph/badge.svg?token=IL7RYZ5ERC
+   :target: https://codecov.io/gh/mdabrowski1990/uds
+   :alt: Software Tests Coverage
 
 .. image:: https://img.shields.io/pypi/v/py-uds.svg
    :target: https://pypi.python.org/pypi/py-uds
