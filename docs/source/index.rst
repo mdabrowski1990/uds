@@ -44,7 +44,8 @@ Current implementation status of package features:
 +----------------------------------------------+--------------------------------------------+
 | UDS Packets Transmission                     | Planned                                    |
 +----------------------------------------------+--------------------------------------------+
-| Segmentation                                 | Ongoing                                    |
+| Segmentation                                 | Available since version `0.2.0             |
+|                                              | <https://pypi.org/project/py-uds/0.2.0/>`_ |
 +----------------------------------------------+--------------------------------------------+
 | Support for Services with multiple responses | Planned                                    |
 +----------------------------------------------+--------------------------------------------+
