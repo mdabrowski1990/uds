@@ -6,17 +6,27 @@ and how they are supposed to be handled by UDS entities.
 
 CAN specific
 ------------
+:ref:`ISO standards <knowledge-base-uds-standards>` related to UDS on CAN defines follow time values:
+
+- N_As_
+- N_Ar_
+- N_Bs_
+- N_Br_
+- N_Cs_
+- N_Cr_
 
 .. figure:: ../../images/CAN_Timings.png
     :alt: Diagnostic on CAN timings
     :figclass: align-center
     :width: 100%
 
-    Diagnostic on CAN timings (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr).
+    Network layer time values (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) present during UDS on CAN communication.
 
-    Sender - CAN entity that transmits a diagnostic message.
-
-    Receiver - CAN entity that receives a diagnostic message.
+.. note::
+  The example uses :ref:`segmented diagnostic message transmission <knowledge-base-segmented-message-transmission>`
+  as all CAN timings values can be presented there (all these times are applicable in this case).
+  For :ref:`unsegmented diagnostic message transmission <knowledge-base-unsegmented-message-transmission>` though,
+  the only applicable time is N_As_.
 
 
 N_As
@@ -72,7 +82,6 @@ It is measured from the end of the last CAN Packet transmission (either received
 till the reception of a confirmation that :ref:`Flow Control <knowledge-base-can-flow-control>` was received by a sender.
 
 Performance requirement:
-
   A receiving entity is obliged to transmit :ref:`Flow Control <knowledge-base-can-flow-control>` packet before value
   of N_Br achieves maximal value threshold.
 
@@ -91,7 +100,6 @@ or transmitted :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`),
 that :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>` was received by a receiver.
 
 Performance requirement:
-
   A sending entity is obliged to transmit :ref:`Consecutive Frame <knowledge-base-can-flow-control>` packet before value
   of N_Cs achieves maximal value threshold.
 
