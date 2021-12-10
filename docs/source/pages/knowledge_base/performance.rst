@@ -6,7 +6,8 @@ and how they are supposed to be handled by UDS entities.
 
 CAN specific
 ------------
-:ref:`ISO standards <knowledge-base-uds-standards>` related to UDS on CAN defines follow time values:
+:ref:`ISO standards <knowledge-base-uds-standards>` defines following time values on the network layer of UDS
+on CAN communication:
 
 - N_As_
 - N_Ar_
@@ -26,7 +27,7 @@ CAN specific
   The example uses :ref:`segmented diagnostic message transmission <knowledge-base-segmented-message-transmission>`
   as all CAN timings values can be presented there (all these times are applicable in this case).
   For :ref:`unsegmented diagnostic message transmission <knowledge-base-unsegmented-message-transmission>` though,
-  the only applicable time is N_As_.
+  the only applicable time parameter is N_As_.
 
 
 N_As
@@ -42,6 +43,11 @@ Error handling:
   If N_As timeout is exceeded, then the transmission of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
+Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+  - :ref:`Single Frame <knowledge-base-can-single-frame>`
+  - :ref:`First Frame <knowledge-base-can-first-frame>`
+  - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
 
 N_Ar
 ````
@@ -55,6 +61,9 @@ Timeout value:
 Error handling:
   If N_Ar timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
+
+Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+  - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
 N_Bs
@@ -71,6 +80,9 @@ Timeout value:
 Error handling:
   If N_Bs timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
+
+Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+  - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
 N_Br
@@ -90,6 +102,9 @@ Performance requirement:
     [N_Br] + [N_Ar] < 0.9 * [N_Bs timeout]
     [N_Br max] = 900ms - [N_Ar]
 
+Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+  - :ref:`Flow Control <knowledge-base-can-flow-control>`
+
 
 N_Cs
 ````
@@ -108,11 +123,14 @@ Performance requirement:
     [N_Cs] + [N_As] < 0.9 * [N_Cr timeout]
     [N_Cs max] = 900ms - [N_As]
 
+Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+  - :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+
 
 N_Cr
 ````
-N_Cr is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>` reception
-by a receiver.
+N_Cr is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+reception by a receiver.
 It is measured from the end of the last CAN Packet transmission (either transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`
 or received :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the reception of
 :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`.
@@ -123,3 +141,6 @@ Timeout value:
 Error handling:
   If N_Cr timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
+
+Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+  - :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
