@@ -11,5 +11,5 @@ markers = [
     "integration: Software integration tests.",
 ]
 testpaths = [
-    "tests\\software_tests",
+    "tests/software_tests",
 ]
