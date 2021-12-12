@@ -4,3 +4,12 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: Software integration tests.",
+]
+testpaths = [
+    "tests\\software_tests",
+]
