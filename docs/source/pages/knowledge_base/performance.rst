@@ -112,7 +112,7 @@ N_Cs is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowle
 transmission by a sender.
 It is measured from the end of the last CAN Packet transmission (either received :ref:`Flow Control <knowledge-base-can-flow-control>`
 or transmitted :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the reception of a confirmation
-that :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>` was received by a receiver.
+that :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` was received by a receiver.
 
 Performance requirement:
   A sending entity is obliged to transmit :ref:`Consecutive Frame <knowledge-base-can-flow-control>` packet before value
@@ -124,7 +124,7 @@ Performance requirement:
     [N_Cs max] = 900ms - [N_As]
 
 Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
-  - :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+  - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
 N_Cr
@@ -133,7 +133,7 @@ N_Cr is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowle
 reception by a receiver.
 It is measured from the end of the last CAN Packet transmission (either transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`
 or received :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the reception of
-:ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`.
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
 
 Timeout value:
   1000 ms
@@ -143,4 +143,4 @@ Error handling:
   shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
-  - :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+  - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
