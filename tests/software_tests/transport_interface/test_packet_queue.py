@@ -59,6 +59,14 @@ class TestTimestampedPacketsQueue:
     def setup(self):
         self.mock_timestamped_packets_queue = Mock(spec=TimestampedPacketsQueue)
 
+    # __init__
+
+    def test_init(self):
+        with pytest.raises(NotImplementedError):
+            TimestampedPacketsQueue.__init__(self=self.mock_timestamped_packets_queue, packet_class=Mock())
+
+    # get_packet
+
     @pytest.mark.asyncio
     async def test_get_packet(self):
         with pytest.raises(NotImplementedError):
@@ -77,6 +85,12 @@ class TestPacketsQueue:
 
     def setup(self):
         self.mock_fifo_packets_queue = Mock(spec=PacketsQueue)
+
+    # __init__
+
+    def test_init(self):
+        with pytest.raises(NotImplementedError):
+            PacketsQueue.__init__(self=self.mock_fifo_packets_queue, packet_class=Mock())
 
     # get_packet
 

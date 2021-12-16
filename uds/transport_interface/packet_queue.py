@@ -13,9 +13,10 @@ from uds.packet import PacketAlias
 class AbstractPacketsQueue(ABC):
     """Abstract definition of a queue with UDS packets."""
 
+    @abstractmethod
     def __init__(self, packet_class: type) -> None:  # noqa: F841
         """
-        Create a queue as a storage for UDS packets.
+        Create a queue for storing UDS packets.
 
         :param packet_class: A class that defines UDS packets type that is accepted by this queue.
             One can use this parameter to restrict packets managed by this queue.
@@ -92,6 +93,15 @@ class AbstractPacketsQueue(ABC):
 class TimestampedPacketsQueue:
     """Priority queue with UDS packets ordered by packet's timestamp."""
 
+    def __init__(self, packet_class: type) -> None:  # noqa: F841
+        """
+        Create a queue for storing UDS packets ordered by time stamp assigned to each packet.
+
+        :param packet_class: A class that defines UDS packets type that is accepted by this queue.
+            One can use this parameter to restrict packets managed by this queue.
+        """
+        raise NotImplementedError
+
     async def get_packet(self) -> PacketAlias:
         """
         Get the next received packet from the queue.
@@ -115,6 +125,15 @@ class TimestampedPacketsQueue:
 
 class PacketsQueue:
     """FIFO queue for UDS packets."""
+
+    def __init__(self, packet_class: type) -> None:  # noqa: F841
+        """
+        Create a queue for storing UDS packets in FIFO order.
+
+        :param packet_class: A class that defines UDS packets type that is accepted by this queue.
+            One can use this parameter to restrict packets managed by this queue.
+        """
+        raise NotImplementedError
 
     async def get_packet(self) -> PacketAlias:
         """
