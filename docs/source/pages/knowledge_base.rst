@@ -12,3 +12,4 @@ UDS protocol itself.
     knowledge_base/diagnostic_message.rst
     knowledge_base/packet.rst
     knowledge_base/segmentation.rst
+    knowledge_base/performance.rst

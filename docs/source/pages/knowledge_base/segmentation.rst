@@ -20,6 +20,8 @@ Segmentation on CAN
 ```````````````````
 
 
+.. _knowledge-base-unsegmented-message-transmission:
+
 Unsegmented message transmission
 ''''''''''''''''''''''''''''''''
 When mentioning unsegmented message transmission, we mean a case when an entire
@@ -37,6 +39,8 @@ the described scenario.
     A sender transmits a :ref:`Single Frame (CAN Packet) <knowledge-base-can-single-frame>` that contains
     an entire :ref:`Diagnostic Message <knowledge-base-diagnostic-message>`.
 
+
+.. _knowledge-base-segmented-message-transmission:
 
 Segmented message transmission
 ''''''''''''''''''''''''''''''
