@@ -16,7 +16,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         """
         Create a queue for storing UDS packets ordered by timestamp.
 
-        ..note:: Packets from the queue become available when the timestamp is achieved.
+        .. note:: Packets from the queue become available when the timestamp is achieved.
 
         :param packet_class: A class of which all UDS packets in the queue shall be objects.
             This parameter is meant to support type restriction for packets objects that are managed by this queue.
@@ -28,7 +28,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         """
         Get the next packet from the queue.
 
-        ..note:: If called when there are no packets available in the queue, then the method would await until
+        .. note:: If called when there are no packets available in the queue, then the method would await until
             the next packet is ready (timestamp is achieved).
 
         :return: The next packet in the queue.
