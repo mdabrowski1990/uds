@@ -2,7 +2,7 @@
 
 __all__ = ["AbstractPacketsQueue"]
 
-from typing import NoReturn
+from typing import NoReturn, Optional
 from abc import ABC, abstractmethod
 
 from uds.packet import PacketAlias
@@ -12,31 +12,23 @@ class AbstractPacketsQueue(ABC):
     """Abstract definition of a queue with UDS packets."""
 
     @abstractmethod
-    def __init__(self, packet_class: type) -> None:  # noqa: F841
+    def __init__(self, packet_class: Optional[type] = None) -> None:  # noqa: F841
         """
-        Create a queue for storing UDS packets.
+        Create a queue for UDS packets storing.
 
-        :param packet_class: A class that defines UDS packets type which shall be accepted by this queue.
-            This parameter is meant to restrict types of packets that are managed by this queue.
+        :param packet_class: A class of which all UDS packets in the queue shall be objects.
+            This parameter is meant to support type restriction for packets objects that are managed by this queue.
+            Leave None to use no restriction.
 
-        :raise TypeError: Provided packet_class argument is not a class that inherits after
-            :class:"~uds.packet.abstract_packet.AbstractUdsPacket" or
-            :class:"~uds.packet.abstract_packet.AbstractUdsPacketRecord".
+        :raise TypeError: Provided packet_class argument is not None neither equal to a proper UDS Packet class.
         """
-        raise NotImplementedError
 
     def __del__(self) -> NoReturn:
-        """
-        Delete the queue safely.
-
-        To satisfy safe closure of tasks using the queue:
-         - prevent new tasks creations
-         - await (till timeout) for closure of already started tasks
-        """
+        """Delete the queue safely (make sure there are no hanging tasks)."""
         raise NotImplementedError
 
     def __len__(self) -> int:
-        """Get number of packets that are currently stored by the queue."""
+        """Get the number of packets that are currently stored by the queue."""
         raise NotImplementedError
 
     def is_empty(self) -> bool:
@@ -49,9 +41,9 @@ class AbstractPacketsQueue(ABC):
 
     def mark_task_done(self) -> None:
         """
-        Inform that a task related to one packet was completed.
+        Inform that a task related to one queue's packet was completed.
 
-        This method is used for monitoring tasks so they can be completed safely and closed quietly.
+        This method is used for monitoring tasks, so they can be completed safely and closed quietly.
         """
         raise NotImplementedError
 
