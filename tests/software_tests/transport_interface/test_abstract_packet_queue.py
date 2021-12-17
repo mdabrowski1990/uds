@@ -10,12 +10,6 @@ class TestAbstractPacketsQueue:
     def setup(self):
         self.mock_abstract_packets_queue = Mock(spec=AbstractPacketsQueue)
 
-    # __init__
-
-    def test_init(self):
-        with pytest.raises(NotImplementedError):
-            AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_class=Mock())
-
     # __del__
 
     def test_del(self):
