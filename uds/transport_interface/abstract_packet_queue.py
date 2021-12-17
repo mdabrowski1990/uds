@@ -16,8 +16,8 @@ class AbstractPacketsQueue(ABC):
         """
         Create a queue for storing UDS packets.
 
-        :param packet_class: A class that defines UDS packets type that is accepted by this queue.
-            One can use this parameter to restrict packets managed by this queue.
+        :param packet_class: A class that defines UDS packets type which shall be accepted by this queue.
+            This parameter is meant to restrict types of packets that are managed by this queue.
 
         :raise TypeError: Provided packet_class argument is not a class that inherits after
             :class:"~uds.packet.abstract_packet.AbstractUdsPacket" or
@@ -47,7 +47,7 @@ class AbstractPacketsQueue(ABC):
         """
         raise NotImplementedError
 
-    def one_task_done(self) -> None:
+    def mark_task_done(self) -> None:
         """
         Inform that a task related to one packet was completed.
 
@@ -66,18 +66,15 @@ class AbstractPacketsQueue(ABC):
     @abstractmethod
     async def get_packet(self) -> PacketAlias:
         """
-        Get the next received packet from the queue.
+        Get the next packet from the queue.
 
-        Note: If called, when there are no packets in the queue, then execution would await until another packet
-            is received.
-
-        :return: The next received packet.
+        :return: The next packet in the queue.
         """
 
     @abstractmethod
     async def put_packet(self, packet: PacketAlias) -> None:
         """
-        Add a packet (that was just received) to the end of the queue.
+        Add a packet to the queue.
 
-        :param packet: A packet that was just received.
+        :param packet: A packet to add to the queue.
         """

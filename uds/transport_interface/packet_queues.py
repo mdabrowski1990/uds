@@ -14,30 +14,32 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
 
     def __init__(self, packet_class: type) -> None:  # noqa: F841
         """
-        Create a queue for storing UDS packets ordered by time stamp assigned to each packet.
+        Create a queue for storing UDS packets ordered by timestamp.
 
-        :param packet_class: A class that defines UDS packets type that is accepted by this queue.
-            One can use this parameter to restrict packets managed by this queue.
+        .. note:: Packets from the queue become available when the timestamp is achieved.
+
+        :param packet_class: A class that defines UDS packets type which shall be accepted by this queue.
+            This parameter is meant to restrict types of packets that are managed by this queue.
         """
         raise NotImplementedError
 
     async def get_packet(self) -> PacketAlias:
         """
-        Get the next received packet from the queue.
+        Get the next packet from the queue.
 
-        Note: If called, when there are no packets in the queue, then execution would await until another packet
-            is received.
+        .. note:: If called, when there are no packets available in the queue, then execution would await until
+            the next packet is ready.
 
-        :return: The next received packet.
+        :return: The next packet in the queue.
         """
         raise NotImplementedError
 
     async def put_packet(self, packet: PacketAlias, timestamp: Optional[TimeStamp] = None) -> None:  # noqa: F841
         """
-        Add a packet (that was just received) to the end of the queue.
+        Add a packet to the queue.
 
-        :param packet: A packet that was just received.
-        :param timestamp:
+        :param packet: A packet to add to the queue.
+        :param timestamp: A moment of time that the packet become available in the queue.
         """
         raise NotImplementedError
 
@@ -49,26 +51,23 @@ class PacketsQueue(AbstractPacketsQueue):
         """
         Create a queue for storing UDS packets in FIFO order.
 
-        :param packet_class: A class that defines UDS packets type that is accepted by this queue.
-            One can use this parameter to restrict packets managed by this queue.
+        :param packet_class: A class that defines UDS packets type which shall be accepted by this queue.
+            This parameter is meant to restrict types of packets that are managed by this queue.
         """
         raise NotImplementedError
 
     async def get_packet(self) -> PacketAlias:
         """
-        Get the next received packet from the queue.
+        Get the next packet from the queue.
 
-        Note: If called, when there are no packets in the queue, then execution would await until another packet
-            is received.
-
-        :return: The next received packet.
+        :return: The next packet in the queue.
         """
         raise NotImplementedError
 
     async def put_packet(self, packet: PacketAlias) -> None:
         """
-        Add a packet (that was just received) to the end of the queue.
+        Add a packet at the end of the queue.
 
-        :param packet: A packet that was just received.
+        :param packet: A packet to add to the queue.
         """
         raise NotImplementedError

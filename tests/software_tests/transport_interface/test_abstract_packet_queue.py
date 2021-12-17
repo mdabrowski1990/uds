@@ -34,11 +34,11 @@ class TestAbstractPacketsQueue:
         with pytest.raises(NotImplementedError):
             AbstractPacketsQueue.is_empty(self=self.mock_abstract_packets_queue)
 
-    # one_task_done
+    # mark_task_done
 
-    def test_one_task_done(self):
+    def test_mark_task_done(self):
         with pytest.raises(NotImplementedError):
-            AbstractPacketsQueue.one_task_done(self=self.mock_abstract_packets_queue)
+            AbstractPacketsQueue.mark_task_done(self=self.mock_abstract_packets_queue)
 
     # block
 
