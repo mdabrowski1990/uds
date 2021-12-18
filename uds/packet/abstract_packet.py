@@ -5,9 +5,9 @@ Implementation of UDS packets that is common for all bus types.
 """
 
 __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
-           "PacketAlias", "PacketsTuple", "PacketsSequence",
-           "PacketsDefinitionTuple", "PacketsDefinitionSequence",
-           "PacketsRecordsTuple", "PacketsRecordsSequence"]
+           "PacketsContainersSequence", "PacketsContainersTuple", "PacketsContainersList",
+           "PacketsSequence", "PacketsTuple", "PacketsList",
+           "PacketsRecordsSequence", "PacketsRecordsTuple", "PacketsRecordsList"]
 
 from abc import ABC, abstractmethod
 from typing import Union, Optional, Any, Tuple, List
@@ -201,19 +201,23 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
         """
 
 
-PacketsDefinitionTuple = Tuple[AbstractUdsPacket, ...]
-"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacket` instances."""
-PacketsDefinitionSequence = Union[PacketsDefinitionTuple, List[AbstractUdsPacket]]
-"""Typing alias of a sequence filled with :class:`~uds.message.uds_packet.AbstractUdsPacket` instances."""
+PacketsContainersTuple = Tuple[AbstractUdsPacketContainer, ...]
+"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
+PacketsContainersList = List[AbstractUdsPacketContainer]
+"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
+PacketsContainersSequence = Union[PacketsContainersTuple, PacketsContainersList]
+"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
+
+PacketsTuple = Tuple[AbstractUdsPacket, ...]
+"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
+PacketsList = List[AbstractUdsPacket]
+"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
+PacketsSequence = Union[PacketsTuple, PacketsList]
+"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
 
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` instances."""
-PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
-"""Typing alias of a sequence filled with :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` instances."""
-
-PacketAlias = Union[AbstractUdsPacket, AbstractUdsPacketRecord]
-"""Typing alias of UDS packet."""
-PacketsTuple = Union[PacketsDefinitionTuple, PacketsRecordsTuple]  # noqa: F841
-"""Typing alias of a tuple filled with UDS packets."""
-PacketsSequence = Union[PacketsDefinitionSequence, PacketsRecordsSequence]
-"""Typing alias of a sequence filled with UDS packets."""
+"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""
+PacketsRecordsList = List[AbstractUdsPacketRecord]
+"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""
+PacketsRecordsSequence = Union[PacketsRecordsTuple, PacketsRecordsList]
+"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""

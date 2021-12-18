@@ -5,7 +5,7 @@ __all__ = ["PacketsQueue", "TimestampedPacketsQueue"]
 from typing import Optional
 
 from uds.utilities import TimeStamp
-from uds.packet import PacketAlias
+from uds.packet import AbstractUdsPacketContainer
 from .abstract_packet_queue import AbstractPacketsQueue
 
 
@@ -24,7 +24,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         """
         raise NotImplementedError
 
-    async def get_packet(self) -> PacketAlias:
+    async def get_packet(self) -> AbstractUdsPacketContainer:
         """
         Get the next packet from the queue.
 
@@ -35,7 +35,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         """
         raise NotImplementedError
 
-    async def put_packet(self, packet: PacketAlias, timestamp: Optional[TimeStamp] = None) -> None:  # noqa: F841
+    async def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[TimeStamp] = None) -> None:  # noqa: F841
         """
         Add a packet to the queue.
 
@@ -58,7 +58,7 @@ class PacketsQueue(AbstractPacketsQueue):
         """
         raise NotImplementedError
 
-    async def get_packet(self) -> PacketAlias:
+    async def get_packet(self) -> AbstractUdsPacketContainer:
         """
         Get the next packet from the queue.
 
@@ -66,7 +66,7 @@ class PacketsQueue(AbstractPacketsQueue):
         """
         raise NotImplementedError
 
-    async def put_packet(self, packet: PacketAlias) -> None:
+    async def put_packet(self, packet: AbstractUdsPacketContainer) -> None:
         """
         Add a packet at the end of the queue.
 

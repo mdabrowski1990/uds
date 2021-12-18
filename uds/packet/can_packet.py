@@ -712,9 +712,8 @@ class AnyCanPacket(AbstractUdsPacket):
         """
         Create a storage for a single CAN packet.
 
-        .. note:: Intention of this of this method is to create a CAN Packet that is incompatible with ISO 15765,
-            therefore any parameter validation is restricted to sanity check (whether the data can be converted into
-            a CAN Frame).
+        .. note:: Intention of this method is to create a CAN Packet that is incompatible with ISO 15765, therefore
+            any parameter validation is restricted to sanity check (whether the data can be put into a CAN Frame).
             If you want to create a valid CAN Packet, use :class:`~uds.packet.can_packet.CanPacket` instead.
 
         :param raw_frame_data: Raw data bytes of a CAN frame that carries this CAN packet.
