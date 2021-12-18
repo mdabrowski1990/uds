@@ -4,7 +4,7 @@ Module with common implementation of all diagnostic messages (requests and respo
 :ref:`Diagnostic message <knowledge-base-diagnostic-message>` are defined on upper layers of UDS OSI Model.
 """
 
-__all__ = ["UdsMessage", "UdsMessageRecord"]
+__all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 from abc import ABC, abstractmethod
