@@ -34,7 +34,7 @@ class CanPacketRecord(AbstractUdsPacketRecord):
                  addressing_format: CanAddressingFormatAlias,
                  transmission_time: TimeStamp) -> None:
         """
-        Create a record of a historic information about a CAN packet that was either received or transmitted.
+        Create a record of historic information about a CAN packet that was either received or transmitted.
 
         :param frame: Either received or transmitted CAN frame that carried this CAN Packet.
         :param direction: Information whether this packet was transmitted or received.

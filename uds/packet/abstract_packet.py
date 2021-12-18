@@ -56,7 +56,7 @@ class AbstractUdsPacketRecord(ABC):
                  direction: TransmissionDirectionAlias,
                  transmission_time: TimeStamp) -> None:
         """
-        Create a record of a historic information about a packet that was either received or transmitted.
+        Create a record of historic information about a packet that was either received or transmitted.
 
         :param frame: Frame that carried this UDS packet.
         :param direction: Information whether this packet was transmitted or received.

@@ -7,13 +7,38 @@ Module with common implementation of all diagnostic messages (requests and respo
 __all__ = ["UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
+from abc import ABC, abstractmethod
 
 from uds.utilities import RawBytes, RawBytesTuple, RawBytesList, validate_raw_bytes, ReassignmentError, TimeStamp
 from uds.transmission_attributes import TransmissionDirectionAlias, AddressingType, AddressingTypeAlias
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
 
-class UdsMessage:
+class AbstractUdsMessageContainer(ABC):
+    """Abstract definition of a container with a diagnostic message information."""
+
+    @abstractmethod
+    def __eq__(self, other: object) -> bool:
+        """
+        Compare with other object.
+
+        :param other: Object to compare.
+
+        :return: True if both other object are the same type and carries the same diagnostic message, otherwise False.
+        """
+
+    @property
+    @abstractmethod
+    def payload(self) -> RawBytesTuple:
+        """Raw payload bytes carried by this diagnostic message."""
+
+    @property
+    @abstractmethod
+    def addressing_type(self) -> AddressingTypeAlias:
+        """Addressing for which this diagnostic message is relevant."""
+
+
+class UdsMessage(AbstractUdsMessageContainer):
     """
     Definition of a diagnostic message.
 
@@ -28,19 +53,19 @@ class UdsMessage:
         """
         Create a storage for a single diagnostic message.
 
-        :param payload: Raw bytes of payload that this diagnostic message carries.
-        :param addressing_type: Addressing type for which this message is relevant.
+        :param payload: Raw payload bytes carried by this diagnostic message.
+        :param addressing_type: Addressing for which this diagnostic message is relevant.
         """
         self.payload = payload  # type: ignore
         self.addressing_type = addressing_type
 
     def __eq__(self, other: object) -> bool:
         """
-        Compare with other diagnostic message.
+        Compare with other object.
 
-        :param other: Diagnostic message to compare.
+        :param other: Object to compare.
 
-        :return: True if both messages carry the same Payload and uses the same Addressing Type, otherwise False.
+        :return: True if both other object are the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
             raise TypeError("UDS Message can only be compared with another UDS Message")
@@ -48,7 +73,7 @@ class UdsMessage:
 
     @property
     def payload(self) -> RawBytesTuple:
-        """Raw bytes of payload that this diagnostic message carries."""
+        """Raw payload bytes carried by this diagnostic message."""
         return self.__payload
 
     @payload.setter
@@ -63,13 +88,13 @@ class UdsMessage:
 
     @property
     def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing type for which this message is relevant."""
+        """Addressing for which this diagnostic message is relevant."""
         return self.__addressing_type
 
     @addressing_type.setter
     def addressing_type(self, value: AddressingTypeAlias):
         """
-        Set value of addressing type for which this diagnostic message is relevant.
+        Set value of addressing for this diagnostic message.
 
         :param value: Addressing value to set.
         """
@@ -77,12 +102,12 @@ class UdsMessage:
         self.__addressing_type = AddressingType(value)
 
 
-class UdsMessageRecord:
+class UdsMessageRecord(AbstractUdsMessageContainer):
     """Storage for historic information about a diagnostic message that was either received or transmitted."""
 
     def __init__(self, packets_records: PacketsRecordsSequence) -> None:
         """
-        Create a record of a historic information about a diagnostic message that was either received or transmitted.
+        Create a record of historic information about a diagnostic message that was either received or transmitted.
 
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
@@ -91,12 +116,11 @@ class UdsMessageRecord:
 
     def __eq__(self, other: object) -> bool:
         """
-        Compare with other diagnostic message record.
+        Compare with other object.
 
-        :param other: Diagnostic message record to compare.
+        :param other: Object to compare.
 
-        :return: True if both messages records carry the same Payload and uses the same Addressing Type and Direction,
-            otherwise False.
+        :return: True if both other object are the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
             raise TypeError("UDS Message Record can only be compared with another UDS Message Record")
@@ -155,7 +179,7 @@ class UdsMessageRecord:
 
     @property
     def payload(self) -> RawBytesTuple:
-        """Raw bytes of payload that this diagnostic message carried."""
+        """Raw payload bytes carried by this diagnostic message."""
         number_of_bytes = self.packets_records[0].data_length
         message_payload: RawBytesList = []
         for packet in self.packets_records:
@@ -165,12 +189,12 @@ class UdsMessageRecord:
 
     @property
     def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing type which was used to transmit this message."""
+        """Addressing which was used to transmit this diagnostic message."""
         return self.packets_records[0].addressing_type
 
     @property
     def direction(self) -> TransmissionDirectionAlias:
-        """Information whether this message was received or sent by the code."""
+        """Information whether this message was received or sent."""
         return self.packets_records[0].direction
 
     @property  # noqa: F841
