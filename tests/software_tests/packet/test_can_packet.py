@@ -710,193 +710,63 @@ class TestCanPacket:
     @pytest.mark.parametrize("value", ["some", 5.5])
     def test_raw_frame_data__get(self, value):
         self.mock_can_packet._CanPacket__raw_frame_data = value
-        assert CanPacket.raw_frame_data.fget(self=self.mock_can_packet) == value
-
-    # addressing
-
-    @pytest.mark.parametrize("value", ["some", 5.5])
-    def test_addressing_type__get(self, value):
-        self.mock_can_packet._CanPacket__addressing_type = value
-        assert CanPacket.addressing_type.fget(self=self.mock_can_packet) == value
-
-    # addressing_format
-
-    @pytest.mark.parametrize("value", ["some", 5.5])
-    def test_addressing_format__get(self, value):
-        self.mock_can_packet._CanPacket__addressing_format = value
-        assert CanPacket.addressing_format.fget(self=self.mock_can_packet) == value
-
-    # packet_type
-
-    @pytest.mark.parametrize("value", ["some", 5.5])
-    def test_packet_type__get(self, value):
-        self.mock_can_packet._CanPacket__packet_type = value
-        assert CanPacket.packet_type.fget(self=self.mock_can_packet) == value
+        assert CanPacket.raw_frame_data.fget(self.mock_can_packet) == value
 
     # can_id
 
     @pytest.mark.parametrize("value", ["some", 5.5])
     def test_can_id__get(self, value):
         self.mock_can_packet._CanPacket__can_id = value
-        assert CanPacket.can_id.fget(self=self.mock_can_packet) == value
+        assert CanPacket.can_id.fget(self.mock_can_packet) == value
+
+    # addressing_format
+
+    @pytest.mark.parametrize("value", ["some", 5.5])
+    def test_addressing_format__get(self, value):
+        self.mock_can_packet._CanPacket__addressing_format = value
+        assert CanPacket.addressing_format.fget(self.mock_can_packet) == value
+
+    # addressing_type
+
+    @pytest.mark.parametrize("value", ["some", 5.5])
+    def test_addressing_type__get(self, value):
+        self.mock_can_packet._CanPacket__addressing_type = value
+        assert CanPacket.addressing_type.fget(self.mock_can_packet) == value
 
     # dlc
 
     @pytest.mark.parametrize("value", ["some", 5.5])
     def test_dlc__get(self, value):
         self.mock_can_packet._CanPacket__dlc = value
-        assert CanPacket.dlc.fget(self=self.mock_can_packet) == value
+        assert CanPacket.dlc.fget(self.mock_can_packet) == value
+
+    # packet_type
+
+    @pytest.mark.parametrize("value", ["some", 5.5])
+    def test_packet_type__get(self, value):
+        self.mock_can_packet._CanPacket__packet_type = value
+        assert CanPacket.packet_type.fget(self.mock_can_packet) == value
 
     # target_address
 
     @pytest.mark.parametrize("value", ["some", 5.5])
     def test_target_address__get(self, value):
         self.mock_can_packet._CanPacket__target_address = value
-        assert CanPacket.target_address.fget(self=self.mock_can_packet) == value
+        assert CanPacket.target_address.fget(self.mock_can_packet) == value
 
     # source_address
 
     @pytest.mark.parametrize("value", ["some", 5.5])
     def test_source_address__get(self, value):
         self.mock_can_packet._CanPacket__source_address = value
-        assert CanPacket.source_address.fget(self=self.mock_can_packet) == value
+        assert CanPacket.source_address.fget(self.mock_can_packet) == value
 
     # address_extension
 
     @pytest.mark.parametrize("value", ["some", 5.5])
     def test_address_extension__get(self, value):
         self.mock_can_packet._CanPacket__address_extension = value
-        assert CanPacket.address_extension.fget(self=self.mock_can_packet) == value
-
-    # payload
-
-    @pytest.mark.parametrize("packet_type", [None, CanPacketType.FLOW_CONTROL, "something new"])
-    def test_payload__none(self, packet_type):
-        self.mock_can_packet.packet_type = packet_type
-        assert CanPacket.payload.fget(self=self.mock_can_packet) is None
-
-    @pytest.mark.parametrize("payload", [range(10), [0xFE, 0xDC]])
-    def test_payload__single_frame(self, payload):
-        self.mock_can_packet.packet_type = CanPacketType.SINGLE_FRAME
-        self.mock_single_frame_handler_class.decode_payload.return_value = payload
-        assert CanPacket.payload.fget(self=self.mock_can_packet) == tuple(payload)
-        self.mock_single_frame_handler_class.decode_payload.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format, raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    @pytest.mark.parametrize("payload", [range(10), [0xFE, 0xDC]])
-    def test_payload__first_frame(self, payload):
-        self.mock_can_packet.packet_type = CanPacketType.FIRST_FRAME
-        self.mock_first_frame_handler_class.decode_payload.return_value = payload
-        assert CanPacket.payload.fget(self=self.mock_can_packet) == tuple(payload)
-        self.mock_first_frame_handler_class.decode_payload.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format, raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    @pytest.mark.parametrize("payload", [range(10), [0xFE, 0xDC]])
-    def test_payload__consecutive_frame(self, payload):
-        self.mock_can_packet.packet_type = CanPacketType.CONSECUTIVE_FRAME
-        self.mock_consecutive_frame_handler_class.decode_payload.return_value = payload
-        assert CanPacket.payload.fget(self=self.mock_can_packet) == tuple(payload)
-        self.mock_consecutive_frame_handler_class.decode_payload.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format, raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    # data_length
-
-    @pytest.mark.parametrize("packet_type", [None, CanPacketType.CONSECUTIVE_FRAME, CanPacketType.FLOW_CONTROL, "x"])
-    def test_data_length__none(self, packet_type):
-        self.mock_can_packet.packet_type = packet_type
-        assert CanPacket.data_length.fget(self=self.mock_can_packet) is None
-
-    def test_data_length__single_frame(self):
-        self.mock_can_packet.packet_type = CanPacketType.SINGLE_FRAME
-        assert CanPacket.data_length.fget(self=self.mock_can_packet) \
-               == self.mock_single_frame_handler_class.decode_sf_dl.return_value
-        self.mock_single_frame_handler_class.decode_sf_dl.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    def test_data_length__first_frame(self):
-        self.mock_can_packet.packet_type = CanPacketType.FIRST_FRAME
-        assert CanPacket.data_length.fget(self=self.mock_can_packet) \
-               == self.mock_first_frame_handler_class.decode_ff_dl.return_value
-        self.mock_first_frame_handler_class.decode_ff_dl.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    # sequence_number
-
-    @pytest.mark.parametrize("packet_type", [None,
-                                             CanPacketType.SINGLE_FRAME,
-                                             CanPacketType.FIRST_FRAME,
-                                             CanPacketType.FLOW_CONTROL,
-                                             "something new"])
-    def test_sequence_number__none(self, packet_type):
-        self.mock_can_packet.packet_type = packet_type
-        assert CanPacket.sequence_number.fget(self=self.mock_can_packet) is None
-
-    def test_sequence_number__consecutive_frame(self):
-        self.mock_can_packet.packet_type = CanPacketType.CONSECUTIVE_FRAME
-        assert CanPacket.sequence_number.fget(self=self.mock_can_packet) \
-               == self.mock_consecutive_frame_handler_class.decode_sequence_number.return_value
-        self.mock_consecutive_frame_handler_class.decode_sequence_number.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    # flow_status
-
-    @pytest.mark.parametrize("packet_type", [None,
-                                             CanPacketType.SINGLE_FRAME,
-                                             CanPacketType.FIRST_FRAME,
-                                             CanPacketType.CONSECUTIVE_FRAME,
-                                             "something new"])
-    def test_flow_status__none(self, packet_type):
-        self.mock_can_packet.packet_type = packet_type
-        assert CanPacket.flow_status.fget(self=self.mock_can_packet) is None
-
-    def test_flow_status__flow_control(self):
-        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
-        assert CanPacket.flow_status.fget(self=self.mock_can_packet) \
-               == self.mock_flow_control_handler_class.decode_flow_status.return_value
-        self.mock_flow_control_handler_class.decode_flow_status.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    # block_size
-
-    @pytest.mark.parametrize("packet_type", [None,
-                                             CanPacketType.SINGLE_FRAME,
-                                             CanPacketType.FIRST_FRAME,
-                                             CanPacketType.CONSECUTIVE_FRAME,
-                                             "something new"])
-    def test_block_size__none(self, packet_type):
-        self.mock_can_packet.packet_type = packet_type
-        assert CanPacket.block_size.fget(self=self.mock_can_packet) is None
-
-    def test_block_size__flow_control(self):
-        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
-        assert CanPacket.block_size.fget(self=self.mock_can_packet) \
-               == self.mock_flow_control_handler_class.decode_block_size.return_value
-        self.mock_flow_control_handler_class.decode_block_size.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            raw_frame_data=self.mock_can_packet.raw_frame_data)
-
-    # st_min
-
-    @pytest.mark.parametrize("packet_type", [None,
-                                             CanPacketType.SINGLE_FRAME,
-                                             CanPacketType.FIRST_FRAME,
-                                             CanPacketType.CONSECUTIVE_FRAME,
-                                             "something new"])
-    def test_st_min__none(self, packet_type):
-        self.mock_can_packet.packet_type = packet_type
-        assert CanPacket.st_min.fget(self=self.mock_can_packet) is None
-
-    def test_st_min__flow_control(self):
-        self.mock_can_packet.packet_type = CanPacketType.FLOW_CONTROL
-        assert CanPacket.st_min.fget(self=self.mock_can_packet) \
-               == self.mock_flow_control_handler_class.decode_st_min.return_value
-        self.mock_flow_control_handler_class.decode_st_min.assert_called_once_with(
-            addressing_format=self.mock_can_packet.addressing_format,
-            raw_frame_data=self.mock_can_packet.raw_frame_data)
+        assert CanPacket.address_extension.fget(self.mock_can_packet) == value
 
     # __validate_unambiguous_ai_change
 
@@ -1023,55 +893,63 @@ class TestAnyCanPacket:
     @pytest.mark.parametrize("raw_frame_data", ["some raw data", list(range(10))])
     def test_raw_frame_data__get(self, raw_frame_data):
         self.mock_any_can_packet._AnyCanPacket__raw_frame_data = raw_frame_data
-        assert AnyCanPacket.raw_frame_data.fget(self=self.mock_any_can_packet) == raw_frame_data
+        assert AnyCanPacket.raw_frame_data.fget(self.mock_any_can_packet) == raw_frame_data
 
     @pytest.mark.parametrize("raw_frame_data", ["some raw data", list(range(10))])
     def test_raw_frame_data__set(self, raw_frame_data):
-        AnyCanPacket.raw_frame_data.fset(self=self.mock_any_can_packet, value=raw_frame_data)
+        AnyCanPacket.raw_frame_data.fset(self.mock_any_can_packet, value=raw_frame_data)
         self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data, allow_empty=True)
         self.mock_can_dlc_handler_class.validate_data_bytes_number.assert_called_once_with(len(raw_frame_data))
         assert self.mock_any_can_packet._AnyCanPacket__raw_frame_data == tuple(raw_frame_data)
-        
-    # addressing_type
-
-    @pytest.mark.parametrize("addressing_type", ["some addresisng", AddressingType.PHYSICAL])
-    def test_addressing_type__get(self, addressing_type):
-        self.mock_any_can_packet._AnyCanPacket__addressing_type = addressing_type
-        assert AnyCanPacket.addressing_type.fget(self=self.mock_any_can_packet) == addressing_type
-
-    @pytest.mark.parametrize("addressing_type", ["some addresisng", AddressingType.PHYSICAL])
-    def test_addressing_type__set(self, addressing_type):
-        AnyCanPacket.addressing_type.fset(self=self.mock_any_can_packet, value=addressing_type)
-        self.mock_addressing_type_class.validate_member.assert_called_once_with(addressing_type)
-        self.mock_addressing_type_class.assert_called_once_with(addressing_type)
-        assert self.mock_any_can_packet._AnyCanPacket__addressing_type == self.mock_addressing_type_class.return_value
-
-    # addressing_format
-
-    @pytest.mark.parametrize("addressing_format", ["some addresisng format", CanAddressingFormat.EXTENDED_ADDRESSING])
-    def test_addressing_format__get(self, addressing_format):
-        self.mock_any_can_packet._AnyCanPacket__addressing_format = addressing_format
-        assert AnyCanPacket.addressing_format.fget(self=self.mock_any_can_packet) == addressing_format
-
-    @pytest.mark.parametrize("addressing_format", ["some addresisng format", CanAddressingFormat.EXTENDED_ADDRESSING])
-    def test_addressing_format__set(self, addressing_format):
-        AnyCanPacket.addressing_format.fset(self=self.mock_any_can_packet, value=addressing_format)
-        self.mock_addressing_format_class.validate_member.assert_called_once_with(addressing_format)
-        self.mock_addressing_format_class.assert_called_once_with(addressing_format)
-        assert self.mock_any_can_packet._AnyCanPacket__addressing_format == self.mock_addressing_format_class.return_value
 
     # can_id
 
     @pytest.mark.parametrize("can_id", ["some CAN ID", 0x98321])
     def test_can_id__get(self, can_id):
         self.mock_any_can_packet._AnyCanPacket__can_id = can_id
-        assert AnyCanPacket.can_id.fget(self=self.mock_any_can_packet) == can_id
+        assert AnyCanPacket.can_id.fget(self.mock_any_can_packet) == can_id
 
     @pytest.mark.parametrize("can_id", ["some CAN ID", 0x98321])
     def test_can_id__set(self, can_id):
-        AnyCanPacket.can_id.fset(self=self.mock_any_can_packet, value=can_id)
+        AnyCanPacket.can_id.fset(self.mock_any_can_packet, value=can_id)
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         assert self.mock_any_can_packet._AnyCanPacket__can_id == can_id
+
+    # addressing_format
+
+    @pytest.mark.parametrize("addressing_format", ["some addresisng format", CanAddressingFormat.EXTENDED_ADDRESSING])
+    def test_addressing_format__get(self, addressing_format):
+        self.mock_any_can_packet._AnyCanPacket__addressing_format = addressing_format
+        assert AnyCanPacket.addressing_format.fget(self.mock_any_can_packet) == addressing_format
+
+    @pytest.mark.parametrize("addressing_format", ["some addresisng format", CanAddressingFormat.EXTENDED_ADDRESSING])
+    def test_addressing_format__set(self, addressing_format):
+        AnyCanPacket.addressing_format.fset(self.mock_any_can_packet, value=addressing_format)
+        self.mock_addressing_format_class.validate_member.assert_called_once_with(addressing_format)
+        self.mock_addressing_format_class.assert_called_once_with(addressing_format)
+        assert self.mock_any_can_packet._AnyCanPacket__addressing_format == self.mock_addressing_format_class.return_value
+
+    # addressing_type
+
+    @pytest.mark.parametrize("addressing_type", ["some addresisng", AddressingType.PHYSICAL])
+    def test_addressing_type__get(self, addressing_type):
+        self.mock_any_can_packet._AnyCanPacket__addressing_type = addressing_type
+        assert AnyCanPacket.addressing_type.fget(self.mock_any_can_packet) == addressing_type
+    @pytest.mark.parametrize("addressing_type", ["some addresisng", AddressingType.PHYSICAL])
+    def test_addressing_type__set(self, addressing_type):
+        AnyCanPacket.addressing_type.fset(self.mock_any_can_packet, value=addressing_type)
+        self.mock_addressing_type_class.validate_member.assert_called_once_with(addressing_type)
+        self.mock_addressing_type_class.assert_called_once_with(addressing_type)
+        assert self.mock_any_can_packet._AnyCanPacket__addressing_type == self.mock_addressing_type_class.return_value
+
+    # dlc
+
+    @pytest.mark.parametrize("raw_frame_data", ["some raw data", list(range(10))])
+    def test_dlc__get(self, raw_frame_data):
+        self.mock_any_can_packet.raw_frame_data = raw_frame_data
+        assert AnyCanPacket.dlc.fget(self.mock_any_can_packet) \
+               == self.mock_can_dlc_handler_class.encode_dlc.return_value
+        self.mock_can_dlc_handler_class.encode_dlc.assert_called_once_with(len(raw_frame_data))
 
     # packet_type
 
@@ -1082,7 +960,7 @@ class TestAnyCanPacket:
     def test_packet_type__get__none(self, ai_data_bytes_number, raw_frame_data):
         self.mock_ai_handler_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         self.mock_any_can_packet.raw_frame_data = raw_frame_data
-        assert AnyCanPacket.packet_type.fget(self=self.mock_any_can_packet) is None
+        assert AnyCanPacket.packet_type.fget(self.mock_any_can_packet) is None
         self.mock_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(
             self.mock_any_can_packet.addressing_format)
 
@@ -1093,168 +971,29 @@ class TestAnyCanPacket:
     def test_packet_type__get(self, ai_data_bytes_number, raw_frame_data):
         self.mock_ai_handler_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         self.mock_any_can_packet.raw_frame_data = raw_frame_data
-        assert AnyCanPacket.packet_type.fget(self=self.mock_any_can_packet) is raw_frame_data[ai_data_bytes_number] >> 4
+        assert AnyCanPacket.packet_type.fget(self.mock_any_can_packet) is raw_frame_data[ai_data_bytes_number] >> 4
         self.mock_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(
             self.mock_any_can_packet.addressing_format)
 
-    # dlc
+    # get_addressing_info
 
-    @pytest.mark.parametrize("raw_frame_data", ["some raw data", list(range(10))])
-    def test_dlc__get(self, raw_frame_data):
-        self.mock_any_can_packet.raw_frame_data = raw_frame_data
-        assert AnyCanPacket.dlc.fget(self=self.mock_any_can_packet) \
-               == self.mock_can_dlc_handler_class.encode_dlc.return_value
-        self.mock_can_dlc_handler_class.encode_dlc.assert_called_once_with(len(raw_frame_data))
-
-    # target_address
-
-    def test_target_address__get__none(self):
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.return_value = None
-        assert AnyCanPacket.target_address.fget(self=self.mock_any_can_packet) is None
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.assert_called_once_with()
-
-    @pytest.mark.parametrize("ai_info", [
-        {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Addressing",
-        },
-        {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0xF9,
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: 0xE8,
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-        }
-    ])
-    def test_target_address__get(self, ai_info):
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.return_value = ai_info
-        assert AnyCanPacket.target_address.fget(self=self.mock_any_can_packet) \
-               == ai_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.assert_called_once_with()
-
-    # source_address
-
-    def test_source_address__get__none(self):
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.return_value = None
-        assert AnyCanPacket.source_address.fget(self=self.mock_any_can_packet) is None
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.assert_called_once_with()
-
-    @pytest.mark.parametrize("ai_info", [
-        {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Addressing",
-        },
-        {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0xF9,
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: 0xE8,
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-        }
-    ])
-    def test_source_address__get(self, ai_info):
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.return_value = ai_info
-        assert AnyCanPacket.source_address.fget(self=self.mock_any_can_packet) \
-               == ai_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.assert_called_once_with()
-
-    # address_extension
-
-    def test_address_extension__get__none(self):
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.return_value = None
-        assert AnyCanPacket.address_extension.fget(self=self.mock_any_can_packet) is None
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.assert_called_once_with()
-
-    @pytest.mark.parametrize("ai_info", [
-        {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Addressing",
-        },
-        {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0xF9,
+    @pytest.mark.parametrize("exception", [TypeError, ValueError, IndexError])
+    @patch(f"{SCRIPT_LOCATION}.AbstractCanPacketContainer.get_addressing_info")
+    def test_get_addressing_info__none(self, mock_get_addressing_info, exception):
+        mock_get_addressing_info.side_effect = exception
+        assert AnyCanPacket.get_addressing_info(self=self.mock_any_can_packet) == {
+            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: None,
+            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: None,
             CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: None,
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: 0xE8,
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
+            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
         }
-    ])
-    def test_address_extension__get(self, ai_info):
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.return_value = ai_info
-        assert AnyCanPacket.address_extension.fget(self=self.mock_any_can_packet) \
-               == ai_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
-        self.mock_any_can_packet._AnyCanPacket__get_addressing_info.assert_called_once_with()
+        mock_get_addressing_info.assert_called_once_with()
 
-    # payload
-
-    def test_payload__get(self):
-        assert AnyCanPacket.payload.fget(self=self.mock_any_can_packet) \
-               == self.mock_can_packet_class.payload.fget.return_value
-        self.mock_can_packet_class.payload.fget.assert_called_once_with(self.mock_any_can_packet)
-
-    # data_length
-
-    def test_data_length__get(self):
-        assert AnyCanPacket.data_length.fget(self=self.mock_any_can_packet) \
-               == self.mock_can_packet_class.data_length.fget.return_value
-        self.mock_can_packet_class.data_length.fget.assert_called_once_with(self.mock_any_can_packet)
-    
-    # sequence_number
-
-    def test_sequence_number__get(self):
-        assert AnyCanPacket.sequence_number.fget(self=self.mock_any_can_packet) \
-               == self.mock_can_packet_class.sequence_number.fget.return_value
-        self.mock_can_packet_class.sequence_number.fget.assert_called_once_with(self.mock_any_can_packet)
-
-    # flow_status
-
-    def test_flow_status__get(self):
-        assert AnyCanPacket.flow_status.fget(self=self.mock_any_can_packet) \
-               == self.mock_can_packet_class.flow_status.fget.return_value
-        self.mock_can_packet_class.flow_status.fget.assert_called_once_with(self.mock_any_can_packet)
-
-    # block_size
-
-    def test_block_size__get(self):
-        assert AnyCanPacket.block_size.fget(self=self.mock_any_can_packet) \
-               == self.mock_can_packet_class.block_size.fget.return_value
-        self.mock_can_packet_class.block_size.fget.assert_called_once_with(self.mock_any_can_packet)
-
-    # st_min
-
-    def test_st_min__get(self):
-        assert AnyCanPacket.st_min.fget(self=self.mock_any_can_packet) \
-               == self.mock_can_packet_class.st_min.fget.return_value
-        self.mock_can_packet_class.st_min.fget.assert_called_once_with(self.mock_any_can_packet)
-
-    # __get_addressing_info
-
-    def test_get_ai__none(self):
-        self.mock_any_can_packet.raw_frame_data = []
-        self.mock_ai_handler_class.get_ai_data_bytes_number.return_value = 1
-        assert AnyCanPacket._AnyCanPacket__get_addressing_info(self=self.mock_any_can_packet) is None
-        self.mock_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(
-            self.mock_any_can_packet.addressing_format)
-        self.mock_ai_handler_class.decode_ai.assert_not_called()
-
-    @pytest.mark.parametrize("raw_frame_data, ai_data_bytes_number", [
-        ([], 0),
-        ([0x12], 1),
-        ((0xF9, 0xE8, 0xD7, 0xC6, 0xB5), 1),
-    ])
-    def test_get_ai(self, raw_frame_data, ai_data_bytes_number):
-        self.mock_any_can_packet.raw_frame_data = raw_frame_data
-        self.mock_ai_handler_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
-        assert AnyCanPacket._AnyCanPacket__get_addressing_info(self=self.mock_any_can_packet) \
-               == self.mock_ai_handler_class.decode_ai.return_value
-        self.mock_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(
-            self.mock_any_can_packet.addressing_format)
-        self.mock_ai_handler_class.decode_ai.assert_called_once_with(
-            addressing_format=self.mock_any_can_packet.addressing_format,
-            can_id=self.mock_any_can_packet.can_id,
-            ai_data_bytes=self.mock_any_can_packet.raw_frame_data[:ai_data_bytes_number])
+    @patch(f"{SCRIPT_LOCATION}.AbstractCanPacketContainer.get_addressing_info")
+    def test_get_addressing_info(self, mock_get_addressing_info):
+        assert AnyCanPacket.get_addressing_info(self=self.mock_any_can_packet) \
+               == mock_get_addressing_info.return_value
+        mock_get_addressing_info.assert_called_once_with()
 
 
 @pytest.mark.integration

@@ -28,8 +28,6 @@ class TestCanPacketRecord:
         self.mock_can_addressing_format_class = self._patcher_can_addressing_format_class.start()
         self._patcher_can_ai_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformationHandler", mock_ai)
         self.mock_can_ai_handler_class = self._patcher_can_ai_handler_class.start()
-        self._patcher_can_packet_class = patch(f"{self.SCRIPT_LOCATION}.CanPacket")
-        self.mock_can_packet_class = self._patcher_can_packet_class.start()
         self._patcher_can_packet_type_class = patch(f"{self.SCRIPT_LOCATION}.CanPacketType")
         self.mock_can_packet_type_class = self._patcher_can_packet_type_class.start()
         self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
@@ -43,7 +41,6 @@ class TestCanPacketRecord:
         self._patcher_addressing_type_class.stop()
         self._patcher_can_addressing_format_class.stop()
         self._patcher_can_ai_handler_class.stop()
-        self._patcher_can_packet_class.stop()
         self._patcher_can_packet_type_class.stop()
         self._patcher_can_id_handler_class.stop()
         self._patcher_can_dlc_handler_class.stop()
@@ -85,116 +82,65 @@ class TestCanPacketRecord:
     @pytest.mark.parametrize("raw_frame_data", ["some raw data", range(10)])
     def test_raw_frame_data__python_can(self, raw_frame_data):
         self.mock_can_packet_record.frame = Mock(spec=PythonCanMessage, data=raw_frame_data)
-        assert CanPacketRecord.raw_frame_data.fget(self=self.mock_can_packet_record) \
+        assert CanPacketRecord.raw_frame_data.fget(self.mock_can_packet_record) \
                == tuple(self.mock_can_packet_record.frame.data)
 
     def test_raw_frame_data__not_implemented(self):
         with pytest.raises(NotImplementedError):
-            CanPacketRecord.raw_frame_data.fget(self=self.mock_can_packet_record)
+            CanPacketRecord.raw_frame_data.fget(self.mock_can_packet_record)
+
+    # can_id
+
+    def test_can_id__python_can(self):
+        self.mock_can_packet_record.frame = Mock(spec=PythonCanMessage)
+        assert CanPacketRecord.can_id.fget(self.mock_can_packet_record) \
+               == self.mock_can_packet_record.frame.arbitration_id
+
+    def test_can_id__not_implemented(self):
+        with pytest.raises(NotImplementedError):
+            CanPacketRecord.can_id.fget(self.mock_can_packet_record)
+
+    # addressing_format
+
+    @pytest.mark.parametrize("value", [None, "something", 1])
+    def test_addressing_format(self, value):
+        self.mock_can_packet_record._CanPacketRecord__addressing_format = value
+        assert CanPacketRecord.addressing_format.fget(self.mock_can_packet_record) == value
 
     # addressing_type
 
     @pytest.mark.parametrize("value", [None, "something", 1])
     def test_addressing_type(self, value):
         self.mock_can_packet_record._CanPacketRecord__addressing_type = value
-        assert CanPacketRecord.addressing_type.fget(self=self.mock_can_packet_record) == value
-        
-    # addressing_format
-
-    @pytest.mark.parametrize("value", [None, "something", 1])
-    def test_addressing_format(self, value):
-        self.mock_can_packet_record._CanPacketRecord__addressing_format = value
-        assert CanPacketRecord.addressing_format.fget(self=self.mock_can_packet_record) == value
+        assert CanPacketRecord.addressing_type.fget(self.mock_can_packet_record) == value
 
     # packet_type
 
     @pytest.mark.parametrize("value", [None, "something", 1])
     def test_packet_type(self, value):
         self.mock_can_packet_record._CanPacketRecord__packet_type = value
-        assert CanPacketRecord.packet_type.fget(self=self.mock_can_packet_record) == value
+        assert CanPacketRecord.packet_type.fget(self.mock_can_packet_record) == value
 
-    # payload
-
-    def test_payload(self):
-        assert CanPacketRecord.payload.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_packet_class.payload.fget.return_value
-        self.mock_can_packet_class.payload.fget.assert_called_once_with(self.mock_can_packet_record)
-        
-    # data_length
-
-    def test_data_length(self):
-        assert CanPacketRecord.data_length.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_packet_class.data_length.fget.return_value
-        self.mock_can_packet_class.data_length.fget.assert_called_once_with(self.mock_can_packet_record)
-
-    # can_id
-
-    def test_can_id__python_can(self):
-        self.mock_can_packet_record.frame = Mock(spec=PythonCanMessage)
-        assert CanPacketRecord.can_id.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_packet_record.frame.arbitration_id
-
-    def test_can_id__not_implemented(self):
-        with pytest.raises(NotImplementedError):
-            CanPacketRecord.can_id.fget(self=self.mock_can_packet_record)
-
-    # dlc
-
-    @pytest.mark.parametrize("raw_frame_data", [range(10), [0xFF, 0xEE, 0xDD]])
-    def test_dlc(self, raw_frame_data):
-        self.mock_can_packet_record.raw_frame_data = raw_frame_data
-        assert CanPacketRecord.dlc.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_dlc_handler_class.encode_dlc.return_value
-        self.mock_can_dlc_handler_class.encode_dlc.assert_called_once_with(len(self.mock_can_packet_record.raw_frame_data))
-        
     # target_address
 
     @pytest.mark.parametrize("value", [None, "something", 1])
     def test_target_address(self, value):
         self.mock_can_packet_record._CanPacketRecord__target_address = value
-        assert CanPacketRecord.target_address.fget(self=self.mock_can_packet_record) == value
-        
+        assert CanPacketRecord.target_address.fget(self.mock_can_packet_record) == value
+
     # source_address
 
     @pytest.mark.parametrize("value", [None, "something", 1])
     def test_source_address(self, value):
         self.mock_can_packet_record._CanPacketRecord__source_address = value
-        assert CanPacketRecord.source_address.fget(self=self.mock_can_packet_record) == value
-        
+        assert CanPacketRecord.source_address.fget(self.mock_can_packet_record) == value
+
     # address_extension
 
     @pytest.mark.parametrize("value", [None, "something", 1])
     def test_address_extension(self, value):
         self.mock_can_packet_record._CanPacketRecord__address_extension = value
-        assert CanPacketRecord.address_extension.fget(self=self.mock_can_packet_record) == value
-
-    # sequence_number
-
-    def test_sequence_number(self):
-        assert CanPacketRecord.sequence_number.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_packet_class.sequence_number.fget.return_value
-        self.mock_can_packet_class.sequence_number.fget.assert_called_once_with(self.mock_can_packet_record)
-
-    # flow_status
-    
-    def test_flow_status(self):
-        assert CanPacketRecord.flow_status.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_packet_class.flow_status.fget.return_value
-        self.mock_can_packet_class.flow_status.fget.assert_called_once_with(self.mock_can_packet_record)
-
-    # block_size
-
-    def test_block_size(self):
-        assert CanPacketRecord.block_size.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_packet_class.block_size.fget.return_value
-        self.mock_can_packet_class.block_size.fget.assert_called_once_with(self.mock_can_packet_record)
-
-    # st_min
-
-    def test_st_min(self):
-        assert CanPacketRecord.st_min.fget(self=self.mock_can_packet_record) \
-               == self.mock_can_packet_class.st_min.fget.return_value
-        self.mock_can_packet_class.st_min.fget.assert_called_once_with(self.mock_can_packet_record)
+        assert CanPacketRecord.address_extension.fget(self.mock_can_packet_record) == value
 
     # _validate_frame
 

@@ -9,9 +9,9 @@ from can import Message as PythonCanMessage
 from uds.utilities import RawByte, RawBytesTuple, TimeStamp, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
 from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
-    CanDlcHandler, CanIdHandler, CanFlowStatusAlias
-from .can_packet import CanPacket
+    CanDlcHandler, CanIdHandler
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
+from .abstract_can_packet_container import AbstractCanPacketContainer
 from .abstract_packet import AbstractUdsPacketRecord
 
 
@@ -19,7 +19,7 @@ CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
 
 
-class CanPacketRecord(AbstractUdsPacketRecord):
+class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
     """
     Definition of a CAN packet Record.
 
@@ -62,31 +62,6 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
-    def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing type over which this CAN packet was transmitted."""
-        return self.__addressing_type
-
-    @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
-        """CAN addressing format used by this CAN packet."""
-        return self.__addressing_format
-
-    @property
-    def packet_type(self) -> CanPacketTypeAlias:
-        """CAN packet type value - N_PCI value of this N_PDU."""
-        return self.__packet_type
-
-    @property
-    def payload(self) -> Optional[RawBytesTuple]:
-        """Payload bytes of a diagnostic message carried by this CAN packet."""
-        return CanPacket.payload.fget(self)  # type: ignore
-
-    @property
-    def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this CAN packet."""
-        return CanPacket.data_length.fget(self)  # type: ignore
-
-    @property
     def can_id(self) -> int:
         """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
         if isinstance(self.frame, PythonCanMessage):
@@ -94,9 +69,19 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
-    def dlc(self) -> int:
-        """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
-        return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
+    def addressing_format(self) -> CanAddressingFormatAlias:
+        """CAN addressing format used by this CAN packet."""
+        return self.__addressing_format
+
+    @property
+    def addressing_type(self) -> AddressingTypeAlias:
+        """Addressing type over which this CAN packet was transmitted."""
+        return self.__addressing_type
+
+    @property
+    def packet_type(self) -> CanPacketTypeAlias:
+        """CAN packet type value - N_PCI value of this N_PDU."""
+        return self.__packet_type
 
     @property
     def target_address(self) -> Optional[RawByte]:
@@ -138,54 +123,6 @@ class CanPacketRecord(AbstractUdsPacketRecord):
         None in other cases.
         """
         return self.__address_extension
-
-    @property
-    def sequence_number(self) -> Optional[int]:
-        """
-        Sequence Number carried by this CAN packet.
-
-        :ref:`Sequence Number <knowledge-base-can-sequence-number>` is only provided by packets of following types:
-         - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-
-        None in other cases.
-        """
-        return CanPacket.sequence_number.fget(self)  # type: ignore
-
-    @property
-    def flow_status(self) -> Optional[CanFlowStatusAlias]:
-        """
-        Flow Status carried by this CAN packet.
-
-        :ref:`Flow Status <knowledge-base-can-flow-status>` is only provided by packets of following types:
-         - :ref:`Flow Control <knowledge-base-can-flow-control>`
-
-        None in other cases.
-        """
-        return CanPacket.flow_status.fget(self)  # type: ignore
-
-    @property
-    def block_size(self) -> Optional[RawByte]:
-        """
-        Block Size value carried by this CAN packet.
-
-        :ref:`Block Size <knowledge-base-can-flow-status>` is only provided by packets of following types:
-         - :ref:`Flow Control <knowledge-base-can-block-size>`
-
-        None in other cases.
-        """
-        return CanPacket.block_size.fget(self)  # type: ignore
-
-    @property
-    def st_min(self) -> Optional[RawByte]:
-        """
-        Separation Time minimum (STmin) value carried by this CAN packet.
-
-        :ref:`STmin <knowledge-base-can-st-min>` is only provided by packets of following types:
-         - :ref:`Flow Control <knowledge-base-can-block-size>`
-
-        None in other cases.
-        """
-        return CanPacket.st_min.fget(self)  # type: ignore
 
     @staticmethod
     def _validate_frame(value: Any) -> None:

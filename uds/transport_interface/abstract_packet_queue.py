@@ -2,7 +2,7 @@
 
 __all__ = ["AbstractPacketsQueue"]
 
-from typing import NoReturn, Optional
+from typing import NoReturn
 from abc import ABC, abstractmethod
 
 from uds.packet import AbstractUdsPacketContainer
@@ -12,7 +12,7 @@ class AbstractPacketsQueue(ABC):
     """Abstract definition of a queue with UDS packets."""
 
     @abstractmethod
-    def __init__(self, packet_class: Optional[type] = None) -> None:  # noqa: F841
+    def __init__(self, packet_class: type = None) -> None:  # noqa: F841
         """
         Create a queue for UDS packets storing.
 

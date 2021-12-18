@@ -1,8 +1,4 @@
-"""
-Implementation of UDS packets that is common for all bus types.
-
-:ref:`UDS packets <knowledge-base-uds-packet>` are defined on middle layers of UDS OSI Model.
-"""
+"""Abstract definition of UDS packets that is common for all bus types."""
 
 __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketsContainersSequence", "PacketsContainersTuple", "PacketsContainersList",
@@ -212,7 +208,7 @@ PacketsTuple = Tuple[AbstractUdsPacket, ...]
 """Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
 PacketsList = List[AbstractUdsPacket]
 """Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
-PacketsSequence = Union[PacketsTuple, PacketsList]
+PacketsSequence = Union[PacketsTuple, PacketsList]  # noqa: F841
 """Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
 
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
