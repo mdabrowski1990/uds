@@ -19,13 +19,13 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing for which this packet is relevant."""
+    def raw_frame_data(self) -> RawBytesTuple:
+        """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
-        """Raw data bytes of a frame that carries this packet."""
+    def addressing_type(self) -> AddressingTypeAlias:
+        """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
@@ -34,13 +34,13 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
-        """Raw payload bytes of a diagnostic message that are carried by this packet."""
+    def data_length(self) -> Optional[int]:
+        """Payload bytes number of a diagnostic message which was carried by this packet."""
 
     @property
     @abstractmethod
-    def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this packet."""
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
 class AbstractUdsPacket(AbstractUdsPacketContainer):
@@ -48,13 +48,13 @@ class AbstractUdsPacket(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing for which this packet is relevant."""
+    def raw_frame_data(self) -> RawBytesTuple:
+        """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
-        """Raw data bytes of a frame that carries this packet."""
+    def addressing_type(self) -> AddressingTypeAlias:
+        """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
@@ -63,13 +63,13 @@ class AbstractUdsPacket(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
-        """Raw payload bytes of a diagnostic message that are carried by this packet."""
+    def data_length(self) -> Optional[int]:
+        """Payload bytes number of a diagnostic message which was carried by this packet."""
 
     @property
     @abstractmethod
-    def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this packet."""
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
 class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
@@ -161,13 +161,13 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing for which this packet is relevant."""
+    def raw_frame_data(self) -> RawBytesTuple:
+        """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
-        """Raw data bytes of a frame that carries this packet."""
+    def addressing_type(self) -> AddressingTypeAlias:
+        """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
@@ -176,13 +176,13 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
-        """Raw payload bytes of a diagnostic message that are carried by this packet."""
+    def data_length(self) -> Optional[int]:
+        """Payload bytes number of a diagnostic message which was carried by this packet."""
 
     @property
     @abstractmethod
-    def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this packet."""
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
     @staticmethod
     @abstractmethod
