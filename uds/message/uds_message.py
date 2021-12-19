@@ -24,7 +24,7 @@ class AbstractUdsMessageContainer(ABC):
 
         :param other: Object to compare.
 
-        :return: True if both other object are the same type and carries the same diagnostic message, otherwise False.
+        :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
 
     @property
@@ -65,7 +65,7 @@ class UdsMessage(AbstractUdsMessageContainer):
 
         :param other: Object to compare.
 
-        :return: True if both other object are the same type and carries the same diagnostic message, otherwise False.
+        :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
             raise TypeError("UDS Message can only be compared with another UDS Message")
@@ -120,7 +120,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :param other: Object to compare.
 
-        :return: True if both other object are the same type and carries the same diagnostic message, otherwise False.
+        :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
             raise TypeError("UDS Message Record can only be compared with another UDS Message Record")

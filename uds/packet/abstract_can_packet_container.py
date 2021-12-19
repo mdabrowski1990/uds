@@ -59,7 +59,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_info()[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
+        return self.get_addressing_information()[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
 
     @property
     def source_address(self) -> Optional[RawByte]:
@@ -72,7 +72,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_info()[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
+        return self.get_addressing_information()[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
 
     @property
     def address_extension(self) -> Optional[RawByte]:
@@ -86,7 +86,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_info()[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
+        return self.get_addressing_information()[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
 
     @property
     def data_length(self) -> Optional[int]:
@@ -198,7 +198,7 @@ class AbstractCanPacketContainer(ABC):
                                                        raw_frame_data=self.raw_frame_data)
         return None
 
-    def get_addressing_info(self) -> dict:
+    def get_addressing_information(self) -> dict:
         """
         Get Addressing Information carried by this packet.
 

@@ -975,25 +975,25 @@ class TestAnyCanPacket:
         self.mock_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(
             self.mock_any_can_packet.addressing_format)
 
-    # get_addressing_info
+    # get_addressing_information
 
     @pytest.mark.parametrize("exception", [TypeError, ValueError, IndexError])
-    @patch(f"{SCRIPT_LOCATION}.AbstractCanPacketContainer.get_addressing_info")
-    def test_get_addressing_info__none(self, mock_get_addressing_info, exception):
-        mock_get_addressing_info.side_effect = exception
-        assert AnyCanPacket.get_addressing_info(self=self.mock_any_can_packet) == {
+    @patch(f"{SCRIPT_LOCATION}.AbstractCanPacketContainer.get_addressing_information")
+    def test_get_addressing_information__none(self, mock_get_addressing_information, exception):
+        mock_get_addressing_information.side_effect = exception
+        assert AnyCanPacket.get_addressing_information(self=self.mock_any_can_packet) == {
             CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: None,
             CanAddressingInformationHandler.TARGET_ADDRESS_NAME: None,
             CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: None,
             CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
         }
-        mock_get_addressing_info.assert_called_once_with()
+        mock_get_addressing_information.assert_called_once_with()
 
-    @patch(f"{SCRIPT_LOCATION}.AbstractCanPacketContainer.get_addressing_info")
-    def test_get_addressing_info(self, mock_get_addressing_info):
-        assert AnyCanPacket.get_addressing_info(self=self.mock_any_can_packet) \
-               == mock_get_addressing_info.return_value
-        mock_get_addressing_info.assert_called_once_with()
+    @patch(f"{SCRIPT_LOCATION}.AbstractCanPacketContainer.get_addressing_information")
+    def test_get_addressing_information(self, mock_get_addressing_information):
+        assert AnyCanPacket.get_addressing_information(self=self.mock_any_can_packet) \
+               == mock_get_addressing_information.return_value
+        mock_get_addressing_information.assert_called_once_with()
 
 
 @pytest.mark.integration

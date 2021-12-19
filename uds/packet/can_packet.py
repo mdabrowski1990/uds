@@ -698,14 +698,14 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             return None
         return self.raw_frame_data[ai_data_bytes_number] >> 4
 
-    def get_addressing_info(self) -> dict:
+    def get_addressing_information(self) -> dict:
         """
         Get Addressing Information carried by this packet.
 
         :return: Addressing Information decoded from CAN ID and CAN Frame data of this packet.
         """
         try:
-            return super().get_addressing_info()
+            return super().get_addressing_information()
         except (TypeError, ValueError, IndexError):
             return {
                 CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: None,
