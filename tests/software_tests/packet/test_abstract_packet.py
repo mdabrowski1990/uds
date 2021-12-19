@@ -38,11 +38,11 @@ class TestAbstractUdsPacketRecord:
     @pytest.mark.parametrize("frame", [None, 0, "some frame"])
     def test_frame__get(self, frame):
         self.mock_packet_record._AbstractUdsPacketRecord__frame = frame
-        assert AbstractUdsPacketRecord.frame.fget(self=self.mock_packet_record) == frame
+        assert AbstractUdsPacketRecord.frame.fget(self.mock_packet_record) == frame
 
     @pytest.mark.parametrize("frame", [None, 0, "some frame"])
     def test_frame__set(self, frame):
-        AbstractUdsPacketRecord.frame.fset(self=self.mock_packet_record, value=frame)
+        AbstractUdsPacketRecord.frame.fset(self.mock_packet_record, value=frame)
         assert self.mock_packet_record._AbstractUdsPacketRecord__frame == frame
         self.mock_packet_record._validate_frame.assert_called_once_with(frame)
 
@@ -51,7 +51,7 @@ class TestAbstractUdsPacketRecord:
     def test_frame__set__second_attempt(self, old_value, new_value):
         self.mock_packet_record._AbstractUdsPacketRecord__frame = old_value
         with pytest.raises(ReassignmentError):
-            AbstractUdsPacketRecord.frame.fset(self=self.mock_packet_record, value=new_value)
+            AbstractUdsPacketRecord.frame.fset(self.mock_packet_record, value=new_value)
         assert self.mock_packet_record._AbstractUdsPacketRecord__frame == old_value
         self.mock_packet_record._validate_frame.assert_not_called()
 
@@ -60,10 +60,10 @@ class TestAbstractUdsPacketRecord:
     @pytest.mark.parametrize("direction", [None, "some direction"] + list(TransmissionDirection))
     def test_direction__get(self, direction):
         self.mock_packet_record._AbstractUdsPacketRecord__direction = direction
-        assert AbstractUdsPacketRecord.direction.fget(self=self.mock_packet_record) == direction
+        assert AbstractUdsPacketRecord.direction.fget(self.mock_packet_record) == direction
 
     def test_direction__set(self, example_transmission_direction):
-        AbstractUdsPacketRecord.direction.fset(self=self.mock_packet_record, value=example_transmission_direction)
+        AbstractUdsPacketRecord.direction.fset(self.mock_packet_record, value=example_transmission_direction)
         assert self.mock_packet_record._AbstractUdsPacketRecord__direction == example_transmission_direction
         self.mock_validate_direction.assert_called_once_with(example_transmission_direction)
 
@@ -72,7 +72,7 @@ class TestAbstractUdsPacketRecord:
     def test_direction__set__second_attempt(self, old_value, new_value):
         self.mock_packet_record._AbstractUdsPacketRecord__direction = old_value
         with pytest.raises(ReassignmentError):
-            AbstractUdsPacketRecord.direction.fset(self=self.mock_packet_record, value=new_value)
+            AbstractUdsPacketRecord.direction.fset(self.mock_packet_record, value=new_value)
         assert self.mock_packet_record._AbstractUdsPacketRecord__direction == old_value
         self.mock_validate_direction.assert_not_called()
 
@@ -81,22 +81,22 @@ class TestAbstractUdsPacketRecord:
     @pytest.mark.parametrize("transmission_time", [None, 0, "some transmission_time"])
     def test_transmission_time__get(self, transmission_time):
         self.mock_packet_record._AbstractUdsPacketRecord__transmission_time = transmission_time
-        assert AbstractUdsPacketRecord.transmission_time.fget(self=self.mock_packet_record) == transmission_time
+        assert AbstractUdsPacketRecord.transmission_time.fget(self.mock_packet_record) == transmission_time
 
     def test_transmission_time__set(self):
         value = Mock(spec=TimeStamp)
-        AbstractUdsPacketRecord.transmission_time.fset(self=self.mock_packet_record, value=value)
+        AbstractUdsPacketRecord.transmission_time.fset(self.mock_packet_record, value=value)
         assert self.mock_packet_record._AbstractUdsPacketRecord__transmission_time == value
 
     @pytest.mark.parametrize("value", [None, "not a timestamp"])
     def test_transmission_time__set__invalid_type(self, value):
         with pytest.raises(TypeError):
-            AbstractUdsPacketRecord.transmission_time.fset(self=self.mock_packet_record, value=value)
+            AbstractUdsPacketRecord.transmission_time.fset(self.mock_packet_record, value=value)
 
     @pytest.mark.parametrize("old_value", [None, 0, "some transmission_time"])
     @pytest.mark.parametrize("new_value", [None, True, Mock(spec=TimeStamp)])
     def test_transmission_time__set__second_attempt(self, old_value, new_value):
         self.mock_packet_record._AbstractUdsPacketRecord__transmission_time = old_value
         with pytest.raises(ReassignmentError):
-            AbstractUdsPacketRecord.transmission_time.fset(self=self.mock_packet_record, value=new_value)
+            AbstractUdsPacketRecord.transmission_time.fset(self.mock_packet_record, value=new_value)
         assert self.mock_packet_record._AbstractUdsPacketRecord__transmission_time == old_value

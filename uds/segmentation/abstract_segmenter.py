@@ -6,7 +6,7 @@ from typing import Tuple, Type, Union, Any
 from abc import ABC, abstractmethod
 
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import PacketAlias, PacketsSequence, PacketsDefinitionTuple
+from uds.packet import AbstractUdsPacketContainer, PacketsContainersSequence, PacketsTuple
 
 
 class SegmentationError(ValueError):
@@ -27,7 +27,7 @@ class AbstractSegmenter(ABC):
 
     @property
     @abstractmethod
-    def supported_packet_classes(self) -> Tuple[Type[PacketAlias], ...]:
+    def supported_packet_classes(self) -> Tuple[Type[AbstractUdsPacketContainer], ...]:
         """Classes that define packet objects supported by this segmenter."""
 
     def is_supported_packet(self, value: Any) -> bool:
@@ -58,7 +58,7 @@ class AbstractSegmenter(ABC):
         return len({type(element) for element in value}) == 1
 
     @abstractmethod
-    def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
+    def is_complete_packets_sequence(self, packets: PacketsContainersSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -69,7 +69,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
         Perform desegmentation of UDS packets.
 
@@ -81,7 +81,7 @@ class AbstractSegmenter(ABC):
         """
 
     @abstractmethod
-    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+    def segmentation(self, message: UdsMessage) -> PacketsTuple:
         """
         Perform segmentation of a diagnostic message.
 

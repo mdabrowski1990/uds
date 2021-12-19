@@ -1,13 +1,9 @@
-"""
-Implementation of UDS packets that is common for all bus types.
+"""Abstract definition of UDS packets that is common for all bus types."""
 
-:ref:`UDS packets <knowledge-base-uds-packet>` are defined on middle layers of UDS OSI Model.
-"""
-
-__all__ = ["AbstractUdsPacket", "AbstractUdsPacketRecord",
-           "PacketAlias", "PacketsTuple", "PacketsSequence",
-           "PacketsDefinitionTuple", "PacketsDefinitionSequence",
-           "PacketsRecordsTuple", "PacketsRecordsSequence"]
+__all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
+           "PacketsContainersSequence", "PacketsContainersTuple", "PacketsContainersList",
+           "PacketsSequence", "PacketsTuple", "PacketsList",
+           "PacketsRecordsSequence", "PacketsRecordsTuple", "PacketsRecordsList"]
 
 from abc import ABC, abstractmethod
 from typing import Union, Optional, Any, Tuple, List
@@ -18,13 +14,8 @@ from uds.transmission_attributes.transmission_direction import TransmissionDirec
 from .abstract_packet_type import AbstractUdsPacketTypeAlias
 
 
-class AbstractUdsPacket(ABC):
-    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
-
-    @property
-    @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing type for which this packet is relevant."""
+class AbstractUdsPacketContainer(ABC):
+    """Abstract definition of a container with UDS Packet information."""
 
     @property
     @abstractmethod
@@ -33,21 +24,55 @@ class AbstractUdsPacket(ABC):
 
     @property
     @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketTypeAlias:
-        """UDS packet type value - N_PCI value of this N_PDU."""
+    def addressing_type(self) -> AddressingTypeAlias:
+        """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
-        """Payload bytes of a diagnostic message carried by this packet."""
+    def packet_type(self) -> AbstractUdsPacketTypeAlias:
+        """Type (N_PCI value) of this UDS packet."""
 
     @property
     @abstractmethod
     def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which is carried by this packet."""
+        """Payload bytes number of a diagnostic message which was carried by this packet."""
+
+    @property
+    @abstractmethod
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
-class AbstractUdsPacketRecord(ABC):
+class AbstractUdsPacket(AbstractUdsPacketContainer):
+    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
+
+    @property
+    @abstractmethod
+    def raw_frame_data(self) -> RawBytesTuple:
+        """Raw data bytes of a frame that carries this packet."""
+
+    @property
+    @abstractmethod
+    def addressing_type(self) -> AddressingTypeAlias:
+        """Addressing for which this packet is relevant."""
+
+    @property
+    @abstractmethod
+    def packet_type(self) -> AbstractUdsPacketTypeAlias:
+        """Type (N_PCI value) of this UDS packet."""
+
+    @property
+    @abstractmethod
+    def data_length(self) -> Optional[int]:
+        """Payload bytes number of a diagnostic message which was carried by this packet."""
+
+    @property
+    @abstractmethod
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Raw payload bytes of a diagnostic message that are carried by this packet."""
+
+
+class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
     """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
@@ -56,7 +81,7 @@ class AbstractUdsPacketRecord(ABC):
                  direction: TransmissionDirectionAlias,
                  transmission_time: TimeStamp) -> None:
         """
-        Create a record of a historic information about a packet that was either received or transmitted.
+        Create a record of historic information about a packet that was either received or transmitted.
 
         :param frame: Frame that carried this UDS packet.
         :param direction: Information whether this packet was transmitted or received.
@@ -142,22 +167,22 @@ class AbstractUdsPacketRecord(ABC):
     @property
     @abstractmethod
     def addressing_type(self) -> AddressingTypeAlias:
-        """Addressing type over which this packet was transmitted."""
+        """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketTypeAlias:
-        """UDS packet type value - N_PCI value of this N_PDU."""
-
-    @property
-    @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
-        """Payload bytes of a diagnostic message carried by this packet."""
+        """Type (N_PCI value) of this UDS packet."""
 
     @property
     @abstractmethod
     def data_length(self) -> Optional[int]:
         """Payload bytes number of a diagnostic message which was carried by this packet."""
+
+    @property
+    @abstractmethod
+    def payload(self) -> Optional[RawBytesTuple]:
+        """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
     @staticmethod
     @abstractmethod
@@ -172,19 +197,23 @@ class AbstractUdsPacketRecord(ABC):
         """
 
 
-PacketsDefinitionTuple = Tuple[AbstractUdsPacket, ...]
-"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacket` instances."""
-PacketsDefinitionSequence = Union[PacketsDefinitionTuple, List[AbstractUdsPacket]]
-"""Typing alias of a sequence filled with :class:`~uds.message.uds_packet.AbstractUdsPacket` instances."""
+PacketsContainersTuple = Tuple[AbstractUdsPacketContainer, ...]
+"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
+PacketsContainersList = List[AbstractUdsPacketContainer]
+"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
+PacketsContainersSequence = Union[PacketsContainersTuple, PacketsContainersList]
+"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
+
+PacketsTuple = Tuple[AbstractUdsPacket, ...]
+"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
+PacketsList = List[AbstractUdsPacket]
+"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
+PacketsSequence = Union[PacketsTuple, PacketsList]  # noqa: F841
+"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
 
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-"""Typing alias of a tuple filled with :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` instances."""
-PacketsRecordsSequence = Union[PacketsRecordsTuple, List[AbstractUdsPacketRecord]]
-"""Typing alias of a sequence filled with :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` instances."""
-
-PacketAlias = Union[AbstractUdsPacket, AbstractUdsPacketRecord]
-"""Typing alias of UDS packet."""
-PacketsTuple = Union[PacketsDefinitionTuple, PacketsRecordsTuple]  # noqa: F841
-"""Typing alias of a tuple filled with UDS packets."""
-PacketsSequence = Union[PacketsDefinitionSequence, PacketsRecordsSequence]
-"""Typing alias of a sequence filled with UDS packets."""
+"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""
+PacketsRecordsList = List[AbstractUdsPacketRecord]
+"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""
+PacketsRecordsSequence = Union[PacketsRecordsTuple, PacketsRecordsList]
+"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""

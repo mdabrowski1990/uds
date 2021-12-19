@@ -9,9 +9,10 @@ It provides tools for:
 """
 
 from .abstract_packet_type import AbstractUdsPacketType, AbstractUdsPacketTypeAlias
-from .abstract_packet import AbstractUdsPacket, AbstractUdsPacketRecord, \
-    PacketsRecordsTuple, PacketsRecordsSequence, \
-    PacketAlias, PacketsSequence, PacketsDefinitionTuple
+from .abstract_packet import AbstractUdsPacketContainer, AbstractUdsPacket, AbstractUdsPacketRecord, \
+    PacketsContainersSequence, PacketsContainersTuple, PacketsContainersList, \
+    PacketsSequence, PacketsTuple, PacketsList, \
+    PacketsRecordsSequence, PacketsRecordsTuple, PacketsRecordsList
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
 from .can_packet import CanPacket
 from .can_packet_record import CanPacketRecord

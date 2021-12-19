@@ -57,10 +57,10 @@ class TestUdsMessage:
     @pytest.mark.parametrize("value", [None, [0x1, 0x02], "some message"])
     def test_payload__get(self, value):
         self.mock_uds_message._UdsMessage__payload = value
-        assert UdsMessage.payload.fget(self=self.mock_uds_message) is value
+        assert UdsMessage.payload.fget(self.mock_uds_message) is value
 
     def test_payload__set(self, example_raw_bytes):
-        UdsMessage.payload.fset(self=self.mock_uds_message, value=example_raw_bytes)
+        UdsMessage.payload.fset(self.mock_uds_message, value=example_raw_bytes)
         assert self.mock_uds_message._UdsMessage__payload == tuple(example_raw_bytes)
         self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
 
@@ -73,10 +73,10 @@ class TestUdsMessage:
     @pytest.mark.parametrize("value", [None, AddressingType.PHYSICAL, "some addressing"])
     def test_addressing_type__get(self, value):
         self.mock_uds_message._UdsMessage__addressing_type = value
-        assert UdsMessage.addressing_type.fget(self=self.mock_uds_message) is value
+        assert UdsMessage.addressing_type.fget(self.mock_uds_message) is value
 
     def test_addressing_type__set(self, example_addressing_type):
-        UdsMessage.addressing_type.fset(self=self.mock_uds_message, value=example_addressing_type)
+        UdsMessage.addressing_type.fset(self.mock_uds_message, value=example_addressing_type)
         assert self.mock_uds_message._UdsMessage__addressing_type == example_addressing_type
         self.mock_validate_addressing.assert_called_once_with(example_addressing_type)
 
@@ -162,7 +162,7 @@ class TestUdsMessageRecord:
     ])
     def test_payload__get(self, packets):
         self.mock_uds_message_record.packets_records = packets
-        payload = UdsMessageRecord.payload.fget(self=self.mock_uds_message_record)
+        payload = UdsMessageRecord.payload.fget(self.mock_uds_message_record)
         assert isinstance(payload, tuple)
         assert len(payload) == self.mock_uds_message_record.packets_records[0].data_length
 
@@ -179,7 +179,7 @@ class TestUdsMessageRecord:
         "abcdefg"
     ])
     def test_packets_records__set__first_call(self, packets_records):
-        UdsMessageRecord.packets_records.fset(self=self.mock_uds_message_record, value=packets_records)
+        UdsMessageRecord.packets_records.fset(self.mock_uds_message_record, value=packets_records)
         assert self.mock_uds_message_record._UdsMessageRecord__packets_records == tuple(packets_records)
         self.mock_uds_message_record._UdsMessageRecord__validate_packets_records.assert_called_once_with(packets_records)
 
@@ -188,7 +188,7 @@ class TestUdsMessageRecord:
     def test_packets_records__set__second_call(self, old_value, new_value):
         self.mock_uds_message_record._UdsMessageRecord__packets_records = old_value
         with pytest.raises(ReassignmentError):
-            UdsMessageRecord.packets_records.fset(self=self.mock_uds_message_record, value=new_value)
+            UdsMessageRecord.packets_records.fset(self.mock_uds_message_record, value=new_value)
         assert self.mock_uds_message_record._UdsMessageRecord__packets_records == old_value
         self.mock_uds_message_record._UdsMessageRecord__validate_packets_records.assert_not_called()
 
@@ -201,7 +201,7 @@ class TestUdsMessageRecord:
     ])
     def test_addressing_type__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.addressing_type.fget(self=self.mock_uds_message_record) == packets_records[0].addressing_type
+        assert UdsMessageRecord.addressing_type.fget(self.mock_uds_message_record) == packets_records[0].addressing_type
 
     # direction
 
@@ -212,7 +212,7 @@ class TestUdsMessageRecord:
     ])
     def test_direction__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.direction.fget(self=self.mock_uds_message_record) == packets_records[0].direction
+        assert UdsMessageRecord.direction.fget(self.mock_uds_message_record) == packets_records[0].direction
 
     # transmission_start
 
@@ -224,7 +224,7 @@ class TestUdsMessageRecord:
     ])
     def test_transmission_start__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.transmission_start.fget(self=self.mock_uds_message_record) \
+        assert UdsMessageRecord.transmission_start.fget(self.mock_uds_message_record) \
                == packets_records[0].transmission_time
 
     # transmission_end
@@ -237,5 +237,5 @@ class TestUdsMessageRecord:
     ])
     def test_transmission_end__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.transmission_end.fget(self=self.mock_uds_message_record) \
+        assert UdsMessageRecord.transmission_end.fget(self.mock_uds_message_record) \
                == packets_records[-1].transmission_time

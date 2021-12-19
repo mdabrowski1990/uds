@@ -9,7 +9,8 @@ from uds.utilities import RawByte, RawBytesList, validate_raw_byte, AmbiguityErr
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import CanAddressingInformationHandler, CanAddressingFormat, CanAddressingFormatAlias, \
     CanDlcHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, DEFAULT_FILLER_BYTE
-from uds.packet import CanPacket, CanPacketRecord, CanPacketType, PacketAlias, PacketsSequence, PacketsDefinitionTuple
+from uds.packet import CanPacket, CanPacketRecord, CanPacketType, \
+    AbstractUdsPacketContainer, PacketsContainersSequence, PacketsTuple
 from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
@@ -51,7 +52,7 @@ class CanSegmenter(AbstractSegmenter):
         self.filler_byte = filler_byte
 
     @property
-    def supported_packet_classes(self) -> Tuple[Type[PacketAlias], ...]:
+    def supported_packet_classes(self) -> Tuple[Type[AbstractUdsPacketContainer], ...]:
         """Classes that define packet objects supported by this segmenter."""
         return CanPacket, CanPacketRecord
 
@@ -175,7 +176,7 @@ class CanSegmenter(AbstractSegmenter):
         validate_raw_byte(value)
         self.__filler_byte: RawByte = value
 
-    def desegmentation(self, packets: PacketsSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
         Perform desegmentation of CAN packets.
 
@@ -206,7 +207,7 @@ class CanSegmenter(AbstractSegmenter):
             raise SegmentationError("Unexpectedly, something went wrong...")
         raise NotImplementedError(f"Missing implementation for provided CAN Packet: {type(packets[0])}")
 
-    def segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+    def segmentation(self, message: UdsMessage) -> PacketsTuple:
         """
         Perform segmentation of a diagnostic message.
 
@@ -234,7 +235,7 @@ class CanSegmenter(AbstractSegmenter):
             return self.__functional_segmentation(message)
         raise NotImplementedError(f"Unknown addressing type received: {message.addressing_type}")
 
-    def is_complete_packets_sequence(self, packets: PacketsSequence) -> bool:
+    def is_complete_packets_sequence(self, packets: PacketsContainersSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -267,7 +268,7 @@ class CanSegmenter(AbstractSegmenter):
             return payload_bytes_found >= total_payload_size  # type: ignore
         raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
 
-    def __physical_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+    def __physical_segmentation(self, message: UdsMessage) -> PacketsTuple:
         """
         Segment physically addressed diagnostic message.
 
@@ -316,7 +317,7 @@ class CanSegmenter(AbstractSegmenter):
             consecutive_frames.append(consecutive_frame)
         return (first_frame, *consecutive_frames)
 
-    def __functional_segmentation(self, message: UdsMessage) -> PacketsDefinitionTuple:
+    def __functional_segmentation(self, message: UdsMessage) -> PacketsTuple:
         """
         Segment functionally addressed diagnostic message.
 

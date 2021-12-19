@@ -2,17 +2,17 @@
 
 __all__ = ["AbstractPacketsQueue"]
 
-from typing import NoReturn, Optional
+from typing import NoReturn
 from abc import ABC, abstractmethod
 
-from uds.packet import PacketAlias
+from uds.packet import AbstractUdsPacketContainer
 
 
 class AbstractPacketsQueue(ABC):
     """Abstract definition of a queue with UDS packets."""
 
     @abstractmethod
-    def __init__(self, packet_class: Optional[type] = None) -> None:  # noqa: F841
+    def __init__(self, packet_class: type) -> None:  # noqa: F841
         """
         Create a queue for UDS packets storing.
 
@@ -56,7 +56,7 @@ class AbstractPacketsQueue(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_packet(self) -> PacketAlias:
+    async def get_packet(self) -> AbstractUdsPacketContainer:
         """
         Get the next packet from the queue.
 
@@ -64,7 +64,7 @@ class AbstractPacketsQueue(ABC):
         """
 
     @abstractmethod
-    async def put_packet(self, packet: PacketAlias) -> None:
+    async def put_packet(self, packet: AbstractUdsPacketContainer) -> None:
         """
         Add a packet to the queue.
 
