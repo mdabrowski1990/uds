@@ -33,16 +33,23 @@ class AbstractPacketsQueue(ABC):
 
     def __del__(self) -> NoReturn:
         """Delete the queue safely (make sure there are no hanging tasks)."""
-        raise NotImplementedError
+        raise NotImplementedError  # TODO
 
     def __len__(self) -> int:
         """Get the number of packets that are currently stored by the queue."""
         return self._async_queue.qsize()
 
     @property
-    @abstractmethod
     def _async_queue(self) -> Queue:
         """Asynchronous queue object behind this abstraction layer."""
+        return self.__async_queue
+
+    @_async_queue.setter
+    def _async_queue(self, value: Queue):
+        """Set asynchronous queue object."""
+        if not isinstance(value, Queue):
+            raise TypeError(f"Provided value is not Queue object. Actual type: {type(value)}")
+        self.__async_queue = value
 
     @property
     def packet_type(self) -> Type[AbstractUdsPacketContainer]:
@@ -67,11 +74,11 @@ class AbstractPacketsQueue(ABC):
 
     def block(self) -> None:
         """Block from putting new packets to the queue until all packets are gotten and processed."""
-        raise NotImplementedError
+        raise NotImplementedError  # TODO: rework?
 
     def clear(self) -> None:
         """Delete all packets stored by the queue."""
-        raise NotImplementedError
+        raise NotImplementedError  # TODO
 
     @abstractmethod
     async def get_packet(self) -> AbstractUdsPacketContainer:

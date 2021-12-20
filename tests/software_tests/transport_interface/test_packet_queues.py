@@ -1,7 +1,9 @@
 import pytest
 from mock import Mock, patch
 
+import datetime
 from uds.transport_interface.packet_queues import PacketsQueue, TimestampedPacketsQueue
+from uds.packet import AbstractUdsPacketContainer
 
 
 class TestTimestampedPacketsQueue:
@@ -77,17 +79,40 @@ class TestPacketsQueue:
 class TestTimestampedPacketsQueueIntegration:
     """Integration tests for `TimestampedPacketsQueue` class."""
 
+    def setup(self):
+        self.queue = TimestampedPacketsQueue(packet_type=AbstractUdsPacketContainer)
+
     # TODO: put_packet (None) and immediately get_packet
 
     # TODO: put_packet (in future) and await for get_packet
 
     # TODO: block (when awaited)
 
-    # TODO: clear
+    @pytest.mark.parametrize("packets", [
+        [(Mock(spec=AbstractUdsPacketContainer), None)],
+        [(Mock(spec=AbstractUdsPacketContainer), None),
+         (Mock(spec=AbstractUdsPacketContainer), datetime.datetime.now() + datetime.timedelta(seconds=23))],
+    ])
+    def test_clear(self, packets):
+        for packet, timestamp in packets:
+            self.queue.put_packet(packet=packet, timestamp=timestamp)
+        assert self.queue.is_empty() is False and len(self.queue) == len(packets)
+        self.queue.clear()
+        assert self.queue.is_empty() is True and len(self.queue) == 0
 
 
 class TestPacketsQueueIntegration:
     """Integration tests for `PacketsQueue` class."""
+
+    def setup(self):
+        self.queue = PacketsQueue(packet_type=AbstractUdsPacketContainer)
+
+    # @pytest.mark.parametrize("packet_type", [AbstractUdsPacketContainer, AbstractUdsPacket, AbstractUdsPacketRecord])
+    # def test_await_for_packet(self, packet_type):
+    #     packet = Mock(spec=packet_type)
+    #     queue = PacketsQueue(packet_type=packet_type)
+    #     queue.put_packet(packet)
+    #     future = queue.get_packet()
 
     # TODO: await for get_packet and put_packet
 
@@ -95,4 +120,13 @@ class TestPacketsQueueIntegration:
 
     # TODO: block (when awaited)
 
-    # TODO: clear
+    @pytest.mark.parametrize("packets", [
+        [Mock(spec=AbstractUdsPacketContainer)],
+        [Mock(spec=AbstractUdsPacketContainer)] * 10,
+    ])
+    def test_clear(self, packets):
+        for packet in packets:
+            self.queue.put_packet(packet=packet)
+        assert self.queue.is_empty() is False and len(self.queue) == len(packets)
+        self.queue.clear()
+        assert self.queue.is_empty() is True and len(self.queue) == 0

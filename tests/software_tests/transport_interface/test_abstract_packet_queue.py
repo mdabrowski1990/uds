@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock, Mock
 
 from uds.transport_interface.abstract_packet_queue import AbstractPacketsQueue, \
-    AbstractUdsPacketContainer
+    AbstractUdsPacketContainer, Queue
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage
 
@@ -41,6 +41,23 @@ class TestAbstractPacketsQueue:
     def test_len(self):
         assert AbstractPacketsQueue.__len__(self=self.mock_abstract_packets_queue) \
                == self.mock_abstract_packets_queue._async_queue.qsize.return_value
+
+    # _async_queue
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_async_queue__get(self, value):
+        self.mock_abstract_packets_queue._AbstractPacketsQueue__async_queue = value
+        assert AbstractPacketsQueue._async_queue.fget(self.mock_abstract_packets_queue) == value
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_async_queue__set__type_error(self, value):
+        with pytest.raises(TypeError):
+            AbstractPacketsQueue._async_queue.fset(self.mock_abstract_packets_queue, value)
+
+    @pytest.mark.parametrize("value", [Mock(spec=Queue)])
+    def test_async_queue__set(self, value):
+        AbstractPacketsQueue._async_queue.fset(self.mock_abstract_packets_queue, value)
+        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__async_queue == value
 
     # packet_type
 
