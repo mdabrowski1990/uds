@@ -2,8 +2,9 @@
 
 __all__ = ["AbstractPacketsQueue"]
 
-from typing import NoReturn
+from typing import NoReturn, Type
 from abc import ABC, abstractmethod
+from asyncio import Queue
 
 from uds.packet import AbstractUdsPacketContainer
 
@@ -12,16 +13,23 @@ class AbstractPacketsQueue(ABC):
     """Abstract definition of a queue with UDS packets."""
 
     @abstractmethod
-    def __init__(self, packet_class: type) -> None:  # noqa: F841
+    def __init__(self, packet_type: Type[AbstractUdsPacketContainer]) -> None:
         """
         Create a queue for UDS packets storing.
 
-        :param packet_class: A class of which all UDS packets in the queue shall be objects.
+        :param packet_type: A class of which all UDS packets in the queue shall be objects.
             This parameter is meant to support type restriction for packets objects that are managed by this queue.
             Leave None to use no restriction.
 
-        :raise TypeError: Provided packet_class argument is not None neither equal to a proper UDS Packet class.
+        :raise ValueError: Provided packet_class argument is not a type (class).
+        :raise TypeError: Provided packet_class argument is a class that defines UDS Packet type.
         """
+        if not isinstance(packet_type, type):
+            raise ValueError(f"Provided value is not a type (class). Actual value: {packet_type}")
+        if not issubclass(packet_type, AbstractUdsPacketContainer):
+            raise TypeError(f"Provided value is not a class that defines UDS Packet type. "
+                            f"Actual type: {type(packet_type)}")
+        self.__packet_type = packet_type
 
     def __del__(self) -> NoReturn:
         """Delete the queue safely (make sure there are no hanging tasks)."""
@@ -29,7 +37,17 @@ class AbstractPacketsQueue(ABC):
 
     def __len__(self) -> int:
         """Get the number of packets that are currently stored by the queue."""
-        raise NotImplementedError
+        return self._async_queue.qsize()
+
+    @property
+    @abstractmethod
+    def _async_queue(self) -> Queue:
+        """Asynchronous queue object behind this abstraction layer."""
+
+    @property
+    def packet_type(self) -> Type[AbstractUdsPacketContainer]:
+        """Type of UDS packets in the queue."""
+        return self.__packet_type
 
     def is_empty(self) -> bool:
         """
@@ -37,7 +55,7 @@ class AbstractPacketsQueue(ABC):
 
         :return: True if queue is empty (does not contain any packets), False otherwise.
         """
-        raise NotImplementedError
+        return len(self) == 0
 
     def mark_task_done(self) -> None:
         """
@@ -45,7 +63,7 @@ class AbstractPacketsQueue(ABC):
 
         This method is used for monitoring tasks, so they can be completed safely and closed quietly.
         """
-        raise NotImplementedError
+        self._async_queue.task_done()
 
     def block(self) -> None:
         """Block from putting new packets to the queue until all packets are gotten and processed."""

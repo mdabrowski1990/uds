@@ -19,7 +19,7 @@ CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
 
 
-class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
+class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # lgtm [py/conflicting-attributes]
     """
     Definition of a CAN packet Record.
 

@@ -2,7 +2,7 @@
 
 __all__ = ["PacketsQueue", "TimestampedPacketsQueue"]
 
-from typing import Optional
+from typing import Optional, Type
 
 from uds.utilities import TimeStamp
 from uds.packet import AbstractUdsPacketContainer
@@ -12,17 +12,17 @@ from .abstract_packet_queue import AbstractPacketsQueue
 class TimestampedPacketsQueue(AbstractPacketsQueue):
     """Priority queue with UDS packets ordered by packet's timestamp."""
 
-    def __init__(self, packet_class: type) -> None:  # noqa: F841
+    def __init__(self, packet_type: Type[AbstractUdsPacketContainer]) -> None:
         """
         Create a queue for storing UDS packets ordered by timestamp.
 
         .. note:: Packets from the queue become available when the timestamp is achieved.
 
-        :param packet_class: A class of which all UDS packets in the queue shall be objects.
+        :param packet_type: A class of which all UDS packets in the queue shall be objects.
             This parameter is meant to support type restriction for packets objects that are managed by this queue.
             Leave None to use no restriction.
         """
-        raise NotImplementedError
+        super().__init__(packet_type=packet_type)
 
     async def get_packet(self) -> AbstractUdsPacketContainer:
         """
@@ -35,7 +35,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         """
         raise NotImplementedError
 
-    async def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[TimeStamp] = None) -> None:  # noqa: F841
+    async def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[TimeStamp] = None) -> None:
         """
         Add a packet to the queue.
 
@@ -48,15 +48,15 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
 class PacketsQueue(AbstractPacketsQueue):
     """FIFO queue for UDS packets."""
 
-    def __init__(self, packet_class: type) -> None:  # noqa: F841
+    def __init__(self, packet_type: Type[AbstractUdsPacketContainer]) -> None:
         """
         Create a queue for storing UDS packets in FIFO order.
 
-        :param packet_class: A class of which all UDS packets in the queue shall be objects.
+        :param packet_type: A class of which all UDS packets in the queue shall be objects.
             This parameter is meant to support type restriction for packets objects that are managed by this queue.
             Leave None to use no restriction.
         """
-        raise NotImplementedError
+        super().__init__(packet_type=packet_type)
 
     async def get_packet(self) -> AbstractUdsPacketContainer:
         """
