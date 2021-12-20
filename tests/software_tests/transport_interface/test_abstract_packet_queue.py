@@ -77,4 +77,3 @@ class TestAbstractPacketsQueue:
     def test_get_clear(self):
         with pytest.raises(NotImplementedError):
             AbstractPacketsQueue.clear(self=self.mock_abstract_packets_queue)
-

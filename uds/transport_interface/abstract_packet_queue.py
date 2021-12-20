@@ -82,7 +82,7 @@ class AbstractPacketsQueue(ABC):
         """
 
     @abstractmethod
-    async def put_packet(self, packet: AbstractUdsPacketContainer) -> None:
+    def put_packet(self, packet: AbstractUdsPacketContainer) -> None:
         """
         Add a packet to the queue.
 

@@ -3,6 +3,7 @@
 __all__ = ["PacketsQueue", "TimestampedPacketsQueue"]
 
 from typing import Optional, Type
+from asyncio import Queue, PriorityQueue
 
 from uds.utilities import TimeStamp
 from uds.packet import AbstractUdsPacketContainer
@@ -23,6 +24,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
             Leave None to use no restriction.
         """
         super().__init__(packet_type=packet_type)
+        self._async_queue = PriorityQueue()  # TODO: create Queue (_async_queue)
 
     async def get_packet(self) -> AbstractUdsPacketContainer:
         """
@@ -35,7 +37,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         """
         raise NotImplementedError
 
-    async def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[TimeStamp] = None) -> None:
+    def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[TimeStamp] = None) -> None:  # TODO: resolve incompatibility
         """
         Add a packet to the queue.
 
@@ -57,6 +59,7 @@ class PacketsQueue(AbstractPacketsQueue):
             Leave None to use no restriction.
         """
         super().__init__(packet_type=packet_type)
+        self._async_queue = Queue()  # TODO: create Queue (_async_queue)
 
     async def get_packet(self) -> AbstractUdsPacketContainer:
         """
@@ -66,7 +69,7 @@ class PacketsQueue(AbstractPacketsQueue):
         """
         raise NotImplementedError
 
-    async def put_packet(self, packet: AbstractUdsPacketContainer) -> None:
+    def put_packet(self, packet: AbstractUdsPacketContainer) -> None:
         """
         Add a packet at the end of the queue.
 

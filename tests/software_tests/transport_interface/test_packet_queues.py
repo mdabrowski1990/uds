@@ -34,10 +34,9 @@ class TestTimestampedPacketsQueue:
 
     # put_packet
 
-    @pytest.mark.asyncio
-    async def test_put_packet(self):
+    def test_put_packet(self):
         with pytest.raises(NotImplementedError):
-            await TimestampedPacketsQueue.put_packet(self=self.mock_timestamped_packets_queue, packet=Mock())
+            TimestampedPacketsQueue.put_packet(self=self.mock_timestamped_packets_queue, packet=Mock())
 
 
 class TestPacketsQueue:
@@ -70,10 +69,9 @@ class TestPacketsQueue:
 
     # put_packet
 
-    @pytest.mark.asyncio
-    async def test_put_packet(self):
+    def test_put_packet(self):
         with pytest.raises(NotImplementedError):
-            await PacketsQueue.put_packet(self=self.mock_fifo_packets_queue, packet=Mock())
+            PacketsQueue.put_packet(self=self.mock_fifo_packets_queue, packet=Mock())
 
 
 class TestTimestampedPacketsQueueIntegration:
