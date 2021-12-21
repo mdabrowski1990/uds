@@ -16,16 +16,29 @@ class TestTimestampedPacketsQueue:
         # patching
         self._patcher_abstract_packets_queue_init = patch(f"{self.SCRIPT_LOCATION}.AbstractPacketsQueue.__init__")
         self.mock_abstract_packets_queue_init = self._patcher_abstract_packets_queue_init.start()
+        self._patcher_priority_queue_class = patch(f"{self.SCRIPT_LOCATION}.PriorityQueue")
+        self.mock_priority_queue_class = self._patcher_priority_queue_class.start()
 
     def teardown(self):
         self._patcher_abstract_packets_queue_init.stop()
+        self._patcher_priority_queue_class.stop()
 
     # __init__
 
     @pytest.mark.parametrize("packet_type", [Mock(), "something"])
     def test_init(self, packet_type):
         TimestampedPacketsQueue.__init__(self=self.mock_timestamped_packets_queue, packet_type=packet_type)
+        assert self.mock_timestamped_packets_queue._TimestampedPacketsQueue__async_queue \
+               == self.mock_priority_queue_class.return_value
         self.mock_abstract_packets_queue_init.assert_called_once_with(packet_type=packet_type)
+        self.mock_priority_queue_class.assert_called_once_with()
+
+    # _async_queue
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_async_queue__get(self, value):
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__async_queue = value
+        assert TimestampedPacketsQueue._async_queue.fget(self.mock_timestamped_packets_queue) == value
 
     # get_packet
 
@@ -51,16 +64,28 @@ class TestPacketsQueue:
         # patching
         self._patcher_abstract_packets_queue_init = patch(f"{self.SCRIPT_LOCATION}.AbstractPacketsQueue.__init__")
         self.mock_abstract_packets_queue_init = self._patcher_abstract_packets_queue_init.start()
+        self._patcher_queue_class = patch(f"{self.SCRIPT_LOCATION}.Queue")
+        self.mock_queue_class = self._patcher_queue_class.start()
 
     def teardown(self):
         self._patcher_abstract_packets_queue_init.stop()
+        self._patcher_queue_class.stop()
 
     # __init__
 
     @pytest.mark.parametrize("packet_type", [Mock(), "something"])
     def test_init(self, packet_type):
         PacketsQueue.__init__(self=self.mock_fifo_packets_queue, packet_type=packet_type)
+        assert self.mock_fifo_packets_queue._PacketsQueue__async_queue == self.mock_queue_class.return_value
         self.mock_abstract_packets_queue_init.assert_called_once_with(packet_type=packet_type)
+        self.mock_queue_class.assert_called_once_with()
+
+    # _async_queue
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_async_queue__get(self, value):
+        self.mock_fifo_packets_queue._PacketsQueue__async_queue = value
+        assert PacketsQueue._async_queue.fget(self.mock_fifo_packets_queue) == value
 
     # get_packet
 

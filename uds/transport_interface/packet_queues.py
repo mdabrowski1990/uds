@@ -24,7 +24,12 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
             Leave None to use no restriction.
         """
         super().__init__(packet_type=packet_type)
-        self._async_queue = PriorityQueue()  # TODO: create Queue (_async_queue)
+        self.__async_queue = PriorityQueue()
+
+    @property
+    def _async_queue(self) -> Queue:
+        """Asynchronous queue object behind this abstraction layer."""
+        return self.__async_queue
 
     async def get_packet(self) -> AbstractUdsPacketContainer:
         """
@@ -59,7 +64,12 @@ class PacketsQueue(AbstractPacketsQueue):
             Leave None to use no restriction.
         """
         super().__init__(packet_type=packet_type)
-        self._async_queue = Queue()  # TODO: create Queue (_async_queue)
+        self.__async_queue = Queue()
+
+    @property
+    def _async_queue(self) -> Queue:
+        """Asynchronous queue object behind this abstraction layer."""
+        return self.__async_queue
 
     async def get_packet(self) -> AbstractUdsPacketContainer:
         """

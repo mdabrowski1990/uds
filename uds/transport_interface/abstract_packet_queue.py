@@ -40,16 +40,9 @@ class AbstractPacketsQueue(ABC):
         return self._async_queue.qsize()
 
     @property
+    @abstractmethod
     def _async_queue(self) -> Queue:
         """Asynchronous queue object behind this abstraction layer."""
-        return self.__async_queue
-
-    @_async_queue.setter
-    def _async_queue(self, value: Queue):
-        """Set asynchronous queue object."""
-        if not isinstance(value, Queue):
-            raise TypeError(f"Provided value is not Queue object. Actual type: {type(value)}")
-        self.__async_queue = value
 
     @property
     def packet_type(self) -> Type[AbstractUdsPacketContainer]:
