@@ -1,8 +1,8 @@
 import pytest
-from mock import MagicMock, Mock
+from mock import MagicMock, Mock, AsyncMock
 
 from uds.transport_interface.abstract_packet_queue import AbstractPacketsQueue, \
-    AbstractUdsPacketContainer, Queue
+    AbstractUdsPacketContainer
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage
 
@@ -11,7 +11,10 @@ class TestAbstractPacketsQueue:
     """Unit tests for `AbstractPacketsQueue` class."""
 
     def setup(self):
-        self.mock_abstract_packets_queue = MagicMock(spec=AbstractPacketsQueue)
+        self.mock_abstract_packets_queue = MagicMock(spec=AbstractPacketsQueue,
+                                                     _async_queue=MagicMock(get=AsyncMock(),
+                                                                            put=AsyncMock(),
+                                                                            join=AsyncMock()))
 
     # __init__
 
@@ -21,43 +24,28 @@ class TestAbstractPacketsQueue:
         assert self.mock_abstract_packets_queue._AbstractPacketsQueue__packet_type == packet_type
 
     @pytest.mark.parametrize("packet_type", [None, Mock(spec=AbstractUdsPacketContainer)])
-    def test_init__value_error(self, packet_type):
-        with pytest.raises(ValueError):
+    def test_init__type_error(self, packet_type):
+        with pytest.raises(TypeError):
             AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type)
 
     @pytest.mark.parametrize("packet_type", [UdsMessage, type, int])
-    def test_init__type_error(self, packet_type):
-        with pytest.raises(TypeError):
+    def test_init__value_error(self, packet_type):
+        with pytest.raises(ValueError):
             AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type)
 
     # __del__
 
     def test_del(self):
-        with pytest.raises(NotImplementedError):
-            AbstractPacketsQueue.__del__(self=self.mock_abstract_packets_queue)
+        AbstractPacketsQueue.__del__(self=self.mock_abstract_packets_queue)
+        self.mock_abstract_packets_queue.clear.assert_called_once_with()
+        # TODO: await_handled through wait_for and run_coroutine_threadsafe
+        # TODO: del objects
 
     # __len__
 
     def test_len(self):
         assert AbstractPacketsQueue.__len__(self=self.mock_abstract_packets_queue) \
                == self.mock_abstract_packets_queue._async_queue.qsize.return_value
-
-    # _async_queue
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_async_queue__get(self, value):
-        self.mock_abstract_packets_queue._AbstractPacketsQueue__async_queue = value
-        assert AbstractPacketsQueue._async_queue.fget(self.mock_abstract_packets_queue) == value
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_async_queue__set__type_error(self, value):
-        with pytest.raises(TypeError):
-            AbstractPacketsQueue._async_queue.fset(self.mock_abstract_packets_queue, value)
-
-    @pytest.mark.parametrize("value", [Mock(spec=Queue)])
-    def test_async_queue__set(self, value):
-        AbstractPacketsQueue._async_queue.fset(self.mock_abstract_packets_queue, value)
-        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__async_queue == value
 
     # packet_type
 
@@ -94,3 +82,16 @@ class TestAbstractPacketsQueue:
     def test_get_clear(self):
         with pytest.raises(NotImplementedError):
             AbstractPacketsQueue.clear(self=self.mock_abstract_packets_queue)
+
+    # await_handled
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("block_new_packets", [True, False])
+    async def test_await_handled(self, block_new_packets):
+        await AbstractPacketsQueue.await_handled(self=self.mock_abstract_packets_queue,
+                                                 block_new_packets=block_new_packets)
+        self.mock_abstract_packets_queue._async_queue.join.assert_awaited_once_with()
+        if block_new_packets:
+            self.mock_abstract_packets_queue.block.assert_called_once_with()
+        else:
+            self.mock_abstract_packets_queue.block.assert_not_called()

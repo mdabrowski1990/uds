@@ -3,7 +3,7 @@
 __all__ = ["PacketsQueue", "TimestampedPacketsQueue"]
 
 from typing import Optional, Type
-from asyncio import Queue, PriorityQueue
+from asyncio import Queue, PriorityQueue, Event, wait, FIRST_COMPLETED
 
 from uds.utilities import TimeStamp
 from uds.packet import AbstractUdsPacketContainer
@@ -25,6 +25,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         """
         super().__init__(packet_type=packet_type)
         self.__async_queue = PriorityQueue()
+        # TODO: add flag whether new packet added - Event
 
     @property
     def _async_queue(self) -> Queue:
@@ -40,6 +41,9 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
 
         :return: The next packet in the queue.
         """
+        # TODO: use asyncio.wait to wait for the FIRST_COMPLETED, either:
+        #  - the lowest timestamp of a packet (in the queue) achieved (asyncio.sleep timestamp-datetime.now())
+        #  - a new packet was added to the queue
         raise NotImplementedError
 
     def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[TimeStamp] = None) -> None:  # TODO: resolve incompatibility
@@ -48,6 +52,8 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
 
         :param packet: A packet to add to the queue.
         :param timestamp: A moment of time that the packet become available in the queue.
+
+        :raise TypeError: Provided packet has unsupported type (inconsistent with packet_type attribute).
         """
         raise NotImplementedError
 
@@ -77,12 +83,18 @@ class PacketsQueue(AbstractPacketsQueue):
 
         :return: The next packet in the queue.
         """
-        raise NotImplementedError
+        return await self._async_queue.get()
 
     def put_packet(self, packet: AbstractUdsPacketContainer) -> None:
         """
         Add a packet at the end of the queue.
 
         :param packet: A packet to add to the queue.
+
+        :raise TypeError: Provided packet has unsupported type (inconsistent with packet_type attribute).
         """
-        raise NotImplementedError
+        if not isinstance(packet, self.packet_type):
+            raise TypeError(f"Provided packet value is not proper UDS Packet Type.  Expected type: {self.packet_type}. "
+                            f"Actual type: {type(packet)}.")
+        # TODO: check if blocked
+        self._async_queue.put_nowait(packet)

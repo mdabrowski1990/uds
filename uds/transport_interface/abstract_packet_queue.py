@@ -4,7 +4,7 @@ __all__ = ["AbstractPacketsQueue"]
 
 from typing import NoReturn, Type
 from abc import ABC, abstractmethod
-from asyncio import Queue
+from asyncio import Queue, gather, wait_for, run_coroutine_threadsafe, get_event_loop
 
 from uds.packet import AbstractUdsPacketContainer
 
@@ -21,19 +21,20 @@ class AbstractPacketsQueue(ABC):
             This parameter is meant to support type restriction for packets objects that are managed by this queue.
             Leave None to use no restriction.
 
-        :raise ValueError: Provided packet_class argument is not a type (class).
-        :raise TypeError: Provided packet_class argument is a class that defines UDS Packet type.
+        :raise TypeError: Provided packet_class argument is not a type (class).
+        :raise ValueError: Provided packet_class argument is a class that defines UDS Packet type.
         """
         if not isinstance(packet_type, type):
-            raise ValueError(f"Provided value is not a type (class). Actual value: {packet_type}")
+            raise TypeError(f"Provided value is not a type (class). Actual value: {packet_type}")
         if not issubclass(packet_type, AbstractUdsPacketContainer):
-            raise TypeError(f"Provided value is not a class that defines UDS Packet type. "
-                            f"Actual type: {type(packet_type)}")
+            raise ValueError(f"Provided value is not a class that defines UDS Packet type. "
+                             f"Actual type: {type(packet_type)}")
         self.__packet_type = packet_type
 
     def __del__(self) -> NoReturn:
         """Delete the queue safely (make sure there are no hanging tasks)."""
         raise NotImplementedError  # TODO
+        # TODO: run_coroutine_threadsafe(wait_for(self.await_handled))
 
     def __len__(self) -> int:
         """Get the number of packets that are currently stored by the queue."""
@@ -67,11 +68,21 @@ class AbstractPacketsQueue(ABC):
 
     def block(self) -> None:
         """Block from putting new packets to the queue until all packets are gotten and processed."""
-        raise NotImplementedError  # TODO: rework?
+        raise NotImplementedError  # TODO
 
     def clear(self) -> None:
         """Delete all packets stored by the queue."""
         raise NotImplementedError  # TODO
+
+    async def await_handled(self, block_new_packets: bool = False) -> None:
+        """
+        Wait until all packets are gotten and processed by the queue.
+
+        :param block_new_packets: Flag whether to block adding new packets to the queue.
+        """
+        if block_new_packets:
+            self.block()
+        await self._async_queue.join()
 
     @abstractmethod
     async def get_packet(self) -> AbstractUdsPacketContainer:
