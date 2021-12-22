@@ -12,7 +12,7 @@ class TestTimestampedPacketsQueue:
     SCRIPT_LOCATION = "uds.transport_interface.packet_queues"
 
     def setup(self):
-        self.mock_timestamped_packets_queue = Mock(spec=PacketsQueue,
+        self.mock_timestamped_packets_queue = Mock(spec=TimestampedPacketsQueue,
                                                    _async_queue=MagicMock(get=AsyncMock(),
                                                                           put=AsyncMock(),
                                                                           join=AsyncMock()))
@@ -98,7 +98,7 @@ class TestPacketsQueue:
     @pytest.mark.asyncio
     async def test_get_packet(self):
         packet = await PacketsQueue.get_packet(self=self.mock_fifo_packets_queue)
-        assert packet == self.mock_queue_class._async_queue.get.return_value
+        assert packet == self.mock_fifo_packets_queue._async_queue.get.return_value
 
     # put_packet
 
@@ -152,9 +152,9 @@ class TestTimestampedPacketsQueueIntegration:
     def test_clear(self, packets):
         for packet, timestamp in packets:
             self.queue.put_packet(packet=packet, timestamp=timestamp)
-        assert self.queue.is_empty() is False and len(self.queue) == len(packets)
+        assert self.queue.is_empty is False and len(self.queue) == len(packets)
         self.queue.clear()
-        assert self.queue.is_empty() is True and len(self.queue) == 0
+        assert self.queue.is_empty is True and len(self.queue) == 0
 
 
 class TestPacketsQueueIntegration:
@@ -163,10 +163,10 @@ class TestPacketsQueueIntegration:
     def setup(self):
         self.queue = PacketsQueue(packet_type=AbstractUdsPacketContainer)
 
-    # TODO: block (when awaited)
+    # TODO: put_when_blocked
 
     def test_empty(self):
-        assert self.queue.is_empty() is True
+        assert self.queue.is_empty is True
         assert len(self.queue) == 0
 
     @pytest.mark.asyncio
@@ -180,14 +180,14 @@ class TestPacketsQueueIntegration:
         for packet in packets:
             self.queue.put_packet(packet)
         # check packets number
-        assert self.queue.is_empty() is False
+        assert self.queue.is_empty is False
         assert len(self.queue) == len(packets)
         # get packets from queue
         for packet in packets:
             packet_from_queue = await self.queue.get_packet()
             assert packet_from_queue is packet
         # check packets number
-        assert self.queue.is_empty() is True
+        assert self.queue.is_empty is True
         assert len(self.queue) == 0
 
     @pytest.mark.parametrize("packets", [
@@ -197,8 +197,8 @@ class TestPacketsQueueIntegration:
     def test_clear(self, packets):
         for packet in packets:
             self.queue.put_packet(packet=packet)
-        assert self.queue.is_empty() is False
+        assert self.queue.is_empty is False
         assert len(self.queue) == len(packets)
         self.queue.clear()
-        assert self.queue.is_empty() is True
+        assert self.queue.is_empty is True
         assert len(self.queue) == 0
