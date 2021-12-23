@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock, Mock, AsyncMock, patch, call
 
 from uds.transport_interface.abstract_packet_queue import AbstractPacketsQueue, \
-    AbstractUdsPacketContainer
+    AbstractUdsPacketContainer, QueueEmpty
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage
 
@@ -17,14 +17,19 @@ class TestAbstractPacketsQueue:
                                                      _async_queue=MagicMock(get=AsyncMock(),
                                                                             put=AsyncMock(),
                                                                             join=AsyncMock()))
+        # patching
+        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
+
+    def teardown(self):
+        self._patcher_warn.stop()
 
     # __init__
 
     @pytest.mark.parametrize("packet_type", [AbstractUdsPacketContainer, AbstractUdsPacket, AbstractUdsPacketRecord])
     def test_init(self, packet_type):
-        AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type)
+        assert AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type) is None
         assert self.mock_abstract_packets_queue._AbstractPacketsQueue__packet_type == packet_type
-        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__is_blocked is False
 
     @pytest.mark.parametrize("packet_type", [None, Mock(spec=AbstractUdsPacketContainer)])
     def test_init__type_error(self, packet_type):
@@ -60,13 +65,6 @@ class TestAbstractPacketsQueue:
         self.mock_abstract_packets_queue.__len__.return_value = len_value
         assert AbstractPacketsQueue.is_empty.fget(self.mock_abstract_packets_queue) is False
 
-    # is_blocked
-
-    @pytest.mark.parametrize("value", [True, False])
-    def test_is_blocked(self, value):
-        self.mock_abstract_packets_queue._AbstractPacketsQueue__is_blocked = value
-        assert AbstractPacketsQueue.is_blocked.fget(self.mock_abstract_packets_queue) == value
-
     # mark_task_done
 
     def test_mark_task_done__value_error(self):
@@ -82,41 +80,50 @@ class TestAbstractPacketsQueue:
         self.mock_abstract_packets_queue._async_queue.task_done.assert_called_once_with()
         assert self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks == unfinished_tasks_number - 1
 
-    # block
-
-    def test_block__empty(self):
-        self.mock_abstract_packets_queue.is_empty = True
-        AbstractPacketsQueue.block(self=self.mock_abstract_packets_queue)
-        with pytest.raises(AttributeError):  # value not set
-            self.mock_abstract_packets_queue._AbstractPacketsQueue__is_blocked
-
-    def test_block__nonempty(self):
-        self.mock_abstract_packets_queue.is_empty = False
-        AbstractPacketsQueue.block(self=self.mock_abstract_packets_queue)
-        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__is_blocked is True
-
     # clear
 
     @pytest.mark.parametrize("packets_number", [0, 1, 99])
     @patch(f"{SCRIPT_LOCATION}.len")
     def test_clear(self, mock_len, packets_number):
         mock_len.return_value = packets_number
-        AbstractPacketsQueue.clear(self=self.mock_abstract_packets_queue)
+        assert AbstractPacketsQueue.clear(self=self.mock_abstract_packets_queue) is None
         mock_len.assert_called_once_with(self.mock_abstract_packets_queue)
-        self.mock_abstract_packets_queue.block.assert_called_once_with()
         self.mock_abstract_packets_queue._async_queue.get_nowait.assert_has_calls([call()] * packets_number)
         self.mock_abstract_packets_queue.mark_task_done.assert_has_calls([call()] * packets_number)
-        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__is_blocked is False
+
+    @pytest.mark.parametrize("packets_number", [1, 99])
+    @patch(f"{SCRIPT_LOCATION}.len")
+    def test_clear__queue_empty(self, mock_len, packets_number):
+        mock_len.return_value = packets_number
+        self.mock_abstract_packets_queue._async_queue.get_nowait.side_effect = QueueEmpty
+        assert AbstractPacketsQueue.clear(self=self.mock_abstract_packets_queue) is None
+        self.mock_abstract_packets_queue._async_queue.get_nowait.assert_called_once()
+        self.mock_warn.assert_called_once()
+        self.mock_abstract_packets_queue.mark_task_done.assert_not_called()
 
     # await_handled
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("block_new_packets", [True, False])
-    async def test_await_handled(self, block_new_packets):
-        await AbstractPacketsQueue.await_handled(self=self.mock_abstract_packets_queue,
-                                                 block_new_packets=block_new_packets)
+    async def test_await_handled(self):
+        assert await AbstractPacketsQueue.await_handled(self=self.mock_abstract_packets_queue) is None
         self.mock_abstract_packets_queue._async_queue.join.assert_awaited_once_with()
-        if block_new_packets:
-            self.mock_abstract_packets_queue.block.assert_called_once_with()
-        else:
-            self.mock_abstract_packets_queue.block.assert_not_called()
+
+    # put_packet
+
+    @pytest.mark.parametrize("packet", ["some packet", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_put_packet__type_error(self, mock_isinstance, packet):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractPacketsQueue.put_packet(self=self.mock_abstract_packets_queue, packet=packet)
+        mock_isinstance.assert_called_once_with(packet, self.mock_abstract_packets_queue.packet_type)
+
+    @pytest.mark.parametrize("packet", ["some packet", Mock()])
+    @pytest.mark.parametrize("unfinished_tasks", [0, 1, 99])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_put_packet(self, mock_isinstance, packet, unfinished_tasks):
+        mock_isinstance.return_value = True
+        self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks = unfinished_tasks
+        assert AbstractPacketsQueue.put_packet(self=self.mock_abstract_packets_queue, packet=packet) is None
+        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks == unfinished_tasks + 1
+        mock_isinstance.assert_called_once_with(packet, self.mock_abstract_packets_queue.packet_type)

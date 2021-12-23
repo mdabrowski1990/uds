@@ -70,11 +70,14 @@ class TestPacketsQueue:
         # patching
         self._patcher_abstract_packets_queue_init = patch(f"{self.SCRIPT_LOCATION}.AbstractPacketsQueue.__init__")
         self.mock_abstract_packets_queue_init = self._patcher_abstract_packets_queue_init.start()
+        self._patcher_abstract_packets_queue_put_packet = patch(f"{self.SCRIPT_LOCATION}.AbstractPacketsQueue.put_packet")
+        self.mock_abstract_packets_queue_put_packet = self._patcher_abstract_packets_queue_put_packet.start()
         self._patcher_queue_class = patch(f"{self.SCRIPT_LOCATION}.Queue")
         self.mock_queue_class = self._patcher_queue_class.start()
 
     def teardown(self):
         self._patcher_abstract_packets_queue_init.stop()
+        self._patcher_abstract_packets_queue_put_packet.stop()
         self._patcher_queue_class.stop()
 
     # __init__
@@ -102,21 +105,11 @@ class TestPacketsQueue:
 
     # put_packet
 
-    @pytest.mark.parametrize("packet", [Mock(), "not a packet"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_put_packet__type_error(self, mock_isinstance, packet):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            PacketsQueue.put_packet(self=self.mock_fifo_packets_queue, packet=packet)
-        mock_isinstance.assert_called_once_with(packet, self.mock_fifo_packets_queue.packet_type)
-
     @pytest.mark.parametrize("packet", [Mock(), "a packet"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_put_packet(self, mock_isinstance, packet):
-        mock_isinstance.return_value = True
+    def test_put_packet(self, packet):
         assert PacketsQueue.put_packet(self=self.mock_fifo_packets_queue, packet=packet) is None
+        self.mock_abstract_packets_queue_put_packet.assert_called_once_with(packet=packet)
         self.mock_fifo_packets_queue._async_queue.put_nowait.assert_called_once_with(packet)
-        mock_isinstance.assert_called_once_with(packet, self.mock_fifo_packets_queue.packet_type)
 
 
 class TestTimestampedPacketsQueueIntegration:
@@ -128,8 +121,6 @@ class TestTimestampedPacketsQueueIntegration:
     # TODO: put_packet (None) and immediately get_packet
 
     # TODO: put_packet (in future) and await for get_packet
-
-    # TODO: block (when awaited)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("packets", [
@@ -163,7 +154,7 @@ class TestPacketsQueueIntegration:
     def setup(self):
         self.queue = PacketsQueue(packet_type=AbstractUdsPacketContainer)
 
-    # TODO: put_when_blocked
+    # tests
 
     def test_empty(self):
         assert self.queue.is_empty is True

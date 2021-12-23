@@ -93,8 +93,5 @@ class PacketsQueue(AbstractPacketsQueue):
 
         :raise TypeError: Provided packet has unsupported type (inconsistent with packet_type attribute).
         """
-        if not isinstance(packet, self.packet_type):
-            raise TypeError(f"Provided packet value is not proper UDS Packet Type.  Expected type: {self.packet_type}. "
-                            f"Actual type: {type(packet)}.")
-        # TODO: check if blocked
+        super().put_packet(packet=packet)
         self._async_queue.put_nowait(packet)

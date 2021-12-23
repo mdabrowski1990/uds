@@ -4,7 +4,8 @@ __all__ = ["AbstractPacketsQueue"]
 
 from typing import Type
 from abc import ABC, abstractmethod
-from asyncio import Queue
+from asyncio import Queue, QueueEmpty
+from warnings import warn
 
 from uds.packet import AbstractUdsPacketContainer
 
@@ -30,7 +31,6 @@ class AbstractPacketsQueue(ABC):
             raise ValueError(f"Provided value is not a class that defines UDS Packet type. "
                              f"Actual type: {type(packet_type)}")
         self.__packet_type = packet_type
-        self.__is_blocked: bool = False
         self.__unfinished_tasks: int = 0
 
     def __len__(self) -> int:
@@ -52,11 +52,6 @@ class AbstractPacketsQueue(ABC):
         """True if queue is empty (does not contain any packets), False otherwise."""
         return len(self) == 0
 
-    @property
-    def is_blocked(self) -> bool:
-        """True if queue is blocked from adding new items, False otherwise."""
-        return self.__is_blocked
-
     def mark_task_done(self) -> None:
         """
         Inform that a task related to one queue's packet was completed.
@@ -66,31 +61,24 @@ class AbstractPacketsQueue(ABC):
         :raise ValueError: The method was called more times than there were packets got.
         """
         if self.__unfinished_tasks <= 0:
-            raise ValueError
+            raise ValueError("More tasks were marked as done than packets were gotten from the queue.")
         self.__unfinished_tasks -= 1
         self._async_queue.task_done()
 
-    def block(self) -> None:
-        """Block from putting new packets to the queue until all packets are gotten and processed."""
-        if not self.is_empty:
-            self.__is_blocked = True
-
     def clear(self) -> None:
         """Delete all packets stored by the queue."""
-        self.block()
         for _ in range(len(self)):
-            self._async_queue.get_nowait()
-            self.mark_task_done()
-        self.__is_blocked = False
+            try:
+                self._async_queue.get_nowait()
+            except QueueEmpty:
+                warn(message=f"At least one packet was gotten from {self} queue during the clearing.",
+                     category=RuntimeWarning)
+                break
+            else:
+                self.mark_task_done()
 
-    async def await_handled(self, block_new_packets: bool = False) -> None:
-        """
-        Wait until all packets are gotten and processed by the queue.
-
-        :param block_new_packets: Flag whether to block adding new packets to the queue.
-        """
-        if block_new_packets:
-            self.block()
+    async def await_handled(self) -> None:
+        """Wait until all packets are gotten and processed by the queue."""
         await self._async_queue.join()
 
     @abstractmethod
@@ -107,4 +95,10 @@ class AbstractPacketsQueue(ABC):
         Add a packet to the queue.
 
         :param packet: A packet to add to the queue.
+
+        :raise TypeError: Provided packet is not a packet of expected type.
         """
+        if not isinstance(packet, self.packet_type):
+            raise TypeError(f"Provided packet has unexpected type. Expected: {self.packet_type}. "
+                            f"Actual type: {type(packet)}")
+        self.__unfinished_tasks += 1
