@@ -2,10 +2,10 @@
 
 __all__ = ["PacketsQueue", "TimestampedPacketsQueue"]
 
-from typing import Optional, Type
+from typing import Optional, Type, Set
 from asyncio import Queue, PriorityQueue, Event, wait, FIRST_COMPLETED
+from time import perf_counter
 
-from uds.utilities import TimeStamp
 from uds.packet import AbstractUdsPacketContainer
 from .abstract_packet_queue import AbstractPacketsQueue
 
@@ -24,8 +24,11 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
             Leave None to use no restriction.
         """
         super().__init__(packet_type=packet_type)
-        self.__async_queue = PriorityQueue()
-        # TODO: add flag whether new packet added - Event
+        self.__async_queue: PriorityQueue = PriorityQueue()
+        self.__event_packet_added: Event = Event()
+        self.__event_timestamp_achieved: Event = Event()
+        # TODO: add container for timestamps
+        # TODO: add task / async method that waits for the timestamp and set the flag
 
     @property
     def _async_queue(self) -> Queue:
@@ -41,21 +44,29 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
 
         :return: The next packet in the queue.
         """
-        # TODO: use asyncio.wait to wait for the FIRST_COMPLETED, either:
-        #  - the lowest timestamp of a packet (in the queue) achieved (asyncio.sleep timestamp-datetime.now())
-        #  - a new packet was added to the queue
+        # TODO: __event_packet_added cleared
+        # use asyncio.wait to wait for the FIRST_COMPLETED, either __event_packet_added or __event_timestamp_achieved
+        # if __event_timestamp_achieved -> return packet
+        # if __event_packet_added -> run
         raise NotImplementedError
 
-    def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[TimeStamp] = None) -> None:  # TODO: resolve incompatibility
+    def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[float] = None) -> None:
         """
         Add a packet to the queue.
 
         :param packet: A packet to add to the queue.
-        :param timestamp: A moment of time that the packet become available in the queue.
+        :param timestamp: Timestamp value (from perf_counter) when make the packet available (gettable) in the queue.
 
-        :raise TypeError: Provided packet has unsupported type (inconsistent with packet_type attribute).
+        :raise TypeError: Provided timestamp value has unexpected type.
         """
-        raise NotImplementedError
+        if timestamp is None:
+            timestamp = perf_counter()
+        elif not isinstance(timestamp, float):
+            raise TypeError(f"Provided value of timestamp is not float (perf_counter) value. "
+                            f"Actual type: {type(timestamp)}")
+        super().put_packet(packet=packet)
+        self._async_queue.put_nowait((timestamp, packet))
+        # TODO: __event_packet_added set
 
 
 class PacketsQueue(AbstractPacketsQueue):
@@ -70,7 +81,7 @@ class PacketsQueue(AbstractPacketsQueue):
             Leave None to use no restriction.
         """
         super().__init__(packet_type=packet_type)
-        self.__async_queue = Queue()
+        self.__async_queue: Queue = Queue()
 
     @property
     def _async_queue(self) -> Queue:
@@ -90,8 +101,6 @@ class PacketsQueue(AbstractPacketsQueue):
         Add a packet at the end of the queue.
 
         :param packet: A packet to add to the queue.
-
-        :raise TypeError: Provided packet has unsupported type (inconsistent with packet_type attribute).
         """
         super().put_packet(packet=packet)
         self._async_queue.put_nowait(packet)

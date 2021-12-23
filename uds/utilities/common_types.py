@@ -2,7 +2,7 @@
 
 __all__ = ["Nibble", "RawByte", "RawBytes", "RawBytesTuple", "RawBytesList", "RawBytesSet",
            "validate_nibble", "validate_raw_byte", "validate_raw_bytes",
-           "TimeMilliseconds", "TimeStamp"]
+           "TimeMilliseconds"]
 
 from typing import Union, Tuple, List, Set, Any
 from datetime import datetime
@@ -22,8 +22,6 @@ RawBytes = Union[RawBytesTuple, RawBytesList, bytearray]
 """Alias of a sequence filled with byte values."""
 TimeMilliseconds = Union[int, float]
 """Alias of a time value in milliseconds."""
-TimeStamp = datetime
-"""Alias of a `timestamp <https://en.wikipedia.org/wiki/Timestamp>`_ value."""
 
 
 def validate_nibble(value: Any) -> None:

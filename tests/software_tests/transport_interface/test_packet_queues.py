@@ -1,7 +1,8 @@
 import pytest
 from mock import Mock, MagicMock, AsyncMock, patch
 
-import datetime
+from time import perf_counter
+
 from uds.transport_interface.packet_queues import PacketsQueue, TimestampedPacketsQueue
 from uds.packet import AbstractUdsPacketContainer
 
@@ -19,12 +20,18 @@ class TestTimestampedPacketsQueue:
         # patching
         self._patcher_abstract_packets_queue_init = patch(f"{self.SCRIPT_LOCATION}.AbstractPacketsQueue.__init__")
         self.mock_abstract_packets_queue_init = self._patcher_abstract_packets_queue_init.start()
+        self._patcher_abstract_packets_queue_put_packet = patch(f"{self.SCRIPT_LOCATION}.AbstractPacketsQueue.put_packet")
+        self.mock_abstract_packets_queue_put_packet = self._patcher_abstract_packets_queue_put_packet.start()
         self._patcher_priority_queue_class = patch(f"{self.SCRIPT_LOCATION}.PriorityQueue")
         self.mock_priority_queue_class = self._patcher_priority_queue_class.start()
+        self._patcher_perf_counter = patch(f"{self.SCRIPT_LOCATION}.perf_counter")
+        self.mock_perf_counter = self._patcher_perf_counter.start()
 
     def teardown(self):
         self._patcher_abstract_packets_queue_init.stop()
+        self._patcher_abstract_packets_queue_put_packet.stop()
         self._patcher_priority_queue_class.stop()
+        self._patcher_perf_counter.stop()
 
     # __init__
 
@@ -52,9 +59,38 @@ class TestTimestampedPacketsQueue:
 
     # put_packet
 
-    def test_put_packet(self):
-        with pytest.raises(NotImplementedError):
-            TimestampedPacketsQueue.put_packet(self=self.mock_timestamped_packets_queue, packet=Mock())
+    @pytest.mark.parametrize("packet", [Mock(), "a packet"])
+    def test_put_packet__without_timestamp(self, packet):
+        assert TimestampedPacketsQueue.put_packet(self=self.mock_timestamped_packets_queue, packet=packet) is None
+        self.mock_abstract_packets_queue_put_packet.assert_called_once_with(packet=packet)
+        self.mock_timestamped_packets_queue._async_queue.put_nowait.assert_called_once_with(
+            (self.mock_perf_counter.return_value, packet))
+        self.mock_perf_counter.assert_called_once_with()
+
+    @pytest.mark.parametrize("packet", [Mock(), "a packet"])
+    @pytest.mark.parametrize("timestamp", [Mock(), "something"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_put_packet__type_error(self, mock_isinstance, packet, timestamp):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            TimestampedPacketsQueue.put_packet(self=self.mock_timestamped_packets_queue,
+                                               packet=packet,
+                                               timestamp=timestamp)
+        mock_isinstance.assert_called_once_with(timestamp, float)
+        self.mock_abstract_packets_queue_put_packet.assert_not_called()
+        self.mock_timestamped_packets_queue._async_queue.put_nowait.assert_not_called()
+
+    @pytest.mark.parametrize("packet", [Mock(), "a packet"])
+    @pytest.mark.parametrize("timestamp", [Mock(), "something"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_put_packet__with_timestamp(self, mock_isinstance, packet, timestamp):
+        mock_isinstance.return_value = True
+        assert TimestampedPacketsQueue.put_packet(self=self.mock_timestamped_packets_queue,
+                                                  packet=packet,
+                                                  timestamp=timestamp) is None
+        mock_isinstance.assert_called_once_with(timestamp, float)
+        self.mock_abstract_packets_queue_put_packet.assert_called_once_with(packet=packet)
+        self.mock_timestamped_packets_queue._async_queue.put_nowait.assert_called_once_with((timestamp, packet))
 
 
 class TestPacketsQueue:
@@ -115,12 +151,10 @@ class TestPacketsQueue:
 class TestTimestampedPacketsQueueIntegration:
     """Integration tests for `TimestampedPacketsQueue` class."""
 
+    ACCURACY = 0.000001
+
     def setup(self):
         self.queue = TimestampedPacketsQueue(packet_type=AbstractUdsPacketContainer)
-
-    # TODO: put_packet (None) and immediately get_packet
-
-    # TODO: put_packet (in future) and await for get_packet
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("packets", [
@@ -128,17 +162,34 @@ class TestTimestampedPacketsQueueIntegration:
         [Mock(spec=AbstractUdsPacketContainer), Mock(spec=AbstractUdsPacketContainer),
          Mock(spec=AbstractUdsPacketContainer), Mock(spec=AbstractUdsPacketContainer)]
     ])
-    async def test_put_get_packets(self, packets):
+    async def test_put_get_packets__without_timestamp(self, packets):
         for packet in packets:
             self.queue.put_packet(packet)
         for packet in packets:
             packet_from_queue = await self.queue.get_packet()
             assert packet_from_queue is packet
 
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("packets_with_timestamp", [
+        [(perf_counter() + 20/1000, Mock(spec=AbstractUdsPacketContainer))],
+        [(perf_counter() + 1, Mock(spec=AbstractUdsPacketContainer)),
+         (perf_counter() + 613/1000, Mock(spec=AbstractUdsPacketContainer)),
+         (perf_counter() + 10/1000, Mock(spec=AbstractUdsPacketContainer)),
+         (perf_counter() + 955/1000, Mock(spec=AbstractUdsPacketContainer))]
+    ])
+    async def test_put_get_packets__with_timestamp(self, packets_with_timestamp):
+        for timestamp, packet in packets_with_timestamp:
+            self.queue.put_packet(packet=packet, timestamp=timestamp)
+        for timestamp, packet in sorted(packets_with_timestamp):
+            packet_from_queue = await self.queue.get_packet()
+            assert packet_from_queue is packet
+            now = perf_counter()
+            assert now - self.ACCURACY <= timestamp <= now + self.ACCURACY
+
     @pytest.mark.parametrize("packets", [
         [(Mock(spec=AbstractUdsPacketContainer), None)],
         [(Mock(spec=AbstractUdsPacketContainer), None),
-         (Mock(spec=AbstractUdsPacketContainer), datetime.datetime.now() + datetime.timedelta(seconds=23))],
+         (Mock(spec=AbstractUdsPacketContainer), perf_counter() + 23.123)],
     ])
     def test_clear(self, packets):
         for packet, timestamp in packets:

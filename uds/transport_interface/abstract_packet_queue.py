@@ -49,7 +49,7 @@ class AbstractPacketsQueue(ABC):
 
     @property
     def is_empty(self) -> bool:
-        """True if queue is empty (does not contain any packets), False otherwise."""
+        """Flag whether the queue is empty (does not contain any packets)."""
         return len(self) == 0
 
     def mark_task_done(self) -> None:
