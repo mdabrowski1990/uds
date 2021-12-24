@@ -3,7 +3,7 @@
 __all__ = ["PacketsQueue", "TimestampedPacketsQueue"]
 
 from typing import Optional, Type, Set
-from asyncio import Queue, PriorityQueue, Event, wait, FIRST_COMPLETED
+from asyncio import Queue, PriorityQueue, Event, wait_for
 from time import perf_counter
 
 from uds.packet import AbstractUdsPacketContainer
@@ -26,14 +26,19 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         super().__init__(packet_type=packet_type)
         self.__async_queue: PriorityQueue = PriorityQueue()
         self.__event_packet_added: Event = Event()
-        self.__event_timestamp_achieved: Event = Event()
-        # TODO: add container for timestamps
-        # TODO: add task / async method that waits for the timestamp and set the flag
+        self.__timestamps: Set[float] = set()
 
     @property
     def _async_queue(self) -> Queue:
         """Asynchronous queue object behind this abstraction layer."""
         return self.__async_queue
+
+    async def __await_lowest_timestamp(self) -> None:
+        # TODO: consider such function to make things easier
+        min_timestamp = min(self.__timestamps)
+        current_time = perf_counter()
+        if current_time < min_timestamp:
+            ...
 
     async def get_packet(self) -> AbstractUdsPacketContainer:
         """
@@ -44,11 +49,21 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
 
         :return: The next packet in the queue.
         """
-        # TODO: __event_packet_added cleared
-        # use asyncio.wait to wait for the FIRST_COMPLETED, either __event_packet_added or __event_timestamp_achieved
-        # if __event_timestamp_achieved -> return packet
-        # if __event_packet_added -> run
-        raise NotImplementedError
+        # TODO: simplify and refactor this
+        self.__event_packet_added.clear()
+        if self.is_empty:
+            await self.__event_packet_added.wait()
+            return await self.get_packet()
+        min_timestamp = min(self.__timestamps)
+        current_time = perf_counter()
+        if current_time >= min_timestamp:
+            self.__timestamps.remove(min_timestamp)
+            return self._async_queue.get_nowait()
+        try:
+            await wait_for(fut=self.__event_packet_added.wait(), timeout=min_timestamp-current_time)
+        except TimeoutError:
+            self.__timestamps.remove(min_timestamp)
+            return self._async_queue.get_nowait()
 
     def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[float] = None) -> None:
         """
@@ -66,7 +81,8 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
                             f"Actual type: {type(timestamp)}")
         super().put_packet(packet=packet)
         self._async_queue.put_nowait((timestamp, packet))
-        # TODO: __event_packet_added set
+        self.__timestamps.add(timestamp)
+        self.__event_packet_added.set()
 
 
 class PacketsQueue(AbstractPacketsQueue):

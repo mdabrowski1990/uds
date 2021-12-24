@@ -2,8 +2,10 @@ import pytest
 from mock import Mock, MagicMock, AsyncMock, patch
 
 from time import perf_counter
+from copy import deepcopy
 
-from uds.transport_interface.packet_queues import PacketsQueue, TimestampedPacketsQueue
+from uds.transport_interface.packet_queues import PacketsQueue, TimestampedPacketsQueue, \
+    Event, PriorityQueue, Queue
 from uds.packet import AbstractUdsPacketContainer
 
 
@@ -14,7 +16,11 @@ class TestTimestampedPacketsQueue:
 
     def setup(self):
         self.mock_timestamped_packets_queue = Mock(spec=TimestampedPacketsQueue,
-                                                   _async_queue=MagicMock(get=AsyncMock(),
+                                                   _TimestampedPacketsQueue__timestamps=MagicMock(spec=set),
+                                                   _TimestampedPacketsQueue__event_packet_added=MagicMock(spec=Event,
+                                                                                                          wait=AsyncMock()),
+                                                   _async_queue=MagicMock(spec=PriorityQueue,
+                                                                          get=AsyncMock(),
                                                                           put=AsyncMock(),
                                                                           join=AsyncMock()))
         # patching
@@ -24,6 +30,8 @@ class TestTimestampedPacketsQueue:
         self.mock_abstract_packets_queue_put_packet = self._patcher_abstract_packets_queue_put_packet.start()
         self._patcher_priority_queue_class = patch(f"{self.SCRIPT_LOCATION}.PriorityQueue")
         self.mock_priority_queue_class = self._patcher_priority_queue_class.start()
+        self._patcher_event_class = patch(f"{self.SCRIPT_LOCATION}.Event")
+        self.mock_event_class = self._patcher_event_class.start()
         self._patcher_perf_counter = patch(f"{self.SCRIPT_LOCATION}.perf_counter")
         self.mock_perf_counter = self._patcher_perf_counter.start()
 
@@ -31,6 +39,7 @@ class TestTimestampedPacketsQueue:
         self._patcher_abstract_packets_queue_init.stop()
         self._patcher_abstract_packets_queue_put_packet.stop()
         self._patcher_priority_queue_class.stop()
+        self._patcher_event_class.stop()
         self._patcher_perf_counter.stop()
 
     # __init__
@@ -40,6 +49,9 @@ class TestTimestampedPacketsQueue:
         TimestampedPacketsQueue.__init__(self=self.mock_timestamped_packets_queue, packet_type=packet_type)
         assert self.mock_timestamped_packets_queue._TimestampedPacketsQueue__async_queue \
                == self.mock_priority_queue_class.return_value
+        assert self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added \
+               == self.mock_event_class.return_value
+        assert self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps == set()
         self.mock_abstract_packets_queue_init.assert_called_once_with(packet_type=packet_type)
         self.mock_priority_queue_class.assert_called_once_with()
 
@@ -52,20 +64,74 @@ class TestTimestampedPacketsQueue:
 
     # get_packet
 
+    # TODO: update these test case
+
     @pytest.mark.asyncio
-    async def test_get_packet(self):
-        with pytest.raises(NotImplementedError):
-            await TimestampedPacketsQueue.get_packet(self=self.mock_timestamped_packets_queue)
+    @pytest.mark.parametrize("current_timestamp, timestamps", [
+        (0, {0, 0.1}),
+        (100, {43.123, 102, 150})
+    ])
+    async def test_get_packet__return_packet(self, current_timestamp, timestamps):
+        self.mock_timestamped_packets_queue.is_empty = False
+        self.mock_perf_counter.return_value = current_timestamp
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps = deepcopy(timestamps)
+        assert await TimestampedPacketsQueue.get_packet(self=self.mock_timestamped_packets_queue) \
+               == self.mock_timestamped_packets_queue._async_queue.get_nowait.return_value
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.clear.assert_called_once_with()
+        self.mock_perf_counter.assert_called_once_with()
+        assert self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps \
+               == timestamps.difference({min(timestamps)})
+
+    @pytest.mark.asyncio
+    async def test_get_packet__await_packet(self):
+        self.mock_timestamped_packets_queue.is_empty = True
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps = set()
+        assert await TimestampedPacketsQueue.get_packet(self=self.mock_timestamped_packets_queue) \
+               == self.mock_timestamped_packets_queue.get_packet.return_value
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.clear.assert_called_once_with()
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.wait.assert_awaited_once_with()
+
+    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio
+    # @pytest.mark.parametrize("current_timestamp, timestamps", [
+    #     (0, {1, 0.1}),
+    #     (100, {983221, 102, 150})
+    # ])
+    # async def test_get_packet__await_timestamp__no_event(self, current_timestamp, timestamps):
+    #     self.mock_timestamped_packets_queue.is_empty = False
+    #     self.mock_perf_counter.return_value = current_timestamp
+    #     self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps = deepcopy(timestamps)
+    #     assert await TimestampedPacketsQueue.get_packet(self=self.mock_timestamped_packets_queue) \
+    #            == self.mock_timestamped_packets_queue.get_packet.return_value
+    #     self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.clear.assert_called_once_with()
+    #     self.mock_perf_counter.assert_called_once_with()
+    #
+    # @pytest.mark.asyncio
+    # @pytest.mark.asyncio
+    # @pytest.mark.parametrize("current_timestamp, timestamps", [
+    #     (0, {1, 0.1}),
+    #     (100, {983221, 102, 150})
+    # ])
+    # async def test_get_packet__await_timestamp__event(self, current_timestamp, timestamps):
+    #     self.mock_timestamped_packets_queue.is_empty = False
+    #     self.mock_perf_counter.return_value = current_timestamp
+    #     self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps = deepcopy(timestamps)
+    #     assert await TimestampedPacketsQueue.get_packet(self=self.mock_timestamped_packets_queue) == ??
+    #     self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.clear.assert_called_once_with()
+    #     self.mock_perf_counter.assert_called_once_with()
 
     # put_packet
 
     @pytest.mark.parametrize("packet", [Mock(), "a packet"])
-    def test_put_packet__without_timestamp(self, packet):
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_put_packet__without_timestamp(self, mock_isinstance, packet):
+        timestamp = self.mock_perf_counter.return_value
         assert TimestampedPacketsQueue.put_packet(self=self.mock_timestamped_packets_queue, packet=packet) is None
+        mock_isinstance.assert_not_called()
         self.mock_abstract_packets_queue_put_packet.assert_called_once_with(packet=packet)
-        self.mock_timestamped_packets_queue._async_queue.put_nowait.assert_called_once_with(
-            (self.mock_perf_counter.return_value, packet))
-        self.mock_perf_counter.assert_called_once_with()
+        self.mock_timestamped_packets_queue._async_queue.put_nowait.assert_called_once_with((timestamp, packet))
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps.add.assert_called_once_with(timestamp)
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.set.assert_called_once_with()
 
     @pytest.mark.parametrize("packet", [Mock(), "a packet"])
     @pytest.mark.parametrize("timestamp", [Mock(), "something"])
@@ -79,6 +145,8 @@ class TestTimestampedPacketsQueue:
         mock_isinstance.assert_called_once_with(timestamp, float)
         self.mock_abstract_packets_queue_put_packet.assert_not_called()
         self.mock_timestamped_packets_queue._async_queue.put_nowait.assert_not_called()
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps.add.assert_not_called()
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.set.assert_not_called()
 
     @pytest.mark.parametrize("packet", [Mock(), "a packet"])
     @pytest.mark.parametrize("timestamp", [Mock(), "something"])
@@ -91,6 +159,8 @@ class TestTimestampedPacketsQueue:
         mock_isinstance.assert_called_once_with(timestamp, float)
         self.mock_abstract_packets_queue_put_packet.assert_called_once_with(packet=packet)
         self.mock_timestamped_packets_queue._async_queue.put_nowait.assert_called_once_with((timestamp, packet))
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__timestamps.add.assert_called_once_with(timestamp)
+        self.mock_timestamped_packets_queue._TimestampedPacketsQueue__event_packet_added.set.assert_called_once_with()
 
 
 class TestPacketsQueue:
@@ -100,7 +170,8 @@ class TestPacketsQueue:
 
     def setup(self):
         self.mock_fifo_packets_queue = Mock(spec=PacketsQueue,
-                                            _async_queue=MagicMock(get=AsyncMock(),
+                                            _async_queue=MagicMock(spec=Queue,
+                                                                   get=AsyncMock(),
                                                                    put=AsyncMock(),
                                                                    join=AsyncMock()))
         # patching
