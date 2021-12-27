@@ -243,7 +243,7 @@ class TestPacketsQueue:
 class TestTimestampedPacketsQueueIntegration:
     """Integration tests for `TimestampedPacketsQueue` class."""
 
-    ACCURACY = 0.02  # TODO: somehow increase accuracy (go down to ~0.0001)
+    ACCURACY = 0.02  # TODO: increase accuracy (go down to ~0.0001) - probably selecting proper loop (in a separate thread) would make the trick
 
     def setup(self):
         self.queue = TimestampedPacketsQueue(packet_type=AbstractUdsPacketContainer)

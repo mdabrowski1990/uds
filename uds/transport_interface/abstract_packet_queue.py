@@ -47,8 +47,8 @@ class AbstractPacketsQueue(ABC):
         """Type of UDS packets in the queue."""
         return self.__packet_type
 
-    @property
-    def is_empty(self) -> bool:  # noqa: F841
+    @property  # noqa: F841
+    def is_empty(self) -> bool:
         """Flag whether the queue is empty (does not contain any packets)."""
         return len(self) == 0
 
