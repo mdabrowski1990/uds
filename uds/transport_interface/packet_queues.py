@@ -45,7 +45,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         while current_time < min_timestamp:
             self.__event_packet_added.clear()
             try:
-                await wait_for(fut=self.__event_packet_added.wait(), timeout=min_timestamp-current_time)
+                await wait_for(fut=self.__event_packet_added.wait(), timeout=min_timestamp - current_time)
             except AsyncioTimeoutError:
                 return min_timestamp
             else:
@@ -71,7 +71,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         self.__timestamps.remove(packet_timestamp)
         return packet
 
-    def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[float] = None) -> None:
+    def put_packet(self, packet: AbstractUdsPacketContainer, timestamp: Optional[float] = None) -> None:  # noqa
         """
         Add a packet to the queue.
 

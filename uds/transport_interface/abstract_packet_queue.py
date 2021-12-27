@@ -48,7 +48,7 @@ class AbstractPacketsQueue(ABC):
         return self.__packet_type
 
     @property
-    def is_empty(self) -> bool:
+    def is_empty(self) -> bool:  # noqa: F841
         """Flag whether the queue is empty (does not contain any packets)."""
         return len(self) == 0
 

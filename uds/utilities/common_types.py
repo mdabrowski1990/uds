@@ -5,7 +5,6 @@ __all__ = ["Nibble", "RawByte", "RawBytes", "RawBytesTuple", "RawBytesList", "Ra
            "TimeMilliseconds"]
 
 from typing import Union, Tuple, List, Set, Any
-from datetime import datetime
 
 
 Nibble = int
