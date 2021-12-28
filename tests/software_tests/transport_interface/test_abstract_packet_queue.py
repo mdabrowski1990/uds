@@ -3,8 +3,6 @@ from mock import MagicMock, Mock, AsyncMock, patch, call
 
 from uds.transport_interface.abstract_packet_queue import AbstractPacketsQueue, \
     AbstractUdsPacketContainer, QueueEmpty
-from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
-from uds.message import UdsMessage
 
 
 class TestAbstractPacketsQueue:
@@ -26,20 +24,36 @@ class TestAbstractPacketsQueue:
 
     # __init__
 
-    @pytest.mark.parametrize("packet_type", [AbstractUdsPacketContainer, AbstractUdsPacket, AbstractUdsPacketRecord])
-    def test_init(self, packet_type):
+    @pytest.mark.parametrize("packet_type", [Mock(), "something"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    @patch(f"{SCRIPT_LOCATION}.issubclass")
+    def test_init(self, mock_issubclass, mock_isinstance, packet_type):
+        mock_issubclass.return_value = True
+        mock_isinstance.return_value = True
         assert AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type) is None
         assert self.mock_abstract_packets_queue._AbstractPacketsQueue__packet_type == packet_type
+        mock_issubclass.assert_called_once_with(packet_type, AbstractUdsPacketContainer)
+        mock_isinstance.assert_called_once_with(packet_type, type)
 
-    @pytest.mark.parametrize("packet_type", [None, Mock(spec=AbstractUdsPacketContainer)])
-    def test_init__type_error(self, packet_type):
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    @patch(f"{SCRIPT_LOCATION}.issubclass")
+    @pytest.mark.parametrize("packet_type", [Mock(), "something"])
+    def test_init__type_error(self, mock_issubclass, mock_isinstance, packet_type):
+        mock_issubclass.return_value = True
+        mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type)
+        mock_isinstance.assert_called_once_with(packet_type, type)
 
-    @pytest.mark.parametrize("packet_type", [UdsMessage, type, int])
-    def test_init__value_error(self, packet_type):
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    @patch(f"{SCRIPT_LOCATION}.issubclass")
+    @pytest.mark.parametrize("packet_type", [Mock(), "something"])
+    def test_init__value_error(self, mock_issubclass, mock_isinstance, packet_type):
+        mock_issubclass.return_value = False
+        mock_isinstance.return_value = True
         with pytest.raises(ValueError):
             AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type)
+        mock_issubclass.assert_called_once_with(packet_type, AbstractUdsPacketContainer)
 
     # __len__
 
@@ -88,6 +102,7 @@ class TestAbstractPacketsQueue:
         mock_len.return_value = packets_number
         self.mock_abstract_packets_queue._async_queue.get_nowait.side_effect = QueueEmpty
         assert AbstractPacketsQueue.clear(self=self.mock_abstract_packets_queue) is None
+        mock_len.assert_called_once_with(self.mock_abstract_packets_queue)
         self.mock_abstract_packets_queue._async_queue.get_nowait.assert_called_once()
         self.mock_warn.assert_called_once()
         self.mock_abstract_packets_queue.mark_task_done.assert_not_called()

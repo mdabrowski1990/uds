@@ -56,8 +56,6 @@ class AbstractPacketsQueue(ABC):
         Inform that a task related to one queue's packet was completed.
 
         This method is used for monitoring tasks, so they can be completed safely and closed quietly.
-
-        :raise ValueError: The method was called more times than there were packets got.
         """
         self._async_queue.task_done()
 
