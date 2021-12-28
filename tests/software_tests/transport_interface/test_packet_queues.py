@@ -243,8 +243,6 @@ class TestPacketsQueue:
 class TestTimestampedPacketsQueueIntegration:
     """Integration tests for `TimestampedPacketsQueue` class."""
 
-    ACCURACY = 0.02  # TODO: increase accuracy (go down to ~0.0001) - probably selecting proper loop (in a separate thread) would make the trick
-
     def setup(self):
         self.queue = TimestampedPacketsQueue(packet_type=AbstractUdsPacketContainer)
 
@@ -263,21 +261,19 @@ class TestTimestampedPacketsQueueIntegration:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("packets_with_timestamp", [
-        [(0.1, Mock(spec=AbstractUdsPacketContainer))],
-        [(0.1, Mock(spec=AbstractUdsPacketContainer)),
-         (0.25, Mock(spec=AbstractUdsPacketContainer)),
-         (0.2, Mock(spec=AbstractUdsPacketContainer)),
-         (0.225, Mock(spec=AbstractUdsPacketContainer))],
+        [(0.0000001, Mock(spec=AbstractUdsPacketContainer))],
+        [(0.0000001, Mock(spec=AbstractUdsPacketContainer)),
+         (0.0000004, Mock(spec=AbstractUdsPacketContainer)),
+         (0.0000003, Mock(spec=AbstractUdsPacketContainer)),
+         (0.0000002, Mock(spec=AbstractUdsPacketContainer))],
     ])
     async def test_put_get_packets__with_timestamp(self, packets_with_timestamp):
-        offset = perf_counter()
-        for timestamp, packet in packets_with_timestamp:
-            self.queue.put_packet(packet=packet, timestamp=offset+timestamp)
+        start_time = perf_counter()
+        for offset, packet in packets_with_timestamp:
+            self.queue.put_packet(packet=packet, timestamp=start_time+offset)
         for timestamp, packet in sorted(packets_with_timestamp):
             packet_from_queue = await self.queue.get_packet()
-            now = perf_counter()
             assert packet_from_queue is packet
-            assert now - self.ACCURACY <= offset+timestamp <= now + self.ACCURACY
 
     @pytest.mark.parametrize("packets", [
         [(Mock(spec=AbstractUdsPacketContainer), None)],
