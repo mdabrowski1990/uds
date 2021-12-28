@@ -67,18 +67,9 @@ class TestAbstractPacketsQueue:
 
     # mark_task_done
 
-    def test_mark_task_done__value_error(self):
-        self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks = 0
-        with pytest.raises(ValueError):
-            AbstractPacketsQueue.mark_task_done(self=self.mock_abstract_packets_queue)
-        self.mock_abstract_packets_queue._async_queue.task_done.assert_not_called()
-
-    @pytest.mark.parametrize("unfinished_tasks_number", [1, 100])
-    def test_mark_task_done(self, unfinished_tasks_number):
-        self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks = unfinished_tasks_number
+    def test_mark_task_done(self):
         assert AbstractPacketsQueue.mark_task_done(self=self.mock_abstract_packets_queue) is None
         self.mock_abstract_packets_queue._async_queue.task_done.assert_called_once_with()
-        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks == unfinished_tasks_number - 1
 
     # clear
 
@@ -125,5 +116,4 @@ class TestAbstractPacketsQueue:
         mock_isinstance.return_value = True
         self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks = unfinished_tasks
         assert AbstractPacketsQueue.put_packet(self=self.mock_abstract_packets_queue, packet=packet) is None
-        assert self.mock_abstract_packets_queue._AbstractPacketsQueue__unfinished_tasks == unfinished_tasks + 1
         mock_isinstance.assert_called_once_with(packet, self.mock_abstract_packets_queue.packet_type)

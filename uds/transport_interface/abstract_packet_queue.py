@@ -31,7 +31,6 @@ class AbstractPacketsQueue(ABC):
             raise ValueError(f"Provided value is not a class that defines UDS Packet type. "
                              f"Actual type: {type(packet_type)}")
         self.__packet_type = packet_type
-        self.__unfinished_tasks: int = 0
 
     def __len__(self) -> int:
         """Get the number of packets that are currently stored by the queue."""
@@ -60,9 +59,6 @@ class AbstractPacketsQueue(ABC):
 
         :raise ValueError: The method was called more times than there were packets got.
         """
-        if self.__unfinished_tasks <= 0:
-            raise ValueError("More tasks were marked as done than packets were gotten from the queue.")
-        self.__unfinished_tasks -= 1
         self._async_queue.task_done()
 
     def clear(self) -> None:
@@ -101,4 +97,3 @@ class AbstractPacketsQueue(ABC):
         if not isinstance(packet, self.packet_type):
             raise TypeError(f"Provided packet has unexpected type. Expected: {self.packet_type}. "
                             f"Actual type: {type(packet)}")
-        self.__unfinished_tasks += 1
