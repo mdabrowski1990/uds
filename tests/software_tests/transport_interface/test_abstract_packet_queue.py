@@ -35,9 +35,9 @@ class TestAbstractPacketsQueue:
         mock_issubclass.assert_called_once_with(packet_type, AbstractUdsPacketContainer)
         mock_isinstance.assert_called_once_with(packet_type, type)
 
+    @pytest.mark.parametrize("packet_type", [Mock(), "something"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     @patch(f"{SCRIPT_LOCATION}.issubclass")
-    @pytest.mark.parametrize("packet_type", [Mock(), "something"])
     def test_init__type_error(self, mock_issubclass, mock_isinstance, packet_type):
         mock_issubclass.return_value = True
         mock_isinstance.return_value = False
@@ -45,9 +45,9 @@ class TestAbstractPacketsQueue:
             AbstractPacketsQueue.__init__(self=self.mock_abstract_packets_queue, packet_type=packet_type)
         mock_isinstance.assert_called_once_with(packet_type, type)
 
+    @pytest.mark.parametrize("packet_type", [Mock(), "something"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     @patch(f"{SCRIPT_LOCATION}.issubclass")
-    @pytest.mark.parametrize("packet_type", [Mock(), "something"])
     def test_init__value_error(self, mock_issubclass, mock_isinstance, packet_type):
         mock_issubclass.return_value = False
         mock_isinstance.return_value = True
