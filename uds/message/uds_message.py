@@ -8,8 +8,9 @@ __all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
 
 from typing import Any
 from abc import ABC, abstractmethod
+from datetime import datetime
 
-from uds.utilities import RawBytes, RawBytesTuple, RawBytesList, validate_raw_bytes, ReassignmentError, TimeStamp
+from uds.utilities import RawBytes, RawBytesTuple, RawBytesList, validate_raw_bytes, ReassignmentError
 from uds.transmission_attributes import TransmissionDirectionAlias, AddressingType, AddressingTypeAlias
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
@@ -198,7 +199,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return self.packets_records[0].direction
 
     @property  # noqa: F841
-    def transmission_start(self) -> TimeStamp:
+    def transmission_start(self) -> datetime:
         """
         Time stamp when transmission of this message was initiated.
 
@@ -210,7 +211,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return self.packets_records[0].transmission_time
 
     @property  # noqa: F841
-    def transmission_end(self) -> TimeStamp:
+    def transmission_end(self) -> datetime:
         """
         Time stamp when transmission of this message was completed.
 

@@ -7,8 +7,9 @@ __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacket
 
 from abc import ABC, abstractmethod
 from typing import Union, Optional, Any, Tuple, List
+from datetime import datetime
 
-from uds.utilities import RawBytesTuple, ReassignmentError, TimeStamp
+from uds.utilities import RawBytesTuple, ReassignmentError
 from uds.transmission_attributes.addressing import AddressingTypeAlias
 from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionAlias
 from .abstract_packet_type import AbstractUdsPacketTypeAlias
@@ -79,7 +80,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
     def __init__(self,
                  frame: Any,
                  direction: TransmissionDirectionAlias,
-                 transmission_time: TimeStamp) -> None:
+                 transmission_time: datetime) -> None:
         """
         Create a record of historic information about a packet that was either received or transmitted.
 
@@ -136,12 +137,12 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
             raise ReassignmentError("You cannot change value of 'direction' attribute once it is assigned.")
 
     @property
-    def transmission_time(self) -> TimeStamp:
+    def transmission_time(self) -> datetime:
         """Time stamp when this packet was fully transmitted on a bus."""
         return self.__transmission_time
 
     @transmission_time.setter
-    def transmission_time(self, value: TimeStamp):
+    def transmission_time(self, value: datetime):
         """
         Set value of transmission_time attribute.
 
@@ -153,7 +154,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
         try:
             self.__getattribute__("_AbstractUdsPacketRecord__transmission_time")
         except AttributeError:
-            if not isinstance(value, TimeStamp):
+            if not isinstance(value, datetime):
                 raise TypeError(f"Provided value has invalid type: {type(value)}")  # pylint: disable=raise-missing-from
             self.__transmission_time = value
         else:

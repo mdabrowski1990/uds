@@ -3,10 +3,11 @@
 __all__ = ["CanPacketRecord"]
 
 from typing import Union, Any, Optional
+from datetime import datetime
 
 from can import Message as PythonCanMessage
 
-from uds.utilities import RawByte, RawBytesTuple, TimeStamp, InconsistentArgumentsError
+from uds.utilities import RawByte, RawBytesTuple, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
 from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
     CanDlcHandler, CanIdHandler
@@ -19,7 +20,7 @@ CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
 
 
-class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
+class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # lgtm [py/conflicting-attributes]
     """
     Definition of a CAN packet Record.
 
@@ -32,7 +33,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
                  direction: TransmissionDirectionAlias,
                  addressing_type: AddressingTypeAlias,
                  addressing_format: CanAddressingFormatAlias,
-                 transmission_time: TimeStamp) -> None:
+                 transmission_time: datetime) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
 

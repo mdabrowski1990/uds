@@ -32,7 +32,7 @@ jobs:
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
-          pytest --cov-report=term-missing --cov=uds -m "not integration"
+          pytest --cov-report=term-missing --cov=uds -m "not integration and not performance"
 
       - name: Execute integration tests with coverage report [pytest]
         run: |
@@ -67,7 +67,7 @@ jobs:
 
       - name: Execute unit tests [pytest]
         run: |
-          pytest --cov-report=xml --cov=uds -m "not integration"
+          pytest --cov-report=xml --cov=uds -m "not integration and not performance"
 
       - name: Upload unit tests report [CodeCov]
         uses: codecov/codecov-action@v2

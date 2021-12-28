@@ -2,7 +2,7 @@ import pytest
 from mock import Mock, patch
 
 from uds.packet.abstract_packet import AbstractUdsPacketRecord, \
-    TransmissionDirection, ReassignmentError, TimeStamp
+    TransmissionDirection, ReassignmentError, datetime
 
 
 class TestAbstractUdsPacketRecord:
@@ -84,7 +84,7 @@ class TestAbstractUdsPacketRecord:
         assert AbstractUdsPacketRecord.transmission_time.fget(self.mock_packet_record) == transmission_time
 
     def test_transmission_time__set(self):
-        value = Mock(spec=TimeStamp)
+        value = Mock(spec=datetime)
         AbstractUdsPacketRecord.transmission_time.fset(self.mock_packet_record, value=value)
         assert self.mock_packet_record._AbstractUdsPacketRecord__transmission_time == value
 
@@ -94,7 +94,7 @@ class TestAbstractUdsPacketRecord:
             AbstractUdsPacketRecord.transmission_time.fset(self.mock_packet_record, value=value)
 
     @pytest.mark.parametrize("old_value", [None, 0, "some transmission_time"])
-    @pytest.mark.parametrize("new_value", [None, True, Mock(spec=TimeStamp)])
+    @pytest.mark.parametrize("new_value", [None, True, Mock(spec=datetime)])
     def test_transmission_time__set__second_attempt(self, old_value, new_value):
         self.mock_packet_record._AbstractUdsPacketRecord__transmission_time = old_value
         with pytest.raises(ReassignmentError):
