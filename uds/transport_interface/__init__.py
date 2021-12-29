@@ -1,7 +1,7 @@
 """
 A subpackage with implementation for UDS middle layers (Transport and Network).
 
-It provides configurable Transport Interface for:
+It provides configurable Transport Interfaces for:
  - transmitting and receiving UDS packets
  - transmitting and receiving UDS messages
  - storing information about transmitted and received UDS packets
