@@ -11,9 +11,9 @@ from uds.message import UdsMessage, UdsMessageRecord
 
 
 DEFAULT_PACKET_RECORDS_STORED: int = 100
-"""Default size of container for UDS packet records in Transport Interface."""
+"""Default size of a container for UDS packet records in Transport Interface."""
 DEFAULT_MESSAGE_RECORDS_STORED: int = 10
-"""Default size of container for UDS message records in Transport Interface."""
+"""Default size of a container for UDS message records in Transport Interface."""
 
 
 class AbstractTransportInterface(ABC):
@@ -24,9 +24,9 @@ class AbstractTransportInterface(ABC):
     """
 
     def __init__(self,
-                 bus_handler: Any,
-                 max_packet_records_stored: int = DEFAULT_PACKET_RECORDS_STORED,
-                 max_message_records_stored: int = DEFAULT_MESSAGE_RECORDS_STORED) -> None:
+                 bus_handler: Any,  # noqa: F841
+                 max_packet_records_stored: int = DEFAULT_PACKET_RECORDS_STORED,  # noqa: F841
+                 max_message_records_stored: int = DEFAULT_MESSAGE_RECORDS_STORED) -> None:  # noqa: F841
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
@@ -38,24 +38,28 @@ class AbstractTransportInterface(ABC):
         """
         raise NotImplementedError
 
-    @property
+    @property  # noqa: F841
     def bus_handler(self) -> Any:
-        """An object which handles the bus (Physical and Data layers of OSI Model) for this Transport Interface."""
+        """
+        Value of the bus handler used by this Transport Interface.
+
+        Bus handler manages Physical and Data layers (OSI Model) of the bus.
+        """
         raise NotImplementedError
 
-    @property
+    @property  # noqa: F841
     def packet_records(self) -> Tuple[AbstractUdsPacketRecord, ...]:
         """Container with records of UDS packets that was either received or transmitted on the bus."""
         raise NotImplementedError
 
-    @property
+    @property  # noqa: F841
     def message_records(self) -> Tuple[UdsMessageRecord, ...]:
         """Container with records of UDS Messages that was either received or transmitted on the bus."""
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
-    def is_supported_bus_handler(bus_handler: Any) -> bool:
+    def is_supported_bus_handler(bus_handler: Any) -> bool:  # noqa: F841
         """
         Check whether provided value is a bus handler that is supported by this Transport Interface.
 
@@ -64,7 +68,7 @@ class AbstractTransportInterface(ABC):
         :return: True if provided object can handle the bus for this Transport Interface, False otherwise.
         """
 
-    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:
+    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:  # noqa: F841
         """
         Wait until the next UDS packet is received.
 
@@ -76,7 +80,7 @@ class AbstractTransportInterface(ABC):
         """
         raise NotImplementedError
 
-    async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:
+    async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:  # noqa: F841
         """
         Wait until the next UDS packet is transmitted.
 
@@ -88,7 +92,7 @@ class AbstractTransportInterface(ABC):
         """
         raise NotImplementedError
 
-    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:
+    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
         """
         Wait until the next UDS message is received.
 
@@ -100,7 +104,7 @@ class AbstractTransportInterface(ABC):
         """
         raise NotImplementedError
 
-    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:
+    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
         """
         Wait until the next UDS message is transmitted.
 
@@ -113,7 +117,7 @@ class AbstractTransportInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def send_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:
+    def send_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
         """
         Transmit UDS packet on the configured bus.
 
@@ -123,7 +127,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:
+    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
         """
         Transmit UDS message on the configured bus.
 
