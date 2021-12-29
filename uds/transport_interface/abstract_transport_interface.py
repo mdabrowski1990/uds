@@ -18,9 +18,9 @@ DEFAULT_MESSAGE_RECORDS_STORED: int = 10
 
 class AbstractTransportInterface(ABC):
     """
-    Abstract definition of Transport Interface class.
+    Abstract definition of Transport Interface.
 
-    Transport Interface classes are meant to handle middle layers of UDs
+    Transport Interfaces are meant to handle middle layers (Transport and Network) of UDS OSI Model.
     """
 
     def __init__(self,
