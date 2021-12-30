@@ -15,7 +15,9 @@ class TestAbstractTransportInterface:
     def test_init(self):
         with pytest.raises(NotImplementedError):
             AbstractTransportInterface.__init__(self=self.mock_transport_interface,
-                                                bus_handler=Mock())
+                                                bus_handler=Mock(),
+                                                max_message_records_stored=Mock(),
+                                                max_packet_records_stored=Mock())
 
     # bus_handler
 

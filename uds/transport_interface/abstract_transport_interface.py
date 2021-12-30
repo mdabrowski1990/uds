@@ -10,12 +10,6 @@ from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
 
 
-DEFAULT_PACKET_RECORDS_STORED: int = 100
-"""Default size of a container for UDS packet records in Transport Interface."""
-DEFAULT_MESSAGE_RECORDS_STORED: int = 10
-"""Default size of a container for UDS message records in Transport Interface."""
-
-
 class AbstractTransportInterface(ABC):
     """
     Abstract definition of Transport Interface.
@@ -25,8 +19,8 @@ class AbstractTransportInterface(ABC):
 
     def __init__(self,
                  bus_handler: Any,  # noqa: F841
-                 max_packet_records_stored: int = DEFAULT_PACKET_RECORDS_STORED,  # noqa: F841
-                 max_message_records_stored: int = DEFAULT_MESSAGE_RECORDS_STORED) -> None:  # noqa: F841
+                 max_packet_records_stored: int,  # noqa: F841
+                 max_message_records_stored: int) -> None:  # noqa: F841
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
