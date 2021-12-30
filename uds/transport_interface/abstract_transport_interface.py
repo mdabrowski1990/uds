@@ -49,12 +49,12 @@ class AbstractTransportInterface(ABC):
 
     @property  # noqa: F841
     def packet_records(self) -> Tuple[AbstractUdsPacketRecord, ...]:
-        """Container with records of UDS packets that was either received or transmitted on the bus."""
+        """Container with records of UDS packets that were either received or transmitted."""
         raise NotImplementedError
 
     @property  # noqa: F841
     def message_records(self) -> Tuple[UdsMessageRecord, ...]:
-        """Container with records of UDS Messages that was either received or transmitted on the bus."""
+        """Container with records of UDS Messages that were either received or transmitted."""
         raise NotImplementedError
 
     @staticmethod
@@ -65,7 +65,7 @@ class AbstractTransportInterface(ABC):
 
         :param bus_handler: Value to check.
 
-        :return: True if provided object can handle the bus for this Transport Interface, False otherwise.
+        :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
         """
 
     async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:  # noqa: F841
