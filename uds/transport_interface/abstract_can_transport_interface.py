@@ -1,10 +1,10 @@
 """Abstract definition of UDS Transport Interface for CAN bus."""
 
-from typing import Optional, Union, Any, Tuple, Iterable
-from abc import abstractmethod
+from typing import Optional, Union, Any, Iterable
 
-from uds.utilities import TimeMilliseconds
+from uds.utilities import TimeMilliseconds, RawByte
 from uds.packet import CanPacket
+from uds.can import CanAddressingFormatAlias
 from .abstract_transport_interface import AbstractTransportInterface
 
 
@@ -19,7 +19,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     """
 
     def __init__(self,
-                 bus_handler: Any,  # noqa: F841
+                 bus_manager: Any,  # noqa: F841
                  max_packet_records_stored: int,  # noqa: F841
                  max_message_records_stored: int,  # noqa: F841
                  addressing_format: CanAddressingFormatAlias,
@@ -29,17 +29,27 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
-        :param bus_handler: An object that handles the bus (Physical and Data layers of OSI Model).
+        :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
         :param max_packet_records_stored: Maximal number of UDS packet records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
         :param max_message_records_stored: Maximal number of UDS message records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.message_records`.
-        :param kwargs: TODO:
-            - Network layer parameters (N_As, N_Ar, ...)
-            - CAN Frame creation (dlc, use_data_optimization, filler_byte)
-        """
+        :param kwargs: Optional arguments that are specific for CAN bus.
 
-    # N_As
+            - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
+            - :parameter n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
+            - :parameter n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
+            - :parameter n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
+            - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
+            - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
+            - :parameter dlc: Base CAN DLC value to use for CAN Packets.
+            - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
+            - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
+            - :parameter flow_control_generator: Generator of Flow Control CAN packets.
+        """
+        raise NotImplementedError
+
+    # Time parameter - CAN Network Layer
 
     @property
     def n_as_timeout(self) -> TimeMilliseconds:
@@ -49,7 +59,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def n_as_timeout(self, value: TimeMilliseconds):
         ...
 
-    # N_Ar
+    @property
+    def n_as_measured(self) -> Optional[TimeMilliseconds]:
+        ...
 
     @property
     def n_ar_timeout(self) -> TimeMilliseconds:
@@ -59,7 +71,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def n_ar_timeout(self, value: TimeMilliseconds):
         ...
 
-    # N_Bs
+    @property
+    def n_ar_measured(self) -> Optional[TimeMilliseconds]:
+        ...
 
     @property
     def n_bs_timeout(self) -> TimeMilliseconds:
@@ -69,7 +83,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def n_bs_timeout(self, value: TimeMilliseconds):
         ...
 
-    # N_Br
+    @property
+    def n_bs_measured(self) -> Optional[TimeMilliseconds]:
+        ...
 
     @property
     def n_br(self) -> Optional[TimeMilliseconds]:
@@ -83,8 +99,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def n_br_max(self) -> Optional[TimeMilliseconds]:
         ...
 
-    # N_Cs
-
     @property
     def n_cs(self) -> Optional[TimeMilliseconds]:
         ...
@@ -97,8 +111,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def n_cs_max(self) -> Optional[TimeMilliseconds]:
         ...
 
-    # N_Cr
-
     @property
     def n_cr_timeout(self) -> TimeMilliseconds:
         ...
@@ -107,14 +119,64 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def n_cr_timeout(self, value: TimeMilliseconds):
         ...
 
-    # Flow Control
+    @property
+    def n_cr_measured(self) -> Optional[TimeMilliseconds]:
+        ...
+
+    # Communication parameters
 
     @property
-    def flow_control(self) -> FlowControlGenerator:
+    def addressing_format(self) -> CanAddressingFormatAlias:  # TODO: get from the segmenter
         ...
 
-    @flow_control.setter
-    def flow_control(self, value: FlowControlGenerator) -> None:
+    @property
+    def physical_ai(self) -> Optional[AIParamsAlias]:  # TODO: get from the segmenter
         ...
 
-    # TODO: properties - CAN Segmenter and CAN parameters (get them from segmenter to avoid variables duplicates)
+    @physical_ai.setter
+    def physical_ai(self, value: Optional[AIArgsAlias]):  # TODO: set in the segmenter
+        ...
+
+    @property
+    def functional_ai(self) -> AIParamsAlias:  # TODO: get from the segmenter
+        ...
+
+    @functional_ai.setter
+    def functional_ai(self, value: Optional[AIArgsAlias]):  # TODO: set in the segmenter
+        ...
+
+    @property
+    def dlc(self) -> int:  # TODO: get from the segmenter
+        ...
+
+    @dlc.setter
+    def dlc(self, value: int):  # TODO: set in the segmenter
+        ...
+
+    @property
+    def use_data_optimization(self) -> bool:  # TODO: get from the segmenter
+        ...
+
+    @use_data_optimization.setter
+    def use_data_optimization(self, value: bool):  # TODO: set in the segmenter
+        ...
+
+    @property
+    def filler_byte(self) -> RawByte:  # TODO: get from the segmenter
+        ...
+
+    @filler_byte.setter
+    def filler_byte(self, value: RawByte):  # TODO: set in the segmenter
+        ...
+
+    # Flow Control configuration
+
+    @property
+    def flow_control_generator(self) -> FlowControlGenerator:
+        ...
+
+    @flow_control_generator.setter
+    def flow_control_generator(self, value: FlowControlGenerator) -> None:
+        ...
+
+    # TODO: Packets Queues (received, scheduled)

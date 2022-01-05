@@ -15,7 +15,7 @@ from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
-AIArgsAlias = Dict[str, Optional[Union[int, RawByte]]]
+AIArgsAlias = Dict[str, Optional[int]]
 """Alias of Addressing Information arguments to configure CAN Segmenter communication model."""
 AIParamsAlias = Dict[str, Optional[Union[int, AddressingTypeAlias]]]
 """Alias of Addressing Information parameters used by CAN Segmenter for each communication model."""
