@@ -1,6 +1,6 @@
 """Segmentation specific for CAN bus."""
 
-__all__ = ["CanSegmenter"]
+__all__ = ["CanSegmenter", "CanAIArgsAlias", "CanAIParamsAlias"]
 
 from typing import Optional, Union, Tuple, Dict, Type
 from copy import copy
@@ -15,9 +15,9 @@ from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
-AIArgsAlias = Dict[str, Optional[int]]
+CanAIArgsAlias = Dict[str, Optional[int]]
 """Alias of Addressing Information arguments to configure CAN Segmenter communication model."""
-AIParamsAlias = Dict[str, Optional[Union[int, AddressingTypeAlias]]]
+CanAIParamsAlias = Dict[str, Optional[Union[int, AddressingTypeAlias]]]
 """Alias of Addressing Information parameters used by CAN Segmenter for each communication model."""
 
 
@@ -26,8 +26,8 @@ class CanSegmenter(AbstractSegmenter):
 
     def __init__(self, *,
                  addressing_format: CanAddressingFormatAlias,
-                 physical_ai: Optional[AIArgsAlias] = None,
-                 functional_ai: Optional[AIArgsAlias] = None,
+                 physical_ai: Optional[CanAIArgsAlias] = None,
+                 functional_ai: Optional[CanAIArgsAlias] = None,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
                  use_data_optimization: bool = False,
                  filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
@@ -62,7 +62,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__addressing_format
 
     @property
-    def physical_ai(self) -> Optional[AIParamsAlias]:
+    def physical_ai(self) -> Optional[CanAIParamsAlias]:
         """
         CAN Addressing Information parameters used for physically addressed communication.
 
@@ -71,14 +71,14 @@ class CanSegmenter(AbstractSegmenter):
         return copy(self.__physical_ai)
 
     @physical_ai.setter
-    def physical_ai(self, value: Optional[AIArgsAlias]):
+    def physical_ai(self, value: Optional[CanAIArgsAlias]):
         """
         Set value of CAN Addressing Information parameters to use for physically addressed communication.
 
         :param value: Value to set.
         """
         if value is None:
-            self.__physical_ai: Optional[AIParamsAlias] = None
+            self.__physical_ai: Optional[CanAIParamsAlias] = None
         else:
             CanAddressingInformationHandler.validate_ai(
                 addressing_format=self.addressing_format,
@@ -92,7 +92,7 @@ class CanSegmenter(AbstractSegmenter):
             self.__physical_ai = physical_ai  # type: ignore
 
     @property
-    def functional_ai(self) -> AIParamsAlias:
+    def functional_ai(self) -> CanAIParamsAlias:
         """
         CAN Addressing Information parameters used for functionally addressed communication.
 
@@ -101,14 +101,14 @@ class CanSegmenter(AbstractSegmenter):
         return copy(self.__functional_ai)  # type: ignore
 
     @functional_ai.setter
-    def functional_ai(self, value: Optional[AIArgsAlias]):
+    def functional_ai(self, value: Optional[CanAIArgsAlias]):
         """
         Set value of CAN Addressing Information parameters to use for functionally addressed communication.
 
         :param value: Value to set.
         """
         if value is None:
-            self.__functional_ai: Optional[AIParamsAlias] = None
+            self.__functional_ai: Optional[CanAIParamsAlias] = None
         else:
             CanAddressingInformationHandler.validate_ai(
                 addressing_format=self.addressing_format,
@@ -149,13 +149,13 @@ class CanSegmenter(AbstractSegmenter):
 
     @property
     def use_data_optimization(self) -> bool:
-        """Information whether to use CAN Frame Data Optimization for CAN Packet created during segmentation."""
+        """Information whether to use CAN Frame Data Optimization during CAN Packet creation."""
         return self.__use_data_optimization
 
     @use_data_optimization.setter
     def use_data_optimization(self, value: bool):
         """
-        Set whether to use CAN Frame Data Optimization for CAN Packet created during segmentation.
+        Set whether to use CAN Frame Data Optimization during CAN Packets creation.
 
         :param value: Value to set.
         """

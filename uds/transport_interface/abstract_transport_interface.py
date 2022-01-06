@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from uds.utilities import TimeMilliseconds
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
+from uds.segmentation import AbstractSegmenter
 
 
 class AbstractTransportInterface(ABC):
@@ -31,6 +32,11 @@ class AbstractTransportInterface(ABC):
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.message_records`.
         """
         raise NotImplementedError
+
+    @abstractmethod
+    @property
+    def segmenter(self) -> AbstractSegmenter:
+        """Value of the segmenter used by this Transport Interface."""
 
     @property  # noqa: F841
     def bus_manager(self) -> Any:

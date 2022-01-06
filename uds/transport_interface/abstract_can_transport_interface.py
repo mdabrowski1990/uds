@@ -1,14 +1,17 @@
 """Abstract definition of UDS Transport Interface for CAN bus."""
 
 from typing import Optional, Union, Any, Iterable
+from abc import abstractmethod
 
 from uds.utilities import TimeMilliseconds, RawByte
 from uds.packet import CanPacket
 from uds.can import CanAddressingFormatAlias
+from uds.segmentation import CanSegmenter, CanAIArgsAlias, CanAIParamsAlias
 from .abstract_transport_interface import AbstractTransportInterface
 
 
 FlowControlGenerator = Union[CanPacket, Iterable[CanPacket]]
+# TODO: docstring
 
 
 class AbstractCanTransportInterface(AbstractTransportInterface):
@@ -23,8 +26,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  max_packet_records_stored: int,  # noqa: F841
                  max_message_records_stored: int,  # noqa: F841
                  addressing_format: CanAddressingFormatAlias,
-                 physical_ai: AIArgsAlias,
-                 functional_ai: AIArgsAlias,
+                 physical_ai: CanAIArgsAlias,
+                 functional_ai: CanAIArgsAlias,
                  **kwargs: Any) -> None:  # noqa: F841
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
@@ -49,125 +52,260 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
+    @property
+    def segmenter(self) -> CanSegmenter:
+        """Value of the segmenter used by this CAN Transport Interface."""
+        raise NotImplementedError
+
+    # TODO: Packets Queues (received, scheduled)
+
     # Time parameter - CAN Network Layer
 
     @property
     def n_as_timeout(self) -> TimeMilliseconds:
-        ...
+        """Timeout value for N_As time parameter."""
+        raise NotImplementedError
 
     @n_as_timeout.setter
     def n_as_timeout(self, value: TimeMilliseconds):
-        ...
+        """
+        Set timeout value for N_As time parameter.
 
+        :param value: Value of timeout to set.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     @property
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
-        ...
+        """
+        Get the last measured value of N_As time parameter.
+
+        :return: Time in milliseconds or None if the value was never measured.
+        """
 
     @property
     def n_ar_timeout(self) -> TimeMilliseconds:
-        ...
+        """Timeout value for N_Ar time parameter."""
+        raise NotImplementedError
 
     @n_ar_timeout.setter
     def n_ar_timeout(self, value: TimeMilliseconds):
-        ...
+        """
+        Set timeout value for N_Ar time parameter.
 
+        :param value: Value of timeout to set.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     @property
     def n_ar_measured(self) -> Optional[TimeMilliseconds]:
-        ...
+        """
+        Get the last measured value of N_Ar time parameter.
+
+        :return: Time in milliseconds or None if the value was never measured.
+        """
 
     @property
     def n_bs_timeout(self) -> TimeMilliseconds:
-        ...
+        """Timeout value for N_Bs time parameter."""
+        raise NotImplementedError
 
     @n_bs_timeout.setter
     def n_bs_timeout(self, value: TimeMilliseconds):
-        ...
+        """
+        Set timeout value for N_Bs time parameter.
 
+        :param value: Value of timeout to set.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     @property
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
-        ...
+        """
+        Get the last measured value of N_Bs time parameter.
+
+        :return: Time in milliseconds or None if the value was never measured.
+        """
 
     @property
-    def n_br(self) -> Optional[TimeMilliseconds]:
-        ...
+    def n_br(self) -> TimeMilliseconds:
+        """
+        Get the value of N_Br time parameter which is currently set.
+
+        .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
+            and CAN Interface delays.
+        """
+        raise NotImplementedError
 
     @n_br.setter
-    def n_br(self, value: Optional[TimeMilliseconds]) -> None:
-        ...
+    def n_br(self, value: TimeMilliseconds) -> None:
+        """
+        Set the value of N_Br time parameter to use.
+
+        :param value: The value to set.
+        """
+        raise NotImplementedError
 
     @property
-    def n_br_max(self) -> Optional[TimeMilliseconds]:
-        ...
+    def n_br_max(self) -> TimeMilliseconds:
+        """
+        The maximum valid value of N_Br time parameter.
+
+        .. warning:: To assess maximal value of :ref:`N_Br <knowledge-base-can-n-br>`, the actual value of
+            :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter is required.
+            Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
+            no measurement result).
+        """
+        raise NotImplementedError
 
     @property
-    def n_cs(self) -> Optional[TimeMilliseconds]:
-        ...
+    def n_cs(self) -> TimeMilliseconds:
+        """
+        Get the value of N_Cs time parameter which is currently set.
+
+        .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
+            and CAN Interface delays.
+        """
+        raise NotImplementedError
 
     @n_cs.setter
-    def n_cs(self, value: Optional[TimeMilliseconds]) -> None:
-        ...
+    def n_cs(self, value: TimeMilliseconds) -> None:
+        """
+        Set the value of N_Cs time parameter to use.
+
+        :param value: The value to set.
+        """
+        raise NotImplementedError
 
     @property
-    def n_cs_max(self) -> Optional[TimeMilliseconds]:
-        ...
+    def n_cs_max(self) -> TimeMilliseconds:
+        """
+        The maximum valid value of N_Cs time parameter.
+
+        .. warning:: To assess maximal value of :ref:`N_Cs <knowledge-base-can-n-cs>`, the actual value of
+            :ref:`N_As <knowledge-base-can-n-as>` time parameter is required.
+            Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
+            no measurement result).
+        """
+        raise NotImplementedError
 
     @property
     def n_cr_timeout(self) -> TimeMilliseconds:
-        ...
+        """Timeout value for N_Cr time parameter."""
+        raise NotImplementedError
 
     @n_cr_timeout.setter
     def n_cr_timeout(self, value: TimeMilliseconds):
-        ...
+        """
+        Set timeout value for N_Cr time parameter.
 
+        :param value: Value of timeout to set.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     @property
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
-        ...
+        """
+        Get the last measured value of N_Cr time parameter.
+
+        :return: Time in milliseconds or None if the value was never measured.
+        """
 
     # Communication parameters
 
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:  # TODO: get from the segmenter
-        ...
+        """CAN Addressing format used."""
+        raise NotImplementedError
 
     @property
-    def physical_ai(self) -> Optional[AIParamsAlias]:  # TODO: get from the segmenter
-        ...
+    def physical_ai(self) -> CanAIParamsAlias:
+        """CAN Addressing Information parameters used for physically addressed communication."""
+        # TODO: get from the segmenter
+        raise NotImplementedError
 
     @physical_ai.setter
-    def physical_ai(self, value: Optional[AIArgsAlias]):  # TODO: set in the segmenter
-        ...
+    def physical_ai(self, value: CanAIArgsAlias):
+        """
+        Set value of CAN Addressing Information parameters to use for physically addressed communication.
+
+        :param value: Value to set.
+        """
+        # TODO: set in the segmenter
+        raise NotImplementedError
 
     @property
-    def functional_ai(self) -> AIParamsAlias:  # TODO: get from the segmenter
-        ...
+    def functional_ai(self) -> CanAIParamsAlias:
+        """CAN Addressing Information parameters used for functionally addressed communication."""
+        # TODO: get from the segmenter
+        raise NotImplementedError
 
     @functional_ai.setter
-    def functional_ai(self, value: Optional[AIArgsAlias]):  # TODO: set in the segmenter
-        ...
+    def functional_ai(self, value: CanAIArgsAlias):
+        """
+        Set value of CAN Addressing Information parameters to use for functionally addressed communication.
+
+        :param value: Value to set.
+        """
+        # TODO: set in the segmenter
+        raise NotImplementedError
 
     @property
-    def dlc(self) -> int:  # TODO: get from the segmenter
-        ...
+    def dlc(self) -> int:
+        """
+        Value of base CAN DLC to use for CAN Packets.
+
+        .. note:: All output CAN Packets will have this DLC value set unless
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
+        """
+        # TODO: get from the segmenter
+        raise NotImplementedError
 
     @dlc.setter
-    def dlc(self, value: int):  # TODO: set in the segmenter
-        ...
+    def dlc(self, value: int):
+        """
+        Set value of base CAN DLC to use for CAN Packets.
+
+        :param value: Value to set.
+        """
+        # TODO: set in the segmenter
+        raise NotImplementedError
 
     @property
-    def use_data_optimization(self) -> bool:  # TODO: get from the segmenter
-        ...
+    def use_data_optimization(self) -> bool:
+        """Information whether to use CAN Frame Data Optimization during CAN Packets creation."""
+        # TODO: get from the segmenter
+        raise NotImplementedError
 
     @use_data_optimization.setter
-    def use_data_optimization(self, value: bool):  # TODO: set in the segmenter
-        ...
+    def use_data_optimization(self, value: bool):
+        """
+        Set whether to use CAN Frame Data Optimization during CAN Packets creation.
+
+        :param value: Value to set.
+        """
+        # TODO: set in the segmenter
+        raise NotImplementedError
 
     @property
-    def filler_byte(self) -> RawByte:  # TODO: get from the segmenter
-        ...
+    def filler_byte(self) -> RawByte:
+        """Filler byte value to use for CAN Frame Data Padding during segmentation."""
+        # TODO: get from the segmenter
+        raise NotImplementedError
 
     @filler_byte.setter
-    def filler_byte(self, value: RawByte):  # TODO: set in the segmenter
-        ...
+    def filler_byte(self, value: RawByte):
+        """
+        Set value of filler byte to use for CAN Frame Data Padding.
+
+        :param value: Value to set.
+        """
+        # TODO: set in the segmenter
+        raise NotImplementedError
 
     # Flow Control configuration
 
@@ -178,5 +316,3 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @flow_control_generator.setter
     def flow_control_generator(self, value: FlowControlGenerator) -> None:
         ...
-
-    # TODO: Packets Queues (received, scheduled)
