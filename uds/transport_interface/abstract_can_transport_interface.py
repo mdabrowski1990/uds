@@ -1,6 +1,6 @@
 """Abstract definition of UDS Transport Interface for CAN bus."""
 
-from typing import Optional, Union, Any, Iterable
+from typing import Optional, Union, Any, Iterator
 from abc import abstractmethod
 
 from uds.utilities import TimeMilliseconds, RawByte
@@ -8,10 +8,11 @@ from uds.packet import CanPacket
 from uds.can import CanAddressingFormatAlias
 from uds.segmentation import CanSegmenter, CanAIArgsAlias, CanAIParamsAlias
 from .abstract_transport_interface import AbstractTransportInterface
+from .packet_queues import PacketsQueue, TimestampedPacketsQueue
 
 
-FlowControlGenerator = Union[CanPacket, Iterable[CanPacket]]
-# TODO: docstring
+FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
+"""Alias that describes types used for :ref:`Flow Control <knowledge-base-can-flow-control>` CAN Packets generation."""
 
 
 class AbstractCanTransportInterface(AbstractTransportInterface):
@@ -21,13 +22,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     CAN Transport Interfaces are meant to handle middle layers (Transport and Network) for CAN bus.
     """
 
-    def __init__(self,
+    def __init__(self,  # pylint: disable=super-init-not-called
                  bus_manager: Any,  # noqa: F841
                  max_packet_records_stored: int,  # noqa: F841
                  max_message_records_stored: int,  # noqa: F841
-                 addressing_format: CanAddressingFormatAlias,
-                 physical_ai: CanAIArgsAlias,
-                 functional_ai: CanAIArgsAlias,
+                 addressing_format: CanAddressingFormatAlias,  # noqa: F841
+                 physical_ai: CanAIArgsAlias,  # noqa: F841
+                 functional_ai: CanAIArgsAlias,  # noqa: F841
                  **kwargs: Any) -> None:  # noqa: F841
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
@@ -52,12 +53,20 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @property
+    @property  # noqa: F841
     def segmenter(self) -> CanSegmenter:
         """Value of the segmenter used by this CAN Transport Interface."""
         raise NotImplementedError
 
-    # TODO: Packets Queues (received, scheduled)
+    @property  # noqa: F841
+    def _input_packets_queue(self) -> PacketsQueue:
+        """Queue with records of CAN Packet that were either received or transmitted."""
+        raise NotImplementedError
+
+    @property  # noqa: F841
+    def _output_packet_queue(self) -> TimestampedPacketsQueue:
+        """Queue with CAN Packets that are planned for the transmission."""
+        raise NotImplementedError
 
     # Time parameter - CAN Network Layer
 
@@ -75,7 +84,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @abstractmethod  # noqa: F841
     @property
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -98,7 +107,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @abstractmethod  # noqa: F841
     @property
     def n_ar_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -121,7 +130,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @abstractmethod  # noqa: F841
     @property
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -141,7 +150,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         raise NotImplementedError
 
     @n_br.setter
-    def n_br(self, value: TimeMilliseconds) -> None:
+    def n_br(self, value: TimeMilliseconds):
         """
         Set the value of N_Br time parameter to use.
 
@@ -149,10 +158,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @property
+    @property  # noqa: F841
     def n_br_max(self) -> TimeMilliseconds:
         """
-        The maximum valid value of N_Br time parameter.
+        Get the maximum valid value of N_Br time parameter.
 
         .. warning:: To assess maximal value of :ref:`N_Br <knowledge-base-can-n-br>`, the actual value of
             :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter is required.
@@ -172,7 +181,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         raise NotImplementedError
 
     @n_cs.setter
-    def n_cs(self, value: TimeMilliseconds) -> None:
+    def n_cs(self, value: TimeMilliseconds):
         """
         Set the value of N_Cs time parameter to use.
 
@@ -180,10 +189,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @property
+    @property  # noqa: F841
     def n_cs_max(self) -> TimeMilliseconds:
         """
-        The maximum valid value of N_Cs time parameter.
+        Get the maximum valid value of N_Cs time parameter.
 
         .. warning:: To assess maximal value of :ref:`N_Cs <knowledge-base-can-n-cs>`, the actual value of
             :ref:`N_As <knowledge-base-can-n-as>` time parameter is required.
@@ -206,7 +215,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    @abstractmethod  # noqa: F841
     @property
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -307,12 +316,44 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         # TODO: set in the segmenter
         raise NotImplementedError
 
-    # Flow Control configuration
+    # Flow Control
 
     @property
-    def flow_control_generator(self) -> FlowControlGenerator:
-        ...
+    def flow_control_generator(self) -> FlowControlGeneratorAlias:
+        """Get the generator of Flow Control CAN Packets."""
+        raise NotImplementedError
 
     @flow_control_generator.setter
-    def flow_control_generator(self, value: FlowControlGenerator) -> None:
-        ...
+    def flow_control_generator(self, value: FlowControlGeneratorAlias):
+        """
+        Set the value of Flow Control generator.
+
+        :param value: The value of Flow Control CAN Packet generator to use.
+            It must be either:
+
+            - object of `CanPacket` class - in this case the same Flow Control CAN Packet will always be used
+            - generator of `CanPacket` objects - built-in functions `iter` and `next` will be used on the generator
+              to restart iteration (upon reception of a new First Frame) and to produce the following
+              Flow Control CAN Packets
+        """
+        raise NotImplementedError
+
+    def _get_flow_control(self, is_first: bool) -> CanPacket:  # noqa: F841
+        """
+        Get the next Flow Control CAN Packet to send.
+
+        .. warning:: This method is restricted for internal use and shall not be called by the user as it might cause
+            malfunctioning of Flow Control CAN Packets generation.
+
+        :param is_first: Information whether it is the first Flow Control to respond to a message.
+
+            - True - Flow Control to return is the first Flow Control CAN Packet to send in current diagnostic message
+              reception. In other words, it is the first Flow Control which directly responds to
+              :ref:`First Frame <knowledge-base-can-first-frame>`.
+            - False - Flow Control to return is the following Flow Control CAN Packet to send in current
+              diagnostic message reception. In other words, there was at least one Flow Control already sent since
+              the reception of the last :ref:`First Frame <knowledge-base-can-first-frame>`.
+
+        :return: Flow Control CAN Packet to send in this diagnostic message reception
+        """
+        raise NotImplementedError

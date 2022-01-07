@@ -9,6 +9,7 @@ from uds.utilities import TimeMilliseconds
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.segmentation import AbstractSegmenter
+from .packet_queues import PacketsQueue, TimestampedPacketsQueue
 
 
 class AbstractTransportInterface(ABC):
@@ -33,11 +34,6 @@ class AbstractTransportInterface(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    @property
-    def segmenter(self) -> AbstractSegmenter:
-        """Value of the segmenter used by this Transport Interface."""
-
     @property  # noqa: F841
     def bus_manager(self) -> Any:
         """
@@ -46,6 +42,23 @@ class AbstractTransportInterface(ABC):
         Bus manager handles Physical and Data layers (OSI Model) of the bus.
         """
         raise NotImplementedError
+
+    @abstractmethod  # noqa: F841
+    @property
+    def segmenter(self) -> AbstractSegmenter:
+        """Value of the segmenter used by this Transport Interface."""
+
+    @abstractmethod  # noqa: F841
+    @property
+    def _input_packets_queue(self) -> PacketsQueue:
+        """Queue with records of UDS Packet that were either received or transmitted."""
+
+    @abstractmethod  # noqa: F841
+    @property
+    def _output_packet_queue(self) -> TimestampedPacketsQueue:
+        """Queue with UDS Packets that are planned for the transmission."""
+
+    # TODO: Message Queues
 
     @property  # noqa: F841
     def packet_records(self) -> Tuple[AbstractUdsPacketRecord, ...]:
