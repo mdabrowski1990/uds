@@ -51,14 +51,12 @@ class AbstractTransportInterface(ABC):
     @abstractmethod  # noqa: F841
     @property
     def _input_packets_queue(self) -> PacketsQueue:
-        """Queue with records of UDS Packet that were either received or transmitted."""
+        """Queue with records of UDS Packets that were either received or transmitted."""
 
     @abstractmethod  # noqa: F841
     @property
     def _output_packet_queue(self) -> TimestampedPacketsQueue:
         """Queue with UDS Packets that are planned for the transmission."""
-
-    # TODO: Message Queues
 
     @property  # noqa: F841
     def packet_records(self) -> Tuple[AbstractUdsPacketRecord, ...]:
