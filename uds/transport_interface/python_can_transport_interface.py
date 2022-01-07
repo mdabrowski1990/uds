@@ -133,7 +133,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
         """
         Wait until the next UDS message is received.
 
@@ -145,7 +145,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
         """
         Wait until the next UDS message is transmitted.
 

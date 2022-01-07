@@ -87,8 +87,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod  # noqa: F841
-    @property
+    @property  # noqa: F841
+    @abstractmethod
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_As time parameter.
@@ -110,8 +110,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod  # noqa: F841
-    @property
+    @property  # noqa: F841
+    @abstractmethod
     def n_ar_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Ar time parameter.
@@ -133,8 +133,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod  # noqa: F841
-    @property
+    @property  # noqa: F841
+    @abstractmethod
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Bs time parameter.
@@ -218,8 +218,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @abstractmethod  # noqa: F841
-    @property
+    @property  # noqa: F841
+    @abstractmethod
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Cr time parameter.
@@ -230,8 +230,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     # Communication parameters
 
     @property
-    def addressing_format(self) -> CanAddressingFormatAlias:  # TODO: get from the segmenter
+    def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
+        # TODO: get from the segmenter
         raise NotImplementedError
 
     @property

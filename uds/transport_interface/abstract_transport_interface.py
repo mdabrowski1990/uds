@@ -43,18 +43,18 @@ class AbstractTransportInterface(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod  # noqa: F841
-    @property
+    @property  # noqa: F841
+    @abstractmethod
     def segmenter(self) -> AbstractSegmenter:
         """Value of the segmenter used by this Transport Interface."""
 
-    @abstractmethod  # noqa: F841
-    @property
+    @property  # noqa: F841
+    @abstractmethod
     def _input_packets_queue(self) -> PacketsQueue:
         """Queue with records of UDS Packets that were either received or transmitted."""
 
-    @abstractmethod  # noqa: F841
-    @property
+    @property  # noqa: F841
+    @abstractmethod
     def _output_packet_queue(self) -> TimestampedPacketsQueue:
         """Queue with UDS Packets that are planned for the transmission."""
 
@@ -104,7 +104,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
         """
         Wait until the next UDS message is received.
 
@@ -116,7 +116,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
         """
         Wait until the next UDS message is transmitted.
 
