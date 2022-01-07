@@ -36,7 +36,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
-        :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
+        :param bus_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
         :param max_packet_records_stored: Maximal number of UDS packet records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
         :param max_message_records_stored: Maximal number of UDS message records to be stored in

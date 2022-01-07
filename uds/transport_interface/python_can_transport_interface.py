@@ -32,8 +32,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
-        :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
-        :param max_packet_records_stored: Maximal number of UDS packet records to be stored in
+        :param can_bus: Bus object for managing CAN bus (Physical and Data layers of OSI Model).
+        :param max_packet_records_stored: Maximal number of CAN packet records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
         :param max_message_records_stored: Maximal number of UDS message records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.message_records`.
@@ -111,7 +111,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
         """
-        Wait until the next UDS packet is received.
+        Wait until the next CAN packet is received.
 
         :param timeout: Maximal time (in milliseconds) to wait.
 
@@ -123,7 +123,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
         """
-        Wait until the next UDS packet is transmitted.
+        Wait until the next CAN packet is transmitted.
 
         :param timeout: Maximal time (in milliseconds) to wait.
 
@@ -159,9 +159,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     def send_packet(self, packet: CanPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
         """
-        Transmit UDS packet on the configured bus.
+        Transmit CAN packet on the configured bus.
 
-        :param packet: A packet to send.
+        :param packet: CAN packet to send.
         :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
             None if the transmission to be executed immediately.
         """
