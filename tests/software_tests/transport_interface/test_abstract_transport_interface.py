@@ -15,13 +15,15 @@ class TestAbstractTransportInterface:
     def test_init(self):
         with pytest.raises(NotImplementedError):
             AbstractTransportInterface.__init__(self=self.mock_transport_interface,
-                                                bus_handler=Mock())
+                                                bus_manager=Mock(),
+                                                max_message_records_stored=Mock(),
+                                                max_packet_records_stored=Mock())
 
-    # bus_handler
+    # bus_manager
 
-    def test_bus_handler(self):
+    def test_bus_manager(self):
         with pytest.raises(NotImplementedError):
-            AbstractTransportInterface.bus_handler.fget(self.mock_transport_interface)
+            AbstractTransportInterface.bus_manager.fget(self.mock_transport_interface)
 
     # packet_records
 
@@ -34,31 +36,3 @@ class TestAbstractTransportInterface:
     def test_message_records(self):
         with pytest.raises(NotImplementedError):
             AbstractTransportInterface.message_records.fget(self.mock_transport_interface)
-
-    # await_packet_received
-
-    @pytest.mark.asyncio
-    async def test_await_packet_received(self):
-        with pytest.raises(NotImplementedError):
-            await AbstractTransportInterface.await_packet_received(self=self.mock_transport_interface)
-
-    # await_packet_transmitted
-
-    @pytest.mark.asyncio
-    async def test_await_packet_transmitted(self):
-        with pytest.raises(NotImplementedError):
-            await AbstractTransportInterface.await_packet_transmitted(self=self.mock_transport_interface)
-
-    # await_message_transmitted
-
-    @pytest.mark.asyncio
-    async def test_await_message_transmitted(self):
-        with pytest.raises(NotImplementedError):
-            await AbstractTransportInterface.await_message_transmitted(self=self.mock_transport_interface)
-
-    # await_message_received
-
-    @pytest.mark.asyncio
-    async def test_await_message_received(self):
-        with pytest.raises(NotImplementedError):
-            await AbstractTransportInterface.await_message_received(self=self.mock_transport_interface)

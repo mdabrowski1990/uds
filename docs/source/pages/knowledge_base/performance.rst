@@ -30,6 +30,8 @@ on CAN communication:
   the only applicable time parameter is N_As_.
 
 
+.. _knowledge-base-can-n-as:
+
 N_As
 ````
 N_As is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-uds-can-packet>` by a sender.
@@ -49,6 +51,8 @@ Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
   - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
+.. _knowledge-base-can-n-ar:
+
 N_Ar
 ````
 N_Ar is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-uds-can-packet>` by a receiver.
@@ -65,6 +69,8 @@ Error handling:
 Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
   - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
+
+.. _knowledge-base-can-n-bs:
 
 N_Bs
 ````
@@ -84,6 +90,8 @@ Error handling:
 Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
   - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
+
+.. _knowledge-base-can-n-br:
 
 N_Br
 ````
@@ -106,6 +114,8 @@ Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
   - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
+.. _knowledge-base-can-n-cs:
+
 N_Cs
 ````
 N_Cs is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
@@ -126,6 +136,8 @@ Performance requirement:
 Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
   - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
+
+.. _knowledge-base-can-n-cr:
 
 N_Cr
 ````
