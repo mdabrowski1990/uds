@@ -10,18 +10,6 @@ class TestPyCanTransportInterface:
     def setup(self):
         self.mock_can_transport_interface = Mock(spec=PyCanTransportInterface)
 
-    # __init__
-
-    def test_init(self):
-        with pytest.raises(NotImplementedError):
-            PyCanTransportInterface.__init__(self=self.mock_can_transport_interface,
-                                             can_bus=Mock(),
-                                             max_packet_records_stored=Mock(),
-                                             max_message_records_stored=Mock(),
-                                             addressing_format=Mock(),
-                                             physical_ai=Mock(),
-                                             functional_ai=Mock())
-
     # n_as_measured
 
     def test_n_as_measured(self):

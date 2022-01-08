@@ -21,7 +21,7 @@ class TestAbstractTransportInterface:
 
     # bus_manager
 
-    def test_bus_handler(self):
+    def test_bus_manager(self):
         with pytest.raises(NotImplementedError):
             AbstractTransportInterface.bus_manager.fget(self.mock_transport_interface)
 

@@ -1,56 +1,21 @@
-"""Implementation of Transport Interfaces for CAN bus handled by python-can."""
+"""
+Implementation of python-can Transport Interface.
+
+Documentation for python-can package: https://python-can.readthedocs.io/
+"""
 
 __all__ = ["PyCanTransportInterface"]
 
 from typing import Optional, Any
 
-from can import BusABC
-
 from uds.utilities import TimeMilliseconds
 from uds.packet import CanPacket, CanPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.can import CanAddressingFormatAlias
-from uds.segmentation import CanAIArgsAlias
 from .abstract_can_transport_interface import AbstractCanTransportInterface
 
 
 class PyCanTransportInterface(AbstractCanTransportInterface):
-    """
-    Transport Interface for CAN that is compatible with python-can.
-
-    Documentation for python-can: https://python-can.readthedocs.io/
-    """
-
-    def __init__(self,  # pylint: disable=super-init-not-called
-                 can_bus: BusABC,  # noqa: F841
-                 max_packet_records_stored: int,  # noqa: F841
-                 max_message_records_stored: int,  # noqa: F841
-                 addressing_format: CanAddressingFormatAlias,  # noqa: F841
-                 physical_ai: CanAIArgsAlias,  # noqa: F841
-                 functional_ai: CanAIArgsAlias,  # noqa: F841
-                 **kwargs: Any) -> None:  # noqa: F841
-        """
-        Create Transport Interface (an object for handling UDS Transport and Network layers).
-
-        :param can_bus: Bus object for managing CAN bus (Physical and Data layers of OSI Model).
-        :param max_packet_records_stored: Maximal number of CAN packet records to be stored in
-            :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
-        :param max_message_records_stored: Maximal number of UDS message records to be stored in
-            :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.message_records`.
-        :param kwargs: Optional arguments that are specific for CAN bus.
-
-            - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
-            - :parameter n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
-            - :parameter n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
-            - :parameter n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
-            - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
-            - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
-            - :parameter dlc: Base CAN DLC value to use for CAN Packets.
-            - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
-            - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
-            - :parameter flow_control_generator: Generator of Flow Control CAN packets.
-        """
-        raise NotImplementedError
+    """Transport Interface for managing UDS on CAN using python-can package."""
 
     @property  # noqa: F841
     def n_as_measured(self) -> Optional[TimeMilliseconds]:

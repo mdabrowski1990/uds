@@ -1,6 +1,6 @@
 """Abstract definition of UDS Transport Interface for CAN bus."""
 
-__all__ = ["AbstractCanTransportInterface", "FlowControlGeneratorAlias"]
+__all__ = ["AbstractCanTransportInterface"]
 
 
 from typing import Optional, Union, Any, Iterator
@@ -20,13 +20,13 @@ FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
 
 class AbstractCanTransportInterface(AbstractTransportInterface):
     """
-    Abstract definition of Transport Interface for CAN bus.
+    Abstract definition of Transport Interface for managing UDS on CAN bus.
 
-    CAN Transport Interfaces are meant to handle middle layers (Transport and Network) for CAN bus.
+    CAN Transport Interfaces are meant to handle UDS middle layers (Transport and Network) on CAN bus.
     """
 
     def __init__(self,  # pylint: disable=super-init-not-called
-                 bus_manager: Any,  # noqa: F841
+                 can_bus_manager: Any,  # noqa: F841
                  max_packet_records_stored: int,  # noqa: F841
                  max_message_records_stored: int,  # noqa: F841
                  addressing_format: CanAddressingFormatAlias,  # noqa: F841
@@ -36,7 +36,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
-        :param bus_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
+        :param can_bus_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
         :param max_packet_records_stored: Maximal number of UDS packet records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
         :param max_message_records_stored: Maximal number of UDS message records to be stored in
@@ -63,7 +63,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property  # noqa: F841
     def _input_packets_queue(self) -> PacketsQueue:
-        """Queue with records of CAN Packet that were either received or transmitted."""
+        """Queue with CAN Packets records that were either received or transmitted."""
         raise NotImplementedError
 
     @property  # noqa: F841
