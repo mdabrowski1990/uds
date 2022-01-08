@@ -12,6 +12,8 @@ from uds.can import CanAddressingFormatAlias
 from uds.segmentation import CanSegmenter, CanAIArgsAlias, CanAIParamsAlias
 from .abstract_transport_interface import AbstractTransportInterface
 from .packet_queues import PacketsQueue, TimestampedPacketsQueue
+from .consts import DEFAULT_PACKET_RECORDS_STORED, DEFAULT_MESSAGE_RECORDS_STORED
+from .can_consts import DEFAULT_FLOW_CONTROL_ARGS, N_AS_TIMEOUT, N_AR_TIMEOUT, N_BS_TIMEOUT, N_CR_TIMEOUT
 
 
 FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
@@ -25,18 +27,21 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     CAN Transport Interfaces are meant to handle UDS middle layers (Transport and Network) on CAN bus.
     """
 
-    def __init__(self,  # pylint: disable=super-init-not-called
-                 can_bus_manager: Any,  # noqa: F841
-                 max_packet_records_stored: int,  # noqa: F841
-                 max_message_records_stored: int,  # noqa: F841
-                 addressing_format: CanAddressingFormatAlias,  # noqa: F841
-                 physical_ai: CanAIArgsAlias,  # noqa: F841
-                 functional_ai: CanAIArgsAlias,  # noqa: F841
-                 **kwargs: Any) -> None:  # noqa: F841
+    def __init__(self,
+                 can_bus_manager: Any,
+                 addressing_format: CanAddressingFormatAlias,
+                 physical_ai: CanAIArgsAlias,
+                 functional_ai: CanAIArgsAlias,
+                 max_packet_records_stored: int = DEFAULT_PACKET_RECORDS_STORED,
+                 max_message_records_stored: int = DEFAULT_MESSAGE_RECORDS_STORED,
+                 **kwargs: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param can_bus_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
+        :param addressing_format: CAN Addressing format used.
+        :param physical_ai: CAN Addressing Information parameters used for physically addressed communication.
+        :param functional_ai: CAN Addressing Information parameters used for functionally addressed communication.
         :param max_packet_records_stored: Maximal number of UDS packet records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
         :param max_message_records_stored: Maximal number of UDS message records to be stored in
@@ -54,7 +59,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
             - :parameter flow_control_generator: Generator of Flow Control CAN packets.
         """
-        raise NotImplementedError
 
     @property  # noqa: F841
     def segmenter(self) -> CanSegmenter:
