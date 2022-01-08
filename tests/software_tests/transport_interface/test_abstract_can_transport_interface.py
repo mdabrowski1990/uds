@@ -1,74 +1,26 @@
 import pytest
-from mock import Mock, patch
+from mock import Mock
 
-from uds.transport_interface.abstract_can_transport_interface import AbstractCanTransportInterface,\
-    DEFAULT_PACKET_RECORDS_STORED, DEFAULT_MESSAGE_RECORDS_STORED,\
-    DEFAULT_FLOW_CONTROL_ARGS, N_AS_TIMEOUT, N_AR_TIMEOUT, N_BS_TIMEOUT, N_CR_TIMEOUT
+from uds.transport_interface.abstract_can_transport_interface import AbstractCanTransportInterface
 
 
 class TestAbstractCanTransportInterface:
     """Unit tests for `AbstractCanTransportInterface` class."""
 
-    SCRIPT_LOCATION = "uds.transport_interface.abstract_can_transport_interface"
-
     def setup(self):
         self.mock_can_transport_interface = Mock(spec=AbstractCanTransportInterface)
-        # patching
-        self._patcher_abstract_ti_init = patch(f"{self.SCRIPT_LOCATION}.AbstractTransportInterface.__init__")
-        self.mock_abstract_ti_init = self._patcher_abstract_ti_init.start()
-        self._patcher_can_segmenter_class = patch(f"{self.SCRIPT_LOCATION}.CanSegmenter")
-        self.mock_can_segmenter_class = self._patcher_can_segmenter_class.start()
-        self._patcher_can_packet_class = patch(f"{self.SCRIPT_LOCATION}.CanPacket")
-        self.mock_can_packet_class = self._patcher_can_packet_class.start()
-        self._patcher_packet_queue_class = patch(f"{self.SCRIPT_LOCATION}.PacketsQueue")
-        self.mock_packet_queue_class = self._patcher_packet_queue_class.start()
-        self._patcher_timestamped_packet_queue_class = patch(f"{self.SCRIPT_LOCATION}.TimestampedPacketsQueue")
-        self.mock_timestamped_packet_queue_class = self._patcher_timestamped_packet_queue_class.start()
-
-    def teardown(self):
-        self._patcher_abstract_ti_init.stop()
-        self._patcher_can_segmenter_class.stop()
-        self._patcher_can_packet_class.stop()
-        self._patcher_packet_queue_class.stop()
-        self._patcher_timestamped_packet_queue_class.stop()
 
     # __init__
 
-    def test_init__valid(self, can_bus_manager, addressing_format, physical_ai, functional_ai,
-                         records_args, segmenter_args, other_can_args):
-        AbstractCanTransportInterface.__init__(self=self.mock_can_transport_interface,
-                                               can_bus_manager=can_bus_manager,
-                                               addressing_format=addressing_format,
-                                               physical_ai=physical_ai,
-                                               functional_ai=functional_ai,
-                                               **records_args,
-                                               **segmenter_args,
-                                               **other_can_args)
-        self.mock_abstract_ti_init.assert_called_once_with(
-            bus_manager=can_bus_manager,
-            max_packet_records_stored=records_args.get("max_packet_records_stored", DEFAULT_PACKET_RECORDS_STORED),
-            max_message_records_stored=records_args.get("max_message_records_stored", DEFAULT_MESSAGE_RECORDS_STORED))
-        self.mock_can_segmenter_class.assert_called_once_with(addressing_format=addressing_format,
-                                                              physical_ai=physical_ai,
-                                                              functional_ai=functional_ai,
-                                                              **segmenter_args)
-        assert self.mock_can_transport_interface.__segmenter == self.mock_can_segmenter_class.return_value
-        assert self.mock_can_transport_interface.__input_packets_queue == self.mock_packet_queue_class.return_value
-        assert self.mock_can_transport_interface.__output_packet_queue == self.mock_timestamped_packet_queue_class.return_value
-        assert self.mock_can_transport_interface.n_as_timeout == other_can_args.get("n_as_timeout", N_AS_TIMEOUT)
-        assert self.mock_can_transport_interface.n_ar_timeout == other_can_args.get("n_ar_timeout", N_AR_TIMEOUT)
-        assert self.mock_can_transport_interface.n_bs_timeout == other_can_args.get("n_bs_timeout", N_BS_TIMEOUT)
-        assert self.mock_can_transport_interface.n_cr_timeout == other_can_args.get("n_cr_timeout", N_CR_TIMEOUT)
-        if "flow_control_generator" in other_can_args:
-            assert self.mock_can_transport_interface.flow_control_generator == other_can_args["flow_control_generator"]
-        else:
-            self.mock_can_packet_class.assert_called_once_with(
-                dlc=self.mock_can_transport_interface.dlc,
-                use_data_optimization=self.mock_can_transport_interface.use_data_optimization,
-                filler_byte=self.mock_can_transport_interface.filler_byte,
-                **DEFAULT_FLOW_CONTROL_ARGS,
-                **self.mock_can_transport_interface.physical_ai)
-            assert self.mock_can_transport_interface.flow_control_generator == self.mock_can_packet_class.return_value
+    def test_init(self):
+        with pytest.raises(NotImplementedError):
+            AbstractCanTransportInterface.__init__(self=self.mock_can_transport_interface,
+                                                   can_bus_manager=Mock(),
+                                                   max_packet_records_stored=Mock(),
+                                                   max_message_records_stored=Mock(),
+                                                   addressing_format=Mock(),
+                                                   physical_ai=Mock(),
+                                                   functional_ai=Mock())
 
     # segmenter
 

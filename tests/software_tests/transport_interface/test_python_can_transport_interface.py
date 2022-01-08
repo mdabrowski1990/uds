@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock, patch
+from mock import Mock
 
 from uds.transport_interface.python_can_transport_interface import PyCanTransportInterface
 
