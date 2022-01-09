@@ -14,3 +14,7 @@ class UnusedArgumentWarning(Warning):
 
         The function would warn (using this warning) when both parameters are provided but `a != 1`.
     """
+
+
+class ValueWarning(Warning):
+    """Value of the argument is out of typical range, but the package is able to handle it."""

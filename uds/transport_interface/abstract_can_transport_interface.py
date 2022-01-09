@@ -3,10 +3,11 @@
 __all__ = ["AbstractCanTransportInterface"]
 
 
-from typing import Optional, Union, Any, Iterator
+from typing import Optional, Union, Any, Iterator, Iterable
 from abc import abstractmethod
+from warnings import warn
 
-from uds.utilities import TimeMilliseconds, RawByte
+from uds.utilities import TimeMilliseconds, RawByte, ValueWarning
 from uds.packet import CanPacket, CanPacketRecord
 from uds.can import CanAddressingFormatAlias
 from uds.segmentation import CanSegmenter, CanAIArgsAlias, CanAIParamsAlias
@@ -17,7 +18,7 @@ from .can_consts import DEFAULT_FLOW_CONTROL_ARGS, DEFAULT_N_BR, DEFAULT_N_CS, \
     N_AS_TIMEOUT, N_AR_TIMEOUT, N_BS_TIMEOUT, N_CR_TIMEOUT
 
 
-FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
+FlowControlGeneratorAlias = Union[CanPacket, Iterable[CanPacket]]
 """Alias that describes types used for :ref:`Flow Control <knowledge-base-can-flow-control>` CAN Packets generation."""
 
 
@@ -66,7 +67,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                          max_packet_records_stored=max_packet_records_stored,
                          max_message_records_stored=max_message_records_stored)
         segmenter_kwargs = {}
-        for arg_name in {"dlc", "use_data_optimization", "filler_byte"}:
+        for arg_name in ("dlc", "use_data_optimization", "filler_byte"):
             if arg_name in kwargs:
                 segmenter_kwargs[arg_name] = kwargs.pop(arg_name)
         self.__segmenter = CanSegmenter(addressing_format=addressing_format,
@@ -204,7 +205,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
         """
-        raise NotImplementedError
+        return self.__n_br
 
     @n_br.setter
     def n_br(self, value: TimeMilliseconds):
@@ -212,8 +213,19 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set the value of N_Br time parameter to use.
 
         :param value: The value to set.
+
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Provided time value is less than 0.
         """
-        raise NotImplementedError
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+        if value < 0:
+            raise ValueError(f"Provided value is less than 0. Actual value: {value}")
+        if self.n_br_max <= value:
+            warn(message=f"Provided N_Br value is greater than maximal value allowed by UDS standard. "
+                         f"Max value = {self.n_br_max}. Actual value = {value}",
+                 category=ValueWarning)
+        self.__n_br = value
 
     @property
     def n_br_max(self) -> TimeMilliseconds:
@@ -228,14 +240,14 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return 0.9 * self.n_bs_timeout - self.n_ar_measured
 
     @property
-    def n_cs(self) -> TimeMilliseconds:
+    def n_cs(self) -> Optional[TimeMilliseconds]:
         """
         Get the value of N_Cs time parameter which is currently set.
 
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
         """
-        raise NotImplementedError
+        return self.__n_cs
 
     @n_cs.setter
     def n_cs(self, value: Optional[TimeMilliseconds]):
@@ -243,9 +255,23 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set the value of N_Cs time parameter to use.
 
         :param value: The value to set.
-            TODO: Leave None to use STmin
+
+            - None - Use :ref:`STmin <knowledge-base-can-st-min>` provided by the receiver.
+            - int or float type value - Value in milliseconds to use.
+
+        :raise TypeError: Provided value is not None neither time in milliseconds.
+        :raise ValueError: Provided time value is less than 0.
         """
-        raise NotImplementedError
+        if value is not None:
+            if not isinstance(value, (int, float)):
+                raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+            if value < 0:
+                raise ValueError(f"Provided value is less than 0. Actual value: {value}")
+            if self.n_cs_max <= value:
+                warn(message=f"Provided N_Br value is greater than maximal value allowed by UDS standard. "
+                             f"Max value = {self.n_cs_max}. Actual value = {value}",
+                     category=ValueWarning)
+        self.__n_cs = value
 
     @property
     def n_cs_max(self) -> TimeMilliseconds:
@@ -294,14 +320,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
+        return self.segmenter.addressing_format
 
     @property
     def physical_ai(self) -> CanAIParamsAlias:
         """CAN Addressing Information parameters used for physically addressed communication."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
+        return self.segmenter.physical_ai
 
     @physical_ai.setter
     def physical_ai(self, value: CanAIArgsAlias):
@@ -310,14 +334,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value to set.
         """
-        # TODO: set in the segmenter
-        raise NotImplementedError
+        self.segmenter.physical_ai = value
 
     @property
     def functional_ai(self) -> CanAIParamsAlias:
         """CAN Addressing Information parameters used for functionally addressed communication."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
+        return self.segmenter.functional_ai
 
     @functional_ai.setter
     def functional_ai(self, value: CanAIArgsAlias):
@@ -326,8 +348,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value to set.
         """
-        # TODO: set in the segmenter
-        raise NotImplementedError
+        self.segmenter.functional_ai = value
 
     @property
     def dlc(self) -> int:
@@ -337,8 +358,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         .. note:: All output CAN Packets will have this DLC value set unless
             :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
         """
-        # TODO: get from the segmenter
-        raise NotImplementedError
+        return self.segmenter.dlc
 
     @dlc.setter
     def dlc(self, value: int):
@@ -347,14 +367,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value to set.
         """
-        # TODO: set in the segmenter
-        raise NotImplementedError
+        self.segmenter.dlc = value
 
     @property
     def use_data_optimization(self) -> bool:
         """Information whether to use CAN Frame Data Optimization during CAN Packets creation."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
+        return self.segmenter.use_data_optimization
 
     @use_data_optimization.setter
     def use_data_optimization(self, value: bool):
@@ -363,14 +381,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value to set.
         """
-        # TODO: set in the segmenter
-        raise NotImplementedError
+        self.segmenter.use_data_optimization = value
 
     @property
     def filler_byte(self) -> RawByte:
         """Filler byte value to use for CAN Frame Data Padding during segmentation."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
+        return self.segmenter.filler_byte
 
     @filler_byte.setter
     def filler_byte(self, value: RawByte):
@@ -379,15 +395,14 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value to set.
         """
-        # TODO: set in the segmenter
-        raise NotImplementedError
+        self.segmenter.filler_byte = value
 
     # Flow Control
 
     @property
     def flow_control_generator(self) -> FlowControlGeneratorAlias:
         """Get the generator of Flow Control CAN Packets."""
-        raise NotImplementedError
+        return self.__flow_control_generator
 
     @flow_control_generator.setter
     def flow_control_generator(self, value: FlowControlGeneratorAlias):
@@ -401,8 +416,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - generator of `CanPacket` objects - built-in functions `iter` and `next` will be used on the generator
               to restart iteration (upon reception of a new First Frame) and to produce the following
               Flow Control CAN Packets
+
+        :raise TypeError: Provided value has unsupported type.
         """
-        raise NotImplementedError
+        if not isinstance(value, (CanPacket, Iterable)):
+            raise TypeError
+        self.__flow_control_generator = value
+        self.__flow_control_current_iterator: Optional[Iterator[CanPacket]] = None
 
     def _get_flow_control(self, is_first: bool) -> CanPacket:
         """
@@ -422,4 +442,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :return: Flow Control CAN Packet to send in this diagnostic message reception
         """
-        raise NotImplementedError
+        if isinstance(self.flow_control_generator, CanPacket):
+            return self.flow_control_generator
+        if is_first:
+            self.__flow_control_current_iterator = iter(self.flow_control_generator)
+        return next(self.__flow_control_current_iterator)
