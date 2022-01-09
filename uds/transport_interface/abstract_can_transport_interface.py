@@ -7,13 +7,14 @@ from typing import Optional, Union, Any, Iterator
 from abc import abstractmethod
 
 from uds.utilities import TimeMilliseconds, RawByte
-from uds.packet import CanPacket
+from uds.packet import CanPacket, CanPacketRecord
 from uds.can import CanAddressingFormatAlias
 from uds.segmentation import CanSegmenter, CanAIArgsAlias, CanAIParamsAlias
 from .abstract_transport_interface import AbstractTransportInterface
 from .packet_queues import PacketsQueue, TimestampedPacketsQueue
 from .consts import DEFAULT_PACKET_RECORDS_STORED, DEFAULT_MESSAGE_RECORDS_STORED
-from .can_consts import DEFAULT_FLOW_CONTROL_ARGS, N_AS_TIMEOUT, N_AR_TIMEOUT, N_BS_TIMEOUT, N_CR_TIMEOUT
+from .can_consts import DEFAULT_FLOW_CONTROL_ARGS, DEFAULT_N_BR, DEFAULT_N_CS, \
+    N_AS_TIMEOUT, N_AR_TIMEOUT, N_BS_TIMEOUT, N_CR_TIMEOUT
 
 
 FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
@@ -58,29 +59,57 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
             - :parameter flow_control_generator: Generator of Flow Control CAN packets.
-        """
 
-    @property  # noqa: F841
+        :raise ValueError: Unexpected keyword argument(s) was/were provided.
+        """
+        super().__init__(bus_manager=can_bus_manager,
+                         max_packet_records_stored=max_packet_records_stored,
+                         max_message_records_stored=max_message_records_stored)
+        segmenter_kwargs = {}
+        for arg_name in {"dlc", "use_data_optimization", "filler_byte"}:
+            if arg_name in kwargs:
+                segmenter_kwargs[arg_name] = kwargs.pop(arg_name)
+        self.__segmenter = CanSegmenter(addressing_format=addressing_format,
+                                        physical_ai=physical_ai,
+                                        functional_ai=functional_ai,
+                                        **segmenter_kwargs)
+        self.__input_packets_queue = PacketsQueue(packet_type=CanPacketRecord)
+        self.__output_packet_queue = TimestampedPacketsQueue(packet_type=CanPacket)
+        self.n_as_timeout = kwargs.pop("n_as_timeout", N_AS_TIMEOUT)
+        self.n_ar_timeout = kwargs.pop("n_ar_timeout", N_AR_TIMEOUT)
+        self.n_bs_timeout = kwargs.pop("n_bs_timeout", N_BS_TIMEOUT)
+        self.n_cr_timeout = kwargs.pop("n_cr_timeout", N_CR_TIMEOUT)
+        self.n_br = kwargs.pop("n_br", DEFAULT_N_BR)
+        self.n_cs = kwargs.pop("n_cs", DEFAULT_N_CS)
+        self.flow_control_generator = kwargs.pop("flow_control_generator",
+                                                 CanPacket(dlc=self.dlc if self.use_data_optimization else None,
+                                                           filler_byte=self.filler_byte,
+                                                           **DEFAULT_FLOW_CONTROL_ARGS,
+                                                           **self.physical_ai))
+        if kwargs:
+            raise ValueError(f"Unexpected keyword argument(s) was/were provided: {kwargs}.")
+
+    @property
     def segmenter(self) -> CanSegmenter:
         """Value of the segmenter used by this CAN Transport Interface."""
-        raise NotImplementedError
+        return self.__segmenter
 
-    @property  # noqa: F841
+    @property
     def _input_packets_queue(self) -> PacketsQueue:
         """Queue with CAN Packets records that were either received or transmitted."""
-        raise NotImplementedError
+        return self.__input_packets_queue
 
-    @property  # noqa: F841
+    @property
     def _output_packet_queue(self) -> TimestampedPacketsQueue:
         """Queue with CAN Packets that are planned for the transmission."""
-        raise NotImplementedError
+        return self.__output_packet_queue
 
     # Time parameter - CAN Network Layer
 
     @property
     def n_as_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_As time parameter."""
-        raise NotImplementedError
+        return self.__n_as_timeout
 
     @n_as_timeout.setter
     def n_as_timeout(self, value: TimeMilliseconds):
@@ -88,10 +117,17 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_As time parameter.
 
         :param value: Value of timeout to set.
-        """
-        raise NotImplementedError
 
-    @property  # noqa: F841
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Provided time value is less than 0.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+        if value < 0:
+            raise ValueError(f"Provided value is less than 0. Actual value: {value}")
+        self.__n_as_timeout = value
+
+    @property
     @abstractmethod
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -103,7 +139,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_ar_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_Ar time parameter."""
-        raise NotImplementedError
+        return self.__n_ar_timeout
 
     @n_ar_timeout.setter
     def n_ar_timeout(self, value: TimeMilliseconds):
@@ -111,10 +147,17 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_Ar time parameter.
 
         :param value: Value of timeout to set.
-        """
-        raise NotImplementedError
 
-    @property  # noqa: F841
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Provided time value is less than 0.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+        if value < 0:
+            raise ValueError(f"Provided value is less than 0. Actual value: {value}")
+        self.__n_ar_timeout = value
+
+    @property
     @abstractmethod
     def n_ar_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -126,7 +169,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_bs_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_Bs time parameter."""
-        raise NotImplementedError
+        return self.__n_bs_timeout
 
     @n_bs_timeout.setter
     def n_bs_timeout(self, value: TimeMilliseconds):
@@ -134,10 +177,17 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_Bs time parameter.
 
         :param value: Value of timeout to set.
-        """
-        raise NotImplementedError
 
-    @property  # noqa: F841
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Provided time value is less than 0.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+        if value < 0:
+            raise ValueError(f"Provided value is less than 0. Actual value: {value}")
+        self.__n_bs_timeout = value
+
+    @property
     @abstractmethod
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -165,7 +215,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    @property  # noqa: F841
+    @property
     def n_br_max(self) -> TimeMilliseconds:
         """
         Get the maximum valid value of N_Br time parameter.
@@ -175,7 +225,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
             no measurement result).
         """
-        raise NotImplementedError
+        return 0.9 * self.n_bs_timeout - self.n_ar_measured
 
     @property
     def n_cs(self) -> TimeMilliseconds:
@@ -188,15 +238,16 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         raise NotImplementedError
 
     @n_cs.setter
-    def n_cs(self, value: TimeMilliseconds):
+    def n_cs(self, value: Optional[TimeMilliseconds]):
         """
         Set the value of N_Cs time parameter to use.
 
         :param value: The value to set.
+            TODO: Leave None to use STmin
         """
         raise NotImplementedError
 
-    @property  # noqa: F841
+    @property
     def n_cs_max(self) -> TimeMilliseconds:
         """
         Get the maximum valid value of N_Cs time parameter.
@@ -206,12 +257,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
             no measurement result).
         """
-        raise NotImplementedError
+        return 0.9 * self.n_cr_timeout - self.n_as_measured
 
     @property
     def n_cr_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_Cr time parameter."""
-        raise NotImplementedError
+        return self.__n_cr_timeout
 
     @n_cr_timeout.setter
     def n_cr_timeout(self, value: TimeMilliseconds):
@@ -219,10 +270,17 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_Cr time parameter.
 
         :param value: Value of timeout to set.
-        """
-        raise NotImplementedError
 
-    @property  # noqa: F841
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Provided time value is less than 0.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+        if value < 0:
+            raise ValueError(f"Provided value is less than 0. Actual value: {value}")
+        self.__n_cr_timeout = value
+
+    @property
     @abstractmethod
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -346,7 +404,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         raise NotImplementedError
 
-    def _get_flow_control(self, is_first: bool) -> CanPacket:  # noqa: F841
+    def _get_flow_control(self, is_first: bool) -> CanPacket:
         """
         Get the next Flow Control CAN Packet to send.
 
