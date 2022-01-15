@@ -7,9 +7,9 @@ Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
  - Data
 """
 
-__all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE", "AICanIdAlias"]
+__all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
-from typing import Any, Optional, Union, Tuple, Set, Dict
+from typing import Any, Optional, Union, Literal, Tuple, Set, Dict
 from bisect import bisect_left
 
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
@@ -21,9 +21,6 @@ DEFAULT_FILLER_BYTE: RawByte = 0xCC
 """Default value of Filler Byte.
 Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
 .. note:: The value is specified by ISO 15765-2:2016 (chapter 10.4.2.1)."""
-
-AICanIdAlias = Dict[str, Optional[Union[AddressingTypeAlias, RawByte]]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in CAN Identifier."""
 
 
 class CanIdHandler:
@@ -55,15 +52,19 @@ class CanIdHandler:
     MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18CD0000
     """Minimum value of functionally addressed CAN ID in Mixed 29-bit Addressing format."""
 
-    ADDRESSING_TYPE_NAME = "addressing_type"
+    ADDRESSING_TYPE_NAME: str = "addressing_type"
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
-    TARGET_ADDRESS_NAME = "target_address"
+    TARGET_ADDRESS_NAME: str = "target_address"
     """Name of Target Address parameter in Addressing Information."""
-    SOURCE_ADDRESS_NAME = "source_address"
+    SOURCE_ADDRESS_NAME: str = "source_address"
     """Name of Source Address parameter in Addressing Information."""
 
+    CanIdAIAlias = Dict[Literal[ADDRESSING_TYPE_NAME, TARGET_ADDRESS_NAME, SOURCE_ADDRESS_NAME],
+                        Optional[Union[AddressingTypeAlias, RawByte]]]
+    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by CAN Identifier."""
+
     @classmethod
-    def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> AICanIdAlias:
+    def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> CanIdAIAlias:
         """
         Extract Addressing Information out of CAN ID.
 
@@ -93,11 +94,11 @@ class CanIdHandler:
                                  CanAddressingFormat.MIXED_11BIT_ADDRESSING):
             return {cls.ADDRESSING_TYPE_NAME: None,
                     cls.TARGET_ADDRESS_NAME: None,
-                    cls.SOURCE_ADDRESS_NAME: None}  # information cannot be decoded
+                    cls.SOURCE_ADDRESS_NAME: None}  # no addressing information can be decoded
         raise NotImplementedError(f"Unknown addressing format value was provided: {addressing_format}")
 
     @classmethod
-    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> AICanIdAlias:
+    def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> CanIdAIAlias:
         """
         Extract Addressing Information out of CAN ID for Normal Fixed CAN Addressing format.
 
@@ -131,7 +132,7 @@ class CanIdHandler:
                                   f"Actual value: {can_id}")
 
     @classmethod
-    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> AICanIdAlias:
+    def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> CanIdAIAlias:
         """
         Extract Addressing Information out of CAN ID for Mixed 29-bit CAN Addressing format.
 
@@ -414,9 +415,11 @@ class CanDlcHandler:
 
     __DLC_VALUES: Tuple[int, ...] = tuple(range(0x10))
     __DATA_BYTES_NUMBERS: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64)
-    __DLC_MAPPING: Dict[int, int] = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS))
-    __DATA_BYTES_NUMBER_MAPPING: Dict[int, int] = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
-    __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(__DLC_VALUES[9:])
+    __DLC_MAPPING: Dict[Literal[__DLC_VALUES], Literal[__DATA_BYTES_NUMBERS]] \
+        = dict(zip(__DLC_VALUES, __DATA_BYTES_NUMBERS))
+    __DATA_BYTES_NUMBER_MAPPING: Dict[Literal[__DATA_BYTES_NUMBERS], Literal[__DLC_VALUES]] \
+        = dict(zip(__DATA_BYTES_NUMBERS, __DLC_VALUES))
+    __DLC_SPECIFIC_FOR_CAN_FD: Set[int] = set(dlc for dlc in __DLC_VALUES if dlc > 8)
 
     MIN_DATA_BYTES_NUMBER: int = min(__DATA_BYTES_NUMBERS)
     """Minimum number of data bytes in a CAN frame."""

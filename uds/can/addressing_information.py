@@ -4,21 +4,15 @@ Implementation of CAN Addressing Information.
 This module contains helper class for managing :ref:`Addressing Information <knowledge-base-n-ai>` on CAN bus.
 """
 
-__all__ = ["CanAddressingInformationHandler", "AIDataBytesAlias", "AIAlias"]
+__all__ = ["CanAddressingInformationHandler"]
 
-from typing import Optional, Union, Dict
+from typing import Optional, Union, Literal, Dict
 
 from uds.utilities import RawByte, RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, \
     InconsistentArgumentsError, UnusedArgumentError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .frame_fields import CanIdHandler
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
-
-
-AIDataBytesAlias = Dict[str, Optional[RawByte]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in data bytes."""
-AIAlias = Dict[str, Optional[Union[RawByte, AddressingTypeAlias]]]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>`."""
 
 
 class CanAddressingInformationHandler:
@@ -40,6 +34,12 @@ class CanAddressingInformationHandler:
     """Name of Source Address parameter in Addressing Information."""
     ADDRESS_EXTENSION_NAME = "address_extension"
     """Name of Address Extension parameter in Addressing Information."""
+
+    AIDataBytesAlias = Dict[Literal[TARGET_ADDRESS_NAME, ADDRESS_EXTENSION_NAME], Optional[RawByte]]
+    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in data bytes."""
+    AIAlias = Dict[Literal[ADDRESSING_TYPE_NAME, TARGET_ADDRESS_NAME, SOURCE_ADDRESS_NAME, ADDRESS_EXTENSION_NAME],
+                   Optional[Union[RawByte, AddressingTypeAlias]]]
+    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>`."""
 
     @classmethod
     def decode_ai(cls,
