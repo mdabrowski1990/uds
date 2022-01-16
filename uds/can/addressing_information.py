@@ -39,7 +39,7 @@ class CanAddressingInformationHandler:
     """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried in data bytes."""
     AIAlias = Dict[Literal[ADDRESSING_TYPE_NAME, TARGET_ADDRESS_NAME, SOURCE_ADDRESS_NAME, ADDRESS_EXTENSION_NAME],
                    Optional[Union[RawByte, AddressingTypeAlias]]]
-    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>`."""
+    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in CAN ID and data field."""
 
     @classmethod
     def decode_ai(cls,
