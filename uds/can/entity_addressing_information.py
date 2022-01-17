@@ -13,15 +13,24 @@ from .addressing_information import CanAddressingInformationHandler
 from .frame_fields import CanIdHandler
 
 
-class AbstractCanEntityAI(ABC):
+class AbstractCanEntityAI(ABC):  # TODO: merge with CanAddressingInformationHandler
     """Abstract definition of CAN Entity (either server or client) Addressing Information"""
 
-    AIParamsAlias = Dict[Literal[CanAddressingInformationHandler.ADDRESSING_TYPE_NAME,
-                                 "addressing_format",
-                                 "can_id",
-                                 CanAddressingInformationHandler.TARGET_ADDRESS_NAME,
-                                 CanAddressingInformationHandler.SOURCE_ADDRESS_NAME,
-                                 CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME],
+    ADDRESSING_FORMAT_NAME = "addressing_format"
+    """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter in Addressing Information."""
+    ADDRESSING_TYPE_NAME = CanAddressingInformationHandler.ADDRESSING_TYPE_NAME
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
+    CAN_ID_NAME = "can_id"
+    """Name of CAN Identifier parameter in Addressing Information."""
+    TARGET_ADDRESS_NAME = CanAddressingInformationHandler.TARGET_ADDRESS_NAME
+    """Name of Target Address parameter in Addressing Information."""
+    SOURCE_ADDRESS_NAME = CanAddressingInformationHandler.SOURCE_ADDRESS_NAME
+    """Name of Source Address parameter in Addressing Information."""
+    ADDRESS_EXTENSION_NAME = CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME
+    """Name of Address Extension parameter in Addressing Information."""
+
+    AIParamsAlias = Dict[Literal[ADDRESSING_FORMAT_NAME, ADDRESSING_TYPE_NAME, CAN_ID_NAME,
+                                 TARGET_ADDRESS_NAME, SOURCE_ADDRESS_NAME, ADDRESS_EXTENSION_NAME],
                          Optional[Union[AddressingTypeAlias, CanAddressingFormatAlias, int]]]
     """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters."""
 
@@ -71,14 +80,17 @@ class AbstractCanEntityAI(ABC):
         else:
             raise NotImplementedError(f"CAN Packet using unknown addressing type value was provided: "
                                       f"{can_packet.addressing_type}")
-        for ai_param_name, ai_param_value in receiving_ai_params.items():
-            if getattr(can_packet, ai_param_name) != ai_param_value:
-                return False
-        return True
+        return all(getattr(can_packet, ai_param_name) == ai_param_value
+                   for ai_param_name, ai_param_value in receiving_ai_params.items())
 
     @property
     @abstractmethod
-    def receiving_physical_ai(self) -> AIParamsAlias:
+    def addressing_format(self) -> CanAddressingFormatAlias:
+        """CAN Addressing format used."""
+
+    @property
+    @abstractmethod
+    def receiving_physical_ai(self) -> AIParamsAlias:  # TODO: rename
         """
         Addressing Information parameters of incoming physically addressed communication.
 
@@ -87,7 +99,7 @@ class AbstractCanEntityAI(ABC):
 
     @property
     @abstractmethod
-    def transmitting_physical_ai(self) -> AIParamsAlias:
+    def transmitting_physical_ai(self) -> AIParamsAlias:  # TODO: rename
         """
         Addressing Information parameters of outgoing physically addressed communication.
 
@@ -96,7 +108,7 @@ class AbstractCanEntityAI(ABC):
 
     @property
     @abstractmethod
-    def receiving_functional_ai(self) -> AIParamsAlias:
+    def receiving_functional_ai(self) -> AIParamsAlias:  # TODO: rename
         """
         Addressing Information parameters of incoming functionally addressed communication.
 
@@ -111,11 +123,6 @@ class AbstractCanEntityAI(ABC):
 
         Functionally addressed CAN packets that are transmitted by this entity must use these parameters.
         """
-
-    @property
-    @abstractmethod
-    def addressing_format(self) -> CanAddressingFormatAlias:
-        """CAN Addressing format used."""
 
 
 class CanEntityNormal11bitAI(AbstractCanEntityAI):
@@ -171,17 +178,81 @@ class CanEntityNormal11bitAI(AbstractCanEntityAI):
             raise ValueError(f"Provided `rx_can_id` is not 11-bit CAN ID. Actual value: {rx_can_id}")
         if not CanIdHandler.is_normal_11bit_addressed_can_id(tx_can_id):
             raise ValueError(f"Provided `tx_can_id` is not 11-bit CAN ID. Actual value: {tx_can_id}")
-        if rx_can_id in {tx_can_id, self.__functional_rx_can_id, self.__functional_tx_can_id}:
+        if rx_can_id in {tx_can_id, self.__physical_rx_can_id, self.__physical_tx_can_id}:
             raise ValueError(f"Provided `rx_can_id` is used more than once.")
-        if tx_can_id in {rx_can_id, self.__functional_rx_can_id, self.__functional_tx_can_id}:
+        if tx_can_id in {rx_can_id, self.__physical_rx_can_id, self.__physical_tx_can_id}:
             raise ValueError(f"Provided `tx_can_id` is used more than once.")
-        self.__physical_rx_can_id = rx_can_id
-        self.__physical_tx_can_id = tx_can_id
+        self.__functional_rx_can_id = rx_can_id
+        self.__functional_tx_can_id = tx_can_id
 
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
         return CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+
+    @property
+    def receiving_physical_ai(self) -> AbstractCanEntityAI.AIParamsAlias:
+        """
+        Addressing Information parameters of incoming physically addressed communication.
+
+        Physically addressed CAN packets that target this entity must use these parameters.
+        """
+        return {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.CAN_ID_NAME: self.__physical_rx_can_id,
+            self.TARGET_ADDRESS_NAME: None,
+            self.SOURCE_ADDRESS_NAME: None,
+            self.ADDRESS_EXTENSION_NAME: None,
+        }
+
+    @property
+    def transmitting_physical_ai(self) -> AbstractCanEntityAI.AIParamsAlias:
+        """
+        Addressing Information parameters of outgoing physically addressed communication.
+
+        Physically addressed CAN packets that are transmitted by this entity must use these parameters.
+        """
+        return {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.CAN_ID_NAME: self.__physical_tx_can_id,
+            self.TARGET_ADDRESS_NAME: None,
+            self.SOURCE_ADDRESS_NAME: None,
+            self.ADDRESS_EXTENSION_NAME: None,
+        }
+
+    @property
+    def receiving_functional_ai(self) -> AbstractCanEntityAI.AIParamsAlias:
+        """
+        Addressing Information parameters of incoming functionally addressed communication.
+
+        Functionally addressed CAN packets that target this entity must use these parameters.
+        """
+        return {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.CAN_ID_NAME: self.__functional_rx_can_id,
+            self.TARGET_ADDRESS_NAME: None,
+            self.SOURCE_ADDRESS_NAME: None,
+            self.ADDRESS_EXTENSION_NAME: None,
+        }
+
+    @property
+    def transmitting_functional_ai(self) -> AbstractCanEntityAI.AIParamsAlias:
+        """
+        Addressing Information parameters of outgoing functionally addressed communication.
+
+        Functionally addressed CAN packets that are transmitted by this entity must use these parameters.
+        """
+        return {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.CAN_ID_NAME: self.__functional_tx_can_id,
+            self.TARGET_ADDRESS_NAME: None,
+            self.SOURCE_ADDRESS_NAME: None,
+            self.ADDRESS_EXTENSION_NAME: None,
+        }
 
 
 class CanEntityNormalFixedAI(AbstractCanEntityAI):
@@ -201,7 +272,7 @@ class CanEntityMixed29bitAI(AbstractCanEntityAI):
 
 
 def get_can_entity_ai(addressing_format: CanAddressingFormatAlias,
-                      physical_ai: dict,
-                      functional_ai: dict) -> AbstractCanEntityAI:
+                      physical_ai: Dict[str, Any],
+                      functional_ai: Dict[str, Any]) -> AbstractCanEntityAI:
     # TODO
     ...

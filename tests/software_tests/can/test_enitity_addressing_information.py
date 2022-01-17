@@ -51,17 +51,17 @@ class TestAbstractCanEntityAI:
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_is_packet_targeting_entity__true(self, mock_isinstance, can_packet, ai_params_names):
         mock_isinstance.return_value = True
-        mock_ne = Mock(return_value=False)
+        mock_eq = Mock(return_value=True)
         if can_packet.addressing_type == AddressingType.PHYSICAL:
-            self.mock_can_entity_ai.receiving_physical_ai = {param_name: MagicMock(__ne__=mock_ne)
+            self.mock_can_entity_ai.receiving_physical_ai = {param_name: MagicMock(__eq__=mock_eq)
                                                              for param_name in ai_params_names}
         elif can_packet.addressing_type == AddressingType.FUNCTIONAL:
-            self.mock_can_entity_ai.receiving_functional_ai = {param_name: MagicMock(__ne__=mock_ne)
+            self.mock_can_entity_ai.receiving_functional_ai = {param_name: MagicMock(__eq__=mock_eq)
                                                                for param_name in ai_params_names}
         assert AbstractCanEntityAI.is_packet_targeting_entity(self=self.mock_can_entity_ai,
                                                               can_packet=can_packet) is True
         mock_isinstance.assert_called_once_with(can_packet, AbstractCanPacketContainer)
-        mock_ne.assert_has_calls([call(getattr(can_packet, param_name)) for param_name in ai_params_names],
+        mock_eq.assert_has_calls([call(getattr(can_packet, param_name)) for param_name in ai_params_names],
                                  any_order=True)
 
     @pytest.mark.parametrize("can_packet", [Mock(addressing_type=AddressingType.PHYSICAL),
@@ -73,17 +73,17 @@ class TestAbstractCanEntityAI:
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_is_packet_targeting_entity__false(self, mock_isinstance, can_packet, ai_params_names):
         mock_isinstance.return_value = True
-        mock_ne = Mock(return_value=True)
+        mock_eq = Mock(return_value=False)
         if can_packet.addressing_type == AddressingType.PHYSICAL:
-            self.mock_can_entity_ai.receiving_physical_ai = {param_name: MagicMock(__ne__=mock_ne)
+            self.mock_can_entity_ai.receiving_physical_ai = {param_name: MagicMock(__eq__=mock_eq)
                                                              for param_name in ai_params_names}
         elif can_packet.addressing_type == AddressingType.FUNCTIONAL:
-            self.mock_can_entity_ai.receiving_functional_ai = {param_name: MagicMock(__ne__=mock_ne)
+            self.mock_can_entity_ai.receiving_functional_ai = {param_name: MagicMock(__eq__=mock_eq)
                                                                for param_name in ai_params_names}
         assert AbstractCanEntityAI.is_packet_targeting_entity(self=self.mock_can_entity_ai,
                                                               can_packet=can_packet) is False
         mock_isinstance.assert_called_once_with(can_packet, AbstractCanPacketContainer)
-        mock_ne.assert_called_once()
+        mock_eq.assert_called_once()
 
 
 class TestCanEntityNormal11bitAI:
@@ -187,10 +187,127 @@ class TestCanEntityNormal11bitAI:
 
     # set_functional_ai
 
-    # TODO
+    @pytest.mark.parametrize("can_entity_ai, rx_can_id, tx_can_id", [
+        (Mock(spec=CanEntityNormal11bitAI,
+              _CanEntityNormal11bitAI__physical_rx_can_id=0x124,
+              _CanEntityNormal11bitAI__physical_tx_can_id=0x122,
+              _CanEntityNormal11bitAI__functional_rx_can_id=0x1,
+              _CanEntityNormal11bitAI__functional_tx_can_id=0x2),
+         0x123, 0x456),
+        (Mock(spec=CanEntityNormal11bitAI,
+              _CanEntityNormal11bitAI__physical_rx_can_id=0xB1,
+              _CanEntityNormal11bitAI__physical_tx_can_id=0xB3,
+              _CanEntityNormal11bitAI__functional_rx_can_id=0xA1,
+              _CanEntityNormal11bitAI__functional_tx_can_id=0xB2),
+         0xA1, 0xB2),
+    ])
+    def test_set_functional_ai__valid(self, can_entity_ai, rx_can_id, tx_can_id):
+        self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.return_value = True
+        assert CanEntityNormal11bitAI.set_functional_ai(self=can_entity_ai,
+                                                        rx_can_id=rx_can_id,
+                                                        tx_can_id=tx_can_id) is None
+        self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.assert_has_calls(
+            [call(rx_can_id), call(tx_can_id)], any_order=True)
+        assert can_entity_ai._CanEntityNormal11bitAI__functional_rx_can_id == rx_can_id
+        assert can_entity_ai._CanEntityNormal11bitAI__functional_tx_can_id == tx_can_id
+
+    @pytest.mark.parametrize("rx_can_id, tx_can_id", [
+        ("some", "thing"),
+        (123, 456),
+    ])
+    @pytest.mark.parametrize("check_results", [
+        [False, True],
+        [True, False],
+    ])
+    def test_set_functional_ai__invalid_value(self, rx_can_id, tx_can_id, check_results):
+        self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.side_effect = check_results
+        with pytest.raises(ValueError):
+            CanEntityNormal11bitAI.set_functional_ai(self=self.mock_can_entity_ai,
+                                                     rx_can_id=rx_can_id,
+                                                     tx_can_id=tx_can_id)
+        self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.assert_called()
+
+    @pytest.mark.parametrize("can_entity_ai, rx_can_id, tx_can_id", [
+        (Mock(spec=CanEntityNormal11bitAI,
+              _CanEntityNormal11bitAI__physical_rx_can_id=0x123,
+              _CanEntityNormal11bitAI__physical_tx_can_id=None,
+              _CanEntityNormal11bitAI__functional_rx_can_id=None,
+              _CanEntityNormal11bitAI__functional_tx_can_id=None),
+         0x123, 0x456),
+        (Mock(spec=CanEntityNormal11bitAI,
+              _CanEntityNormal11bitAI__physical_rx_can_id=None,
+              _CanEntityNormal11bitAI__physical_tx_can_id=0xB2,
+              _CanEntityNormal11bitAI__functional_rx_can_id=None,
+              _CanEntityNormal11bitAI__functional_tx_can_id=None),
+         0xA1, 0xB2),
+    ])
+    def test_set_functional_ai__repeated_value(self, can_entity_ai, rx_can_id, tx_can_id):
+        self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.return_value = True
+        with pytest.raises(ValueError):
+            CanEntityNormal11bitAI.set_functional_ai(self=can_entity_ai,
+                                                     rx_can_id=rx_can_id,
+                                                     tx_can_id=tx_can_id)
+        self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.assert_has_calls(
+            [call(rx_can_id), call(tx_can_id)], any_order=True)
 
     # addressing_format
 
     def test_addressing_format(self):
         assert CanEntityNormal11bitAI.addressing_format.fget(self.mock_can_entity_ai) \
                == CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+
+    # receiving_physical_ai
+
+    @pytest.mark.parametrize("can_id", [Mock(), 0x192])
+    def test_receiving_physical_ai(self, can_id):
+        self.mock_can_entity_ai._CanEntityNormal11bitAI__physical_rx_can_id = can_id
+        assert CanEntityNormal11bitAI.receiving_physical_ai.fget(self.mock_can_entity_ai) == {
+            self.mock_can_entity_ai.ADDRESSING_FORMAT_NAME: self.mock_can_entity_ai.addressing_format,
+            self.mock_can_entity_ai.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.mock_can_entity_ai.CAN_ID_NAME: can_id,
+            self.mock_can_entity_ai.TARGET_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.SOURCE_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.ADDRESS_EXTENSION_NAME: None,
+        }
+        
+    # transmitting_physical_ai
+
+    @pytest.mark.parametrize("can_id", [Mock(), 0x192])
+    def test_transmitting_physical_ai(self, can_id):
+        self.mock_can_entity_ai._CanEntityNormal11bitAI__physical_tx_can_id = can_id
+        assert CanEntityNormal11bitAI.transmitting_physical_ai.fget(self.mock_can_entity_ai) == {
+            self.mock_can_entity_ai.ADDRESSING_FORMAT_NAME: self.mock_can_entity_ai.addressing_format,
+            self.mock_can_entity_ai.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.mock_can_entity_ai.CAN_ID_NAME: can_id,
+            self.mock_can_entity_ai.TARGET_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.SOURCE_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.ADDRESS_EXTENSION_NAME: None,
+        }
+
+    # receiving_functional_ai
+
+    @pytest.mark.parametrize("can_id", [Mock(), 0x192])
+    def test_receiving_functional_ai(self, can_id):
+        self.mock_can_entity_ai._CanEntityNormal11bitAI__functional_rx_can_id = can_id
+        assert CanEntityNormal11bitAI.receiving_functional_ai.fget(self.mock_can_entity_ai) == {
+            self.mock_can_entity_ai.ADDRESSING_FORMAT_NAME: self.mock_can_entity_ai.addressing_format,
+            self.mock_can_entity_ai.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.mock_can_entity_ai.CAN_ID_NAME: can_id,
+            self.mock_can_entity_ai.TARGET_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.SOURCE_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.ADDRESS_EXTENSION_NAME: None,
+        }
+        
+    # transmitting_functional_ai
+
+    @pytest.mark.parametrize("can_id", [Mock(), 0x192])
+    def test_transmitting_functional_ai(self, can_id):
+        self.mock_can_entity_ai._CanEntityNormal11bitAI__functional_tx_can_id = can_id
+        assert CanEntityNormal11bitAI.transmitting_functional_ai.fget(self.mock_can_entity_ai) == {
+            self.mock_can_entity_ai.ADDRESSING_FORMAT_NAME: self.mock_can_entity_ai.addressing_format,
+            self.mock_can_entity_ai.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            self.mock_can_entity_ai.CAN_ID_NAME: can_id,
+            self.mock_can_entity_ai.TARGET_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.SOURCE_ADDRESS_NAME: None,
+            self.mock_can_entity_ai.ADDRESS_EXTENSION_NAME: None,
+        }
