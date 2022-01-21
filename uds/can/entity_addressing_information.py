@@ -13,7 +13,7 @@ from .addressing_information import CanAddressingInformationHandler
 from .frame_fields import CanIdHandler
 
 
-class AbstractCanEntityAI(ABC):  # TODO: merge with CanAddressingInformationHandler
+class AbstractCanEntityAI(ABC):
     """Abstract definition of CAN Entity (either server or client) Addressing Information"""
 
     ADDRESSING_FORMAT_NAME = "addressing_format"
