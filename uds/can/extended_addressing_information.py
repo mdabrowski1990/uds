@@ -2,6 +2,8 @@
 
 __all__ = ["ExtendedAddressingInformation"]
 
+from copy import deepcopy
+
 from uds.utilities import InconsistentArgumentsError, RawByte, validate_raw_byte
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
@@ -23,86 +25,78 @@ class ExtendedAddressingInformation(AbstractAddressingInformation):
         return 1
 
     @property
-    def rx_packets_physical_ai(self) -> AbstractAddressingInformation.AIParamsAlias:
+    def rx_packets_physical_ai(self) -> AbstractAddressingInformation.PacketAIParamsAlias:
         """Addressing Information parameters of incoming physically addressed CAN packets."""
-        return self.__rx_packets_physical_ai  # type: ignore
+        return deepcopy(self.__rx_packets_physical_ai)
 
     @rx_packets_physical_ai.setter
-    def rx_packets_physical_ai(self, value: dict):
+    def rx_packets_physical_ai(self, value: AbstractAddressingInformation.InputAIParamsAlias):
         """
         Set Addressing Information parameters of incoming physically addressed CAN packets.
 
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)  # type: ignore
-        self.__rx_packets_physical_ai = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+        self.__rx_packets_physical_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
-            self.SOURCE_ADDRESS_NAME: None,
-            self.ADDRESS_EXTENSION_NAME: None,
             **value
         }
 
     @property
-    def tx_packets_physical_ai(self) -> AbstractAddressingInformation.AIParamsAlias:
+    def tx_packets_physical_ai(self) -> AbstractAddressingInformation.PacketAIParamsAlias:
         """Addressing Information parameters of outgoing physically addressed CAN packets."""
-        return self.__tx_packets_physical_ai  # type: ignore
+        return deepcopy(self.__tx_packets_physical_ai)
 
     @tx_packets_physical_ai.setter
-    def tx_packets_physical_ai(self, value: dict):
+    def tx_packets_physical_ai(self, value: AbstractAddressingInformation.InputAIParamsAlias):
         """
         Set Addressing Information parameters of outgoing physically addressed CAN packets.
 
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)  # type: ignore
-        self.__tx_packets_physical_ai = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+        self.__tx_packets_physical_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
-            self.SOURCE_ADDRESS_NAME: None,
-            self.ADDRESS_EXTENSION_NAME: None,
             **value
         }
 
     @property
-    def rx_packets_functional_ai(self) -> AbstractAddressingInformation.AIParamsAlias:
+    def rx_packets_functional_ai(self) -> AbstractAddressingInformation.PacketAIParamsAlias:
         """Addressing Information parameters of incoming functionally addressed CAN packets."""
-        return self.__rx_packets_functional_ai  # type: ignore
+        return deepcopy(self.__rx_packets_functional_ai)
 
     @rx_packets_functional_ai.setter
-    def rx_packets_functional_ai(self, value: dict):
+    def rx_packets_functional_ai(self, value: AbstractAddressingInformation.InputAIParamsAlias):
         """
         Set Addressing Information parameters of incoming functionally addressed CAN packets.
 
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)  # type: ignore
-        self.__rx_packets_functional_ai = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+        self.__rx_packets_functional_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-            self.SOURCE_ADDRESS_NAME: None,
-            self.ADDRESS_EXTENSION_NAME: None,
             **value
         }
 
     @property
-    def tx_packets_functional_ai(self) -> AbstractAddressingInformation.AIParamsAlias:
+    def tx_packets_functional_ai(self) -> AbstractAddressingInformation.PacketAIParamsAlias:
         """Addressing Information parameters of outgoing functionally addressed CAN packets."""
-        return self.__tx_packets_functional_ai  # type: ignore
+        return deepcopy(self.__tx_packets_functional_ai)
 
     @tx_packets_functional_ai.setter
-    def tx_packets_functional_ai(self, value: dict):
+    def tx_packets_functional_ai(self, value: AbstractAddressingInformation.InputAIParamsAlias):
         """
         Set Addressing Information parameters of outgoing functionally addressed CAN packets.
 
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)  # type: ignore
-        self.__tx_packets_functional_ai = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,
+        self.__tx_packets_functional_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-            self.SOURCE_ADDRESS_NAME: None,
-            self.ADDRESS_EXTENSION_NAME: None,
             **value
         }
 
