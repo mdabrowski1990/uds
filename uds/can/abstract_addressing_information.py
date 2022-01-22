@@ -2,7 +2,7 @@
 
 __all__ = ["AbstractAddressingInformation"]
 
-from typing import Optional, Union, Literal, Any, Dict
+from typing import Optional, Union, Literal, Dict
 from abc import ABC, abstractmethod
 
 from uds.transmission_attributes import AddressingTypeAlias
@@ -31,10 +31,29 @@ class AbstractAddressingInformation(ABC):
                          Optional[Union[AddressingTypeAlias, CanAddressingFormatAlias, int]]]
     """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters."""
 
+    def __init__(self, rx_physical: dict, tx_physical: dict, rx_functional: dict, tx_functional: dict) -> None:
+        """
+        Configure Addressing Information of a CAN Entity.
+
+        :param rx_physical: Addressing Information parameters used for incoming physically addressed communication.
+        :param tx_physical: Addressing Information parameters used for outgoing physically addressed communication.
+        :param rx_functional: Addressing Information parameters used for incoming functionally addressed communication.
+        :param tx_functional: Addressing Information parameters used for outgoing functionally addressed communication.
+        """
+        self.rx_packets_physical_ai = rx_physical
+        self.tx_packets_physical_ai = tx_physical
+        self.rx_packets_functional_ai = rx_functional
+        self.tx_packets_functional_ai = tx_functional
+
     @property
     @abstractmethod
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
+
+    @property
+    @abstractmethod
+    def ai_data_bytes_number(self) -> int:
+        """Number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     @property
     @abstractmethod
