@@ -1,17 +1,17 @@
 import pytest
 from mock import Mock, patch, call
 
-from uds.can.mixed_addressing_information import Mixed11bitAddressingInformation, Mixed29bitAddressingInformation, \
+from uds.can.mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation, \
     CanAddressingFormat, InconsistentArgumentsError
 
 
-class TestMixed11bitAddressingInformation:
-    """Unit tests for `Mixed11bitAddressingInformation` class."""
+class TestMixed11BitCanAddressingInformation:
+    """Unit tests for `Mixed11BitCanAddressingInformation` class."""
 
     SCRIPT_LOCATION = "uds.can.mixed_addressing_information"
 
     def setup(self):
-        self.mock_addressing_information = Mock(spec=Mixed11bitAddressingInformation)
+        self.mock_addressing_information = Mock(spec=Mixed11BitCanAddressingInformation)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
@@ -28,13 +28,8 @@ class TestMixed11bitAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert Mixed11bitAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
+        assert Mixed11BitCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
                == CanAddressingFormat.MIXED_11BIT_ADDRESSING
-
-    # ai_data_bytes_number
-
-    def test_ai_data_bytes_number(self):
-        assert Mixed11bitAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 1
 
     # validate_packet_ai
 
@@ -46,9 +41,9 @@ class TestMixed11bitAddressingInformation:
     def test_validate_ai_mixed_11bit__invalid_can_id(self, addressing_type, can_id, address_extension):
         self.mock_can_id_handler_class.is_mixed_11bit_addressed_can_id.return_value = False
         with pytest.raises(InconsistentArgumentsError):
-            Mixed11bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                               can_id=can_id,
-                                                               address_extension=address_extension)
+            Mixed11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                  can_id=can_id,
+                                                                  address_extension=address_extension)
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_mixed_11bit_addressed_can_id.assert_called_once_with(can_id)
 
@@ -59,22 +54,22 @@ class TestMixed11bitAddressingInformation:
     @pytest.mark.parametrize("address_extension", ["some AE", 0x5B])
     def test_validate_ai_mixed_11bit__valid(self, addressing_type, can_id, address_extension):
         self.mock_can_id_handler_class.is_mixed_11bit_addressed_can_id.return_value = True
-        Mixed11bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                           can_id=can_id,
-                                                           address_extension=address_extension)
+        Mixed11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                              can_id=can_id,
+                                                              address_extension=address_extension)
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_mixed_11bit_addressed_can_id.assert_called_once_with(can_id)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_called_once_with(address_extension)
 
 
-class TestMixed29bitAddressingInformation:
-    """Unit tests for `Mixed29bitAddressingInformation` class."""
+class TestMixed29BitCanAddressingInformation:
+    """Unit tests for `Mixed29BitCanAddressingInformation` class."""
 
-    SCRIPT_LOCATION = TestMixed11bitAddressingInformation.SCRIPT_LOCATION
+    SCRIPT_LOCATION = TestMixed11BitCanAddressingInformation.SCRIPT_LOCATION
 
     def setup(self):
-        self.mock_addressing_information = Mock(spec=Mixed29bitAddressingInformation)
+        self.mock_addressing_information = Mock(spec=Mixed29BitCanAddressingInformation)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
@@ -91,13 +86,8 @@ class TestMixed29bitAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert Mixed29bitAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
+        assert Mixed29BitCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
                == CanAddressingFormat.MIXED_29BIT_ADDRESSING
-
-    # ai_data_bytes_number
-
-    def test_ai_data_bytes_number(self):
-        assert Mixed29bitAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 1
 
     # validate_packet_ai
 
@@ -112,11 +102,11 @@ class TestMixed29bitAddressingInformation:
                                               target_address, source_address, address_extension):
         self.mock_can_id_handler_class.is_mixed_29bit_addressed_can_id.return_value = True
         with pytest.raises(InconsistentArgumentsError):
-            Mixed29bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                               can_id=can_id,
-                                                               target_address=target_address,
-                                                               source_address=source_address,
-                                                               address_extension=address_extension)
+            Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                  can_id=can_id,
+                                                                  target_address=target_address,
+                                                                  source_address=source_address,
+                                                                  address_extension=address_extension)
 
     @pytest.mark.parametrize("can_id", ["some CAN ID", 0x8FABC])
     @pytest.mark.parametrize("addressing_type, decoded_addressing_type, ta, decoded_ta, sa, decoded_sa", [
@@ -134,11 +124,11 @@ class TestMixed29bitAddressingInformation:
             self.mock_can_id_handler_class.SOURCE_ADDRESS_NAME: decoded_sa,
         }
         with pytest.raises(InconsistentArgumentsError):
-            Mixed29bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                               can_id=can_id,
-                                                               target_address=ta,
-                                                               source_address=sa,
-                                                               address_extension=address_extension)
+            Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                  can_id=can_id,
+                                                                  target_address=ta,
+                                                                  source_address=sa,
+                                                                  address_extension=address_extension)
         self.mock_can_id_handler_class.decode_mixed_addressed_29bit_can_id.assert_called_once_with(can_id)
 
     @pytest.mark.parametrize("addressing_type", ["some addressing type", Mock()])
@@ -150,11 +140,11 @@ class TestMixed29bitAddressingInformation:
     @pytest.mark.parametrize("address_extension", ["some AE", 0x5B])
     def test_validate_packet_ai__valid_without_can_id(self, addressing_type,
                                                       target_address, source_address, address_extension):
-        Mixed29bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                           can_id=None,
-                                                           target_address=target_address,
-                                                           source_address=source_address,
-                                                           address_extension=address_extension)
+        Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                              can_id=None,
+                                                              target_address=target_address,
+                                                              source_address=source_address,
+                                                              address_extension=address_extension)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address),
                                                       call(address_extension)], any_order=True)
@@ -176,11 +166,11 @@ class TestMixed29bitAddressingInformation:
             self.mock_can_id_handler_class.TARGET_ADDRESS_NAME: target_address or "ta",
             self.mock_can_id_handler_class.SOURCE_ADDRESS_NAME: source_address or "sa",
         }
-        Mixed29bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                           can_id=can_id,
-                                                           target_address=target_address,
-                                                           source_address=source_address,
-                                                           address_extension=address_extension)
+        Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                              can_id=can_id,
+                                                              target_address=target_address,
+                                                              source_address=source_address,
+                                                              address_extension=address_extension)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_called_once_with(address_extension)
         self.mock_can_id_handler_class.decode_mixed_addressed_29bit_can_id.assert_called_once_with(can_id)

@@ -1,17 +1,17 @@
 import pytest
 from mock import Mock, patch, call
 
-from uds.can.normal_addressing_information import Normal11bitAddressingInformation, NormalFixedAddressingInformation, \
+from uds.can.normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, \
     CanAddressingFormat, InconsistentArgumentsError
 
 
-class TestNormal11bitAddressingInformation:
-    """Unit tests for `Normal11bitAddressingInformation` class."""
+class TestNormal11BitCanAddressingInformation:
+    """Unit tests for `Normal11BitCanAddressingInformation` class."""
 
     SCRIPT_LOCATION = "uds.can.normal_addressing_information"
 
     def setup(self):
-        self.mock_addressing_information = Mock(spec=Normal11bitAddressingInformation)
+        self.mock_addressing_information = Mock(spec=Normal11BitCanAddressingInformation)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
@@ -28,13 +28,8 @@ class TestNormal11bitAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert Normal11bitAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
+        assert Normal11BitCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
                == CanAddressingFormat.NORMAL_11BIT_ADDRESSING
-
-    # ai_data_bytes_number
-
-    def test_ai_data_bytes_number(self):
-        assert Normal11bitAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 0
 
     # validate_packet_ai
 
@@ -45,8 +40,8 @@ class TestNormal11bitAddressingInformation:
     def test_validate_packet_ai__invalid_can_id(self, addressing_type, can_id):
         self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.return_value = False
         with pytest.raises(InconsistentArgumentsError):
-            Normal11bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                can_id=can_id)
+            Normal11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                   can_id=can_id)
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.assert_called_once_with(can_id)
 
@@ -56,20 +51,20 @@ class TestNormal11bitAddressingInformation:
     ])
     def test_validate_packet_ai__valid(self, addressing_type, can_id):
         self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.return_value = True
-        Normal11bitAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                            can_id=can_id)
+        Normal11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                               can_id=can_id)
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.assert_called_once_with(can_id)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
 
 
-class TestNormalFixedAddressingInformation:
-    """Unit tests for `NormalFixedAddressingInformation` class."""
+class TestNormalFixedCanAddressingInformation:
+    """Unit tests for `NormalFixedCanAddressingInformation` class."""
 
-    SCRIPT_LOCATION = TestNormal11bitAddressingInformation.SCRIPT_LOCATION
+    SCRIPT_LOCATION = TestNormal11BitCanAddressingInformation.SCRIPT_LOCATION
 
     def setup(self):
-        self.mock_addressing_information = Mock(spec=NormalFixedAddressingInformation)
+        self.mock_addressing_information = Mock(spec=NormalFixedCanAddressingInformation)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
@@ -86,13 +81,8 @@ class TestNormalFixedAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert NormalFixedAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
+        assert NormalFixedCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
                == CanAddressingFormat.NORMAL_FIXED_ADDRESSING
-
-    # ai_data_bytes_number
-
-    def test_ai_data_bytes_number(self):
-        assert NormalFixedAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 0
 
     # validate_packet_ai
 
@@ -106,10 +96,10 @@ class TestNormalFixedAddressingInformation:
                                               target_address, source_address):
         self.mock_can_id_handler_class.is_normal_fixed_addressed_can_id.return_value = True
         with pytest.raises(InconsistentArgumentsError):
-            NormalFixedAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                can_id=can_id,
-                                                                target_address=target_address,
-                                                                source_address=source_address)
+            NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                   can_id=can_id,
+                                                                   target_address=target_address,
+                                                                   source_address=source_address)
 
     @pytest.mark.parametrize("can_id", ["some CAN ID", 0x8FABC])
     @pytest.mark.parametrize("addressing_type, decoded_addressing_type, ta, decoded_ta, sa, decoded_sa", [
@@ -126,10 +116,10 @@ class TestNormalFixedAddressingInformation:
             self.mock_can_id_handler_class.SOURCE_ADDRESS_NAME: decoded_sa
         }
         with pytest.raises(InconsistentArgumentsError):
-            NormalFixedAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                can_id=can_id,
-                                                                target_address=ta,
-                                                                source_address=sa)
+            NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                   can_id=can_id,
+                                                                   target_address=ta,
+                                                                   source_address=sa)
         self.mock_can_id_handler_class.decode_normal_fixed_addressed_can_id.assert_called_once_with(can_id)
 
     @pytest.mark.parametrize("addressing_type", ["some addressing type", Mock()])
@@ -138,10 +128,10 @@ class TestNormalFixedAddressingInformation:
         (0xFA, 0x55),
     ])
     def test_validate_packet_ai__valid_without_can_id(self, addressing_type, target_address, source_address):
-        NormalFixedAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                            can_id=None,
-                                                            target_address=target_address,
-                                                            source_address=source_address)
+        NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                               can_id=None,
+                                                               target_address=target_address,
+                                                               source_address=source_address)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address)], any_order=True)
         self.mock_can_id_handler_class.validate_can_id.assert_not_called()
@@ -161,10 +151,10 @@ class TestNormalFixedAddressingInformation:
             self.mock_can_id_handler_class.TARGET_ADDRESS_NAME: target_address or "ta",
             self.mock_can_id_handler_class.SOURCE_ADDRESS_NAME: source_address or "sa",
         }
-        NormalFixedAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                            can_id=can_id,
-                                                            target_address=target_address,
-                                                            source_address=source_address)
+        NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                               can_id=can_id,
+                                                               target_address=target_address,
+                                                               source_address=source_address)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_not_called()
         self.mock_can_id_handler_class.decode_normal_fixed_addressed_can_id.assert_called_once_with(can_id)

@@ -1,6 +1,6 @@
 """Abstract definition of Addressing Information handler."""
 
-__all__ = ["AbstractAddressingInformation"]
+__all__ = ["AbstractCanAddressingInformation"]
 
 from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
@@ -12,7 +12,7 @@ from .addressing_format import CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
 
 
-class AbstractAddressingInformation(ABC):
+class AbstractCanAddressingInformation(ABC):
     """Abstract definition of CAN Entity (either server or client) Addressing Information."""
 
     ADDRESSING_FORMAT_NAME: str = "addressing_format"
@@ -50,6 +50,9 @@ class AbstractAddressingInformation(ABC):
         addressing_type: AddressingTypeAlias
         can_id: int
 
+    AI_DATA_BYTES_NUMBER: int
+    """Number of CAN Frame data bytes that are used to carry Addressing Information."""
+
     def __init__(self,
                  rx_physical: InputAIParamsAlias,
                  tx_physical: InputAIParamsAlias,
@@ -74,11 +77,6 @@ class AbstractAddressingInformation(ABC):
         """CAN Addressing format used."""
 
     @property
-    @abstractmethod
-    def ai_data_bytes_number(self) -> int:
-        """Get number of CAN Frame data bytes that are used to carry Addressing Information."""
-
-    @property
     def rx_packets_physical_ai(self) -> PacketAIParamsAlias:
         """Addressing Information parameters of incoming physically addressed CAN packets."""
         return deepcopy(self.__rx_packets_physical_ai)
@@ -91,7 +89,7 @@ class AbstractAddressingInformation(ABC):
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
-        self.__rx_packets_physical_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+        self.__rx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
             self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
             **value
@@ -110,7 +108,7 @@ class AbstractAddressingInformation(ABC):
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
-        self.__tx_packets_physical_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+        self.__tx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
             self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
             **value
@@ -129,7 +127,7 @@ class AbstractAddressingInformation(ABC):
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
-        self.__rx_packets_functional_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+        self.__rx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
             self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
             **value
@@ -148,7 +146,7 @@ class AbstractAddressingInformation(ABC):
         :param value: Addressing Information parameters to set.
         """
         self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
-        self.__tx_packets_functional_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+        self.__tx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
             self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
             self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
             **value
@@ -162,7 +160,7 @@ class AbstractAddressingInformation(ABC):
                            source_address: Optional[RawByte],
                            address_extension: Optional[RawByte]) -> None:
         """
-        Validate Addressing Information parameters of a CAN packet that uses Normal 11-bit Addressing format.
+        Validate Addressing Information parameters of a CAN packet.
 
         :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.

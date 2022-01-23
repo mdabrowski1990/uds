@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from uds.can.abstract_addressing_information import AbstractAddressingInformation, AddressingType
+from uds.can.abstract_addressing_information import AbstractCanAddressingInformation, AddressingType
 
 
 class TestAbstractAddressingInformation:
@@ -10,7 +10,7 @@ class TestAbstractAddressingInformation:
     SCRIPT_LOCATION = "uds.can.abstract_addressing_information"
 
     def setup(self):
-        self.mock_addressing_information = Mock(spec=AbstractAddressingInformation,
+        self.mock_addressing_information = Mock(spec=AbstractCanAddressingInformation,
                                                 ADDRESSING_FORMAT_NAME="addressing_format",
                                                 ADDRESSING_TYPE_NAME="addressing_type",
                                                 TARGET_ADDRESS_NAME="target_address",
@@ -30,11 +30,11 @@ class TestAbstractAddressingInformation:
         ("rx_physical", "tx_physical", "rx_functional", "tx_functional"),
     ])
     def test_init(self, rx_physical, tx_physical, rx_functional, tx_functional):
-        assert AbstractAddressingInformation.__init__(self=self.mock_addressing_information,
-                                                      rx_physical=rx_physical,
-                                                      tx_physical=tx_physical,
-                                                      rx_functional=rx_functional,
-                                                      tx_functional=tx_functional) is None
+        assert AbstractCanAddressingInformation.__init__(self=self.mock_addressing_information,
+                                                         rx_physical=rx_physical,
+                                                         tx_physical=tx_physical,
+                                                         rx_functional=rx_functional,
+                                                         tx_functional=tx_functional) is None
         assert self.mock_addressing_information.rx_packets_physical_ai == rx_physical
         assert self.mock_addressing_information.tx_packets_physical_ai == tx_physical
         assert self.mock_addressing_information.rx_packets_functional_ai == rx_functional
@@ -45,13 +45,13 @@ class TestAbstractAddressingInformation:
     @pytest.mark.parametrize("value", ["any value", Mock()])
     def test_rx_packets_physical_ai__get(self, value):
         self.mock_addressing_information._AbstractAddressingInformation__rx_packets_physical_ai = value
-        assert AbstractAddressingInformation.rx_packets_physical_ai.fget(self.mock_addressing_information) \
+        assert AbstractCanAddressingInformation.rx_packets_physical_ai.fget(self.mock_addressing_information) \
                == self.mock_deepcopy.return_value
         self.mock_deepcopy.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [{"a": 1, "b": 2}, {"argument_1": None, "argument_2": Mock()}])
     def test_rx_packets_physical_ai__set(self, value):
-        AbstractAddressingInformation.rx_packets_physical_ai.fset(self.mock_addressing_information, value)
+        AbstractCanAddressingInformation.rx_packets_physical_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.PHYSICAL, **value)
         assert self.mock_addressing_information._AbstractAddressingInformation__rx_packets_physical_ai == {
             self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,
@@ -64,13 +64,13 @@ class TestAbstractAddressingInformation:
     @pytest.mark.parametrize("value", ["any value", Mock()])
     def test_tx_packets_physical_ai__get(self, value):
         self.mock_addressing_information._AbstractAddressingInformation__tx_packets_physical_ai = value
-        assert AbstractAddressingInformation.tx_packets_physical_ai.fget(self.mock_addressing_information) \
+        assert AbstractCanAddressingInformation.tx_packets_physical_ai.fget(self.mock_addressing_information) \
                == self.mock_deepcopy.return_value
         self.mock_deepcopy.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [{"a": 1, "b": 2}, {"argument_1": None, "argument_2": Mock()}])
     def test_tx_packets_physical_ai__set(self, value):
-        AbstractAddressingInformation.tx_packets_physical_ai.fset(self.mock_addressing_information, value)
+        AbstractCanAddressingInformation.tx_packets_physical_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.PHYSICAL, **value)
         assert self.mock_addressing_information._AbstractAddressingInformation__tx_packets_physical_ai == {
             self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,
@@ -83,13 +83,13 @@ class TestAbstractAddressingInformation:
     @pytest.mark.parametrize("value", ["any value", Mock()])
     def test_rx_packets_functional_ai__get(self, value):
         self.mock_addressing_information._AbstractAddressingInformation__rx_packets_functional_ai = value
-        assert AbstractAddressingInformation.rx_packets_functional_ai.fget(self.mock_addressing_information) \
+        assert AbstractCanAddressingInformation.rx_packets_functional_ai.fget(self.mock_addressing_information) \
                == self.mock_deepcopy.return_value
         self.mock_deepcopy.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [{"a": 1, "b": 2}, {"argument_1": None, "argument_2": Mock()}])
     def test_rx_packets_functional_ai__set(self, value):
-        AbstractAddressingInformation.rx_packets_functional_ai.fset(self.mock_addressing_information, value)
+        AbstractCanAddressingInformation.rx_packets_functional_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.FUNCTIONAL, **value)
         assert self.mock_addressing_information._AbstractAddressingInformation__rx_packets_functional_ai == {
             self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,
@@ -102,13 +102,13 @@ class TestAbstractAddressingInformation:
     @pytest.mark.parametrize("value", ["any value", Mock()])
     def test_tx_packets_functional_ai__get(self, value):
         self.mock_addressing_information._AbstractAddressingInformation__tx_packets_functional_ai = value
-        assert AbstractAddressingInformation.tx_packets_functional_ai.fget(self.mock_addressing_information) \
+        assert AbstractCanAddressingInformation.tx_packets_functional_ai.fget(self.mock_addressing_information) \
                == self.mock_deepcopy.return_value
         self.mock_deepcopy.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [{"a": 1, "b": 2}, {"argument_1": None, "argument_2": Mock()}])
     def test_tx_packets_functional_ai__set(self, value):
-        AbstractAddressingInformation.tx_packets_functional_ai.fset(self.mock_addressing_information, value)
+        AbstractCanAddressingInformation.tx_packets_functional_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.FUNCTIONAL, **value)
         assert self.mock_addressing_information._AbstractAddressingInformation__tx_packets_functional_ai == {
             self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,

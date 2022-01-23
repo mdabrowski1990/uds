@@ -16,7 +16,11 @@ It provides tools for:
 """
 
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
-from .addressing_information import CanAddressingInformationHandler
+from .abstract_addressing_information import AbstractCanAddressingInformation
+from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
+from .extended_addressing_information import ExtendedCanAddressingInformation
+from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler
 from .single_frame import CanSingleFrameHandler
 from .first_frame import CanFirstFrameHandler

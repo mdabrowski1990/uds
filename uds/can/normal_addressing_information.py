@@ -1,6 +1,6 @@
 """Implementation of Normal Addressing Information handlers."""
 
-__all__ = ["Normal11bitAddressingInformation", "NormalFixedAddressingInformation"]
+__all__ = ["Normal11BitCanAddressingInformation", "NormalFixedCanAddressingInformation"]
 
 from typing import Optional
 
@@ -8,21 +8,19 @@ from uds.utilities import InconsistentArgumentsError, RawByte, validate_raw_byte
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
-from .abstract_addressing_information import AbstractAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation
 
 
-class Normal11bitAddressingInformation(AbstractAddressingInformation):
+class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Normal 11-bit Addressing format."""
+
+    AI_DATA_BYTES_NUMBER: int = 0
+    """Number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
         return CanAddressingFormat.NORMAL_11BIT_ADDRESSING
-
-    @property
-    def ai_data_bytes_number(self) -> int:
-        """Get number of CAN Frame data bytes that are used to carry Addressing Information."""
-        return 0
 
     @staticmethod
     def validate_packet_ai(addressing_type: AddressingTypeAlias, can_id: int) -> None:  # noqa
@@ -42,18 +40,16 @@ class Normal11bitAddressingInformation(AbstractAddressingInformation):
                                              f"Normal 11-bit Addressing Format. Actual value: {can_id}")
 
 
-class NormalFixedAddressingInformation(AbstractAddressingInformation):
+class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Normal Fixed Addressing format."""
+
+    AI_DATA_BYTES_NUMBER: int = 0
+    """Number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
         return CanAddressingFormat.NORMAL_FIXED_ADDRESSING
-
-    @property
-    def ai_data_bytes_number(self) -> int:
-        """Get number of CAN Frame data bytes that are used to carry Addressing Information."""
-        return 0
 
     @staticmethod
     def validate_packet_ai(addressing_type: AddressingTypeAlias,  # noqa
