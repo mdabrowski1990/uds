@@ -698,7 +698,7 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
             return None
         return self.raw_frame_data[ai_data_bytes_number] >> 4
 
-    def get_addressing_information(self) -> dict:
+    def get_addressing_information(self) -> dict:  # TODO: update annotation
         """
         Get Addressing Information carried by this packet.
 

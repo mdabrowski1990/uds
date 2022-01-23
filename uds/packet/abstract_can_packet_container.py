@@ -198,7 +198,7 @@ class AbstractCanPacketContainer(ABC):
                                                        raw_frame_data=self.raw_frame_data)
         return None
 
-    def get_addressing_information(self) -> dict:
+    def get_addressing_information(self) -> dict:  # TODO: update annotation
         """
         Get Addressing Information carried by this packet.
 

@@ -24,7 +24,7 @@ CanAIParamsAlias = Dict[str, Optional[Union[int, AddressingTypeAlias]]]
 class CanSegmenter(AbstractSegmenter):
     """Segmenter class that provides utilities for segmentation and desegmentation on CAN bus."""
 
-    def __init__(self, *,
+    def __init__(self, *,  # TODO: rework to use AddressingInformation object
                  addressing_format: CanAddressingFormatAlias,
                  physical_ai: Optional[CanAIArgsAlias] = None,
                  functional_ai: Optional[CanAIArgsAlias] = None,

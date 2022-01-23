@@ -2,11 +2,12 @@
 
 __all__ = ["AbstractAddressingInformation"]
 
-from typing import TypedDict
+from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
+from copy import deepcopy
 
 from uds.utilities import RawByte
-from uds.transmission_attributes import AddressingTypeAlias
+from uds.transmission_attributes import AddressingTypeAlias, AddressingType
 from .addressing_format import CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
 
@@ -78,9 +79,9 @@ class AbstractAddressingInformation(ABC):
         """Get number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     @property
-    @abstractmethod
     def rx_packets_physical_ai(self) -> PacketAIParamsAlias:
         """Addressing Information parameters of incoming physically addressed CAN packets."""
+        return deepcopy(self.__rx_packets_physical_ai)
 
     @rx_packets_physical_ai.setter
     def rx_packets_physical_ai(self, value: InputAIParamsAlias):
@@ -89,11 +90,17 @@ class AbstractAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
+        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
+        self.__rx_packets_physical_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
+            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            **value
+        }
 
     @property
-    @abstractmethod
     def tx_packets_physical_ai(self) -> PacketAIParamsAlias:
         """Addressing Information parameters of outgoing physically addressed CAN packets."""
+        return deepcopy(self.__tx_packets_physical_ai)
 
     @tx_packets_physical_ai.setter
     def tx_packets_physical_ai(self, value: InputAIParamsAlias):
@@ -102,11 +109,17 @@ class AbstractAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
+        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
+        self.__tx_packets_physical_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
+            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
+            **value
+        }
 
     @property
-    @abstractmethod
     def rx_packets_functional_ai(self) -> PacketAIParamsAlias:
         """Addressing Information parameters of incoming functionally addressed CAN packets."""
+        return deepcopy(self.__rx_packets_functional_ai)
 
     @rx_packets_functional_ai.setter
     def rx_packets_functional_ai(self, value: InputAIParamsAlias):
@@ -115,11 +128,17 @@ class AbstractAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
+        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
+        self.__rx_packets_functional_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
+            self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
+            **value
+        }
 
     @property
-    @abstractmethod
     def tx_packets_functional_ai(self) -> PacketAIParamsAlias:
         """Addressing Information parameters of outgoing functionally addressed CAN packets."""
+        return deepcopy(self.__tx_packets_functional_ai)
 
     @tx_packets_functional_ai.setter
     def tx_packets_functional_ai(self, value: InputAIParamsAlias):
@@ -127,4 +146,30 @@ class AbstractAddressingInformation(ABC):
         Set Addressing Information parameters of outgoing functionally addressed CAN packets.
 
         :param value: Addressing Information parameters to set.
+        """
+        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
+        self.__tx_packets_functional_ai: AbstractAddressingInformation.PacketAIParamsAlias = {
+            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
+            self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
+            **value
+        }
+
+    @staticmethod
+    @abstractmethod
+    def validate_packet_ai(addressing_type: AddressingTypeAlias,
+                           can_id: Optional[int],
+                           target_address: Optional[RawByte],
+                           source_address: Optional[RawByte],
+                           address_extension: Optional[RawByte]) -> None:
+        """
+        Validate Addressing Information parameters of a CAN packet that uses Normal 11-bit Addressing format.
+
+        :param addressing_type: Addressing type to validate.
+        :param can_id: CAN Identifier value to validate.
+        :param target_address: Target Address value to validate.
+        :param source_address: Source Address value to validate.
+        :param address_extension: Address Extension value to validate.
+
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
+            or with the Addressing format used.
         """
