@@ -9,7 +9,7 @@ from can import Message as PythonCanMessage
 
 from uds.utilities import RawByte, RawBytesTuple, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
-from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
+from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformation, \
     CanDlcHandler, CanIdHandler
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
 from .abstract_can_packet_container import AbstractCanPacketContainer
@@ -155,9 +155,9 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
         :raise InconsistentArgumentsError: Value of Addressing Type that is already set does not match decoded one.
         """
         ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
-        ai_info = CanAddressingInformationHandler.decode_ai(addressing_format=self.addressing_format,
-                                                            can_id=self.can_id,
-                                                            ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])
+        ai_info = CanAddressingInformationHandler.decode_packet_ai(addressing_format=self.addressing_format,
+                                                                   can_id=self.can_id,
+                                                                   ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])
         self.__target_address = ai_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]  # type: ignore
         self.__source_address = ai_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]  # type: ignore
         self.__address_extension = ai_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]  # type: ignore

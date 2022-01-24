@@ -7,7 +7,7 @@ from copy import copy
 
 from uds.utilities import RawByte, RawBytesList, validate_raw_byte, AmbiguityError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
-from uds.can import CanAddressingInformationHandler, CanAddressingFormat, CanAddressingFormatAlias, \
+from uds.can import CanAddressingInformation, CanAddressingFormat, CanAddressingFormatAlias, \
     CanDlcHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, DEFAULT_FILLER_BYTE
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType, \
     AbstractUdsPacketContainer, PacketsContainersSequence, PacketsTuple
@@ -80,7 +80,7 @@ class CanSegmenter(AbstractSegmenter):
         if value is None:
             self.__physical_ai: Optional[CanAIParamsAlias] = None
         else:
-            CanAddressingInformationHandler.validate_ai(
+            CanAddressingInformation.validate_packet_ai(
                 addressing_format=self.addressing_format,
                 addressing_type=AddressingType.PHYSICAL,
                 **value)

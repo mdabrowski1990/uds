@@ -12,7 +12,7 @@ from typing import Optional
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
     validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormatAlias
-from .addressing_information import CanAddressingInformationHandler
+from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
@@ -64,7 +64,7 @@ class CanConsecutiveFrameHandler:
         frame_dlc = cls.get_min_dlc(addressing_format=addressing_format, payload_length=len(payload)) \
             if dlc is None else dlc
         frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
                                                                              target_address=target_address,
                                                                              address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
@@ -116,7 +116,7 @@ class CanConsecutiveFrameHandler:
         validate_raw_byte(filler_byte)
         validate_raw_bytes(payload, allow_empty=True)
         frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
                                                                              target_address=target_address,
                                                                              address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
@@ -141,7 +141,7 @@ class CanConsecutiveFrameHandler:
 
         :return: True if provided data bytes carries Consecutive Frame, False otherwise.
         """
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] >> 4 == cls.CONSECUTIVE_FRAME_N_PCI
 
     @classmethod
@@ -169,7 +169,7 @@ class CanConsecutiveFrameHandler:
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return list(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
 
     @classmethod
@@ -191,7 +191,7 @@ class CanConsecutiveFrameHandler:
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] & 0xF
 
     @classmethod
@@ -214,7 +214,7 @@ class CanConsecutiveFrameHandler:
         if not 1 <= payload_length <= max_payload_length:
             raise ValueError(f"Provided `payload_length` value is out of range. "
                              f"Expected: 1 <= payload_length <= {max_payload_length}. Actual value: {payload_length}")
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         if payload_length + ai_data_bytes_number > max_payload_length:
             raise InconsistentArgumentsError(f"Provided `payload_length` and `addressing_format` values cannot be used "
                                              f"together. As they require {payload_length + ai_data_bytes_number} "
@@ -244,7 +244,7 @@ class CanConsecutiveFrameHandler:
         else:
             frame_data_bytes_number = CanDlcHandler.MAX_DATA_BYTES_NUMBER
         ai_data_bytes_number = 0 if addressing_format is None else \
-            CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+            CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         output = frame_data_bytes_number - ai_data_bytes_number - cls.SN_BYTES_USED
         if output <= 0:
             raise InconsistentArgumentsError(f"Provided values cannot be used to transmit a valid Consecutive Frame "
