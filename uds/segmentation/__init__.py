@@ -11,4 +11,4 @@ This subpackage contains implementation of:
 """
 
 from .abstract_segmenter import SegmentationError, AbstractSegmenter
-from .can_segmenter import CanSegmenter, CanAIArgsAlias, CanAIParamsAlias
+from .can_segmenter import CanSegmenter
