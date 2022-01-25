@@ -21,7 +21,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         return CanAddressingFormat.EXTENDED_ADDRESSING
 
     @staticmethod
-    def validate_packet_ai(addressing_type: AddressingTypeAlias,  # noqa
+    def validate_packet_ai(addressing_type: AddressingTypeAlias,  # TODO: rework
                            can_id: int,
                            target_address: RawByte) -> None:
         """

@@ -67,7 +67,7 @@ class CanAddressingInformation:
                         tx_functional=tx_functional)
 
     @classmethod
-    def validate_packet_ai(cls,
+    def validate_packet_ai(cls,  # TODO: rework
                            addressing_format: CanAddressingFormatAlias,
                            addressing_type: AddressingTypeAlias,
                            can_id: Optional[int] = None,

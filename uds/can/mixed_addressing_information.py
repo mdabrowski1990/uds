@@ -23,7 +23,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         return CanAddressingFormat.MIXED_11BIT_ADDRESSING
 
     @staticmethod
-    def validate_packet_ai(addressing_type: AddressingTypeAlias,  # noqa
+    def validate_packet_ai(addressing_type: AddressingTypeAlias,  # TODO: rework
                            can_id: int,
                            address_extension: RawByte) -> None:
         """
@@ -56,7 +56,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
         return CanAddressingFormat.MIXED_29BIT_ADDRESSING
 
     @staticmethod
-    def validate_packet_ai(addressing_type: AddressingTypeAlias,  # noqa
+    def validate_packet_ai(addressing_type: AddressingTypeAlias,  # TODO: rework
                            address_extension: RawByte,
                            can_id: Optional[int] = None,
                            target_address: Optional[RawByte] = None,

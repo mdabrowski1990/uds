@@ -53,11 +53,8 @@ class TestAbstractCanAddressingInformation:
     def test_rx_packets_physical_ai__set(self, value):
         AbstractCanAddressingInformation.rx_packets_physical_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.PHYSICAL, **value)
-        assert self.mock_addressing_information._AbstractCanAddressingInformation__rx_packets_physical_ai == {
-            self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,
-            self.mock_addressing_information.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
-            **value
-        }
+        assert self.mock_addressing_information._AbstractCanAddressingInformation__rx_packets_physical_ai \
+               == self.mock_addressing_information.validate_packet_ai.return_value
 
     # tx_packets_physical_ai
 
@@ -72,11 +69,8 @@ class TestAbstractCanAddressingInformation:
     def test_tx_packets_physical_ai__set(self, value):
         AbstractCanAddressingInformation.tx_packets_physical_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.PHYSICAL, **value)
-        assert self.mock_addressing_information._AbstractCanAddressingInformation__tx_packets_physical_ai == {
-            self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,
-            self.mock_addressing_information.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
-            **value
-        }
+        assert self.mock_addressing_information._AbstractCanAddressingInformation__tx_packets_physical_ai \
+               == self.mock_addressing_information.validate_packet_ai.return_value
 
     # rx_packets_functional_ai
 
@@ -91,11 +85,8 @@ class TestAbstractCanAddressingInformation:
     def test_rx_packets_functional_ai__set(self, value):
         AbstractCanAddressingInformation.rx_packets_functional_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.FUNCTIONAL, **value)
-        assert self.mock_addressing_information._AbstractCanAddressingInformation__rx_packets_functional_ai == {
-            self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,
-            self.mock_addressing_information.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-            **value
-        }
+        assert self.mock_addressing_information._AbstractCanAddressingInformation__rx_packets_functional_ai \
+               == self.mock_addressing_information.validate_packet_ai.return_value
 
     # tx_packets_functional_ai
 
@@ -110,8 +101,5 @@ class TestAbstractCanAddressingInformation:
     def test_tx_packets_functional_ai__set(self, value):
         AbstractCanAddressingInformation.tx_packets_functional_ai.fset(self.mock_addressing_information, value)
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.FUNCTIONAL, **value)
-        assert self.mock_addressing_information._AbstractCanAddressingInformation__tx_packets_functional_ai == {
-            self.mock_addressing_information.ADDRESSING_FORMAT_NAME: self.mock_addressing_information.addressing_format,
-            self.mock_addressing_information.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-            **value
-        }
+        assert self.mock_addressing_information._AbstractCanAddressingInformation__tx_packets_functional_ai \
+               == self.mock_addressing_information.validate_packet_ai.return_value

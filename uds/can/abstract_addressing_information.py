@@ -88,12 +88,8 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
-        self.__rx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
-            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
-            **value
-        }
+        self.__rx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+            = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
 
     @property
     def tx_packets_physical_ai(self) -> PacketAIParamsAlias:
@@ -107,12 +103,8 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
-        self.__tx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
-            self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL,
-            **value
-        }
+        self.__tx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+            = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
 
     @property
     def rx_packets_functional_ai(self) -> PacketAIParamsAlias:
@@ -126,12 +118,8 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
-        self.__rx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
-            self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-            **value
-        }
+        self.__rx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+            = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 
     @property
     def tx_packets_functional_ai(self) -> PacketAIParamsAlias:
@@ -145,20 +133,16 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
-        self.__tx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias = {
-            self.ADDRESSING_FORMAT_NAME: self.addressing_format,  # type: ignore
-            self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
-            **value
-        }
+        self.__tx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+            = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 
     @staticmethod
     @abstractmethod
     def validate_packet_ai(addressing_type: AddressingTypeAlias,
-                           can_id: Optional[int],
-                           target_address: Optional[RawByte],
-                           source_address: Optional[RawByte],
-                           address_extension: Optional[RawByte]) -> None:
+                           can_id: Optional[int] = None,
+                           target_address: Optional[RawByte] = None,
+                           source_address: Optional[RawByte] = None,
+                           address_extension: Optional[RawByte] = None) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -170,4 +154,7 @@ class AbstractCanAddressingInformation(ABC):
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
             or with the Addressing format used.
+        :raise UnusedArgumentError: Provided parameter is not supported by Addressing format used.
+
+        :return: Normalized dictionary with the provided information.
         """
