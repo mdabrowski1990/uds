@@ -9,7 +9,7 @@ __all__ = ["CanAddressingInformation"]
 from typing import Optional, Dict, TypedDict, Type
 
 from uds.utilities import RawByte, RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, \
-    UnusedArgumentError, InconsistentArgumentsError
+    InconsistentArgumentsError
 from uds.transmission_attributes import AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
@@ -67,13 +67,14 @@ class CanAddressingInformation:
                         tx_functional=tx_functional)
 
     @classmethod
-    def validate_packet_ai(cls,  # TODO: rework
+    def validate_packet_ai(cls,
                            addressing_format: CanAddressingFormatAlias,
                            addressing_type: AddressingTypeAlias,
                            can_id: Optional[int] = None,
                            target_address: Optional[RawByte] = None,
                            source_address: Optional[RawByte] = None,
-                           address_extension: Optional[RawByte] = None) -> None:
+                           address_extension: Optional[RawByte] = None
+                           ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -84,53 +85,16 @@ class CanAddressingInformation:
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
-            or with the Addressing format used.
-        :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
+        :return: Normalized dictionary with the provided Addressing Information.
         """
         CanAddressingFormat.validate_member(addressing_format)
-        if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
-            if (target_address, source_address, address_extension) != (None, None, None):
-                raise UnusedArgumentError(f"Values of Target Address, Source Address and Address Extension must not be "
-                                          f"provided for {addressing_format}. Actual values: "
-                                          f"target_address={target_address}, source_address={source_address}, "
-                                          f"address_extension={address_extension}")
-            Normal11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type, can_id=can_id)
-        elif addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
-            if address_extension is not None:
-                raise UnusedArgumentError(f"Value of Address Extension must not be provided for "
-                                          f"{addressing_format}. Actual value: "
-                                          f"address_extension={address_extension}")
-            NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                   can_id=can_id,
-                                                                   target_address=target_address,
-                                                                   source_address=source_address)
-        elif addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            if (source_address, address_extension) != (None, None):
-                raise UnusedArgumentError(f"Values of Source Address and Address Extension must not be provided for "
-                                          f"{addressing_format}. Actual values: "
-                                          f"source_address={source_address}, address_extension={address_extension}")
-            ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                can_id=can_id,
-                                                                target_address=target_address)
-        elif addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
-            if (target_address, source_address) != (None, None):
-                raise UnusedArgumentError(f"Values of Target Address and Source Address must not be provided for "
-                                          f"{addressing_format}. Actual values: "
-                                          f"target_address={target_address}, source_address={source_address}")
-            Mixed11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                  can_id=can_id,
-                                                                  address_extension=address_extension)
-        elif addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
-            Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                  can_id=can_id,
-                                                                  target_address=target_address,
-                                                                  source_address=source_address,
-                                                                  address_extension=address_extension)
-        else:
-            raise NotImplementedError(f"Missing implementation for: {addressing_format}")
+        return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].validate_packet_ai(
+            addressing_type=addressing_type,
+            can_id=can_id,
+            target_address=target_address,
+            source_address=source_address,
+            address_extension=address_extension
+        )
 
     @classmethod
     def validate_ai_data_bytes(cls, addressing_format: CanAddressingFormatAlias, ai_data_bytes: RawBytes) -> None:

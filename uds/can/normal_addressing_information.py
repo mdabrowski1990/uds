@@ -40,7 +40,7 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
         :param address_extension: Address Extension value to validate.
 
         :raise InconsistentArgumentsError: Provided CAN ID value is incompatible with Normal 11-bit Addressing format.
-        :raise UnusedArgumentError: Provided parameter is not supported by Addressing format used.
+        :raise UnusedArgumentError: Provided parameter is not supported by this Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
@@ -85,10 +85,11 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
+        :param address_extension: Address Extension value to validate.
 
-        :raise InconsistentArgumentsError: Provided Target Address, Source Address and CAN ID values is incompatible
+        :raise InconsistentArgumentsError: Provided Target Address, Source Address or CAN ID values are incompatible
             with each other or Normal Fixed Addressing format.
-        :raise UnusedArgumentError: Provided parameter is not supported by Addressing format used.
+        :raise UnusedArgumentError: Provided parameter is not supported by this Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """

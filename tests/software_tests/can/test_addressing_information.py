@@ -2,7 +2,7 @@ import pytest
 from mock import patch, MagicMock, Mock
 
 from uds.can.addressing_information import CanAddressingInformation, \
-    CanAddressingFormat, InconsistentArgumentsError, UnusedArgumentError, AbstractCanAddressingInformation
+    CanAddressingFormat, InconsistentArgumentsError, AbstractCanAddressingInformation
 from uds.transmission_attributes import AddressingType
 
 
@@ -73,161 +73,25 @@ class TestCanAddressingInformation:
         ("some addressing", "some CAN ID", "TA", "SA", "AE"),
         (Mock(), 0x8213, 0x9A, 0x0B, 0xF1),
     ])
-    def test_validate_packet_ai__unknown_addressing_format(self, addressing_format, addressing_type, can_id,
-                                                           target_address, source_address, address_extension):
-        with pytest.raises(NotImplementedError):
-            CanAddressingInformation.validate_packet_ai(addressing_format=addressing_format,
-                                                        addressing_type=addressing_type,
-                                                        can_id=can_id,
-                                                        target_address=target_address,
-                                                        source_address=source_address,
-                                                        address_extension=address_extension)
-        self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
-
-    @pytest.mark.parametrize("addressing_type, can_id", [
-        ("some addressing", "some CAN ID"),
-        (Mock(), 0x8213),
-    ])
-    def test_validate_packet_ai__normal_11bit__valid(self, addressing_type, can_id):
-        CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                                                    addressing_type=addressing_type,
-                                                    can_id=can_id)
-        self.mock_normal_11bit_ai_class.validate_packet_ai.assert_called_once_with(addressing_type=addressing_type,
-                                                                                   can_id=can_id)
-
-    @pytest.mark.parametrize("addressing_type, can_id, target_address, source_address, address_extension", [
-        ("some addressing", "some CAN ID", "TA", "SA", "AE"),
-        ("some addressing", "some CAN ID", "TA", None, None),
-        (Mock(), 0x8213, None, None, 0xF1),
-    ])
-    def test_validate_packet_ai__normal_11bit__invalid(self, addressing_type, can_id,
-                                                       target_address, source_address, address_extension):
-        with pytest.raises(UnusedArgumentError):
-            CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                                                        addressing_type=addressing_type,
-                                                        can_id=can_id,
-                                                        target_address=target_address,
-                                                        source_address=source_address,
-                                                        address_extension=address_extension)
-        self.mock_normal_11bit_ai_class.assert_not_called()
-
-    @pytest.mark.parametrize("addressing_type, can_id, target_address, source_address", [
-        ("some addressing", "some CAN ID", "TA", "SA"),
-        (Mock(), 0x8213, 0x9A, 0x0B),
-    ])
-    def test_validate_packet_ai__normal_fixed__valid(self, addressing_type, can_id, target_address, source_address):
-        CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                                    addressing_type=addressing_type,
-                                                    can_id=can_id,
-                                                    target_address=target_address,
-                                                    source_address=source_address)
-        self.mock_normal_fixed_ai_class.validate_packet_ai.assert_called_once_with(addressing_type=addressing_type,
-                                                                                   can_id=can_id,
-                                                                                   target_address=target_address,
-                                                                                   source_address=source_address)
-
-    @pytest.mark.parametrize("addressing_type, can_id, target_address, source_address", [
-        ("some addressing", "some CAN ID", "TA", "SA"),
-        (Mock(), 0x8213, 0x9A, 0x0B),
-    ])
-    @pytest.mark.parametrize("address_extension", ["AE", 0x9B, 1])
-    def test_validate_packet_ai__normal_fixed__invalid(self, addressing_type, can_id,
-                                                       target_address, source_address, address_extension):
-        with pytest.raises(UnusedArgumentError):
-            CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                                        addressing_type=addressing_type,
-                                                        can_id=can_id,
-                                                        target_address=target_address,
-                                                        source_address=source_address,
-                                                        address_extension=address_extension)
-        self.mock_normal_fixed_ai_class.validate_packet_ai.assert_not_called()
-
-    @pytest.mark.parametrize("addressing_type, can_id, target_address", [
-        ("some addressing", "some CAN ID", "TA"),
-        (Mock(), 0x8213, 0x9A),
-    ])
-    def test_validate_packet_ai__extended__valid(self, addressing_type, can_id, target_address):
-        CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
-                                                    addressing_type=addressing_type,
-                                                    can_id=can_id,
-                                                    target_address=target_address)
-        self.mock_extended_ai_class.validate_packet_ai.assert_called_once_with(addressing_type=addressing_type,
-                                                                               can_id=can_id,
-                                                                               target_address=target_address)
-
-    @pytest.mark.parametrize("addressing_type, can_id, target_address", [
-        ("some addressing", "some CAN ID", "TA"),
-        (Mock(), 0x8213, 0x9A),
-    ])
-    @pytest.mark.parametrize("source_address, address_extension", [
-        ("SA", "AE"),
-        ("SA", None),
-        (None, "AE"),
-        (0x0B, 0xF1),
-    ])
-    def test_validate_packet_ai__extended__invalid(self, addressing_type, can_id,
-                                                   target_address, source_address, address_extension):
-        with pytest.raises(UnusedArgumentError):
-            CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
-                                                        addressing_type=addressing_type,
-                                                        can_id=can_id,
-                                                        target_address=target_address,
-                                                        source_address=source_address,
-                                                        address_extension=address_extension)
-        self.mock_extended_ai_class.validate_packet_ai.assert_not_called()
-
-    @pytest.mark.parametrize("addressing_type, can_id, address_extension", [
-        ("some addressing", "some CAN ID", "AE"),
-        (Mock(), 0x8213, 0xF1),
-    ])
-    def test_validate_packet_ai__mixed_11bit__valid(self, addressing_type, can_id, address_extension):
-        CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-                                                    addressing_type=addressing_type,
-                                                    can_id=can_id,
-                                                    address_extension=address_extension)
-        self.mock_mixed_11bit_ai_class.validate_packet_ai.assert_called_once_with(addressing_type=addressing_type,
-                                                                                  can_id=can_id,
-                                                                                  address_extension=address_extension)
-
-    @pytest.mark.parametrize("addressing_type, can_id, address_extension", [
-        ("some addressing", "some CAN ID", "AE"),
-        (Mock(), 0x8213, 0xF1),
-    ])
-    @pytest.mark.parametrize("target_address, source_address", [
-        ("TA", "SA"),
-        ("TA", None),
-        (None, "SA"),
-        (0x0B, 0xF1),
-    ])
-    def test_validate_packet_ai__mixed_11bit__invalid(self, addressing_type, can_id,
-                                                      target_address, source_address, address_extension):
-        with pytest.raises(UnusedArgumentError):
-            CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-                                                        addressing_type=addressing_type,
-                                                        can_id=can_id,
-                                                        target_address=target_address,
-                                                        source_address=source_address,
-                                                        address_extension=address_extension)
-        self.mock_mixed_11bit_ai_class.validate_packet_ai.assert_not_called()
-
-    @pytest.mark.parametrize("addressing_type, can_id, target_address, source_address, address_extension", [
-        ("some addressing", "some CAN ID", "TA", "SA", "AE"),
-        (0, None, None, None, None),
-        (Mock(), 0x8213, 0x9A, 0x0B, 0xF1),
-    ])
-    def test_validate_packet_ai__mixed_29bit(self, addressing_type, can_id,
-                                             target_address, source_address, address_extension):
-        CanAddressingInformation.validate_packet_ai(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                                                    addressing_type=addressing_type,
-                                                    can_id=can_id,
-                                                    target_address=target_address,
-                                                    source_address=source_address,
-                                                    address_extension=address_extension)
-        self.mock_mixed_29bit_ai_class.validate_packet_ai.assert_called_once_with(addressing_type=addressing_type,
-                                                                                  can_id=can_id,
-                                                                                  target_address=target_address,
-                                                                                  source_address=source_address,
-                                                                                  address_extension=address_extension)
+    @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.ADDRESSING_INFORMATION_MAPPING")
+    def test_validate_packet_ai(self, mock_ai_mapping, addressing_format,
+                                addressing_type, can_id, target_address, source_address, address_extension):
+        mock_returned_class = Mock()
+        mock_getitem = Mock(return_value=mock_returned_class)
+        mock_ai_mapping.__getitem__ = mock_getitem
+        assert CanAddressingInformation.validate_packet_ai(addressing_format=addressing_format,
+                                                           addressing_type=addressing_type,
+                                                           can_id=can_id,
+                                                           target_address=target_address,
+                                                           source_address=source_address,
+                                                           address_extension=address_extension) \
+               == mock_returned_class.validate_packet_ai.return_value
+        mock_getitem.assert_called_once_with(addressing_format)
+        mock_returned_class.validate_packet_ai.assert_called_once_with(addressing_type=addressing_type,
+                                                                       can_id=can_id,
+                                                                       target_address=target_address,
+                                                                       source_address=source_address,
+                                                                       address_extension=address_extension)
 
     # validate_ai_data_bytes
 
@@ -496,7 +360,7 @@ class TestCanAddressingInformationIntegration:
                                      "address_extension": 0x00},
           "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
-                                     "can_id": 0x18CEFFFF,
+                                     "can_id": 0x18CEFF0F,
                                      "target_address": 0xFF,
                                      "source_address": 0x0F,
                                      "address_extension": 0x5E},
@@ -517,5 +381,3 @@ class TestCanAddressingInformationIntegration:
         ai = CanAddressingInformation(**input_params)
         for attr_name, attr_value in expected_attributes.items():
             assert getattr(ai, attr_name) == attr_value
-
-

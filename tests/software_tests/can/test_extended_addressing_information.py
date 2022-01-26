@@ -2,7 +2,7 @@ import pytest
 from mock import Mock, patch
 
 from uds.can.extended_addressing_information import ExtendedCanAddressingInformation, \
-    CanAddressingFormat, InconsistentArgumentsError, AddressingType
+    CanAddressingFormat, InconsistentArgumentsError, UnusedArgumentError, AbstractCanAddressingInformation
 
 
 class TestExtendedCanAddressingInformation:
@@ -33,6 +33,18 @@ class TestExtendedCanAddressingInformation:
 
     # validate_packet_ai
 
+    @pytest.mark.parametrize("unsupported_args", [
+        {"source_address": "something"},
+        {"address_extension": Mock()},
+        {"source_address": Mock(), "address_extension": Mock()}
+    ])
+    def test_validate_packet_ai__inconsistent_arg(self, unsupported_args):
+        with pytest.raises(UnusedArgumentError):
+            ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=Mock(),
+                                                                can_id=Mock(),
+                                                                target_address=Mock(),
+                                                                **unsupported_args)
+
     @pytest.mark.parametrize("addressing_type, can_id", [
         ("some addressing type", "some id"),
         (Mock(), 0x7FF),
@@ -54,9 +66,14 @@ class TestExtendedCanAddressingInformation:
     @pytest.mark.parametrize("target_address", ["some TA", 0x5B])
     def test_validate_packet_ai__valid(self, addressing_type, can_id, target_address):
         self.mock_can_id_handler_class.is_extended_addressed_can_id.return_value = True
-        ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                            can_id=can_id,
-                                                            target_address=target_address)
+        assert ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                   can_id=can_id,
+                                                                   target_address=target_address) == {
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+            AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
+        }
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_extended_addressed_can_id.assert_called_once_with(can_id)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
