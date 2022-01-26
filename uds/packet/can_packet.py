@@ -2,7 +2,7 @@
 
 __all__ = ["CanPacket", "AnyCanPacket"]
 
-from typing import Optional, Any
+from typing import Optional, Any, TypedDict
 from warnings import warn
 
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesTuple, validate_raw_bytes, \
@@ -596,6 +596,14 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
         other features that this class is missing.
     """
 
+    class DecodedAIParamsAlias(TypedDict, total=True):
+        """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in any CAN Packet."""
+
+        addressing_type: Optional[AddressingTypeAlias]
+        target_address: Optional[RawByte]
+        source_address: Optional[RawByte]
+        address_extension: Optional[RawByte]
+
     def __init__(self, *,
                  raw_frame_data: RawBytes,
                  addressing_format: CanAddressingFormatAlias,
@@ -699,7 +707,7 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
             return None
         return self.raw_frame_data[ai_data_bytes_number] >> 4
 
-    def get_addressing_information(self) -> dict:  # TODO: update annotation
+    def get_addressing_information(self) -> DecodedAIParamsAlias:
         """
         Get Addressing Information carried by this packet.
 
@@ -709,7 +717,7 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
             return super().get_addressing_information()
         except (TypeError, ValueError, IndexError):
             return {
-                AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: None,
+                AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: None,  # type: ignore
                 AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
                 AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
                 AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,

@@ -45,7 +45,7 @@ class CanAddressingInformation:
         source_address: Optional[RawByte]
         address_extension: Optional[RawByte]
 
-    def __new__(cls,
+    def __new__(cls,  # type: ignore
                 addressing_format: CanAddressingFormatAlias,
                 rx_physical: AbstractCanAddressingInformation.InputAIParamsAlias,
                 tx_physical: AbstractCanAddressingInformation.InputAIParamsAlias,
@@ -143,7 +143,7 @@ class CanAddressingInformation:
                  AbstractCanAddressingInformation.TARGET_ADDRESS_NAME,
                  AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME,
                  AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME)
-        return {name: from_data_bytes.get(name, None) or from_can_id.get(name, None) for name in names}
+        return {name: from_data_bytes.get(name, None) or from_can_id.get(name, None) for name in names}  # type: ignore
 
     @classmethod
     def decode_ai_data_bytes(cls,
@@ -167,14 +167,14 @@ class CanAddressingInformation:
                                    ai_data_bytes=ai_data_bytes)
         if addressing_format in {CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING}:
-            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
+            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,  # type: ignore
                     AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None}
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: ai_data_bytes[0],
+            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: ai_data_bytes[0],  # type: ignore
                     AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None}
         if addressing_format in {CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING}:
-            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
+            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,  # type: ignore
                     AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME:  ai_data_bytes[0]}
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
@@ -202,11 +202,11 @@ class CanAddressingInformation:
             return []
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
             validate_raw_byte(target_address)
-            return [target_address]
+            return [target_address]  # type: ignore
         if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING):
             validate_raw_byte(address_extension)
-            return [address_extension]
+            return [address_extension]  # type: ignore
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod

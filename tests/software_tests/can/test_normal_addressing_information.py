@@ -127,10 +127,10 @@ class TestNormalFixedCanAddressingInformation:
 
     @pytest.mark.parametrize("can_id", ["some CAN ID", 0x8FABC])
     @pytest.mark.parametrize("addressing_type, decoded_addressing_type, ta, decoded_ta, sa, decoded_sa", [
-        (Mock(), Mock(), None, 0x55, 0x7F, 0x80),
-        ("something", "something else", None, 0x55, None, 0x10),
+        (Mock(), Mock(), None, 0x55, None, 0x80),
         ("something", "something", 0x56, 0x55, None, 0x10),
-        ("something", "something else", 0x56, 0x55, 0x7F, 0x10),
+        ("abc", "abc", None, 0x55, 0x9F, 0x10),
+        ("something", "something else", 0x1, 0x2, 0xF0, 0x10),
     ])
     def test_validate_packet_ai__inconsistent_can_id_ta_sa(self, can_id, addressing_type, decoded_addressing_type,
                                                            ta, decoded_ta, sa, decoded_sa):

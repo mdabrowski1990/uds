@@ -59,7 +59,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]
+        return self.get_addressing_information()[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
 
     @property
     def source_address(self) -> Optional[RawByte]:
@@ -72,7 +72,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]
+        return self.get_addressing_information()[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
 
     @property
     def address_extension(self) -> Optional[RawByte]:
@@ -86,7 +86,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]
+        return self.get_addressing_information()[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]  # type:ignore
 
     @property
     def data_length(self) -> Optional[int]:

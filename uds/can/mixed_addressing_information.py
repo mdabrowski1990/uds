@@ -50,11 +50,11 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)
         validate_raw_byte(address_extension)
-        if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):
+        if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Mixed 11-bit Addressing Format. Actual value: {can_id}")
         return {
-            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_11BIT_ADDRESSING,  # noqa
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: address_extension,
@@ -104,33 +104,33 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
                                                  f"target_address={target_address}, source_address={source_address}")
             validate_raw_byte(target_address)
             validate_raw_byte(source_address)
-            encoded_can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(addressing_type=addressing_type,
-                                                                              target_address=target_address,
-                                                                              source_address=source_address)
+            encoded_can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(
+                addressing_type=addressing_type,
+                target_address=target_address,  # type: ignore
+                source_address=source_address)  # type: ignore
             return {
-                AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,  # noqa
                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
                 AbstractCanAddressingInformation.CAN_ID_NAME: encoded_can_id,
                 AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
                 AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address,
                 AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: address_extension,
             }
-        else:
-            decoded_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
-            if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
-                raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
-                                                 f"Actual values: can_id={can_id}, addressing={addressing_type}")
-            if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):
-                raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
-                                                 f"Actual values: can_id={can_id}, target_address={target_address}")
-            if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):
-                raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
-                                                 f"Actual values: can_id={can_id}, source_address={source_address}")
-            return {
-                AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
-                AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
-                AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],
-                AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],
-                AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: address_extension,
-            }
+        decoded_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
+        if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:  # type: ignore
+            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
+                                             f"Actual values: can_id={can_id}, addressing={addressing_type}")
+        if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):  # type: ignore
+            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
+                                             f"Actual values: can_id={can_id}, target_address={target_address}")
+        if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):  # type: ignore
+            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
+                                             f"Actual values: can_id={can_id}, source_address={source_address}")
+        return {
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,  # noqa
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+            AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: address_extension,
+        }

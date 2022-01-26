@@ -50,11 +50,11 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)
         validate_raw_byte(target_address)
-        if not CanIdHandler.is_extended_addressed_can_id(can_id):
+        if not CanIdHandler.is_extended_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Extended Addressing Format. Actual value: {can_id}")
         return {
-            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,  # noqa
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,

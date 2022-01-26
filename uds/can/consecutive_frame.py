@@ -65,8 +65,8 @@ class CanConsecutiveFrameHandler:
             if dlc is None else dlc
         frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
         ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
         cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
         if len(cf_bytes) > frame_data_bytes_number:
@@ -117,8 +117,8 @@ class CanConsecutiveFrameHandler:
         validate_raw_bytes(payload, allow_empty=True)
         frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
         ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
         cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
         if len(cf_bytes) > frame_data_bytes_number:

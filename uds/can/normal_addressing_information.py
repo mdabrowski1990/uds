@@ -49,11 +49,11 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
                                       "not supported by Normal 11-bit Addressing format and all must be None.")
         AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)
-        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):
+        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Normal 11-bit Addressing Format. Actual value: {can_id}")
         return {
-            cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+            cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_11BIT_ADDRESSING,  # type: ignore
             cls.ADDRESSING_TYPE_NAME: addressing_type,
             cls.CAN_ID_NAME: can_id
         }
@@ -105,28 +105,29 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                                                  f"target_address={target_address}, source_address={source_address}")
             validate_raw_byte(target_address)
             validate_raw_byte(source_address)
-            encoded_can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(addressing_type=addressing_type,
-                                                                               target_address=target_address,
-                                                                               source_address=source_address)
+            encoded_can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(
+                addressing_type=addressing_type,
+                target_address=target_address,  # type: ignore
+                source_address=source_address)  # type: ignore
             return {
-                AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,  # noqa
                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
                 AbstractCanAddressingInformation.CAN_ID_NAME: encoded_can_id,
                 AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
                 AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address,
             }
         decoded_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
-        if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:
+        if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
                                              f"Actual values: can_id={can_id}, addressing={addressing_type}")
-        if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):
+        if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
                                              f"Actual values: can_id={can_id}, target_address={target_address}")
-        if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):
+        if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
                                              f"Actual values: can_id={can_id}, source_address={source_address}")
         return {
-            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,  # noqa
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],
