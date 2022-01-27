@@ -136,9 +136,10 @@ class AbstractCanAddressingInformation(ABC):
         self.__tx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def validate_packet_ai(addressing_type: AddressingTypeAlias,
+    def validate_packet_ai(cls,
+                           addressing_type: AddressingTypeAlias,
                            can_id: Optional[int] = None,
                            target_address: Optional[RawByte] = None,
                            source_address: Optional[RawByte] = None,
