@@ -31,11 +31,11 @@ class CanAddressingInformation:
     }
     """Dictionary with CAN Addressing format mapping to Addressing Information handler classes."""
 
-    class DataBatesAIParamsAlias(TypedDict, total=True):
+    class DataBatesAIParamsAlias(TypedDict, total=False):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in data field."""
 
-        target_address: Optional[RawByte]
-        address_extension: Optional[RawByte]
+        target_address: RawByte
+        address_extension: RawByte
 
     class DecodedAIParamsAlias(TypedDict, total=True):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in CAN ID and data field."""
@@ -167,15 +167,12 @@ class CanAddressingInformation:
                                    ai_data_bytes=ai_data_bytes)
         if addressing_format in {CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING}:
-            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,  # type: ignore
-                    AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None}
+            return {}
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: ai_data_bytes[0],  # type: ignore
-                    AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None}
+            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: ai_data_bytes[0]}  # type: ignore
         if addressing_format in {CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING}:
-            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,  # type: ignore
-                    AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME:  ai_data_bytes[0]}
+            return {AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME:  ai_data_bytes[0]}  # type: ignore
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod

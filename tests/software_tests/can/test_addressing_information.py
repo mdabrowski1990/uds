@@ -157,26 +157,18 @@ class TestCanAddressingInformation:
     @pytest.mark.parametrize("ai_data_bytes", [[], (0xCF,)])
     @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.validate_ai_data_bytes")
     def test_decode_ai_data_bytes__normal(self, mock_validate_ai_data_bytes, addressing_format, ai_data_bytes):
-        decoded_values = CanAddressingInformation.decode_ai_data_bytes(addressing_format=addressing_format,
-                                                                       ai_data_bytes=ai_data_bytes)
-        assert isinstance(decoded_values, dict)
-        assert set(decoded_values.keys()) == {AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME,
-                                              AbstractCanAddressingInformation.TARGET_ADDRESS_NAME}
-        assert decoded_values[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME] is None
-        assert decoded_values[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME] is None
+        assert CanAddressingInformation.decode_ai_data_bytes(addressing_format=addressing_format,
+                                                             ai_data_bytes=ai_data_bytes) == {}
         mock_validate_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                             ai_data_bytes=ai_data_bytes)
 
     @pytest.mark.parametrize("ai_data_bytes", [[0x0A], (0xCF,)])
     @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.validate_ai_data_bytes")
     def test_decode_ai_data_bytes__extended(self, mock_validate_ai_data_bytes, ai_data_bytes):
-        decoded_values = CanAddressingInformation.decode_ai_data_bytes(
-            addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING, ai_data_bytes=ai_data_bytes)
-        assert isinstance(decoded_values, dict)
-        assert set(decoded_values.keys()) == {AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME,
-                                              AbstractCanAddressingInformation.TARGET_ADDRESS_NAME}
-        assert decoded_values[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME] == ai_data_bytes[0]
-        assert decoded_values[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME] is None
+        assert CanAddressingInformation.decode_ai_data_bytes(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
+                                                             ai_data_bytes=ai_data_bytes) == {
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: ai_data_bytes[0]
+        }
         mock_validate_ai_data_bytes.assert_called_once_with(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
                                                             ai_data_bytes=ai_data_bytes)
 
@@ -185,13 +177,10 @@ class TestCanAddressingInformation:
     @pytest.mark.parametrize("ai_data_bytes", [[0x0A], (0xCF,)])
     @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.validate_ai_data_bytes")
     def test_decode_ai_data_bytes__mixed(self, mock_validate_ai_data_bytes, addressing_format, ai_data_bytes):
-        decoded_values = CanAddressingInformation.decode_ai_data_bytes(addressing_format=addressing_format,
-                                                                       ai_data_bytes=ai_data_bytes)
-        assert isinstance(decoded_values, dict)
-        assert set(decoded_values.keys()) == {AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME,
-                                              AbstractCanAddressingInformation.TARGET_ADDRESS_NAME}
-        assert decoded_values[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME] is None
-        assert decoded_values[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME] == ai_data_bytes[0]
+        assert CanAddressingInformation.decode_ai_data_bytes(addressing_format=addressing_format,
+                                                             ai_data_bytes=ai_data_bytes) == {
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: ai_data_bytes[0]
+        }
         mock_validate_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                             ai_data_bytes=ai_data_bytes)
 

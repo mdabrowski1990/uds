@@ -204,23 +204,14 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         :param source_address: Source Address value carried by this CAN packet.
             Leave None if the value of `can_id` parameter is provided.
         """
-        NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                               can_id=can_id,
-                                                               target_address=target_address,
-                                                               source_address=source_address)
+        ai_params = NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                           can_id=can_id,
+                                                                           target_address=target_address,
+                                                                           source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
-        if can_id is None:
-            self.__can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(
-                addressing_type=addressing_type,
-                target_address=target_address,  # type: ignore
-                source_address=source_address)  # type: ignore
-            self.__source_address = source_address
-            self.__target_address = target_address
-        else:
-            self.__can_id = can_id
-            ai_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
-            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]  # type: ignore
-            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__can_id = ai_params[AbstractCanAddressingInformation.CAN_ID_NAME]  # type: ignore
+        self.__source_address = ai_params[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
+        self.__target_address = ai_params[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
         self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = None
@@ -290,24 +281,15 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
             Leave None if the value of `can_id` parameter is provided.
         :param address_extension: Address Extension value carried by this CAN packet.
         """
-        Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                              can_id=can_id,
-                                                              target_address=target_address,
-                                                              source_address=source_address,
-                                                              address_extension=address_extension)
+        ai_params = Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                          can_id=can_id,
+                                                                          target_address=target_address,
+                                                                          source_address=source_address,
+                                                                          address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_29BIT_ADDRESSING)
-        if can_id is None:
-            self.__can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(
-                addressing_type=addressing_type,
-                target_address=target_address,  # type: ignore
-                source_address=source_address)  # type: ignore
-            self.__source_address = source_address
-            self.__target_address = target_address
-        else:
-            self.__can_id = can_id
-            ai_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
-            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]  # type: ignore
-            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__can_id = ai_params[AbstractCanAddressingInformation.CAN_ID_NAME]  # type: ignore
+        self.__source_address = ai_params[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
+        self.__target_address = ai_params[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
         self.__addressing_format = CanAddressingFormat.MIXED_29BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = address_extension

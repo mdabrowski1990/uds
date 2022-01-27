@@ -31,4 +31,4 @@ import uds.can
 import uds.packet
 import uds.message
 import uds.segmentation
-# import uds.transport_interface
+import uds.transport_interface
