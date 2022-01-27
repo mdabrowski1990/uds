@@ -11,7 +11,7 @@ from uds.packet import AbstractUdsPacketContainer
 from .abstract_packet_queue import AbstractPacketsQueue
 
 
-class TimestampedPacketsQueue(AbstractPacketsQueue):
+class TimestampedPacketsQueue(AbstractPacketsQueue):  # TODO: rework
     """Priority queue with UDS packets ordered by packet's timestamp."""
 
     def __init__(self, packet_type: Type[AbstractUdsPacketContainer]) -> None:
@@ -91,7 +91,7 @@ class TimestampedPacketsQueue(AbstractPacketsQueue):
         self.__event_packet_added.set()
 
 
-class PacketsQueue(AbstractPacketsQueue):
+class PacketsQueue(AbstractPacketsQueue):  # TODO: rework
     """FIFO queue for UDS packets."""
 
     def __init__(self, packet_type: Type[AbstractUdsPacketContainer]) -> None:

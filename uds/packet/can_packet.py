@@ -2,14 +2,16 @@
 
 __all__ = ["CanPacket", "AnyCanPacket"]
 
-from typing import Optional, Any
+from typing import Optional, Any, TypedDict
 from warnings import warn
 
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesTuple, validate_raw_bytes, \
     AmbiguityError, UnusedArgumentWarning
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler, \
-    CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
+    CanAddressingFormat, CanAddressingFormatAlias, AbstractCanAddressingInformation, CanAddressingInformation, \
+    Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, ExtendedCanAddressingInformation, \
+    Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation, \
     CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, \
     CanFlowControlHandler, CanFlowStatusAlias
 from .abstract_can_packet_container import AbstractCanPacketContainer
@@ -176,7 +178,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
         """
-        CanAddressingInformationHandler.validate_ai_normal_11bit(addressing_type=addressing_type, can_id=can_id)
+        Normal11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type, can_id=can_id)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
         self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
@@ -202,23 +204,14 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         :param source_address: Source Address value carried by this CAN packet.
             Leave None if the value of `can_id` parameter is provided.
         """
-        CanAddressingInformationHandler.validate_ai_normal_fixed(addressing_type=addressing_type,
-                                                                 can_id=can_id,
-                                                                 target_address=target_address,
-                                                                 source_address=source_address)
+        ai_params = NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                           can_id=can_id,
+                                                                           target_address=target_address,
+                                                                           source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
-        if can_id is None:
-            self.__can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(
-                addressing_type=addressing_type,
-                target_address=target_address,  # type: ignore
-                source_address=source_address)  # type: ignore
-            self.__source_address = source_address
-            self.__target_address = target_address
-        else:
-            self.__can_id = can_id
-            ai_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
-            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]  # type: ignore
-            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__can_id = ai_params[AbstractCanAddressingInformation.CAN_ID_NAME]  # type: ignore
+        self.__source_address = ai_params[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
+        self.__target_address = ai_params[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
         self.__addressing_format = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = None
@@ -235,9 +228,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         :param can_id: CAN Identifier value that is used by this packet.
         :param target_address: Target Address value carried by this CAN Packet.
         """
-        CanAddressingInformationHandler.validate_ai_extended(addressing_type=addressing_type,
-                                                             can_id=can_id,
-                                                             target_address=target_address)
+        ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                            can_id=can_id,
+                                                            target_address=target_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.EXTENDED_ADDRESSING)
         self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
@@ -258,9 +251,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         :param can_id: CAN Identifier value that is used by this packet.
         :param address_extension: Address Extension value carried by this CAN packet.
         """
-        CanAddressingInformationHandler.validate_ai_mixed_11bit(addressing_type=addressing_type,
-                                                                can_id=can_id,
-                                                                address_extension=address_extension)
+        Mixed11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                              can_id=can_id,
+                                                              address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_11BIT_ADDRESSING)
         self.__addressing_format = CanAddressingFormat.MIXED_11BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
@@ -288,24 +281,15 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
             Leave None if the value of `can_id` parameter is provided.
         :param address_extension: Address Extension value carried by this CAN packet.
         """
-        CanAddressingInformationHandler.validate_ai_mixed_29bit(addressing_type=addressing_type,
-                                                                can_id=can_id,
-                                                                target_address=target_address,
-                                                                source_address=source_address,
-                                                                address_extension=address_extension)
+        ai_params = Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
+                                                                          can_id=can_id,
+                                                                          target_address=target_address,
+                                                                          source_address=source_address,
+                                                                          address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_29BIT_ADDRESSING)
-        if can_id is None:
-            self.__can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(
-                addressing_type=addressing_type,
-                target_address=target_address,  # type: ignore
-                source_address=source_address)  # type: ignore
-            self.__source_address = source_address
-            self.__target_address = target_address
-        else:
-            self.__can_id = can_id
-            ai_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
-            self.__source_address = ai_info[CanIdHandler.SOURCE_ADDRESS_NAME]  # type: ignore
-            self.__target_address = ai_info[CanIdHandler.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__can_id = ai_params[AbstractCanAddressingInformation.CAN_ID_NAME]  # type: ignore
+        self.__source_address = ai_params[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
+        self.__target_address = ai_params[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
         self.__addressing_format = CanAddressingFormat.MIXED_29BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__address_extension = address_extension
@@ -564,8 +548,8 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         :raise AmbiguityError: Cannot change value because the operation is ambiguous.
         """
         if self.addressing_format is not None \
-                and CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format) \
-                != CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format):
+                and CanAddressingInformation.get_ai_data_bytes_number(addressing_format) \
+                != CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format):
             raise AmbiguityError(f"Cannot change CAN Addressing Format from {self.addressing_format} to "
                                  f"{addressing_format} as such operation provides ambiguity. "
                                  f"Create a new CAN Packet object instead.")
@@ -573,10 +557,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
     def __update_ai_data_byte(self) -> None:
         """Update the value of `raw_frame_data` attribute after Addressing Information change."""
         if self.__raw_frame_data is not None:
-            ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(
-                addressing_format=self.addressing_format,
-                target_address=self.target_address,
-                address_extension=self.address_extension)
+            ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=self.addressing_format,
+                                                                          target_address=self.target_address,
+                                                                          address_extension=self.address_extension)
             self.__raw_frame_data = tuple(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))
 
 
@@ -594,6 +577,14 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
         :class:`~uds.packet.can_packet.CanPacket` for all valid cases as it provides proper format validation and
         other features that this class is missing.
     """
+
+    class DecodedAIParamsAlias(TypedDict, total=True):
+        """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in any CAN Packet."""
+
+        addressing_type: Optional[AddressingTypeAlias]
+        target_address: Optional[RawByte]
+        source_address: Optional[RawByte]
+        address_extension: Optional[RawByte]
 
     def __init__(self, *,
                  raw_frame_data: RawBytes,
@@ -693,12 +684,12 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
     @property
     def packet_type(self) -> Optional[Nibble]:  # type: ignore
         """Type (N_PCI value) of this CAN packet."""
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
         if ai_data_bytes_number >= len(self.raw_frame_data):
             return None
         return self.raw_frame_data[ai_data_bytes_number] >> 4
 
-    def get_addressing_information(self) -> dict:
+    def get_addressing_information(self) -> DecodedAIParamsAlias:
         """
         Get Addressing Information carried by this packet.
 
@@ -708,8 +699,8 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
             return super().get_addressing_information()
         except (TypeError, ValueError, IndexError):
             return {
-                CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: None,
-                CanAddressingInformationHandler.TARGET_ADDRESS_NAME: None,
-                CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: None,
-                CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
+                AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: None,  # type: ignore
+                AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
+                AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
+                AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
             }

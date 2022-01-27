@@ -27,10 +27,10 @@ class TestCanSingleFrameHandler:
         self._patcher_validate_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.validate_dlc")
         self.mock_validate_dlc = self._patcher_validate_dlc.start()
         self._patcher_encode_ai_data_bytes = \
-            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformationHandler.encode_ai_data_bytes")
+            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.encode_ai_data_bytes")
         self.mock_encode_ai_data_bytes = self._patcher_encode_ai_data_bytes.start()
         self._patcher_get_ai_data_bytes_number = \
-            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformationHandler.get_ai_data_bytes_number")
+            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
         self.mock_get_ai_data_bytes_number = self._patcher_get_ai_data_bytes_number.start()
 
     def teardown(self):

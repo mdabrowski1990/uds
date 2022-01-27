@@ -2,14 +2,14 @@
 
 __all__ = ["AbstractTransportInterface"]
 
-from typing import Optional, Tuple, Any
+from typing import Optional, Any
 from abc import ABC, abstractmethod
 
 from uds.utilities import TimeMilliseconds
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.segmentation import AbstractSegmenter
-from .packet_queues import PacketsQueue, TimestampedPacketsQueue
+from .packet_queues import PacketsQueue
 
 
 class AbstractTransportInterface(ABC):
@@ -49,23 +49,13 @@ class AbstractTransportInterface(ABC):
         """Value of the segmenter used by this Transport Interface."""
 
     @property  # noqa: F841
-    @abstractmethod
-    def _input_packets_queue(self) -> PacketsQueue:
-        """Queue with records of UDS Packets that were either received or transmitted."""
-
-    @property  # noqa: F841
-    @abstractmethod
-    def _output_packet_queue(self) -> TimestampedPacketsQueue:
-        """Queue with UDS Packets that are planned for the transmission."""
-
-    @property  # noqa: F841
-    def packet_records(self) -> Tuple[AbstractUdsPacketRecord, ...]:
-        """Container with records of UDS packets that were either received or transmitted."""
+    def packet_records_queue(self) -> PacketsQueue:
+        """Queue with records of UDS packets that were either received or transmitted."""
         raise NotImplementedError
 
     @property  # noqa: F841
-    def message_records(self) -> Tuple[UdsMessageRecord, ...]:
-        """Container with records of UDS Messages that were either received or transmitted."""
+    def message_records_queue(self):  # TODO: annotation
+        """Queue with records of UDS Messages that were either received or transmitted."""
         raise NotImplementedError
 
     @staticmethod

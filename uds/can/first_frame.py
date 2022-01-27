@@ -12,7 +12,7 @@ from typing import Optional
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
     validate_raw_bytes, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormatAlias
-from .addressing_information import CanAddressingInformationHandler
+from .addressing_information import CanAddressingInformation
 from .frame_fields import CanDlcHandler
 from .single_frame import CanSingleFrameHandler
 
@@ -64,9 +64,9 @@ class CanFirstFrameHandler:
         :return: Raw bytes of CAN frame data for the provided First Frame packet information.
         """
         validate_raw_bytes(payload)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         ff_dl_data_bytes = cls.__encode_valid_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
         ff_data_bytes = list(ai_data_bytes) + list(ff_dl_data_bytes) + list(payload)
         frame_length = CanDlcHandler.decode_dlc(dlc)
@@ -109,9 +109,9 @@ class CanFirstFrameHandler:
         :return: Raw bytes of CAN frame data for the provided First Frame packet information.
         """
         validate_raw_bytes(payload)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         ff_dl_data_bytes = cls.__encode_any_ff_dl(ff_dl=ff_dl, long_ff_dl_format=long_ff_dl_format)
         ff_data_bytes = list(ai_data_bytes) + list(ff_dl_data_bytes) + list(payload)
         frame_length = CanDlcHandler.decode_dlc(dlc)
@@ -133,7 +133,7 @@ class CanFirstFrameHandler:
 
         :return: True if provided data bytes carries First Frame, False otherwise.
         """
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] >> 4 == cls.FIRST_FRAME_N_PCI
 
     @classmethod
@@ -150,7 +150,7 @@ class CanFirstFrameHandler:
 
         :return: Payload bytes of a diagnostic message carried by a considered First Frame.
         """
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
         return list(raw_frame_data[ai_bytes_number + len(ff_dl_data_bytes):])
@@ -201,7 +201,7 @@ class CanFirstFrameHandler:
             raise ValueError(f"First Frame must use DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. "
                              f"Actual value: dlc={dlc}")
         data_bytes_number = CanDlcHandler.decode_dlc(dlc)
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         ff_dl_data_bytes_number = cls.LONG_FF_DL_BYTES_USED if long_ff_dl_format else cls.SHORT_FF_DL_BYTES_USED
         return data_bytes_number - ai_data_bytes_number - ff_dl_data_bytes_number
 
@@ -290,7 +290,7 @@ class CanFirstFrameHandler:
 
         :return: Extracted data bytes with CAN Packet Type and First Frame Data Length parameters.
         """
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         ff_dl_short = list(raw_frame_data[ai_bytes_number:][:cls.SHORT_FF_DL_BYTES_USED])
         if ff_dl_short[0] & 0xF != 0 or ff_dl_short[1] != 0x00:
             return ff_dl_short

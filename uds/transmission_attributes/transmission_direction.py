@@ -16,7 +16,7 @@ class TransmissionDirection(StrEnum, ValidatedEnum):
     RECEIVED = "Rx"  # noqa: F841
     """Incoming transmission from the perspective of the code."""
     TRANSMITTED = "Tx"  # noqa: F841
-    """Outcoming transmission from the perspective of the code."""
+    """Outgoing transmission from the perspective of the code."""
 
 
 TransmissionDirectionAlias = Union[TransmissionDirection, str]

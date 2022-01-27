@@ -7,7 +7,7 @@ from typing import Optional
 
 from uds.utilities import RawByte, RawBytesTuple
 from uds.transmission_attributes import AddressingTypeAlias
-from uds.can import CanAddressingInformationHandler, CanDlcHandler, \
+from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, CanDlcHandler, \
     CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, CanFlowControlHandler, \
     CanAddressingFormatAlias, CanFlowStatusAlias
 from .can_packet_type import CanPacketTypeAlias, CanPacketType
@@ -44,7 +44,7 @@ class AbstractCanPacketContainer(ABC):
     @property
     def packet_type(self) -> CanPacketTypeAlias:
         """Type (N_PCI value) of this CAN packet."""
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
         return CanPacketType(self.raw_frame_data[ai_data_bytes_number] >> 4)
 
     @property
@@ -59,7 +59,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
+        return self.get_addressing_information()[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
 
     @property
     def source_address(self) -> Optional[RawByte]:
@@ -72,7 +72,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
+        return self.get_addressing_information()[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
 
     @property
     def address_extension(self) -> Optional[RawByte]:
@@ -86,7 +86,7 @@ class AbstractCanPacketContainer(ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
+        return self.get_addressing_information()[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]  # type:ignore
 
     @property
     def data_length(self) -> Optional[int]:
@@ -198,13 +198,13 @@ class AbstractCanPacketContainer(ABC):
                                                        raw_frame_data=self.raw_frame_data)
         return None
 
-    def get_addressing_information(self) -> dict:
+    def get_addressing_information(self) -> CanAddressingInformation.DecodedAIParamsAlias:
         """
         Get Addressing Information carried by this packet.
 
         :return: Addressing Information decoded from CAN ID and CAN Frame data of this packet.
         """
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
-        return CanAddressingInformationHandler.decode_ai(addressing_format=self.addressing_format,
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
+        return CanAddressingInformation.decode_packet_ai(addressing_format=self.addressing_format,
                                                          can_id=self.can_id,
                                                          ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])

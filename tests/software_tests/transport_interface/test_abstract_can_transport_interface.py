@@ -18,27 +18,13 @@ class TestAbstractCanTransportInterface:
                                                    can_bus_manager=Mock(),
                                                    max_packet_records_stored=Mock(),
                                                    max_message_records_stored=Mock(),
-                                                   addressing_format=Mock(),
-                                                   physical_ai=Mock(),
-                                                   functional_ai=Mock())
+                                                   addressing_information=Mock())
 
     # segmenter
 
     def test_segmenter(self):
         with pytest.raises(NotImplementedError):
             AbstractCanTransportInterface.segmenter.fget(self.mock_can_transport_interface)
-
-    # _input_packets_queue
-
-    def test_input_packets_queue(self):
-        with pytest.raises(NotImplementedError):
-            AbstractCanTransportInterface._input_packets_queue.fget(self.mock_can_transport_interface)
-
-    # _output_packet_queue
-
-    def test_output_packet_queue(self):
-        with pytest.raises(NotImplementedError):
-            AbstractCanTransportInterface._output_packet_queue.fget(self.mock_can_transport_interface)
 
     # n_as
 
@@ -108,31 +94,11 @@ class TestAbstractCanTransportInterface:
         with pytest.raises(NotImplementedError):
             AbstractCanTransportInterface.n_cr_timeout.fset(self.mock_can_transport_interface, Mock())
 
-    # addressing_format
+    # addressing_information
 
-    def test_addressing_format__get(self):
+    def test_addressing_information__get(self):
         with pytest.raises(NotImplementedError):
-            AbstractCanTransportInterface.addressing_format.fget(self.mock_can_transport_interface)
-
-    # physical_ai
-
-    def test_physical_ai__get(self):
-        with pytest.raises(NotImplementedError):
-            AbstractCanTransportInterface.physical_ai.fget(self.mock_can_transport_interface)
-
-    def test_physical_ai__set(self):
-        with pytest.raises(NotImplementedError):
-            AbstractCanTransportInterface.physical_ai.fset(self.mock_can_transport_interface, Mock())
-            
-    # functional_ai
-
-    def test_functional_ai__get(self):
-        with pytest.raises(NotImplementedError):
-            AbstractCanTransportInterface.functional_ai.fget(self.mock_can_transport_interface)
-
-    def test_functional_ai__set(self):
-        with pytest.raises(NotImplementedError):
-            AbstractCanTransportInterface.functional_ai.fset(self.mock_can_transport_interface, Mock())
+            AbstractCanTransportInterface.addressing_information.fget(self.mock_can_transport_interface)
 
     # dlc
 

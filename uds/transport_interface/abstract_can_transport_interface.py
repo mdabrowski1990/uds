@@ -8,10 +8,9 @@ from abc import abstractmethod
 
 from uds.utilities import TimeMilliseconds, RawByte
 from uds.packet import CanPacket
-from uds.can import CanAddressingFormatAlias
-from uds.segmentation import CanSegmenter, CanAIArgsAlias, CanAIParamsAlias
+from uds.can import AbstractCanAddressingInformation
+from uds.segmentation import CanSegmenter
 from .abstract_transport_interface import AbstractTransportInterface
-from .packet_queues import PacketsQueue, TimestampedPacketsQueue
 
 
 FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
@@ -29,9 +28,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  can_bus_manager: Any,  # noqa: F841
                  max_packet_records_stored: int,  # noqa: F841
                  max_message_records_stored: int,  # noqa: F841
-                 addressing_format: CanAddressingFormatAlias,  # noqa: F841
-                 physical_ai: CanAIArgsAlias,  # noqa: F841
-                 functional_ai: CanAIArgsAlias,  # noqa: F841
+                 addressing_information: AbstractCanAddressingInformation,  # noqa: F841
                  **kwargs: Any) -> None:  # noqa: F841
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
@@ -41,6 +38,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
         :param max_message_records_stored: Maximal number of UDS message records to be stored in
             :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.message_records`.
+        :param addressing_information: Addressing Information of CAN Transport Interface.
         :param kwargs: Optional arguments that are specific for CAN bus.
 
             - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
@@ -59,16 +57,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property  # noqa: F841
     def segmenter(self) -> CanSegmenter:
         """Value of the segmenter used by this CAN Transport Interface."""
-        raise NotImplementedError
-
-    @property  # noqa: F841
-    def _input_packets_queue(self) -> PacketsQueue:
-        """Queue with CAN Packets records that were either received or transmitted."""
-        raise NotImplementedError
-
-    @property  # noqa: F841
-    def _output_packet_queue(self) -> TimestampedPacketsQueue:
-        """Queue with CAN Packets that are planned for the transmission."""
         raise NotImplementedError
 
     # Time parameter - CAN Network Layer
@@ -229,42 +217,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     # Communication parameters
 
-    @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
-        """CAN Addressing format used."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
-
-    @property
-    def physical_ai(self) -> CanAIParamsAlias:
-        """CAN Addressing Information parameters used for physically addressed communication."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
-
-    @physical_ai.setter
-    def physical_ai(self, value: CanAIArgsAlias):
-        """
-        Set value of CAN Addressing Information parameters to use for physically addressed communication.
-
-        :param value: Value to set.
-        """
-        # TODO: set in the segmenter
-        raise NotImplementedError
-
-    @property
-    def functional_ai(self) -> CanAIParamsAlias:
-        """CAN Addressing Information parameters used for functionally addressed communication."""
-        # TODO: get from the segmenter
-        raise NotImplementedError
-
-    @functional_ai.setter
-    def functional_ai(self, value: CanAIArgsAlias):
-        """
-        Set value of CAN Addressing Information parameters to use for functionally addressed communication.
-
-        :param value: Value to set.
-        """
-        # TODO: set in the segmenter
+    @property  # noqa: F841
+    def addressing_information(self) -> AbstractCanAddressingInformation:
+        """Addressing Information of Transport Interface."""
         raise NotImplementedError
 
     @property

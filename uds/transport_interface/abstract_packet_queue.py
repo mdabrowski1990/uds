@@ -10,7 +10,7 @@ from warnings import warn
 from uds.packet import AbstractUdsPacketContainer
 
 
-class AbstractPacketsQueue(ABC):
+class AbstractPacketsQueue(ABC):  # TODO: rework
     """Abstract definition of a queue with UDS packets."""
 
     @abstractmethod

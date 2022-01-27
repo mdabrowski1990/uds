@@ -29,10 +29,10 @@ class TestAbstractTransportInterface:
 
     def test_packet_records(self):
         with pytest.raises(NotImplementedError):
-            AbstractTransportInterface.packet_records.fget(self.mock_transport_interface)
+            AbstractTransportInterface.packet_records_queue.fget(self.mock_transport_interface)
 
     # message_records
 
     def test_message_records(self):
         with pytest.raises(NotImplementedError):
-            AbstractTransportInterface.message_records.fget(self.mock_transport_interface)
+            AbstractTransportInterface.message_records_queue.fget(self.mock_transport_interface)
