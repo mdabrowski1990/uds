@@ -12,7 +12,7 @@ from typing import Optional
 from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
     validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
 from .addressing_format import CanAddressingFormatAlias
-from .addressing_information import CanAddressingInformationHandler
+from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
@@ -66,9 +66,9 @@ class CanSingleFrameHandler:
         """
         validate_raw_byte(filler_byte)
         validate_raw_bytes(payload, allow_empty=False)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         frame_dlc = cls.get_min_dlc(addressing_format=addressing_format, payload_length=len(payload)) \
             if dlc is None else dlc
         frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
@@ -124,9 +124,9 @@ class CanSingleFrameHandler:
         """
         validate_raw_byte(filler_byte)
         validate_raw_bytes(payload, allow_empty=True)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
         sf_dl_bytes = cls.__encode_any_sf_dl(sf_dl_short=sf_dl_short,
                                              sf_dl_long=sf_dl_long)
@@ -151,7 +151,7 @@ class CanSingleFrameHandler:
 
         :return: True if provided data bytes carries Single Frame, False otherwise.
         """
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return (raw_frame_data[ai_bytes_number] >> 4) == cls.SINGLE_FRAME_N_PCI
 
     @classmethod
@@ -169,7 +169,7 @@ class CanSingleFrameHandler:
         :return: Payload bytes of a diagnostic message carried by a considered Single Frame.
         """
         sf_dl = cls.decode_sf_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         sf_dl_bytes_number = cls.get_sf_dl_bytes_number(dlc)
         return list(raw_frame_data[ai_data_bytes_number + sf_dl_bytes_number:][:sf_dl])
@@ -210,7 +210,7 @@ class CanSingleFrameHandler:
 
         :return: The lowest value of DLC that enables to fit in provided Single Frame packet data.
         """
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         cls.__validate_payload_length(payload_length=payload_length, ai_data_bytes_number=ai_data_bytes_number)
         data_bytes_short_sf_dl = ai_data_bytes_number + cls.SHORT_SF_DL_BYTES_USED + payload_length
         dlc_with_short_sf_dl = CanDlcHandler.get_min_dlc(data_bytes_short_sf_dl)
@@ -243,7 +243,7 @@ class CanSingleFrameHandler:
             frame_data_bytes_number = CanDlcHandler.MAX_DATA_BYTES_NUMBER
             sf_dl_bytes_number = cls.LONG_SF_DL_BYTES_USED
         ai_data_bytes_number = 0 if addressing_format is None else \
-            CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+            CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         output = frame_data_bytes_number - ai_data_bytes_number - sf_dl_bytes_number
         if output <= 0:
             raise InconsistentArgumentsError(f"Provided values cannot be used to transmit a valid Single Frame packet. "
@@ -279,7 +279,7 @@ class CanSingleFrameHandler:
         if not cls.is_single_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a Single Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         sf_dl_data_bytes = cls.__extract_sf_dl_data_bytes(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
         data_bytes_number = len(raw_frame_data)
@@ -366,7 +366,7 @@ class CanSingleFrameHandler:
         :return: Extracted data bytes with CAN Packet Type and Single Frame Data Length parameters.
         """
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return list(raw_frame_data[ai_bytes_number:])[:cls.get_sf_dl_bytes_number(dlc)]
 
     @classmethod

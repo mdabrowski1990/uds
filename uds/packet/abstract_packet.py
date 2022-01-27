@@ -138,15 +138,15 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
     @property
     def transmission_time(self) -> datetime:
-        """Time stamp when this packet was fully transmitted on a bus."""
+        """Time when this packet was fully transmitted on a bus."""
         return self.__transmission_time
 
     @transmission_time.setter
     def transmission_time(self, value: datetime):
         """
-        Set value of transmission_time attribute.
+        Set value when this packet was transmitted on a bus.
 
-        :param value: Direction value to set.
+        :param value: Value of transmission time to set.
 
         :raise TypeError: Provided value has unexpected type.
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).

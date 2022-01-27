@@ -4,7 +4,7 @@ from mock import Mock, patch
 from datetime import datetime
 
 from uds.packet.can_packet_record import CanPacketRecord, \
-    PythonCanMessage, CanAddressingInformationHandler, InconsistentArgumentsError, CanAddressingFormat, CanPacketType
+    PythonCanMessage, AbstractCanAddressingInformation, InconsistentArgumentsError, CanAddressingFormat, CanPacketType
 from uds.transmission_attributes import TransmissionDirection, AddressingType
 from uds.can import CanFlowStatus
 
@@ -16,18 +16,13 @@ class TestCanPacketRecord:
 
     def setup(self):
         self.mock_can_packet_record = Mock(spec=CanPacketRecord)
-        mock_ai = Mock(spec=CanAddressingInformationHandler,
-                       TARGET_ADDRESS_NAME=CanAddressingInformationHandler.TARGET_ADDRESS_NAME,
-                       SOURCE_ADDRESS_NAME=CanAddressingInformationHandler.SOURCE_ADDRESS_NAME,
-                       ADDRESS_EXTENSION_NAME=CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME,
-                       ADDRESSING_TYPE_NAME=CanAddressingInformationHandler.ADDRESSING_TYPE_NAME)
         # patching
         self._patcher_addressing_type_class = patch(f"{self.SCRIPT_LOCATION}.AddressingType")
         self.mock_addressing_type_class = self._patcher_addressing_type_class.start()
         self._patcher_can_addressing_format_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat")
         self.mock_can_addressing_format_class = self._patcher_can_addressing_format_class.start()
-        self._patcher_can_ai_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformationHandler", mock_ai)
-        self.mock_can_ai_handler_class = self._patcher_can_ai_handler_class.start()
+        self._patcher_can_ai_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation")
+        self.mock_can_ai_class = self._patcher_can_ai_class.start()
         self._patcher_can_packet_type_class = patch(f"{self.SCRIPT_LOCATION}.CanPacketType")
         self.mock_can_packet_type_class = self._patcher_can_packet_type_class.start()
         self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
@@ -40,7 +35,7 @@ class TestCanPacketRecord:
     def teardown(self):
         self._patcher_addressing_type_class.stop()
         self._patcher_can_addressing_format_class.stop()
-        self._patcher_can_ai_handler_class.stop()
+        self._patcher_can_ai_class.stop()
         self._patcher_can_packet_type_class.stop()
         self._patcher_can_id_handler_class.stop()
         self._patcher_can_dlc_handler_class.stop()
@@ -162,11 +157,11 @@ class TestCanPacketRecord:
     @pytest.mark.parametrize("ai_data_bytes_number", [0, 1])
     def test_assess_packet_type(self, raw_frame_data, ai_data_bytes_number):
         self.mock_can_packet_record.raw_frame_data = raw_frame_data
-        self.mock_can_ai_handler_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
+        self.mock_can_ai_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         assert CanPacketRecord._CanPacketRecord__assess_packet_type(self=self.mock_can_packet_record) is None
         assert self.mock_can_packet_record._CanPacketRecord__packet_type == self.mock_can_packet_type_class.return_value
         n_pci_value = raw_frame_data[ai_data_bytes_number] >> 4
-        self.mock_can_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(
+        self.mock_can_ai_class.get_ai_data_bytes_number.assert_called_once_with(
             self.mock_can_packet_record.addressing_format)
         self.mock_can_packet_type_class.validate_member.assert_called_once_with(n_pci_value)
         self.mock_can_packet_type_class.assert_called_once_with(n_pci_value)
@@ -178,14 +173,14 @@ class TestCanPacketRecord:
         ("some other fortmat", 0x98765, [0xFE, 0xDC, 0xBA, 0x98, 0x76]),
     ])
     @pytest.mark.parametrize("decoded_ai", [
-        {CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-         CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-         CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-         CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Some Addressing"},
-        {CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0x12,
-         CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: 0x34,
-         CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: 0x56,
-         CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: None},
+        {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: "TA",
+         AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: "SA",
+         AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: "AE",
+         AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "Some Addressing"},
+        {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: 0x12,
+         AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: 0x34,
+         AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: 0x56,
+         AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: None},
     ])
     @pytest.mark.parametrize("ai_data_bytes_number", [0, 1])
     def test_assess_ai_attributes(self, addressing_format, can_id, raw_frame_data,
@@ -194,11 +189,11 @@ class TestCanPacketRecord:
         self.mock_can_packet_record.can_id = can_id
         self.mock_can_packet_record.raw_frame_data = raw_frame_data
         self.mock_can_packet_record.addressing_type = "Some Addressing"
-        self.mock_can_ai_handler_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
-        self.mock_can_ai_handler_class.decode_ai.return_value = decoded_ai
+        self.mock_can_ai_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
+        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
         assert CanPacketRecord._CanPacketRecord__assess_ai_attributes(self=self.mock_can_packet_record) is None
-        self.mock_can_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
-        self.mock_can_ai_handler_class.decode_ai.assert_called_once_with(addressing_format=addressing_format,
+        self.mock_can_ai_class.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+        self.mock_can_ai_class.decode_packet_ai.assert_called_once_with(addressing_format=addressing_format,
                                                                          can_id=can_id,
                                                                          ai_data_bytes=raw_frame_data[:ai_data_bytes_number])
         assert self.mock_can_packet_record._CanPacketRecord__target_address == decoded_ai["target_address"]
@@ -210,14 +205,14 @@ class TestCanPacketRecord:
         ("some other fortmat", 0x98765, [0xFE, 0xDC, 0xBA, 0x98, 0x76]),
     ])
     @pytest.mark.parametrize("decoded_ai", [
-        {CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-         CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-         CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-         CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Some Addressing"},
-        {CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0x12,
-         CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: 0x34,
-         CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: 0x56,
-         CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Some Other Addressing"},
+        {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: "TA",
+         AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: "SA",
+         AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: "AE",
+         AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "Some Addressing"},
+        {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: 0x12,
+         AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: 0x34,
+         AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: 0x56,
+         AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "Some Other Addressing"},
     ])
     @pytest.mark.parametrize("ai_data_bytes_number", [0, 1])
     def test_assess_ai_attributes__inconsistent_addressing(self, addressing_format, can_id, raw_frame_data,
@@ -225,14 +220,14 @@ class TestCanPacketRecord:
         self.mock_can_packet_record.addressing_format = addressing_format
         self.mock_can_packet_record.can_id = can_id
         self.mock_can_packet_record.raw_frame_data = raw_frame_data
-        self.mock_can_ai_handler_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
-        self.mock_can_ai_handler_class.decode_ai.return_value = decoded_ai
+        self.mock_can_ai_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
+        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
         with pytest.raises(InconsistentArgumentsError):
             CanPacketRecord._CanPacketRecord__assess_ai_attributes(self=self.mock_can_packet_record)
-        self.mock_can_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
-        self.mock_can_ai_handler_class.decode_ai.assert_called_once_with(addressing_format=addressing_format,
-                                                                         can_id=can_id,
-                                                                         ai_data_bytes=raw_frame_data[:ai_data_bytes_number])
+        self.mock_can_ai_class.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
+        self.mock_can_ai_class.decode_packet_ai.assert_called_once_with(addressing_format=addressing_format,
+                                                                        can_id=can_id,
+                                                                        ai_data_bytes=raw_frame_data[:ai_data_bytes_number])
 
 
 @pytest.mark.integration

@@ -19,7 +19,7 @@ from uds.utilities import NibbleEnum, ValidatedEnum, TimeMilliseconds, \
     Nibble, RawByte, RawBytes, RawBytesList, validate_nibble, validate_raw_byte, validate_raw_bytes, \
     InconsistentArgumentsError
 from .addressing_format import CanAddressingFormatAlias
-from .addressing_information import CanAddressingInformationHandler
+from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
@@ -215,9 +215,9 @@ class CanFlowControlHandler:
         :return: Raw bytes of CAN frame data for the provided Flow Control packet information.
         """
         validate_raw_byte(filler_byte)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         frame_dlc = cls.get_min_dlc(addressing_format) if dlc is None else dlc
         frame_data_bytes_number = CanDlcHandler.decode_dlc(frame_dlc)
         fs_data_bytes = cls.__encode_valid_flow_status(flow_status=flow_status,
@@ -271,9 +271,9 @@ class CanFlowControlHandler:
         :return: Raw bytes of CAN frame data for the provided Flow Control packet information.
         """
         validate_raw_byte(filler_byte)
-        ai_data_bytes = CanAddressingInformationHandler.encode_ai_data_bytes(addressing_format=addressing_format,
-                                                                             target_address=target_address,
-                                                                             address_extension=address_extension)
+        ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                      target_address=target_address,
+                                                                      address_extension=address_extension)
         frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
         fs_data_bytes = cls.__encode_any_flow_status(flow_status=flow_status,
                                                      block_size=block_size,
@@ -300,7 +300,7 @@ class CanFlowControlHandler:
 
         :return: True if provided data bytes carries Flow Control, False otherwise.
         """
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] >> 4 == cls.FLOW_CONTROL_N_PCI
 
     @classmethod
@@ -324,7 +324,7 @@ class CanFlowControlHandler:
         if not cls.is_flow_control(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
-        ai_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return CanFlowStatus(raw_frame_data[ai_bytes_number] & 0xF)
 
     @classmethod
@@ -349,7 +349,7 @@ class CanFlowControlHandler:
             raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
                              f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_data_bytes_number + cls.BS_BYTE_POSITION]
 
     @classmethod
@@ -374,7 +374,7 @@ class CanFlowControlHandler:
             raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
                              f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_data_bytes_number + cls.STMIN_BYTE_POSITION]
 
     @classmethod
@@ -386,7 +386,7 @@ class CanFlowControlHandler:
 
         :return: The lowest value of DLC that enables to fit in provided Flow Control packet data.
         """
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(addressing_format)
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return CanDlcHandler.get_min_dlc(ai_data_bytes_number + cls.FS_BYTES_USED)
 
     @classmethod

@@ -1,13 +1,14 @@
 """Segmentation specific for CAN bus."""
 
-__all__ = ["CanSegmenter", "CanAIArgsAlias", "CanAIParamsAlias"]
+__all__ = ["CanSegmenter"]
 
-from typing import Optional, Union, Tuple, Dict, Type
+from typing import Union, Tuple, Type
 from copy import copy
 
-from uds.utilities import RawByte, RawBytesList, validate_raw_byte, AmbiguityError
-from uds.transmission_attributes import AddressingType, AddressingTypeAlias
-from uds.can import CanAddressingInformationHandler, CanAddressingFormat, CanAddressingFormatAlias, \
+from uds.utilities import RawByte, RawBytesList, validate_raw_byte
+from uds.transmission_attributes import AddressingType
+from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, \
+    CanAddressingFormat, CanAddressingFormatAlias, \
     CanDlcHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, DEFAULT_FILLER_BYTE
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType, \
     AbstractUdsPacketContainer, PacketsContainersSequence, PacketsTuple
@@ -15,19 +16,13 @@ from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
-CanAIArgsAlias = Dict[str, Optional[int]]
-"""Alias of Addressing Information arguments to configure CAN Segmenter communication model."""
-CanAIParamsAlias = Dict[str, Optional[Union[int, AddressingTypeAlias]]]
-"""Alias of Addressing Information parameters used by CAN Segmenter for each communication model."""
-
-
 class CanSegmenter(AbstractSegmenter):
     """Segmenter class that provides utilities for segmentation and desegmentation on CAN bus."""
 
     def __init__(self, *,
                  addressing_format: CanAddressingFormatAlias,
-                 physical_ai: Optional[CanAIArgsAlias] = None,
-                 functional_ai: Optional[CanAIArgsAlias] = None,
+                 physical_ai: AbstractCanAddressingInformation.InputAIParamsAlias,
+                 functional_ai: AbstractCanAddressingInformation.InputAIParamsAlias,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
                  use_data_optimization: bool = False,
                  filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
@@ -36,9 +31,7 @@ class CanSegmenter(AbstractSegmenter):
 
         :param addressing_format: CAN Addressing format used.
         :param physical_ai: CAN Addressing Information parameters to use for physically addressed communication.
-            Leave None if the segmenter will not be used for segmenting physically addressed messages.
         :param functional_ai: CAN Addressing Information parameters to use for functionally addressed communication.
-            Leave None if the segmenter will not be used for segmenting functionally addressed messages.
         :param dlc: Base CAN DLC value to use for CAN Packets.
         :param use_data_optimization: Information whether to use CAN Frame Data Optimization during segmentation.
         :param filler_byte: Filler byte value to use for CAN Frame Data Padding during segmentation.
@@ -62,64 +55,36 @@ class CanSegmenter(AbstractSegmenter):
         return self.__addressing_format
 
     @property
-    def physical_ai(self) -> Optional[CanAIParamsAlias]:
-        """
-        CAN Addressing Information parameters used for physically addressed communication.
-
-        None if physically addressed communication parameters are not configured.
-        """
+    def physical_ai(self) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
+        """CAN Addressing Information parameters used for outgoing physically addressed communication."""
         return copy(self.__physical_ai)
 
     @physical_ai.setter
-    def physical_ai(self, value: Optional[CanAIArgsAlias]):
+    def physical_ai(self, value: AbstractCanAddressingInformation.InputAIParamsAlias):
         """
-        Set value of CAN Addressing Information parameters to use for physically addressed communication.
+        Set Addressing Information parameters of physically addressed CAN packets.
 
-        :param value: Value to set.
+        :param value: Addressing Information parameters to set.
         """
-        if value is None:
-            self.__physical_ai: Optional[CanAIParamsAlias] = None
-        else:
-            CanAddressingInformationHandler.validate_ai(
-                addressing_format=self.addressing_format,
-                addressing_type=AddressingType.PHYSICAL,
-                **value)
-            physical_ai = copy(value)
-            physical_ai.update({
-                "addressing_format": self.addressing_format,  # type: ignore
-                CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL  # type: ignore
-            })
-            self.__physical_ai = physical_ai  # type: ignore
+        self.__physical_ai = CanAddressingInformation.validate_packet_ai(addressing_format=self.addressing_format,
+                                                                         addressing_type=AddressingType.PHYSICAL,
+                                                                         **value)
 
     @property
-    def functional_ai(self) -> CanAIParamsAlias:
-        """
-        CAN Addressing Information parameters used for functionally addressed communication.
-
-        None if functionally addressed communication parameters are not configured.
-        """
-        return copy(self.__functional_ai)  # type: ignore
+    def functional_ai(self) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
+        """CAN Addressing Information parameters used for outgoing functionally addressed communication."""
+        return copy(self.__functional_ai)
 
     @functional_ai.setter
-    def functional_ai(self, value: Optional[CanAIArgsAlias]):
+    def functional_ai(self, value: AbstractCanAddressingInformation.InputAIParamsAlias):
         """
-        Set value of CAN Addressing Information parameters to use for functionally addressed communication.
+        Set Addressing Information parameters of functionally addressed CAN packets.
 
-        :param value: Value to set.
+        :param value: Addressing Information parameters to set.
         """
-        if value is None:
-            self.__functional_ai: Optional[CanAIParamsAlias] = None
-        else:
-            CanAddressingInformationHandler.validate_ai(
-                addressing_format=self.addressing_format,
-                addressing_type=AddressingType.FUNCTIONAL,
-                **value)
-            functional_ai = copy(value)
-            functional_ai.update({
-                "addressing_format": self.addressing_format,  # type: ignore
-                CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL  # type: ignore
-            })
-            self.__functional_ai = functional_ai  # type: ignore
+        self.__functional_ai = CanAddressingInformation.validate_packet_ai(addressing_format=self.addressing_format,
+                                                                           addressing_type=AddressingType.FUNCTIONAL,
+                                                                           **value)
 
     @property
     def dlc(self) -> int:
@@ -214,7 +179,6 @@ class CanSegmenter(AbstractSegmenter):
         :param message: UDS message to divide into UDS packets.
 
         :raise TypeError: Provided value is not instance of UdsMessage class.
-        :raise AmbiguityError: Segmentation cannot be completed because CAN Segmenter is not properly configured.
         :raise NotImplementedError: There is missing implementation for the Addressing Type used by provided message.
             Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
             with detailed description if you face this error.
@@ -224,14 +188,8 @@ class CanSegmenter(AbstractSegmenter):
         if not isinstance(message, UdsMessage):
             raise TypeError(f"Provided value is not instance of UdsMessage class. Actual type: {type(message)}")
         if message.addressing_type == AddressingType.PHYSICAL:
-            if self.physical_ai is None:
-                raise AmbiguityError("Provided diagnostic message cannot be segmented as physical addressing "
-                                     "information are not configured.")
             return self.__physical_segmentation(message)
         if message.addressing_type == AddressingType.FUNCTIONAL:
-            if self.functional_ai is None:
-                raise AmbiguityError("Provided diagnostic message cannot be segmented as functional addressing "
-                                     "information are not configured.")
             return self.__functional_segmentation(message)
         raise NotImplementedError(f"Unknown addressing type received: {message.addressing_type}")
 
@@ -284,7 +242,7 @@ class CanSegmenter(AbstractSegmenter):
                                     "to transmit it over CAN bus.")
         if message_payload_size <= CanSingleFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
                                                                               dlc=self.dlc):
-            single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,  # type: ignore
+            single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
                                      payload=message.payload,
                                      filler_byte=self.filler_byte,
                                      dlc=None if self.use_data_optimization else self.dlc,
@@ -294,7 +252,7 @@ class CanSegmenter(AbstractSegmenter):
             addressing_format=self.addressing_format,
             dlc=self.dlc,
             long_ff_dl_format=message_payload_size > CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE)
-        first_frame = CanPacket(packet_type=CanPacketType.FIRST_FRAME,  # type: ignore
+        first_frame = CanPacket(packet_type=CanPacketType.FIRST_FRAME,
                                 payload=message.payload[:ff_payload_size],
                                 dlc=self.dlc,
                                 data_length=message_payload_size,
@@ -307,7 +265,7 @@ class CanSegmenter(AbstractSegmenter):
             sequence_number = (cf_index + 1) % 0x10
             payload_i_start = ff_payload_size + cf_index * cf_payload_size
             payload_i_stop = payload_i_start + cf_payload_size
-            consecutive_frame = CanPacket(packet_type=CanPacketType.CONSECUTIVE_FRAME,  # type: ignore
+            consecutive_frame = CanPacket(packet_type=CanPacketType.CONSECUTIVE_FRAME,
                                           payload=message.payload[payload_i_start: payload_i_stop],
                                           dlc=None if self.use_data_optimization and cf_index == total_cfs_number - 1
                                           else self.dlc,
@@ -337,5 +295,5 @@ class CanSegmenter(AbstractSegmenter):
                                  payload=message.payload,
                                  filler_byte=self.filler_byte,
                                  dlc=None if self.use_data_optimization else self.dlc,
-                                 **self.functional_ai)  # type: ignore
+                                 **self.functional_ai)
         return (single_frame,)

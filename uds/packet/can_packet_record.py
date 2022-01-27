@@ -9,12 +9,12 @@ from can import Message as PythonCanMessage
 
 from uds.utilities import RawByte, RawBytesTuple, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
-from uds.can import CanAddressingFormat, CanAddressingFormatAlias, CanAddressingInformationHandler, \
+from uds.can import CanAddressingFormat, CanAddressingFormatAlias, \
+    CanAddressingInformation, AbstractCanAddressingInformation, \
     CanDlcHandler, CanIdHandler
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
 from .abstract_can_packet_container import AbstractCanPacketContainer
 from .abstract_packet import AbstractUdsPacketRecord
-
 
 CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
@@ -143,7 +143,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
 
     def __assess_packet_type(self) -> None:
         """Assess and set value of Packet Type attribute."""
-        ai_data_bytes = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
+        ai_data_bytes = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
         n_pci_value = self.raw_frame_data[ai_data_bytes] >> 4
         CanPacketType.validate_member(n_pci_value)
         self.__packet_type = CanPacketType(n_pci_value)
@@ -154,12 +154,12 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
 
         :raise InconsistentArgumentsError: Value of Addressing Type that is already set does not match decoded one.
         """
-        ai_data_bytes_number = CanAddressingInformationHandler.get_ai_data_bytes_number(self.addressing_format)
-        ai_info = CanAddressingInformationHandler.decode_ai(addressing_format=self.addressing_format,
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
+        ai_info = CanAddressingInformation.decode_packet_ai(addressing_format=self.addressing_format,
                                                             can_id=self.can_id,
                                                             ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])
-        self.__target_address = ai_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]  # type: ignore
-        self.__source_address = ai_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]  # type: ignore
-        self.__address_extension = ai_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]  # type: ignore
-        if ai_info[CanAddressingInformationHandler.ADDRESSING_TYPE_NAME] not in (self.addressing_type, None):
+        self.__target_address = ai_info[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
+        self.__source_address = ai_info[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
+        self.__address_extension = ai_info[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]  # type: ignore
+        if ai_info[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME] not in (self.addressing_type, None):  # noqa
             raise InconsistentArgumentsError("Decoded Addressing Type does not match the one that is already set.")

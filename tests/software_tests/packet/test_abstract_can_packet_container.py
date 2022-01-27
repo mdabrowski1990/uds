@@ -2,7 +2,7 @@ import pytest
 from mock import Mock, patch
 
 from uds.packet.abstract_can_packet_container import AbstractCanPacketContainer, \
-    CanAddressingInformationHandler, CanPacketType
+    CanPacketType, AbstractCanAddressingInformation
 from uds.transmission_attributes import AddressingType
 
 
@@ -13,17 +13,12 @@ class TestAbstractCanPacketContainer:
 
     def setup(self):
         self.mock_can_packet_container = Mock(spec=AbstractCanPacketContainer)
-        mock_ai_handler_class = Mock(ADDRESSING_TYPE_NAME=CanAddressingInformationHandler.ADDRESSING_TYPE_NAME,
-                                     TARGET_ADDRESS_NAME=CanAddressingInformationHandler.TARGET_ADDRESS_NAME,
-                                     SOURCE_ADDRESS_NAME=CanAddressingInformationHandler.SOURCE_ADDRESS_NAME,
-                                     ADDRESS_EXTENSION_NAME=CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME)
         mock_can_packet_type_class = Mock(SINGLE_FRAME=CanPacketType.SINGLE_FRAME,
                                           FIRST_FRAME=CanPacketType.FIRST_FRAME,
                                           CONSECUTIVE_FRAME=CanPacketType.CONSECUTIVE_FRAME,
                                           FLOW_CONTROL=CanPacketType.FLOW_CONTROL)
         # patching
-        self._patcher_ai_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformationHandler",
-                                               mock_ai_handler_class)
+        self._patcher_ai_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_ai_handler_class = self._patcher_ai_handler_class.start()
         self._patcher_can_dlc_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler")
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
@@ -75,66 +70,66 @@ class TestAbstractCanPacketContainer:
 
     @pytest.mark.parametrize("ai_info", [
         {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Addressing",
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: "TA",
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: "SA",
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: "AE",
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "Addressing",
         },
         {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0xF9,
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: 0xE8,
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: 0xF9,
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: 0xE8,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
         }
     ])
     def test_target_address__get(self, ai_info):
         self.mock_can_packet_container.get_addressing_information.return_value = ai_info
         assert AbstractCanPacketContainer.target_address.fget(self.mock_can_packet_container) \
-               == ai_info[CanAddressingInformationHandler.TARGET_ADDRESS_NAME]
+               == ai_info[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]
         self.mock_can_packet_container.get_addressing_information.assert_called_once_with()
 
     # source_address
 
     @pytest.mark.parametrize("ai_info", [
         {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Addressing",
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: "TA",
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: "SA",
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: "AE",
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "Addressing",
         },
         {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0xF9,
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: 0xE8,
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: 0xF9,
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: 0xE8,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
         }
     ])
     def test_source_address__get(self, ai_info):
         self.mock_can_packet_container.get_addressing_information.return_value = ai_info
         assert AbstractCanPacketContainer.source_address.fget(self.mock_can_packet_container) \
-               == ai_info[CanAddressingInformationHandler.SOURCE_ADDRESS_NAME]
+               == ai_info[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]
         self.mock_can_packet_container.get_addressing_information.assert_called_once_with()
 
     # address_extension
 
     @pytest.mark.parametrize("ai_info", [
         {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: "TA",
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: "SA",
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: "AE",
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: "Addressing",
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: "TA",
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: "SA",
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: "AE",
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "Addressing",
         },
         {
-            CanAddressingInformationHandler.TARGET_ADDRESS_NAME: 0xF9,
-            CanAddressingInformationHandler.SOURCE_ADDRESS_NAME: 0xE8,
-            CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME: None,
-            CanAddressingInformationHandler.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: 0xF9,
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: 0xE8,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL,
         }
     ])
     def test_address_extension__get(self, ai_info):
         self.mock_can_packet_container.get_addressing_information.return_value = ai_info
         assert AbstractCanPacketContainer.address_extension.fget(self.mock_can_packet_container) \
-               == ai_info[CanAddressingInformationHandler.ADDRESS_EXTENSION_NAME]
+               == ai_info[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]
         self.mock_can_packet_container.get_addressing_information.assert_called_once_with()
 
     # data_length
@@ -280,10 +275,10 @@ class TestAbstractCanPacketContainer:
         self.mock_can_packet_container.raw_frame_data = raw_frame_data
         self.mock_ai_handler_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         assert AbstractCanPacketContainer.get_addressing_information(self=self.mock_can_packet_container) \
-               == self.mock_ai_handler_class.decode_ai.return_value
+               == self.mock_ai_handler_class.decode_packet_ai.return_value
         self.mock_ai_handler_class.get_ai_data_bytes_number.assert_called_once_with(
             self.mock_can_packet_container.addressing_format)
-        self.mock_ai_handler_class.decode_ai.assert_called_once_with(
+        self.mock_ai_handler_class.decode_packet_ai.assert_called_once_with(
             addressing_format=self.mock_can_packet_container.addressing_format,
             can_id=self.mock_can_packet_container.can_id,
             ai_data_bytes=self.mock_can_packet_container.raw_frame_data[:ai_data_bytes_number])
