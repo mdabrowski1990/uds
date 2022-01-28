@@ -5,8 +5,9 @@ __all__ = ["AbstractCanTransportInterface"]
 
 from typing import Optional, Union, Any, Iterator, Iterable
 from abc import abstractmethod
+from warnings import warn
 
-from uds.utilities import TimeMilliseconds, RawByte
+from uds.utilities import TimeMilliseconds, RawByte, ValueWarning
 from uds.packet import CanPacket, CanPacketType
 from uds.can import AbstractCanAddressingInformation, CanFlowStatus, CanSTminTranslator
 from uds.segmentation import CanSegmenter
@@ -106,7 +107,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_as_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_As time parameter."""
-        raise NotImplementedError
+        return self.__n_as_timeout
 
     @n_as_timeout.setter
     def n_as_timeout(self, value: TimeMilliseconds):
@@ -114,8 +115,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_As time parameter.
 
         :param value: Value of timeout to set.
+
+        :raise TypeError: Provided value is not int or float.
+        :raise ValueError: Provided value is less or equal 0.
         """
-        raise NotImplementedError
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided time parameter value must be greater than 0.")
+        if value != self.N_AS_TIMEOUT:
+            warn(message="Non-default value of N_As timeout was set.",
+                 category=ValueWarning)
+        self.__n_as_timeout = value
 
     @property
     @abstractmethod
@@ -129,7 +140,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_ar_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_Ar time parameter."""
-        raise NotImplementedError
+        return self.__n_ar_timeout
 
     @n_ar_timeout.setter
     def n_ar_timeout(self, value: TimeMilliseconds):
@@ -137,8 +148,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_Ar time parameter.
 
         :param value: Value of timeout to set.
+
+        :raise TypeError: Provided value is not int or float.
+        :raise ValueError: Provided value is less or equal 0.
         """
-        raise NotImplementedError
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided time parameter value must be greater than 0.")
+        if value != self.N_AR_TIMEOUT:
+            warn(message="Non-default value of N_Ar timeout was set.",
+                 category=ValueWarning)
+        self.__n_ar_timeout = value
 
     @property
     @abstractmethod
@@ -152,7 +173,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_bs_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_Bs time parameter."""
-        raise NotImplementedError
+        return self.__n_bs_timeout
 
     @n_bs_timeout.setter
     def n_bs_timeout(self, value: TimeMilliseconds):
@@ -160,8 +181,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_Bs time parameter.
 
         :param value: Value of timeout to set.
+
+        :raise TypeError: Provided value is not int or float.
+        :raise ValueError: Provided value is less or equal 0.
         """
-        raise NotImplementedError
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided time parameter value must be greater than 0.")
+        if value != self.N_BS_TIMEOUT:
+            warn(message="Non-default value of N_Bs timeout was set.",
+                 category=ValueWarning)
+        self.__n_bs_timeout = value
 
     @property
     @abstractmethod
@@ -180,7 +211,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
         """
-        raise NotImplementedError
+        return self.__n_br
 
     @n_br.setter
     def n_br(self, value: TimeMilliseconds):
@@ -188,8 +219,15 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set the value of N_Br time parameter to use.
 
         :param value: The value to set.
+
+        :raise TypeError: Provided value is not int or float.
+        :raise ValueError: Provided value is out of range.
         """
-        raise NotImplementedError
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if not 0 <= value < self.n_br_max:
+            raise ValueError("Provided time parameter value is out of range.")
+        self.__n_br = value
 
     @property
     def n_br_max(self) -> TimeMilliseconds:
@@ -201,26 +239,35 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
             no measurement result).
         """
-        raise NotImplementedError
+        n_ar_measured = 0 if self.n_ar_measured is None else self.n_ar_measured
+        return 0.9 * self.n_bs_timeout - n_ar_measured
 
     @property
-    def n_cs(self) -> TimeMilliseconds:
+    def n_cs(self) -> Optional[TimeMilliseconds]:
         """
         Get the value of N_Cs time parameter which is currently set.
 
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
         """
-        raise NotImplementedError
+        return self.__n_cs
 
     @n_cs.setter
-    def n_cs(self, value: TimeMilliseconds):
+    def n_cs(self, value: Optional[TimeMilliseconds]):
         """
         Set the value of N_Cs time parameter to use.
 
         :param value: The value to set.
+
+        :raise TypeError: Provided value is not int or float.
+        :raise ValueError: Provided value is out of range.
         """
-        raise NotImplementedError
+        if value is not None:
+            if not isinstance(value, (int, float)):
+                raise TypeError("Provided time parameter value must be int or float type.")
+            if not 0 <= value < self.n_cs_max:
+                raise ValueError("Provided time parameter value is out of range.")
+        self.__n_cs = value
 
     @property
     def n_cs_max(self) -> TimeMilliseconds:
@@ -232,12 +279,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
             no measurement result).
         """
-        raise NotImplementedError
+        n_as_measured = 0 if self.n_as_measured is None else self.n_as_measured
+        return 0.9 * self.n_cr_timeout - n_as_measured
 
     @property
     def n_cr_timeout(self) -> TimeMilliseconds:
         """Timeout value for N_Cr time parameter."""
-        raise NotImplementedError
+        return self.__n_cr_timeout
 
     @n_cr_timeout.setter
     def n_cr_timeout(self, value: TimeMilliseconds):
@@ -245,8 +293,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set timeout value for N_Cr time parameter.
 
         :param value: Value of timeout to set.
+
+        :raise TypeError: Provided value is not int or float.
+        :raise ValueError: Provided value is less or equal 0.
         """
-        raise NotImplementedError
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided time parameter value must be greater than 0.")
+        if value != self.N_CR_TIMEOUT:
+            warn(message="Non-default value of N_Cr timeout was set.",
+                 category=ValueWarning)
+        self.__n_cr_timeout = value
 
     @property
     @abstractmethod
