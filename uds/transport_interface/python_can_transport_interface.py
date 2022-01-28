@@ -17,7 +17,7 @@ from .abstract_can_transport_interface import AbstractCanTransportInterface
 class PyCanTransportInterface(AbstractCanTransportInterface):
     """Transport Interface for managing UDS on CAN using python-can package."""
 
-    @property  # noqa: F841
+    @property
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_As time parameter.
@@ -26,7 +26,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    @property  # noqa: F841
+    @property
     def n_ar_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Ar time parameter.
@@ -35,7 +35,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    @property  # noqa: F841
+    @property
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Bs time parameter.
@@ -44,7 +44,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    @property  # noqa: F841
+    @property
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Cr time parameter.
@@ -64,7 +64,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         raise NotImplementedError
 
     @staticmethod
-    def is_supported_bus_manager(bus_manager: Any) -> bool:  # noqa: F841
+    def is_supported_bus_manager(bus_manager: Any) -> bool:
         """
         Check whether provided value is a bus manager that is supported by this Transport Interface.
 
@@ -74,7 +74,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
+    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:
         """
         Wait until the next CAN packet is received.
 
@@ -86,7 +86,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
+    async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:
         """
         Wait until the next CAN packet is transmitted.
 
@@ -98,7 +98,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:
         """
         Wait until the next UDS message is received.
 
@@ -110,7 +110,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:
         """
         Wait until the next UDS message is transmitted.
 
@@ -122,7 +122,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    def send_packet(self, packet: CanPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    def send_packet(self, packet: CanPacket, delay: Optional[TimeMilliseconds] = None) -> None:
         """
         Transmit CAN packet on the configured bus.
 
@@ -132,7 +132,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         raise NotImplementedError
 
-    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:
         """
         Transmit UDS message on the configured bus.
 

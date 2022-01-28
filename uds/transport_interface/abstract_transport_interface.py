@@ -20,47 +20,49 @@ class AbstractTransportInterface(ABC):
     """
 
     def __init__(self,
-                 bus_manager: Any,  # noqa: F841
-                 max_packet_records_stored: int,  # noqa: F841
-                 max_message_records_stored: int) -> None:  # noqa: F841
+                 bus_manager: Any,
+                 packet_records_number: int,
+                 message_records_number: int) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
-        :param max_packet_records_stored: Maximal number of UDS packet records to be stored in
-            :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
-        :param max_message_records_stored: Maximal number of UDS message records to be stored in
-            :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.message_records`.
-        """
-        raise NotImplementedError
+        :param packet_records_number: Number of UDS packet records to store.
+        :param message_records_number: Number of UDS Message records to store.
 
-    @property  # noqa: F841
+        :raise ValueError: Provided value of bus manager is not supported by this Transport Interface.
+        """
+        if not self.is_supported_bus_manager(bus_manager):
+            raise ValueError("Unsupported bus manager was provided.")
+        self.__bus_manager = bus_manager
+
+    @property
     def bus_manager(self) -> Any:
         """
         Value of the bus manager used by this Transport Interface.
 
         Bus manager handles Physical and Data layers (OSI Model) of the bus.
         """
-        raise NotImplementedError
+        return self.__bus_manager
 
-    @property  # noqa: F841
+    @property
+    def packet_records_queue(self) -> PacketsQueue:
+        """Queue with records of UDS packets that were either received or transmitted."""
+        return self.__packet_records_queue
+
+    @property
+    def message_records_queue(self):  # TODO: annotation
+        """Queue with records of UDS Messages that were either received or transmitted."""
+        return self.__message_records_queue
+
+    @property
     @abstractmethod
     def segmenter(self) -> AbstractSegmenter:
         """Value of the segmenter used by this Transport Interface."""
 
-    @property  # noqa: F841
-    def packet_records_queue(self) -> PacketsQueue:
-        """Queue with records of UDS packets that were either received or transmitted."""
-        raise NotImplementedError
-
-    @property  # noqa: F841
-    def message_records_queue(self):  # TODO: annotation
-        """Queue with records of UDS Messages that were either received or transmitted."""
-        raise NotImplementedError
-
     @staticmethod
     @abstractmethod
-    def is_supported_bus_manager(bus_manager: Any) -> bool:  # noqa: F841
+    def is_supported_bus_manager(bus_manager: Any) -> bool:
         """
         Check whether provided value is a bus manager that is supported by this Transport Interface.
 
@@ -70,7 +72,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:  # noqa: F841
+    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:
         """
         Wait until the next UDS packet is received.
 
@@ -82,7 +84,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:  # noqa: F841
+    async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:
         """
         Wait until the next UDS packet is transmitted.
 
@@ -94,7 +96,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:
         """
         Wait until the next UDS message is received.
 
@@ -106,7 +108,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
+    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:
         """
         Wait until the next UDS message is transmitted.
 
@@ -118,7 +120,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def send_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    def send_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:
         """
         Transmit UDS packet on the configured bus.
 
@@ -128,7 +130,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:
         """
         Transmit UDS message on the configured bus.
 
