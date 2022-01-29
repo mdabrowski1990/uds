@@ -70,8 +70,14 @@ class CanSegmenter(AbstractSegmenter):
 
         :param value: Addressing Information parameters to set.
         """
-        kwargs = deepcopy(value)  # type: ignore
-        kwargs.update(addressing_format=self.addressing_format, addressing_type=AddressingType.PHYSICAL)  # noqa
+        kwargs = {
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL
+        }
+        for item_name, item_value in value.items():
+            if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
+                                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
+                kwargs.update({item_name: item_value})  # type: ignore
         self.__physical_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
 
     @property
@@ -86,8 +92,14 @@ class CanSegmenter(AbstractSegmenter):
 
         :param value: Addressing Information parameters to set.
         """
-        kwargs = deepcopy(value)  # type: ignore
-        kwargs.update(addressing_format=self.addressing_format, addressing_type=AddressingType.FUNCTIONAL)  # noqa
+        kwargs = {
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL
+        }
+        for item_name, item_value in value.items():
+            if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
+                                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
+                kwargs.update({item_name: item_value})  # type: ignore
         self.__functional_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
 
     @property
