@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock, Mock, patch
 
 from uds.transport_interface.abstract_can_transport_interface import AbstractCanTransportInterface, \
-    AbstractCanAddressingInformation, Iterable
+    AbstractTransportInterface, AbstractCanAddressingInformation, Iterable
 
 
 class TestAbstractCanTransportInterface:
@@ -32,41 +32,37 @@ class TestAbstractCanTransportInterface:
 
     # __init__
 
-    @pytest.mark.parametrize("can_bus_manager, packet_records_number, message_records_number, addressing_information", [
-        ("can_bus_manager", "packet_records_number", "message_records_number", "addressing_information"),
-        (Mock(), Mock(), Mock(), Mock()),
+    @pytest.mark.parametrize("can_bus_manager, addressing_information", [
+        ("can_bus_manager", "addressing_information"),
+        (Mock(), Mock()),
     ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_init__type_error(self, mock_isinstance,
-                              can_bus_manager, packet_records_number, message_records_number, addressing_information):
+                              can_bus_manager, addressing_information):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             AbstractCanTransportInterface.__init__(self=self.mock_can_transport_interface,
                                                    can_bus_manager=can_bus_manager,
-                                                   packet_records_number=packet_records_number,
-                                                   message_records_number=message_records_number,
                                                    addressing_information=addressing_information)
         mock_isinstance.assert_called_once_with(addressing_information, AbstractCanAddressingInformation)
 
-    @pytest.mark.parametrize("can_bus_manager, packet_records_number, message_records_number, addressing_information", [
-        ("can_bus_manager", "packet_records_number", "message_records_number", Mock(tx_packets_physical_ai={})),
-        (Mock(), Mock(), Mock(), Mock(tx_packets_physical_ai={"arg1": 1, "arg2": 2})),
+    @pytest.mark.parametrize("can_bus_manager, addressing_information", [
+        ("can_bus_manager", Mock(tx_packets_physical_ai={"addressing_format": Mock(),
+                                                         "addressing_type": Mock()})),
+        (Mock(), Mock(tx_packets_physical_ai={"arg1": 1, "arg2": 2})),
     ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_init__valid_mandatory_args(self, mock_isinstance,
-                                        can_bus_manager, packet_records_number, message_records_number,
-                                        addressing_information):
+                                        can_bus_manager, addressing_information):
         mock_isinstance.return_value = True
         AbstractCanTransportInterface.__init__(self=self.mock_can_transport_interface,
                                                can_bus_manager=can_bus_manager,
-                                               packet_records_number=packet_records_number,
-                                               message_records_number=message_records_number,
                                                addressing_information=addressing_information)
         mock_isinstance.assert_called_once_with(addressing_information, AbstractCanAddressingInformation)
         self.mock_abstract_transport_interface_init.assert_called_once_with(
             bus_manager=can_bus_manager,
-            packet_records_number=packet_records_number,
-            message_records_number=message_records_number)
+            packet_records_number=AbstractTransportInterface.DEFAULT_PACKET_RECORDS_NUMBER,
+            message_records_number=AbstractTransportInterface.DEFAULT_MESSAGE_RECORDS_NUMBER)
         self.mock_can_segmenter_class.assert_called_once_with(
             addressing_format=addressing_information.addressing_format,
             physical_ai=addressing_information.tx_packets_physical_ai,
@@ -88,21 +84,24 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface.n_cs == self.mock_can_transport_interface.DEFAULT_N_CS
         assert self.mock_can_transport_interface.n_cr_timeout == self.mock_can_transport_interface.N_CR_TIMEOUT
 
-    @pytest.mark.parametrize("can_bus_manager, packet_records_number, message_records_number, addressing_information", [
-        ("can_bus_manager", "packet_records_number", "message_records_number", Mock(tx_packets_physical_ai={})),
-        (Mock(), Mock(), Mock(), Mock(tx_packets_physical_ai={"arg1": 1, "arg2": 2})),
+    @pytest.mark.parametrize("can_bus_manager, addressing_information", [
+        ("can_bus_manager", Mock(tx_packets_physical_ai={"addressing_format": Mock(),
+                                                         "addressing_type": Mock()})),
+        (Mock(), Mock(tx_packets_physical_ai={"arg1": 1, "arg2": 2})),
     ])
     @pytest.mark.parametrize("n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout, "
-                             "dlc, use_data_optimization, filler_byte, flow_control_generator", [
+                             "dlc, use_data_optimization, filler_byte, flow_control_generator, "
+                             "packet_records_number, message_records_number", [
         ("n_as_timeout", "n_ar_timeout", "n_bs_timeout", "n_br", "n_cs", "n_cr_timeout", "dlc", "use_data_optimization",
-         "filler_byte", "flow_control_generator"),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+         "filler_byte", "flow_control_generator", "packet_records_number", "message_records_number"),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
     ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_init__valid_all_args(self, mock_isinstance,
-                                  can_bus_manager, packet_records_number, message_records_number,
-                                  addressing_information, n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs,
-                                  n_cr_timeout, dlc, use_data_optimization, filler_byte, flow_control_generator):
+                                  can_bus_manager, addressing_information,
+                                  n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout,
+                                  dlc, use_data_optimization, filler_byte, flow_control_generator,
+                                  packet_records_number, message_records_number):
         mock_isinstance.return_value = True
         AbstractCanTransportInterface.__init__(self=self.mock_can_transport_interface,
                                                can_bus_manager=can_bus_manager,

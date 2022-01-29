@@ -49,8 +49,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def __init__(self,
                  can_bus_manager: Any,
                  addressing_information: AbstractCanAddressingInformation,
-                 packet_records_number: int,
-                 message_records_number: int,
+                 packet_records_number: int = AbstractTransportInterface.DEFAULT_PACKET_RECORDS_NUMBER,
+                 message_records_number: int = AbstractTransportInterface.DEFAULT_MESSAGE_RECORDS_NUMBER,
                  **kwargs: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
@@ -194,7 +194,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  category=ValueWarning)
         self.__n_bs_timeout = value
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -306,7 +306,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  category=ValueWarning)
         self.__n_cr_timeout = value
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -372,7 +372,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     # Flow Control
 
     @property
-    def flow_control_generator(self) -> FlowControlGeneratorAlias:
+    def flow_control_generator(self) -> FlowControlGeneratorAlias:  # pylint: disable=undefined-variable
         """Get the generator of Flow Control CAN Packets."""
         return self.__flow_control_generator
 
@@ -417,5 +417,5 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         if isinstance(self.flow_control_generator, CanPacket):
             return self.flow_control_generator
         if is_first:
-            self.__flow_control_iterator = iter(self.flow_control_generator)
-        return next(self.__flow_control_iterator)
+            self.__flow_control_iterator = iter(self.flow_control_generator)  # type: ignore
+        return next(self.__flow_control_iterator)  # type: ignore

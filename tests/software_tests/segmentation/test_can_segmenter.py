@@ -116,9 +116,12 @@ class TestCanSegmenter:
         self.mock_can_segmenter._CanSegmenter__physical_ai = value
         assert CanSegmenter.physical_ai.fget(self.mock_can_segmenter) == value
 
-    @pytest.mark.parametrize("value", [{"a": 1, "b": 2}, {"arg1": "something", "arg2": "something else"}])
+    @pytest.mark.parametrize("value", [{"a": 1, "b": 2, "addressing_format": Mock(), "addressing_type": Mock()},
+                                       {"arg1": "something", "arg2": "something else"}])
     def test_physical_ai__set(self, value):
         CanSegmenter.physical_ai.fset(self.mock_can_segmenter, value=value)
+        value.pop("addressing_format", None)
+        value.pop("addressing_type", None)
         self.mock_can_ai_class.validate_packet_ai.assert_called_once_with(
             addressing_format=self.mock_can_segmenter.addressing_format,
             addressing_type=AddressingType.PHYSICAL,
@@ -133,9 +136,12 @@ class TestCanSegmenter:
         self.mock_can_segmenter._CanSegmenter__functional_ai = value
         assert CanSegmenter.functional_ai.fget(self.mock_can_segmenter) == value
 
-    @pytest.mark.parametrize("value", [{"a": 1, "b": 2}, {"arg1": "something", "arg2": "something else"}])
+    @pytest.mark.parametrize("value", [{"a": 1, "b": 2, "addressing_format": Mock(), "addressing_type": Mock()},
+                                       {"arg1": "something", "arg2": "something else"}])
     def test_functional_ai__set(self, value):
         CanSegmenter.functional_ai.fset(self.mock_can_segmenter, value=value)
+        value.pop("addressing_format", None)
+        value.pop("addressing_type", None)
         self.mock_can_ai_class.validate_packet_ai.assert_called_once_with(
             addressing_format=self.mock_can_segmenter.addressing_format,
             addressing_type=AddressingType.FUNCTIONAL,
