@@ -77,7 +77,7 @@ class CanSegmenter(AbstractSegmenter):
         for item_name, item_value in value.items():
             if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
                                  AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
-                kwargs.update({item_name: item_value})  # type: ignore
+                kwargs[item_name] = item_value  # type: ignore
         self.__physical_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
 
     @property
@@ -99,7 +99,7 @@ class CanSegmenter(AbstractSegmenter):
         for item_name, item_value in value.items():
             if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
                                  AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
-                kwargs.update({item_name: item_value})  # type: ignore
+                kwargs[item_name] = item_value  # type: ignore
         self.__functional_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
 
     @property
