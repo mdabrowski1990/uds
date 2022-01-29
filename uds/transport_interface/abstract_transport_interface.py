@@ -19,48 +19,55 @@ class AbstractTransportInterface(ABC):
     Transport Interfaces are meant to handle middle layers (Transport and Network) of UDS OSI Model.
     """
 
+    DEFAULT_PACKET_RECORDS_NUMBER: int = 100
+    """Default number of UDS packet records stored."""
+    DEFAULT_MESSAGE_RECORDS_NUMBER: int = 10
+    """Default number of UDS message records stored."""
+
     def __init__(self,
-                 bus_manager: Any,  # noqa: F841
-                 max_packet_records_stored: int,  # noqa: F841
-                 max_message_records_stored: int) -> None:  # noqa: F841
+                 bus_manager: Any,
+                 packet_records_number: int = DEFAULT_PACKET_RECORDS_NUMBER,  # noqa: F841
+                 message_records_number: int = DEFAULT_MESSAGE_RECORDS_NUMBER) -> None:  # noqa: F841
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
-        :param max_packet_records_stored: Maximal number of UDS packet records to be stored in
-            :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.packet_records`.
-        :param max_message_records_stored: Maximal number of UDS message records to be stored in
-            :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.message_records`.
-        """
-        raise NotImplementedError
+        :param packet_records_number: Number of UDS packet records to store.
+        :param message_records_number: Number of UDS Message records to store.
 
-    @property  # noqa: F841
+        :raise ValueError: Provided value of bus manager is not supported by this Transport Interface.
+        """
+        if not self.is_supported_bus_manager(bus_manager):
+            raise ValueError("Unsupported bus manager was provided.")
+        self.__bus_manager = bus_manager
+
+    @property
     def bus_manager(self) -> Any:
         """
         Value of the bus manager used by this Transport Interface.
 
         Bus manager handles Physical and Data layers (OSI Model) of the bus.
         """
-        raise NotImplementedError
-
-    @property  # noqa: F841
-    @abstractmethod
-    def segmenter(self) -> AbstractSegmenter:
-        """Value of the segmenter used by this Transport Interface."""
+        return self.__bus_manager
 
     @property  # noqa: F841
     def packet_records_queue(self) -> PacketsQueue:
         """Queue with records of UDS packets that were either received or transmitted."""
-        raise NotImplementedError
+        return self.__packet_records_queue  # type: ignore
 
     @property  # noqa: F841
     def message_records_queue(self):  # TODO: annotation
         """Queue with records of UDS Messages that were either received or transmitted."""
-        raise NotImplementedError
+        return self.__message_records_queue
+
+    @property
+    @abstractmethod
+    def segmenter(self) -> AbstractSegmenter:
+        """Value of the segmenter used by this Transport Interface."""
 
     @staticmethod
     @abstractmethod
-    def is_supported_bus_manager(bus_manager: Any) -> bool:  # noqa: F841
+    def is_supported_bus_manager(bus_manager: Any) -> bool:
         """
         Check whether provided value is a bus manager that is supported by this Transport Interface.
 

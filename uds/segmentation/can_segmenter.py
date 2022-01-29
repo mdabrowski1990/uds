@@ -19,10 +19,14 @@ from .abstract_segmenter import AbstractSegmenter, SegmentationError
 class CanSegmenter(AbstractSegmenter):
     """Segmenter class that provides utilities for segmentation and desegmentation on CAN bus."""
 
+    InputAIParamsAlias = Union[AbstractCanAddressingInformation.InputAIParamsAlias,
+                               AbstractCanAddressingInformation.PacketAIParamsAlias]
+    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
+
     def __init__(self, *,
                  addressing_format: CanAddressingFormatAlias,
-                 physical_ai: AbstractCanAddressingInformation.InputAIParamsAlias,
-                 functional_ai: AbstractCanAddressingInformation.InputAIParamsAlias,
+                 physical_ai: InputAIParamsAlias,
+                 functional_ai: InputAIParamsAlias,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
                  use_data_optimization: bool = False,
                  filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
@@ -60,15 +64,21 @@ class CanSegmenter(AbstractSegmenter):
         return copy(self.__physical_ai)
 
     @physical_ai.setter
-    def physical_ai(self, value: AbstractCanAddressingInformation.InputAIParamsAlias):
+    def physical_ai(self, value: InputAIParamsAlias):
         """
         Set Addressing Information parameters of physically addressed CAN packets.
 
         :param value: Addressing Information parameters to set.
         """
-        self.__physical_ai = CanAddressingInformation.validate_packet_ai(addressing_format=self.addressing_format,
-                                                                         addressing_type=AddressingType.PHYSICAL,
-                                                                         **value)
+        kwargs = {
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL
+        }
+        for item_name, item_value in value.items():
+            if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
+                                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
+                kwargs[item_name] = item_value  # type: ignore
+        self.__physical_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
 
     @property
     def functional_ai(self) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
@@ -76,15 +86,21 @@ class CanSegmenter(AbstractSegmenter):
         return copy(self.__functional_ai)
 
     @functional_ai.setter
-    def functional_ai(self, value: AbstractCanAddressingInformation.InputAIParamsAlias):
+    def functional_ai(self, value: InputAIParamsAlias):
         """
         Set Addressing Information parameters of functionally addressed CAN packets.
 
         :param value: Addressing Information parameters to set.
         """
-        self.__functional_ai = CanAddressingInformation.validate_packet_ai(addressing_format=self.addressing_format,
-                                                                           addressing_type=AddressingType.FUNCTIONAL,
-                                                                           **value)
+        kwargs = {
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL
+        }
+        for item_name, item_value in value.items():
+            if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
+                                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
+                kwargs[item_name] = item_value  # type: ignore
+        self.__functional_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
 
     @property
     def dlc(self) -> int:

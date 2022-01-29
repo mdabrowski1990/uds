@@ -7,4 +7,4 @@ from .common_types import Nibble, RawByte, RawBytes, RawBytesTuple, RawBytesList
 from .bytes_operations import Endianness, EndiannessAlias, int_to_bytes_list, bytes_list_to_int
 from .custom_exceptions import ReassignmentError, InconsistentArgumentsError, AmbiguityError, \
     UnusedArgumentError
-from .custom_warnings import UnusedArgumentWarning
+from .custom_warnings import UnusedArgumentWarning, ValueWarning

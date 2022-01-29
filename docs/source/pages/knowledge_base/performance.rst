@@ -99,7 +99,7 @@ N_Br is a time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-b
 by a receiver.
 It is measured from the end of the last CAN Packet transmission (either received :ref:`First Frame <knowledge-base-can-first-frame>`,
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` or transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`),
-till the reception of a confirmation that :ref:`Flow Control <knowledge-base-can-flow-control>` was received by a sender.
+till the start of :ref:`Flow Control <knowledge-base-can-flow-control>` transmission.
 
 Performance requirement:
   A receiving entity is obliged to transmit :ref:`Flow Control <knowledge-base-can-flow-control>` packet before value
@@ -121,8 +121,8 @@ N_Cs
 N_Cs is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
 transmission by a sender.
 It is measured from the end of the last CAN Packet transmission (either received :ref:`Flow Control <knowledge-base-can-flow-control>`
-or transmitted :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the reception of a confirmation
-that :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` was received by a receiver.
+or transmitted :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the start of
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` transmission.
 
 Performance requirement:
   A sending entity is obliged to transmit :ref:`Consecutive Frame <knowledge-base-can-flow-control>` packet before value
