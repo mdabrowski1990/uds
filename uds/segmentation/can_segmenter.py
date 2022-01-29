@@ -3,7 +3,7 @@
 __all__ = ["CanSegmenter"]
 
 from typing import Union, Tuple, Type
-from copy import copy, deepcopy
+from copy import copy
 
 from uds.utilities import RawByte, RawBytesList, validate_raw_byte
 from uds.transmission_attributes import AddressingType
