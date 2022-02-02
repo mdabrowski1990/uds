@@ -9,7 +9,6 @@ from uds.utilities import TimeMilliseconds
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.segmentation import AbstractSegmenter
-from .packet_queues import PacketsQueue
 
 
 class AbstractTransportInterface(ABC):
@@ -51,7 +50,7 @@ class AbstractTransportInterface(ABC):
         return self.__bus_manager
 
     @property  # noqa: F841
-    def packet_records_queue(self) -> PacketsQueue:
+    def packet_records_queue(self):  # TODO: annotation
         """Queue with records of UDS packets that were either received or transmitted."""
         return self.__packet_records_queue  # type: ignore
 

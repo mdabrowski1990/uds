@@ -24,7 +24,7 @@ class RecordsQueue:
         :param records_type: Type of records to store.
         :param history_size: Number of records to store.
 
-        :raise TypeError: Provided value has unsupported types.
+        :raise TypeError: Provided value has unsupported type.
         :raise ValueError: Provided value is out of range.
         """
         if not issubclass(records_type, (UdsMessageRecord, AbstractUdsPacket)):
