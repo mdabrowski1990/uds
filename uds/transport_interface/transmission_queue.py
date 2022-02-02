@@ -65,4 +65,3 @@ class TransmissionQueue:
 
         :raise TypeError: Provided PDU or timestamp value has unexpected type.
         """
-    
