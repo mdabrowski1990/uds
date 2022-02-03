@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock, Mock, patch
 
 from uds.transport_interface.abstract_can_transport_interface import AbstractCanTransportInterface, \
-    AbstractTransportInterface, AbstractCanAddressingInformation, Iterable
+    AbstractTransportInterface, AbstractCanAddressingInformation, CanPacket, CanPacketRecord, Iterable
 
 
 class TestAbstractCanTransportInterface:
@@ -17,6 +17,10 @@ class TestAbstractCanTransportInterface:
         self._patcher_abstract_transport_interface_init \
             = patch(f"{self.SCRIPT_LOCATION}.AbstractTransportInterface.__init__")
         self.mock_abstract_transport_interface_init = self._patcher_abstract_transport_interface_init.start()
+        self._patcher_records_queue_class = patch(f"{self.SCRIPT_LOCATION}.RecordsQueue")
+        self.mock_records_queue_class = self._patcher_records_queue_class.start()
+        self._patcher_transmission_queue_class = patch(f"{self.SCRIPT_LOCATION}.TransmissionQueue")
+        self.mock_transmission_queue_class = self._patcher_transmission_queue_class.start()
         self._patcher_can_segmenter_class = patch(f"{self.SCRIPT_LOCATION}.CanSegmenter")
         self.mock_can_segmenter_class = self._patcher_can_segmenter_class.start()
         self._patcher_can_packet_class = patch(f"{self.SCRIPT_LOCATION}.CanPacket")
@@ -26,6 +30,8 @@ class TestAbstractCanTransportInterface:
 
     def teardown(self):
         self._patcher_abstract_transport_interface_init.stop()
+        self._patcher_records_queue_class.stop()
+        self._patcher_transmission_queue_class.stop()
         self._patcher_can_segmenter_class.stop()
         self._patcher_can_packet_class.stop()
         self._patcher_warn.stop()
@@ -61,12 +67,15 @@ class TestAbstractCanTransportInterface:
         mock_isinstance.assert_called_once_with(addressing_information, AbstractCanAddressingInformation)
         self.mock_abstract_transport_interface_init.assert_called_once_with(
             bus_manager=can_bus_manager,
-            packet_records_number=AbstractTransportInterface.DEFAULT_PACKET_RECORDS_NUMBER,
             message_records_number=AbstractTransportInterface.DEFAULT_MESSAGE_RECORDS_NUMBER)
         self.mock_can_segmenter_class.assert_called_once_with(
             addressing_format=addressing_information.addressing_format,
             physical_ai=addressing_information.tx_packets_physical_ai,
             functional_ai=addressing_information.tx_packets_functional_ai)
+        self.mock_records_queue_class.assert_called_once_with(
+            records_type=CanPacketRecord,
+            history_size=AbstractTransportInterface.DEFAULT_PACKET_RECORDS_NUMBER)
+        self.mock_transmission_queue_class.assert_called_once_with(pdu_type=self.mock_can_packet_class)
         self.mock_can_packet_class.assert_called_once_with(
             dlc=None if self.mock_can_transport_interface.use_data_optimization else self.mock_can_transport_interface.dlc,
             filler_byte=self.mock_can_transport_interface.filler_byte,
@@ -76,6 +85,10 @@ class TestAbstractCanTransportInterface:
                == addressing_information
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__segmenter \
                == self.mock_can_segmenter_class.return_value
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__packet_records_queue \
+               == self.mock_records_queue_class.return_value
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__packet_transmission_queue \
+               == self.mock_transmission_queue_class.return_value
         assert self.mock_can_transport_interface.flow_control_generator == self.mock_can_packet_class.return_value
         assert self.mock_can_transport_interface.n_as_timeout == self.mock_can_transport_interface.N_AS_TIMEOUT
         assert self.mock_can_transport_interface.n_ar_timeout == self.mock_can_transport_interface.N_AR_TIMEOUT
@@ -121,7 +134,6 @@ class TestAbstractCanTransportInterface:
         mock_isinstance.assert_called_once_with(addressing_information, AbstractCanAddressingInformation)
         self.mock_abstract_transport_interface_init.assert_called_once_with(
             bus_manager=can_bus_manager,
-            packet_records_number=packet_records_number,
             message_records_number=message_records_number)
         self.mock_can_segmenter_class.assert_called_once_with(
             addressing_format=addressing_information.addressing_format,
@@ -130,11 +142,18 @@ class TestAbstractCanTransportInterface:
             dlc=dlc,
             use_data_optimization=use_data_optimization,
             filler_byte=filler_byte)
+        self.mock_records_queue_class.assert_called_once_with(records_type=CanPacketRecord,
+                                                              history_size=packet_records_number)
+        self.mock_transmission_queue_class.assert_called_once_with(pdu_type=self.mock_can_packet_class)
         self.mock_can_packet_class.assert_not_called()
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__addressing_information \
                == addressing_information
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__segmenter \
                == self.mock_can_segmenter_class.return_value
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__packet_records_queue \
+               == self.mock_records_queue_class.return_value
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__packet_transmission_queue \
+               == self.mock_transmission_queue_class.return_value
         assert self.mock_can_transport_interface.flow_control_generator == flow_control_generator
         assert self.mock_can_transport_interface.n_as_timeout == n_as_timeout
         assert self.mock_can_transport_interface.n_ar_timeout == n_ar_timeout
@@ -142,6 +161,20 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface.n_br == n_br
         assert self.mock_can_transport_interface.n_cs == n_cs
         assert self.mock_can_transport_interface.n_cr_timeout == n_cr_timeout
+
+    # _packet_records_queue
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_packet_records_queue__get(self, value):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__packet_records_queue = value
+        assert AbstractCanTransportInterface._packet_records_queue.fget(self.mock_can_transport_interface) == value
+
+    # _packet_transmission_queue
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_packet_transmission_queue__get(self, value):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__packet_transmission_queue = value
+        assert AbstractCanTransportInterface._packet_transmission_queue.fget(self.mock_can_transport_interface) == value
 
     # segmenter
 

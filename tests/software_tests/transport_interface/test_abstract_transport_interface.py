@@ -1,14 +1,26 @@
 import pytest
-from mock import Mock
+from mock import Mock, patch
 
-from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface
+from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface, \
+    UdsMessageRecord, UdsMessage
 
 
 class TestAbstractTransportInterface:
     """Unit tests for `AbstractTransportInterface` class."""
 
+    SCRIPT_LOCATION = "uds.transport_interface.abstract_transport_interface"
+
     def setup(self):
         self.mock_transport_interface = Mock(spec=AbstractTransportInterface)
+        # patching
+        self._patcher_records_queue_class = patch(f"{self.SCRIPT_LOCATION}.RecordsQueue")
+        self.mock_records_queue_class = self._patcher_records_queue_class.start()
+        self._patcher_transmission_queue_class = patch(f"{self.SCRIPT_LOCATION}.TransmissionQueue")
+        self.mock_transmission_queue_class = self._patcher_transmission_queue_class.start()
+
+    def teardown(self):
+        self._patcher_records_queue_class.stop()
+        self._patcher_transmission_queue_class.stop()
 
     # __init__
 
@@ -17,8 +29,7 @@ class TestAbstractTransportInterface:
         with pytest.raises(ValueError):
             AbstractTransportInterface.__init__(self=self.mock_transport_interface,
                                                 bus_manager=Mock(),
-                                                message_records_number=Mock(),
-                                                packet_records_number=Mock())
+                                                message_records_number=Mock())
         self.mock_transport_interface.is_supported_bus_manager.assert_called_once()
 
     @pytest.mark.parametrize("bus_manager, message_records_number, packet_records_number", [
@@ -29,33 +40,46 @@ class TestAbstractTransportInterface:
         self.mock_transport_interface.is_supported_bus_manager.return_value = True
         AbstractTransportInterface.__init__(self=self.mock_transport_interface,
                                             bus_manager=bus_manager,
-                                            message_records_number=message_records_number,
-                                            packet_records_number=packet_records_number)
+                                            message_records_number=message_records_number)
         self.mock_transport_interface.is_supported_bus_manager.assert_called_once_with(bus_manager)
+        self.mock_records_queue_class.assert_called_once_with(records_type=UdsMessageRecord,
+                                                              history_size=message_records_number)
+        self.mock_transmission_queue_class.assert_called_once_with(pdu_type=UdsMessage)
         assert self.mock_transport_interface._AbstractTransportInterface__bus_manager == bus_manager
-        # TODO: utilize message_records_number
-        # TODO: utilize packet_records_number
+        assert self.mock_transport_interface._AbstractTransportInterface__message_records_queue \
+               == self.mock_records_queue_class.return_value
+        assert self.mock_transport_interface._AbstractTransportInterface__message_transmission_queue \
+               == self.mock_transmission_queue_class.return_value
+
+    # _message_records_queue
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_message_records_queue__get(self, value):
+        self.mock_transport_interface._AbstractTransportInterface__message_records_queue = value
+        assert AbstractTransportInterface._message_records_queue.fget(self.mock_transport_interface) == value
+
+    # _message_transmission_queue
+    
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_message_transmission_queue__get(self, value):
+        self.mock_transport_interface._AbstractTransportInterface__message_transmission_queue = value
+        assert AbstractTransportInterface._message_transmission_queue.fget(self.mock_transport_interface) == value
 
     # bus_manager
 
     @pytest.mark.parametrize("value", ["something", Mock()])
     def test_bus_manager(self, value):
         self.mock_transport_interface._AbstractTransportInterface__bus_manager = value
-        assert AbstractTransportInterface.bus_manager.fget(self.mock_transport_interface) \
-               == self.mock_transport_interface._AbstractTransportInterface__bus_manager
+        assert AbstractTransportInterface.bus_manager.fget(self.mock_transport_interface) == value
 
-    # packet_records_queue
+    # message_records_history
 
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_packet_records_queue(self, value):
-        self.mock_transport_interface._AbstractTransportInterface__packet_records_queue = value
-        assert AbstractTransportInterface.packet_records_queue.fget(self.mock_transport_interface) \
-               == self.mock_transport_interface._AbstractTransportInterface__packet_records_queue
+    def test_message_records_history__get(self):
+        assert AbstractTransportInterface.message_records_history.fget(self.mock_transport_interface) \
+               == self.mock_transport_interface._message_records_queue.records_history
 
-    # message_records_queue
+    # packet_records_history
 
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_message_records_queue(self, value):
-        self.mock_transport_interface._AbstractTransportInterface__message_records_queue = value
-        assert AbstractTransportInterface.message_records_queue.fget(self.mock_transport_interface) \
-               == self.mock_transport_interface._AbstractTransportInterface__message_records_queue
+    def test_packet_records_history__get(self):
+        assert AbstractTransportInterface.packet_records_history.fget(self.mock_transport_interface) \
+               == self.mock_transport_interface._packet_records_queue.records_history

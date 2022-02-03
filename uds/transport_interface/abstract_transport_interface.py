@@ -2,13 +2,15 @@
 
 __all__ = ["AbstractTransportInterface"]
 
-from typing import Optional, Any
+from typing import Optional, Any, Tuple
 from abc import ABC, abstractmethod
 
 from uds.utilities import TimeMilliseconds
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.segmentation import AbstractSegmenter
+from .records_queue import RecordsQueue
+from .transmission_queue import TransmissionQueue
 
 
 class AbstractTransportInterface(ABC):
@@ -25,13 +27,11 @@ class AbstractTransportInterface(ABC):
 
     def __init__(self,
                  bus_manager: Any,
-                 packet_records_number: int = DEFAULT_PACKET_RECORDS_NUMBER,  # noqa: F841
-                 message_records_number: int = DEFAULT_MESSAGE_RECORDS_NUMBER) -> None:  # noqa: F841
+                 message_records_number: int = DEFAULT_MESSAGE_RECORDS_NUMBER) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
-        :param packet_records_number: Number of UDS packet records to store.
         :param message_records_number: Number of UDS Message records to store.
 
         :raise ValueError: Provided value of bus manager is not supported by this Transport Interface.
@@ -39,6 +39,28 @@ class AbstractTransportInterface(ABC):
         if not self.is_supported_bus_manager(bus_manager):
             raise ValueError("Unsupported bus manager was provided.")
         self.__bus_manager = bus_manager
+        self.__message_records_queue = RecordsQueue(records_type=UdsMessageRecord, history_size=message_records_number)
+        self.__message_transmission_queue = TransmissionQueue(pdu_type=UdsMessage)
+
+    @property
+    @abstractmethod
+    def _packet_records_queue(self) -> RecordsQueue:
+        """Queue with UDS packet records that were either received or transmitted."""
+
+    @property
+    @abstractmethod
+    def _packet_transmission_queue(self) -> TransmissionQueue:
+        """Queue with UDS packets that are planned for the transmission."""
+
+    @property
+    def _message_records_queue(self) -> RecordsQueue:
+        """Queue with UDS messages records that were either received or transmitted."""
+        return self.__message_records_queue
+
+    @property
+    def _message_transmission_queue(self) -> TransmissionQueue:
+        """Queue with UDS messages that are planned for the transmission."""
+        return self.__message_transmission_queue
 
     @property
     def bus_manager(self) -> Any:
@@ -49,15 +71,15 @@ class AbstractTransportInterface(ABC):
         """
         return self.__bus_manager
 
-    @property  # noqa: F841
-    def packet_records_queue(self):  # TODO: annotation
-        """Queue with records of UDS packets that were either received or transmitted."""
-        return self.__packet_records_queue  # type: ignore
+    @property
+    def message_records_history(self) -> Tuple[UdsMessageRecord]:
+        """Historic records of UDS messages that were either received or transmitted."""
+        return self._message_records_queue.records_history  # type: ignore
 
-    @property  # noqa: F841
-    def message_records_queue(self):  # TODO: annotation
-        """Queue with records of UDS Messages that were either received or transmitted."""
-        return self.__message_records_queue
+    @property
+    def packet_records_history(self) -> Tuple[AbstractUdsPacketRecord]:
+        """Historic records of UDS packets that were either received or transmitted."""
+        return self._packet_records_queue.records_history  # type: ignore
 
     @property
     @abstractmethod

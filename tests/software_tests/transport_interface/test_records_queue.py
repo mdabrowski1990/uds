@@ -3,7 +3,7 @@ from copy import deepcopy
 from mock import AsyncMock, Mock, patch
 
 from uds.transport_interface.records_queue import RecordsQueue, \
-    UdsMessageRecord, AbstractUdsPacket
+    UdsMessageRecord, AbstractUdsPacketRecord
 
 
 class TestRecordsQueue:
@@ -35,7 +35,7 @@ class TestRecordsQueue:
             RecordsQueue.__init__(self=self.mock_records_queue,
                                   records_type=records_type,
                                   history_size=history_size)
-        mock_issubclass.assert_called_once_with(records_type, (UdsMessageRecord, AbstractUdsPacket))
+        mock_issubclass.assert_called_once_with(records_type, (UdsMessageRecord, AbstractUdsPacketRecord))
 
     @pytest.mark.parametrize("records_type, history_size", [
         (Mock(), Mock()),
@@ -58,15 +58,15 @@ class TestRecordsQueue:
     def test_init__value_error(self, mock_isinstance, mock_issubclass, records_type):
         mock_isinstance.return_value = True
         mock_issubclass.return_value = True
-        mock_lt = Mock(return_value=True)
-        mock_history_size = Mock(__lt__=mock_lt)
+        mock_le = Mock(return_value=True)
+        mock_history_size = Mock(__le__=mock_le)
         with pytest.raises(ValueError):
             RecordsQueue.__init__(self=self.mock_records_queue,
                                   records_type=records_type,
                                   history_size=mock_history_size)
         mock_isinstance.assert_called_once_with(mock_history_size, int)
-        mock_issubclass.assert_called_once_with(records_type, (UdsMessageRecord, AbstractUdsPacket))
-        mock_lt.assert_called_once_with(0)
+        mock_issubclass.assert_called_once_with(records_type, (UdsMessageRecord, AbstractUdsPacketRecord))
+        mock_le.assert_called_once_with(0)
 
     @pytest.mark.parametrize("records_type", [Mock(), "some type"])
     @patch(f"{SCRIPT_LOCATION}.issubclass")
@@ -74,14 +74,14 @@ class TestRecordsQueue:
     def test_init__valid(self, mock_isinstance, mock_issubclass, records_type):
         mock_isinstance.return_value = True
         mock_issubclass.return_value = True
-        mock_lt = Mock(return_value=False)
-        mock_history_size = Mock(__lt__=mock_lt)
+        mock_le = Mock(return_value=False)
+        mock_history_size = Mock(__le__=mock_le)
         assert RecordsQueue.__init__(self=self.mock_records_queue,
                                      records_type=records_type,
                                      history_size=mock_history_size) is None
         mock_isinstance.assert_called_once_with(mock_history_size, int)
-        mock_issubclass.assert_called_once_with(records_type, (UdsMessageRecord, AbstractUdsPacket))
-        mock_lt.assert_called_once_with(0)
+        mock_issubclass.assert_called_once_with(records_type, (UdsMessageRecord, AbstractUdsPacketRecord))
+        mock_le.assert_called_once_with(0)
         self.mock_event_class.assert_called_once_with()
         assert self.mock_records_queue._RecordsQueue__records_type == records_type
         assert self.mock_records_queue._RecordsQueue__history_size == mock_history_size

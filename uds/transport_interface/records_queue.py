@@ -6,15 +6,15 @@ from typing import Union, Type, Tuple
 from asyncio import Event
 
 from uds.message import UdsMessageRecord
-from uds.packet import AbstractUdsPacket
+from uds.packet import AbstractUdsPacketRecord
 
 
 class RecordsQueue:
     """Queue with historic records of UDS Packets or Messages."""
 
-    RecordsTypeAlias = Union[Type[UdsMessageRecord], Type[AbstractUdsPacket]]
+    RecordsTypeAlias = Union[Type[UdsMessageRecord], Type[AbstractUdsPacketRecord]]
     """Alias of a record type that is accepted by this Queue."""
-    RecordAlias = Union[UdsMessageRecord, AbstractUdsPacket]
+    RecordAlias = Union[UdsMessageRecord, AbstractUdsPacketRecord]
     """Alias of a record stored by this Queue."""
 
     def __init__(self, records_type: RecordsTypeAlias, history_size: int) -> None:
@@ -27,11 +27,11 @@ class RecordsQueue:
         :raise TypeError: Provided value has unsupported type.
         :raise ValueError: Provided value is out of range.
         """
-        if not issubclass(records_type, (UdsMessageRecord, AbstractUdsPacket)):
+        if not issubclass(records_type, (UdsMessageRecord, AbstractUdsPacketRecord)):
             raise TypeError("Provided 'records_type' value does not store supported record class.")
         if not isinstance(history_size, int):
             raise TypeError("Provided 'history_size' value is not int type.")
-        if history_size < 0:
+        if history_size <= 0:
             raise ValueError("Provided value of 'history_size' is lower than 0.")
         self.__records_type = records_type
         self.__history_size: int = history_size
