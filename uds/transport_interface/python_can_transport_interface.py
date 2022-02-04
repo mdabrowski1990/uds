@@ -104,7 +104,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return isinstance(bus_manager, BusABC)
 
-    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
+    async def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
         """
         Wait until the next CAN packet is received.
 

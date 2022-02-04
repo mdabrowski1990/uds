@@ -108,7 +108,7 @@ class TestPyCanTransportInterface:
     @pytest.mark.asyncio
     async def test_await_packet_received(self):
         with pytest.raises(NotImplementedError):
-            await PyCanTransportInterface.await_packet_received(self.mock_can_transport_interface)
+            await PyCanTransportInterface.receive_packet(self.mock_can_transport_interface)
             
     # await_packet_transmitted
 

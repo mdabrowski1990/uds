@@ -2,7 +2,7 @@
 
 __all__ = ["RecordsQueue"]
 
-from typing import Union, Type, Tuple
+from typing import Union, Type, Tuple, List
 from asyncio import Event
 
 from uds.message import UdsMessageRecord
@@ -36,7 +36,7 @@ class RecordsQueue:
         self.__records_type = records_type
         self.__history_size: int = history_size
         self.__total_records_number: int = 0
-        self.__records_history = []
+        self.__records_history: List[Union[UdsMessageRecord, AbstractUdsPacketRecord]] = []
         self.__event_new_record = Event()
 
     @property
@@ -47,13 +47,13 @@ class RecordsQueue:
     @property
     def history_size(self) -> int:
         """
-        Number of records stored by this queue.
+        Get number of records stored by this queue.
 
         .. note:: If a record beyond this number is received, then the oldest one is pushed out of the queue.
         """
         return self.__history_size
 
-    @property
+    @property  # noqa: F841
     def total_records_number(self) -> int:
         """Total number of records that went through the queue."""
         return self.__total_records_number

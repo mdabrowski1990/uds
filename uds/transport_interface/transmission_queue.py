@@ -22,7 +22,7 @@ class TransmissionQueue:
 
     def __init__(self, pdu_type: PDUTypeAlias) -> None:
         """
-        Created timestamped queue with PDUs to transmit.
+        Create timestamped queue with PDUs to transmit.
 
         :param pdu_type: Type of PDUs to store.
 
@@ -36,7 +36,7 @@ class TransmissionQueue:
         self.__timestamps: Set[float] = set()
 
     def __len__(self) -> int:
-        """Number of elements that are currently stored."""
+        """Get number of elements that are currently stored."""
         return self.__async_queue.qsize()
 
     async def __pdu_ready(self) -> float:
@@ -63,7 +63,7 @@ class TransmissionQueue:
         """Type of PDUs stored by this queue."""
         return self.__pdu_type
 
-    @property
+    @property  # noqa: F841
     def is_empty(self) -> bool:
         """Flag whether the queue is empty (does not contain any PDUs)."""
         return self.__len__() == 0
@@ -88,7 +88,7 @@ class TransmissionQueue:
             else:
                 self.mark_pdu_sent()
 
-    async def get_pdu(self) -> PDUAlias:
+    async def get_pdu(self) -> PDUAlias:  # pylint: disable=undefined-variable
         """
         Get the next PDU from the queue.
 
@@ -120,7 +120,7 @@ class TransmissionQueue:
         if timestamp is None:
             timestamp = perf_counter()
         elif not isinstance(timestamp, float):
-            raise TypeError(f"Provided timestamp value is not float (perf_counter) value.")
+            raise TypeError("Provided timestamp value is not float (perf_counter) value.")
         self.__async_queue.put_nowait((timestamp, pdu))
         self.__timestamps.add(timestamp)
         self.__event_pdu_added.set()

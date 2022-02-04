@@ -83,3 +83,43 @@ class TestAbstractTransportInterface:
     def test_packet_records_history__get(self):
         assert AbstractTransportInterface.packet_records_history.fget(self.mock_transport_interface) \
                == self.mock_transport_interface._packet_records_queue.records_history
+
+    # await_packet_received
+
+    @pytest.mark.asyncio
+    async def test_await_packet_received(self):
+        with pytest.raises(NotImplementedError):
+            await AbstractTransportInterface.await_packet_received(self=self.mock_transport_interface)
+
+    # await_packet_transmitted
+
+    @pytest.mark.asyncio
+    async def test_await_packet_transmitted(self):
+        with pytest.raises(NotImplementedError):
+            await AbstractTransportInterface.await_packet_transmitted(self=self.mock_transport_interface)
+
+    # await_message_received
+
+    @pytest.mark.asyncio
+    async def test_await_message_received(self):
+        with pytest.raises(NotImplementedError):
+            await AbstractTransportInterface.await_message_received(self=self.mock_transport_interface)
+            
+    # await_message_transmitted
+
+    @pytest.mark.asyncio
+    async def test_await_message_transmitted(self):
+        with pytest.raises(NotImplementedError):
+            await AbstractTransportInterface.await_message_transmitted(self=self.mock_transport_interface)
+            
+    # send_packet
+
+    def test_send_packet(self):
+        with pytest.raises(NotImplementedError):
+            AbstractTransportInterface.send_packet(self=self.mock_transport_interface, packet=Mock())
+            
+    # send_message
+
+    def test_send_message(self):
+        with pytest.raises(NotImplementedError):
+            AbstractTransportInterface.send_message(self=self.mock_transport_interface, message=Mock())

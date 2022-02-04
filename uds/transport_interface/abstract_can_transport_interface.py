@@ -105,7 +105,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """Queue with UDS packet records that were either received or transmitted."""
         return self.__packet_records_queue
 
-    @property
+    @property  # noqa: F841
     def _packet_transmission_queue(self) -> TransmissionQueue:
         """Queue with UDS packets that are planned for the transmission."""
         return self.__packet_transmission_queue
