@@ -96,4 +96,4 @@ class RecordsQueue:
         records_number_at_start = self.total_records_number
         await self.__event_new_record.wait()
         records_number_with_new_records = self.total_records_number
-        return self.records_history[records_number_with_new_records-records_number_at_start-1]
+        return self.records_history[records_number_with_new_records - records_number_at_start - 1]
