@@ -103,46 +103,6 @@ class TestPyCanTransportInterface:
         assert PyCanTransportInterface.is_supported_bus_manager(value) == mock_isinstance.return_value
         mock_isinstance.assert_called_once_with(value, BusABC)
 
-    # await_packet_received
-
-    @pytest.mark.asyncio
-    async def test_await_packet_received(self):
-        with pytest.raises(NotImplementedError):
-            await PyCanTransportInterface.receive_packet(self.mock_can_transport_interface)
-            
-    # await_packet_transmitted
-
-    @pytest.mark.asyncio
-    async def test_await_packet_transmitted(self):
-        with pytest.raises(NotImplementedError):
-            await PyCanTransportInterface.await_packet_transmitted(self.mock_can_transport_interface)
-
-    # await_message_received
-
-    @pytest.mark.asyncio
-    async def test_await_message_received(self):
-        with pytest.raises(NotImplementedError):
-            await PyCanTransportInterface.await_message_received(self.mock_can_transport_interface)
-
-    # await_message_transmitted
-
-    @pytest.mark.asyncio
-    async def test_await_message_transmitted(self):
-        with pytest.raises(NotImplementedError):
-            await PyCanTransportInterface.await_message_transmitted(self.mock_can_transport_interface)
-
-    # send_packet
-
-    def test_send_packet(self):
-        with pytest.raises(NotImplementedError):
-            PyCanTransportInterface.send_packet(self.mock_can_transport_interface, Mock())
-
-    # send_message
-
-    def test_send_message(self):
-        with pytest.raises(NotImplementedError):
-            PyCanTransportInterface.send_message(self.mock_can_transport_interface, Mock())
-
 
 class TestPyCanTransportInterfaceIntegration:
     """Integration tests for `PyCanTransportInterface` class."""

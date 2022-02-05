@@ -162,12 +162,23 @@ class TestRecordsQueue:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("records_history", [
-        (Mock(), ),
+        (Mock(), Mock(), Mock(), Mock()),
         tuple(range(100)),
     ])
-    async def test_get_next_record(self, records_history):
+    @pytest.mark.parametrize("records_number_1, records_number_2", [
+        (0, 1),
+        (5, 8),
+        (65, 67),
+    ])
+    async def test_get_next_record(self, records_history, records_number_1, records_number_2):
+        def _update_records_number():
+            self.mock_records_queue.total_records_number = records_number_2
+
         self.mock_records_queue.records_history = records_history
-        self.mock_records_queue._RecordsQueue__event_new_record = Mock(wait=AsyncMock())
-        assert await RecordsQueue.get_next_record(self=self.mock_records_queue) == records_history[0]
+        self.mock_records_queue.total_records_number = records_number_1
+        self.mock_records_queue._RecordsQueue__event_new_record \
+            = Mock(wait=AsyncMock(side_effect=_update_records_number))
+        assert await RecordsQueue.get_next_record(self=self.mock_records_queue) \
+               == records_history[records_number_2 - records_number_1 - 1]
         self.mock_records_queue._RecordsQueue__event_new_record.clear.assert_called_once_with()
         self.mock_records_queue._RecordsQueue__event_new_record.wait.assert_awaited_once_with()

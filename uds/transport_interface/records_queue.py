@@ -87,8 +87,13 @@ class RecordsQueue:
         """
         Get the next record to enter the queue.
 
+        .. warning:: More than one record might enter the queue when awaited.
+            Regardless of the number of new records, always the next record would be returned.
+
         :return: The next record that was put to the queue.
         """
         self.__event_new_record.clear()
+        records_number_at_start = self.total_records_number
         await self.__event_new_record.wait()
-        return self.records_history[0]
+        records_number_with_new_records = self.total_records_number
+        return self.records_history[records_number_with_new_records-records_number_at_start-1]
