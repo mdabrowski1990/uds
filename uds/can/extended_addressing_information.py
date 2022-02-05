@@ -4,7 +4,7 @@ __all__ = ["ExtendedCanAddressingInformation"]
 
 from typing import Optional
 
-from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, RawByte, validate_raw_byte
+from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
@@ -26,9 +26,9 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
     def validate_packet_ai(cls,
                            addressing_type: AddressingTypeAlias,
                            can_id: Optional[int] = None,
-                           target_address: Optional[RawByte] = None,
-                           source_address: Optional[RawByte] = None,
-                           address_extension: Optional[RawByte] = None
+                           target_address: Optional[int] = None,
+                           source_address: Optional[int] = None,
+                           address_extension: Optional[int] = None
                            ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Extended Addressing format.

@@ -5,7 +5,7 @@ __all__ = ["CanSegmenter"]
 from typing import Union, Tuple, Type
 from copy import copy
 
-from uds.utilities import RawByte, RawBytesList, validate_raw_byte
+from uds.utilities import RawBytesList, validate_raw_byte
 from uds.transmission_attributes import AddressingType
 from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, \
     CanAddressingFormat, CanAddressingFormatAlias, \
@@ -29,7 +29,7 @@ class CanSegmenter(AbstractSegmenter):
                  functional_ai: InputAIParamsAlias,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
                  use_data_optimization: bool = False,
-                 filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
+                 filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
         Configure CAN Segmenter.
 
@@ -143,19 +143,19 @@ class CanSegmenter(AbstractSegmenter):
         self.__use_data_optimization: bool = bool(value)
 
     @property
-    def filler_byte(self) -> RawByte:
+    def filler_byte(self) -> int:
         """Filler byte value to use for CAN Frame Data Padding during segmentation."""
         return self.__filler_byte
 
     @filler_byte.setter
-    def filler_byte(self, value: RawByte):
+    def filler_byte(self, value: int):
         """
         Set value of filler byte to use for CAN Frame Data Padding.
 
         :param value: Value to set.
         """
         validate_raw_byte(value)
-        self.__filler_byte: RawByte = value
+        self.__filler_byte: int = value
 
     def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """

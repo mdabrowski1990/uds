@@ -6,7 +6,6 @@ from typing import Any, Union
 
 from aenum import unique
 
-from uds.utilities import Nibble
 from uds.can import CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, CanFlowControlHandler
 from .abstract_packet_type import AbstractUdsPacketType
 
@@ -42,5 +41,5 @@ class CanPacketType(AbstractUdsPacketType):
         return value in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
 
 
-CanPacketTypeAlias = Union[CanPacketType, Nibble]
+CanPacketTypeAlias = Union[CanPacketType, int]
 """Alias that describes :class:`~uds.packet.can_packet_type.CanPacketType` member type."""

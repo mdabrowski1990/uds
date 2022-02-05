@@ -9,8 +9,8 @@ __all__ = ["CanFirstFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, \
-    validate_raw_bytes, InconsistentArgumentsError
+from uds.utilities import RawBytes, RawBytesList, int_to_bytes_list, bytes_list_to_int, validate_raw_bytes, \
+    InconsistentArgumentsError
 from .addressing_format import CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformation
 from .frame_fields import CanDlcHandler
@@ -20,7 +20,7 @@ from .single_frame import CanSingleFrameHandler
 class CanFirstFrameHandler:
     """Helper class that provides utilities for First Frame CAN Packets."""
 
-    FIRST_FRAME_N_PCI: Nibble = 0x1
+    FIRST_FRAME_N_PCI: int = 0x1
     """First Frame N_PCI value."""
     MAX_SHORT_FF_DL_VALUE: int = 0xFFF
     """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` for which
@@ -40,8 +40,8 @@ class CanFirstFrameHandler:
                                 payload: RawBytes,
                                 dlc: int,
                                 ff_dl: int,
-                                target_address: Optional[RawByte] = None,
-                                address_extension: Optional[RawByte] = None) -> RawBytesList:
+                                target_address: Optional[int] = None,
+                                address_extension: Optional[int] = None) -> RawBytesList:
         """
         Create a data field of a CAN frame that carries a valid First Frame packet.
 
@@ -83,8 +83,8 @@ class CanFirstFrameHandler:
                               dlc: int,
                               ff_dl: int,
                               long_ff_dl_format: bool = False,
-                              target_address: Optional[RawByte] = None,
-                              address_extension: Optional[RawByte] = None) -> RawBytesList:
+                              target_address: Optional[int] = None,
+                              address_extension: Optional[int] = None) -> RawBytesList:
         """
         Create a data field of a CAN frame that carries a First Frame packet.
 

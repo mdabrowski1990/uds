@@ -9,8 +9,8 @@ __all__ = ["CanConsecutiveFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
-    validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
+from uds.utilities import RawBytes, RawBytesList, validate_raw_bytes, validate_raw_byte, validate_nibble, \
+    InconsistentArgumentsError
 from .addressing_format import CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
@@ -19,7 +19,7 @@ from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 class CanConsecutiveFrameHandler:
     """Helper class that provides utilities for Consecutive Frame CAN Packets."""
 
-    CONSECUTIVE_FRAME_N_PCI: Nibble = 0x2
+    CONSECUTIVE_FRAME_N_PCI: int = 0x2
     """Consecutive Frame N_PCI value."""
     SN_BYTES_USED: int = 1
     """Number of CAN Frame data bytes used to carry CAN Packet Type and Sequence Number in Consecutive Frame."""
@@ -28,11 +28,11 @@ class CanConsecutiveFrameHandler:
     def create_valid_frame_data(cls, *,
                                 addressing_format: CanAddressingFormatAlias,
                                 payload: RawBytes,
-                                sequence_number: Nibble,
+                                sequence_number: int,
                                 dlc: Optional[int] = None,
-                                filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                                target_address: Optional[RawByte] = None,
-                                address_extension: Optional[RawByte] = None) -> RawBytesList:
+                                filler_byte: int = DEFAULT_FILLER_BYTE,
+                                target_address: Optional[int] = None,
+                                address_extension: Optional[int] = None) -> RawBytesList:
         """
         Create a data field of a CAN frame that carries a valid Consecutive Frame packet.
 
@@ -84,11 +84,11 @@ class CanConsecutiveFrameHandler:
     def create_any_frame_data(cls, *,
                               addressing_format: CanAddressingFormatAlias,
                               payload: RawBytes,
-                              sequence_number: Nibble,
+                              sequence_number: int,
                               dlc: int,
-                              filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                              target_address: Optional[RawByte] = None,
-                              address_extension: Optional[RawByte] = None) -> RawBytesList:
+                              filler_byte: int = DEFAULT_FILLER_BYTE,
+                              target_address: Optional[int] = None,
+                              address_extension: Optional[int] = None) -> RawBytesList:
         """
         Create a data field of a CAN frame that carries a Consecutive Frame packet.
 
@@ -274,7 +274,7 @@ class CanConsecutiveFrameHandler:
             raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
 
     @classmethod
-    def __encode_sn(cls, sequence_number: Nibble) -> RawBytesList:
+    def __encode_sn(cls, sequence_number: int) -> RawBytesList:
         """
         Create Consecutive Frame data bytes with CAN Packet Type and Sequence Number parameters.
 

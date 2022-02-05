@@ -11,7 +11,7 @@ from typing import Any
 
 from aenum import Enum, IntEnum, extend_enum
 
-from .common_types import validate_nibble, Nibble, validate_raw_byte, RawByte
+from .common_types import validate_nibble, validate_raw_byte
 
 
 class ExtendableEnum(Enum):
@@ -72,7 +72,7 @@ class ValidatedEnum(Enum):
 class ByteEnum(IntEnum):
     """Enum which members are one byte integers (0x00-0xFF) only."""
 
-    def __new__(cls, value: RawByte):
+    def __new__(cls, value: int):
         """
         Creation of a new member.
 
@@ -87,7 +87,7 @@ class ByteEnum(IntEnum):
 class NibbleEnum(IntEnum):
     """Enum which members are one nibble (4 bits) integers (0x0-0xF) only."""
 
-    def __new__(cls, value: Nibble):
+    def __new__(cls, value: int):
         """
         Creation of a new member.
 

@@ -8,7 +8,7 @@ __all__ = ["CanAddressingInformation"]
 
 from typing import Optional, Dict, TypedDict, Type
 
-from uds.utilities import RawByte, RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, \
+from uds.utilities import RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, \
     InconsistentArgumentsError
 from uds.transmission_attributes import AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
@@ -34,16 +34,16 @@ class CanAddressingInformation:
     class DataBatesAIParamsAlias(TypedDict, total=False):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in data field."""
 
-        target_address: RawByte
-        address_extension: RawByte
+        target_address: int
+        address_extension: int
 
     class DecodedAIParamsAlias(TypedDict, total=True):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in CAN ID and data field."""
 
         addressing_type: Optional[AddressingTypeAlias]
-        target_address: Optional[RawByte]
-        source_address: Optional[RawByte]
-        address_extension: Optional[RawByte]
+        target_address: Optional[int]
+        source_address: Optional[int]
+        address_extension: Optional[int]
 
     def __new__(cls,  # type: ignore
                 addressing_format: CanAddressingFormatAlias,
@@ -71,9 +71,9 @@ class CanAddressingInformation:
                            addressing_format: CanAddressingFormatAlias,
                            addressing_type: AddressingTypeAlias,
                            can_id: Optional[int] = None,
-                           target_address: Optional[RawByte] = None,
-                           source_address: Optional[RawByte] = None,
-                           address_extension: Optional[RawByte] = None
+                           target_address: Optional[int] = None,
+                           source_address: Optional[int] = None,
+                           address_extension: Optional[int] = None
                            ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet.
@@ -178,8 +178,8 @@ class CanAddressingInformation:
     @classmethod
     def encode_ai_data_bytes(cls,
                              addressing_format: CanAddressingFormatAlias,
-                             target_address: Optional[RawByte] = None,
-                             address_extension: Optional[RawByte] = None) -> RawBytesList:
+                             target_address: Optional[int] = None,
+                             address_extension: Optional[int] = None) -> RawBytesList:
         """
         Generate a list of data bytes that carry Addressing Information.
 

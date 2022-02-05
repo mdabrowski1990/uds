@@ -5,7 +5,7 @@ __all__ = ["AbstractUdsPacketType", "AbstractUdsPacketTypeAlias"]
 from typing import Any, Union
 from abc import abstractmethod
 
-from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum, Nibble
+from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum
 
 
 class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
@@ -30,5 +30,5 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
         """
 
 
-AbstractUdsPacketTypeAlias = Union[AbstractUdsPacketType, Nibble]
+AbstractUdsPacketTypeAlias = Union[AbstractUdsPacketType, int]
 """Alias that describes :class:`~uds.packet.abstract_packet_type.AbstractUdsPacketType` member."""

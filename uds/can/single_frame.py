@@ -9,8 +9,8 @@ __all__ = ["CanSingleFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesList, \
-    validate_raw_bytes, validate_raw_byte, validate_nibble, InconsistentArgumentsError
+from uds.utilities import RawBytes, RawBytesList, validate_raw_bytes, validate_raw_byte, validate_nibble, \
+    InconsistentArgumentsError
 from .addressing_format import CanAddressingFormatAlias
 from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
@@ -19,7 +19,7 @@ from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 class CanSingleFrameHandler:
     """Helper class that provides utilities for Single Frame CAN Packets."""
 
-    SINGLE_FRAME_N_PCI: Nibble = 0
+    SINGLE_FRAME_N_PCI: int = 0
     """N_PCI value of Single Frame."""
     MAX_DLC_VALUE_SHORT_SF_DL: int = 8
     """Maximum value of DLC for which short
@@ -36,9 +36,9 @@ class CanSingleFrameHandler:
                                 addressing_format: CanAddressingFormatAlias,
                                 payload: RawBytes,
                                 dlc: Optional[int] = None,
-                                filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                                target_address: Optional[RawByte] = None,
-                                address_extension: Optional[RawByte] = None) -> RawBytesList:
+                                filler_byte: int = DEFAULT_FILLER_BYTE,
+                                target_address: Optional[int] = None,
+                                address_extension: Optional[int] = None) -> RawBytesList:
         """
         Create a data field of a CAN frame that carries a valid Single Frame packet.
 
@@ -92,11 +92,11 @@ class CanSingleFrameHandler:
                               addressing_format: CanAddressingFormatAlias,
                               payload: RawBytes,
                               dlc: int,
-                              sf_dl_short: Nibble,
-                              sf_dl_long: Optional[RawByte] = None,
-                              filler_byte: RawByte = DEFAULT_FILLER_BYTE,
-                              target_address: Optional[RawByte] = None,
-                              address_extension: Optional[RawByte] = None) -> RawBytesList:
+                              sf_dl_short: int,
+                              sf_dl_long: Optional[int] = None,
+                              filler_byte: int = DEFAULT_FILLER_BYTE,
+                              target_address: Optional[int] = None,
+                              address_extension: Optional[int] = None) -> RawBytesList:
         """
         Create a data field of a CAN frame that carries a Single Frame packet.
 
@@ -391,7 +391,7 @@ class CanSingleFrameHandler:
         return cls.__encode_any_sf_dl(sf_dl_long=sf_dl)
 
     @classmethod
-    def __encode_any_sf_dl(cls, sf_dl_short: Nibble = 0, sf_dl_long: Optional[RawByte] = None) -> RawBytesList:
+    def __encode_any_sf_dl(cls, sf_dl_short: int = 0, sf_dl_long: Optional[int] = None) -> RawBytesList:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
