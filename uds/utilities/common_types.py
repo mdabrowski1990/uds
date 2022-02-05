@@ -1,12 +1,13 @@
 """Module with all common types (and its aliases) used in the package and helper functions for these types."""
 
-__all__ = ["RawBytes", "RawBytesTuple", "RawBytesList", "RawBytesSet",
-           "validate_nibble", "validate_raw_byte", "validate_raw_bytes",
-           "TimeMilliseconds"]
+__all__ = ["TimeMilliseconds", "RawBytes", "RawBytesTuple", "RawBytesList", "RawBytesSet",
+           "validate_nibble", "validate_raw_byte", "validate_raw_bytes"]
 
 from typing import Union, Tuple, List, Set, Any
 
 
+TimeMilliseconds = Union[int, float]
+"""Alias of a time value in milliseconds."""
 RawBytesTuple = Tuple[int, ...]
 """Alias of a tuple filled with byte values."""
 RawBytesSet = Set[int]
@@ -15,8 +16,6 @@ RawBytesList = List[int]
 """Alias of a list filled with byte values."""
 RawBytes = Union[RawBytesTuple, RawBytesList, bytearray]
 """Alias of a sequence filled with byte values."""
-TimeMilliseconds = Union[int, float]
-"""Alias of a time value in milliseconds."""
 
 
 def validate_nibble(value: Any) -> None:

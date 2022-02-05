@@ -48,7 +48,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
         super().__init__(frame=frame, direction=direction, transmission_time=transmission_time)
         self.__addressing_type = AddressingType(addressing_type)
         self.__addressing_format = CanAddressingFormat(addressing_format)
-        self.__packet_type: CanPacketType
+        self.__packet_type: CanPacketTypeAlias
         self.__target_address: Optional[int]
         self.__source_address: Optional[int]
         self.__address_extension: Optional[int]
