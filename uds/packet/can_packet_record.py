@@ -7,7 +7,7 @@ from datetime import datetime
 
 from can import Message as PythonCanMessage
 
-from uds.utilities import RawByte, RawBytesTuple, InconsistentArgumentsError
+from uds.utilities import RawBytesTuple, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
 from uds.can import CanAddressingFormat, CanAddressingFormatAlias, \
     CanAddressingInformation, AbstractCanAddressingInformation, \
@@ -49,9 +49,9 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
         self.__addressing_type = AddressingType(addressing_type)
         self.__addressing_format = CanAddressingFormat(addressing_format)
         self.__packet_type: CanPacketType
-        self.__target_address: Optional[RawByte]
-        self.__source_address: Optional[RawByte]
-        self.__address_extension: Optional[RawByte]
+        self.__target_address: Optional[int]
+        self.__source_address: Optional[int]
+        self.__address_extension: Optional[int]
         self.__assess_packet_type()
         self.__assess_ai_attributes()
 
@@ -85,7 +85,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
         return self.__packet_type
 
     @property
-    def target_address(self) -> Optional[RawByte]:
+    def target_address(self) -> Optional[int]:
         """
         Target Address (TA) value of this CAN Packet.
 
@@ -99,7 +99,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
         return self.__target_address
 
     @property
-    def source_address(self) -> Optional[RawByte]:
+    def source_address(self) -> Optional[int]:
         """
         Source Address (SA) value of this CAN Packet.
 
@@ -112,7 +112,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):  # l
         return self.__source_address
 
     @property
-    def address_extension(self) -> Optional[RawByte]:
+    def address_extension(self) -> Optional[int]:
         """
         Address Extension (AE) value of this CAN Packet.
 

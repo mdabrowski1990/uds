@@ -6,7 +6,6 @@ from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
 from copy import deepcopy
 
-from uds.utilities import RawByte
 from uds.transmission_attributes import AddressingTypeAlias, AddressingType
 from .addressing_format import CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
@@ -32,16 +31,16 @@ class AbstractCanAddressingInformation(ABC):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
 
         can_id: int
-        target_address: RawByte
-        source_address: RawByte
-        address_extension: RawByte
+        target_address: int
+        source_address: int
+        address_extension: int
 
     class _OptionalPacketAIParamsAlias(TypedDict, total=False):
         """Alias of optional :ref:`Addressing Information <knowledge-base-n-ai>` parameters of CAN packets stream."""
 
-        target_address: RawByte
-        source_address: RawByte
-        address_extension: RawByte
+        target_address: int
+        source_address: int
+        address_extension: int
 
     class PacketAIParamsAlias(_OptionalPacketAIParamsAlias, total=True):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters of CAN packets stream."""
@@ -145,9 +144,9 @@ class AbstractCanAddressingInformation(ABC):
     def validate_packet_ai(cls,
                            addressing_type: AddressingTypeAlias,
                            can_id: Optional[int] = None,
-                           target_address: Optional[RawByte] = None,
-                           source_address: Optional[RawByte] = None,
-                           address_extension: Optional[RawByte] = None) -> PacketAIParamsAlias:
+                           target_address: Optional[int] = None,
+                           source_address: Optional[int] = None,
+                           address_extension: Optional[int] = None) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet.
 

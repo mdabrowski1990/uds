@@ -13,11 +13,11 @@ from typing import Any, Optional, Tuple, Set, TypedDict, Dict
 from bisect import bisect_left
 
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
-from uds.utilities import RawByte, validate_raw_byte
+from uds.utilities import validate_raw_byte
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 
 
-DEFAULT_FILLER_BYTE: RawByte = 0xCC
+DEFAULT_FILLER_BYTE: int = 0xCC
 """Default value of Filler Byte.
 Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
 .. note:: The value is specified by ISO 15765-2:2016 (chapter 10.4.2.1)."""
@@ -63,8 +63,8 @@ class CanIdHandler:
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by CAN Identifier."""
 
         addressing_type: Optional[AddressingTypeAlias]
-        target_address: Optional[RawByte]
-        source_address: Optional[RawByte]
+        target_address: Optional[int]
+        source_address: Optional[int]
 
     @classmethod
     def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> CanIdAIAlias:
@@ -171,8 +171,8 @@ class CanIdHandler:
     @classmethod
     def encode_normal_fixed_addressed_can_id(cls,
                                              addressing_type: AddressingTypeAlias,
-                                             target_address: RawByte,
-                                             source_address: RawByte) -> int:
+                                             target_address: int,
+                                             source_address: int) -> int:
         """
         Generate CAN ID value for Normal Fixed CAN Addressing format.
 
@@ -199,8 +199,8 @@ class CanIdHandler:
     @classmethod
     def encode_mixed_addressed_29bit_can_id(cls,
                                             addressing_type: AddressingTypeAlias,
-                                            target_address: RawByte,
-                                            source_address: RawByte) -> int:
+                                            target_address: int,
+                                            source_address: int) -> int:
         """
         Generate CAN ID value for Mixed 29-bit CAN Addressing format.
 

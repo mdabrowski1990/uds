@@ -5,8 +5,7 @@ __all__ = ["CanPacket", "AnyCanPacket"]
 from typing import Optional, Any, TypedDict
 from warnings import warn
 
-from uds.utilities import Nibble, RawByte, RawBytes, RawBytesTuple, validate_raw_bytes, \
-    AmbiguityError, UnusedArgumentWarning
+from uds.utilities import AmbiguityError, UnusedArgumentWarning, RawBytes, RawBytesTuple, validate_raw_bytes
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler, \
     CanAddressingFormat, CanAddressingFormatAlias, AbstractCanAddressingInformation, CanAddressingInformation, \
@@ -32,9 +31,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
                  addressing_format: CanAddressingFormatAlias,
                  addressing_type: AddressingTypeAlias,
                  can_id: Optional[int] = None,
-                 target_address: Optional[RawByte] = None,
-                 source_address: Optional[RawByte] = None,
-                 address_extension: Optional[RawByte] = None,
+                 target_address: Optional[int] = None,
+                 source_address: Optional[int] = None,
+                 address_extension: Optional[int] = None,
                  dlc: Optional[int] = None,
                  **packet_type_specific_kwargs: Any) -> None:
         """
@@ -84,9 +83,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         self.__packet_type: CanPacketTypeAlias = None  # type: ignore
         self.__can_id: int = None  # type: ignore
         self.__dlc: int = None  # type: ignore
-        self.__target_address: Optional[RawByte] = None
-        self.__source_address: Optional[RawByte] = None
-        self.__address_extension: Optional[RawByte] = None
+        self.__target_address: Optional[int] = None
+        self.__source_address: Optional[int] = None
+        self.__address_extension: Optional[int] = None
         # set the proper attribute values after arguments validation
         self.set_address_information(addressing_type=addressing_type,
                                      addressing_format=addressing_format,
@@ -102,9 +101,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
                                 addressing_format: CanAddressingFormatAlias,
                                 addressing_type: AddressingTypeAlias,
                                 can_id: Optional[int] = None,
-                                target_address: Optional[RawByte] = None,
-                                source_address: Optional[RawByte] = None,
-                                address_extension: Optional[RawByte] = None) -> None:
+                                target_address: Optional[int] = None,
+                                source_address: Optional[int] = None,
+                                address_extension: Optional[int] = None) -> None:
         """
         Change addressing information for this CAN packet.
 
@@ -191,8 +190,8 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
     def set_address_information_normal_fixed(self,
                                              addressing_type: AddressingTypeAlias,
                                              can_id: Optional[int] = None,
-                                             target_address: Optional[RawByte] = None,
-                                             source_address: Optional[RawByte] = None) -> None:
+                                             target_address: Optional[int] = None,
+                                             source_address: Optional[int] = None) -> None:
         """
         Change addressing information for this CAN packet to use Normal Fixed Addressing format.
 
@@ -220,7 +219,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
     def set_address_information_extended(self,
                                          addressing_type: AddressingTypeAlias,
                                          can_id: int,
-                                         target_address: RawByte) -> None:
+                                         target_address: int) -> None:
         """
         Change addressing information for this CAN packet to use Extended Addressing format.
 
@@ -243,7 +242,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
     def set_address_information_mixed_11bit(self,
                                             addressing_type: AddressingTypeAlias,
                                             can_id: int,
-                                            address_extension: RawByte) -> None:
+                                            address_extension: int) -> None:
         """
         Change addressing information for this CAN packet to use Mixed 11-bit Addressing format.
 
@@ -265,10 +264,10 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
 
     def set_address_information_mixed_29bit(self,
                                             addressing_type: AddressingTypeAlias,
-                                            address_extension: RawByte,
+                                            address_extension: int,
                                             can_id: Optional[int] = None,
-                                            target_address: Optional[RawByte] = None,
-                                            source_address: Optional[RawByte] = None) -> None:
+                                            target_address: Optional[int] = None,
+                                            source_address: Optional[int] = None) -> None:
         """
         Change addressing information for this CAN packet to use Mixed 29-bit Addressing format.
 
@@ -350,7 +349,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
     def set_single_frame_data(self,
                               payload: RawBytes,
                               dlc: Optional[int] = None,
-                              filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
+                              filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
         Change packet type (to Single Frame) and data field of this CAN packet.
 
@@ -405,7 +404,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
                                    payload: RawBytes,
                                    sequence_number: int,
                                    dlc: Optional[int] = None,
-                                   filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
+                                   filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
         Change packet type (to Consecutive Frame) and data field of this CAN packet.
 
@@ -435,10 +434,10 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
 
     def set_flow_control_data(self,
                               flow_status: CanFlowStatusAlias,
-                              block_size: Optional[RawByte] = None,
-                              st_min: Optional[RawByte] = None,
+                              block_size: Optional[int] = None,
+                              st_min: Optional[int] = None,
                               dlc: Optional[int] = None,
-                              filler_byte: RawByte = DEFAULT_FILLER_BYTE) -> None:
+                              filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
         Change packet type (to Flow Control) and data field of this CAN packet.
 
@@ -499,7 +498,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         return self.__packet_type
 
     @property
-    def target_address(self) -> Optional[RawByte]:
+    def target_address(self) -> Optional[int]:
         """
         Target Address (TA) value of this CAN Packet.
 
@@ -513,7 +512,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         return self.__target_address
 
     @property
-    def source_address(self) -> Optional[RawByte]:
+    def source_address(self) -> Optional[int]:
         """
         Source Address (SA) value of this CAN Packet.
 
@@ -526,7 +525,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
         return self.__source_address
 
     @property
-    def address_extension(self) -> Optional[RawByte]:
+    def address_extension(self) -> Optional[int]:
         """
         Address Extension (AE) value of this CAN Packet.
 
@@ -582,9 +581,9 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in any CAN Packet."""
 
         addressing_type: Optional[AddressingTypeAlias]
-        target_address: Optional[RawByte]
-        source_address: Optional[RawByte]
-        address_extension: Optional[RawByte]
+        target_address: Optional[int]
+        source_address: Optional[int]
+        address_extension: Optional[int]
 
     def __init__(self, *,
                  raw_frame_data: RawBytes,
@@ -682,7 +681,7 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
         return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
 
     @property
-    def packet_type(self) -> Optional[Nibble]:  # type: ignore
+    def packet_type(self) -> Optional[int]:  # type: ignore
         """Type (N_PCI value) of this CAN packet."""
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
         if ai_data_bytes_number >= len(self.raw_frame_data):

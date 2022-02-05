@@ -5,7 +5,7 @@ __all__ = ["AbstractCanPacketContainer"]
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from uds.utilities import RawByte, RawBytesTuple
+from uds.utilities import RawBytesTuple
 from uds.transmission_attributes import AddressingTypeAlias
 from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, CanDlcHandler, \
     CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, CanFlowControlHandler, \
@@ -48,7 +48,7 @@ class AbstractCanPacketContainer(ABC):
         return CanPacketType(self.raw_frame_data[ai_data_bytes_number] >> 4)
 
     @property
-    def target_address(self) -> Optional[RawByte]:
+    def target_address(self) -> Optional[int]:
         """
         Target Address (TA) value of this CAN Packet.
 
@@ -62,7 +62,7 @@ class AbstractCanPacketContainer(ABC):
         return self.get_addressing_information()[AbstractCanAddressingInformation.TARGET_ADDRESS_NAME]  # type: ignore
 
     @property
-    def source_address(self) -> Optional[RawByte]:
+    def source_address(self) -> Optional[int]:
         """
         Source Address (SA) value of this CAN Packet.
 
@@ -75,7 +75,7 @@ class AbstractCanPacketContainer(ABC):
         return self.get_addressing_information()[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
 
     @property
-    def address_extension(self) -> Optional[RawByte]:
+    def address_extension(self) -> Optional[int]:
         """
         Address Extension (AE) value of this CAN Packet.
 
@@ -169,7 +169,7 @@ class AbstractCanPacketContainer(ABC):
         return None
 
     @property
-    def block_size(self) -> Optional[RawByte]:
+    def block_size(self) -> Optional[int]:
         """
         Block Size value carried by this CAN packet.
 
@@ -184,7 +184,7 @@ class AbstractCanPacketContainer(ABC):
         return None
 
     @property
-    def st_min(self) -> Optional[RawByte]:
+    def st_min(self) -> Optional[int]:
         """
         Separation Time minimum (STmin) value carried by this CAN packet.
 

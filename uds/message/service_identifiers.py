@@ -11,7 +11,7 @@ from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import RawByte, RawBytesSet, ByteEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import RawBytesSet, ByteEnum, ValidatedEnum, ExtendableEnum
 
 # reserved SID values
 _REQUEST_SIDS_DEFINED_BY_SAEJ1979 = set(range(0x01, 0x10))
@@ -50,7 +50,7 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
 
     @classmethod
-    def is_request_sid(cls, value: RawByte) -> bool:
+    def is_request_sid(cls, value: int) -> bool:
         """
         Check whether given value is Service Identifier (SID).
 
@@ -113,7 +113,7 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
     """
 
     @classmethod
-    def is_response_sid(cls, value: RawByte) -> bool:
+    def is_response_sid(cls, value: int) -> bool:
         """
         Check whether given value is Response Service Identifier (RSID).
 

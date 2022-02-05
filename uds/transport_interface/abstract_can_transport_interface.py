@@ -7,7 +7,7 @@ from typing import Optional, Union, Any, Iterator, Iterable
 from abc import abstractmethod
 from warnings import warn
 
-from uds.utilities import TimeMilliseconds, RawByte, ValueWarning
+from uds.utilities import TimeMilliseconds, ValueWarning
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.can import AbstractCanAddressingInformation, CanFlowStatus, CanSTminTranslator
 from uds.segmentation import CanSegmenter
@@ -369,12 +369,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.segmenter.use_data_optimization = value
 
     @property
-    def filler_byte(self) -> RawByte:
+    def filler_byte(self) -> int:
         """Filler byte value to use for CAN Frame Data Padding during segmentation."""
         return self.segmenter.filler_byte
 
     @filler_byte.setter
-    def filler_byte(self, value: RawByte):
+    def filler_byte(self, value: int):
         """
         Set value of filler byte to use for CAN Frame Data Padding.
 
