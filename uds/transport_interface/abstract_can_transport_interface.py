@@ -8,10 +8,12 @@ from abc import abstractmethod
 from warnings import warn
 
 from uds.utilities import TimeMilliseconds, RawByte, ValueWarning
-from uds.packet import CanPacket, CanPacketType
+from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.can import AbstractCanAddressingInformation, CanFlowStatus, CanSTminTranslator
 from uds.segmentation import CanSegmenter
 from .abstract_transport_interface import AbstractTransportInterface
+from .records_queue import RecordsQueue
+from .transmission_queue import TransmissionQueue
 
 
 class AbstractCanTransportInterface(AbstractTransportInterface):
@@ -78,7 +80,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             raise TypeError("Unsupported type of Addressing Information was provided.")
         self.__addressing_information: AbstractCanAddressingInformation = addressing_information
         super().__init__(bus_manager=can_bus_manager,
-                         packet_records_number=packet_records_number,
                          message_records_number=message_records_number)
         self.n_as_timeout = kwargs.pop("n_as_timeout", self.N_AS_TIMEOUT)
         self.n_ar_timeout = kwargs.pop("n_ar_timeout", self.N_AR_TIMEOUT)
@@ -91,11 +92,23 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                                         physical_ai=addressing_information.tx_packets_physical_ai,
                                         functional_ai=addressing_information.tx_packets_functional_ai,
                                         **kwargs)
+        self.__packet_records_queue = RecordsQueue(records_type=CanPacketRecord, history_size=packet_records_number)
+        self.__packet_transmission_queue = TransmissionQueue(pdu_type=CanPacket)
         self.flow_control_generator = flow_control_generator if flow_control_generator is not None else \
             CanPacket(**self.DEFAULT_FLOW_CONTROL_ARGS,
                       **addressing_information.tx_packets_physical_ai,
                       dlc=None if self.use_data_optimization else self.dlc,
                       filler_byte=self.filler_byte)
+
+    @property
+    def _packet_records_queue(self) -> RecordsQueue:
+        """Queue with UDS packet records that were either received or transmitted."""
+        return self.__packet_records_queue
+
+    @property  # noqa: F841
+    def _packet_transmission_queue(self) -> TransmissionQueue:
+        """Queue with UDS packets that are planned for the transmission."""
+        return self.__packet_transmission_queue
 
     @property
     def segmenter(self) -> CanSegmenter:

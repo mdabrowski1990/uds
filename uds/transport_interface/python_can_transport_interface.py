@@ -11,8 +11,6 @@ from typing import Optional, Any
 from can import BusABC
 
 from uds.utilities import TimeMilliseconds
-from uds.packet import CanPacket, CanPacketRecord
-from uds.message import UdsMessage, UdsMessageRecord
 from uds.can import AbstractCanAddressingInformation
 from .abstract_transport_interface import AbstractTransportInterface
 from .abstract_can_transport_interface import AbstractCanTransportInterface
@@ -103,71 +101,3 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
         """
         return isinstance(bus_manager, BusABC)
-
-    async def await_packet_received(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
-        """
-        Wait until the next CAN packet is received.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-
-        :raise TimeoutError: Timeout was reached.
-
-        :return: Record with historic information of a packet that was just received.
-        """
-        raise NotImplementedError
-
-    async def await_packet_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # noqa: F841
-        """
-        Wait until the next CAN packet is transmitted.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-
-        :raise TimeoutError: Timeout was reached.
-
-        :return: Record with historic information of a packet that was just transmitted.
-        """
-        raise NotImplementedError
-
-    async def await_message_received(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
-        """
-        Wait until the next UDS message is received.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-
-        :raise TimeoutError: Timeout was reached.
-
-        :return: Record with historic information of a message that was just received.
-        """
-        raise NotImplementedError
-
-    async def await_message_transmitted(self, timeout: Optional[TimeMilliseconds] = None) -> UdsMessageRecord:  # noqa: F841
-        """
-        Wait until the next UDS message is transmitted.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-
-        :raise TimeoutError: Timeout was reached.
-
-        :return: Record with historic information of a message that was just transmitted.
-        """
-        raise NotImplementedError
-
-    def send_packet(self, packet: CanPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
-        """
-        Transmit CAN packet on the configured bus.
-
-        :param packet: CAN packet to send.
-        :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
-            None if the transmission to be executed immediately.
-        """
-        raise NotImplementedError
-
-    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
-        """
-        Transmit UDS message on the configured bus.
-
-        :param message: A message to send.
-        :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
-            None if the transmission to be executed immediately.
-        """
-        raise NotImplementedError
