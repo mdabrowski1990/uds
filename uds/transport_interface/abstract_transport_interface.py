@@ -181,28 +181,72 @@ class AbstractTransportInterface(ABC):
         """
         raise NotImplementedError
 
-    def send_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    def schedule_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
         """
-        Transmit UDS packet on the configured bus.
+        Schedule UDS packet transmission.
 
         :param packet: A packet to send.
         :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
-            None if the transmission to be executed immediately.
+            None if the transmission to be scheduled immediately.
 
         :raise TypeError: Delay value is not int or float type.
         :raise ValueError: Delay value is less or equal 0.
         """
         raise NotImplementedError
 
-    def send_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    def schedule_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
         """
-        Transmit UDS message on the configured bus.
+        Schedule UDS message transmissions.
 
         :param message: A message to send.
         :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
-            None if the transmission to be executed immediately.
+            None if the transmission to be scheduled immediately.
 
         :raise TypeError: Delay value is not int or float type.
         :raise ValueError: Delay value is less or equal 0.
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def send_packet(self, packet: AbstractUdsPacket) -> AbstractUdsPacketRecord:
+        """
+        Transmit UDS packet.
+
+        :param packet: A packet to send.
+
+        :return: Record with historic information about transmitted UDS packet.
+        """
+
+    @abstractmethod
+    def send_message(self, message: UdsMessage) -> UdsMessageRecord:
+        """
+        Transmit UDS message.
+
+        :param message: A message to send.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+
+    @abstractmethod
+    def receive_packet(self, timeout: Optional[TimeMilliseconds]) -> AbstractUdsPacketRecord:
+        """
+        Receive UDS packet.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS packet.
+        """
+
+    @abstractmethod
+    def receive_message(self, timeout: Optional[TimeMilliseconds]) -> UdsMessageRecord:
+        """
+        Receive UDS message.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS message.
+        """

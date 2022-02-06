@@ -12,6 +12,8 @@ from can import BusABC
 
 from uds.utilities import TimeMilliseconds
 from uds.can import AbstractCanAddressingInformation
+from uds.packet import CanPacket, CanPacketRecord
+from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_transport_interface import AbstractTransportInterface
 from .abstract_can_transport_interface import AbstractCanTransportInterface
 
@@ -101,3 +103,47 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
         """
         return isinstance(bus_manager, BusABC)
+
+    def send_packet(self, packet: CanPacket) -> CanPacketRecord:
+        """
+        Transmit UDS packet.
+
+        :param packet: A packet to send.
+
+        :return: Record with historic information about transmitted UDS packet.
+        """
+        raise NotImplementedError
+
+    def send_message(self, message: UdsMessage) -> UdsMessageRecord:
+        """
+        Transmit UDS message.
+
+        :param message: A message to send.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        raise NotImplementedError
+
+    def receive_packet(self, timeout: Optional[TimeMilliseconds]) -> CanPacketRecord:
+        """
+        Receive UDS packet.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS packet.
+        """
+        raise NotImplementedError
+
+    def receive_message(self, timeout: Optional[TimeMilliseconds]) -> UdsMessageRecord:
+        """
+        Receive UDS message.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS message.
+        """
+        raise NotImplementedError

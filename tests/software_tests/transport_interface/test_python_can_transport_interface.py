@@ -103,6 +103,30 @@ class TestPyCanTransportInterface:
         assert PyCanTransportInterface.is_supported_bus_manager(value) == mock_isinstance.return_value
         mock_isinstance.assert_called_once_with(value, BusABC)
 
+    # send_packet
+
+    def test_send_packet(self):
+        with pytest.raises(NotImplementedError):
+            PyCanTransportInterface.send_packet(self=self.mock_can_transport_interface, packet=Mock())
+
+    # send_message
+
+    def test_send_message(self):
+        with pytest.raises(NotImplementedError):
+            PyCanTransportInterface.send_message(self=self.mock_can_transport_interface, message=Mock())
+
+    # receive_packet
+
+    def test_receive_packet(self):
+        with pytest.raises(NotImplementedError):
+            PyCanTransportInterface.receive_packet(self=self.mock_can_transport_interface, timeout=Mock())
+
+    # receive_message
+
+    def test_receive_message(self):
+        with pytest.raises(NotImplementedError):
+            PyCanTransportInterface.receive_message(self=self.mock_can_transport_interface, timeout=Mock())
+
 
 class TestPyCanTransportInterfaceIntegration:
     """Integration tests for `PyCanTransportInterface` class."""

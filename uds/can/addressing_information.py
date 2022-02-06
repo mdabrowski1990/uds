@@ -8,8 +8,7 @@ __all__ = ["CanAddressingInformation"]
 
 from typing import Optional, Dict, TypedDict, Type
 
-from uds.utilities import RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, \
-    InconsistentArgumentsError
+from uds.utilities import RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler

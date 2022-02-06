@@ -112,14 +112,14 @@ class TestAbstractTransportInterface:
         with pytest.raises(NotImplementedError):
             await AbstractTransportInterface.await_message_transmitted(self=self.mock_transport_interface)
             
-    # send_packet
+    # schedule_packet
 
-    def test_send_packet(self):
+    def test_schedule_packet(self):
         with pytest.raises(NotImplementedError):
-            AbstractTransportInterface.send_packet(self=self.mock_transport_interface, packet=Mock())
+            AbstractTransportInterface.schedule_packet(self=self.mock_transport_interface, packet=Mock())
             
-    # send_message
+    # schedule_message
 
-    def test_send_message(self):
+    def test_schedule_message(self):
         with pytest.raises(NotImplementedError):
-            AbstractTransportInterface.send_message(self=self.mock_transport_interface, message=Mock())
+            AbstractTransportInterface.schedule_message(self=self.mock_transport_interface, message=Mock())
