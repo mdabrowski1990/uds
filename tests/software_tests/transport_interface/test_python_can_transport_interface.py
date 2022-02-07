@@ -105,9 +105,9 @@ class TestPyCanTransportInterface:
 
     # send_packet
 
-    def test_send_packet(self):
-        with pytest.raises(NotImplementedError):
-            PyCanTransportInterface.send_packet(self=self.mock_can_transport_interface, packet=Mock())
+    # def test_send_packet(self):
+    #     with pytest.raises(NotImplementedError):
+    #         PyCanTransportInterface.send_packet(self=self.mock_can_transport_interface, packet=Mock())
 
     # send_message
 
@@ -117,9 +117,9 @@ class TestPyCanTransportInterface:
 
     # receive_packet
 
-    def test_receive_packet(self):
-        with pytest.raises(NotImplementedError):
-            PyCanTransportInterface.receive_packet(self=self.mock_can_transport_interface, timeout=Mock())
+    # def test_receive_packet(self):
+    #     with pytest.raises(NotImplementedError):
+    #         PyCanTransportInterface.receive_packet(self=self.mock_can_transport_interface, timeout=Mock())
 
     # receive_message
 

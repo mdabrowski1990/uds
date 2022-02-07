@@ -112,7 +112,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about transmitted UDS packet.
         """
-        raise NotImplementedError
+        # TODO:
+        #  - check packet type - TypeError
+        #  - make sure packet uses proper AddressingInformation - Warning
+        #  - measure N_AS / N_AR
+        #  - use CAN Bus to transmit packet
+        #  - get confirmation from Bus Listener that the packet was received
+        #  - make sure that `_packet_records_queue` (and `_message_records_queue' if needed) is updated
+        #  - return record of transmitted packet
 
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:
         """
@@ -134,7 +141,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received UDS packet.
         """
-        raise NotImplementedError
+        # TODO:
+        #  - update `_packet_records_queue`
+        #  - measure N_As / N_Ar
+        #  - use Bus Listener to filter out UDS Packets that targets this entity
+        #  - make sure that `_packet_records_queue` (and `_message_records_queue' if needed) is updated
+        #  - return record of received packet when received
 
     def receive_message(self, timeout: Optional[TimeMilliseconds]) -> UdsMessageRecord:
         """
