@@ -1,42 +1,3 @@
-[project]
-name = "py-uds"
-description = "UDS (Unified Diagnostic Services) protocol handler. It supports CAN, Ethernet, LIN, FlexRay, K-Line with possible extension for any other bus."
-readme = "README.rst"
-requires-python = ">=3.8"
-license = {file = "LICENSE"}
-keywords = ["uds", "unified-diagnostic-services", "iso14229", "iso-14229", "obd", "on-board-diagnostic", "vehicle-diagnostic", "automotive"]
-authors = [
-    {name = "UDS Package Developers", email = "uds-package-development@googlegroups.com"},
-    {name = "Maciej Dąbrowski"}
-]
-maintainers = [
-    {name = "UDS Package Developers", email = "uds-package-development@googlegroups.com"},
-    {name = "Maciej Dąbrowski"}
-]
-classifiers = [
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Natural Language :: English",
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
-    "Topic :: Software Development :: Embedded Systems",
-    "Topic :: System :: Monitoring",
-    "Topic :: System :: Networking"
-]
-dependencies = [
-    "aenum",
-    "python-can"
-]
-dynamic = ["version"]
-
-
 [project.optional-dependencies]
 test = [
     "pytest >= 6.0.0",
@@ -53,11 +14,11 @@ doc = [
 
 [project.urls]
 Homepage = "https://github.com/mdabrowski1990/uds"
-Documentation = "https://uds.readthedocs.io/en/latest/"
+"User Documentation" = "https://uds.readthedocs.io/en/latest/"
 Repository = "https://github.com/mdabrowski1990/uds"
-"Security Policy" = "https://github.com/mdabrowski1990/uds/security/policy"
 "Issues Tracking System" = "https://github.com/mdabrowski1990/uds/issues"
 "Releases and Changelogs" = "https://github.com/mdabrowski1990/uds/releases"
+"Security Policy" = "https://github.com/mdabrowski1990/uds/security/policy"
 "PyPI" = "https://pypi.org/project/py-uds/"
 Wiki = "https://github.com/mdabrowski1990/uds/wiki"
 "Code Download" = "https://github.com/mdabrowski1990/uds/archive/refs/heads/main.zip"
