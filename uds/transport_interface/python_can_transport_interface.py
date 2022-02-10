@@ -7,10 +7,11 @@ Documentation for python-can package: https://python-can.readthedocs.io/
 __all__ = ["PyCanTransportInterface"]
 
 from typing import Optional, Any
+from warnings import warn
 
-from can import BusABC
+from can import BusABC, AsyncBufferedReader
 
-from uds.utilities import TimeMilliseconds
+from uds.utilities import TimeMilliseconds, ValueWarning
 from uds.can import AbstractCanAddressingInformation
 from uds.packet import CanPacket, CanPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
@@ -110,10 +111,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :param packet: A packet to send.
 
+        :raise TypeError: Provided packet value does not contain CAN Packet.
+
         :return: Record with historic information about transmitted UDS packet.
         """
+        if not isinstance(packet, CanPacket):
+            raise TypeError("Provided packet value does not contain CAN Packet.")
+
         # TODO:
-        #  - check packet type - TypeError
         #  - make sure packet uses proper AddressingInformation - Warning
         #  - measure N_AS / N_AR
         #  - use CAN Bus to transmit packet
@@ -137,10 +142,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :param timeout: Maximal time (in milliseconds) to wait.
 
+        :raise TypeError: Provided timeout value is not None neither int nor float type.
+        :raise ValueError: Provided timeout value is less or equal 0.
         :raise TimeoutError: Timeout was reached.
 
         :return: Record with historic information about received UDS packet.
         """
+        if timeout is not None:
+            if not isinstance(timeout, (int, float)):
+                raise TypeError("Provided timeout value is not None neither int nor float type.")
+            if timeout <= 0:
+                raise ValueError("Provided timeout value is less or equal 0.")
         # TODO:
         #  - update `_packet_records_queue`
         #  - measure N_As / N_Ar

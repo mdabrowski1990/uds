@@ -1,8 +1,8 @@
 import pytest
-from mock import Mock, patch
+from mock import MagicMock, Mock, patch
 
 from uds.transport_interface.python_can_transport_interface import PyCanTransportInterface, \
-    BusABC, AbstractTransportInterface
+    BusABC, AbstractTransportInterface, CanPacket
 from uds.can import CanAddressingInformation, CanAddressingFormat
 
 
@@ -16,9 +16,12 @@ class TestPyCanTransportInterface:
         # patching
         self._patcher_abstract_can_ti_init = patch(f"{self.SCRIPT_LOCATION}.AbstractCanTransportInterface.__init__")
         self.mock_abstract_can_ti_init = self._patcher_abstract_can_ti_init.start()
+        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
 
     def teardown(self):
         self._patcher_abstract_can_ti_init.stop()
+        self._patcher_warn.stop()
 
     # __init__
 
@@ -105,9 +108,31 @@ class TestPyCanTransportInterface:
 
     # send_packet
 
-    # def test_send_packet(self):
-    #     with pytest.raises(NotImplementedError):
-    #         PyCanTransportInterface.send_packet(self=self.mock_can_transport_interface, packet=Mock())
+    @pytest.mark.parametrize("packet", ["some packet", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_send_packet__type_error(self, mock_isinstance, packet):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            PyCanTransportInterface.send_packet(self=self.mock_can_transport_interface, packet=packet)
+        mock_isinstance.assert_called_once_with(packet, CanPacket)
+
+    # TODO: finish more cases
+
+    # @pytest.mark.parametrize("packet", [Mock()])
+    # @patch(f"{SCRIPT_LOCATION}.isinstance")
+    # def test_send_packet__with_warning(self, mock_isinstance, packet):
+    #     mock_isinstance.return_value = True
+    #     PyCanTransportInterface.send_packet(self=self.mock_can_transport_interface, packet=packet)
+    #     mock_isinstance.assert_called_once_with(packet, CanPacket)
+    #     self.mock_warn.assert_called_once()
+    #
+    # @pytest.mark.parametrize("packet", [Mock()])
+    # @patch(f"{SCRIPT_LOCATION}.isinstance")
+    # def test_send_packet__without_warning(self, mock_isinstance, packet):
+    #     mock_isinstance.return_value = True
+    #     PyCanTransportInterface.send_packet(self=self.mock_can_transport_interface, packet=packet)
+    #     mock_isinstance.assert_called_once_with(packet, CanPacket)
+    #     self.mock_warn.assert_not_called()
 
     # send_message
 
@@ -117,9 +142,25 @@ class TestPyCanTransportInterface:
 
     # receive_packet
 
-    # def test_receive_packet(self):
-    #     with pytest.raises(NotImplementedError):
-    #         PyCanTransportInterface.receive_packet(self=self.mock_can_transport_interface, timeout=Mock())
+    @pytest.mark.parametrize("timeout", ["some timeout", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_receive_packet__type_error(self, mock_isinstance, timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            PyCanTransportInterface.receive_packet(self=self.mock_can_transport_interface, timeout=timeout)
+        mock_isinstance.assert_called_once_with(timeout, (int, float))
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_receive_packet__value_error(self, mock_isinstance):
+        mock_le = Mock(return_value=True)
+        mock_timeout = MagicMock(__le__=mock_le)
+        mock_isinstance.return_value = True
+        with pytest.raises(ValueError):
+            PyCanTransportInterface.receive_packet(self=self.mock_can_transport_interface, timeout=mock_timeout)
+        mock_isinstance.assert_called_once_with(mock_timeout, (int, float))
+        mock_le.assert_called_once_with(0)
+
+    # TODO: more cases
 
     # receive_message
 
