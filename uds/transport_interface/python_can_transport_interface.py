@@ -9,7 +9,7 @@ __all__ = ["PyCanTransportInterface"]
 from typing import Optional, Any
 from warnings import warn
 
-from can import BusABC, AsyncBufferedReader
+from can import BusABC, AsyncBufferedReader, Notifier
 
 from uds.utilities import TimeMilliseconds, ValueWarning
 from uds.can import AbstractCanAddressingInformation
@@ -117,7 +117,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         if not isinstance(packet, CanPacket):
             raise TypeError("Provided packet value does not contain CAN Packet.")
-
         # TODO:
         #  - make sure packet uses proper AddressingInformation - Warning
         #  - measure N_AS / N_AR

@@ -84,7 +84,12 @@ class AbstractTransportInterface(ABC):
     @property
     @abstractmethod
     def segmenter(self) -> AbstractSegmenter:
-        """Value of the segmenter used by this Transport Interface."""
+        """
+        Value of the segmenter used by this Transport Interface.
+
+        .. warning:: Do not change any segmenter attributes as it might cause malfunction of the entire
+            Transport Interface.
+        """
 
     @staticmethod
     @abstractmethod
@@ -97,115 +102,115 @@ class AbstractTransportInterface(ABC):
         :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
         """
 
-    async def await_packet_received(self,
-                                    timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
-                                    ignore_interruptions: bool = False) -> AbstractUdsPacketRecord:  # noqa: F841
-        """
-        Wait until the next UDS packet is received.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-        :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was transmitted.
-
-            - True - ignore transmitted UDS packets and do not raise InterruptedError
-            - False - raise InterruptedError if UDS packet is transmitted when awaiting
-
-        :raise TypeError: Timeout value is not int or float type.
-        :raise ValueError: Timeout value is less or equal 0.
-        :raise TimeoutError: Timeout was reached.
-        :raise InterruptedError: UDS packet was transmitted during awaiting.
-
-        :return: Record with historic information of a packet that was just received.
-        """
-        raise NotImplementedError
-
-    async def await_packet_transmitted(self,
-                                       timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
-                                       ignore_interruptions: bool = False) -> AbstractUdsPacketRecord:  # noqa: F841
-        """
-        Wait until the next UDS packet is transmitted.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-        :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was received.
-
-            - True - ignore received UDS packets and do not raise InterruptedError
-            - False - raise InterruptedError if UDS packet is received when awaiting
-
-        :raise TypeError: Timeout value is not int or float type.
-        :raise ValueError: Timeout value is less or equal 0.
-        :raise TimeoutError: Timeout was reached.
-        :raise InterruptedError: UDS packet was received during awaiting.
-
-        :return: Record with historic information of a packet that was just transmitted.
-        """
-        raise NotImplementedError
-
-    async def await_message_received(self,
-                                     timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
-                                     ignore_interruptions: bool = False) -> UdsMessageRecord:  # noqa: F841
-        """
-        Wait until the next UDS message is received.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-        :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was transmitted.
-
-            - True - ignore transmitted UDS packets and do not raise InterruptedError
-            - False - raise InterruptedError if UDS packet is transmitted when awaiting
-
-        :raise TypeError: Timeout value is not int or float type.
-        :raise ValueError: Timeout value is less or equal 0.
-        :raise TimeoutError: Timeout was reached.
-        :raise InterruptedError: UDS packet was transmitted during awaiting.
-
-        :return: Record with historic information of a message that was just received.
-        """
-        raise NotImplementedError
-
-    async def await_message_transmitted(self,
-                                        timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
-                                        ignore_interruptions: bool = False) -> UdsMessageRecord:  # noqa: F841
-        """
-        Wait until the next UDS message is transmitted.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-        :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was received.
-
-            - True - ignore received UDS packets and do not raise InterruptedError
-            - False - raise InterruptedError if UDS packet is received when awaiting
-
-        :raise TypeError: Timeout value is not int or float type.
-        :raise ValueError: Timeout value is less or equal 0.
-        :raise TimeoutError: Timeout was reached.
-        :raise InterruptedError: UDS packet was received during awaiting.
-
-        :return: Record with historic information of a message that was just transmitted.
-        """
-        raise NotImplementedError
-
-    def schedule_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
-        """
-        Schedule UDS packet transmission.
-
-        :param packet: A packet to send.
-        :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
-            None if the transmission to be scheduled immediately.
-
-        :raise TypeError: Delay value is not int or float type.
-        :raise ValueError: Delay value is less or equal 0.
-        """
-        raise NotImplementedError
-
-    def schedule_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
-        """
-        Schedule UDS message transmissions.
-
-        :param message: A message to send.
-        :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
-            None if the transmission to be scheduled immediately.
-
-        :raise TypeError: Delay value is not int or float type.
-        :raise ValueError: Delay value is less or equal 0.
-        """
-        raise NotImplementedError
+    # async def await_packet_received(self,
+    #                                 timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
+    #                                 ignore_interruptions: bool = False) -> AbstractUdsPacketRecord:  # noqa: F841
+    #     """
+    #     Wait until the next UDS packet is received.
+    #
+    #     :param timeout: Maximal time (in milliseconds) to wait.
+    #     :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was transmitted.
+    #
+    #         - True - ignore transmitted UDS packets and do not raise InterruptedError
+    #         - False - raise InterruptedError if UDS packet is transmitted when awaiting
+    #
+    #     :raise TypeError: Timeout value is not int or float type.
+    #     :raise ValueError: Timeout value is less or equal 0.
+    #     :raise TimeoutError: Timeout was reached.
+    #     :raise InterruptedError: UDS packet was transmitted during awaiting.
+    #
+    #     :return: Record with historic information of a packet that was just received.
+    #     """
+    #     raise NotImplementedError
+    #
+    # async def await_packet_transmitted(self,
+    #                                    timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
+    #                                    ignore_interruptions: bool = False) -> AbstractUdsPacketRecord:  # noqa: F841
+    #     """
+    #     Wait until the next UDS packet is transmitted.
+    #
+    #     :param timeout: Maximal time (in milliseconds) to wait.
+    #     :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was received.
+    #
+    #         - True - ignore received UDS packets and do not raise InterruptedError
+    #         - False - raise InterruptedError if UDS packet is received when awaiting
+    #
+    #     :raise TypeError: Timeout value is not int or float type.
+    #     :raise ValueError: Timeout value is less or equal 0.
+    #     :raise TimeoutError: Timeout was reached.
+    #     :raise InterruptedError: UDS packet was received during awaiting.
+    #
+    #     :return: Record with historic information of a packet that was just transmitted.
+    #     """
+    #     raise NotImplementedError
+    #
+    # async def await_message_received(self,
+    #                                  timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
+    #                                  ignore_interruptions: bool = False) -> UdsMessageRecord:  # noqa: F841
+    #     """
+    #     Wait until the next UDS message is received.
+    #
+    #     :param timeout: Maximal time (in milliseconds) to wait.
+    #     :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was transmitted.
+    #
+    #         - True - ignore transmitted UDS packets and do not raise InterruptedError
+    #         - False - raise InterruptedError if UDS packet is transmitted when awaiting
+    #
+    #     :raise TypeError: Timeout value is not int or float type.
+    #     :raise ValueError: Timeout value is less or equal 0.
+    #     :raise TimeoutError: Timeout was reached.
+    #     :raise InterruptedError: UDS packet was transmitted during awaiting.
+    #
+    #     :return: Record with historic information of a message that was just received.
+    #     """
+    #     raise NotImplementedError
+    #
+    # async def await_message_transmitted(self,
+    #                                     timeout: Optional[TimeMilliseconds] = None,  # noqa: F841
+    #                                     ignore_interruptions: bool = False) -> UdsMessageRecord:  # noqa: F841
+    #     """
+    #     Wait until the next UDS message is transmitted.
+    #
+    #     :param timeout: Maximal time (in milliseconds) to wait.
+    #     :param ignore_interruptions: Flag informing whether to stop if meanwhile UDS packet was received.
+    #
+    #         - True - ignore received UDS packets and do not raise InterruptedError
+    #         - False - raise InterruptedError if UDS packet is received when awaiting
+    #
+    #     :raise TypeError: Timeout value is not int or float type.
+    #     :raise ValueError: Timeout value is less or equal 0.
+    #     :raise TimeoutError: Timeout was reached.
+    #     :raise InterruptedError: UDS packet was received during awaiting.
+    #
+    #     :return: Record with historic information of a message that was just transmitted.
+    #     """
+    #     raise NotImplementedError
+    #
+    # def schedule_packet(self, packet: AbstractUdsPacket, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    #     """
+    #     Schedule UDS packet transmission.
+    #
+    #     :param packet: A packet to send.
+    #     :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
+    #         None if the transmission to be scheduled immediately.
+    #
+    #     :raise TypeError: Delay value is not int or float type.
+    #     :raise ValueError: Delay value is less or equal 0.
+    #     """
+    #     raise NotImplementedError
+    #
+    # def schedule_message(self, message: UdsMessage, delay: Optional[TimeMilliseconds] = None) -> None:  # noqa: F841
+    #     """
+    #     Schedule UDS message transmissions.
+    #
+    #     :param message: A message to send.
+    #     :param delay: Value of a delay (in milliseconds) if the transmission to be scheduled in the future.
+    #         None if the transmission to be scheduled immediately.
+    #
+    #     :raise TypeError: Delay value is not int or float type.
+    #     :raise ValueError: Delay value is less or equal 0.
+    #     """
+    #     raise NotImplementedError
 
     @abstractmethod
     def send_packet(self, packet: AbstractUdsPacket) -> AbstractUdsPacketRecord:

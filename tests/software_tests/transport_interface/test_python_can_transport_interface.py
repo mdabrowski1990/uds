@@ -59,12 +59,11 @@ class TestPyCanTransportInterface:
                                          packet_records_number=packet_records_number,
                                          message_records_number=message_records_number,
                                          **kwargs)
-        self.mock_abstract_can_ti_init.assert_called_once_with(
-            can_bus_manager=can_bus_manager,
-            addressing_information=addressing_information,
-            packet_records_number=packet_records_number,
-            message_records_number=message_records_number,
-            **kwargs)
+        self.mock_abstract_can_ti_init.assert_called_once_with(an_bus_manager=can_bus_manager,
+                                                               addressing_information=addressing_information,
+                                                               packet_records_number=packet_records_number,
+                                                               message_records_number=message_records_number,
+                                                               **kwargs)
         assert self.mock_can_transport_interface._PyCanTransportInterface__n_as_measured is None
         assert self.mock_can_transport_interface._PyCanTransportInterface__n_ar_measured is None
         assert self.mock_can_transport_interface._PyCanTransportInterface__n_bs_measured is None
