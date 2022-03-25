@@ -38,7 +38,7 @@ jobs:
         run: |
           pytest --cov-report=term-missing --cov=uds -m "integration"
 
-# TODO: uncomment when performance test are added
+# TODO: uncomment when performance tests are added
 #      - name: Execute performance tests with coverage report [pytest]
 #        run: |
 #          pytest --cov-report=term-missing --cov=uds -m "performance"
@@ -92,7 +92,7 @@ jobs:
           files: coverage.xml
           flags: integration-tests
 
-# TODO: uncomment when performance test are added
+# TODO: uncomment when performance tests are added
 #      - name: Execute performance tests [pytest]
 #        run: |
 #          pytest --cov-report=xml --cov=uds -m "performance"
