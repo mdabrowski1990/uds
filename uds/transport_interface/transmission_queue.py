@@ -88,7 +88,7 @@ class TransmissionQueue:
             else:
                 self.mark_pdu_sent()
 
-    async def get_pdu(self) -> PDUAlias:  # pylint: disable=undefined-variable
+    async def get_pdu(self) -> PDUAlias:
         """
         Get the next PDU from the queue.
 

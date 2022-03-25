@@ -385,7 +385,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     # Flow Control
 
     @property
-    def flow_control_generator(self) -> FlowControlGeneratorAlias:  # pylint: disable=undefined-variable
+    def flow_control_generator(self) -> FlowControlGeneratorAlias:
         """Get the generator of Flow Control CAN Packets."""
         return self.__flow_control_generator
 
