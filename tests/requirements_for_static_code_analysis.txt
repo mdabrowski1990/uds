@@ -1,4 +1,4 @@
-prospector==1.7.7
+prospector==1.8.1
 mypy==0.960
 vulture==2.4
 pyroma==4.0
