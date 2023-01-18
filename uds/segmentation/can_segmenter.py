@@ -16,12 +16,13 @@ from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
+InputAIParamsAlias = Union[AbstractCanAddressingInformation.InputAIParamsAlias,
+                           AbstractCanAddressingInformation.PacketAIParamsAlias]
+"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
+
+
 class CanSegmenter(AbstractSegmenter):
     """Segmenter class that provides utilities for segmentation and desegmentation on CAN bus."""
-
-    InputAIParamsAlias = Union[AbstractCanAddressingInformation.InputAIParamsAlias,
-                               AbstractCanAddressingInformation.PacketAIParamsAlias]
-    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
 
     def __init__(self, *,
                  addressing_format: CanAddressingFormatAlias,

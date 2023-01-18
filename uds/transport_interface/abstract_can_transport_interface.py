@@ -16,15 +16,16 @@ from .records_queue import RecordsQueue
 from .transmission_queue import TransmissionQueue
 
 
+FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
+"""Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` CAN Packets generator."""
+
+
 class AbstractCanTransportInterface(AbstractTransportInterface):
     """
     Abstract definition of Transport Interface for managing UDS on CAN bus.
 
     CAN Transport Interfaces are meant to handle UDS middle layers (Transport and Network) on CAN bus.
     """
-
-    FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
-    """Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` CAN Packets generator."""
 
     N_AS_TIMEOUT: TimeMilliseconds = 1000
     """Timeout value of :ref:`N_As <knowledge-base-can-n-as>` time parameter according to ISO 15765-2."""
