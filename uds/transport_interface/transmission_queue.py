@@ -12,13 +12,14 @@ from uds.message import UdsMessage
 from uds.packet import AbstractUdsPacket
 
 
+PDUTypeAlias = Union[Type[UdsMessage], Type[AbstractUdsPacket]]
+"""Alias of a PDU type that is accepted by this Queue."""
+PDUAlias = Union[UdsMessage, AbstractUdsPacket]
+"""Alias of a PDU (either a message or a packet) stored by this Queue."""
+
+
 class TransmissionQueue:
     """Queue with PDUs to transmit."""
-
-    PDUTypeAlias = Union[Type[UdsMessage], Type[AbstractUdsPacket]]
-    """Alias of a PDU type that is accepted by this Queue."""
-    PDUAlias = Union[UdsMessage, AbstractUdsPacket]
-    """Alias of a PDU (either a message or a packet) stored by this Queue."""
 
     def __init__(self, pdu_type: PDUTypeAlias) -> None:
         """
