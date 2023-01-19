@@ -3,4 +3,4 @@ mypy==0.991
 vulture==2.7
 pyroma==4.0
 bandit==1.7.4
-pylint==2.11.1
+pylint==2.15.10
