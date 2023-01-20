@@ -110,11 +110,11 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                 target_address=target_address,  # type: ignore
                 source_address=source_address)  # type: ignore
             return {
-                AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,  # noqa
-                AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
-                AbstractCanAddressingInformation.CAN_ID_NAME: encoded_can_id,
-                AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
-                AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address,
+                cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,  # type: ignore
+                cls.ADDRESSING_TYPE_NAME: addressing_type,
+                cls.CAN_ID_NAME: encoded_can_id,
+                cls.TARGET_ADDRESS_NAME: target_address,
+                cls.SOURCE_ADDRESS_NAME: source_address,
             }
         decoded_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
         if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:  # type: ignore
@@ -127,9 +127,9 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
                                              f"Actual values: can_id={can_id}, source_address={source_address}")
         return {
-            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,  # noqa
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
-            AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
-            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],
-            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],
+            cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,  # type: ignore
+            cls.ADDRESSING_TYPE_NAME: addressing_type,
+            cls.CAN_ID_NAME: can_id,
+            cls.TARGET_ADDRESS_NAME: decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],
+            cls.SOURCE_ADDRESS_NAME: decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],
         }

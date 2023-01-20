@@ -47,7 +47,7 @@ class AbstractTransportInterface(ABC):
     def _packet_records_queue(self) -> RecordsQueue:
         """Queue with UDS packet records that were either received or transmitted."""
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def _packet_transmission_queue(self) -> TransmissionQueue:
         """Queue with UDS packets that are planned for the transmission."""
@@ -57,7 +57,7 @@ class AbstractTransportInterface(ABC):
         """Queue with UDS messages records that were either received or transmitted."""
         return self.__message_records_queue
 
-    @property  # noqa: F841
+    @property  # noqa
     def _message_transmission_queue(self) -> TransmissionQueue:
         """Queue with UDS messages that are planned for the transmission."""
         return self.__message_transmission_queue
@@ -71,12 +71,12 @@ class AbstractTransportInterface(ABC):
         """
         return self.__bus_manager
 
-    @property  # noqa: F841
+    @property  # noqa
     def message_records_history(self) -> Tuple[UdsMessageRecord]:
         """Historic records of UDS messages that were either received or transmitted."""
         return self._message_records_queue.records_history  # type: ignore
 
-    @property  # noqa: F841
+    @property  # noqa
     def packet_records_history(self) -> Tuple[AbstractUdsPacketRecord]:
         """Historic records of UDS packets that were either received or transmitted."""
         return self._packet_records_queue.records_history  # type: ignore

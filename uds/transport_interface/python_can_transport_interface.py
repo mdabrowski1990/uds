@@ -73,7 +73,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return self.__n_ar_measured
 
-    @property  # noqa: F841
+    @property  # noqa
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Bs time parameter.
@@ -82,7 +82,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return self.__n_bs_measured
 
-    @property  # noqa: F841
+    @property  # noqa
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """
         Get the last measured value of N_Cr time parameter.

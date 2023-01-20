@@ -107,7 +107,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_AbstractUdsPacketRecord__frame")
+            getattr(self, "_AbstractUdsPacketRecord__frame")
         except AttributeError:
             self._validate_frame(value)
             self.__frame = value
@@ -129,7 +129,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_AbstractUdsPacketRecord__direction")
+            getattr(self, "_AbstractUdsPacketRecord__direction")
         except AttributeError:
             TransmissionDirection.validate_member(value)
             self.__direction = TransmissionDirection(value)
@@ -152,7 +152,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_AbstractUdsPacketRecord__transmission_time")
+            getattr(self, "_AbstractUdsPacketRecord__transmission_time")
         except AttributeError:
             if not isinstance(value, datetime):
                 raise TypeError(f"Provided value has invalid type: {type(value)}")  # pylint: disable=raise-missing-from

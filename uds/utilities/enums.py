@@ -80,7 +80,7 @@ class ByteEnum(IntEnum):
         """
         validate_raw_byte(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa: F841
+        member._value_ = value  # noqa
         return member
 
 
@@ -95,5 +95,5 @@ class NibbleEnum(IntEnum):
         """
         validate_nibble(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa: F841
+        member._value_ = value  # noqa
         return member
