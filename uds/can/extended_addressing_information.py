@@ -54,8 +54,8 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Extended Addressing Format. Actual value: {can_id}")
         return {
-            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,  # noqa
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
-            AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
-            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
+            cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,  # type: ignore
+            cls.ADDRESSING_TYPE_NAME: addressing_type,
+            cls.CAN_ID_NAME: can_id,
+            cls.TARGET_ADDRESS_NAME: target_address,
         }

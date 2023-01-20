@@ -64,10 +64,10 @@ class TransmissionQueue:
         """Type of PDUs stored by this queue."""
         return self.__pdu_type
 
-    @property  # noqa: F841
+    @property  # noqa
     def is_empty(self) -> bool:
         """Flag whether the queue is empty (does not contain any PDUs)."""
-        return self.__len__() == 0
+        return len(self) == 0
 
     def mark_pdu_sent(self) -> None:
         """
@@ -79,7 +79,7 @@ class TransmissionQueue:
 
     def clear(self) -> None:
         """Delete all PDUs stored by the queue."""
-        for _ in range(self.__len__()):
+        for _ in range(len(self)):
             try:
                 self.__async_queue.get_nowait()
             except QueueEmpty:
