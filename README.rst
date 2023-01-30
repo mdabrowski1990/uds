@@ -4,7 +4,7 @@ UDS
 
 |CI| |SecurityScan| |BestPractices| |ReadTheDocs| |CodeCoverage|
 
-|PyPIStatus| |LatestVersion| |PythonVersions| |TotalDownloads| |MonthlyDownloads| |Licence|
+|LatestVersion| |PythonVersions| |PyPIStatus| |TotalDownloads| |MonthlyDownloads| |Licence|
 
 Python package for handling `Unified Diagnostic Services`_ (UDS_) protocol defined by ISO 14229.
 It supports different communication buses on both communication sides (client and server).
