@@ -6,7 +6,7 @@ UDS
 
 |LatestVersion| |PythonVersions| |PyPIStatus| |TotalDownloads| |MonthlyDownloads| |Licence|
 
-Python package for handling `Unified Diagnostic Services`_ (UDS_) protocol defined by ISO 14229.
+Python package for handling `Unified Diagnostic Services`_ (UDS) protocol defined by ISO 14229.
 It supports different communication buses on both communication sides (client and server).
 
 
@@ -14,23 +14,25 @@ Documentation
 -------------
 User documentation is hosted by ReadTheDocs portal and available under the following link: https://uds.readthedocs.io/
 
-Security policy for this package is defined in
-`SECURITY.md <https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md>`_ file.
+Security policy for this package is defined in `SECURITY.md`_ file.
 
-If you want to become a contributor, please read
-`CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ file.
+If you want to become a contributor, please read `CONTRIBUTING.md`_ file.
 
 
 Contact
 -------
 - e-mail: uds-package-development@googlegroups.com
-- group: `UDS package development <https://groups.google.com/g/uds-package-development/about>`_
+- group: `UDS package development`_
 - discord: https://discord.gg/y3waVmR5PZ
 
 
-.. _Unified Diagnostic Services: https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
+.. _SECURITY.md: https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md
 
-.. _UDS: https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
+.. _CONTRIBUTING.md: https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md
+
+.. _UDS package development: https://groups.google.com/g/uds-package-development/about
+
+.. _Unified Diagnostic Services: https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
 
 .. |CI| image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml/badge.svg?branch=main
    :target: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml
