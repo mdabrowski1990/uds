@@ -1,6 +1,7 @@
 import pytest
 from mock import AsyncMock, MagicMock, Mock, patch, call
 from copy import deepcopy
+from time import perf_counter
 
 from uds.transport_interface.transmission_queue import TransmissionQueue, \
     UdsMessage, AbstractUdsPacket, QueueEmpty, Event, AsyncioTimeoutError, PriorityQueue
@@ -243,3 +244,27 @@ class TestTransmissionQueue:
         self.mock_transmission_queue._TransmissionQueue__async_queue.put_nowait.assert_called_once_with((timestamp, pdu))
         self.mock_transmission_queue._TransmissionQueue__timestamps.add.assert_called_once_with(timestamp)
         self.mock_transmission_queue._TransmissionQueue__event_pdu_added.set.assert_called_once_with()
+
+
+@pytest.mark.performance
+class TestTransmissionQueuePerformance:
+
+    def setup(self):
+        self.transmission_queue = TransmissionQueue(AbstractUdsPacket)
+
+    @pytest.mark.asyncio
+    @pytest.mark.skip("Sometimes fails due to issues with async timing - TO BE IMPROVED")
+    @pytest.mark.parametrize("delays", [
+        (0.1, 0.2, 0.3, 0.4),
+        (0.19, 0.01, 0.35, 0.3),
+        (0.01, 0.02, 0.8, 0.05, 0.03, 0.07, 0.065, 0.015, 0.7, 0.123456)])
+    async def test_put_and_get_pdu(self, delays):
+        pdu_list = [Mock(spec=AbstractUdsPacket) for _ in delays]
+        pdu_with_delays = list(zip(pdu_list, [perf_counter() + delay for delay in delays]))
+        for pdu, timestamp in pdu_with_delays:
+            self.transmission_queue.put_pdu(pdu=pdu, timestamp=timestamp)
+        for expected_pdu, expected_timestamp in sorted(pdu_with_delays, key=lambda pair: pair[1]):
+            assert await self.transmission_queue.get_pdu() == expected_pdu
+            out_time = perf_counter()
+            assert out_time >= expected_timestamp
+            print(expected_timestamp, out_time, out_time - expected_timestamp)

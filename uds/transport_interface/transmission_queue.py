@@ -88,6 +88,7 @@ class TransmissionQueue:
             else:
                 self.mark_pdu_sent()
 
+    # TODO: improve to have better performance (currently up to 15 ms)
     async def get_pdu(self) -> PDUAlias:  # pylint: disable=undefined-variable
         """
         Get the next PDU from the queue.
