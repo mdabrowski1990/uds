@@ -54,9 +54,8 @@ class TransmissionQueue:
                 await wait_for(fut=self.__event_pdu_added.wait(), timeout=min_timestamp - current_time)
             except AsyncioTimeoutError:
                 return min_timestamp
-            else:
-                current_time = perf_counter()
-                min_timestamp = min(self.__timestamps)
+            current_time = perf_counter()
+            min_timestamp = min(self.__timestamps)
         return min_timestamp
 
     @property
