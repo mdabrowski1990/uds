@@ -106,7 +106,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """Queue with UDS packet records that were either received or transmitted."""
         return self.__packet_records_queue
 
-    @property  # noqa: F841
+    @property  # noqa
     def _packet_transmission_queue(self) -> TransmissionQueue:
         """Queue with UDS packets that are planned for the transmission."""
         return self.__packet_transmission_queue
@@ -208,7 +208,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  category=ValueWarning)
         self.__n_bs_timeout = value
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -320,7 +320,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  category=ValueWarning)
         self.__n_cr_timeout = value
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """

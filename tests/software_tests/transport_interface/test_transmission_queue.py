@@ -21,6 +21,8 @@ class TestTransmissionQueue:
                                                                                       put=AsyncMock(),
                                                                                       join=AsyncMock()))
         # patching
+        self._patcher_len = patch(f"{self.SCRIPT_LOCATION}.len")
+        self.mock_len = self._patcher_len.start()
         self._patcher_priority_queue_class = patch(f"{self.SCRIPT_LOCATION}.PriorityQueue")
         self.mock_priority_queue_class = self._patcher_priority_queue_class.start()
         self._patcher_event_class = patch(f"{self.SCRIPT_LOCATION}.Event")
@@ -33,6 +35,7 @@ class TestTransmissionQueue:
         self.mock_perf_counter = self._patcher_perf_counter.start()
 
     def teardown(self):
+        self._patcher_len.stop()
         self._patcher_priority_queue_class.stop()
         self._patcher_event_class.stop()
         self._patcher_wait_for.stop()
@@ -130,7 +133,7 @@ class TestTransmissionQueue:
     @pytest.mark.parametrize("value", [True, False])
     def test_is_empty(self, value):
         mock_eq = Mock(return_value=value)
-        self.mock_transmission_queue.__len__ = Mock(return_value=MagicMock(__eq__=mock_eq))
+        self.mock_len.return_value = MagicMock(__eq__=mock_eq)
         assert TransmissionQueue.is_empty.fget(self.mock_transmission_queue) is value
         mock_eq.assert_called_once_with(0)
 
@@ -146,22 +149,22 @@ class TestTransmissionQueue:
 
     @pytest.mark.parametrize("packets_number", [0, 1, 99])
     def test_clear(self, packets_number):
-        self.mock_transmission_queue.__len__ = Mock(return_value=packets_number)
+        self.mock_len.return_value = packets_number
         mock_get_nowait = Mock()
         self.mock_transmission_queue._TransmissionQueue__async_queue = Mock(get_nowait=mock_get_nowait)
         assert TransmissionQueue.clear(self=self.mock_transmission_queue) is None
-        self.mock_transmission_queue.__len__.assert_called_once_with()
+        self.mock_len.assert_called_once_with(self.mock_transmission_queue)
         mock_get_nowait.assert_has_calls([call()] * packets_number)
         self.mock_warn.assert_not_called()
         self.mock_transmission_queue.mark_pdu_sent.assert_has_calls([call()] * packets_number)
 
     @pytest.mark.parametrize("packets_number", [1, 99])
     def test_clear__queue_empty(self, packets_number):
-        self.mock_transmission_queue.__len__ = Mock(return_value=packets_number)
+        self.mock_len.return_value = packets_number
         mock_get_nowait = Mock(side_effect=QueueEmpty)
         self.mock_transmission_queue._TransmissionQueue__async_queue = Mock(get_nowait=mock_get_nowait)
         assert TransmissionQueue.clear(self=self.mock_transmission_queue) is None
-        self.mock_transmission_queue.__len__.assert_called_once_with()
+        self.mock_len.assert_called_once_with(self.mock_transmission_queue)
         mock_get_nowait.assert_called_once()
         self.mock_warn.assert_called_once()
         self.mock_transmission_queue.mark_pdu_sent.assert_not_called()
