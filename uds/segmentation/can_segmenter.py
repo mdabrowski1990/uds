@@ -16,7 +16,7 @@ from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
-InputAIParamsAlias = Union[AbstractCanAddressingInformation.InputAIParamsAlias,
+InputAiParamsAlias = Union[AbstractCanAddressingInformation.InputAIParamsAlias,
                            AbstractCanAddressingInformation.PacketAIParamsAlias]
 """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
 
@@ -26,8 +26,8 @@ class CanSegmenter(AbstractSegmenter):
 
     def __init__(self, *,
                  addressing_format: CanAddressingFormatAlias,
-                 physical_ai: InputAIParamsAlias,
-                 functional_ai: InputAIParamsAlias,
+                 physical_ai: InputAiParamsAlias,
+                 functional_ai: InputAiParamsAlias,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
                  use_data_optimization: bool = False,
                  filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
@@ -65,7 +65,7 @@ class CanSegmenter(AbstractSegmenter):
         return copy(self.__physical_ai)
 
     @physical_ai.setter
-    def physical_ai(self, value: InputAIParamsAlias):
+    def physical_ai(self, value: InputAiParamsAlias):
         """
         Set Addressing Information parameters of physically addressed CAN packets.
 
@@ -87,7 +87,7 @@ class CanSegmenter(AbstractSegmenter):
         return copy(self.__functional_ai)
 
     @functional_ai.setter
-    def functional_ai(self, value: InputAIParamsAlias):
+    def functional_ai(self, value: InputAiParamsAlias):
         """
         Set Addressing Information parameters of functionally addressed CAN packets.
 
