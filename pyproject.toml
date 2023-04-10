@@ -1,3 +1,29 @@
+[project.optional-dependencies]
+test = [
+    "pytest >= 6.0.0",
+    "pytest-cov",
+    "pytest-asyncio",
+    "mock"
+]
+doc = [
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme"
+]
+
+
+[project.urls]
+Homepage = "https://github.com/mdabrowski1990/uds"
+"User Documentation" = "https://uds.readthedocs.io/en/latest/"
+Repository = "https://github.com/mdabrowski1990/uds"
+"Issues Tracking System" = "https://github.com/mdabrowski1990/uds/issues"
+"Releases and Changelogs" = "https://github.com/mdabrowski1990/uds/releases"
+"Security Policy" = "https://github.com/mdabrowski1990/uds/security/policy"
+"PyPI" = "https://pypi.org/project/py-uds/"
+Wiki = "https://github.com/mdabrowski1990/uds/wiki"
+"Code Download" = "https://github.com/mdabrowski1990/uds/archive/refs/heads/main.zip"
+
+
 [build-system]
 requires = [
     "setuptools>=42",
@@ -7,6 +33,7 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.pytest.ini_options]
+minversion = "6.0"
 markers = [
     "integration: Software integration tests.",
     "performance: Performance (non-functional) tests."
@@ -14,3 +41,5 @@ markers = [
 testpaths = [
     "tests/software_tests",
 ]
+filterwarnings = "ignore:::.*uds*"
+asyncio_mode = "strict"

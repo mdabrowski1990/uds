@@ -171,7 +171,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
         """
         try:
-            self.__getattribute__("_UdsMessageRecord__packets_records")
+            getattr(self, "_UdsMessageRecord__packets_records")
         except AttributeError:
             self.__validate_packets_records(value)
             self.__packets_records = tuple(value)
@@ -198,7 +198,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """Information whether this message was received or sent."""
         return self.packets_records[0].direction
 
-    @property  # noqa: F841
+    @property  # noqa
     def transmission_start(self) -> datetime:
         """
         Time stamp when transmission of this message was initiated.
@@ -210,7 +210,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """
         return self.packets_records[0].transmission_time
 
-    @property  # noqa: F841
+    @property  # noqa
     def transmission_end(self) -> datetime:
         """
         Time stamp when transmission of this message was completed.

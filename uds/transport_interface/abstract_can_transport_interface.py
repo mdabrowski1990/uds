@@ -16,15 +16,16 @@ from .records_queue import RecordsQueue
 from .transmission_queue import TransmissionQueue
 
 
+FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
+"""Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` CAN Packets generator."""
+
+
 class AbstractCanTransportInterface(AbstractTransportInterface):
     """
     Abstract definition of Transport Interface for managing UDS on CAN bus.
 
     CAN Transport Interfaces are meant to handle UDS middle layers (Transport and Network) on CAN bus.
     """
-
-    FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
-    """Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` CAN Packets generator."""
 
     N_AS_TIMEOUT: TimeMilliseconds = 1000
     """Timeout value of :ref:`N_As <knowledge-base-can-n-as>` time parameter according to ISO 15765-2."""
@@ -105,7 +106,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """Queue with UDS packet records that were either received or transmitted."""
         return self.__packet_records_queue
 
-    @property  # noqa: F841
+    @property  # noqa
     def _packet_transmission_queue(self) -> TransmissionQueue:
         """Queue with UDS packets that are planned for the transmission."""
         return self.__packet_transmission_queue
@@ -207,7 +208,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  category=ValueWarning)
         self.__n_bs_timeout = value
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def n_bs_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -319,7 +320,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  category=ValueWarning)
         self.__n_cr_timeout = value
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def n_cr_measured(self) -> Optional[TimeMilliseconds]:
         """
@@ -385,7 +386,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     # Flow Control
 
     @property
-    def flow_control_generator(self) -> FlowControlGeneratorAlias:  # pylint: disable=undefined-variable
+    def flow_control_generator(self) -> FlowControlGeneratorAlias:
         """Get the generator of Flow Control CAN Packets."""
         return self.__flow_control_generator
 
