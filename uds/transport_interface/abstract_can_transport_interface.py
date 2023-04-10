@@ -3,17 +3,15 @@
 __all__ = ["AbstractCanTransportInterface"]
 
 
-from typing import Optional, Union, Any, Iterator, Iterable
+from typing import Optional, Union, Any, Iterator
 from abc import abstractmethod
 from warnings import warn
 
 from uds.utilities import TimeMilliseconds, ValueWarning
-from uds.packet import CanPacket, CanPacketRecord, CanPacketType
-from uds.can import AbstractCanAddressingInformation, CanFlowStatus, CanSTminTranslator
+from uds.packet import CanPacket
+from uds.can import AbstractCanAddressingInformation
 from uds.segmentation import CanSegmenter
 from .abstract_transport_interface import AbstractTransportInterface
-from .records_queue import RecordsQueue
-from .transmission_queue import TransmissionQueue
 
 
 FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
@@ -41,27 +39,15 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     DEFAULT_N_CS: Optional[TimeMilliseconds] = None
     """Default value of :ref:`N_Cs <knowledge-base-can-n-br>` time parameter."""
 
-    DEFAULT_FLOW_CONTROL_ARGS = {
-        "packet_type": CanPacketType.FLOW_CONTROL,
-        "flow_status": CanFlowStatus.ContinueToSend,
-        "block_size": 0x10,
-        "st_min": CanSTminTranslator.encode(0),
-    }
-    """Default parameters of Flow Control CAN Packet."""
-
     def __init__(self,
                  can_bus_manager: Any,
                  addressing_information: AbstractCanAddressingInformation,
-                 packet_records_number: int = AbstractTransportInterface.DEFAULT_PACKET_RECORDS_NUMBER,
-                 message_records_number: int = AbstractTransportInterface.DEFAULT_MESSAGE_RECORDS_NUMBER,
                  **kwargs: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param can_bus_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
         :param addressing_information: Addressing Information of CAN Transport Interface.
-        :param packet_records_number: Number of UDS packet records to store.
-        :param message_records_number: Number of UDS Message records to store.
         :param kwargs: Optional arguments that are specific for CAN bus.
 
             - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
@@ -73,43 +59,23 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter dlc: Base CAN DLC value to use for CAN Packets.
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
-            - :parameter flow_control_generator: Generator of Flow Control CAN packets.
 
         :raise TypeError: Provided Addressing Information value has unexpected type.
         """
         if not isinstance(addressing_information, AbstractCanAddressingInformation):
             raise TypeError("Unsupported type of Addressing Information was provided.")
         self.__addressing_information: AbstractCanAddressingInformation = addressing_information
-        super().__init__(bus_manager=can_bus_manager,
-                         message_records_number=message_records_number)
+        super().__init__(bus_manager=can_bus_manager)
         self.n_as_timeout = kwargs.pop("n_as_timeout", self.N_AS_TIMEOUT)
         self.n_ar_timeout = kwargs.pop("n_ar_timeout", self.N_AR_TIMEOUT)
         self.n_bs_timeout = kwargs.pop("n_bs_timeout", self.N_BS_TIMEOUT)
         self.n_br = kwargs.pop("n_br", self.DEFAULT_N_BR)
         self.n_cs = kwargs.pop("n_cs", self.DEFAULT_N_CS)
         self.n_cr_timeout = kwargs.pop("n_cr_timeout", self.N_CR_TIMEOUT)
-        flow_control_generator = kwargs.pop("flow_control_generator", None)
         self.__segmenter = CanSegmenter(addressing_format=addressing_information.addressing_format,
                                         physical_ai=addressing_information.tx_packets_physical_ai,
                                         functional_ai=addressing_information.tx_packets_functional_ai,
                                         **kwargs)
-        self.__packet_records_queue = RecordsQueue(records_type=CanPacketRecord, history_size=packet_records_number)
-        self.__packet_transmission_queue = TransmissionQueue(pdu_type=CanPacket)
-        self.flow_control_generator = flow_control_generator if flow_control_generator is not None else \
-            CanPacket(**self.DEFAULT_FLOW_CONTROL_ARGS,
-                      **addressing_information.tx_packets_physical_ai,
-                      dlc=None if self.use_data_optimization else self.dlc,
-                      filler_byte=self.filler_byte)
-
-    @property
-    def _packet_records_queue(self) -> RecordsQueue:
-        """Queue with UDS packet records that were either received or transmitted."""
-        return self.__packet_records_queue
-
-    @property  # noqa
-    def _packet_transmission_queue(self) -> TransmissionQueue:
-        """Queue with UDS packets that are planned for the transmission."""
-        return self.__packet_transmission_queue
 
     @property
     def segmenter(self) -> CanSegmenter:
@@ -382,54 +348,3 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         :param value: Value to set.
         """
         self.segmenter.filler_byte = value
-
-    # Flow Control
-
-    @property
-    def flow_control_generator(self) -> FlowControlGeneratorAlias:
-        """Get the generator of Flow Control CAN Packets."""
-        return self.__flow_control_generator
-
-    @flow_control_generator.setter
-    def flow_control_generator(self, value: FlowControlGeneratorAlias):
-        """
-        Set the value of Flow Control generator.
-
-        :param value: The value of Flow Control CAN Packet generator to use.
-            It must be either:
-
-            - object of `CanPacket` class - in this case the same Flow Control CAN Packet will always be used
-            - generator of `CanPacket` objects - built-in functions `iter` and `next` will be used on the generator
-              to restart iteration (upon reception of a new First Frame) and to produce the following
-              Flow Control CAN Packets
-
-        :raise TypeError: Provided value has unexpected type.
-        """
-        if not isinstance(value, (CanPacket, Iterable)):
-            raise TypeError("Provided value is not CAN Packet neither CAN Packet generator.")
-        self.__flow_control_generator = value
-        self.__flow_control_iterator = None
-
-    def _get_flow_control(self, is_first: bool) -> CanPacket:
-        """
-        Get the next Flow Control CAN Packet to send.
-
-        .. warning:: This method is restricted for internal use and shall not be called by the user as it might cause
-            malfunctioning of Flow Control CAN Packets generation.
-
-        :param is_first: Information whether it is the first Flow Control to respond to a message.
-
-            - True - Flow Control to return is the first Flow Control CAN Packet to send in current diagnostic message
-              reception. In other words, it is the first Flow Control which directly responds to
-              :ref:`First Frame <knowledge-base-can-first-frame>`.
-            - False - Flow Control to return is the following Flow Control CAN Packet to send in current
-              diagnostic message reception. In other words, there was at least one Flow Control already sent since
-              the reception of the last :ref:`First Frame <knowledge-base-can-first-frame>`.
-
-        :return: Flow Control CAN Packet to send in this diagnostic message reception
-        """
-        if isinstance(self.flow_control_generator, CanPacket):
-            return self.flow_control_generator
-        if is_first:
-            self.__flow_control_iterator = iter(self.flow_control_generator)  # type: ignore
-        return next(self.__flow_control_iterator)  # type: ignore
