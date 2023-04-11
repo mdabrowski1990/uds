@@ -26,23 +26,23 @@ sys.path.append(os.path.abspath('../..'))
 
 
 with open("../../uds/__init__.py", "r", encoding="utf-8") as init_file:
-    full_version_str = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
+    full_version_from_init = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
     init_file.seek(0)
-    author = re.search(r'^__author__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
+    author_from_init = re.search(r'^__author__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
 
 with open("../../pyproject.toml", "rb") as pyproject_file:
-    pyproject_data = tomlib.load(pyproject_file)
-    project_name = pyproject_data["project"]["name"]
+    _pyproject_data = tomlib.load(pyproject_file)
+    project_name_from_pyproject = _pyproject_data["project"]["name"]
 
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = project_name
-author = author
-copyright = f"{datetime.date.today().year}, {author}"
-version = ".".join(full_version_str.split(".")[:2])
-release = full_version_str
+project = project_name_from_pyproject
+author = author_from_init
+copyright = f"{datetime.date.today().year}, {author_from_init}"
+version = ".".join(full_version_from_init.split(".")[:2])
+release = full_version_from_init
 
 
 # -- General configuration ---------------------------------------------------
