@@ -1,7 +1,7 @@
 [project]
 name = "py-uds"
-version = "0.2.0"
 description = "UDS (Unified Diagnostic Services) protocol handler."
+readme = "README.rst"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python",
@@ -10,6 +10,7 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Natural Language :: English",
@@ -30,23 +31,19 @@ keywords = [
     "vehicle-diagnostic",
     "automotive"
 ]
+authors = [
+    {name="Maciej Dąbrowski", email="maciej.dabrowski@software-quality.pl"},
+    {name="UDS Package Development", email="uds-package-development@googlegroups.com"},
+]
+maintainers = [
+    {name="Maciej Dąbrowski", email="maciej.dabrowski@software-quality.pl"},
+    {name="UDS Package Development", email="uds-package-development@googlegroups.com"},
+]
 dependencies = [
     "aenum",
     "python-can"
 ]
-
-[project.optional-dependencies]
-test = [
-    "pytest >= 6.0.0",
-    "pytest-cov",
-    "pytest-asyncio",
-    "mock"
-]
-doc = [
-    "sphinx",
-    "sphinx-autoapi",
-    "sphinx-rtd-theme"
-]
+dynamic = ["version"]
 
 
 [project.urls]
@@ -61,12 +58,51 @@ Wiki = "https://github.com/mdabrowski1990/uds/wiki"
 "Code Download" = "https://github.com/mdabrowski1990/uds/archive/refs/heads/main.zip"
 
 
+[project.optional-dependencies]
+test = [
+    "pytest >= 6.0.0",
+    "pytest-cov",
+    "pytest-asyncio",
+    "mock"
+]
+docs = [
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme"
+]
+
+
 [build-system]
 requires = [
     "setuptools>=42",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.dynamic]
+version = {attr = "uds.__version__"}
+
+
+[tool.setuptools.package-data]
+"*" = [
+    "*.md",
+    "*.rst",
+    "*.txt",
+    "*.toml"
+]
+docs = [
+    "source/*.rst",
+    "source/pages/*.rst",
+    "source/*.png",
+    "source/*.drawio"
+]
+
+
+[tool.setuptools.packages.find]
+include = [
+    "uds"
+]
 
 
 [tool.pytest.ini_options]
