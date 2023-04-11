@@ -1,15 +1,49 @@
-[project.optional-dependencies]
-test = [
-    "pytest >= 6.0.0",
-    "pytest-cov",
-    "pytest-asyncio",
-    "mock"
+[project]
+name = "py-uds"
+description = "UDS (Unified Diagnostic Services) protocol handler."
+readme = "README.rst"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Networking"
 ]
-doc = [
-    "sphinx",
-    "sphinx-autoapi",
-    "sphinx-rtd-theme"
+keywords = [
+    "uds",
+    "unified-diagnostic-services",
+    "iso14229",
+    "iso-14229",
+    "obd",
+    "on-board-diagnostic",
+    "vehicle-diagnostic",
+    "automotive"
 ]
+authors = [
+    {name="Maciej Dąbrowski", email="maciej.dabrowski@software-quality.pl"},
+    {name="UDS Package Development", email="uds-package-development@googlegroups.com"},
+]
+maintainers = [
+    {name="Maciej Dąbrowski", email="maciej.dabrowski@software-quality.pl"},
+    {name="UDS Package Development", email="uds-package-development@googlegroups.com"},
+]
+dependencies = [
+    "aenum",
+    "python-can"
+]
+dynamic = ["version"]
 
 
 [project.urls]
@@ -24,12 +58,51 @@ Wiki = "https://github.com/mdabrowski1990/uds/wiki"
 "Code Download" = "https://github.com/mdabrowski1990/uds/archive/refs/heads/main.zip"
 
 
+[project.optional-dependencies]
+test = [
+    "pytest >= 6.0.0",
+    "pytest-cov",
+    "pytest-asyncio",
+    "mock"
+]
+docs = [
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme"
+]
+
+
 [build-system]
 requires = [
     "setuptools>=42",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.dynamic]
+version = {attr = "uds.__version__"}
+
+
+[tool.setuptools.package-data]
+"*" = [
+    "*.md",
+    "*.rst",
+    "*.txt",
+    "*.toml"
+]
+docs = [
+    "source/*.rst",
+    "source/pages/*.rst",
+    "source/*.png",
+    "source/*.drawio"
+]
+
+
+[tool.setuptools.packages.find]
+include = [
+    "uds"
+]
 
 
 [tool.pytest.ini_options]

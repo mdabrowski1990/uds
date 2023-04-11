@@ -17,30 +17,37 @@
 import os
 import sys
 import datetime
+import re
+try:
+    import tomlib
+except ModuleNotFoundError:
+    import tomli as tomlib
 sys.path.append(os.path.abspath('../..'))
 
-import re
 
 with open("../../uds/__init__.py", "r", encoding="utf-8") as init_file:
-    full_version_str = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
+    full_version_from_init = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
+    init_file.seek(0)
+    author_from_init = re.search(r'^__author__\s*=\s*[\'"]([^\'"]*)[\'"]', init_file.read(), re.MULTILINE).group(1)
+
+with open("../../pyproject.toml", "rb") as pyproject_file:
+    _pyproject_data = tomlib.load(pyproject_file)
+    project_name_from_pyproject = _pyproject_data["project"]["name"]
 
 
 # -- Project information -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = u"UDS"
-author = u"Maciej Dąbrowski"
-copyright = u"{}, {}".format(datetime.date.today().year, author)
-
-# The full version, including alpha/beta/rc tags
-release = full_version_str
-version = ".".join(full_version_str.split(".")[:2])
+project = project_name_from_pyproject
+author = author_from_init
+copyright = f"{datetime.date.today().year}, {author_from_init}"
+version = ".".join(full_version_from_init.split(".")[:2])
+release = full_version_from_init
 
 
 # -- General configuration ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named "sphinx.ext.*") or your custom
-# ones.
 extensions = ["sphinx.ext.autodoc",
               "autoapi.extension",
               "sphinx.ext.viewcode"]
@@ -60,20 +67,13 @@ autoapi_python_class_content = "both"
 viewcode_follow_imported_members = True
 
 
-# Add any paths that contain templates here, relative to this directory.
 templates_path = []
-
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
 
 # -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
 html_theme = "sphinx_rtd_theme"
 html_logo = "images/UDS_logo_without_background.png"
 
@@ -83,7 +83,4 @@ html_theme_options = {
     "navigation_depth": 6,
 }
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []
