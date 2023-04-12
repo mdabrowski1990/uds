@@ -18,7 +18,7 @@ import os
 import sys
 import datetime
 import re
-try:
+try:  # python 3.11 or newer
     import tomlib
 except ModuleNotFoundError:
     import tomli as tomlib

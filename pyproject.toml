@@ -101,7 +101,7 @@ docs = [
 
 [tool.setuptools.packages.find]
 include = [
-    "uds"
+    "uds*"
 ]
 
 
