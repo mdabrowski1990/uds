@@ -13,7 +13,6 @@ from can import BusABC, AsyncBufferedReader, Notifier
 from uds.utilities import TimeMilliseconds
 from uds.can import AbstractCanAddressingInformation
 from uds.packet import CanPacket, CanPacketRecord
-from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_can_transport_interface import AbstractCanTransportInterface
 
 
@@ -96,7 +95,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return isinstance(bus_manager, BusABC)
 
-    async def send_packet(self, packet: CanPacket) -> CanPacketRecord:
+    def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
         """
         Transmit CAN packet.
 
@@ -116,7 +115,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         #  - make sure that `_packet_records_queue` (and `_message_records_queue' if needed) is updated
         #  - return record of transmitted packet
 
-    def receive_packet(self, timeout: Optional[TimeMilliseconds]) -> CanPacketRecord:
+    async def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:
         """
         Receive CAN packet.
 

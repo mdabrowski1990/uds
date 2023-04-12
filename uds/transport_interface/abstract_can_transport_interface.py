@@ -3,19 +3,14 @@
 __all__ = ["AbstractCanTransportInterface"]
 
 
-from typing import Optional, Union, Any, Iterator
+from typing import Optional, Any
 from abc import abstractmethod
 from warnings import warn
 
 from uds.utilities import TimeMilliseconds, ValueWarning
-from uds.packet import CanPacket
 from uds.can import AbstractCanAddressingInformation
 from uds.segmentation import CanSegmenter
 from .abstract_transport_interface import AbstractTransportInterface
-
-
-FlowControlGeneratorAlias = Union[CanPacket, Iterator[CanPacket]]
-"""Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` CAN Packets generator."""
 
 
 class AbstractCanTransportInterface(AbstractTransportInterface):

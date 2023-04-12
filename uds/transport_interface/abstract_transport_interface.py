@@ -61,7 +61,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    async def send_packet(self, packet: AbstractUdsPacket) -> AbstractUdsPacketRecord:
+    def send_packet(self, packet: AbstractUdsPacket) -> AbstractUdsPacketRecord:
         """
         Transmit UDS packet.
 
