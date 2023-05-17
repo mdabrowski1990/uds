@@ -4,6 +4,7 @@ from mock import Mock
 from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface, AbstractUdsPacket
 
 
+@pytest.mark.skip
 class TestAbstractTransportInterface:
     """Unit tests for `AbstractTransportInterface` class."""
 

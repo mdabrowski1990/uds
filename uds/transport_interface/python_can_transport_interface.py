@@ -8,10 +8,10 @@ __all__ = ["PyCanTransportInterface"]
 
 from typing import Optional, Any
 
-from can import BusABC, AsyncBufferedReader, Notifier
+from can import BusABC, AsyncBufferedReader, BufferedReader, Notifier, Message
 
 from uds.utilities import TimeMilliseconds
-from uds.can import AbstractCanAddressingInformation
+from uds.can import AbstractCanAddressingInformation, CanIdHandler, CanDlcHandler
 from uds.packet import CanPacket, CanPacketRecord
 from .abstract_can_transport_interface import AbstractCanTransportInterface
 
@@ -47,6 +47,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         super().__init__(can_bus_manager=can_bus_manager,
                          addressing_information=addressing_information,
                          **kwargs)
+        self.__async_listener = AsyncBufferedReader()
+        self.__sync_listener = BufferedReader()
+        self.__can_notifier = Notifier(bus=self.bus_manager,
+                                       listeners=[self.__async_listener, self.__sync_listener])
 
     @property
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
@@ -93,7 +97,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
         """
-        return isinstance(bus_manager, BusABC)
+        return isinstance(bus_manager, BusABC)  # TODO: check that receive_own_messages is set
 
     def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
         """
@@ -107,13 +111,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         if not isinstance(packet, CanPacket):
             raise TypeError("Provided packet value does not contain CAN Packet.")
-        # TODO:
-        #  - make sure packet uses proper AddressingInformation - Warning
-        #  - measure N_AS / N_AR
-        #  - use CAN Bus to transmit packet
-        #  - get confirmation from Bus Listener that the packet was received
-        #  - make sure that `_packet_records_queue` (and `_message_records_queue' if needed) is updated
-        #  - return record of transmitted packet
+        can_message = Message(arbitration_id=packet.can_id,
+                              is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
+                              data=packet.raw_frame_data,
+                              is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
+        self.bus_manager.send(can_message)
 
     async def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:
         """
@@ -132,9 +134,4 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Provided timeout value is not None neither int nor float type.")
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
-        # TODO:
-        #  - update `_packet_records_queue`
-        #  - measure N_As / N_Ar
-        #  - use Bus Listener to filter out UDS Packets that targets this entity
-        #  - make sure that `_packet_records_queue` (and `_message_records_queue' if needed) is updated
-        #  - return record of received packet when received
+

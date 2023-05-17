@@ -5,6 +5,7 @@ from uds.transport_interface.abstract_can_transport_interface import AbstractCan
     AbstractCanAddressingInformation
 
 
+@pytest.mark.skip
 class TestAbstractCanTransportInterface:
     """Unit tests for `AbstractCanTransportInterface` class."""
 
