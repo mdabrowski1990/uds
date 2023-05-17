@@ -133,10 +133,6 @@ jobs:
         run: |
           prospector --profile tests/prospector_profile.yaml uds
 
-      - name: Execute static code analysis [pyroma]
-        run: |
-          pyroma -a .
-
 
   dependency_checks:
     runs-on: ubuntu-latest

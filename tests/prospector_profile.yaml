@@ -6,6 +6,7 @@ doc-warnings: true
 autodetect: false
 test-warnings: true
 
+
 # default tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#defaults
 
 pep8:
@@ -35,11 +36,6 @@ pep257:
     - D212
     - D407
     - D413
-# Should I add these? For details visit:
-#  https://stackoverflow.com/questions/66408022/what-is-the-reason-for-d407-error-raised-by-pydocstyle
-#    - D213
-#    - D215
-#    - D408
 
 mccabe:
   run: true
@@ -57,8 +53,8 @@ mypy:
 vulture:
   run: true
 
-bandit:  # there is probably no use of it (not applicable for this project), but it is run anyways to make sure everything is secured
+bandit:  # there is probably no use of it (not applicable for this project), but it is run anyway to make sure everything is secured
   run: true
 
 pyroma:
-  run: false
+  run: true
