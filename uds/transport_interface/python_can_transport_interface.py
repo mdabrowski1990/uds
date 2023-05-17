@@ -116,6 +116,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                               data=packet.raw_frame_data,
                               is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         self.bus_manager.send(can_message)
+        # TODO: get sent packet from self.__sync_listener - NOTE: we have to see sent messages
+        # TODO: create CanPacketRecord and return it
 
     async def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:
         """
@@ -134,4 +136,5 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Provided timeout value is not None neither int nor float type.")
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
-
+        # TODO: wait till packet received by self.__async_listener
+        # TODO: create CanPacketRecord and return it
