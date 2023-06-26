@@ -1,5 +1,5 @@
 prospector==1.10.2
-mypy==1.3.0
+mypy==1.4.1
 vulture==2.7
 bandit==1.7.5
 pyroma==4.2
