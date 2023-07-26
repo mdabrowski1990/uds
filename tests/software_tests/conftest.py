@@ -52,22 +52,22 @@ def example_can_addressing_format(request):
     return request.param
 
 
-@fixture(params=[
-    CanSegmenter(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                 physical_ai=dict(can_id=0x724),
-                 functional_ai=dict(can_id=0x7FF)),
-    CanSegmenter(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                 physical_ai=dict(target_address=0x1E, source_address=0xFF),
-                 functional_ai=dict(target_address=0xB1, source_address=0xFF),
-                 dlc=0xF,
-                 use_data_optimization=True,
-                 filler_byte=0x71),
-    CanSegmenter(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
-                 physical_ai=dict(target_address=0xE0, can_id=0x129834),
-                 functional_ai=dict(target_address=0xFF, can_id=0x12FFFF),
-                 dlc=0xC,
-                 use_data_optimization=True,
-                 filler_byte=0x8E)
-])
-def example_can_segmenter(request):
-    return request.param
+# @fixture(params=[
+#     CanSegmenter(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+#                  physical_ai=dict(can_id=0x724),
+#                  functional_ai=dict(can_id=0x7FF)),
+#     CanSegmenter(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+#                  physical_ai=dict(target_address=0x1E, source_address=0xFF),
+#                  functional_ai=dict(target_address=0xB1, source_address=0xFF),
+#                  dlc=0xF,
+#                  use_data_optimization=True,
+#                  filler_byte=0x71),
+#     CanSegmenter(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
+#                  physical_ai=dict(target_address=0xE0, can_id=0x129834),
+#                  functional_ai=dict(target_address=0xFF, can_id=0x12FFFF),
+#                  dlc=0xC,
+#                  use_data_optimization=True,
+#                  filler_byte=0x8E)
+# ])
+# def example_can_segmenter(request):
+#     return request.param

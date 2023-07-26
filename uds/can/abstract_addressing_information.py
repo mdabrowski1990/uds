@@ -6,6 +6,7 @@ from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
 from copy import deepcopy
 
+from uds.utilities import RawBytes
 from uds.transmission_attributes import AddressingTypeAlias, AddressingType
 from .addressing_format import CanAddressingFormatAlias
 from .frame_fields import CanIdHandler

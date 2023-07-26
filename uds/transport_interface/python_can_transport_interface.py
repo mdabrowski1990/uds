@@ -13,6 +13,7 @@ from can import BusABC, AsyncBufferedReader, BufferedReader, Notifier, Message
 from uds.utilities import TimeMilliseconds
 from uds.can import AbstractCanAddressingInformation, CanIdHandler, CanDlcHandler
 from uds.packet import CanPacket, CanPacketRecord
+from uds.transmission_attributes import TransmissionDirection
 from .abstract_can_transport_interface import AbstractCanTransportInterface
 
 
@@ -136,5 +137,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Provided timeout value is not None neither int nor float type.")
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
-        # TODO: wait till packet received by self.__async_listener
-        # TODO: create CanPacketRecord and return it
+        received_frame = await self.__async_listener.get_message()
+        while False:  # TODO: check if received message is either physically or functionally addressed packet directed for this node
+            received_message = await self.__async_listener.get_message()
+        packet_addressing_type = ...  # TODO: extract
+        packet_addressing_format = ...  # TODO: extract
+        received_datetime = ...  # TODO: extract
+        return CanPacketRecord(frame=received_frame,
+                               direction=TransmissionDirection.RECEIVED,
+                               addressing_type=packet_addressing_type,
+                               addressing_format=packet_addressing_format,
+                               transmission_time=received_datetime)

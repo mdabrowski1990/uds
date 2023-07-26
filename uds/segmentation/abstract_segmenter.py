@@ -2,11 +2,13 @@
 
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
-from typing import Tuple, Type, Union, Any
+from typing import Optional, Union, Sequence, Type
 from abc import ABC, abstractmethod
 
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import AbstractUdsPacketContainer, PacketsContainersSequence, PacketsTuple
+from uds.packet import AbstractUdsPacketContainer, AbstractUdsPacket, AbstractUdsPacketRecord, \
+    PacketsContainersSequence, PacketsTuple
+from uds.transmission_attributes import AddressingType
 
 
 class SegmentationError(ValueError):
@@ -27,38 +29,54 @@ class AbstractSegmenter(ABC):
 
     @property
     @abstractmethod
-    def supported_packet_classes(self) -> Tuple[Type[AbstractUdsPacketContainer], ...]:
-        """Classes that define packet objects supported by this segmenter."""
+    def supported_packet_class(self) -> Type[AbstractUdsPacket]:
+        """Class of UDS Packet supported by this segmenter."""
 
-    def is_supported_packet(self, value: Any) -> bool:
+    @property
+    @abstractmethod
+    def supported_packet_record_class(self) -> Type[AbstractUdsPacketRecord]:
+        """Class of UDS Packet Record supported by this segmenter."""
+
+    def is_supported_packet_type(self, packet: AbstractUdsPacketContainer) -> bool:
         """
         Check if the argument value is a packet object of a supported type.
 
-        :param value: Value to check.
+        :param packet: Packet object to check.
 
         :return: True if provided value is an object of a supported packet type, False otherwise.
         """
-        return isinstance(value, self.supported_packet_classes)  # type: ignore
+        return isinstance(packet, (self.supported_packet_class, self.supported_packet_record_class))
 
-    def is_supported_packets_sequence(self, value: Any) -> bool:
+    @abstractmethod
+    def is_input_packet(self, **kwargs) -> Optional[AddressingType]:
         """
-        Check if the argument value is a packet sequence of a supported type.
+        Check if provided frame attributes belong to a UDS packet that is an input for this Segmenter.
 
-        :param value: Value to check.
+        :param kwargs: Attributes of a frame to check.
 
-        :return: True if provided value is a packet sequence of a supported type, False otherwise.
+        :return: Addressing Type used for transmission according to configuration of this Segmenter
+            if provided attributes belongs to an input UDS packet, otherwise None.
         """
-        if not isinstance(value, (list, tuple)):
+
+    def is_supported_packets_sequence_type(self, packets: Sequence[AbstractUdsPacketContainer]) -> bool:
+        """
+        Check if the argument value is a packets sequence of a supported type.
+
+        :param packets: Packets sequence to check.
+
+        :return: True if provided value is a packets sequence of a supported type, False otherwise.
+        """
+        if not isinstance(packets, Sequence):
             # not a sequence
             return False
-        if not all(self.is_supported_packet(element) for element in value):
+        if not all(self.is_supported_packet_type(packet) for packet in packets):
             # at least one element is not a packet of a supported type
             return False
         # check if all packets are the same type
-        return len({type(element) for element in value}) == 1
+        return len({type(packet) for packet in packets}) == 1
 
     @abstractmethod
-    def is_complete_packets_sequence(self, packets: PacketsContainersSequence) -> bool:
+    def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -77,7 +95,7 @@ class AbstractSegmenter(ABC):
 
         :raise SegmentationError: Provided packets are not a complete packet sequence that form a diagnostic message.
 
-        :return: A diagnostic message that is an outcome of UDS packets desegmentation.
+        :return: A diagnostic message that is carried by provided UDS packets.
         """
 
     @abstractmethod
@@ -89,5 +107,5 @@ class AbstractSegmenter(ABC):
 
         :raise SegmentationError: Provided diagnostic message cannot be segmented.
 
-        :return: UDS packets that are an outcome of UDS message segmentation.
+        :return: UDS packet(s) that carry provided diagnostic message.
         """
