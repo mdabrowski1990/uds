@@ -50,12 +50,12 @@ class AbstractSegmenter(ABC):
     @abstractmethod
     def is_input_packet(self, **kwargs) -> Optional[AddressingType]:
         """
-        Check if provided frame attributes belong to a UDS packet that is an input for this Segmenter.
+        Check if provided frame attributes belong to a UDS packet which is an input for this Segmenter.
 
         :param kwargs: Attributes of a frame to check.
 
-        :return: Addressing Type used for transmission according to configuration of this Segmenter
-            if provided attributes belongs to an input UDS packet, otherwise None.
+        :return: Addressing Type used for transmission of this UDS packet according to the configuration of this
+            Segmenter (if provided attributes belongs to an input UDS packet), otherwise None.
         """
 
     def is_supported_packets_sequence_type(self, packets: Sequence[AbstractUdsPacketContainer]) -> bool:

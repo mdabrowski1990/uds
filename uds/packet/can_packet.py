@@ -18,7 +18,7 @@ from .abstract_packet import AbstractUdsPacket
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
 
 
-class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conflicting-attributes]
+class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
     """
     Definition of a CAN packet.
 
@@ -562,7 +562,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
             self.__raw_frame_data = tuple(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))
 
 
-class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conflicting-attributes]
+class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
     """
     Definition of a CAN packet in any format.
 

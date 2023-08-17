@@ -6,7 +6,6 @@ from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
 from copy import deepcopy
 
-from uds.utilities import RawBytes
 from uds.transmission_attributes import AddressingTypeAlias, AddressingType
 from .addressing_format import CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
@@ -88,7 +87,6 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        # lgtm [py/procedure-return-value-used]
         self.__rx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
 
@@ -104,7 +102,6 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        # lgtm [py/procedure-return-value-used]
         self.__tx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
 
@@ -120,7 +117,6 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        # lgtm [py/procedure-return-value-used]
         self.__rx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 
@@ -136,7 +132,6 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        # lgtm [py/procedure-return-value-used]
         self.__tx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 

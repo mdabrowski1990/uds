@@ -1,14 +1,14 @@
 import pytest
 from mock import Mock
 
-from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface, AbstractUdsPacket
+from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface
 
 
-@pytest.mark.skip
+SCRIPT_LOCATION = "uds.transport_interface.abstract_transport_interface"
+
+
 class TestAbstractTransportInterface:
     """Unit tests for `AbstractTransportInterface` class."""
-
-    SCRIPT_LOCATION = "uds.transport_interface.abstract_transport_interface"
 
     def setup(self):
         self.mock_transport_interface = Mock(spec=AbstractTransportInterface)
@@ -39,18 +39,3 @@ class TestAbstractTransportInterface:
     def test_bus_manager(self, value):
         self.mock_transport_interface._AbstractTransportInterface__bus_manager = value
         assert AbstractTransportInterface.bus_manager.fget(self.mock_transport_interface) == value
-
-    # send_packet
-
-    @pytest.mark.asyncio
-    async def test_send_packet(self):
-        with pytest.raises(NotImplementedError):
-            await AbstractTransportInterface.send_packet(self=self.mock_transport_interface,
-                                                         packet=Mock(spec=AbstractUdsPacket))
-
-    # receive_packet
-
-    @pytest.mark.asyncio
-    async def test_receive_packet(self):
-        with pytest.raises(NotImplementedError):
-            await AbstractTransportInterface.receive_packet(self=self.mock_transport_interface)

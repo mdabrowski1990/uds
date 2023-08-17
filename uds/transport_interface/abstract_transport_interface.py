@@ -69,7 +69,6 @@ class AbstractTransportInterface(ABC):
 
         :return: Record with historic information about transmitted UDS packet.
         """
-        raise NotImplementedError
 
     @abstractmethod
     async def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:
@@ -82,4 +81,3 @@ class AbstractTransportInterface(ABC):
 
         :return: Record with historic information about received UDS packet.
         """
-        raise NotImplementedError
