@@ -66,7 +66,10 @@ class TestNormal11BitCanAddressingInformation:
                                                                       can_id=can_id) == {
                    AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                    AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
-                   AbstractCanAddressingInformation.CAN_ID_NAME: can_id
+                   AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
+                   AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
+                   AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
+                   AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
                }
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.assert_called_once_with(can_id)
@@ -160,7 +163,8 @@ class TestNormalFixedCanAddressingInformation:
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: self.mock_can_id_handler_class.encode_normal_fixed_addressed_can_id.return_value,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
-            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
         }
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address)], any_order=True)
@@ -197,6 +201,7 @@ class TestNormalFixedCanAddressingInformation:
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_target_address,
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: decoded_source_address,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
         }
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_not_called()

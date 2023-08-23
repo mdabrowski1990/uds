@@ -73,6 +73,8 @@ class TestMixed11BitCanAddressingInformation:
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: address_extension,
+            AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
         }
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_mixed_11bit_addressed_can_id.assert_called_once_with(can_id)

@@ -12,7 +12,7 @@ from uds.utilities import RawBytes, RawBytesList, validate_raw_byte, validate_ra
 from uds.transmission_attributes import AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
-from .abstract_addressing_information import AbstractCanAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
 from .extended_addressing_information import ExtendedCanAddressingInformation
 from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
@@ -73,7 +73,7 @@ class CanAddressingInformation:
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
                            address_extension: Optional[int] = None
-                           ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
+                           ) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet.
 

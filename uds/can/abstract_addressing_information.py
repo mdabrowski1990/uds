@@ -1,6 +1,6 @@
 """Abstract definition of Addressing Information handler."""
 
-__all__ = ["AbstractCanAddressingInformation"]
+__all__ = ["AbstractCanAddressingInformation", "PacketAIParamsAlias"]
 
 from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
@@ -11,10 +11,21 @@ from .addressing_format import CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
 
 
+class PacketAIParamsAlias(TypedDict):
+    """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters of CAN packets stream."""
+
+    addressing_format: CanAddressingFormatAlias
+    addressing_type: AddressingTypeAlias
+    can_id: int
+    target_address: Optional[int]
+    source_address: Optional[int]
+    address_extension: Optional[int]
+
+
 class AbstractCanAddressingInformation(ABC):
     """Abstract definition of CAN Entity (either server or client) Addressing Information."""
 
-    ADDRESSING_FORMAT_NAME: str = "addressing_format"
+    ADDRESSING_FORMAT_NAME: str = "addressing_format"  # noqa: F841
     """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter in Addressing Information."""
     ADDRESSING_TYPE_NAME: str = CanIdHandler.ADDRESSING_TYPE_NAME
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
@@ -27,6 +38,9 @@ class AbstractCanAddressingInformation(ABC):
     ADDRESS_EXTENSION_NAME: str = "address_extension"
     """Name of Address Extension parameter in Addressing Information."""
 
+    AI_DATA_BYTES_NUMBER: int
+    """Number of CAN Frame data bytes that are used to carry Addressing Information."""
+
     class InputAIParamsAlias(TypedDict, total=False):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
 
@@ -34,23 +48,6 @@ class AbstractCanAddressingInformation(ABC):
         target_address: int
         source_address: int
         address_extension: int
-
-    class _OptionalPacketAIParamsAlias(TypedDict, total=False):
-        """Alias of optional :ref:`Addressing Information <knowledge-base-n-ai>` parameters of CAN packets stream."""
-
-        target_address: int
-        source_address: int
-        address_extension: int
-
-    class PacketAIParamsAlias(_OptionalPacketAIParamsAlias, total=True):
-        """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters of CAN packets stream."""
-
-        addressing_format: CanAddressingFormatAlias
-        addressing_type: AddressingTypeAlias
-        can_id: int
-
-    AI_DATA_BYTES_NUMBER: int
-    """Number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     def __init__(self,
                  rx_physical: InputAIParamsAlias,
@@ -87,7 +84,7 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.__rx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+        self.__rx_packets_physical_ai: PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
 
     @property
@@ -102,7 +99,7 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.__tx_packets_physical_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+        self.__tx_packets_physical_ai: PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL}, **value)
 
     @property
@@ -117,7 +114,7 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.__rx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+        self.__rx_packets_functional_ai: PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 
     @property
@@ -132,7 +129,7 @@ class AbstractCanAddressingInformation(ABC):
 
         :param value: Addressing Information parameters to set.
         """
-        self.__tx_packets_functional_ai: AbstractCanAddressingInformation.PacketAIParamsAlias \
+        self.__tx_packets_functional_ai: PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 
     @classmethod

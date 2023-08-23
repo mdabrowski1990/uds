@@ -73,6 +73,8 @@ class TestExtendedCanAddressingInformation:
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
         }
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_extended_addressed_can_id.assert_called_once_with(can_id)

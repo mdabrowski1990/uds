@@ -149,19 +149,26 @@ class CanSegmenter(AbstractSegmenter):
 
     def is_input_packet(self, **kwargs) -> Optional[AddressingType]:
         """
-        Check if provided CAN frame attributes belong to a CAN packet that is an input for this CAN Segmenter.
+        Check if provided frame attributes belong to a UDS CAN packet which is an input for this CAN Segmenter.
 
         :param kwargs: Attributes of a CAN frame to check.
-            - can_id: CAN Identifier of a CAN Frame
-            - data: Raw data bytes of a CAN frame
 
-        :return: Addressing Type used for transmission if provided attributes belongs to an input CAN packet,
-            otherwise None.
+        :return: Addressing Type used for transmission of this UDS CAN packet according to the configuration of this
+            CAN Segmenter (if provided attributes belongs to an input UDS CAN packet), otherwise None.
         """
-        can_id = kwargs.pop("can_id", None)
-        data = kwargs.pop("data", None)
-        self.addressing_information.
-
+        try:
+            decoded_frame_ai = CanAddressingInformation.decode_packet_ai(
+                addressing_format=self.addressing_format,
+                can_id=kwargs["can_id"],
+                ai_data_bytes=kwargs["data"][:self.addressing_information.AI_DATA_BYTES_NUMBER])
+            decoded_frame_ai.update(can_id=kwargs["can_id"], addressing_format=self.addressing_format)
+        except ValueError:
+            return None
+        if decoded_frame_ai == self.rx_packets_physical_ai:
+            return AddressingType.PHYSICAL
+        if decoded_frame_ai == self.rx_packets_functional_ai:
+            return AddressingType.FUNCTIONAL
+        # TODO: make sure it works
 
     def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:  # TODO: review
         """
@@ -247,8 +254,6 @@ class CanSegmenter(AbstractSegmenter):
                     payload_bytes_found += len(following_packet.payload)
             return payload_bytes_found >= total_payload_size  # type: ignore
         raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
-
-
 
     def __physical_segmentation(self, message: UdsMessage) -> PacketsTuple:  # TODO: rework
         """

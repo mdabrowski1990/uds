@@ -8,7 +8,7 @@ from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, valid
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
-from .abstract_addressing_information import AbstractCanAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 
 
 class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
@@ -29,7 +29,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
                            address_extension: Optional[int] = None
-                           ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
+                           ) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Mixed 11-bit Addressing format.
 
@@ -53,12 +53,14 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Mixed 11-bit Addressing Format. Actual value: {can_id}")
-        return {
-            cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_11BIT_ADDRESSING,  # type: ignore
-            cls.ADDRESSING_TYPE_NAME: addressing_type,
-            cls.CAN_ID_NAME: can_id,
-            cls.ADDRESS_EXTENSION_NAME: address_extension,
-        }
+        return PacketAIParamsAlias(
+            addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+            addressing_type=addressing_type,
+            can_id=can_id,  # type: ignore
+            target_address=target_address,
+            source_address=source_address,
+            address_extension=address_extension
+        )
 
 
 class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
@@ -79,7 +81,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
                            address_extension: Optional[int] = None
-                           ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
+                           ) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Mixed 29-bit Addressing format.
 
@@ -108,14 +110,14 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
                 addressing_type=addressing_type,
                 target_address=target_address,  # type: ignore
                 source_address=source_address)  # type: ignore
-            return {
-                cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,  # type: ignore
-                cls.ADDRESSING_TYPE_NAME: addressing_type,
-                cls.CAN_ID_NAME: encoded_can_id,
-                cls.TARGET_ADDRESS_NAME: target_address,
-                cls.SOURCE_ADDRESS_NAME: source_address,
-                cls.ADDRESS_EXTENSION_NAME: address_extension,
-            }
+            return PacketAIParamsAlias(
+                addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                addressing_type=addressing_type,
+                can_id=encoded_can_id,
+                target_address=target_address,
+                source_address=source_address,
+                address_extension=address_extension
+            )
         decoded_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
         if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
@@ -126,11 +128,11 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
         if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
                                              f"Actual values: can_id={can_id}, source_address={source_address}")
-        return {
-            cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,  # type: ignore
-            cls.ADDRESSING_TYPE_NAME: addressing_type,
-            cls.CAN_ID_NAME: can_id,
-            cls.TARGET_ADDRESS_NAME: decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],
-            cls.SOURCE_ADDRESS_NAME: decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],
-            cls.ADDRESS_EXTENSION_NAME: address_extension,
-        }
+        return PacketAIParamsAlias(
+            addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+            addressing_type=addressing_type,
+            can_id=can_id,
+            target_address=decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],  # type: ignore
+            source_address=decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],  # type: ignore
+            address_extension=address_extension
+        )
