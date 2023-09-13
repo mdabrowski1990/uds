@@ -11,7 +11,7 @@ class TestCanConsecutiveFrameHandler:
 
     SCRIPT_LOCATION = "uds.can.consecutive_frame"
 
-    def setup(self):
+    def setup_method(self):
         self._patcher_validate_nibble = patch(f"{self.SCRIPT_LOCATION}.validate_nibble")
         self.mock_validate_nibble = self._patcher_validate_nibble.start()
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
@@ -31,7 +31,7 @@ class TestCanConsecutiveFrameHandler:
             patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
         self.mock_get_ai_data_bytes_number = self._patcher_get_ai_data_bytes_number.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_nibble.stop()
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_raw_bytes.stop()

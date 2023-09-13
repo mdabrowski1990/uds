@@ -12,7 +12,7 @@ SCRIPT_LOCATION = "uds.transport_interface.can_transport_interface"
 class TestAbstractCanTransportInterface:
     """Unit tests for `AbstractCanTransportInterface` class."""
 
-    def setup(self):
+    def setup_method(self):
         self.mock_can_transport_interface = Mock(spec=AbstractCanTransportInterface)
         # patching
         self._patcher_abstract_transport_interface_init \
@@ -23,7 +23,7 @@ class TestAbstractCanTransportInterface:
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_abstract_transport_interface_init.stop()
         self._patcher_can_segmenter_class.stop()
         self._patcher_warn.stop()
@@ -496,13 +496,13 @@ class TestAbstractCanTransportInterface:
 class TestPyCanTransportInterface:
     """Unit tests for `PyCanTransportInterface` class."""
 
-    def setup(self):
+    def setup_method(self):
         self.mock_can_transport_interface = Mock(spec=PyCanTransportInterface)
         # patching
         self._patcher_abstract_can_ti_init = patch(f"{SCRIPT_LOCATION}.AbstractCanTransportInterface.__init__")
         self.mock_abstract_can_ti_init = self._patcher_abstract_can_ti_init.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_abstract_can_ti_init.stop()
 
     # __init__

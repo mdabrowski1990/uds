@@ -22,13 +22,13 @@ class TestCanSTmin:
 
     SCRIPT_LOCATION = "uds.can.flow_control"
 
-    def setup(self):
+    def setup_method(self):
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
         self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_warn.stop()
 
@@ -137,7 +137,7 @@ class TestCanFlowControlHandler:
 
     SCRIPT_LOCATION = TestCanSTmin.SCRIPT_LOCATION
 
-    def setup(self):
+    def setup_method(self):
         self._patcher_validate_nibble = patch(f"{self.SCRIPT_LOCATION}.validate_nibble")
         self.mock_validate_nibble = self._patcher_validate_nibble.start()
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
@@ -159,7 +159,7 @@ class TestCanFlowControlHandler:
         self._patcher_validate_flow_status = patch(f"{self.SCRIPT_LOCATION}.CanFlowStatus.validate_member")
         self.mock_validate_flow_status = self._patcher_validate_flow_status.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_nibble.stop()
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_raw_bytes.stop()

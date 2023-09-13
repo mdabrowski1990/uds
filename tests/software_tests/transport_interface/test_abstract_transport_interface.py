@@ -10,7 +10,7 @@ SCRIPT_LOCATION = "uds.transport_interface.abstract_transport_interface"
 class TestAbstractTransportInterface:
     """Unit tests for `AbstractTransportInterface` class."""
 
-    def setup(self):
+    def setup_method(self):
         self.mock_transport_interface = Mock(spec=AbstractTransportInterface)
 
     # __init__

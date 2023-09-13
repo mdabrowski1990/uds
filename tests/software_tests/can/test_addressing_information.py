@@ -11,7 +11,7 @@ class TestCanAddressingInformation:
 
     SCRIPT_LOCATION = "uds.can.addressing_information"
 
-    def setup(self):
+    def setup_method(self):
         # patching
         self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
@@ -32,7 +32,7 @@ class TestCanAddressingInformation:
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_can_id_handler_class.stop()
         self._patcher_validate_addressing_format.stop()
         self._patcher_normal_11bit_ai_class.stop()

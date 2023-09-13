@@ -9,7 +9,7 @@ class TestAbstractCanAddressingInformation:
 
     SCRIPT_LOCATION = "uds.can.abstract_addressing_information"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=AbstractCanAddressingInformation,
                                                 ADDRESSING_FORMAT_NAME="addressing_format",
                                                 ADDRESSING_TYPE_NAME="addressing_type",
@@ -20,7 +20,7 @@ class TestAbstractCanAddressingInformation:
         self._patcher_deepcopy = patch(f"{self.SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_deepcopy.stop()
 
     # __init__

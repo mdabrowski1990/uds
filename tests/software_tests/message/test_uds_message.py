@@ -11,7 +11,7 @@ class TestUdsMessage:
 
     SCRIPT_LOCATION = "uds.message.uds_message"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_uds_message = Mock(spec=UdsMessage)
         # patching
         self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
@@ -19,7 +19,7 @@ class TestUdsMessage:
         self._patcher_validate_addressing = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing = self._patcher_validate_addressing.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_addressing.stop()
 
@@ -90,7 +90,7 @@ class TestUdsMessageRecord:
 
     SCRIPT_LOCATION = TestUdsMessage.SCRIPT_LOCATION
 
-    def setup(self):
+    def setup_method(self):
         self.mock_uds_message_record = Mock(spec=UdsMessageRecord)
         # patching
         self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
@@ -98,7 +98,7 @@ class TestUdsMessageRecord:
         self._patcher_validate_addressing = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing = self._patcher_validate_addressing.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_addressing.stop()
 

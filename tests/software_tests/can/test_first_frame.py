@@ -11,7 +11,7 @@ class TestCanFirstFrameHandler:
 
     SCRIPT_LOCATION = "uds.can.first_frame"
 
-    def setup(self):
+    def setup_method(self):
         self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
         self._patcher_bytes_list_to_int = patch(f"{self.SCRIPT_LOCATION}.bytes_list_to_int")
@@ -27,7 +27,7 @@ class TestCanFirstFrameHandler:
         self._patcher_get_max_sf_dl = patch(f"{self.SCRIPT_LOCATION}.CanSingleFrameHandler.get_max_payload_size")
         self.mock_get_max_sf_dl = self._patcher_get_max_sf_dl.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_bytes_list_to_int.stop()
         self._patcher_validate_raw_bytes.stop()
         self._patcher_get_ai_data_bytes_number.stop()

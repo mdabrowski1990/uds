@@ -14,7 +14,7 @@ class TestCanPacketRecord:
 
     SCRIPT_LOCATION = "uds.packet.can_packet_record"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_can_packet_record = Mock(spec=CanPacketRecord)
         # patching
         self._patcher_addressing_type_class = patch(f"{self.SCRIPT_LOCATION}.AddressingType")
@@ -32,7 +32,7 @@ class TestCanPacketRecord:
         self._patcher_abstract_uds_packet_record_init = patch(f"{self.SCRIPT_LOCATION}.AbstractUdsPacketRecord.__init__")
         self.mock_abstract_uds_packet_record_init = self._patcher_abstract_uds_packet_record_init.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_addressing_type_class.stop()
         self._patcher_can_addressing_format_class.stop()
         self._patcher_can_ai_class.stop()

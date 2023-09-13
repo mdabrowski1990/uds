@@ -10,7 +10,7 @@ class TestExtendedCanAddressingInformation:
 
     SCRIPT_LOCATION = "uds.can.extended_addressing_information"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=ExtendedCanAddressingInformation)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
@@ -20,7 +20,7 @@ class TestExtendedCanAddressingInformation:
         self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_type.stop()
         self._patcher_can_id_handler_class.stop()

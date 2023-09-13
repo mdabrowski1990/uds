@@ -10,7 +10,7 @@ class TestCanIdHandler:
 
     SCRIPT_LOCATION = "uds.can.frame_fields"
 
-    def setup(self):
+    def setup_method(self):
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
         self._patcher_validate_addressing_format = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
@@ -18,7 +18,7 @@ class TestCanIdHandler:
         self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_format.stop()
         self._patcher_validate_addressing_type.stop()

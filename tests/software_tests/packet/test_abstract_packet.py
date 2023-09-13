@@ -10,13 +10,13 @@ class TestAbstractUdsPacketRecord:
 
     SCRIPT_LOCATION = "uds.packet.abstract_packet"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_packet_record = Mock(spec=AbstractUdsPacketRecord)
         # patching
         self._patcher_validate_direction = patch(f"{self.SCRIPT_LOCATION}.TransmissionDirection.validate_member")
         self.mock_validate_direction = self._patcher_validate_direction.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_direction.stop()
 
     # __init__

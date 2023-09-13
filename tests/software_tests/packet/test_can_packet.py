@@ -12,7 +12,7 @@ class TestCanPacket:
 
     SCRIPT_LOCATION = "uds.packet.can_packet"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_can_packet = Mock(spec=CanPacket)
         mock_can_id_handler_class = Mock(spec=CanIdHandler,
                                          ADDRESSING_TYPE_NAME=CanIdHandler.ADDRESSING_TYPE_NAME,
@@ -52,7 +52,7 @@ class TestCanPacket:
         self._patcher_validate_packet_type = patch(f"{self.SCRIPT_LOCATION}.CanPacketType.validate_member")
         self.mock_validate_packet_type = self._patcher_validate_packet_type.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_warn.stop()
         self._patcher_can_dlc_handler_class.stop()
         self._patcher_can_id_handler_class.stop()
@@ -814,7 +814,7 @@ class TestAnyCanPacket:
 
     SCRIPT_LOCATION = TestCanPacket.SCRIPT_LOCATION
 
-    def setup(self):
+    def setup_method(self):
         self.mock_any_can_packet = Mock(spec=AnyCanPacket)
         # patching
         self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
@@ -832,7 +832,7 @@ class TestAnyCanPacket:
         self._patcher_can_packet_class = patch(f"{self.SCRIPT_LOCATION}.CanPacket")
         self.mock_can_packet_class = self._patcher_can_packet_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_addressing_type_class.stop()
         self._patcher_addressing_format_class.stop()

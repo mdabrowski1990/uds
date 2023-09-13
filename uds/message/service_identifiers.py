@@ -58,11 +58,10 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 
         :return: True if value is valid SID, else False.
         """
-        if cls.is_member(value):
-            return True
         if value in POSSIBLE_REQUEST_SIDS:
-            warn(message=f"SID 0x{value:X} is not recognized by this version of the package.",
-                 category=UnrecognizedSIDWarning)
+            if not cls.is_member(value):
+                warn(message=f"SID 0x{value:X} is not recognized by this version of the package.",
+                     category=UnrecognizedSIDWarning)
             return True
         return False
 
@@ -121,11 +120,10 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 
         :return: True if value is valid RSID, else False.
         """
-        if cls.is_member(value):
-            return True
         if value in POSSIBLE_RESPONSE_SIDS:
-            warn(message=f"RSID 0x{value:X} is not recognized by this version of the package",
-                 category=UnrecognizedSIDWarning)
+            if not cls.is_member(value):
+                warn(message=f"RSID 0x{value:X} is not recognized by this version of the package",
+                     category=UnrecognizedSIDWarning)
             return True
         return False
 
@@ -135,5 +133,3 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 # extend 'ResponseSID' with members that were defined in RequestSID
 for request_sid_member in RequestSID:  # type: ignore
     ResponseSID.add_member(request_sid_member.name, request_sid_member.value + 0x40)
-
-# TODO: add aliases

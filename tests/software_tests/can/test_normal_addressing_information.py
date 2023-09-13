@@ -10,7 +10,7 @@ class TestNormal11BitCanAddressingInformation:
 
     SCRIPT_LOCATION = "uds.can.normal_addressing_information"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=Normal11BitCanAddressingInformation)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
@@ -20,7 +20,7 @@ class TestNormal11BitCanAddressingInformation:
         self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_type.stop()
         self._patcher_can_id_handler_class.stop()
@@ -81,7 +81,7 @@ class TestNormalFixedCanAddressingInformation:
 
     SCRIPT_LOCATION = TestNormal11BitCanAddressingInformation.SCRIPT_LOCATION
 
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=NormalFixedCanAddressingInformation)
         # patching
         self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
@@ -91,7 +91,7 @@ class TestNormalFixedCanAddressingInformation:
         self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_type.stop()
         self._patcher_can_id_handler_class.stop()

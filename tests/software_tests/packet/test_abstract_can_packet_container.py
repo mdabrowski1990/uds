@@ -11,7 +11,7 @@ class TestAbstractCanPacketContainer:
 
     SCRIPT_LOCATION = "uds.packet.abstract_can_packet_container"
 
-    def setup(self):
+    def setup_method(self):
         self.mock_can_packet_container = Mock(spec=AbstractCanPacketContainer)
         mock_can_packet_type_class = Mock(SINGLE_FRAME=CanPacketType.SINGLE_FRAME,
                                           FIRST_FRAME=CanPacketType.FIRST_FRAME,
@@ -33,7 +33,7 @@ class TestAbstractCanPacketContainer:
         self._patcher_can_packet_type_class = patch(f"{self.SCRIPT_LOCATION}.CanPacketType", mock_can_packet_type_class)
         self.mock_can_packet_type_class = self._patcher_can_packet_type_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_ai_handler_class.stop()
         self._patcher_can_dlc_handler_class.stop()
         self._patcher_single_frame_handler_class.stop()
