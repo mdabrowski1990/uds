@@ -5,7 +5,7 @@ __all__ = ["AbstractCanTransportInterface", "PyCanTransportInterface"]
 from typing import Optional, Any
 from abc import abstractmethod
 from warnings import warn
-from asyncio import wait_for
+from asyncio import wait_for, get_event_loop
 from datetime import datetime
 
 from can import BusABC, AsyncBufferedReader, BufferedReader, Notifier, Message
@@ -382,10 +382,13 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         super().__init__(can_bus_manager=can_bus_manager,
                          addressing_information=addressing_information,
                          **kwargs)
-        self.__async_listener = AsyncBufferedReader()
         self.__sync_listener = BufferedReader()
-        self.__can_notifier = Notifier(bus=self.bus_manager,
-                                       listeners=[self.__async_listener, self.__sync_listener])
+        self.__sync_can_notifier = Notifier(bus=self.bus_manager,
+                                            listeners=[self.__sync_listener])
+        self.__async_listener = AsyncBufferedReader()  # TODO: make it work
+        # self.__async_can_notifier = Notifier(bus=self.bus_manager,
+        #                                      listeners=[self.__async_listener],
+        #                                      loop=get_event_loop())
 
     @property
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
@@ -434,7 +437,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return isinstance(bus_manager, BusABC)  # TODO: check that receive_own_messages is set (if possible)
 
-    def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
+    def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore  # TODO: test
         """
         Transmit CAN packet.
 
@@ -451,10 +454,18 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                               data=packet.raw_frame_data,
                               is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         self.bus_manager.send(can_message)
-        # TODO: get sent packet from self.__sync_listener - NOTE: we have to see sent messages
-        # TODO: create CanPacketRecord and return it
+        observed_frame = self.__sync_listener.get_message()
+        while observed_frame.arbitration_id != packet.can_id \
+                or tuple(observed_frame.data) != packet.raw_frame_data \
+                or not observed_frame.is_rx:
+            observed_frame = self.__sync_listener.get_message()
+        return CanPacketRecord(frame=observed_frame,
+                               direction=TransmissionDirection.TRANSMITTED,
+                               addressing_type=packet.addressing_type,
+                               addressing_format=packet.addressing_format,
+                               transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
-    async def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:
+    async def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:  # TODO: test
         """
         Receive CAN packet.
 
@@ -479,9 +490,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
         packet_addressing_format = self.segmenter.addressing_format
-        received_datetime = datetime.now()  # TODO: get better accuracy: use received_frame.timestamp
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=packet_addressing_format,
-                               transmission_time=received_datetime)
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))

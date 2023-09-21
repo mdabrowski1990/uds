@@ -1,0 +1,221 @@
+<?xml version="1.0" standalone="yes"?>
+<!DOCTYPE CK[
+ <!ELEMENT CK (DIR)* >
+ <!ELEMENT DIR (DIR|INT|EXTENDED|DOUBLE|BINARY|BOOL|STR)* >
+ <!ELEMENT INT (#PCDATA)>
+ <!ELEMENT EXTENDED (#PCDATA)>
+ <!ELEMENT DOUBLE (#PCDATA)>
+ <!ELEMENT BINARY (#PCDATA)>
+ <!ELEMENT BOOL (#PCDATA)>
+ <!ELEMENT STR (#PCDATA)>
+ <!ATTLIST CK version CDATA #REQUIRED>
+ <!ATTLIST DIR Name CDATA #REQUIRED>
+ <!ATTLIST INT Name CDATA #REQUIRED>
+ <!ATTLIST EXTENDED Name CDATA #REQUIRED>
+ <!ATTLIST DOUBLE Name CDATA #REQUIRED>
+ <!ATTLIST BINARY Name CDATA #REQUIRED>
+ <!ATTLIST BOOL Name CDATA #REQUIRED>
+ <!ATTLIST STR Name CDATA #REQUIRED>
+]>
+<CK version="1.2">
+<DIR Name="Config">
+  <DIR Name="CANKingProj">
+    <DIR Name="ProjMgr">
+      <INT Name="PixelsPerInch">96</INT>
+      <INT Name="Left">515</INT>
+      <INT Name="Top">215</INT>
+      <INT Name="Width">435</INT>
+      <INT Name="Height">300</INT>
+      <INT Name="State">0</INT>
+      <INT Name="Visible">0</INT>
+    </DIR>
+    <DIR Name="Desktop">
+      <INT Name="PixelsPerInch">96</INT>
+      <INT Name="Left">6</INT>
+      <INT Name="Top">21</INT>
+      <INT Name="Width">663</INT>
+      <INT Name="Height">101</INT>
+      <INT Name="State">0</INT>
+      <INT Name="Visible">1</INT>
+      <STR Name="Caption">Kvaser CanKing</STR>
+    </DIR>
+    <DIR Name="ConnectionRules">
+      <STR Name="R0">^TCANKingDialog\.,$,,0,TCanCtrlWin,,0</STR>
+      <STR Name="R1">^TCANKingDialog\.,$,,0,THistoryWindow,,0</STR>
+      <STR Name="R2">TTrafficGenerator$,$,,0,TCanCtrlWin,,0</STR>
+      <STR Name="R3">TTimedTransmission$,$,,0,TCanCtrlWin,,0</STR>
+    </DIR>
+    <DIR Name="Windows">
+      <DIR Name="0">
+        <STR Name="Class">TCanCtrlWin</STR>
+        <INT Name="Left">6</INT>
+        <INT Name="Top">127</INT>
+        <INT Name="Width">340</INT>
+        <INT Name="Height">650</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">1</INT>
+        <STR Name="Caption">CAN 1</STR>
+        <INT Name="PixelsPerInch">96</INT>
+        <INT Name="BitR">1000000</INT>
+        <INT Name="T1">5</INT>
+        <INT Name="T2">2</INT>
+        <INT Name="SJW">2</INT>
+        <INT Name="ArgBitR">500000</INT>
+        <INT Name="ArgT1">63</INT>
+        <INT Name="ArgT2">16</INT>
+        <INT Name="ArgSJW">16</INT>
+        <INT Name="DataBitR">4000000</INT>
+        <INT Name="DataT1">7</INT>
+        <INT Name="DataT2">2</INT>
+        <INT Name="DataSJW">2</INT>
+        <INT Name="Chan">1</INT>
+        <INT Name="Drv">0</INT>
+        <INT Name="CanFd">1</INT>
+        <INT Name="Page">0</INT>
+      </DIR>
+      <DIR Name="1">
+        <STR Name="Class">TFormatter</STR>
+        <INT Name="Left">351</INT>
+        <INT Name="Top">127</INT>
+        <INT Name="Width">319</INT>
+        <INT Name="Height">316</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">1</INT>
+        <STR Name="Caption">Select Formatters</STR>
+        <INT Name="PixelsPerInch">96</INT>
+        <DIR Name="Fmt0">
+          <STR Name="Name">StandardText</STR>
+          <INT Name="Octal">0</INT>
+          <INT Name="Hex">0</INT>
+          <INT Name="DeltaTime">0</INT>
+          <INT Name="ShowAscii">0</INT>
+          <INT Name="DefaultBase">0</INT>
+          <INT Name="CompactHex">0</INT>
+          <INT Name="HistoryList">0</INT>
+        </DIR>
+      </DIR>
+      <DIR Name="2">
+        <STR Name="Class">TOutputWindow</STR>
+        <INT Name="Left">676</INT>
+        <INT Name="Top">21</INT>
+        <INT Name="Width">1724</INT>
+        <INT Name="Height">1061</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">1</INT>
+        <STR Name="Caption">Output Window</STR>
+        <INT Name="PixelsPerInch">96</INT>
+        <INT Name="AutoScroll">1</INT>
+        <INT Name="FixedPos">0</INT>
+      </DIR>
+      <DIR Name="3">
+        <STR Name="Class">THistoryWindow</STR>
+        <INT Name="Left">389</INT>
+        <INT Name="Top">411</INT>
+        <INT Name="Width">453</INT>
+        <INT Name="Height">275</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">0</INT>
+        <STR Name="Caption">History list</STR>
+        <INT Name="PixelsPerInch">96</INT>
+      </DIR>
+      <DIR Name="4">
+        <STR Name="Class">TTimedTransmission</STR>
+        <INT Name="Left">389</INT>
+        <INT Name="Top">411</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">0</INT>
+        <STR Name="Caption">Timed transmission</STR>
+        <INT Name="PixelsPerInch">96</INT>
+        <INT Name="Interval">10</INT>
+        <INT Name="Mode">0</INT>
+        <INT Name="Timing">0</INT>
+      </DIR>
+      <DIR Name="5">
+        <STR Name="Class">TLogToFile</STR>
+        <INT Name="Left">530</INT>
+        <INT Name="Top">448</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">0</INT>
+        <STR Name="Caption">Log To Text File</STR>
+        <INT Name="PixelsPerInch">96</INT>
+        <STR Name="FileName"></STR>
+      </DIR>
+      <DIR Name="6">
+        <STR Name="Class">TTextWindow</STR>
+        <INT Name="Left">389</INT>
+        <INT Name="Top">411</INT>
+        <INT Name="Width">600</INT>
+        <INT Name="Height">233</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">0</INT>
+        <STR Name="Caption">System Messages</STR>
+        <INT Name="PixelsPerInch">96</INT>
+      </DIR>
+      <DIR Name="7">
+        <STR Name="Class">TLogFilePlayer</STR>
+        <INT Name="Left">356</INT>
+        <INT Name="Top">455</INT>
+        <INT Name="State">0</INT>
+        <INT Name="Visible">0</INT>
+        <STR Name="Caption">Log File Player</STR>
+        <INT Name="PixelsPerInch">96</INT>
+        <STR Name="FileName"></STR>
+        <INT Name="AutoStart">1</INT>
+      </DIR>
+      <STR Name="ReverseZOrder">1,0,2</STR>
+    </DIR>
+    <DIR Name="Connections">
+      <STR Name="C0">0,1,0,0</STR>
+      <STR Name="C1">1,2,0,0</STR>
+      <STR Name="C2">3,4,1,0</STR>
+      <STR Name="C3">1,2,1,1</STR>
+      <STR Name="C4">4,0,0,0</STR>
+      <STR Name="C5">1,5,0,0</STR>
+      <STR Name="C6">1,5,1,1</STR>
+      <STR Name="C7">7,4,0,0</STR>
+    </DIR>
+  </DIR>
+  <DIR Name="CKMenu">
+    <DIR Name="0">
+      <STR Name="Parent">$MAIN</STR>
+      <INT Name="InsertBefore">0</INT>
+      <STR Name="TargetItem">View1</STR>
+      <STR Name="Item0">*,&amp;Messages,MsgMenu</STR>
+    </DIR>
+    <DIR Name="MsgMenu">
+      <STR Name="Item0">Universal,C,U,TCanKingDialog.TUtilPage.TUniversalMessage</STR>
+      <STR Name="Item1">Traffic Generator,C,G,TTrafficGenerator</STR>
+      <STR Name="Item2">*,Misc,MiscMenu</STR>
+    </DIR>
+    <DIR Name="MiscMenu">
+      <STR Name="Item0">1-4 Ints,C,I,TCanKingDialog.TUtilPage.TInt4Page</STR>
+      <STR Name="Item1">1-2 Longs,C,L,TCanKingDialog.TUtilPage.TLongintPage</STR>
+      <STR Name="Item2">1-2 Floats,C,F,TCanKingDialog.TUtilPage.TFloatPage</STR>
+      <STR Name="Item3">String,C,S,TCanKingDialog.TUtilPage.TStrPage</STR>
+      <STR Name="Item4">Error Frame,C,E,TCanKingDialog.TUtilPage.TErrorFlagPage</STR>
+    </DIR>
+    <DIR Name="1">
+      <STR Name="Parent">$MAIN</STR>
+      <INT Name="InsertBefore">0</INT>
+      <STR Name="TargetItem">_MsgMenu</STR>
+      <STR Name="Item0">*,&amp;Options,OptionsMenu</STR>
+    </DIR>
+    <DIR Name="OptionsMenu">
+      <STR Name="Item0">&amp;Global...,,,TGlobalOptionsDlg</STR>
+    </DIR>
+  </DIR>
+  <DIR Name="Plugin">
+    <DIR Name="&#123;FC073F12-61C1-11D2-BCE1-0060089830AD&#125;">
+      <INT Name="KingsEnvelope">0</INT>
+      <INT Name="DefaultCityGrpAddress">0</INT>
+      <INT Name="KingsEnvIsExt">0</INT>
+    </DIR>
+  </DIR>
+  <DIR Name="MdiMode">
+    <INT Name="MdiMode">0</INT>
+  </DIR>
+  <DIR Name="Global">
+    <INT Name="UseHex">0</INT>
+  </DIR>
+</DIR>
+</CK>

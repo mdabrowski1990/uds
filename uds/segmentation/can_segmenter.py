@@ -257,7 +257,7 @@ class CanSegmenter(AbstractSegmenter):
             return self.__functional_segmentation(message)
         raise NotImplementedError(f"Unknown addressing type received: {message.addressing_type}")
 
-    def __physical_segmentation(self, message: UdsMessage) -> PacketsTuple:  # TODO: rework
+    def __physical_segmentation(self, message: UdsMessage) -> PacketsTuple:
         """
         Segment physically addressed diagnostic message.
 
