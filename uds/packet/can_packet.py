@@ -577,14 +577,6 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         other features that this class is missing.
     """
 
-    class DecodedAIParamsAlias(TypedDict, total=True):
-        """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in any CAN Packet."""
-
-        addressing_type: Optional[AddressingTypeAlias]
-        target_address: Optional[int]
-        source_address: Optional[int]
-        address_extension: Optional[int]
-
     def __init__(self, *,
                  raw_frame_data: RawBytes,
                  addressing_format: CanAddressingFormatAlias,
@@ -688,7 +680,7 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             return None
         return self.raw_frame_data[ai_data_bytes_number] >> 4
 
-    def get_addressing_information(self) -> DecodedAIParamsAlias:
+    def get_addressing_information(self) -> CanAddressingInformation.DecodedAIParamsAlias:
         """
         Get Addressing Information carried by this packet.
 

@@ -136,7 +136,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
         """
         if isinstance(value, PythonCanMessage):
-            CanIdHandler.validate_can_id(value.arbitration_id, extended_can_id=value.is_extended_id)
+            CanIdHandler.validate_can_id(value.arbitration_id)
             CanDlcHandler.validate_data_bytes_number(len(value.data))
             return None
         raise TypeError(f"Unsupported CAN Frame type was provided. Actual type: {type(value)}")

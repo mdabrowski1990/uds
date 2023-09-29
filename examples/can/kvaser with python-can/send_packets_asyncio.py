@@ -1,7 +1,7 @@
-from pprint import pprint
 import asyncio
+from pprint import pprint
 
-from can import Bus, Message
+from can import Bus
 from uds.transport_interface import PyCanTransportInterface
 from uds.can import CanAddressingInformation, CanAddressingFormat
 from uds.message import UdsMessage
@@ -15,7 +15,6 @@ example_addressing_information = CanAddressingInformation(
     tx_functional={"can_id": 0x6FF},
     rx_functional={"can_id": 0x6FE},
 )
-
 can_ti = PyCanTransportInterface(can_bus_manager=kvaser_bus,
                                  addressing_information=example_addressing_information)
 
@@ -25,18 +24,17 @@ message_2 = UdsMessage(addressing_type=AddressingType.FUNCTIONAL, payload=[0x3E]
 packet_1 = can_ti.segmenter.segmentation(message_1)[0]
 packet_2 = can_ti.segmenter.segmentation(message_2)[0]
 
-kvaser_bus.send(Message(arbitration_id=0x611, data=list(range(8))))
-sent_record_1 = can_ti.send_packet(packet=packet_1)
-kvaser_bus.send(Message(arbitration_id=0x6FF, data=[0x01, 0x3E]))
-sent_record_2 = can_ti.send_packet(packet=packet_2)
 
-pprint(sent_record_1.__dict__)
-pprint(sent_record_2.__dict__)
+async def main():
+    r1 = can_ti.async_send_packet(packet_1)
+    r2 = can_ti.async_send_packet(packet_2)
 
-# kvaser_bus.send(Message(arbitration_id=0x612, data=list(range(8))))
-# kvaser_bus.send(Message(arbitration_id=0x6FE, data=[0x01, 0x3E]))
-# received_record_1 = asyncio.run(can_ti.receive_packet())
-# received_record_2 = asyncio.run(can_ti.receive_packet())
-#
-# pprint(received_record_1.__dict__)
-# pprint(received_record_2.__dict__)
+    record_1 = await r1
+    record_2 = await r2
+
+    pprint(record_1.__dict__)
+    pprint(record_2.__dict__)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
