@@ -13,7 +13,7 @@ from can import BusABC, AsyncBufferedReader, BufferedReader, Notifier, Message
 
 from uds.utilities import TimeMilliseconds, ValueWarning
 from uds.can import AbstractCanAddressingInformation, CanIdHandler, CanDlcHandler
-from uds.packet import CanPacket, AnyCanPacket, CanPacketRecord
+from uds.packet import CanPacket, AnyCanPacket, CanPacketRecord, CanPacketType
 from uds.transmission_attributes import TransmissionDirection
 from uds.segmentation import CanSegmenter
 from .abstract_transport_interface import AbstractTransportInterface
@@ -441,8 +441,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about transmitted CAN packet.
         """
+        time_start = time()
         if not isinstance(packet, (CanPacket, AnyCanPacket)):
             raise TypeError("Provided packet value does not contain a CAN Packet.")
+        is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
+        timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         can_message = Message(arbitration_id=packet.can_id,
                               is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                               data=packet.raw_frame_data,
@@ -456,8 +459,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
                 or not observed_frame.is_rx:
-            observed_frame = message_listener.get_message()  # TODO: add wait_for and proper timeout (N_AS ?)
+            time_now = time()
+            timeout_left = timeout - (time_now - time_start) * 1000.
+            observed_frame = message_listener.get_message(timeout=timeout_left)
         notifier.stop()
+        if is_flow_control_packet:
+            self.__n_ar_measured = (observed_frame.timestamp - time_start) * 1000.
+        else:
+            self.__n_as_measured = (observed_frame.timestamp - time_start) * 1000.
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
@@ -490,8 +499,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         packet_addressing_type = None
         while packet_addressing_type is None:
             time_now = time()
-            _timeout_left = None if timeout is None else timeout - (time_now - time_start)*1000
-            received_frame = message_listener.get_message(timeout=_timeout_left)
+            timeout_left = None if timeout is None else timeout - (time_now - time_start)*1000
+            received_frame = message_listener.get_message(timeout=timeout_left)
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
         notifier.stop()
@@ -514,9 +523,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about transmitted CAN packet.
         """
-        loop = get_running_loop() if loop is None else loop
+        time_start = time()
         if not isinstance(packet, (CanPacket, AnyCanPacket)):
             raise TypeError("Provided packet value does not contain a CAN Packet.")
+        loop = get_running_loop() if loop is None else loop
+        is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
+        timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         async_message_listener = AsyncBufferedReader()
         async_notifier = Notifier(bus=self.bus_manager,
                                   listeners=[async_message_listener],
@@ -531,8 +543,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
                 or not observed_frame.is_rx:
-            observed_frame = await async_message_listener.get_message()  # TODO: add wait_for and proper timeout (N_AS ?)
+            time_now = time()
+            timeout_left = timeout - (time_now - time_start) * 1000.
+            observed_frame = await wait_for(async_message_listener.get_message(), timeout=timeout_left)
         async_notifier.stop()
+        if is_flow_control_packet:
+            self.__n_ar_measured = (observed_frame.timestamp - time_start) * 1000.
+        else:
+            self.__n_as_measured = (observed_frame.timestamp - time_start) * 1000.
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
