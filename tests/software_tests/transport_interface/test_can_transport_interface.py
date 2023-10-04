@@ -1,8 +1,8 @@
 import pytest
-from mock import MagicMock, Mock, patch
+from mock import MagicMock, Mock, AsyncMock, patch
 
 from uds.transport_interface.can_transport_interface import AbstractCanTransportInterface, PyCanTransportInterface, \
-    AbstractCanAddressingInformation, BusABC
+    AbstractCanAddressingInformation, BusABC, CanPacket, CanPacketType, TransmissionDirection
 from uds.can import CanAddressingInformation, CanAddressingFormat
 
 
@@ -224,7 +224,7 @@ class TestAbstractCanTransportInterface:
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_AR_TIMEOUT)
         self.mock_warn.assert_not_called()
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_timeout == mock_value
-            
+
     # n_bs
 
     @pytest.mark.parametrize("value", ["something", Mock()])
@@ -275,7 +275,7 @@ class TestAbstractCanTransportInterface:
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_BS_TIMEOUT)
         self.mock_warn.assert_not_called()
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_timeout == mock_value
-            
+
     # n_br
 
     @pytest.mark.parametrize("value", ["something", Mock()])
@@ -399,7 +399,7 @@ class TestAbstractCanTransportInterface:
         self.mock_can_transport_interface.n_as_measured = None
         assert AbstractCanTransportInterface.n_cs_max.fget(self.mock_can_transport_interface) \
                == 0.9 * n_cr_timeout
-            
+
     # n_cr
 
     @pytest.mark.parametrize("value", ["something", Mock()])
@@ -469,7 +469,7 @@ class TestAbstractCanTransportInterface:
     def test_dlc__set(self, value):
         AbstractCanTransportInterface.dlc.fset(self.mock_can_transport_interface, value)
         assert self.mock_can_transport_interface.segmenter.dlc == value
-            
+
     # use_data_optimization
 
     def test_use_data_optimization__get(self):
@@ -480,7 +480,7 @@ class TestAbstractCanTransportInterface:
     def test_use_data_optimization__set(self, value):
         AbstractCanTransportInterface.use_data_optimization.fset(self.mock_can_transport_interface, value)
         assert self.mock_can_transport_interface.segmenter.use_data_optimization == value
-            
+
     # filler_byte
 
     def test_filler_byte__get(self):
@@ -497,13 +497,43 @@ class TestPyCanTransportInterface:
     """Unit tests for `PyCanTransportInterface` class."""
 
     def setup_method(self):
-        self.mock_can_transport_interface = Mock(spec=PyCanTransportInterface)
+        self.mock_can_transport_interface = MagicMock(spec=PyCanTransportInterface)
         # patching
+        self._patcher_wait_for = patch(f"{SCRIPT_LOCATION}.wait_for", AsyncMock(side_effect=lambda *args, **kwargs: args[0]))
+        self.mock_wait_for = self._patcher_wait_for.start()
+        self._patcher_time = patch(f"{SCRIPT_LOCATION}.time")
+        self.mock_time = self._patcher_time.start()
+        self._patcher_datetime = patch(f"{SCRIPT_LOCATION}.datetime")
+        self.mock_datetime = self._patcher_datetime.start()
         self._patcher_abstract_can_ti_init = patch(f"{SCRIPT_LOCATION}.AbstractCanTransportInterface.__init__")
         self.mock_abstract_can_ti_init = self._patcher_abstract_can_ti_init.start()
+        self._patcher_can_id_handler = patch(f"{SCRIPT_LOCATION}.CanIdHandler")
+        self.mock_can_id_handler = self._patcher_can_id_handler.start()
+        self._patcher_can_dlc_handler = patch(f"{SCRIPT_LOCATION}.CanDlcHandler")
+        self.mock_can_dlc_handler = self._patcher_can_dlc_handler.start()
+        self._patcher_can_packet_record = patch(f"{SCRIPT_LOCATION}.CanPacketRecord")
+        self.mock_can_packet_record = self._patcher_can_packet_record.start()
+        self._patcher_buffered_reader = patch(f"{SCRIPT_LOCATION}.BufferedReader")
+        self.mock_buffered_reader = self._patcher_buffered_reader.start()
+        self._patcher_async_buffered_reader = patch(f"{SCRIPT_LOCATION}.AsyncBufferedReader")
+        self.mock_async_buffered_reader = self._patcher_async_buffered_reader.start()
+        self._patcher_notifier = patch(f"{SCRIPT_LOCATION}.Notifier")
+        self.mock_notifier = self._patcher_notifier.start()
+        self._patcher_message = patch(f"{SCRIPT_LOCATION}.Message")
+        self.mock_message = self._patcher_message.start()
 
     def teardown_method(self):
+        self._patcher_wait_for.stop()
+        self._patcher_time.stop()
+        self._patcher_datetime.stop()
         self._patcher_abstract_can_ti_init.stop()
+        self._patcher_can_id_handler.stop()
+        self._patcher_can_dlc_handler.stop()
+        self._patcher_can_packet_record.stop()
+        self._patcher_buffered_reader.stop()
+        self._patcher_async_buffered_reader.stop()
+        self._patcher_notifier.stop()
+        self._patcher_message.stop()
 
     # __init__
 
@@ -579,6 +609,174 @@ class TestPyCanTransportInterface:
     def test_is_supported_bus_manager(self, mock_isinstance, value):
         assert PyCanTransportInterface.is_supported_bus_manager(value) == mock_isinstance.return_value
         mock_isinstance.assert_called_once_with(value, BusABC)
+
+    # send_packet
+
+    @pytest.mark.parametrize("packet", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_send_packet__type_error(self, mock_isinstance, packet):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            PyCanTransportInterface.send_packet(self.mock_can_transport_interface, packet)
+        mock_isinstance.assert_called_once_with(packet, CanPacket)
+
+    @pytest.mark.parametrize("packet", [
+        Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME, raw_frame_data=(0x12, 0x34)),
+        Mock(spec=CanPacket, packet_type=CanPacketType.FLOW_CONTROL, raw_frame_data=tuple(range(8))),
+        Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, raw_frame_data=tuple(range(64, 128))),
+    ])
+    def test_send_packet(self, packet):
+        mock_get_message = Mock(return_value=MagicMock(arbitration_id=packet.can_id,
+                                                       data=packet.raw_frame_data,
+                                                       is_rx=True))
+        self.mock_buffered_reader.return_value.get_message = mock_get_message
+        self.mock_can_transport_interface._PyCanTransportInterface__n_ar_measured = None
+        self.mock_can_transport_interface._PyCanTransportInterface__n_as_measured = None
+        assert PyCanTransportInterface.send_packet(self.mock_can_transport_interface, packet) \
+               == self.mock_can_packet_record.return_value
+        self.mock_can_id_handler.is_extended_can_id.assert_called_once_with(packet.can_id)
+        self.mock_can_dlc_handler.is_can_fd_specific_dlc.assert_called_once_with(packet.dlc)
+        self.mock_message.assert_called_once_with(arbitration_id=packet.can_id,
+                                                  is_extended_id=self.mock_can_id_handler.is_extended_can_id.return_value,
+                                                  data=packet.raw_frame_data,
+                                                  is_fd=self.mock_can_dlc_handler.is_can_fd_specific_dlc.return_value)
+        self.mock_can_transport_interface.bus_manager.send.assert_called_once_with(self.mock_message.return_value)
+        self.mock_datetime.fromtimestamp.assert_called_once_with(mock_get_message.return_value.timestamp)
+        self.mock_can_packet_record.assert_called_once_with(frame=mock_get_message.return_value,
+                                                            direction=TransmissionDirection.TRANSMITTED,
+                                                            addressing_type=packet.addressing_type,
+                                                            addressing_format=packet.addressing_format,
+                                                            transmission_time=self.mock_datetime.fromtimestamp.return_value)
+        if packet.packet_type == CanPacketType.FLOW_CONTROL:
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_as_measured is None
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_ar_measured \
+                   == mock_get_message.return_value.timestamp.__sub__.return_value
+            mock_get_message.return_value.timestamp.__sub__.assert_called_once_with(self.mock_time.return_value)
+        else:
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_as_measured \
+                   == mock_get_message.return_value.timestamp.__sub__.return_value
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_ar_measured is None
+            mock_get_message.return_value.timestamp.__sub__.assert_called_once_with(self.mock_time.return_value)
+
+    # receive_packet
+
+    @pytest.mark.parametrize("timeout", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_receive_packet__type_error(self, mock_isinstance, timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            PyCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout)
+        mock_isinstance.assert_called_once_with(timeout, (int, float))
+
+    @pytest.mark.parametrize("timeout", [0, -654])
+    def test_receive_packet__value_error(self, timeout):
+        with pytest.raises(ValueError):
+            PyCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout)
+
+    @pytest.mark.parametrize("timeout", [0.001, 123.456])
+    def test_receive_packet__timeout_error(self, timeout):
+        mock_get_message = Mock(return_value=None)
+        self.mock_buffered_reader.return_value.get_message = mock_get_message
+        with pytest.raises(TimeoutError):
+            PyCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout)
+
+    @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
+    def test_receive_packet(self, timeout):
+        assert PyCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout) \
+               == self.mock_can_packet_record.return_value
+        self.mock_datetime.fromtimestamp.assert_called_once_with(self.mock_buffered_reader.return_value.get_message.return_value.timestamp)
+        self.mock_can_transport_interface.segmenter.is_input_packet.assert_called_once_with(
+            can_id=self.mock_buffered_reader.return_value.get_message.return_value.arbitration_id,
+            data=self.mock_buffered_reader.return_value.get_message.return_value.data)
+        self.mock_can_packet_record.assert_called_once_with(
+            frame=self.mock_buffered_reader.return_value.get_message.return_value,
+            direction=TransmissionDirection.RECEIVED,
+            addressing_type=self.mock_can_transport_interface.segmenter.is_input_packet.return_value,
+            addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
+            transmission_time=self.mock_datetime.fromtimestamp.return_value)
+
+    # async_send_packet
+
+    @pytest.mark.parametrize("packet", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    @pytest.mark.asyncio
+    async def test_async_send_packet__type_error(self, mock_isinstance, packet):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            await PyCanTransportInterface.async_send_packet(self.mock_can_transport_interface, packet)
+        mock_isinstance.assert_called_once_with(packet, CanPacket)
+
+    @pytest.mark.parametrize("packet", [
+        Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME, raw_frame_data=(0x12, 0x34)),
+        Mock(spec=CanPacket, packet_type=CanPacketType.FLOW_CONTROL, raw_frame_data=tuple(range(8))),
+        Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, raw_frame_data=tuple(range(64, 128))),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_send_packet(self, packet):
+        mock_get_message = Mock(return_value=MagicMock(arbitration_id=packet.can_id,
+                                                       data=packet.raw_frame_data,
+                                                       is_rx=True))
+        self.mock_async_buffered_reader.return_value.get_message = mock_get_message
+        self.mock_can_transport_interface._PyCanTransportInterface__n_ar_measured = None
+        self.mock_can_transport_interface._PyCanTransportInterface__n_as_measured = None
+        assert await PyCanTransportInterface.async_send_packet(self.mock_can_transport_interface, packet) \
+               == self.mock_can_packet_record.return_value
+        self.mock_can_id_handler.is_extended_can_id.assert_called_once_with(packet.can_id)
+        self.mock_can_dlc_handler.is_can_fd_specific_dlc.assert_called_once_with(packet.dlc)
+        self.mock_message.assert_called_once_with(arbitration_id=packet.can_id,
+                                                  is_extended_id=self.mock_can_id_handler.is_extended_can_id.return_value,
+                                                  data=packet.raw_frame_data,
+                                                  is_fd=self.mock_can_dlc_handler.is_can_fd_specific_dlc.return_value)
+        self.mock_can_transport_interface.bus_manager.send.assert_called_once_with(self.mock_message.return_value)
+        self.mock_datetime.fromtimestamp.assert_called_once_with(mock_get_message.return_value.timestamp)
+        self.mock_can_packet_record.assert_called_once_with(frame=mock_get_message.return_value,
+                                                            direction=TransmissionDirection.TRANSMITTED,
+                                                            addressing_type=packet.addressing_type,
+                                                            addressing_format=packet.addressing_format,
+                                                            transmission_time=self.mock_datetime.fromtimestamp.return_value)
+        if packet.packet_type == CanPacketType.FLOW_CONTROL:
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_as_measured is None
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_ar_measured \
+                   == mock_get_message.return_value.timestamp.__sub__.return_value
+            mock_get_message.return_value.timestamp.__sub__.assert_called_once_with(self.mock_time.return_value)
+        else:
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_as_measured \
+                   == mock_get_message.return_value.timestamp.__sub__.return_value
+            assert self.mock_can_transport_interface._PyCanTransportInterface__n_ar_measured is None
+            mock_get_message.return_value.timestamp.__sub__.assert_called_once_with(self.mock_time.return_value)
+
+    # async_receive_packet
+
+    @pytest.mark.parametrize("timeout", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    @pytest.mark.asyncio
+    async def test_async_receive_packet__type_error(self, mock_isinstance, timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            await PyCanTransportInterface.async_receive_packet(self.mock_can_transport_interface, timeout)
+        mock_isinstance.assert_called_once_with(timeout, (int, float))
+
+    @pytest.mark.parametrize("timeout", [0, -654])
+    @pytest.mark.asyncio
+    async def test_async_receive_packet__value_error(self, timeout):
+        with pytest.raises(ValueError):
+            await PyCanTransportInterface.async_receive_packet(self.mock_can_transport_interface, timeout)
+
+    @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
+    @pytest.mark.asyncio
+    async def test_async_receive_packet(self, timeout):
+        assert await PyCanTransportInterface.async_receive_packet(self.mock_can_transport_interface, timeout) \
+               == self.mock_can_packet_record.return_value
+        self.mock_datetime.fromtimestamp.assert_called_once_with(self.mock_async_buffered_reader.return_value.get_message.return_value.timestamp)
+        self.mock_can_transport_interface.segmenter.is_input_packet.assert_called_once_with(
+            can_id=self.mock_async_buffered_reader.return_value.get_message.return_value.arbitration_id,
+            data=self.mock_async_buffered_reader.return_value.get_message.return_value.data)
+        self.mock_can_packet_record.assert_called_once_with(
+            frame=self.mock_async_buffered_reader.return_value.get_message.return_value,
+            direction=TransmissionDirection.RECEIVED,
+            addressing_type=self.mock_can_transport_interface.segmenter.is_input_packet.return_value,
+            addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
+            transmission_time=self.mock_datetime.fromtimestamp.return_value)
 
 
 class TestPyCanTransportInterfaceIntegration:

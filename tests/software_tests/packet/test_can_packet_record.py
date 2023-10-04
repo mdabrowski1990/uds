@@ -147,7 +147,7 @@ class TestCanPacketRecord:
     def test_validate_frame__valid_python_can(self, example_python_can_message):
         assert CanPacketRecord._validate_frame(example_python_can_message) is None
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(
-            example_python_can_message.arbitration_id, extended_can_id=example_python_can_message.is_extended_id)
+            example_python_can_message.arbitration_id)
         self.mock_can_dlc_handler_class.validate_data_bytes_number.assert_called_once_with(
             len(example_python_can_message.data))
 

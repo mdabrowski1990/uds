@@ -2,7 +2,7 @@
 
 __all__ = ["CanPacket", "AnyCanPacket"]
 
-from typing import Optional, Any, TypedDict
+from typing import Optional, Any
 from warnings import warn
 
 from uds.utilities import AmbiguityError, UnusedArgumentWarning, RawBytes, RawBytesTuple, validate_raw_bytes
