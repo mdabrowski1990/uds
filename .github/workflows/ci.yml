@@ -32,16 +32,16 @@ jobs:
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
-          pytest --cov-report=term-missing --cov=uds -m "not integration and not performance"
+          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "not integration and not performance"
 
       - name: Execute integration tests with coverage report [pytest]
         run: |
-          pytest --cov-report=term-missing --cov=uds -m "integration"
+          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "integration"
 
 # TODO: uncomment when performance tests are added
 #      - name: Execute performance tests with coverage report [pytest]
 #        run: |
-#          pytest --cov-report=term-missing --cov=uds -m "performance"
+#          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "performance"
 
 
   code_coverage:
@@ -72,7 +72,7 @@ jobs:
 
       - name: Execute unit tests [pytest]
         run: |
-          pytest --cov-report=xml --cov=uds -m "not integration and not performance"
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance"
 
       - name: Upload unit tests report [CodeCov]
         uses: codecov/codecov-action@v2
@@ -83,7 +83,7 @@ jobs:
 
       - name: Execute integration tests [pytest]
         run: |
-          pytest --cov-report=xml --cov=uds -m "integration"
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
       - name: Upload integration tests report [CodeCov]
         uses: codecov/codecov-action@v2
@@ -95,7 +95,7 @@ jobs:
 # TODO: uncomment when performance tests are added
 #      - name: Execute performance tests [pytest]
 #        run: |
-#          pytest --cov-report=xml --cov=uds -m "performance"
+#          pytest tests/software_tests --cov-report=xml --cov=uds -m "performance"
 #
 #      - name: Upload performance tests report [CodeCov]
 #        uses: codecov/codecov-action@v2

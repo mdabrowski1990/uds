@@ -99,15 +99,19 @@ class AbstractTestPyCan(ABC):
                                   rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}, ),
          Message(data=[0x87, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
-    def test_receive_packet__physical_receive(self, addressing_information, frame):
+    @pytest.mark.parametrize("timeout, send_after", [
+        (1000, 950),  # ms
+        (30, 1),
+    ])
+    def test_receive_packet__physical_receive(self, addressing_information, frame, timeout, send_after):
         frame.arbitration_id = addressing_information.rx_packets_physical_ai["can_id"]
         # data parameter of `frame` object must be set manually and according to `addressing_format`
         # and `addressing_information`
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
                                                           addressing_information=addressing_information)
-        Timer(interval=0.1, function=self.bus2.send, args=(frame, )).run()
+        Timer(interval=send_after/1000., function=self.bus2.send, args=(frame, )).start()
         datetime_before_receive = datetime.now()
-        packet_record = can_transport_interface.receive_packet(timeout=1000)
+        packet_record = can_transport_interface.receive_packet(timeout=timeout)
         datetime_after_receive = datetime.now()
         assert isinstance(packet_record, CanPacketRecord)
         assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
@@ -152,15 +156,19 @@ class AbstractTestPyCan(ABC):
                                   rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}, ),
          Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
-    def test_receive_packet__functional_receive(self, addressing_information, frame):
+    @pytest.mark.parametrize("timeout, send_after", [
+        (1000, 950),  # ms
+        (30, 1),
+    ])
+    def test_receive_packet__functional_receive(self, addressing_information, frame, timeout, send_after):
         frame.arbitration_id = addressing_information.rx_packets_functional_ai["can_id"]
         # data parameter of `frame` object must be set manually and according to `addressing_format`
         # and `addressing_information`
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
                                                           addressing_information=addressing_information)
-        Timer(interval=0.1, function=self.bus2.send, args=(frame, )).run()
+        Timer(interval=send_after/1000., function=self.bus2.send, args=(frame, )).start()
         datetime_before_receive = datetime.now()
-        packet_record = can_transport_interface.receive_packet(timeout=1000)
+        packet_record = can_transport_interface.receive_packet(timeout=timeout)
         datetime_after_receive = datetime.now()
         assert isinstance(packet_record, CanPacketRecord)
         assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
@@ -173,7 +181,63 @@ class AbstractTestPyCan(ABC):
         assert packet_record.source_address == addressing_information.rx_packets_functional_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_functional_ai["address_extension"]
 
-    # TODO: timeout test
+    @pytest.mark.parametrize("addressing_type, addressing_information, frame", [
+        (AddressingType.PHYSICAL,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                  tx_physical={"can_id": 0x611},
+                                  rx_physical={"can_id": 0x612},
+                                  tx_functional={"can_id": 0x6FF},
+                                  rx_functional={"can_id": 0x6FE}),
+         Message(data=[0x02, 0x10, 0x03])),
+        (AddressingType.PHYSICAL,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF},
+                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B},
+                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE},
+                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC}),
+         Message(data=[0x2C] + list(range(100, 163)), is_fd=True)),
+        (AddressingType.FUNCTIONAL,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
+                                  tx_physical={"can_id": 0x987, "target_address": 0x90},
+                                  rx_physical={"can_id": 0x987, "target_address": 0xFE},
+                                  tx_functional={"can_id": 0x11765, "target_address": 0x5A},
+                                  rx_functional={"can_id": 0x11765, "target_address": 0xFF}, ),
+         Message(data=[0xFF, 0x30, 0xAB, 0x7F])),
+        (AddressingType.FUNCTIONAL,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+                                  tx_physical={"can_id": 0x651, "address_extension": 0x87},
+                                  rx_physical={"can_id": 0x652, "address_extension": 0xFE},
+                                  tx_functional={"can_id": 0x6FF, "address_extension": 0xA5},
+                                  rx_functional={"can_id": 0x6FF, "address_extension": 0xFF}, ),
+         Message(data=[0xFF, 0x11, 0x23, 0x62, 0x92, 0xD0, 0xB1, 0x00])),
+        (AddressingType.FUNCTIONAL,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF,
+                                               "address_extension": 0x87},
+                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B,
+                                               "address_extension": 0x87},
+                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE,
+                                                 "address_extension": 0xFF},
+                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC,
+                                                 "address_extension": 0xFF}, ),
+         Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
+    ])
+    @pytest.mark.parametrize("timeout, send_after", [
+        (1000, 1001),  # ms
+        (10, 15),
+    ])
+    def test_receive_packet__timeout(self, addressing_information, addressing_type, frame, timeout, send_after):
+        if addressing_type == AddressingType.PHYSICAL:
+            frame.arbitration_id = addressing_information.rx_packets_physical_ai["can_id"]
+        else:
+            frame.arbitration_id = addressing_information.rx_packets_functional_ai["can_id"]
+        # data parameter of `frame` object must be set manually and according to `addressing_format`
+        # and `addressing_information`
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+                                                          addressing_information=addressing_information)
+        Timer(interval=send_after/1000., function=self.bus2.send, args=(frame,)).start()
+        with pytest.raises(TimeoutError):
+            can_transport_interface.receive_packet(timeout=timeout)
 
     # async_receive_packet
 
