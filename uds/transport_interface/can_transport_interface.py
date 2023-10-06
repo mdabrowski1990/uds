@@ -463,8 +463,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 or tuple(observed_frame.data) != packet.raw_frame_data \
                 or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
+            if timeout_left <= 0:
+                raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
             observed_frame = message_listener.get_message(timeout=timeout_left)
-        notifier.stop()
+        notifier.stop(timeout=0)  # TODO: do it smarter
         if is_flow_control_packet:
             self.__n_ar_measured = observed_frame.timestamp - time_start
         else:
@@ -501,12 +503,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while packet_addressing_type is None:
             time_now = time()
             timeout_left = float("inf") if timeout is None else timeout / 1000. - (time_now - time_start)
+            if timeout_left <= 0:
+                raise TimeoutError("Timeout was reached before a CAN Packet was received.")
             received_frame = message_listener.get_message(timeout=timeout_left)
             if received_frame is None:
-                raise TimeoutError("Timeout was reached before receiving a CAN Packet.")
+                raise TimeoutError("Timeout was reached before a CAN Packet was received.")
+            if timeout is not None and (received_frame.timestamp - time_start) * 1000. > timeout:
+                raise TimeoutError("CAN Packet was received after timeout.")
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        notifier.stop()
+        notifier.stop(timeout=0)  # TODO: do it smarter
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
@@ -548,7 +554,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
             observed_frame = await wait_for(async_message_listener.get_message(), timeout=timeout_left)
-        async_notifier.stop()
+        async_notifier.stop(timeout=0)  # TODO: do it smarter
         if is_flow_control_packet:
             self.__n_ar_measured = observed_frame.timestamp - time_start
         else:
@@ -587,12 +593,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                   loop=loop)
         packet_addressing_type = None
         while packet_addressing_type is None:
-            _timeout_left = None if timeout is None else timeout / 1000. - (time() - time_start)
+            if timeout is None:
+                timeout_left = None
+            else:
+                timeout_left = timeout / 1000. - (time() - time_start)
+                if timeout_left <= 0:
+                    raise TimeoutError("Timeout was reached before a CAN Packet was received.")
             received_frame = await wait_for(async_message_listener.get_message(),
-                                            timeout=_timeout_left)
+                                            timeout=timeout_left)
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        async_notifier.stop()
+        async_notifier.stop(timeout=0)  # TODO: do it smarter
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
