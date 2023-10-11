@@ -8,6 +8,8 @@ from uds.message import UdsMessage
 from uds.transmission_attributes import AddressingType
 
 kvaser_bus = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
+kvaser_bus2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
+
 example_addressing_information = CanAddressingInformation(
     addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
     tx_physical={"can_id": 0x611},

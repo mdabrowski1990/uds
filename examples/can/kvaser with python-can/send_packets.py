@@ -7,6 +7,8 @@ from uds.message import UdsMessage
 from uds.transmission_attributes import AddressingType
 
 kvaser_bus = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
+kvaser_bus2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
+
 example_addressing_information = CanAddressingInformation(
     addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
     tx_physical={"can_id": 0x611},
@@ -26,9 +28,9 @@ packet_2 = can_ti.segmenter.segmentation(message_2)[0]
 
 def main():
     record_1 = can_ti.send_packet(packet_1)
-    record_2 = can_ti.send_packet(packet_2)
-
     pprint(record_1.__dict__)
+
+    record_2 = can_ti.send_packet(packet_2)
     pprint(record_2.__dict__)
 
 

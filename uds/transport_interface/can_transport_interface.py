@@ -355,6 +355,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     .. note:: Documentation for python-can package: https://python-can.readthedocs.io/
     """
 
+    _MAX_LISTENER_TIMEOUT: float = 4280000.  # ms
+    """Maximal timeout value accepted by python-can listeners."""
+    _MIN_NOTIFIER_TIMEOUT: float = 0.0000001  # s
+    """Minimal timeout for notifiers that does not cause malfunctioning of listeners."""
+
     def __init__(self,
                  can_bus_manager: BusABC,
                  addressing_information: AbstractCanAddressingInformation,
@@ -454,8 +459,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                               data=packet.raw_frame_data,
                               is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         message_listener = BufferedReader()
-        notifier = Notifier(bus=self.bus_manager, listeners=[message_listener])
-        notifier.add_listener(message_listener)
+        notifier = Notifier(bus=self.bus_manager, listeners=[message_listener], timeout=self._MIN_NOTIFIER_TIMEOUT)
         self.bus_manager.send(can_message)
         observed_frame = None
         while observed_frame is None \
@@ -466,11 +470,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
             observed_frame = message_listener.get_message(timeout=timeout_left)
-        notifier.stop(timeout=0)  # TODO: do it smarter
+        notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
         if is_flow_control_packet:
             self.__n_ar_measured = observed_frame.timestamp - time_start
         else:
             self.__n_as_measured = observed_frame.timestamp - time_start
+        print([observed_frame.timestamp, time()])
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
@@ -498,11 +503,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
         message_listener = BufferedReader()
-        notifier = Notifier(bus=self.bus_manager, listeners=[message_listener])
+        notifier = Notifier(bus=self.bus_manager, listeners=[message_listener], timeout=self._MIN_NOTIFIER_TIMEOUT)
         packet_addressing_type = None
         while packet_addressing_type is None:
             time_now = time()
-            timeout_left = float("inf") if timeout is None else timeout / 1000. - (time_now - time_start)
+            timeout_left = self._MAX_LISTENER_TIMEOUT if timeout is None else timeout / 1000. - (time_now - time_start)
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before a CAN Packet was received.")
             received_frame = message_listener.get_message(timeout=timeout_left)
@@ -512,7 +517,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TimeoutError("CAN Packet was received after timeout.")
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        notifier.stop(timeout=0)  # TODO: do it smarter
+        notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
@@ -541,7 +546,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         async_message_listener = AsyncBufferedReader()
         async_notifier = Notifier(bus=self.bus_manager,
                                   listeners=[async_message_listener],
-                                  loop=loop)
+                                  loop=loop,
+                                  timeout=self._MIN_NOTIFIER_TIMEOUT)
         can_message = Message(arbitration_id=packet.can_id,
                               is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                               data=packet.raw_frame_data,
@@ -554,7 +560,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
             observed_frame = await wait_for(async_message_listener.get_message(), timeout=timeout_left)
-        async_notifier.stop(timeout=0)  # TODO: do it smarter
+        async_notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
         if is_flow_control_packet:
             self.__n_ar_measured = observed_frame.timestamp - time_start
         else:
@@ -590,7 +596,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         async_message_listener = AsyncBufferedReader()
         async_notifier = Notifier(bus=self.bus_manager,
                                   listeners=[async_message_listener],
-                                  loop=loop)
+                                  loop=loop,
+                                  timeout=self._MIN_NOTIFIER_TIMEOUT)
         packet_addressing_type = None
         while packet_addressing_type is None:
             if timeout is None:
@@ -603,7 +610,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                             timeout=timeout_left)
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        async_notifier.stop(timeout=0)  # TODO: do it smarter
+        async_notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
