@@ -475,7 +475,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             self.__n_ar_measured = observed_frame.timestamp - time_start
         else:
             self.__n_as_measured = observed_frame.timestamp - time_start
-        print([observed_frame.timestamp, time()])
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
