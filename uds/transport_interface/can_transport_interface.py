@@ -391,6 +391,15 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         super().__init__(can_bus_manager=can_bus_manager,
                          addressing_information=addressing_information,
                          **kwargs)
+        self.__notifier: Optional[Notifier] = None
+        self.__frames_buffer = BufferedReader()
+        self.__async_notifier: Optional[Notifier] = None
+        self.__async_frames_buffer = AsyncBufferedReader()
+
+    def __del__(self):
+        # TODO: docstring and unit tests
+        self._teardown_notifier()
+        self._teardown_async_notifier()
 
     @property
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
@@ -428,6 +437,42 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return self.__n_cr_measured
 
+    def _teardown_notifier(self) -> None:
+        # TODO: docstring and unit tests
+        if self.__notifier is not None:
+            self.__notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+            self.__notifier = None
+
+    def _teardown_async_notifier(self):
+        # TODO: docstring and unit tests
+        if self.__async_notifier is not None:
+            self.__async_notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+            self.__async_notifier = None
+
+    def _setup_notifier(self) -> None:
+        # TODO: docstring and unit tests
+        self._teardown_async_notifier()
+        if self.__notifier is None:
+            self.__notifier = Notifier(bus=self.bus_manager,
+                                       listeners=[self.__frames_buffer],
+                                       timeout=self._MIN_NOTIFIER_TIMEOUT)
+
+    def _setup_async_notifier(self, loop) -> None:
+        # TODO: docstring and unit tests
+        if self.__notifier is not None:
+            # TODO: warn
+            self._teardown_notifier()
+        if self.__async_notifier is None:
+            self.__async_notifier = Notifier(bus=self.bus_manager,
+                                             listeners=[self.__async_frames_buffer],
+                                             timeout=self._MIN_NOTIFIER_TIMEOUT,
+                                             loop=loop)
+
+    def _clear_frames_buffer(self) -> None:
+        # TODO: docstring and unit tests
+        for _ in range(self.__frames_buffer.buffer.qsize()):
+            self.__frames_buffer.buffer.get_nowait()
+
     @staticmethod
     def is_supported_bus_manager(bus_manager: Any) -> bool:
         """
@@ -458,8 +503,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                               is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                               data=packet.raw_frame_data,
                               is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
-        message_listener = BufferedReader()
-        notifier = Notifier(bus=self.bus_manager, listeners=[message_listener], timeout=self._MIN_NOTIFIER_TIMEOUT)
+        self._setup_notifier()
+        self._clear_frames_buffer()
         self.bus_manager.send(can_message)
         observed_frame = None
         while observed_frame is None \
@@ -469,8 +514,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             timeout_left = timeout / 1000. - (time() - time_start)
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
-            observed_frame = message_listener.get_message(timeout=timeout_left)
-        notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
+            observed_frame = self.__frames_buffer.get_message(timeout=timeout_left)
         if is_flow_control_packet:
             self.__n_ar_measured = observed_frame.timestamp - time_start
         else:
@@ -501,22 +545,20 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Provided timeout value is not None neither int nor float type.")
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
-        message_listener = BufferedReader()
-        notifier = Notifier(bus=self.bus_manager, listeners=[message_listener], timeout=self._MIN_NOTIFIER_TIMEOUT)
+        self._setup_notifier()
         packet_addressing_type = None
         while packet_addressing_type is None:
             time_now = time()
             timeout_left = self._MAX_LISTENER_TIMEOUT if timeout is None else timeout / 1000. - (time_now - time_start)
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before a CAN Packet was received.")
-            received_frame = message_listener.get_message(timeout=timeout_left)
+            received_frame = self.__frames_buffer.get_message(timeout=timeout_left)
             if received_frame is None:
                 raise TimeoutError("Timeout was reached before a CAN Packet was received.")
             if timeout is not None and (received_frame.timestamp - time_start) * 1000. > timeout:
                 raise TimeoutError("CAN Packet was received after timeout.")
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
@@ -542,11 +584,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         loop = get_running_loop() if loop is None else loop
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
-        async_message_listener = AsyncBufferedReader()
-        async_notifier = Notifier(bus=self.bus_manager,
-                                  listeners=[async_message_listener],
-                                  loop=loop,
-                                  timeout=self._MIN_NOTIFIER_TIMEOUT)
+        self._setup_async_notifier(loop)
         can_message = Message(arbitration_id=packet.can_id,
                               is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                               data=packet.raw_frame_data,
@@ -558,8 +596,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 or tuple(observed_frame.data) != packet.raw_frame_data \
                 or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
-            observed_frame = await wait_for(async_message_listener.get_message(), timeout=timeout_left)
-        async_notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
+            observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
         if is_flow_control_packet:
             self.__n_ar_measured = observed_frame.timestamp - time_start
         else:
@@ -592,11 +629,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
         loop = get_running_loop() if loop is None else loop
-        async_message_listener = AsyncBufferedReader()
-        async_notifier = Notifier(bus=self.bus_manager,
-                                  listeners=[async_message_listener],
-                                  loop=loop,
-                                  timeout=self._MIN_NOTIFIER_TIMEOUT)
+        self._setup_async_notifier(loop)
         packet_addressing_type = None
         while packet_addressing_type is None:
             if timeout is None:
@@ -605,11 +638,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 timeout_left = timeout / 1000. - (time() - time_start)
                 if timeout_left <= 0:
                     raise TimeoutError("Timeout was reached before a CAN Packet was received.")
-            received_frame = await wait_for(async_message_listener.get_message(),
+            received_frame = await wait_for(self.__async_frames_buffer.get_message(),
                                             timeout=timeout_left)
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        async_notifier.stop(timeout=self._MIN_NOTIFIER_TIMEOUT)
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,

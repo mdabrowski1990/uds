@@ -18,8 +18,7 @@ class AbstractTransportInterface(ABC):
     Transport Interfaces are meant to handle middle layers (Transport and Network) of UDS OSI Model.
     """
 
-    def __init__(self,
-                 bus_manager: Any) -> None:
+    def __init__(self, bus_manager: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
