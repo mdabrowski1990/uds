@@ -18,6 +18,16 @@ def example_addressing_information():
 
 
 @fixture
+def example_addressing_information_2nd_node():
+    """Example Addressing Information that can be used in test cases."""
+    return CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                    tx_physical={"can_id": 0x612},
+                                    rx_physical={"can_id": 0x611},
+                                    tx_functional={"can_id": 0x6FE},
+                                    rx_functional={"can_id": 0x6FF})
+
+
+@fixture
 def example_rx_frame():
     """
     Example CAN Frame containing a CAN Packet with received addressing information.

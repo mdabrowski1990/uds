@@ -398,8 +398,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     def __del__(self):
         # TODO: docstring and unit tests
-        self._teardown_notifier()
-        self._teardown_async_notifier()
+        self._teardown_notifier(suppress_warning=True)
+        self._teardown_async_notifier(suppress_warning=True)
 
     @property
     def n_as_measured(self) -> Optional[TimeMilliseconds]:
@@ -437,17 +437,30 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return self.__n_cr_measured
 
-    def _teardown_notifier(self) -> None:
+    def _teardown_notifier(self, suppress_warning: bool = False) -> None:
         # TODO: docstring and unit tests
         if self.__notifier is not None:
             self.__notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
             self.__notifier = None
+            if not suppress_warning:
+                warn(message="Asynchronous (`PyCanTransportInterface.async_send_packet`, "
+                             "`PyCanTransportInterface.async_receive_packet methods`) "
+                             "and synchronous (`PyCanTransportInterface.send_packet`, "
+                             "`PyCanTransportInterface.receive_packet methods`) shall not be used together.",
+                     category=UserWarning)
 
-    def _teardown_async_notifier(self):
+    def _teardown_async_notifier(self, suppress_warning: bool = False):
         # TODO: docstring and unit tests
         if self.__async_notifier is not None:
             self.__async_notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
             self.__async_notifier = None
+            if not suppress_warning:
+                if not suppress_warning:
+                    warn(message="Asynchronous (`PyCanTransportInterface.async_send_packet`, "
+                                 "`PyCanTransportInterface.async_receive_packet methods`) "
+                                 "and synchronous (`PyCanTransportInterface.send_packet`, "
+                                 "`PyCanTransportInterface.receive_packet methods`) shall not be used together.",
+                         category=UserWarning)
 
     def _setup_notifier(self) -> None:
         # TODO: docstring and unit tests
@@ -459,19 +472,19 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     def _setup_async_notifier(self, loop) -> None:
         # TODO: docstring and unit tests
-        if self.__notifier is not None:
-            # TODO: warn
-            self._teardown_notifier()
+        self._teardown_notifier()
         if self.__async_notifier is None:
             self.__async_notifier = Notifier(bus=self.bus_manager,
                                              listeners=[self.__async_frames_buffer],
                                              timeout=self._MIN_NOTIFIER_TIMEOUT,
                                              loop=loop)
 
-    def _clear_frames_buffer(self) -> None:
+    def clear_frames_buffers(self) -> None:
         # TODO: docstring and unit tests
         for _ in range(self.__frames_buffer.buffer.qsize()):
             self.__frames_buffer.buffer.get_nowait()
+        for _ in range(self.__async_frames_buffer.buffer.qsize()):
+            self.__async_frames_buffer.buffer.get_nowait()
 
     @staticmethod
     def is_supported_bus_manager(bus_manager: Any) -> bool:
@@ -504,13 +517,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                               data=packet.raw_frame_data,
                               is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         self._setup_notifier()
-        self._clear_frames_buffer()
+        self.clear_frames_buffers()
         self.bus_manager.send(can_message)
         observed_frame = None
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx:
+                or not observed_frame.is_rx \
+                or observed_frame.timestamp < time_start:
             timeout_left = timeout / 1000. - (time() - time_start)
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
@@ -585,6 +599,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         self._setup_async_notifier(loop)
+        self.clear_frames_buffers()
         can_message = Message(arbitration_id=packet.can_id,
                               is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                               data=packet.raw_frame_data,
@@ -594,7 +609,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx:
+                or not observed_frame.is_rx \
+                or observed_frame.timestamp < time_start:
             timeout_left = timeout / 1000. - (time() - time_start)
             observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
         if is_flow_control_packet:
