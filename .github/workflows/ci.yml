@@ -13,10 +13,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -48,10 +48,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
@@ -75,7 +75,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance"
 
       - name: Upload unit tests report [CodeCov]
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
@@ -86,7 +86,7 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
       - name: Upload integration tests report [CodeCov]
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
@@ -98,7 +98,7 @@ jobs:
 #          pytest tests/software_tests --cov-report=xml --cov=uds -m "performance"
 #
 #      - name: Upload performance tests report [CodeCov]
-#        uses: codecov/codecov-action@v2
+#        uses: codecov/codecov-action@v3
 #        with:
 #          token: ${{ secrets.CODECOV_TOKEN }}
 #          files: coverage.xml
@@ -112,10 +112,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -141,10 +141,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
