@@ -1,2 +1,2 @@
-aenum>=3.0.0
+aenum>=3.0.0, <=3.1.12  # it seems that version 3.1.13 introduced a defect
 python-can>=4.0.0
