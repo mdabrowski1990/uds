@@ -4,10 +4,11 @@ from mock import Mock, patch
 from uds.segmentation.abstract_segmenter import AbstractSegmenter
 
 
+SCRIPT_PATH = "uds.segmentation.abstract_segmenter"
+
+
 class TestAbstractSegmenter:
     """Unit tests for `AbstractSegmenter` class."""
-
-    SCRIPT_PATH = "uds.segmentation.abstract_segmenter"
 
     def setup_method(self):
         self.mock_abstract_segmenter = Mock(spec=AbstractSegmenter)

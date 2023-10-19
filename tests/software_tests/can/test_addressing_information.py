@@ -6,30 +6,31 @@ from uds.can.addressing_information import CanAddressingInformation, \
 from uds.transmission_attributes import AddressingType
 
 
+SCRIPT_LOCATION = "uds.can.addressing_information"
+
+
 class TestCanAddressingInformation:
     """Unit tests for `CanAddressingInformation` class."""
 
-    SCRIPT_LOCATION = "uds.can.addressing_information"
-
     def setup_method(self):
         # patching
-        self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
+        self._patcher_can_id_handler_class = patch(f"{SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
-        self._patcher_validate_addressing_format = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
+        self._patcher_validate_addressing_format = patch(f"{SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
         self.mock_validate_addressing_format = self._patcher_validate_addressing_format.start()
-        self._patcher_normal_11bit_ai_class = patch(f"{self.SCRIPT_LOCATION}.Normal11BitCanAddressingInformation")
+        self._patcher_normal_11bit_ai_class = patch(f"{SCRIPT_LOCATION}.Normal11BitCanAddressingInformation")
         self.mock_normal_11bit_ai_class = self._patcher_normal_11bit_ai_class.start()
-        self._patcher_normal_fixed_ai_class = patch(f"{self.SCRIPT_LOCATION}.NormalFixedCanAddressingInformation")
+        self._patcher_normal_fixed_ai_class = patch(f"{SCRIPT_LOCATION}.NormalFixedCanAddressingInformation")
         self.mock_normal_fixed_ai_class = self._patcher_normal_fixed_ai_class.start()
-        self._patcher_extended_ai_class = patch(f"{self.SCRIPT_LOCATION}.ExtendedCanAddressingInformation")
+        self._patcher_extended_ai_class = patch(f"{SCRIPT_LOCATION}.ExtendedCanAddressingInformation")
         self.mock_extended_ai_class = self._patcher_extended_ai_class.start()
-        self._patcher_mixed_11bit_ai_class = patch(f"{self.SCRIPT_LOCATION}.Mixed11BitCanAddressingInformation")
+        self._patcher_mixed_11bit_ai_class = patch(f"{SCRIPT_LOCATION}.Mixed11BitCanAddressingInformation")
         self.mock_mixed_11bit_ai_class = self._patcher_mixed_11bit_ai_class.start()
-        self._patcher_mixed_29bit_ai_class = patch(f"{self.SCRIPT_LOCATION}.Mixed29BitCanAddressingInformation")
+        self._patcher_mixed_29bit_ai_class = patch(f"{SCRIPT_LOCATION}.Mixed29BitCanAddressingInformation")
         self.mock_mixed_29bit_ai_class = self._patcher_mixed_29bit_ai_class.start()
-        self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
+        self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
 
     def teardown_method(self):

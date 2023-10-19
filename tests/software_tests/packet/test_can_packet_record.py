@@ -9,27 +9,28 @@ from uds.transmission_attributes import TransmissionDirection, AddressingType
 from uds.can import CanFlowStatus
 
 
+SCRIPT_LOCATION = "uds.packet.can_packet_record"
+
+
 class TestCanPacketRecord:
     """Unit tests for `CanPacketRecord` class."""
-
-    SCRIPT_LOCATION = "uds.packet.can_packet_record"
 
     def setup_method(self):
         self.mock_can_packet_record = Mock(spec=CanPacketRecord)
         # patching
-        self._patcher_addressing_type_class = patch(f"{self.SCRIPT_LOCATION}.AddressingType")
+        self._patcher_addressing_type_class = patch(f"{SCRIPT_LOCATION}.AddressingType")
         self.mock_addressing_type_class = self._patcher_addressing_type_class.start()
-        self._patcher_can_addressing_format_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingFormat")
+        self._patcher_can_addressing_format_class = patch(f"{SCRIPT_LOCATION}.CanAddressingFormat")
         self.mock_can_addressing_format_class = self._patcher_can_addressing_format_class.start()
-        self._patcher_can_ai_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation")
+        self._patcher_can_ai_class = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_can_ai_class = self._patcher_can_ai_class.start()
-        self._patcher_can_packet_type_class = patch(f"{self.SCRIPT_LOCATION}.CanPacketType")
+        self._patcher_can_packet_type_class = patch(f"{SCRIPT_LOCATION}.CanPacketType")
         self.mock_can_packet_type_class = self._patcher_can_packet_type_class.start()
-        self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
+        self._patcher_can_id_handler_class = patch(f"{SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
-        self._patcher_can_dlc_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler")
+        self._patcher_can_dlc_handler_class = patch(f"{SCRIPT_LOCATION}.CanDlcHandler")
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
-        self._patcher_abstract_uds_packet_record_init = patch(f"{self.SCRIPT_LOCATION}.AbstractUdsPacketRecord.__init__")
+        self._patcher_abstract_uds_packet_record_init = patch(f"{SCRIPT_LOCATION}.AbstractUdsPacketRecord.__init__")
         self.mock_abstract_uds_packet_record_init = self._patcher_abstract_uds_packet_record_init.start()
 
     def teardown_method(self):

@@ -5,17 +5,18 @@ from uds.message.service_identifiers import RequestSID, ResponseSID, \
     ByteEnum, ValidatedEnum, ExtendableEnum
 
 
+SCRIPT_LOCATION = "uds.message.service_identifiers"
+
+
 class TestRequestSID:
     """Unit tests for 'RequestSID' enum."""
 
-    SCRIPT_LOCATION = "uds.message.service_identifiers"
-
     def setup_method(self):
-        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
-        self._patcher_is_member = patch(f"{self.SCRIPT_LOCATION}.RequestSID.is_member")
+        self._patcher_is_member = patch(f"{SCRIPT_LOCATION}.RequestSID.is_member")
         self.mock_is_member = self._patcher_is_member.start()
-        self._patcher_possible_request_sids = patch(f"{self.SCRIPT_LOCATION}.POSSIBLE_REQUEST_SIDS")
+        self._patcher_possible_request_sids = patch(f"{SCRIPT_LOCATION}.POSSIBLE_REQUEST_SIDS")
         self.mock_possible_request_sids = self._patcher_possible_request_sids.start()
 
     def teardown_method(self):
@@ -63,14 +64,12 @@ class TestRequestSID:
 class TestResponseSID:
     """Unit tests for 'ResponseSID' enum."""
 
-    SCRIPT_LOCATION = TestRequestSID.SCRIPT_LOCATION
-
     def setup_method(self):
-        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
-        self._patcher_is_member = patch(f"{self.SCRIPT_LOCATION}.ResponseSID.is_member")
+        self._patcher_is_member = patch(f"{SCRIPT_LOCATION}.ResponseSID.is_member")
         self.mock_is_member = self._patcher_is_member.start()
-        self._patcher_possible_response_sids = patch(f"{self.SCRIPT_LOCATION}.POSSIBLE_RESPONSE_SIDS")
+        self._patcher_possible_response_sids = patch(f"{SCRIPT_LOCATION}.POSSIBLE_RESPONSE_SIDS")
         self.mock_possible_response_sids = self._patcher_possible_response_sids.start()
 
     def teardown_method(self):

@@ -7,6 +7,9 @@ from uds.can import CanAddressingFormat
 from uds.utilities import ValidatedEnum, NibbleEnum
 
 
+SCRIPT_LOCATION = "uds.can.flow_control"
+
+
 class TestCanFlowStatus:
     """Unit tests for 'CanFlowStatus' class."""
 
@@ -20,12 +23,10 @@ class TestCanFlowStatus:
 class TestCanSTmin:
     """Unit tests for 'CanSTmin' class."""
 
-    SCRIPT_LOCATION = "uds.can.flow_control"
-
     def setup_method(self):
-        self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
-        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
     def teardown_method(self):
@@ -135,28 +136,26 @@ class TestCanSTminIntegration:
 class TestCanFlowControlHandler:
     """Unit tests for `CanFlowControlHandler` class."""
 
-    SCRIPT_LOCATION = TestCanSTmin.SCRIPT_LOCATION
-
     def setup_method(self):
-        self._patcher_validate_nibble = patch(f"{self.SCRIPT_LOCATION}.validate_nibble")
+        self._patcher_validate_nibble = patch(f"{SCRIPT_LOCATION}.validate_nibble")
         self.mock_validate_nibble = self._patcher_validate_nibble.start()
-        self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
-        self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
+        self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_encode_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.encode_dlc")
+        self._patcher_encode_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.encode_dlc")
         self.mock_encode_dlc = self._patcher_encode_dlc.start()
-        self._patcher_decode_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.decode_dlc")
+        self._patcher_decode_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode_dlc")
         self.mock_decode_dlc = self._patcher_decode_dlc.start()
-        self._patcher_get_min_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
+        self._patcher_get_min_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
         self.mock_get_min_dlc = self._patcher_get_min_dlc.start()
         self._patcher_encode_ai_data_bytes = \
-            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.encode_ai_data_bytes")
+            patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.encode_ai_data_bytes")
         self.mock_encode_ai_data_bytes = self._patcher_encode_ai_data_bytes.start()
         self._patcher_get_ai_data_bytes_number = \
-            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
+            patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
         self.mock_get_ai_data_bytes_number = self._patcher_get_ai_data_bytes_number.start()
-        self._patcher_validate_flow_status = patch(f"{self.SCRIPT_LOCATION}.CanFlowStatus.validate_member")
+        self._patcher_validate_flow_status = patch(f"{SCRIPT_LOCATION}.CanFlowStatus.validate_member")
         self.mock_validate_flow_status = self._patcher_validate_flow_status.start()
 
     def teardown_method(self):

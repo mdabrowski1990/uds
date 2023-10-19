@@ -2,10 +2,11 @@ from uds.packet.abstract_packet_type import AbstractUdsPacketType
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum
 
 
+SCRIPT_LOCATION = "uds.packet.abstract_packet"
+
+
 class TestAbstractPacketType:
     """Unit tests for 'AbstractPacketType' class."""
-
-    SCRIPT_LOCATION = "uds.packet.abstract_packet"
 
     def test_inheritance__nibble_enum(self):
         assert issubclass(AbstractUdsPacketType, NibbleEnum)

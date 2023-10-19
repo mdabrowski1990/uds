@@ -6,25 +6,26 @@ from uds.can.first_frame import CanFirstFrameHandler, \
 from uds.can import CanAddressingFormat
 
 
+SCRIPT_LOCATION = "uds.can.first_frame"
+
+
 class TestCanFirstFrameHandler:
     """Unit tests for `CanFirstFrameHandler` class."""
 
-    SCRIPT_LOCATION = "uds.can.first_frame"
-
     def setup_method(self):
-        self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
+        self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_bytes_list_to_int = patch(f"{self.SCRIPT_LOCATION}.bytes_list_to_int")
+        self._patcher_bytes_list_to_int = patch(f"{SCRIPT_LOCATION}.bytes_list_to_int")
         self.mock_bytes_list_to_int = self._patcher_bytes_list_to_int.start()
-        self._patcher_get_ai_data_bytes_number = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
+        self._patcher_get_ai_data_bytes_number = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
         self.mock_get_ai_data_bytes_number = self._patcher_get_ai_data_bytes_number.start()
-        self._patcher_encode_ai_data_bytes = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.encode_ai_data_bytes")
+        self._patcher_encode_ai_data_bytes = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.encode_ai_data_bytes")
         self.mock_encode_ai_data_bytes = self._patcher_encode_ai_data_bytes.start()
-        self._patcher_decode_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.decode_dlc")
+        self._patcher_decode_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode_dlc")
         self.mock_decode_dlc = self._patcher_decode_dlc.start()
-        self._patcher_encode_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.encode_dlc")
+        self._patcher_encode_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.encode_dlc")
         self.mock_encode_dlc = self._patcher_encode_dlc.start()
-        self._patcher_get_max_sf_dl = patch(f"{self.SCRIPT_LOCATION}.CanSingleFrameHandler.get_max_payload_size")
+        self._patcher_get_max_sf_dl = patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler.get_max_payload_size")
         self.mock_get_max_sf_dl = self._patcher_get_max_sf_dl.start()
 
     def teardown_method(self):

@@ -6,10 +6,11 @@ from uds.packet.abstract_can_packet_container import AbstractCanPacketContainer,
 from uds.transmission_attributes import AddressingType
 
 
+SCRIPT_LOCATION = "uds.packet.abstract_can_packet_container"
+
+
 class TestAbstractCanPacketContainer:
     """Unit tests for 'AbstractCanPacketContainer' class."""
-
-    SCRIPT_LOCATION = "uds.packet.abstract_can_packet_container"
 
     def setup_method(self):
         self.mock_can_packet_container = Mock(spec=AbstractCanPacketContainer)
@@ -18,19 +19,19 @@ class TestAbstractCanPacketContainer:
                                           CONSECUTIVE_FRAME=CanPacketType.CONSECUTIVE_FRAME,
                                           FLOW_CONTROL=CanPacketType.FLOW_CONTROL)
         # patching
-        self._patcher_ai_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation")
+        self._patcher_ai_handler_class = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_ai_handler_class = self._patcher_ai_handler_class.start()
-        self._patcher_can_dlc_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler")
+        self._patcher_can_dlc_handler_class = patch(f"{SCRIPT_LOCATION}.CanDlcHandler")
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
-        self._patcher_single_frame_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanSingleFrameHandler")
+        self._patcher_single_frame_handler_class = patch(f"{SCRIPT_LOCATION}.CanSingleFrameHandler")
         self.mock_single_frame_handler_class = self._patcher_single_frame_handler_class.start()
-        self._patcher_first_frame_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanFirstFrameHandler")
+        self._patcher_first_frame_handler_class = patch(f"{SCRIPT_LOCATION}.CanFirstFrameHandler")
         self.mock_first_frame_handler_class = self._patcher_first_frame_handler_class.start()
-        self._patcher_consecutive_frame_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanConsecutiveFrameHandler")
+        self._patcher_consecutive_frame_handler_class = patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler")
         self.mock_consecutive_frame_handler_class = self._patcher_consecutive_frame_handler_class.start()
-        self._patcher_flow_control_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanFlowControlHandler")
+        self._patcher_flow_control_handler_class = patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler")
         self.mock_flow_control_handler_class = self._patcher_flow_control_handler_class.start()
-        self._patcher_can_packet_type_class = patch(f"{self.SCRIPT_LOCATION}.CanPacketType", mock_can_packet_type_class)
+        self._patcher_can_packet_type_class = patch(f"{SCRIPT_LOCATION}.CanPacketType", mock_can_packet_type_class)
         self.mock_can_packet_type_class = self._patcher_can_packet_type_class.start()
 
     def teardown_method(self):
