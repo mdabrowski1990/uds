@@ -59,5 +59,4 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
             can_id=can_id,  # type: ignore
             target_address=target_address,
             source_address=source_address,
-            address_extension=address_extension
-        )
+            address_extension=address_extension)

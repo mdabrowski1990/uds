@@ -92,8 +92,7 @@ class CanAddressingInformation:
             can_id=can_id,
             target_address=target_address,
             source_address=source_address,
-            address_extension=address_extension
-        )
+            address_extension=address_extension)
 
     @classmethod
     def validate_ai_data_bytes(cls, addressing_format: CanAddressingFormatAlias, ai_data_bytes: RawBytes) -> None:
