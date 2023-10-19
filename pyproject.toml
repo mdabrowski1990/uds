@@ -60,10 +60,10 @@ Wiki = "https://github.com/mdabrowski1990/uds/wiki"
 
 [project.optional-dependencies]
 test = [
-    "pytest >= 7.0.0",
+    "pytest == 7.*",
     "pytest-cov",
     "pytest-asyncio",
-    "mock"
+    "mock == 4.*"
 ]
 docs = [
     "sphinx",
