@@ -11,7 +11,7 @@ from .abstract_packet_type import AbstractUdsPacketType
 
 
 @unique
-class CanPacketType(AbstractUdsPacketType):  # pylint: disable=too-many-ancestors
+class CanPacketType(AbstractUdsPacketType):
     """
     Definition of CAN packet types.
 
