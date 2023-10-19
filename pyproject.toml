@@ -40,7 +40,7 @@ maintainers = [
     {name="UDS Package Development", email="uds-package-development@googlegroups.com"},
 ]
 dependencies = [
-    "aenum",
+    "aenum >=3.0.0, <=3.1.12",
     "python-can"
 ]
 dynamic = ["version"]
