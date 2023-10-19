@@ -60,7 +60,7 @@ Wiki = "https://github.com/mdabrowski1990/uds/wiki"
 
 [project.optional-dependencies]
 test = [
-    "pytest >= 6.0.0",
+    "pytest >= 7.0.0",
     "pytest-cov",
     "pytest-asyncio",
     "mock"
@@ -101,12 +101,12 @@ docs = [
 
 [tool.setuptools.packages.find]
 include = [
-    "uds*"
+    "uds.*"
 ]
 
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "7.0"
 markers = [
     "integration: Software integration tests.",
     "performance: Performance (non-functional) tests."

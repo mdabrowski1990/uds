@@ -19,7 +19,12 @@ def example_addressing_information():
 
 @fixture
 def example_addressing_information_2nd_node():
-    """Example Addressing Information that can be used in test cases."""
+    """
+    Example Addressing Information that can be used in test cases.
+
+    .. note::
+        It is Addressing Information of a CAN Node on another end to example_addressing_information.
+    """
     return CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                     tx_physical={"can_id": 0x612},
                                     rx_physical={"can_id": 0x611},
