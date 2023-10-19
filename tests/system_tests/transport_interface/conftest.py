@@ -23,7 +23,7 @@ def example_addressing_information_2nd_node():
     Example Addressing Information of a 2nd CAN Node.
 
     .. note::
-        Values of example_addressing_information and example_addressing_information_2nd_node are defined, so
+        Values of example_addressing_information and example_addressing_information_2nd_node are compatible, so
         these two CAN nodes can communicate with each other over physical and functional addressing.
     """
     return CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
