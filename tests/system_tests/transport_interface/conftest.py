@@ -9,7 +9,7 @@ from uds.transmission_attributes import AddressingType
 
 @fixture
 def example_addressing_information():
-    """Example Addressing Information that can be used in test cases."""
+    """Example Addressing Information of a CAN Node."""
     return CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                     tx_physical={"can_id": 0x611},
                                     rx_physical={"can_id": 0x612},
@@ -20,10 +20,11 @@ def example_addressing_information():
 @fixture
 def example_addressing_information_2nd_node():
     """
-    Example Addressing Information that can be used in test cases.
+    Example Addressing Information of a 2nd CAN Node.
 
     .. note::
-        It is Addressing Information of a CAN Node on another end to example_addressing_information.
+        Values of example_addressing_information and example_addressing_information_2nd_node are defined, so
+        these two CAN nodes can communicate with each other over physical and functional addressing.
     """
     return CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                     tx_physical={"can_id": 0x612},
@@ -60,7 +61,7 @@ def example_tx_uds_message():
     Example CAN Frame containing a CAN Packet with transmitted addressing information.
 
     .. note::
-        The same as example_tx_frame.
+        It is the same message as one carried in example_tx_frame.
         Compatible with example_addressing_information.
     """
     return UdsMessage(payload=[0x50, 0x03], addressing_type=AddressingType.PHYSICAL)
