@@ -38,7 +38,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     DEFAULT_N_BR: TimeMilliseconds = 0
     """Default value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter."""
     DEFAULT_N_CS: Optional[TimeMilliseconds] = None
-    """Default value of :ref:`N_Cs <knowledge-base-can-n-br>` time parameter."""
+    """Default value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
 
     def __init__(self,
                  can_bus_manager: Any,
@@ -70,9 +70,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.n_as_timeout = kwargs.pop("n_as_timeout", self.N_AS_TIMEOUT)
         self.n_ar_timeout = kwargs.pop("n_ar_timeout", self.N_AR_TIMEOUT)
         self.n_bs_timeout = kwargs.pop("n_bs_timeout", self.N_BS_TIMEOUT)
+        self.n_cr_timeout = kwargs.pop("n_cr_timeout", self.N_CR_TIMEOUT)
         self.n_br = kwargs.pop("n_br", self.DEFAULT_N_BR)
         self.n_cs = kwargs.pop("n_cs", self.DEFAULT_N_CS)
-        self.n_cr_timeout = kwargs.pop("n_cr_timeout", self.N_CR_TIMEOUT)
         self.__segmenter = CanSegmenter(addressing_information=addressing_information, **kwargs)
 
     @property
@@ -236,6 +236,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set the value of N_Cs time parameter to use.
 
         :param value: The value to set.
+            - None - use timing compatible with STmin value received in a preceding Flow Control packet
+            - int/float type - timing value to be used regardless of a received STmin value
 
         :raise TypeError: Provided value is not int or float.
         :raise ValueError: Provided value is out of range.
@@ -453,7 +455,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                              "`PyCanTransportInterface.receive_packet methods`) shall not be used together.",
                      category=UserWarning)
 
-    def _teardown_async_notifier(self, suppress_warning: bool = False):
+    def _teardown_async_notifier(self, suppress_warning: bool = False) -> None:
         """
         Stop and remove CAN frame notifier for asynchronous communication.
 

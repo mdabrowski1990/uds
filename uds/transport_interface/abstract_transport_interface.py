@@ -90,7 +90,7 @@ class AbstractTransportInterface(ABC):
         Transmit UDS packet asynchronously.
 
         :param packet: A packet to send.
-        :param loop: An asyncio event loop used for observing messages.
+        :param loop: An asyncio event loop to use for scheduling this task.
 
         :return: Record with historic information about transmitted UDS packet.
         """
@@ -103,9 +103,10 @@ class AbstractTransportInterface(ABC):
         Receive UDS packet asynchronously.
 
         :param timeout: Maximal time (in milliseconds) to wait.
-        :param loop: An asyncio event loop used for observing messages.
+        :param loop: An asyncio event loop to use for scheduling this task.
 
         :raise TimeoutError: Timeout was reached.
+        :raise asyncio.TimeoutError: Timeout was reached.
 
         :return: Record with historic information about received UDS packet.
         """

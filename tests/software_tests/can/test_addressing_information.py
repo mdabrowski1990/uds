@@ -249,6 +249,7 @@ class TestCanAddressingInformation:
         mock_ai_mapping.__getitem__.assert_called_once_with(addressing_format)
 
 
+@pytest.mark.integration
 class TestCanAddressingInformationIntegration:
     """Integration tests for `CanAddressingInformation` class."""
 

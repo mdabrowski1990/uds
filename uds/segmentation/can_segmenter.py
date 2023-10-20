@@ -16,7 +16,7 @@ from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
 class CanSegmenter(AbstractSegmenter):
-    """Segmenter class that provides utilities for segmentation and desegmentation on CAN bus."""
+    """Segmenter class that provides utilities for segmentation and desegmentation specific for CAN bus."""
 
     def __init__(self, *,
                  addressing_information: AbstractCanAddressingInformation,
@@ -26,7 +26,7 @@ class CanSegmenter(AbstractSegmenter):
         """
         Configure CAN Segmenter.
 
-        :param addressing_information: Addressing Information configuration of a CAN entity.
+        :param addressing_information: Addressing Information configuration of a CAN node.
         :param dlc: Base CAN DLC value to use for creating CAN Packets.
         :param use_data_optimization: Information whether to use CAN Frame Data Optimization in created CAN Packets
             during segmentation.
@@ -75,7 +75,7 @@ class CanSegmenter(AbstractSegmenter):
 
     @property
     def addressing_information(self) -> AbstractCanAddressingInformation:
-        """Addressing Information configuration of a CAN entity."""
+        """Addressing Information configuration of a CAN node."""
         return self.__addressing_information
 
     @addressing_information.setter

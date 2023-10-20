@@ -969,6 +969,7 @@ class TestPyCanTransportInterface:
             transmission_time=self.mock_datetime.fromtimestamp.return_value)
 
 
+@pytest.mark.integration
 class TestPyCanTransportInterfaceIntegration:
     """Integration tests for `PyCanTransportInterface` class."""
 
@@ -980,13 +981,35 @@ class TestPyCanTransportInterfaceIntegration:
                 rx_physical={"can_id": 0x641},
                 tx_physical={"can_id": 0x642},
                 rx_functional={"can_id": 0x6FE},
-                tx_functional={"can_id": 0x6FF},
-            ),
-        }
+                tx_functional={"can_id": 0x6FF}),
+        },
+        {
+            "can_bus_manager": Mock(spec=BusABC),
+            "addressing_information": CanAddressingInformation(
+                addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                tx_physical={"target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
+                rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
+                tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
+                rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}),
+            "n_as_timeout": 0.1,
+            "n_ar_timeout": 987,
+            "n_bs_timeout": 43,
+            "n_br": 5.3,
+            "n_cs": 0.92,
+            "n_cr_timeout": 98.32,
+        },
     ])
     def test_init(self, init_kwargs):
         py_can_ti = PyCanTransportInterface(**init_kwargs)
+        assert py_can_ti.bus_manager == init_kwargs["can_bus_manager"]
+        assert py_can_ti.addressing_information == init_kwargs["addressing_information"]
         assert py_can_ti.n_as_measured is None
         assert py_can_ti.n_ar_measured is None
         assert py_can_ti.n_bs_measured is None
         assert py_can_ti.n_cr_measured is None
+        assert py_can_ti.n_as_timeout == init_kwargs.get("n_as_timeout", AbstractCanTransportInterface.N_AS_TIMEOUT)
+        assert py_can_ti.n_ar_timeout == init_kwargs.get("n_ar_timeout", AbstractCanTransportInterface.N_AR_TIMEOUT)
+        assert py_can_ti.n_bs_timeout == init_kwargs.get("n_bs_timeout", AbstractCanTransportInterface.N_BS_TIMEOUT)
+        assert py_can_ti.n_br == init_kwargs.get("n_br", AbstractCanTransportInterface.DEFAULT_N_BR)
+        assert py_can_ti.n_cs == init_kwargs.get("n_cs", AbstractCanTransportInterface.DEFAULT_N_CS)
+        assert py_can_ti.n_cr_timeout == init_kwargs.get("n_cr_timeout", AbstractCanTransportInterface.N_CR_TIMEOUT)
