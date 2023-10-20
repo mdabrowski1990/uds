@@ -13,22 +13,28 @@ from uds.message import UdsMessage
 
 
 class TestPythonCanKvaser:
-    """System Tests for `PyCanTransportInterface` with Kvaser as bus manager."""
+    """
+    System Tests for `PyCanTransportInterface` with Kvaser as bus manager.
+
+    Hardware setup:
+        - two Kvaser interfaces (either https://www.kvaser.com/products-services/our-products/#/?pc_int=usb)
+          connected with each in the same CAN bus (do not forget about CAN termination)
+    """
 
     TASK_TIMING_TOLERANCE = 30.  # ms
 
     def setup_class(self):
-        self.bus1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
-        self.bus2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
+        self.can_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
+        self.can_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
 
     def setup_method(self):
-        self.bus1.flush_tx_buffer()
-        self.bus2.flush_tx_buffer()
+        self.can_interface_1.flush_tx_buffer()
+        self.can_interface_2.flush_tx_buffer()
 
     def teardown_class(self):
         """Safely close bus objects."""
-        self.bus1.shutdown()
-        self.bus2.shutdown()
+        self.can_interface_1.shutdown()
+        self.can_interface_2.shutdown()
 
     # send_packet
 
@@ -99,7 +105,7 @@ class TestPythonCanKvaser:
             target_address = addressing_information.tx_packets_functional_ai["target_address"]
             source_address = addressing_information.tx_packets_functional_ai["source_address"]
             address_extension = addressing_information.tx_packets_functional_ai["address_extension"]
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
                            addressing_format=addressing_information.addressing_format,
@@ -194,9 +200,9 @@ class TestPythonCanKvaser:
             frame.arbitration_id = addressing_information.rx_packets_functional_ai["can_id"]
         # data parameter of `frame` object must be set manually and according to `addressing_format`
         # and `addressing_information`
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
-        Timer(interval=send_after/1000., function=self.bus2.send, args=(frame,)).start()
+        Timer(interval=send_after/1000., function=self.can_interface_2.send, args=(frame,)).start()
         time_before_receive = time()
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_packet(timeout=timeout)
@@ -258,9 +264,9 @@ class TestPythonCanKvaser:
         frame.arbitration_id = addressing_information.rx_packets_physical_ai["can_id"]
         # data parameter of `frame` object must be set manually and according to `addressing_format`
         # and `addressing_information`
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
-        Timer(interval=send_after/1000., function=self.bus2.send, args=(frame, )).start()
+        Timer(interval=send_after/1000., function=self.can_interface_2.send, args=(frame,)).start()
         datetime_before_receive = datetime.now()
         packet_record = can_transport_interface.receive_packet(timeout=timeout)
         datetime_after_receive = datetime.now()
@@ -333,9 +339,9 @@ class TestPythonCanKvaser:
         frame.arbitration_id = addressing_information.rx_packets_functional_ai["can_id"]
         # data parameter of `frame` object must be set manually and according to `addressing_format`
         # and `addressing_information`
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
-        Timer(interval=send_after/1000., function=self.bus2.send, args=(frame, )).start()
+        Timer(interval=send_after/1000., function=self.can_interface_2.send, args=(frame,)).start()
         datetime_before_receive = datetime.now()
         packet_record = can_transport_interface.receive_packet(timeout=timeout)
         datetime_after_receive = datetime.now()
@@ -423,7 +429,7 @@ class TestPythonCanKvaser:
             target_address = addressing_information.tx_packets_functional_ai["target_address"]
             source_address = addressing_information.tx_packets_functional_ai["source_address"]
             address_extension = addressing_information.tx_packets_functional_ai["address_extension"]
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
                            addressing_format=addressing_information.addressing_format,
@@ -465,7 +471,7 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Example Addressing Information of a CAN Node.
         :param timeout: Timeout to pass to receive method [ms].
         """
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         time_before_receive = time()
         with pytest.raises((TimeoutError, asyncio.TimeoutError)):
@@ -528,12 +534,12 @@ class TestPythonCanKvaser:
         """
         async def _send_frame():
             await asyncio.sleep(send_after/1000.)
-            self.bus2.send(frame)
+            self.can_interface_2.send(frame)
 
         frame.arbitration_id = addressing_information.rx_packets_physical_ai["can_id"]
         # data parameter of `frame` object must be set manually and according to `addressing_format`
         # and `addressing_information`
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         future_record = can_transport_interface.async_receive_packet(timeout=timeout)
         datetime_before_receive = datetime.now()
@@ -612,12 +618,12 @@ class TestPythonCanKvaser:
         """
         async def _send_frame():
             await asyncio.sleep(send_after/1000.)
-            self.bus2.send(frame)
+            self.can_interface_2.send(frame)
 
         frame.arbitration_id = addressing_information.rx_packets_functional_ai["can_id"]
         # data parameter of `frame` object must be set manually and according to `addressing_format`
         # and `addressing_information`
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         future_record = can_transport_interface.async_receive_packet(timeout=timeout)
         datetime_before_receive = datetime.now()
@@ -668,9 +674,9 @@ class TestPythonCanKvaser:
         :param payload: Payload of CAN Message to send.
         :param addressing_type: Addressing Type of CAN Message to send.
         """
-        can_transport_interface_1 = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface_1 = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                             addressing_information=example_addressing_information)
-        can_transport_interface_2 = PyCanTransportInterface(can_bus_manager=self.bus2,
+        can_transport_interface_2 = PyCanTransportInterface(can_bus_manager=self.can_interface_2,
                                                             addressing_information=example_addressing_information_2nd_node)
         uds_message = UdsMessage(payload=payload, addressing_type=addressing_type)
         packet = can_transport_interface_2.segmenter.segmentation(uds_message)[0]
@@ -712,9 +718,9 @@ class TestPythonCanKvaser:
         :param payload: Payload of CAN Message to send.
         :param addressing_type: Addressing Type of CAN Message to send.
         """
-        can_transport_interface_1 = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface_1 = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                             addressing_information=example_addressing_information)
-        can_transport_interface_2 = PyCanTransportInterface(can_bus_manager=self.bus2,
+        can_transport_interface_2 = PyCanTransportInterface(can_bus_manager=self.can_interface_2,
                                                             addressing_information=example_addressing_information_2nd_node)
         uds_message = UdsMessage(payload=payload, addressing_type=addressing_type)
         packet = can_transport_interface_2.segmenter.segmentation(uds_message)[0]
@@ -751,7 +757,7 @@ class TestPythonCanKvaser:
         :param payload: Payload of CAN Message to send.
         :param addressing_type: Addressing Type of CAN Message to send.
         """
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         uds_message = UdsMessage(payload=payload, addressing_type=addressing_type)
         packet = can_transport_interface.segmenter.segmentation(uds_message)[0]
@@ -786,7 +792,7 @@ class TestPythonCanKvaser:
         :param payload: Payload of CAN Message to send.
         :param addressing_type: Addressing Type of CAN Message to send.
         """
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         uds_message = UdsMessage(payload=payload, addressing_type=addressing_type)
         packet = can_transport_interface.segmenter.segmentation(uds_message)[0]
@@ -816,12 +822,12 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Example Addressing Information of a CAN Node.
         :param example_rx_frame: Example CAN frame that shall be recognized as a CAN packet.
         """
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_packet(timeout=100)
         datetime_before_send = datetime.now()
-        self.bus2.send(example_rx_frame)
+        self.can_interface_2.send(example_rx_frame)
         packet_record = can_transport_interface.receive_packet(timeout=100)
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
@@ -844,12 +850,12 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Example Addressing Information of a CAN Node.
         :param example_rx_frame: Example CAN frame that shall be recognized as a CAN packet.
         """
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         with pytest.raises((TimeoutError, asyncio.TimeoutError)):
             await can_transport_interface.async_receive_packet(timeout=100)
         datetime_before_send = datetime.now()
-        self.bus2.send(example_rx_frame)
+        self.can_interface_2.send(example_rx_frame)
         packet_record = await can_transport_interface.async_receive_packet(timeout=100)
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
@@ -871,10 +877,10 @@ class TestPythonCanKvaser:
         :param example_tx_frame: Example CAN frame that shall be recognized as a CAN packet.
         :param example_tx_uds_message: CAN Message carried by CAN packet in example_tx_frame.
         """
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         packet = can_transport_interface.segmenter.segmentation(example_tx_uds_message)[0]
-        self.bus1.send(example_tx_frame)
+        self.can_interface_1.send(example_tx_frame)
         sleep(0.1)
         datetime_before_send = datetime.now()
         packet_record = can_transport_interface.send_packet(packet)
@@ -902,10 +908,10 @@ class TestPythonCanKvaser:
         :param example_tx_frame: Example CAN frame that shall be recognized as a CAN packet.
         :param example_tx_uds_message: CAN Message carried by CAN packet in example_tx_frame.
         """
-        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.bus1,
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         packet = can_transport_interface.segmenter.segmentation(example_tx_uds_message)[0]
-        self.bus1.send(example_tx_frame)
+        self.can_interface_1.send(example_tx_frame)
         sleep(0.1)
         datetime_before_send = datetime.now()
         packet_record = await can_transport_interface.async_send_packet(packet)
