@@ -5,11 +5,11 @@ __all__ = ["AbstractCanPacketContainer"]
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from uds.utilities import RawBytesTuple
+from uds.utilities import RawBytesTupleAlias
 from uds.transmission_attributes import AddressingTypeAlias
-from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, CanDlcHandler, \
-    CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, CanFlowControlHandler, \
-    CanAddressingFormatAlias, CanFlowStatusAlias
+from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, PacketAIParamsAlias,\
+    CanDlcHandler, CanAddressingFormat, CanFlowStatusAlias, \
+    CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, CanFlowControlHandler
 from .can_packet_type import CanPacketTypeAlias, CanPacketType
 
 
@@ -18,7 +18,7 @@ class AbstractCanPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
 
     @property
@@ -28,7 +28,7 @@ class AbstractCanPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN addressing format used by this CAN packet."""
 
     @property
@@ -125,7 +125,7 @@ class AbstractCanPacketContainer(ABC):
         return None
 
     @property
-    def payload(self) -> Optional[RawBytesTuple]:
+    def payload(self) -> Optional[RawBytesTupleAlias]:
         """
         Diagnostic message payload carried by this CAN packet.
 
@@ -198,7 +198,7 @@ class AbstractCanPacketContainer(ABC):
                                                        raw_frame_data=self.raw_frame_data)
         return None
 
-    def get_addressing_information(self) -> CanAddressingInformation.DecodedAIParamsAlias:
+    def get_addressing_information(self) -> PacketAIParamsAlias:
         """
         Get Addressing Information carried by this packet.
 

@@ -10,7 +10,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 from datetime import datetime
 
-from uds.utilities import RawBytes, RawBytesTuple, RawBytesList, validate_raw_bytes, ReassignmentError
+from uds.utilities import RawBytesAlias, RawBytesTupleAlias, RawBytesListAlias, validate_raw_bytes, ReassignmentError
 from uds.transmission_attributes import TransmissionDirectionAlias, AddressingType, AddressingTypeAlias
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
@@ -30,7 +30,7 @@ class AbstractUdsMessageContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> RawBytesTuple:
+    def payload(self) -> RawBytesTupleAlias:
         """Raw payload bytes carried by this diagnostic message."""
 
     @property
@@ -50,7 +50,7 @@ class UdsMessage(AbstractUdsMessageContainer):
     :class:`~uds.message.uds_message.UdsMessageRecord`.
     """
 
-    def __init__(self, payload: RawBytes, addressing_type: AddressingTypeAlias) -> None:
+    def __init__(self, payload: RawBytesAlias, addressing_type: AddressingTypeAlias) -> None:
         """
         Create a storage for a single diagnostic message.
 
@@ -73,12 +73,12 @@ class UdsMessage(AbstractUdsMessageContainer):
         return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
-    def payload(self) -> RawBytesTuple:
+    def payload(self) -> RawBytesTupleAlias:
         """Raw payload bytes carried by this diagnostic message."""
         return self.__payload
 
     @payload.setter
-    def payload(self, value: RawBytes):
+    def payload(self, value: RawBytesAlias):
         """
         Set value of raw payload bytes that this diagnostic message carries.
 
@@ -113,7 +113,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
         """
-        self.packets_records = packets_records  # type: ignore
+        self.packets_records = packets_records
 
     def __eq__(self, other: object) -> bool:
         """
@@ -179,10 +179,10 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
             raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
 
     @property
-    def payload(self) -> RawBytesTuple:
+    def payload(self) -> RawBytesTupleAlias:
         """Raw payload bytes carried by this diagnostic message."""
         number_of_bytes = self.packets_records[0].data_length
-        message_payload: RawBytesList = []
+        message_payload: RawBytesListAlias = []
         for packet in self.packets_records:
             if packet.payload is not None:
                 message_payload.extend(packet.payload)
@@ -198,7 +198,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """Information whether this message was received or sent."""
         return self.packets_records[0].direction
 
-    @property  # noqa
+    @property  # noqa: F841
     def transmission_start(self) -> datetime:
         """
         Time stamp when transmission of this message was initiated.
@@ -210,7 +210,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """
         return self.packets_records[0].transmission_time
 
-    @property  # noqa
+    @property  # noqa: F841
     def transmission_end(self) -> datetime:
         """
         Time stamp when transmission of this message was completed.

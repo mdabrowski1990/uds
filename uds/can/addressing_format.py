@@ -1,8 +1,6 @@
 """Implementation of CAN Addressing Formats."""
 
-__all__ = ["CanAddressingFormat", "CanAddressingFormatAlias"]
-
-from typing import Union
+__all__: "CanAddressingFormat" = ["CanAddressingFormat"]
 
 from aenum import unique, StrEnum
 
@@ -18,21 +16,17 @@ class CanAddressingFormat(StrEnum, ValidatedEnum):
     :ref:`Network Address Information (N_AI) <knowledge-base-n-ai>` is provided.
     """
 
-    NORMAL_11BIT_ADDRESSING = "Normal 11-bit Addressing"
+    NORMAL_11BIT_ADDRESSING: "CanAddressingFormat" = "Normal 11-bit Addressing"
     """:ref:`Normal addressing <knowledge-base-can-normal-addressing>` format that uses 11-bit CAN Identifiers."""
-    NORMAL_FIXED_ADDRESSING = "Normal Fixed Addressing"
+    NORMAL_FIXED_ADDRESSING: "CanAddressingFormat" = "Normal Fixed Addressing"
     """:ref:`Normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` format.
     It is a subformat of :ref:`Normal addressing <knowledge-base-can-normal-addressing>` which uses 29-bit
     CAN Identifiers only."""
-    EXTENDED_ADDRESSING = "Extended Addressing"
+    EXTENDED_ADDRESSING: "CanAddressingFormat" = "Extended Addressing"
     """:ref:`Extended addressing <knowledge-base-can-extended-addressing>` format."""
-    MIXED_11BIT_ADDRESSING = "Mixed 11-bit Addressing"
+    MIXED_11BIT_ADDRESSING: "CanAddressingFormat" = "Mixed 11-bit Addressing"
     """:ref:`Mixed addressing with 11-bit CAN ID <knowledge-base-can-mixed-11-bit-addressing>` format.
     It is a subformat of :ref:`mixed addressing <knowledge-base-can-mixed-addressing>`."""
-    MIXED_29BIT_ADDRESSING = "Mixed 29-bit Addressing"
+    MIXED_29BIT_ADDRESSING: "CanAddressingFormat" = "Mixed 29-bit Addressing"
     """:ref:`Mixed addressing with 29-bit CAN ID <knowledge-base-can-mixed-29-bit-addressing>` format.
     It is a subformat of :ref:`mixed addressing <knowledge-base-can-mixed-addressing>`."""
-
-
-CanAddressingFormatAlias = Union[CanAddressingFormat, str]
-"""Alias that describes :class:`~uds.can.addressing_format.CanAddressingFormat` member."""

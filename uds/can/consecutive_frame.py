@@ -9,9 +9,9 @@ __all__ = ["CanConsecutiveFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import RawBytes, RawBytesList, validate_raw_bytes, validate_raw_byte, validate_nibble, \
+from uds.utilities import RawBytesAlias, RawBytesListAlias, validate_raw_bytes, validate_raw_byte, validate_nibble, \
     InconsistentArgumentsError
-from .addressing_format import CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormat
 from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
@@ -26,13 +26,13 @@ class CanConsecutiveFrameHandler:
 
     @classmethod
     def create_valid_frame_data(cls, *,
-                                addressing_format: CanAddressingFormatAlias,
-                                payload: RawBytes,
+                                addressing_format: CanAddressingFormat,
+                                payload: RawBytesAlias,
                                 sequence_number: int,
                                 dlc: Optional[int] = None,
                                 filler_byte: int = DEFAULT_FILLER_BYTE,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesList:
+                                address_extension: Optional[int] = None) -> RawBytesListAlias:
         """
         Create a data field of a CAN frame that carries a valid Consecutive Frame packet.
 
@@ -82,13 +82,13 @@ class CanConsecutiveFrameHandler:
 
     @classmethod
     def create_any_frame_data(cls, *,
-                              addressing_format: CanAddressingFormatAlias,
-                              payload: RawBytes,
+                              addressing_format: CanAddressingFormat,
+                              payload: RawBytesAlias,
                               sequence_number: int,
                               dlc: int,
                               filler_byte: int = DEFAULT_FILLER_BYTE,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesList:
+                              address_extension: Optional[int] = None) -> RawBytesListAlias:
         """
         Create a data field of a CAN frame that carries a Consecutive Frame packet.
 
@@ -128,7 +128,7 @@ class CanConsecutiveFrameHandler:
         return cf_bytes + data_padding
 
     @classmethod
-    def is_consecutive_frame(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> bool:
+    def is_consecutive_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
         """
         Check if provided data bytes encodes a Consecutive Frame packet.
 
@@ -145,7 +145,7 @@ class CanConsecutiveFrameHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.CONSECUTIVE_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> RawBytesList:
+    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> RawBytesListAlias:
         """
         Extract diagnostic message payload from Consecutive Frame data bytes.
 
@@ -173,7 +173,7 @@ class CanConsecutiveFrameHandler:
         return list(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
 
     @classmethod
-    def decode_sequence_number(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> int:
+    def decode_sequence_number(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
         """
         Extract a value of Sequence Number from Consecutive Frame data bytes.
 
@@ -195,7 +195,7 @@ class CanConsecutiveFrameHandler:
         return raw_frame_data[ai_bytes_number] & 0xF
 
     @classmethod
-    def get_min_dlc(cls, addressing_format: CanAddressingFormatAlias, payload_length: int = 1) -> int:
+    def get_min_dlc(cls, addressing_format: CanAddressingFormat, payload_length: int = 1) -> int:
         """
         Get the minimum value of a CAN frame DLC to carry a Consecutive Frame packet.
 
@@ -223,7 +223,7 @@ class CanConsecutiveFrameHandler:
 
     @classmethod
     def get_max_payload_size(cls,
-                             addressing_format: Optional[CanAddressingFormatAlias] = None,
+                             addressing_format: Optional[CanAddressingFormat] = None,
                              dlc: Optional[int] = None) -> int:
         """
         Get the maximum size of a payload that can fit into Consecutive Frame data bytes.
@@ -253,7 +253,7 @@ class CanConsecutiveFrameHandler:
         return output
 
     @classmethod
-    def validate_frame_data(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> None:
+    def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> None:
         """
         Validate whether data field of a CAN Packet carries a properly encoded Consecutive Frame.
 
@@ -274,7 +274,7 @@ class CanConsecutiveFrameHandler:
             raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
 
     @classmethod
-    def __encode_sn(cls, sequence_number: int) -> RawBytesList:
+    def __encode_sn(cls, sequence_number: int) -> RawBytesListAlias:
         """
         Create Consecutive Frame data bytes with CAN Packet Type and Sequence Number parameters.
 

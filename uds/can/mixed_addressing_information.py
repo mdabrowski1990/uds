@@ -6,7 +6,7 @@ from typing import Optional
 
 from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
 from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 
@@ -18,7 +18,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
     """Number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN Addressing format used."""
         return CanAddressingFormat.MIXED_11BIT_ADDRESSING
 
@@ -69,7 +69,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
     """Number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN Addressing format used."""
         return CanAddressingFormat.MIXED_29BIT_ADDRESSING
 

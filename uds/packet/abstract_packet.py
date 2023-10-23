@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Union, Optional, Any, Tuple, List
 from datetime import datetime
 
-from uds.utilities import RawBytesTuple, ReassignmentError
+from uds.utilities import RawBytesTupleAlias, ReassignmentError
 from uds.transmission_attributes.addressing import AddressingTypeAlias
 from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionAlias
 from .abstract_packet_type import AbstractUdsPacketTypeAlias
@@ -20,7 +20,7 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carries this packet."""
 
     @property
@@ -40,7 +40,7 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
+    def payload(self) -> Optional[RawBytesTupleAlias]:
         """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
@@ -49,7 +49,7 @@ class AbstractUdsPacket(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carries this packet."""
 
     @property
@@ -69,7 +69,7 @@ class AbstractUdsPacket(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
+    def payload(self) -> Optional[RawBytesTupleAlias]:
         """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
@@ -162,7 +162,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carries this packet."""
 
     @property
@@ -182,7 +182,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
+    def payload(self) -> Optional[RawBytesTupleAlias]:
         """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
     @staticmethod

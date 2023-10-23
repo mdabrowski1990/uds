@@ -5,10 +5,10 @@ __all__ = ["CanPacket"]
 from typing import Optional, Any
 from warnings import warn
 
-from uds.utilities import AmbiguityError, UnusedArgumentWarning, RawBytes, RawBytesTuple
+from uds.utilities import AmbiguityError, UnusedArgumentWarning, RawBytesAlias, RawBytesTupleAlias
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.can import DEFAULT_FILLER_BYTE, CanDlcHandler, \
-    CanAddressingFormat, CanAddressingFormatAlias, AbstractCanAddressingInformation, CanAddressingInformation, \
+    CanAddressingFormat, AbstractCanAddressingInformation, CanAddressingInformation, \
     Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, ExtendedCanAddressingInformation, \
     Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation, \
     CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, \
@@ -28,7 +28,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
 
     def __init__(self, *,
                  packet_type: CanPacketTypeAlias,
-                 addressing_format: CanAddressingFormatAlias,
+                 addressing_format: CanAddressingFormat,
                  addressing_type: AddressingTypeAlias,
                  can_id: Optional[int] = None,
                  target_address: Optional[int] = None,
@@ -77,9 +77,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                 Separation Time minimum information carried by this Flow Control frame.
         """
         # initialize the variables
-        self.__raw_frame_data: RawBytesTuple = None  # type: ignore
+        self.__raw_frame_data: RawBytesTupleAlias = None  # type: ignore
         self.__addressing_type: AddressingTypeAlias = None  # type: ignore
-        self.__addressing_format: CanAddressingFormatAlias = None  # type: ignore
+        self.__addressing_format: CanAddressingFormat = None  # type: ignore
         self.__packet_type: CanPacketTypeAlias = None  # type: ignore
         self.__can_id: int = None  # type: ignore
         self.__dlc: int = None  # type: ignore
@@ -98,7 +98,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                              **packet_type_specific_kwargs)
 
     def set_address_information(self, *,
-                                addressing_format: CanAddressingFormatAlias,
+                                addressing_format: CanAddressingFormat,
                                 addressing_type: AddressingTypeAlias,
                                 can_id: Optional[int] = None,
                                 target_address: Optional[int] = None,
@@ -347,7 +347,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             raise NotImplementedError(f"Missing implementation for: {packet_type}")
 
     def set_single_frame_data(self,
-                              payload: RawBytes,
+                              payload: RawBytesAlias,
                               dlc: Optional[int] = None,
                               filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
@@ -377,7 +377,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
 
     def set_first_frame_data(self,
                              dlc: int,
-                             payload: RawBytes,
+                             payload: RawBytesAlias,
                              data_length: int) -> None:
         """
         Change packet type (to First Frame) and data field of this CAN packet.
@@ -401,7 +401,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         self.__packet_type = CanPacketType.FIRST_FRAME
 
     def set_consecutive_frame_data(self,
-                                   payload: RawBytes,
+                                   payload: RawBytesAlias,
                                    sequence_number: int,
                                    dlc: Optional[int] = None,
                                    filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
@@ -468,7 +468,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         self.__packet_type = CanPacketType.FLOW_CONTROL
 
     @property
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
         return self.__raw_frame_data
 
@@ -478,7 +478,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         return self.__can_id
 
     @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN addressing format used by this CAN packet."""
         return self.__addressing_format
 
@@ -538,7 +538,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         """
         return self.__address_extension
 
-    def __validate_unambiguous_ai_change(self, addressing_format: CanAddressingFormatAlias) -> None:
+    def __validate_unambiguous_ai_change(self, addressing_format: CanAddressingFormat) -> None:
         """
         Validate whether CAN Addressing Format change to provided value is ambiguous.
 

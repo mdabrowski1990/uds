@@ -14,7 +14,7 @@ from bisect import bisect_left
 
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from uds.utilities import validate_raw_byte
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormat
 
 
 DEFAULT_FILLER_BYTE: int = 0xCC
@@ -67,7 +67,7 @@ class CanIdHandler:
         source_address: Optional[int]
 
     @classmethod
-    def decode_can_id(cls, addressing_format: CanAddressingFormatAlias, can_id: int) -> CanIdAIAlias:
+    def decode_can_id(cls, addressing_format: CanAddressingFormat, can_id: int) -> CanIdAIAlias:
         """
         Extract Addressing Information out of CAN ID.
 
@@ -227,7 +227,7 @@ class CanIdHandler:
     @classmethod
     def is_compatible_can_id(cls,
                              can_id: int,
-                             addressing_format: CanAddressingFormatAlias,
+                             addressing_format: CanAddressingFormat,
                              addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with addressing format used.

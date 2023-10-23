@@ -1,13 +1,13 @@
 """Module with bytes list operations implementation."""
 
-__all__ = ["Endianness", "EndiannessAlias", "bytes_list_to_int", "int_to_bytes_list"]
+__all__ = ["Endianness", "bytes_list_to_int", "int_to_bytes_list"]
 
-from typing import Union, Optional
+from typing import Optional
 
 from aenum import StrEnum
 
 from .enums import ValidatedEnum
-from .common_types import RawBytesList, RawBytes, validate_raw_bytes
+from .common_types import RawBytesListAlias, RawBytesAlias, validate_raw_bytes
 from .custom_exceptions import InconsistentArgumentsError
 
 
@@ -18,19 +18,15 @@ class Endianness(StrEnum, ValidatedEnum):
     `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
     """
 
-    LITTLE_ENDIAN = "little"
+    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore
     """Little Endian stores the most significant byte at the largest memory address and the least significant byte
     at the smallest."""
-    BIG_ENDIAN = "big"
+    BIG_ENDIAN: "Endianness" = "big"  # type: ignore
     """Big Endian stores the most significant byte at the smallest memory address and the least significant byte
     at the largest."""
 
 
-EndiannessAlias = Union[Endianness, str]
-"""Alias that describes :class:`~uds.utilities.bytes_operations.Endianness` member type."""
-
-
-def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessAlias = Endianness.BIG_ENDIAN) -> int:
+def bytes_list_to_int(bytes_list: RawBytesAlias, endianness: Endianness = Endianness.BIG_ENDIAN) -> int:
     """
     Convert a list of bytes to integer value.
 
@@ -41,12 +37,12 @@ def bytes_list_to_int(bytes_list: RawBytes, endianness: EndiannessAlias = Endian
     """
     validate_raw_bytes(bytes_list)
     Endianness.validate_member(endianness)
-    return int.from_bytes(bytes=bytes_list, byteorder=endianness)  # type: ignore
+    return int.from_bytes(bytes=bytes_list, byteorder=endianness)
 
 
 def int_to_bytes_list(int_value: int,
                       list_size: Optional[int] = None,
-                      endianness: EndiannessAlias = Endianness.BIG_ENDIAN) -> RawBytesList:
+                      endianness: Endianness = Endianness.BIG_ENDIAN) -> RawBytesListAlias:
     """
     Convert integer value to a list of bytes.
 

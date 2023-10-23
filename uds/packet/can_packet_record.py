@@ -7,9 +7,9 @@ from datetime import datetime
 
 from can import Message as PythonCanMessage
 
-from uds.utilities import RawBytesTuple, InconsistentArgumentsError
+from uds.utilities import RawBytesTupleAlias, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
-from uds.can import CanAddressingFormat, CanAddressingFormatAlias, \
+from uds.can import CanAddressingFormat, \
     CanAddressingInformation, AbstractCanAddressingInformation, \
     CanDlcHandler, CanIdHandler
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
@@ -32,7 +32,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
                  frame: CanFrameAlias,
                  direction: TransmissionDirectionAlias,
                  addressing_type: AddressingTypeAlias,
-                 addressing_format: CanAddressingFormatAlias,
+                 addressing_format: CanAddressingFormat,
                  transmission_time: datetime) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
@@ -56,7 +56,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         self.__assess_ai_attributes()
 
     @property
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carried this CAN packet."""
         if isinstance(self.frame, PythonCanMessage):
             return tuple(self.frame.data)
@@ -70,7 +70,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN addressing format used by this CAN packet."""
         return self.__addressing_format
 

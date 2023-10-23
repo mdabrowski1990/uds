@@ -15,7 +15,7 @@ It provides tools for:
    - Flow Status
 """
 
-from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormat
 from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
 from .extended_addressing_information import ExtendedCanAddressingInformation

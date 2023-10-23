@@ -7,14 +7,14 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 
 from uds.transmission_attributes import AddressingTypeAlias, AddressingType
-from .addressing_format import CanAddressingFormatAlias
+from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
 
 
 class PacketAIParamsAlias(TypedDict):
     """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters of CAN packets stream."""
 
-    addressing_format: CanAddressingFormatAlias
+    addressing_format: CanAddressingFormat
     addressing_type: AddressingTypeAlias
     can_id: int
     target_address: Optional[int]
@@ -25,7 +25,7 @@ class PacketAIParamsAlias(TypedDict):
 class AbstractCanAddressingInformation(ABC):
     """Abstract definition of CAN Entity (either server or client) Addressing Information."""
 
-    ADDRESSING_FORMAT_NAME: str = "addressing_format"  # noqa: F841
+    ADDRESSING_FORMAT_NAME: str = "addressing_format"
     """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter in Addressing Information."""
     ADDRESSING_TYPE_NAME: str = CanIdHandler.ADDRESSING_TYPE_NAME
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
@@ -69,7 +69,7 @@ class AbstractCanAddressingInformation(ABC):
 
     @property
     @abstractmethod
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN Addressing format used."""
 
     @property
