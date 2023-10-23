@@ -5,22 +5,23 @@ from uds.can.extended_addressing_information import ExtendedCanAddressingInforma
     CanAddressingFormat, InconsistentArgumentsError, UnusedArgumentError, AbstractCanAddressingInformation
 
 
+SCRIPT_LOCATION = "uds.can.extended_addressing_information"
+
+
 class TestExtendedCanAddressingInformation:
     """Unit tests for `ExtendedCanAddressingInformation` class."""
 
-    SCRIPT_LOCATION = "uds.can.extended_addressing_information"
-
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=ExtendedCanAddressingInformation)
         # patching
-        self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
-        self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
+        self._patcher_validate_addressing_type = patch(f"{SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
-        self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
+        self._patcher_can_id_handler_class = patch(f"{SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_type.stop()
         self._patcher_can_id_handler_class.stop()
@@ -73,6 +74,8 @@ class TestExtendedCanAddressingInformation:
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
         }
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_extended_addressed_can_id.assert_called_once_with(can_id)

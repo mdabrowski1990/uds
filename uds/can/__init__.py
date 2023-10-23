@@ -16,7 +16,7 @@ It provides tools for:
 """
 
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
-from .abstract_addressing_information import AbstractCanAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
 from .extended_addressing_information import ExtendedCanAddressingInformation
 from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation

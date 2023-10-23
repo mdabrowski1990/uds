@@ -5,18 +5,19 @@ from uds.packet.abstract_packet import AbstractUdsPacketRecord, \
     TransmissionDirection, ReassignmentError, datetime
 
 
+SCRIPT_LOCATION = "uds.packet.abstract_packet"
+
+
 class TestAbstractUdsPacketRecord:
     """Unit tests for 'AbstractUdsPacketRecord' class."""
 
-    SCRIPT_LOCATION = "uds.packet.abstract_packet"
-
-    def setup(self):
+    def setup_method(self):
         self.mock_packet_record = Mock(spec=AbstractUdsPacketRecord)
         # patching
-        self._patcher_validate_direction = patch(f"{self.SCRIPT_LOCATION}.TransmissionDirection.validate_member")
+        self._patcher_validate_direction = patch(f"{SCRIPT_LOCATION}.TransmissionDirection.validate_member")
         self.mock_validate_direction = self._patcher_validate_direction.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_direction.stop()
 
     # __init__

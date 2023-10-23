@@ -6,6 +6,9 @@ from uds.utilities.bytes_operations import Endianness, bytes_list_to_int, int_to
     InconsistentArgumentsError
 
 
+SCRIPT_LOCATION = "uds.utilities.bytes_operations"
+
+
 class TestEndianness:
     """Unit tests for `Endianness` class."""
 
@@ -16,15 +19,13 @@ class TestEndianness:
 class TestFunctions:
     """Unit tests for module functions."""
 
-    SCRIPT_LOCATION = "uds.utilities.bytes_operations"
-
-    def setup(self):
-        self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
+    def setup_method(self):
+        self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_validate_endianness = patch(f"{self.SCRIPT_LOCATION}.Endianness.validate_member")
+        self._patcher_validate_endianness = patch(f"{SCRIPT_LOCATION}.Endianness.validate_member")
         self.mock_validate_endianness = self._patcher_validate_endianness.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_endianness.stop()
 

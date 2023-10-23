@@ -6,32 +6,33 @@ from uds.can.consecutive_frame import CanConsecutiveFrameHandler, \
 from uds.can import CanAddressingFormat
 
 
+SCRIPT_LOCATION = "uds.can.consecutive_frame"
+
+
 class TestCanConsecutiveFrameHandler:
     """Unit tests for `CanConsecutiveFrameHandler` class."""
 
-    SCRIPT_LOCATION = "uds.can.consecutive_frame"
-
-    def setup(self):
-        self._patcher_validate_nibble = patch(f"{self.SCRIPT_LOCATION}.validate_nibble")
+    def setup_method(self):
+        self._patcher_validate_nibble = patch(f"{SCRIPT_LOCATION}.validate_nibble")
         self.mock_validate_nibble = self._patcher_validate_nibble.start()
-        self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
-        self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
+        self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_encode_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.encode_dlc")
+        self._patcher_encode_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.encode_dlc")
         self.mock_encode_dlc = self._patcher_encode_dlc.start()
-        self._patcher_decode_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.decode_dlc")
+        self._patcher_decode_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.decode_dlc")
         self.mock_decode_dlc = self._patcher_decode_dlc.start()
-        self._patcher_get_min_dlc = patch(f"{self.SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
+        self._patcher_get_min_dlc = patch(f"{SCRIPT_LOCATION}.CanDlcHandler.get_min_dlc")
         self.mock_get_min_dlc = self._patcher_get_min_dlc.start()
         self._patcher_encode_ai_data_bytes = \
-            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.encode_ai_data_bytes")
+            patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.encode_ai_data_bytes")
         self.mock_encode_ai_data_bytes = self._patcher_encode_ai_data_bytes.start()
         self._patcher_get_ai_data_bytes_number = \
-            patch(f"{self.SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
+            patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.get_ai_data_bytes_number")
         self.mock_get_ai_data_bytes_number = self._patcher_get_ai_data_bytes_number.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_nibble.stop()
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_raw_bytes.stop()

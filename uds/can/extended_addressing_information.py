@@ -8,7 +8,7 @@ from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, valid
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
-from .abstract_addressing_information import AbstractCanAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 
 
 class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
@@ -29,7 +29,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
                            address_extension: Optional[int] = None
-                           ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
+                           ) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Extended Addressing format.
 
@@ -53,9 +53,10 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         if not CanIdHandler.is_extended_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Extended Addressing Format. Actual value: {can_id}")
-        return {
-            cls.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,  # type: ignore
-            cls.ADDRESSING_TYPE_NAME: addressing_type,
-            cls.CAN_ID_NAME: can_id,
-            cls.TARGET_ADDRESS_NAME: target_address,
-        }
+        return PacketAIParamsAlias(
+            addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
+            addressing_type=addressing_type,
+            can_id=can_id,  # type: ignore
+            target_address=target_address,
+            source_address=source_address,
+            address_extension=address_extension)
