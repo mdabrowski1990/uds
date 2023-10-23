@@ -22,7 +22,7 @@ CanFrameAlias = Union[PythonCanMessage]
 
 class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
     """
-    Definition of a CAN packet Record.
+    Definition of a CAN packet record.
 
     Objects of this class act as a storage for historic information about transmitted or received
     :ref:`CAN packet <knowledge-base-uds-can-packet>`.
