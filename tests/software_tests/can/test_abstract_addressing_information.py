@@ -4,12 +4,13 @@ from mock import Mock, patch
 from uds.can.abstract_addressing_information import AbstractCanAddressingInformation, AddressingType
 
 
+SCRIPT_LOCATION = "uds.can.abstract_addressing_information"
+
+
 class TestAbstractCanAddressingInformation:
     """Unit tests for `AbstractCanAddressingInformation` class."""
 
-    SCRIPT_LOCATION = "uds.can.abstract_addressing_information"
-
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=AbstractCanAddressingInformation,
                                                 ADDRESSING_FORMAT_NAME="addressing_format",
                                                 ADDRESSING_TYPE_NAME="addressing_type",
@@ -17,10 +18,10 @@ class TestAbstractCanAddressingInformation:
                                                 SOURCE_ADDRESS_NAME="source_address",
                                                 ADDRESS_EXTENSION_NAME="address_extension")
         # patching
-        self._patcher_deepcopy = patch(f"{self.SCRIPT_LOCATION}.deepcopy")
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_deepcopy.stop()
 
     # __init__

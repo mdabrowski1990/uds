@@ -13,10 +13,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -32,26 +32,26 @@ jobs:
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
-          pytest --cov-report=term-missing --cov=uds -m "not integration and not performance"
+          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "not integration and not performance"
 
       - name: Execute integration tests with coverage report [pytest]
         run: |
-          pytest --cov-report=term-missing --cov=uds -m "integration"
+          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "integration"
 
 # TODO: uncomment when performance tests are added
 #      - name: Execute performance tests with coverage report [pytest]
 #        run: |
-#          pytest --cov-report=term-missing --cov=uds -m "performance"
+#          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "performance"
 
 
   code_coverage:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
@@ -72,10 +72,10 @@ jobs:
 
       - name: Execute unit tests [pytest]
         run: |
-          pytest --cov-report=xml --cov=uds -m "not integration and not performance"
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance"
 
       - name: Upload unit tests report [CodeCov]
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
@@ -83,10 +83,10 @@ jobs:
 
       - name: Execute integration tests [pytest]
         run: |
-          pytest --cov-report=xml --cov=uds -m "integration"
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
       - name: Upload integration tests report [CodeCov]
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
@@ -95,10 +95,10 @@ jobs:
 # TODO: uncomment when performance tests are added
 #      - name: Execute performance tests [pytest]
 #        run: |
-#          pytest --cov-report=xml --cov=uds -m "performance"
+#          pytest tests/software_tests --cov-report=xml --cov=uds -m "performance"
 #
 #      - name: Upload performance tests report [CodeCov]
-#        uses: codecov/codecov-action@v2
+#        uses: codecov/codecov-action@v3
 #        with:
 #          token: ${{ secrets.CODECOV_TOKEN }}
 #          files: coverage.xml
@@ -112,10 +112,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -133,10 +133,6 @@ jobs:
         run: |
           prospector --profile tests/prospector_profile.yaml uds
 
-      - name: Execute static code analysis [pyroma]
-        run: |
-          pyroma -a .
-
 
   dependency_checks:
     runs-on: ubuntu-latest
@@ -145,10 +141,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 

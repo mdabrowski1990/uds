@@ -6,20 +6,21 @@ from uds.message.uds_message import UdsMessage, UdsMessageRecord, \
 from uds.transmission_attributes import TransmissionDirection
 
 
+SCRIPT_LOCATION = "uds.message.uds_message"
+
+
 class TestUdsMessage:
     """Unit tests for 'UdsMessage' class."""
 
-    SCRIPT_LOCATION = "uds.message.uds_message"
-
-    def setup(self):
+    def setup_method(self):
         self.mock_uds_message = Mock(spec=UdsMessage)
         # patching
-        self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
+        self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_validate_addressing = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
+        self._patcher_validate_addressing = patch(f"{SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing = self._patcher_validate_addressing.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_addressing.stop()
 
@@ -88,17 +89,15 @@ class TestUdsMessage:
 class TestUdsMessageRecord:
     """Unit tests for 'UdsMessageRecord' class."""
 
-    SCRIPT_LOCATION = TestUdsMessage.SCRIPT_LOCATION
-
-    def setup(self):
+    def setup_method(self):
         self.mock_uds_message_record = Mock(spec=UdsMessageRecord)
         # patching
-        self._patcher_validate_raw_bytes = patch(f"{self.SCRIPT_LOCATION}.validate_raw_bytes")
+        self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_validate_addressing = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
+        self._patcher_validate_addressing = patch(f"{SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing = self._patcher_validate_addressing.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_addressing.stop()
 

@@ -5,20 +5,21 @@ from uds.message.service_identifiers import RequestSID, ResponseSID, \
     ByteEnum, ValidatedEnum, ExtendableEnum
 
 
+SCRIPT_LOCATION = "uds.message.service_identifiers"
+
+
 class TestRequestSID:
     """Unit tests for 'RequestSID' enum."""
 
-    SCRIPT_LOCATION = "uds.message.service_identifiers"
-
-    def setup(self):
-        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+    def setup_method(self):
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
-        self._patcher_is_member = patch(f"{self.SCRIPT_LOCATION}.RequestSID.is_member")
+        self._patcher_is_member = patch(f"{SCRIPT_LOCATION}.RequestSID.is_member")
         self.mock_is_member = self._patcher_is_member.start()
-        self._patcher_possible_request_sids = patch(f"{self.SCRIPT_LOCATION}.POSSIBLE_REQUEST_SIDS")
+        self._patcher_possible_request_sids = patch(f"{SCRIPT_LOCATION}.POSSIBLE_REQUEST_SIDS")
         self.mock_possible_request_sids = self._patcher_possible_request_sids.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_warn.stop()
         self._patcher_is_member.stop()
         self._patcher_possible_request_sids.stop()
@@ -35,10 +36,11 @@ class TestRequestSID:
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_request_sid__member(self, value):
         self.mock_is_member.return_value = True
+        self.mock_possible_request_sids.__contains__.return_value = True
         assert RequestSID.is_request_sid(value=value) is True
         self.mock_warn.assert_not_called()
         self.mock_is_member.assert_called_once_with(value)
-        self.mock_possible_request_sids.__contains__.assert_not_called()
+        self.mock_possible_request_sids.__contains__.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_request_sid__unsupported(self, value):
@@ -55,24 +57,22 @@ class TestRequestSID:
         self.mock_possible_request_sids.__contains__.return_value = False
         assert RequestSID.is_request_sid(value=value) is False
         self.mock_warn.assert_not_called()
-        self.mock_is_member.assert_called_once_with(value)
+        self.mock_is_member.assert_not_called()
         self.mock_possible_request_sids.__contains__.assert_called_once_with(value)
 
 
 class TestResponseSID:
     """Unit tests for 'ResponseSID' enum."""
 
-    SCRIPT_LOCATION = TestRequestSID.SCRIPT_LOCATION
-
-    def setup(self):
-        self._patcher_warn = patch(f"{self.SCRIPT_LOCATION}.warn")
+    def setup_method(self):
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
-        self._patcher_is_member = patch(f"{self.SCRIPT_LOCATION}.ResponseSID.is_member")
+        self._patcher_is_member = patch(f"{SCRIPT_LOCATION}.ResponseSID.is_member")
         self.mock_is_member = self._patcher_is_member.start()
-        self._patcher_possible_response_sids = patch(f"{self.SCRIPT_LOCATION}.POSSIBLE_RESPONSE_SIDS")
+        self._patcher_possible_response_sids = patch(f"{SCRIPT_LOCATION}.POSSIBLE_RESPONSE_SIDS")
         self.mock_possible_response_sids = self._patcher_possible_response_sids.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_warn.stop()
         self._patcher_is_member.stop()
         self._patcher_possible_response_sids.stop()
@@ -89,10 +89,11 @@ class TestResponseSID:
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_response_sid__member(self, value):
         self.mock_is_member.return_value = True
+        self.mock_possible_response_sids.__contains__.return_value = True
         assert ResponseSID.is_response_sid(value=value) is True
         self.mock_warn.assert_not_called()
         self.mock_is_member.assert_called_once_with(value)
-        self.mock_possible_response_sids.__contains__.assert_not_called()
+        self.mock_possible_response_sids.__contains__.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_response_sid__unsupported(self, value):
@@ -109,7 +110,7 @@ class TestResponseSID:
         self.mock_possible_response_sids.__contains__.return_value = False
         assert ResponseSID.is_response_sid(value=value) is False
         self.mock_warn.assert_not_called()
-        self.mock_is_member.assert_called_once_with(value)
+        self.mock_is_member.assert_not_called()
         self.mock_possible_response_sids.__contains__.assert_called_once_with(value)
 
 

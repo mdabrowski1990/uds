@@ -5,22 +5,23 @@ from uds.can.normal_addressing_information import Normal11BitCanAddressingInform
     CanAddressingFormat, InconsistentArgumentsError, UnusedArgumentError, AbstractCanAddressingInformation
 
 
+SCRIPT_LOCATION = "uds.can.normal_addressing_information"
+
+
 class TestNormal11BitCanAddressingInformation:
     """Unit tests for `Normal11BitCanAddressingInformation` class."""
 
-    SCRIPT_LOCATION = "uds.can.normal_addressing_information"
-
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=Normal11BitCanAddressingInformation)
         # patching
-        self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
-        self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
+        self._patcher_validate_addressing_type = patch(f"{SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
-        self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
+        self._patcher_can_id_handler_class = patch(f"{SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_type.stop()
         self._patcher_can_id_handler_class.stop()
@@ -66,7 +67,10 @@ class TestNormal11BitCanAddressingInformation:
                                                                       can_id=can_id) == {
                    AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                    AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
-                   AbstractCanAddressingInformation.CAN_ID_NAME: can_id
+                   AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
+                   AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
+                   AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
+                   AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
                }
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_normal_11bit_addressed_can_id.assert_called_once_with(can_id)
@@ -76,19 +80,17 @@ class TestNormal11BitCanAddressingInformation:
 class TestNormalFixedCanAddressingInformation:
     """Unit tests for `NormalFixedCanAddressingInformation` class."""
 
-    SCRIPT_LOCATION = TestNormal11BitCanAddressingInformation.SCRIPT_LOCATION
-
-    def setup(self):
+    def setup_method(self):
         self.mock_addressing_information = Mock(spec=NormalFixedCanAddressingInformation)
         # patching
-        self._patcher_validate_raw_byte = patch(f"{self.SCRIPT_LOCATION}.validate_raw_byte")
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
-        self._patcher_validate_addressing_type = patch(f"{self.SCRIPT_LOCATION}.AddressingType.validate_member")
+        self._patcher_validate_addressing_type = patch(f"{SCRIPT_LOCATION}.AddressingType.validate_member")
         self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
-        self._patcher_can_id_handler_class = patch(f"{self.SCRIPT_LOCATION}.CanIdHandler")
+        self._patcher_can_id_handler_class = patch(f"{SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_addressing_type.stop()
         self._patcher_can_id_handler_class.stop()
@@ -160,7 +162,8 @@ class TestNormalFixedCanAddressingInformation:
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
             AbstractCanAddressingInformation.CAN_ID_NAME: self.mock_can_id_handler_class.encode_normal_fixed_addressed_can_id.return_value,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
-            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address
+            AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
         }
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_has_calls([call(target_address), call(source_address)], any_order=True)
@@ -197,6 +200,7 @@ class TestNormalFixedCanAddressingInformation:
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_target_address,
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: decoded_source_address,
+            AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: None,
         }
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_not_called()

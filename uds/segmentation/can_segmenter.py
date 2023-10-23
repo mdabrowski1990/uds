@@ -2,106 +2,94 @@
 
 __all__ = ["CanSegmenter"]
 
-from typing import Union, Tuple, Type
-from copy import copy
+from typing import Optional, Union, Type
 
-from uds.utilities import RawBytesList, validate_raw_byte
+from uds.utilities import RawBytesList, RawBytes, validate_raw_byte
 from uds.transmission_attributes import AddressingType
-from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, \
-    CanAddressingFormat, CanAddressingFormatAlias, \
+from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, PacketAIParamsAlias, \
+    CanAddressingFormatAlias, \
     CanDlcHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, DEFAULT_FILLER_BYTE
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType, \
-    AbstractUdsPacketContainer, PacketsContainersSequence, PacketsTuple
+    AbstractUdsPacket, AbstractUdsPacketRecord, PacketsContainersSequence, PacketsTuple
 from uds.message import UdsMessage, UdsMessageRecord
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
-InputAiParamsAlias = Union[AbstractCanAddressingInformation.InputAIParamsAlias,
-                           AbstractCanAddressingInformation.PacketAIParamsAlias]
-"""Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
-
-
 class CanSegmenter(AbstractSegmenter):
-    """Segmenter class that provides utilities for segmentation and desegmentation on CAN bus."""
+    """Segmenter class that provides utilities for segmentation and desegmentation specific for CAN bus."""
 
     def __init__(self, *,
-                 addressing_format: CanAddressingFormatAlias,
-                 physical_ai: InputAiParamsAlias,
-                 functional_ai: InputAiParamsAlias,
+                 addressing_information: AbstractCanAddressingInformation,
                  dlc: int = CanDlcHandler.MIN_BASE_UDS_DLC,
                  use_data_optimization: bool = False,
                  filler_byte: int = DEFAULT_FILLER_BYTE) -> None:
         """
         Configure CAN Segmenter.
 
-        :param addressing_format: CAN Addressing format used.
-        :param physical_ai: CAN Addressing Information parameters to use for physically addressed communication.
-        :param functional_ai: CAN Addressing Information parameters to use for functionally addressed communication.
-        :param dlc: Base CAN DLC value to use for CAN Packets.
-        :param use_data_optimization: Information whether to use CAN Frame Data Optimization during segmentation.
-        :param filler_byte: Filler byte value to use for CAN Frame Data Padding during segmentation.
+        :param addressing_information: Addressing Information configuration of a CAN node.
+        :param dlc: Base CAN DLC value to use for creating CAN Packets.
+        :param use_data_optimization: Information whether to use CAN Frame Data Optimization in created CAN Packets
+            during segmentation.
+        :param filler_byte: Filler byte value to use for CAN Frame Data Padding in created CAN Packets during
+            segmentation.
         """
-        CanAddressingFormat.validate_member(addressing_format)
-        self.__addressing_format: CanAddressingFormatAlias = CanAddressingFormat(addressing_format)
-        self.physical_ai = physical_ai  # type: ignore
-        self.functional_ai = functional_ai  # type: ignore
+        self.addressing_information = addressing_information
         self.dlc = dlc
         self.use_data_optimization = use_data_optimization
         self.filler_byte = filler_byte
 
     @property
-    def supported_packet_classes(self) -> Tuple[Type[AbstractUdsPacketContainer], ...]:
-        """Classes that define packet objects supported by this segmenter."""
-        return CanPacket, CanPacketRecord
+    def supported_packet_class(self) -> Type[AbstractUdsPacket]:
+        """Class of UDS Packet supported by CAN segmenter."""
+        return CanPacket
+
+    @property
+    def supported_packet_record_class(self) -> Type[AbstractUdsPacketRecord]:
+        """Class of UDS Packet Record supported by CAN segmenter."""
+        return CanPacketRecord
 
     @property
     def addressing_format(self) -> CanAddressingFormatAlias:
         """CAN Addressing format used."""
-        return self.__addressing_format
+        return self.addressing_information.addressing_format
 
     @property
-    def physical_ai(self) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
-        """CAN Addressing Information parameters used for outgoing physically addressed communication."""
-        return copy(self.__physical_ai)
-
-    @physical_ai.setter
-    def physical_ai(self, value: InputAiParamsAlias):
-        """
-        Set Addressing Information parameters of physically addressed CAN packets.
-
-        :param value: Addressing Information parameters to set.
-        """
-        kwargs = {
-            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: self.addressing_format,
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.PHYSICAL
-        }
-        for item_name, item_value in value.items():
-            if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
-                                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
-                kwargs[item_name] = item_value  # type: ignore
-        self.__physical_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
+    def rx_packets_physical_ai(self) -> PacketAIParamsAlias:
+        """Addressing Information parameters of incoming physically addressed CAN packets."""
+        return self.addressing_information.rx_packets_physical_ai
 
     @property
-    def functional_ai(self) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
-        """CAN Addressing Information parameters used for outgoing functionally addressed communication."""
-        return copy(self.__functional_ai)
+    def tx_packets_physical_ai(self) -> PacketAIParamsAlias:
+        """Addressing Information parameters of outgoing physically addressed CAN packets."""
+        return self.addressing_information.tx_packets_physical_ai
 
-    @functional_ai.setter
-    def functional_ai(self, value: InputAiParamsAlias):
-        """
-        Set Addressing Information parameters of functionally addressed CAN packets.
+    @property
+    def rx_packets_functional_ai(self) -> PacketAIParamsAlias:
+        """Addressing Information parameters of incoming functionally addressed CAN packets."""
+        return self.addressing_information.rx_packets_functional_ai
 
-        :param value: Addressing Information parameters to set.
+    @property
+    def tx_packets_functional_ai(self) -> PacketAIParamsAlias:
+        """Addressing Information parameters of outgoing functionally addressed CAN packets."""
+        return self.addressing_information.tx_packets_functional_ai
+
+    @property
+    def addressing_information(self) -> AbstractCanAddressingInformation:
+        """Addressing Information configuration of a CAN node."""
+        return self.__addressing_information
+
+    @addressing_information.setter
+    def addressing_information(self, value: AbstractCanAddressingInformation):
         """
-        kwargs = {
-            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: self.addressing_format,
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL
-        }
-        for item_name, item_value in value.items():
-            if item_name not in (AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME,
-                                 AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME):
-                kwargs[item_name] = item_value  # type: ignore
-        self.__functional_ai = CanAddressingInformation.validate_packet_ai(**kwargs)  # type: ignore
+        Set Addressing Information configuration to be used for segmentation and desegmentation.
+
+        :param value: Addressing Information configuration to set.
+
+        :raise TypeError: Provided value has unexpected type.
+        """
+        if not isinstance(value, AbstractCanAddressingInformation):
+            raise TypeError(f"Provided `value` is not CAN Addressing Information type. Actual type: {type(value)}")
+        self.__addressing_information: AbstractCanAddressingInformation = value
 
     @property
     def dlc(self) -> int:
@@ -158,6 +146,65 @@ class CanSegmenter(AbstractSegmenter):
         validate_raw_byte(value)
         self.__filler_byte: int = value
 
+    def is_input_packet(self, can_id: int, data: RawBytes) -> Optional[AddressingType]:  # type: ignore # noqa
+        """
+        Check if provided frame attributes belong to a UDS CAN packet which is an input for this CAN Segmenter.
+
+        :param can_id: Identifier of CAN frame to check.
+        :param data: Data field of CAN frame to check.
+
+        :return: Addressing Type used for transmission of this UDS CAN packet according to the configuration of this
+            CAN Segmenter (if provided attributes belongs to an input UDS CAN packet), otherwise None.
+        """
+        try:
+            decoded_frame_ai = CanAddressingInformation.decode_packet_ai(
+                addressing_format=self.addressing_format,
+                can_id=can_id,
+                ai_data_bytes=data[:self.addressing_information.AI_DATA_BYTES_NUMBER])
+            decoded_frame_ai.update(can_id=can_id, addressing_format=self.addressing_format)  # type: ignore
+        except ValueError:
+            return None
+        decoded_frame_ai[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL  # type: ignore # noqa
+        if self.rx_packets_physical_ai == decoded_frame_ai:
+            return AddressingType.PHYSICAL
+        decoded_frame_ai[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL  # type: ignore # noqa
+        if self.rx_packets_functional_ai == decoded_frame_ai:
+            return AddressingType.FUNCTIONAL
+        return None
+
+    def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:
+        """
+        Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
+
+        :param packets: Packets sequence to check.
+
+        :raise ValueError: Provided value is not CAN packets sequence.
+        :raise NotImplementedError: There is missing implementation for the provided initial packet type.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
+
+        :return: True if the packets form exactly one diagnostic message.
+            False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
+        """
+        if not self.is_supported_packets_sequence_type(packets):
+            raise ValueError("Provided packets are not consistent CAN Packets sequence.")
+        if not CanPacketType.is_initial_packet_type(packets[0].packet_type):
+            return False
+        if packets[0].packet_type == CanPacketType.SINGLE_FRAME:
+            return len(packets) == 1
+        if packets[0].packet_type == CanPacketType.FIRST_FRAME:
+            total_payload_size = packets[0].data_length
+            payload_bytes_found = len(packets[0].payload)  # type: ignore
+            for following_packet in packets[1:]:
+                if CanPacketType.is_initial_packet_type(following_packet.packet_type):
+                    return False
+                if payload_bytes_found >= total_payload_size:  # type: ignore
+                    return False
+                if following_packet.payload is not None:
+                    payload_bytes_found += len(following_packet.payload)
+            return payload_bytes_found >= total_payload_size  # type: ignore
+        raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
+
     def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
         Perform desegmentation of CAN packets.
@@ -171,7 +218,7 @@ class CanSegmenter(AbstractSegmenter):
 
         :return: A diagnostic message that is an outcome of CAN packets desegmentation.
         """
-        if not self.is_complete_packets_sequence(packets):
+        if not self.is_desegmented_message(packets):
             raise SegmentationError("Provided packets are not a complete packets sequence")
         if isinstance(packets[0], CanPacketRecord):
             return UdsMessageRecord(packets)  # type: ignore
@@ -210,39 +257,6 @@ class CanSegmenter(AbstractSegmenter):
             return self.__functional_segmentation(message)
         raise NotImplementedError(f"Unknown addressing type received: {message.addressing_type}")
 
-    def is_complete_packets_sequence(self, packets: PacketsContainersSequence) -> bool:
-        """
-        Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
-
-        :param packets: Packets sequence to check.
-
-        :raise ValueError: Provided value is not CAN packets sequence.
-        :raise NotImplementedError: There is missing implementation for the provided initial packet type.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
-
-        :return: True if the packets form exactly one diagnostic message.
-            False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
-        """
-        if not self.is_supported_packets_sequence(packets):
-            raise ValueError("Provided packets are not consistent CAN Packets sequence.")
-        if not CanPacketType.is_initial_packet_type(packets[0].packet_type):
-            return False
-        if packets[0].packet_type == CanPacketType.SINGLE_FRAME:
-            return len(packets) == 1
-        if packets[0].packet_type == CanPacketType.FIRST_FRAME:
-            total_payload_size = packets[0].data_length
-            payload_bytes_found = len(packets[0].payload)  # type: ignore
-            for following_packet in packets[1:]:
-                if CanPacketType.is_initial_packet_type(following_packet.packet_type):
-                    return False
-                if payload_bytes_found >= total_payload_size:  # type: ignore
-                    return False
-                if following_packet.payload is not None:
-                    payload_bytes_found += len(following_packet.payload)
-            return payload_bytes_found >= total_payload_size  # type: ignore
-        raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
-
     def __physical_segmentation(self, message: UdsMessage) -> PacketsTuple:
         """
         Segment physically addressed diagnostic message.
@@ -263,7 +277,7 @@ class CanSegmenter(AbstractSegmenter):
                                      payload=message.payload,
                                      filler_byte=self.filler_byte,
                                      dlc=None if self.use_data_optimization else self.dlc,
-                                     **self.physical_ai)
+                                     **self.tx_packets_physical_ai)
             return (single_frame,)
         ff_payload_size = CanFirstFrameHandler.get_payload_size(
             addressing_format=self.addressing_format,
@@ -273,7 +287,7 @@ class CanSegmenter(AbstractSegmenter):
                                 payload=message.payload[:ff_payload_size],
                                 dlc=self.dlc,
                                 data_length=message_payload_size,
-                                **self.physical_ai)
+                                **self.tx_packets_physical_ai)
         cf_payload_size = CanConsecutiveFrameHandler.get_max_payload_size(addressing_format=self.addressing_format,
                                                                           dlc=self.dlc)
         total_cfs_number = (message_payload_size - ff_payload_size + cf_payload_size - 1) // cf_payload_size
@@ -288,7 +302,7 @@ class CanSegmenter(AbstractSegmenter):
                                           else self.dlc,
                                           sequence_number=sequence_number,
                                           filler_byte=self.filler_byte,
-                                          **self.physical_ai)
+                                          **self.tx_packets_physical_ai)
             consecutive_frames.append(consecutive_frame)
         return (first_frame, *consecutive_frames)
 
@@ -312,5 +326,5 @@ class CanSegmenter(AbstractSegmenter):
                                  payload=message.payload,
                                  filler_byte=self.filler_byte,
                                  dlc=None if self.use_data_optimization else self.dlc,
-                                 **self.functional_ai)
+                                 **self.tx_packets_functional_ai)
         return (single_frame,)

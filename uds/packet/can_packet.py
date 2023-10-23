@@ -2,7 +2,7 @@
 
 __all__ = ["CanPacket", "AnyCanPacket"]
 
-from typing import Optional, Any, TypedDict
+from typing import Optional, Any
 from warnings import warn
 
 from uds.utilities import AmbiguityError, UnusedArgumentWarning, RawBytes, RawBytesTuple, validate_raw_bytes
@@ -18,7 +18,7 @@ from .abstract_packet import AbstractUdsPacket
 from .can_packet_type import CanPacketType, CanPacketTypeAlias
 
 
-class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conflicting-attributes]
+class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
     """
     Definition of a CAN packet.
 
@@ -562,7 +562,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conf
             self.__raw_frame_data = tuple(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))
 
 
-class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/conflicting-attributes]
+class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
     """
     Definition of a CAN packet in any format.
 
@@ -576,14 +576,6 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
         :class:`~uds.packet.can_packet.CanPacket` for all valid cases as it provides proper format validation and
         other features that this class is missing.
     """
-
-    class DecodedAIParamsAlias(TypedDict, total=True):
-        """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in any CAN Packet."""
-
-        addressing_type: Optional[AddressingTypeAlias]
-        target_address: Optional[int]
-        source_address: Optional[int]
-        address_extension: Optional[int]
 
     def __init__(self, *,
                  raw_frame_data: RawBytes,
@@ -688,7 +680,7 @@ class AnyCanPacket(AbstractCanPacketContainer, AbstractUdsPacket):  # lgtm [py/c
             return None
         return self.raw_frame_data[ai_data_bytes_number] >> 4
 
-    def get_addressing_information(self) -> DecodedAIParamsAlias:
+    def get_addressing_information(self) -> CanAddressingInformation.DecodedAIParamsAlias:
         """
         Get Addressing Information carried by this packet.
 

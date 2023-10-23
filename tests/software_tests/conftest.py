@@ -3,7 +3,8 @@ from pytest import fixture
 from can import Message
 
 from uds.transmission_attributes import TransmissionDirection, AddressingType
-from uds.can import CanAddressingFormat
+from uds.can import CanAddressingFormat, Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, \
+    ExtendedCanAddressingInformation, Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
 from uds.segmentation import CanSegmenter
 
 
@@ -53,21 +54,34 @@ def example_can_addressing_format(request):
 
 
 @fixture(params=[
-    CanSegmenter(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                 physical_ai=dict(can_id=0x724),
-                 functional_ai=dict(can_id=0x7FF)),
-    CanSegmenter(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                 physical_ai=dict(target_address=0x1E, source_address=0xFF),
-                 functional_ai=dict(target_address=0xB1, source_address=0xFF),
+    CanSegmenter(addressing_information=Normal11BitCanAddressingInformation(rx_physical={"can_id": 0x643},
+                                                                            tx_physical={"can_id": 0x644},
+                                                                            rx_functional={"can_id": 0x7DE},
+                                                                            tx_functional={"can_id": 0x7DF})),
+    CanSegmenter(addressing_information=NormalFixedCanAddressingInformation(rx_physical={"target_address": 0x12, "source_address": 0xF8},
+                                                                            tx_physical={"can_id": 0x18DAF812,"target_address": 0xF8, "source_address": 0x12},
+                                                                            rx_functional={"can_id": 0x18DB0BFF, "target_address": 0x0B, "source_address": 0xFF},
+                                                                            tx_functional={"target_address": 0xFF, "source_address": 0x0B}),
                  dlc=0xF,
                  use_data_optimization=True,
-                 filler_byte=0x71),
-    CanSegmenter(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
-                 physical_ai=dict(target_address=0xE0, can_id=0x129834),
-                 functional_ai=dict(target_address=0xFF, can_id=0x12FFFF),
-                 dlc=0xC,
-                 use_data_optimization=True,
-                 filler_byte=0x8E)
+                 filler_byte=0xE9),
+    CanSegmenter(addressing_information=ExtendedCanAddressingInformation(rx_physical={"can_id": 0x752, "target_address": 0x9C},
+                                                                         tx_physical={"can_id": 0x752, "target_address": 0xF0},
+                                                                         rx_functional={"can_id": 0x12CDEF59, "target_address": 0x9A},
+                                                                         tx_functional={"can_id": 0x9876543, "target_address": 0x0E}),
+                 dlc=0xA,
+                 filler_byte=0x55),
+    CanSegmenter(addressing_information=Mixed11BitCanAddressingInformation(rx_physical={"can_id": 0x6FE, "address_extension": 0x6B},
+                                                                           tx_physical={"can_id": 0x720, "address_extension": 0xD0},
+                                                                           rx_functional={"can_id": 0x7BD, "address_extension": 0x9C},
+                                                                           tx_functional={"can_id": 0x7BD, "address_extension": 0xF2}),
+                 use_data_optimization=True),
+    CanSegmenter(addressing_information=Mixed29BitCanAddressingInformation(rx_physical={"can_id": 0x18CEF1E2, "address_extension": 0x6B},
+                                                                           tx_physical={"can_id": 0x18CEE2F1, "target_address": 0xE2, "source_address": 0xF1, "address_extension": 0xD0},
+                                                                           rx_functional={"target_address": 0xFF, "source_address": 0xFF, "address_extension": 0x55},
+                                                                           tx_functional={"can_id": 0x18CDFFFF, "address_extension": 0xEF}),
+                 dlc=0xF,
+                 filler_byte=0xAA),
 ])
 def example_can_segmenter(request):
     return request.param
