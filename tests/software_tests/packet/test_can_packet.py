@@ -2,7 +2,7 @@ import pytest
 from mock import patch, Mock, call
 
 from uds.packet.can_packet import CanPacket, \
-    CanPacketType, CanAddressingFormat, AbstractCanAddressingInformation, CanIdHandler, AddressingType, \
+    CanPacketType, CanAddressingFormat, AbstractCanAddressingInformation, AddressingType, \
     DEFAULT_FILLER_BYTE, AmbiguityError
 from uds.can import CanFlowStatus
 
@@ -15,17 +15,11 @@ class TestCanPacket:
 
     def setup_method(self):
         self.mock_can_packet = Mock(spec=CanPacket)
-        mock_can_id_handler_class = Mock(spec=CanIdHandler,
-                                         ADDRESSING_TYPE_NAME=CanIdHandler.ADDRESSING_TYPE_NAME,
-                                         TARGET_ADDRESS_NAME=CanIdHandler.TARGET_ADDRESS_NAME,
-                                         SOURCE_ADDRESS_NAME=CanIdHandler.SOURCE_ADDRESS_NAME)
         # patching
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
         self._patcher_can_dlc_handler_class = patch(f"{SCRIPT_LOCATION}.CanDlcHandler")
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
-        self._patcher_can_id_handler_class = patch(f"{SCRIPT_LOCATION}.CanIdHandler", mock_can_id_handler_class)
-        self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
         self._patcher_ai_class = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_ai_class = self._patcher_ai_class.start()
         self._patcher_normal_11bit_ai_class = patch(f"{SCRIPT_LOCATION}.Normal11BitCanAddressingInformation")
@@ -56,7 +50,6 @@ class TestCanPacket:
     def teardown_method(self):
         self._patcher_warn.stop()
         self._patcher_can_dlc_handler_class.stop()
-        self._patcher_can_id_handler_class.stop()
         self._patcher_ai_class.stop()
         self._patcher_normal_11bit_ai_class.stop()
         self._patcher_normal_fixed_ai_class.stop()

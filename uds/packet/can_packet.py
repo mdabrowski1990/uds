@@ -5,9 +5,9 @@ __all__ = ["CanPacket"]
 from typing import Optional, Any
 from warnings import warn
 
-from uds.utilities import AmbiguityError, UnusedArgumentWarning, RawBytes, RawBytesTuple, validate_raw_bytes
+from uds.utilities import AmbiguityError, UnusedArgumentWarning, RawBytes, RawBytesTuple
 from uds.transmission_attributes import AddressingType, AddressingTypeAlias
-from uds.can import DEFAULT_FILLER_BYTE, CanIdHandler, CanDlcHandler, \
+from uds.can import DEFAULT_FILLER_BYTE, CanDlcHandler, \
     CanAddressingFormat, CanAddressingFormatAlias, AbstractCanAddressingInformation, CanAddressingInformation, \
     Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, ExtendedCanAddressingInformation, \
     Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation, \
