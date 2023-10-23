@@ -15,5 +15,5 @@ from .abstract_packet import AbstractUdsPacketContainer, AbstractUdsPacket, Abst
     PacketsSequence, PacketsTuple, PacketsList, \
     PacketsRecordsSequence, PacketsRecordsTuple, PacketsRecordsList
 from .abstract_can_packet_container import AbstractCanPacketContainer
-from .can_packet import CanPacket
+from .can_packet import CanPacket, AnyCanPacket
 from .can_packet_record import CanPacketRecord

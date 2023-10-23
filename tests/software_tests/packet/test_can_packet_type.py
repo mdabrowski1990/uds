@@ -8,11 +8,11 @@ from uds.packet import AbstractUdsPacketType
 class TestCanPacketType:
     """Unit tests for `CanPacketType` class."""
 
-    def setup(self):
+    def setup_method(self):
         self._patcher_validate_member = patch("uds.utilities.ValidatedEnum.validate_member")
         self.mock_validate_member = self._patcher_validate_member.start()
 
-    def teardown(self):
+    def teardown_method(self):
         self._patcher_validate_member.stop()
 
     # inheritance

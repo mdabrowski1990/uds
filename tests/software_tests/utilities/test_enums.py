@@ -5,6 +5,9 @@ from aenum import IntEnum, StrEnum
 from uds.utilities.enums import ExtendableEnum, ValidatedEnum, ByteEnum, NibbleEnum
 
 
+SCRIPT_LOCATION = "uds.utilities.enums"
+
+
 class TestByteEnum:
     """
     Tests for `ByteEnum` class.
@@ -71,8 +74,6 @@ class TestValidatedEnum:
     Note:
         In fact these are integration tests, but we were unable to effectively mock enum and it is not worth the effort.
     """
-
-    SCRIPT_LOCATION = "uds.utilities.enums"
 
     class ExampleByteEnum1(ValidatedEnum):
         A = 0
@@ -181,8 +182,6 @@ class TestExtendableEnum:
 @pytest.mark.integration
 class TestMultipleEnums:
     """Integration tests for multiple Enum classes."""
-
-    SCRIPT_LOCATION = "uds.utilities.enums"
 
     class ExtendableByteEnumWithValidated(ByteEnum, ValidatedEnum, ExtendableEnum):
         V1 = 11

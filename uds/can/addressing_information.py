@@ -8,12 +8,11 @@ __all__ = ["CanAddressingInformation"]
 
 from typing import Optional, Dict, TypedDict, Type
 
-from uds.utilities import RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, \
-    InconsistentArgumentsError
+from uds.utilities import RawBytes, RawBytesList, validate_raw_byte, validate_raw_bytes, InconsistentArgumentsError
 from uds.transmission_attributes import AddressingTypeAlias
 from .addressing_format import CanAddressingFormat, CanAddressingFormatAlias
 from .frame_fields import CanIdHandler
-from .abstract_addressing_information import AbstractCanAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
 from .extended_addressing_information import ExtendedCanAddressingInformation
 from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
@@ -74,7 +73,7 @@ class CanAddressingInformation:
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
                            address_extension: Optional[int] = None
-                           ) -> AbstractCanAddressingInformation.PacketAIParamsAlias:
+                           ) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -93,8 +92,7 @@ class CanAddressingInformation:
             can_id=can_id,
             target_address=target_address,
             source_address=source_address,
-            address_extension=address_extension
-        )
+            address_extension=address_extension)
 
     @classmethod
     def validate_ai_data_bytes(cls, addressing_format: CanAddressingFormatAlias, ai_data_bytes: RawBytes) -> None:

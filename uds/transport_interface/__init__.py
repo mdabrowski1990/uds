@@ -10,5 +10,4 @@ It provides configurable Transport Interfaces for:
 """
 
 from .abstract_transport_interface import AbstractTransportInterface
-from .abstract_can_transport_interface import AbstractCanTransportInterface
-from .python_can_transport_interface import PyCanTransportInterface
+from .can_transport_interface import AbstractCanTransportInterface, PyCanTransportInterface
