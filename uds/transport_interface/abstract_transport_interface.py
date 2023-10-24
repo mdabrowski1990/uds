@@ -6,7 +6,7 @@ from typing import Optional, Any
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 
-from uds.utilities import TimeMilliseconds
+from uds.utilities import TimeMillisecondsAlias
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.segmentation import AbstractSegmenter
 
@@ -71,7 +71,7 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> AbstractUdsPacketRecord:
+    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> AbstractUdsPacketRecord:
         """
         Receive UDS packet.
 
@@ -97,7 +97,7 @@ class AbstractTransportInterface(ABC):
 
     @abstractmethod
     async def async_receive_packet(self,
-                                   timeout: Optional[TimeMilliseconds] = None,
+                                   timeout: Optional[TimeMillisecondsAlias] = None,
                                    loop: Optional[AbstractEventLoop] = None) -> AbstractUdsPacketRecord:
         """
         Receive UDS packet asynchronously.

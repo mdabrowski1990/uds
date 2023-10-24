@@ -16,13 +16,13 @@ class TestRequestSID:
         self.mock_warn = self._patcher_warn.start()
         self._patcher_is_member = patch(f"{SCRIPT_LOCATION}.RequestSID.is_member")
         self.mock_is_member = self._patcher_is_member.start()
-        self._patcher_possible_request_sids = patch(f"{SCRIPT_LOCATION}.POSSIBLE_REQUEST_SIDS")
-        self.mock_possible_request_sids = self._patcher_possible_request_sids.start()
+        self.patcher_all_request_sids = patch(f"{SCRIPT_LOCATION}.ALL_REQUEST_SIDS")
+        self.mock_all_request_sids = self.patcher_all_request_sids.start()
 
     def teardown_method(self):
         self._patcher_warn.stop()
         self._patcher_is_member.stop()
-        self._patcher_possible_request_sids.stop()
+        self.patcher_all_request_sids.stop()
 
     def test_inheritance__byte_enum(self):
         assert issubclass(RequestSID, ByteEnum)
@@ -36,29 +36,29 @@ class TestRequestSID:
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_request_sid__member(self, value):
         self.mock_is_member.return_value = True
-        self.mock_possible_request_sids.__contains__.return_value = True
+        self.mock_all_request_sids.__contains__.return_value = True
         assert RequestSID.is_request_sid(value=value) is True
         self.mock_warn.assert_not_called()
         self.mock_is_member.assert_called_once_with(value)
-        self.mock_possible_request_sids.__contains__.assert_called_once_with(value)
+        self.mock_all_request_sids.__contains__.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_request_sid__unsupported(self, value):
         self.mock_is_member.return_value = False
-        self.mock_possible_request_sids.__contains__.return_value = True
+        self.mock_all_request_sids.__contains__.return_value = True
         assert RequestSID.is_request_sid(value=value) is True
         self.mock_warn.assert_called_once()
         self.mock_is_member.assert_called_once_with(value)
-        self.mock_possible_request_sids.__contains__.assert_called_once_with(value)
+        self.mock_all_request_sids.__contains__.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_request_sid__invalid(self, value):
         self.mock_is_member.return_value = False
-        self.mock_possible_request_sids.__contains__.return_value = False
+        self.mock_all_request_sids.__contains__.return_value = False
         assert RequestSID.is_request_sid(value=value) is False
         self.mock_warn.assert_not_called()
         self.mock_is_member.assert_not_called()
-        self.mock_possible_request_sids.__contains__.assert_called_once_with(value)
+        self.mock_all_request_sids.__contains__.assert_called_once_with(value)
 
 
 class TestResponseSID:
@@ -69,13 +69,13 @@ class TestResponseSID:
         self.mock_warn = self._patcher_warn.start()
         self._patcher_is_member = patch(f"{SCRIPT_LOCATION}.ResponseSID.is_member")
         self.mock_is_member = self._patcher_is_member.start()
-        self._patcher_possible_response_sids = patch(f"{SCRIPT_LOCATION}.POSSIBLE_RESPONSE_SIDS")
-        self.mock_possible_response_sids = self._patcher_possible_response_sids.start()
+        self.patcher_all_response_sids = patch(f"{SCRIPT_LOCATION}.ALL_RESPONSE_SIDS")
+        self.mock_all_response_sids = self.patcher_all_response_sids.start()
 
     def teardown_method(self):
         self._patcher_warn.stop()
         self._patcher_is_member.stop()
-        self._patcher_possible_response_sids.stop()
+        self.patcher_all_response_sids.stop()
 
     def test_inheritance__byte_enum(self):
         assert issubclass(ResponseSID, ByteEnum)
@@ -89,29 +89,29 @@ class TestResponseSID:
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_response_sid__member(self, value):
         self.mock_is_member.return_value = True
-        self.mock_possible_response_sids.__contains__.return_value = True
+        self.mock_all_response_sids.__contains__.return_value = True
         assert ResponseSID.is_response_sid(value=value) is True
         self.mock_warn.assert_not_called()
         self.mock_is_member.assert_called_once_with(value)
-        self.mock_possible_response_sids.__contains__.assert_called_once_with(value)
+        self.mock_all_response_sids.__contains__.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_response_sid__unsupported(self, value):
         self.mock_is_member.return_value = False
-        self.mock_possible_response_sids.__contains__.return_value = True
+        self.mock_all_response_sids.__contains__.return_value = True
         assert ResponseSID.is_response_sid(value=value) is True
         self.mock_warn.assert_called_once()
         self.mock_is_member.assert_called_once_with(value)
-        self.mock_possible_response_sids.__contains__.assert_called_once_with(value)
+        self.mock_all_response_sids.__contains__.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [1, 0x55, 0xFF])
     def test_is_response_sid__invalid(self, value):
         self.mock_is_member.return_value = False
-        self.mock_possible_response_sids.__contains__.return_value = False
+        self.mock_all_response_sids.__contains__.return_value = False
         assert ResponseSID.is_response_sid(value=value) is False
         self.mock_warn.assert_not_called()
         self.mock_is_member.assert_not_called()
-        self.mock_possible_response_sids.__contains__.assert_called_once_with(value)
+        self.mock_all_response_sids.__contains__.assert_called_once_with(value)
 
 
 @pytest.mark.integration

@@ -9,6 +9,6 @@ It provides tools for:
 """
 
 from .uds_message import AbstractUdsMessageContainer, UdsMessage, UdsMessageRecord
-from .service_identifiers import RequestSID, ResponseSID, POSSIBLE_REQUEST_SIDS, POSSIBLE_RESPONSE_SIDS, \
+from .service_identifiers import RequestSID, ResponseSID, ALL_REQUEST_SIDS, ALL_RESPONSE_SIDS, \
     UnrecognizedSIDWarning
 from .nrc import NRC

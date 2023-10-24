@@ -60,18 +60,16 @@ class TestCanPacketRecord:
                                  addressing_format=addressing_format,
                                  transmission_time=transmission_time)
         assert self.mock_can_packet_record._CanPacketRecord__addressing_type \
-               == self.mock_addressing_type_class.return_value
+               == self.mock_addressing_type_class.validate_member.return_value
         assert self.mock_can_packet_record._CanPacketRecord__addressing_format \
-               == self.mock_can_addressing_format_class.return_value
+               == self.mock_can_addressing_format_class.validate_member.return_value
         self.mock_abstract_uds_packet_record_init.assert_called_once_with(frame=frame,
                                                                           direction=direction,
                                                                           transmission_time=transmission_time)
         self.mock_can_packet_record._CanPacketRecord__assess_packet_type.assert_called_once_with()
         self.mock_can_packet_record._CanPacketRecord__assess_ai_attributes.assert_called_once_with()
         self.mock_addressing_type_class.validate_member.assert_called_once_with(addressing_type)
-        self.mock_addressing_type_class.assert_called_once_with(addressing_type)
         self.mock_can_addressing_format_class.validate_member.assert_called_once_with(addressing_format)
-        self.mock_can_addressing_format_class.assert_called_once_with(addressing_format)
 
     # raw_frame_data
 
@@ -160,12 +158,12 @@ class TestCanPacketRecord:
         self.mock_can_packet_record.raw_frame_data = raw_frame_data
         self.mock_can_ai_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         assert CanPacketRecord._CanPacketRecord__assess_packet_type(self=self.mock_can_packet_record) is None
-        assert self.mock_can_packet_record._CanPacketRecord__packet_type == self.mock_can_packet_type_class.return_value
+        assert self.mock_can_packet_record._CanPacketRecord__packet_type \
+               == self.mock_can_packet_type_class.validate_member.return_value
         n_pci_value = raw_frame_data[ai_data_bytes_number] >> 4
         self.mock_can_ai_class.get_ai_data_bytes_number.assert_called_once_with(
             self.mock_can_packet_record.addressing_format)
         self.mock_can_packet_type_class.validate_member.assert_called_once_with(n_pci_value)
-        self.mock_can_packet_type_class.assert_called_once_with(n_pci_value)
 
     # __assess_ai_attributes
 
@@ -195,8 +193,8 @@ class TestCanPacketRecord:
         assert CanPacketRecord._CanPacketRecord__assess_ai_attributes(self=self.mock_can_packet_record) is None
         self.mock_can_ai_class.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         self.mock_can_ai_class.decode_packet_ai.assert_called_once_with(addressing_format=addressing_format,
-                                                                         can_id=can_id,
-                                                                         ai_data_bytes=raw_frame_data[:ai_data_bytes_number])
+                                                                        can_id=can_id,
+                                                                        ai_data_bytes=raw_frame_data[:ai_data_bytes_number])
         assert self.mock_can_packet_record._CanPacketRecord__target_address == decoded_ai["target_address"]
         assert self.mock_can_packet_record._CanPacketRecord__source_address == decoded_ai["source_address"]
         assert self.mock_can_packet_record._CanPacketRecord__address_extension == decoded_ai["address_extension"]

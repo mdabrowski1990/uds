@@ -1,20 +1,20 @@
 """Module with all common types (and its aliases) used in the package and helper functions for these types."""
 
-__all__ = ["TimeMilliseconds", "RawBytes", "RawBytesTuple", "RawBytesList", "RawBytesSet",
+__all__ = ["TimeMillisecondsAlias", "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
            "validate_nibble", "validate_raw_byte", "validate_raw_bytes"]
 
-from typing import Union, Tuple, List, Set, Any
+from typing import Any, Union, Tuple, List, Set
 
 
-TimeMilliseconds = Union[int, float]
+TimeMillisecondsAlias = Union[int, float]
 """Alias of a time value in milliseconds."""
-RawBytesTuple = Tuple[int, ...]
+RawBytesTupleAlias = Tuple[int, ...]
 """Alias of a tuple filled with byte values."""
-RawBytesSet = Set[int]
+RawBytesSetAlias = Set[int]
 """Alias of a set filled with byte values."""
-RawBytesList = List[int]
+RawBytesListAlias = List[int]
 """Alias of a list filled with byte values."""
-RawBytes = Union[RawBytesTuple, RawBytesList, bytearray]
+RawBytesAlias = Union[RawBytesTupleAlias, RawBytesListAlias, bytearray]
 """Alias of a sequence filled with byte values."""
 
 
@@ -48,7 +48,7 @@ def validate_raw_byte(value: Any) -> None:
         raise ValueError(f"Provided value is out of byte values range (0x00-0xFF). Actual value: {value}")
 
 
-def validate_raw_bytes(value: Any, allow_empty: bool = False) -> None:
+def validate_raw_bytes(value: RawBytesAlias, allow_empty: bool = False) -> None:
     """
     Validate whether provided value stores raw bytes value.
 

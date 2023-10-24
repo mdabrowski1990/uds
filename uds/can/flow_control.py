@@ -7,17 +7,16 @@ This module contains implementation of :ref:`Flow Control <knowledge-base-can-fl
  - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
 """
 
-__all__ = ["CanFlowStatus", "CanFlowStatusAlias", "CanSTminTranslator", "CanFlowControlHandler",
-           "UnrecognizedSTminWarning"]
+__all__ = ["CanFlowStatus", "CanSTminTranslator", "CanFlowControlHandler", "UnrecognizedSTminWarning"]
 
-from typing import Union, Optional, Any
+from typing import Optional, Any
 from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import InconsistentArgumentsError, NibbleEnum, ValidatedEnum, TimeMilliseconds, \
-    RawBytes, RawBytesList, validate_nibble, validate_raw_byte, validate_raw_bytes
-from .addressing_format import CanAddressingFormatAlias
+from uds.utilities import InconsistentArgumentsError, NibbleEnum, ValidatedEnum, TimeMillisecondsAlias, \
+    RawBytesAlias, RawBytesListAlias, validate_nibble, validate_raw_byte, validate_raw_bytes
+from .addressing_format import CanAddressingFormat
 from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
@@ -42,16 +41,12 @@ class CanFlowStatus(NibbleEnum, ValidatedEnum):
     Consecutive Frames transmission.
     """
 
-    ContinueToSend = 0x0
+    ContinueToSend: "CanFlowStatus" = 0x0  # type: ignore
     """Asks to resume Consecutive Frames transmission."""
-    Wait = 0x1  # noqa: F841
+    Wait: "CanFlowStatus" = 0x1  # type: ignore  # noqa: F841
     """Asks to pause Consecutive Frames transmission."""
-    Overflow = 0x2  # noqa: F841
+    Overflow: "CanFlowStatus" = 0x2  # type: ignore  # noqa: F841
     """Asks to abort transmission of a diagnostic message."""
-
-
-CanFlowStatusAlias = Union[CanFlowStatus, int]
-"""Typing alias that describes :class:`~uds.can.flow_control.CanFlowStatus` member."""
 
 
 class CanSTminTranslator:
@@ -62,7 +57,7 @@ class CanSTminTranslator:
     a transmission of two following Consecutive Frames.
     """
 
-    MAX_STMIN_TIME: TimeMilliseconds = 127
+    MAX_STMIN_TIME: TimeMillisecondsAlias = 127
     """Maximal time value (in milliseconds) of STmin."""
 
     MIN_VALUE_MS_RANGE: int = 0
@@ -74,16 +69,16 @@ class CanSTminTranslator:
     """Minimal raw value of STmin in 100 microseconds range."""
     MAX_RAW_VALUE_100US_RANGE: int = 0xF9
     """Maximal raw value of STmin in 100 microseconds range."""
-    MIN_TIME_VALUE_100US_RANGE: TimeMilliseconds = 0.1
+    MIN_TIME_VALUE_100US_RANGE: TimeMillisecondsAlias = 0.1
     """Minimal time value (in milliseconds) of STmin in 100 microseconds range."""
-    MAX_TIME_VALUE_100US_RANGE: TimeMilliseconds = 0.9
+    MAX_TIME_VALUE_100US_RANGE: TimeMillisecondsAlias = 0.9
     """Maximal time value (in milliseconds) of STmin in 100 microseconds range."""
 
     __FLOATING_POINT_ACCURACY: int = 10
     """Accuracy used for floating point values (rounding is necessary due to float operation in python)."""
 
     @classmethod
-    def decode(cls, raw_value: int) -> TimeMilliseconds:
+    def decode(cls, raw_value: int) -> TimeMillisecondsAlias:
         """
         Map raw value of STmin into time value.
 
@@ -104,7 +99,7 @@ class CanSTminTranslator:
         return cls.MAX_STMIN_TIME
 
     @classmethod
-    def encode(cls, time_value: TimeMilliseconds) -> int:
+    def encode(cls, time_value: TimeMillisecondsAlias) -> int:
         """
         Map time value of STmin into raw value.
 
@@ -137,7 +132,7 @@ class CanSTminTranslator:
         return cls._is_ms_value(value) or cls._is_100us_value(value)
 
     @classmethod
-    def _is_ms_value(cls, value: TimeMilliseconds) -> bool:
+    def _is_ms_value(cls, value: TimeMillisecondsAlias) -> bool:
         """
         Check if provided argument is STmin time value in milliseconds.
 
@@ -150,7 +145,7 @@ class CanSTminTranslator:
         return value % 1 == 0
 
     @classmethod
-    def _is_100us_value(cls, value: TimeMilliseconds) -> bool:
+    def _is_100us_value(cls, value: TimeMillisecondsAlias) -> bool:
         """
         Check if provided argument is STmin time value in 100 microseconds.
 
@@ -177,14 +172,14 @@ class CanFlowControlHandler:
 
     @classmethod
     def create_valid_frame_data(cls, *,
-                                addressing_format: CanAddressingFormatAlias,
-                                flow_status: CanFlowStatusAlias,
+                                addressing_format: CanAddressingFormat,
+                                flow_status: CanFlowStatus,
                                 block_size: Optional[int] = None,
                                 st_min: Optional[int] = None,
                                 dlc: Optional[int] = None,
                                 filler_byte: int = DEFAULT_FILLER_BYTE,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesList:
+                                address_extension: Optional[int] = None) -> RawBytesListAlias:
         """
         Create a data field of a CAN frame that carries a valid Flow Control packet.
 
@@ -236,14 +231,14 @@ class CanFlowControlHandler:
 
     @classmethod
     def create_any_frame_data(cls, *,
-                              addressing_format: CanAddressingFormatAlias,
-                              flow_status: CanFlowStatusAlias,
+                              addressing_format: CanAddressingFormat,
+                              flow_status: CanFlowStatus,
                               dlc: int,
                               block_size: Optional[int] = None,
                               st_min: Optional[int] = None,
                               filler_byte: int = DEFAULT_FILLER_BYTE,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesList:
+                              address_extension: Optional[int] = None) -> RawBytesListAlias:
         """
         Create a data field of a CAN frame that carries a Flow Control packet.
 
@@ -286,7 +281,7 @@ class CanFlowControlHandler:
         return fc_bytes
 
     @classmethod
-    def is_flow_control(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> bool:
+    def is_flow_control(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
         """
         Check if provided data bytes encodes a Flow Control packet.
 
@@ -304,8 +299,8 @@ class CanFlowControlHandler:
 
     @classmethod
     def decode_flow_status(cls,
-                           addressing_format: CanAddressingFormatAlias,
-                           raw_frame_data: RawBytes) -> CanFlowStatusAlias:
+                           addressing_format: CanAddressingFormat,
+                           raw_frame_data: RawBytesAlias) -> CanFlowStatus:
         """
         Extract Flow Status value from Flow Control data bytes.
 
@@ -327,7 +322,7 @@ class CanFlowControlHandler:
         return CanFlowStatus(raw_frame_data[ai_bytes_number] & 0xF)
 
     @classmethod
-    def decode_block_size(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> int:
+    def decode_block_size(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
         """
         Extract Block Size value from Flow Control data bytes.
 
@@ -352,7 +347,7 @@ class CanFlowControlHandler:
         return raw_frame_data[ai_data_bytes_number + cls.BS_BYTE_POSITION]
 
     @classmethod
-    def decode_st_min(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> int:
+    def decode_st_min(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
         """
         Extract STmin value from Flow Control data bytes.
 
@@ -377,7 +372,7 @@ class CanFlowControlHandler:
         return raw_frame_data[ai_data_bytes_number + cls.STMIN_BYTE_POSITION]
 
     @classmethod
-    def get_min_dlc(cls, addressing_format: CanAddressingFormatAlias) -> int:
+    def get_min_dlc(cls, addressing_format: CanAddressingFormat) -> int:
         """
         Get the minimum value of a CAN frame DLC to carry a Flow Control packet.
 
@@ -389,7 +384,7 @@ class CanFlowControlHandler:
         return CanDlcHandler.get_min_dlc(ai_data_bytes_number + cls.FS_BYTES_USED)
 
     @classmethod
-    def validate_frame_data(cls, addressing_format: CanAddressingFormatAlias, raw_frame_data: RawBytes) -> None:
+    def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> None:
         """
         Validate whether data field of a CAN Packet carries a properly encoded Flow Control.
 
@@ -410,10 +405,10 @@ class CanFlowControlHandler:
 
     @classmethod
     def __encode_valid_flow_status(cls,
-                                   flow_status: CanFlowStatusAlias,
+                                   flow_status: CanFlowStatus,
                                    block_size: Optional[int] = None,
                                    st_min: Optional[int] = None,
-                                   filler_byte: int = DEFAULT_FILLER_BYTE) -> RawBytesList:
+                                   filler_byte: int = DEFAULT_FILLER_BYTE) -> RawBytesListAlias:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 
@@ -445,7 +440,7 @@ class CanFlowControlHandler:
     def __encode_any_flow_status(cls,
                                  flow_status: int,
                                  block_size: Optional[int] = None,
-                                 st_min: Optional[int] = None) -> RawBytesList:
+                                 st_min: Optional[int] = None) -> RawBytesListAlias:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 
