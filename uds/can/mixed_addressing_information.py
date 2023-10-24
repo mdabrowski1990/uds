@@ -47,8 +47,8 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
             raise UnusedArgumentError("Values of Target Address and Source Address are not supported by "
                                       "Mixed 11-bit Addressing format and all must be None.")
         AddressingType.validate_member(addressing_type)
-        CanIdHandler.validate_can_id(can_id)
-        validate_raw_byte(address_extension)
+        CanIdHandler.validate_can_id(can_id)  # type: ignore
+        validate_raw_byte(address_extension)  # type: ignore
         if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Mixed 11-bit Addressing Format. Actual value: {can_id}")
@@ -93,15 +93,15 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
         :return: Normalized dictionary with the provided Addressing Information.
         """
         AddressingType.validate_member(addressing_type)
-        validate_raw_byte(address_extension)
+        validate_raw_byte(address_extension)  # type: ignore
         if can_id is None:
             if None in (target_address, source_address):
                 raise InconsistentArgumentsError(f"Values of target_address and source_address must be provided,"
                                                  f"if can_id value is None for Mixed 29-bit Addressing Format. "
                                                  f"Actual values: "
                                                  f"target_address={target_address}, source_address={source_address}")
-            validate_raw_byte(target_address)
-            validate_raw_byte(source_address)
+            validate_raw_byte(target_address)  # type: ignore
+            validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(
                 addressing_type=addressing_type,
                 target_address=target_address,  # type: ignore

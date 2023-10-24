@@ -197,11 +197,11 @@ class CanAddressingInformation:
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
             return []
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            validate_raw_byte(target_address)
+            validate_raw_byte(target_address)  # type: ignore
             return [target_address]  # type: ignore
         if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING):
-            validate_raw_byte(address_extension)
+            validate_raw_byte(address_extension)  # type: ignore
             return [address_extension]  # type: ignore
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 

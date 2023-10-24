@@ -28,8 +28,7 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None
-                           ) -> PacketAIParamsAlias:
+                           address_extension: Optional[int] = None) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Normal 11-bit Addressing format.
 
@@ -48,7 +47,7 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
             raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are "
                                       "not supported by Normal 11-bit Addressing format and all must be None.")
         AddressingType.validate_member(addressing_type)
-        CanIdHandler.validate_can_id(can_id)
+        CanIdHandler.validate_can_id(can_id)  # type: ignore
         if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Normal 11-bit Addressing Format. Actual value: {can_id}")
@@ -77,8 +76,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None
-                           ) -> PacketAIParamsAlias:
+                           address_extension: Optional[int] = None) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Normal Fixed Addressing format.
 
@@ -104,8 +102,8 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                                                  f"if can_id value is None for Normal Fixed Addressing Format. "
                                                  f"Actual values: "
                                                  f"target_address={target_address}, source_address={source_address}")
-            validate_raw_byte(target_address)
-            validate_raw_byte(source_address)
+            validate_raw_byte(target_address)  # type: ignore
+            validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(
                 addressing_type=addressing_type,
                 target_address=target_address,  # type: ignore

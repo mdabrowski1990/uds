@@ -425,8 +425,8 @@ class CanFlowControlHandler:
         """
         CanFlowStatus.validate_member(flow_status)
         if flow_status == CanFlowStatus.ContinueToSend:
-            validate_raw_byte(block_size)
-            validate_raw_byte(st_min)
+            validate_raw_byte(block_size)  # type: ignore
+            validate_raw_byte(st_min)  # type: ignore
         else:
             if block_size is not None:
                 validate_raw_byte(block_size)

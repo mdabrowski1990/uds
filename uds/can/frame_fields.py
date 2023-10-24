@@ -9,7 +9,7 @@ Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
 
 __all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
-from typing import Any, Optional, Tuple, Set, TypedDict, Dict
+from typing import Optional, Tuple, Set, TypedDict, Dict
 from bisect import bisect_left
 
 from uds.transmission_attributes import AddressingType
@@ -372,7 +372,7 @@ class CanIdHandler:
         return isinstance(can_id, int) and cls.MIN_EXTENDED_VALUE <= can_id <= cls.MAX_EXTENDED_VALUE
 
     @classmethod
-    def validate_can_id(cls, value: Any, extended_can_id: Optional[bool] = None) -> None:
+    def validate_can_id(cls, value: int, extended_can_id: Optional[bool] = None) -> None:
         """
         Validate whether provided value is either Standard or Extended CAN ID.
 
@@ -481,7 +481,7 @@ class CanDlcHandler:
         return dlc in cls.__DLC_SPECIFIC_FOR_CAN_FD
 
     @classmethod
-    def validate_dlc(cls, value: Any) -> None:
+    def validate_dlc(cls, value: int) -> None:
         """
         Validate whether the provided value is a valid value of CAN DLC.
 
@@ -496,7 +496,7 @@ class CanDlcHandler:
             raise ValueError(f"Provided value is out of DLC values range. Actual value: {value}")
 
     @classmethod
-    def validate_data_bytes_number(cls, value: Any, exact_value: bool = True) -> None:
+    def validate_data_bytes_number(cls, value: int, exact_value: bool = True) -> None:
         """
         Validate whether provided value is a valid number of data bytes that might be carried a CAN frame.
 
