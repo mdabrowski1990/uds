@@ -46,7 +46,7 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
         if (target_address, source_address, address_extension) != (None, None, None):
             raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are "
                                       "not supported by Normal 11-bit Addressing format and all must be None.")
-        AddressingType.validate_member(addressing_type)
+        addressing_type = AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)  # type: ignore
         if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
@@ -95,7 +95,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         if address_extension is not None:
             raise UnusedArgumentError("Values of TAddress Extension is not supported by Normal Fixed Addressing format "
                                       "and all must be None.")
-        AddressingType.validate_member(addressing_type)
+        addressing_type = AddressingType.validate_member(addressing_type)
         if can_id is None:
             if None in (target_address, source_address):
                 raise InconsistentArgumentsError(f"Values of target_address and source_address must be provided,"

@@ -40,6 +40,7 @@ class TestFunctions:
         ([0x98, 0x76, 0x54, 0x32, 0x1F], Endianness.LITTLE_ENDIAN, 0x1F32547698),
     ])
     def test_bytes_list_to_int(self, bytes_list, endianness, expected_output):
+        self.mock_validate_endianness.side_effect = lambda arg: arg
         assert bytes_list_to_int(bytes_list=bytes_list, endianness=endianness) == expected_output
         self.mock_validate_raw_bytes.assert_called_once_with(bytes_list)
         self.mock_validate_endianness.assert_called_once_with(endianness)

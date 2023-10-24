@@ -46,7 +46,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         if (source_address, address_extension) != (None, None):
             raise UnusedArgumentError("Values of Source Address and Address Extension are not supported by "
                                       "Extended Addressing format and all must be None.")
-        AddressingType.validate_member(addressing_type)
+        addressing_type = AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)  # type: ignore
         validate_raw_byte(target_address)  # type: ignore
         if not CanIdHandler.is_extended_addressed_can_id(can_id):  # type: ignore

@@ -35,5 +35,4 @@ class CanPacketType(AbstractUdsPacketType):
 
         :return: True if given argument is a packet type that initiates a diagnostic message, else False.
         """
-        cls.validate_member(value)
-        return value in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
+        return cls.validate_member(value) in (cls.SINGLE_FRAME, cls.FIRST_FRAME)

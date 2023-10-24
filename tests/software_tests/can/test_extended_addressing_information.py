@@ -71,7 +71,7 @@ class TestExtendedCanAddressingInformation:
                                                                    can_id=can_id,
                                                                    target_address=target_address) == {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
