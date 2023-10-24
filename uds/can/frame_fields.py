@@ -12,7 +12,7 @@ __all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 from typing import Any, Optional, Tuple, Set, TypedDict, Dict
 from bisect import bisect_left
 
-from uds.transmission_attributes import AddressingType, AddressingTypeAlias
+from uds.transmission_attributes import AddressingType
 from uds.utilities import validate_raw_byte
 from .addressing_format import CanAddressingFormat
 
@@ -29,7 +29,7 @@ class CanIdHandler:
 
     CAN Identifier (CAN ID) is a CAN frame field that informs about a sender and a content of CAN frames.
 
-    CAN supports two formats of CAN ID:
+    CAN bus supports two formats of CAN ID:
      - Standard (11-bit Identifier)
      - Extended (29-bit Identifier)
     """
@@ -62,7 +62,7 @@ class CanIdHandler:
     class CanIdAIAlias(TypedDict, total=True):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` that is carried by CAN Identifier."""
 
-        addressing_type: Optional[AddressingTypeAlias]
+        addressing_type: Optional[AddressingType]
         target_address: Optional[int]
         source_address: Optional[int]
 
@@ -170,7 +170,7 @@ class CanIdHandler:
 
     @classmethod
     def encode_normal_fixed_addressed_can_id(cls,
-                                             addressing_type: AddressingTypeAlias,
+                                             addressing_type: AddressingType,
                                              target_address: int,
                                              source_address: int) -> int:
         """
@@ -198,7 +198,7 @@ class CanIdHandler:
 
     @classmethod
     def encode_mixed_addressed_29bit_can_id(cls,
-                                            addressing_type: AddressingTypeAlias,
+                                            addressing_type: AddressingType,
                                             target_address: int,
                                             source_address: int) -> int:
         """
@@ -228,7 +228,7 @@ class CanIdHandler:
     def is_compatible_can_id(cls,
                              can_id: int,
                              addressing_format: CanAddressingFormat,
-                             addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
+                             addressing_type: Optional[AddressingType] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with addressing format used.
 
@@ -271,7 +271,7 @@ class CanIdHandler:
     @classmethod
     def is_normal_fixed_addressed_can_id(cls,
                                          can_id: int,
-                                         addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
+                                         addressing_type: Optional[AddressingType] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with Normal Fixed Addressing format.
 
@@ -319,7 +319,7 @@ class CanIdHandler:
     @classmethod
     def is_mixed_29bit_addressed_can_id(cls,
                                         can_id: int,
-                                        addressing_type: Optional[AddressingTypeAlias] = None) -> bool:
+                                        addressing_type: Optional[AddressingType] = None) -> bool:
         """
         Check if the provided value of CAN ID is compatible with Mixed 29-bit Addressing format.
 

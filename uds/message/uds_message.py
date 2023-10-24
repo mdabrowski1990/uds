@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 from uds.utilities import RawBytesAlias, RawBytesTupleAlias, RawBytesListAlias, validate_raw_bytes, ReassignmentError
-from uds.transmission_attributes import TransmissionDirectionAlias, AddressingType, AddressingTypeAlias
+from uds.transmission_attributes import TransmissionDirection, AddressingType
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
 
 
@@ -35,7 +35,7 @@ class AbstractUdsMessageContainer(ABC):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
+    def addressing_type(self) -> AddressingType:
         """Addressing for which this diagnostic message is relevant."""
 
 
@@ -50,7 +50,7 @@ class UdsMessage(AbstractUdsMessageContainer):
     :class:`~uds.message.uds_message.UdsMessageRecord`.
     """
 
-    def __init__(self, payload: RawBytesAlias, addressing_type: AddressingTypeAlias) -> None:
+    def __init__(self, payload: RawBytesAlias, addressing_type: AddressingType) -> None:
         """
         Create a storage for a single diagnostic message.
 
@@ -88,19 +88,18 @@ class UdsMessage(AbstractUdsMessageContainer):
         self.__payload = tuple(value)
 
     @property
-    def addressing_type(self) -> AddressingTypeAlias:
+    def addressing_type(self) -> AddressingType:
         """Addressing for which this diagnostic message is relevant."""
         return self.__addressing_type
 
     @addressing_type.setter
-    def addressing_type(self, value: AddressingTypeAlias):
+    def addressing_type(self, value: AddressingType):
         """
         Set value of addressing for this diagnostic message.
 
         :param value: Addressing value to set.
         """
-        AddressingType.validate_member(value)
-        self.__addressing_type = AddressingType(value)
+        self.__addressing_type = AddressingType.validate_member(value)
 
 
 class UdsMessageRecord(AbstractUdsMessageContainer):
@@ -113,7 +112,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
         """
-        self.packets_records = packets_records
+        self.packets_records = packets_records  # type: ignore
 
     def __eq__(self, other: object) -> bool:
         """
@@ -189,12 +188,12 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return tuple(message_payload[:number_of_bytes])
 
     @property
-    def addressing_type(self) -> AddressingTypeAlias:
+    def addressing_type(self) -> AddressingType:
         """Addressing which was used to transmit this diagnostic message."""
         return self.packets_records[0].addressing_type
 
     @property
-    def direction(self) -> TransmissionDirectionAlias:
+    def direction(self) -> TransmissionDirection:
         """Information whether this message was received or sent."""
         return self.packets_records[0].direction
 

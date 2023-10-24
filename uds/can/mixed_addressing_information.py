@@ -5,7 +5,7 @@ __all__ = ["Mixed11BitCanAddressingInformation", "Mixed29BitCanAddressingInforma
 from typing import Optional
 
 from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
-from uds.transmission_attributes import AddressingType, AddressingTypeAlias
+from uds.transmission_attributes import AddressingType
 from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
 from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
@@ -24,12 +24,11 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
 
     @classmethod
     def validate_packet_ai(cls,
-                           addressing_type: AddressingTypeAlias,
+                           addressing_type: AddressingType,
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None
-                           ) -> PacketAIParamsAlias:
+                           address_extension: Optional[int] = None) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Mixed 11-bit Addressing format.
 
@@ -75,12 +74,11 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
 
     @classmethod
     def validate_packet_ai(cls,
-                           addressing_type: AddressingTypeAlias,
+                           addressing_type: AddressingType,
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None
-                           ) -> PacketAIParamsAlias:
+                           address_extension: Optional[int] = None) -> PacketAIParamsAlias:
         """
         Validate Addressing Information parameters of a CAN packet that uses Mixed 29-bit Addressing format.
 

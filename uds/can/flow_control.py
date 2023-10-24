@@ -7,10 +7,9 @@ This module contains implementation of :ref:`Flow Control <knowledge-base-can-fl
  - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
 """
 
-__all__ = ["CanFlowStatus", "CanFlowStatusAlias", "CanSTminTranslator", "CanFlowControlHandler",
-           "UnrecognizedSTminWarning"]
+__all__ = ["CanFlowStatus", "CanSTminTranslator", "CanFlowControlHandler", "UnrecognizedSTminWarning"]
 
-from typing import Union, Optional, Any
+from typing import Optional, Any
 from warnings import warn
 
 from aenum import unique
@@ -42,16 +41,12 @@ class CanFlowStatus(NibbleEnum, ValidatedEnum):
     Consecutive Frames transmission.
     """
 
-    ContinueToSend = 0x0
+    ContinueToSend: "CanFlowStatus" = 0x0  # type: ignore
     """Asks to resume Consecutive Frames transmission."""
-    Wait = 0x1  # noqa: F841
+    Wait: "CanFlowStatus" = 0x1  # type: ignore  # noqa: F841
     """Asks to pause Consecutive Frames transmission."""
-    Overflow = 0x2  # noqa: F841
+    Overflow: "CanFlowStatus" = 0x2  # type: ignore  # noqa: F841
     """Asks to abort transmission of a diagnostic message."""
-
-
-CanFlowStatusAlias = Union[CanFlowStatus, int]
-"""Typing alias that describes :class:`~uds.can.flow_control.CanFlowStatus` member."""
 
 
 class CanSTminTranslator:
@@ -178,7 +173,7 @@ class CanFlowControlHandler:
     @classmethod
     def create_valid_frame_data(cls, *,
                                 addressing_format: CanAddressingFormat,
-                                flow_status: CanFlowStatusAlias,
+                                flow_status: CanFlowStatus,
                                 block_size: Optional[int] = None,
                                 st_min: Optional[int] = None,
                                 dlc: Optional[int] = None,
@@ -237,7 +232,7 @@ class CanFlowControlHandler:
     @classmethod
     def create_any_frame_data(cls, *,
                               addressing_format: CanAddressingFormat,
-                              flow_status: CanFlowStatusAlias,
+                              flow_status: CanFlowStatus,
                               dlc: int,
                               block_size: Optional[int] = None,
                               st_min: Optional[int] = None,
@@ -305,7 +300,7 @@ class CanFlowControlHandler:
     @classmethod
     def decode_flow_status(cls,
                            addressing_format: CanAddressingFormat,
-                           raw_frame_data: RawBytesAlias) -> CanFlowStatusAlias:
+                           raw_frame_data: RawBytesAlias) -> CanFlowStatus:
         """
         Extract Flow Status value from Flow Control data bytes.
 
@@ -410,7 +405,7 @@ class CanFlowControlHandler:
 
     @classmethod
     def __encode_valid_flow_status(cls,
-                                   flow_status: CanFlowStatusAlias,
+                                   flow_status: CanFlowStatus,
                                    block_size: Optional[int] = None,
                                    st_min: Optional[int] = None,
                                    filler_byte: int = DEFAULT_FILLER_BYTE) -> RawBytesListAlias:

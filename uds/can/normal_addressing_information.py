@@ -5,7 +5,7 @@ __all__ = ["Normal11BitCanAddressingInformation", "NormalFixedCanAddressingInfor
 from typing import Optional
 
 from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
-from uds.transmission_attributes import AddressingType, AddressingTypeAlias
+from uds.transmission_attributes import AddressingType
 from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
 from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
@@ -24,7 +24,7 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
 
     @classmethod
     def validate_packet_ai(cls,
-                           addressing_type: AddressingTypeAlias,
+                           addressing_type: AddressingType,
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
@@ -74,7 +74,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
 
     @classmethod
     def validate_packet_ai(cls,
-                           addressing_type: AddressingTypeAlias,
+                           addressing_type: AddressingType,
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,

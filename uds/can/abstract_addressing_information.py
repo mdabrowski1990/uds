@@ -6,7 +6,7 @@ from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
 from copy import deepcopy
 
-from uds.transmission_attributes import AddressingTypeAlias, AddressingType
+from uds.transmission_attributes import AddressingType
 from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
 
@@ -15,7 +15,7 @@ class PacketAIParamsAlias(TypedDict):
     """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters of CAN packets stream."""
 
     addressing_format: CanAddressingFormat
-    addressing_type: AddressingTypeAlias
+    addressing_type: AddressingType
     can_id: int
     target_address: Optional[int]
     source_address: Optional[int]
@@ -25,7 +25,7 @@ class PacketAIParamsAlias(TypedDict):
 class AbstractCanAddressingInformation(ABC):
     """Abstract definition of CAN Entity (either server or client) Addressing Information."""
 
-    ADDRESSING_FORMAT_NAME: str = "addressing_format"
+    ADDRESSING_FORMAT_NAME: str = "addressing_format"  # noqa: F841
     """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter in Addressing Information."""
     ADDRESSING_TYPE_NAME: str = CanIdHandler.ADDRESSING_TYPE_NAME
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
@@ -135,7 +135,7 @@ class AbstractCanAddressingInformation(ABC):
     @classmethod
     @abstractmethod
     def validate_packet_ai(cls,
-                           addressing_type: AddressingTypeAlias,
+                           addressing_type: AddressingType,
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
