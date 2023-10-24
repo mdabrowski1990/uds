@@ -1,4 +1,4 @@
-prospector==1.10.2
+prospector==1.10.3
 mypy==1.6.1
 vulture==2.10
 bandit==1.7.5
