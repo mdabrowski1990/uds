@@ -51,13 +51,13 @@ class ValidatedEnum(Enum):
         :return: True if given argument is a member or a value of this Enum, else False.
         """
         try:
-            cls(value)
+            cls.validate_member(value)
         except ValueError:
             return False
         return True
 
     @classmethod
-    def validate_member(cls, value: Any) -> None:
+    def validate_member(cls, value: Any) -> "ValidatedEnum":
         """
         Validate whether given argument is a member or a value stored by this Enum.
 
@@ -65,7 +65,10 @@ class ValidatedEnum(Enum):
 
         :raise ValueError: Provided value is not a member neither a value of this Enum.
         """
-        if not cls.is_member(value):
+        try:
+            return cls(value)
+        except ValueError:
+            # pylint: disable=raise-missing-from
             raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}")
 
 
@@ -80,7 +83,7 @@ class ByteEnum(IntEnum):
         """
         validate_raw_byte(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa
+        member._value_ = value  # noqa: F841
         return member
 
 
@@ -95,5 +98,5 @@ class NibbleEnum(IntEnum):
         """
         validate_nibble(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa
+        member._value_ = value  # noqa: F841
         return member

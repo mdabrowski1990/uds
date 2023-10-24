@@ -11,7 +11,7 @@ from time import time
 
 from can import BusABC, AsyncBufferedReader, BufferedReader, Notifier, Message
 
-from uds.utilities import TimeMilliseconds, ValueWarning
+from uds.utilities import TimeMillisecondsAlias, ValueWarning
 from uds.can import AbstractCanAddressingInformation, CanIdHandler, CanDlcHandler
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.transmission_attributes import TransmissionDirection
@@ -26,18 +26,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     CAN Transport Interfaces are meant to handle UDS middle layers (Transport and Network) on CAN bus.
     """
 
-    N_AS_TIMEOUT: TimeMilliseconds = 1000
+    N_AS_TIMEOUT: TimeMillisecondsAlias = 1000
     """Timeout value of :ref:`N_As <knowledge-base-can-n-as>` time parameter according to ISO 15765-2."""
-    N_AR_TIMEOUT: TimeMilliseconds = 1000
+    N_AR_TIMEOUT: TimeMillisecondsAlias = 1000
     """Timeout value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter according to ISO 15765-2."""
-    N_BS_TIMEOUT: TimeMilliseconds = 1000
+    N_BS_TIMEOUT: TimeMillisecondsAlias = 1000
     """Timeout value of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter according to ISO 15765-2."""
-    N_CR_TIMEOUT: TimeMilliseconds = 1000
+    N_CR_TIMEOUT: TimeMillisecondsAlias = 1000
     """Timeout value of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter according to ISO 15765-2."""
 
-    DEFAULT_N_BR: TimeMilliseconds = 0
+    DEFAULT_N_BR: TimeMillisecondsAlias = 0
     """Default value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter."""
-    DEFAULT_N_CS: Optional[TimeMilliseconds] = None
+    DEFAULT_N_CS: Optional[TimeMillisecondsAlias] = None
     """Default value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
 
     def __init__(self,
@@ -83,12 +83,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     # Time parameter - CAN Network Layer
 
     @property
-    def n_as_timeout(self) -> TimeMilliseconds:
+    def n_as_timeout(self) -> TimeMillisecondsAlias:
         """Timeout value for N_As time parameter."""
         return self.__n_as_timeout
 
     @n_as_timeout.setter
-    def n_as_timeout(self, value: TimeMilliseconds):
+    def n_as_timeout(self, value: TimeMillisecondsAlias):
         """
         Set timeout value for N_As time parameter.
 
@@ -108,7 +108,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     @abstractmethod
-    def n_as_measured(self) -> Optional[TimeMilliseconds]:
+    def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_As time parameter.
 
@@ -116,12 +116,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
 
     @property
-    def n_ar_timeout(self) -> TimeMilliseconds:
+    def n_ar_timeout(self) -> TimeMillisecondsAlias:
         """Timeout value for N_Ar time parameter."""
         return self.__n_ar_timeout
 
     @n_ar_timeout.setter
-    def n_ar_timeout(self, value: TimeMilliseconds):
+    def n_ar_timeout(self, value: TimeMillisecondsAlias):
         """
         Set timeout value for N_Ar time parameter.
 
@@ -141,7 +141,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     @abstractmethod
-    def n_ar_measured(self) -> Optional[TimeMilliseconds]:
+    def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_Ar time parameter.
 
@@ -149,12 +149,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
 
     @property
-    def n_bs_timeout(self) -> TimeMilliseconds:
+    def n_bs_timeout(self) -> TimeMillisecondsAlias:
         """Timeout value for N_Bs time parameter."""
         return self.__n_bs_timeout
 
     @n_bs_timeout.setter
-    def n_bs_timeout(self, value: TimeMilliseconds):
+    def n_bs_timeout(self, value: TimeMillisecondsAlias):
         """
         Set timeout value for N_Bs time parameter.
 
@@ -174,7 +174,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property  # noqa
     @abstractmethod
-    def n_bs_measured(self) -> Optional[TimeMilliseconds]:
+    def n_bs_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_Bs time parameter.
 
@@ -182,7 +182,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
 
     @property
-    def n_br(self) -> TimeMilliseconds:
+    def n_br(self) -> TimeMillisecondsAlias:
         """
         Get the value of N_Br time parameter which is currently set.
 
@@ -192,7 +192,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_br
 
     @n_br.setter
-    def n_br(self, value: TimeMilliseconds):
+    def n_br(self, value: TimeMillisecondsAlias):
         """
         Set the value of N_Br time parameter to use.
 
@@ -208,7 +208,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.__n_br = value
 
     @property
-    def n_br_max(self) -> TimeMilliseconds:
+    def n_br_max(self) -> TimeMillisecondsAlias:
         """
         Get the maximum valid value of N_Br time parameter.
 
@@ -221,7 +221,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return 0.9 * self.n_bs_timeout - n_ar_measured
 
     @property
-    def n_cs(self) -> Optional[TimeMilliseconds]:
+    def n_cs(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the value of N_Cs time parameter which is currently set.
 
@@ -231,7 +231,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_cs
 
     @n_cs.setter
-    def n_cs(self, value: Optional[TimeMilliseconds]):
+    def n_cs(self, value: Optional[TimeMillisecondsAlias]):
         """
         Set the value of N_Cs time parameter to use.
 
@@ -250,7 +250,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.__n_cs = value
 
     @property
-    def n_cs_max(self) -> TimeMilliseconds:
+    def n_cs_max(self) -> TimeMillisecondsAlias:
         """
         Get the maximum valid value of N_Cs time parameter.
 
@@ -263,12 +263,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return 0.9 * self.n_cr_timeout - n_as_measured
 
     @property
-    def n_cr_timeout(self) -> TimeMilliseconds:
+    def n_cr_timeout(self) -> TimeMillisecondsAlias:
         """Timeout value for N_Cr time parameter."""
         return self.__n_cr_timeout
 
     @n_cr_timeout.setter
-    def n_cr_timeout(self, value: TimeMilliseconds):
+    def n_cr_timeout(self, value: TimeMillisecondsAlias):
         """
         Set timeout value for N_Cr time parameter.
 
@@ -288,7 +288,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property  # noqa
     @abstractmethod
-    def n_cr_measured(self) -> Optional[TimeMilliseconds]:
+    def n_cr_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_Cr time parameter.
 
@@ -386,10 +386,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
         """
-        self.__n_as_measured: Optional[TimeMilliseconds] = None
-        self.__n_ar_measured: Optional[TimeMilliseconds] = None
-        self.__n_bs_measured: Optional[TimeMilliseconds] = None
-        self.__n_cr_measured: Optional[TimeMilliseconds] = None
+        self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
+        self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
+        self.__n_bs_measured: Optional[TimeMillisecondsAlias] = None
+        self.__n_cr_measured: Optional[TimeMillisecondsAlias] = None
         super().__init__(can_bus_manager=can_bus_manager,
                          addressing_information=addressing_information,
                          **kwargs)
@@ -404,7 +404,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         self._teardown_async_notifier(suppress_warning=True)
 
     @property
-    def n_as_measured(self) -> Optional[TimeMilliseconds]:
+    def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_As time parameter.
 
@@ -413,7 +413,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return self.__n_as_measured
 
     @property
-    def n_ar_measured(self) -> Optional[TimeMilliseconds]:
+    def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_Ar time parameter.
 
@@ -422,7 +422,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return self.__n_ar_measured
 
     @property  # noqa
-    def n_bs_measured(self) -> Optional[TimeMilliseconds]:
+    def n_bs_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_Bs time parameter.
 
@@ -431,7 +431,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return self.__n_bs_measured
 
     @property  # noqa
-    def n_cr_measured(self) -> Optional[TimeMilliseconds]:
+    def n_cr_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of N_Cr time parameter.
 
@@ -557,7 +557,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                addressing_format=packet.addressing_format,
                                transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
-    def receive_packet(self, timeout: Optional[TimeMilliseconds] = None) -> CanPacketRecord:
+    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> CanPacketRecord:
         """
         Receive CAN packet.
 
@@ -640,7 +640,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
     async def async_receive_packet(self,
-                                   timeout: Optional[TimeMilliseconds] = None,
+                                   timeout: Optional[TimeMillisecondsAlias] = None,
                                    loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
         """
         Receive CAN packet.

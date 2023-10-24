@@ -4,10 +4,10 @@ __all__ = ["CanSegmenter"]
 
 from typing import Optional, Union, Type
 
-from uds.utilities import RawBytesList, RawBytes, validate_raw_byte
+from uds.utilities import RawBytesListAlias, RawBytesAlias, validate_raw_byte
 from uds.transmission_attributes import AddressingType
 from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, PacketAIParamsAlias, \
-    CanAddressingFormatAlias, \
+    CanAddressingFormat, \
     CanDlcHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, DEFAULT_FILLER_BYTE
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType, \
     AbstractUdsPacket, AbstractUdsPacketRecord, PacketsContainersSequence, PacketsTuple
@@ -49,7 +49,7 @@ class CanSegmenter(AbstractSegmenter):
         return CanPacketRecord
 
     @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN Addressing format used."""
         return self.addressing_information.addressing_format
 
@@ -146,7 +146,7 @@ class CanSegmenter(AbstractSegmenter):
         validate_raw_byte(value)
         self.__filler_byte: int = value
 
-    def is_input_packet(self, can_id: int, data: RawBytes) -> Optional[AddressingType]:  # type: ignore # noqa
+    def is_input_packet(self, can_id: int, data: RawBytesAlias) -> Optional[AddressingType]:  # type: ignore # noqa
         """
         Check if provided frame attributes belong to a UDS CAN packet which is an input for this CAN Segmenter.
 
@@ -227,7 +227,7 @@ class CanSegmenter(AbstractSegmenter):
                 return UdsMessage(payload=packets[0].payload,  # type: ignore
                                   addressing_type=packets[0].addressing_type)
             if packets[0].packet_type == CanPacketType.FIRST_FRAME:
-                payload_bytes: RawBytesList = []
+                payload_bytes: RawBytesListAlias = []
                 for packet in packets:
                     if packet.payload is not None:
                         payload_bytes.extend(packet.payload)
