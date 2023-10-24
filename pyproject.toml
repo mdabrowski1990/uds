@@ -63,7 +63,7 @@ test = [
     "pytest == 7.*",
     "pytest-cov",
     "pytest-asyncio",
-    "mock == 4.*"
+    "mock == 5.*"
 ]
 docs = [
     "sphinx",
