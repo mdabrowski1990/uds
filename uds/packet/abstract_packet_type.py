@@ -2,7 +2,6 @@
 
 __all__ = ["AbstractUdsPacketType"]
 
-from typing import Any
 from abc import abstractmethod
 
 from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum
@@ -20,7 +19,7 @@ class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
 
     @classmethod
     @abstractmethod
-    def is_initial_packet_type(cls, value: Any) -> bool:
+    def is_initial_packet_type(cls, value: "AbstractUdsPacketType") -> bool:
         """
         Check whether given argument is a member or a value of packet type that initiates a diagnostic message.
 
