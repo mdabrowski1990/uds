@@ -1,18 +1,16 @@
 """Abstract definition of UDS packets that is common for all bus types."""
 
 __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
-           "PacketsContainersSequence", "PacketsContainersTuple", "PacketsContainersList",
-           "PacketsSequence", "PacketsTuple", "PacketsList",
-           "PacketsRecordsSequence", "PacketsRecordsTuple", "PacketsRecordsList"]
+           "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
 
 from abc import ABC, abstractmethod
-from typing import Union, Optional, Any, Tuple, List
+from typing import Any, Optional, Tuple, Sequence
 from datetime import datetime
 
-from uds.utilities import RawBytesTuple, ReassignmentError
-from uds.transmission_attributes.addressing import AddressingTypeAlias
-from uds.transmission_attributes.transmission_direction import TransmissionDirection, TransmissionDirectionAlias
-from .abstract_packet_type import AbstractUdsPacketTypeAlias
+from uds.utilities import RawBytesTupleAlias, ReassignmentError
+from uds.transmission_attributes.addressing import AddressingType
+from uds.transmission_attributes.transmission_direction import TransmissionDirection
+from .abstract_packet_type import AbstractUdsPacketType
 
 
 class AbstractUdsPacketContainer(ABC):
@@ -20,17 +18,17 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
+    def addressing_type(self) -> AddressingType:
         """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketTypeAlias:
+    def packet_type(self) -> AbstractUdsPacketType:
         """Type (N_PCI value) of this UDS packet."""
 
     @property
@@ -40,7 +38,7 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
+    def payload(self) -> Optional[RawBytesTupleAlias]:
         """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
@@ -49,17 +47,17 @@ class AbstractUdsPacket(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
+    def addressing_type(self) -> AddressingType:
         """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketTypeAlias:
+    def packet_type(self) -> AbstractUdsPacketType:
         """Type (N_PCI value) of this UDS packet."""
 
     @property
@@ -69,7 +67,7 @@ class AbstractUdsPacket(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
+    def payload(self) -> Optional[RawBytesTupleAlias]:
         """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
@@ -79,7 +77,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
     @abstractmethod
     def __init__(self,
                  frame: Any,
-                 direction: TransmissionDirectionAlias,
+                 direction: TransmissionDirection,
                  transmission_time: datetime) -> None:
         """
         Create a record of historic information about a packet that was either received or transmitted.
@@ -115,12 +113,12 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
             raise ReassignmentError("You cannot change value of 'frame' attribute once it is assigned.")
 
     @property
-    def direction(self) -> TransmissionDirectionAlias:
+    def direction(self) -> TransmissionDirection:
         """Information whether this packet was transmitted or received."""
         return self.__direction
 
     @direction.setter
-    def direction(self, value: TransmissionDirectionAlias):
+    def direction(self, value: TransmissionDirection):
         """
         Set value of direction attribute.
 
@@ -131,8 +129,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
         try:
             getattr(self, "_AbstractUdsPacketRecord__direction")
         except AttributeError:
-            TransmissionDirection.validate_member(value)
-            self.__direction = TransmissionDirection(value)
+            self.__direction = TransmissionDirection.validate_member(value)
         else:
             raise ReassignmentError("You cannot change value of 'direction' attribute once it is assigned.")
 
@@ -162,17 +159,17 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carries this packet."""
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingTypeAlias:
+    def addressing_type(self) -> AddressingType:
         """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketTypeAlias:
+    def packet_type(self) -> AbstractUdsPacketType:
         """Type (N_PCI value) of this UDS packet."""
 
     @property
@@ -182,7 +179,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTuple]:
+    def payload(self) -> Optional[RawBytesTupleAlias]:
         """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
     @staticmethod
@@ -198,23 +195,12 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
         """
 
 
-PacketsContainersTuple = Tuple[AbstractUdsPacketContainer, ...]
-"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
-PacketsContainersList = List[AbstractUdsPacketContainer]
-"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
-PacketsContainersSequence = Union[PacketsContainersTuple, PacketsContainersList]
-"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketContainer` instances."""
+PacketsContainersSequence = Sequence[AbstractUdsPacketContainer]
+"""Alias for a sequence filled with packet or packet record object."""
 
 PacketsTuple = Tuple[AbstractUdsPacket, ...]
-"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
-PacketsList = List[AbstractUdsPacket]
-"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
-PacketsSequence = Union[PacketsTuple, PacketsList]  # noqa: F841
-"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacket` instances."""
-
+"""Alias for a packet objects tuple."""
 PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
-"""Typing alias of a tuple filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""
-PacketsRecordsList = List[AbstractUdsPacketRecord]
-"""Typing alias of a list filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""
-PacketsRecordsSequence = Union[PacketsRecordsTuple, PacketsRecordsList]
-"""Typing alias of a sequence filled with :class:`~uds.packet.abstract_packet.AbstractUdsPacketRecord` instances."""
+"""Alias for a packet record objects tuple."""
+PacketsRecordsSequence = Sequence[AbstractUdsPacketRecord]
+"""Alias for a packet record objects sequence."""

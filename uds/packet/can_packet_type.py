@@ -1,8 +1,8 @@
 """CAN packet types definitions."""
 
-__all__ = ["CanPacketType", "CanPacketTypeAlias"]
+__all__ = ["CanPacketType"]
 
-from typing import Any, Union
+from typing import Any
 
 from aenum import unique
 
@@ -19,13 +19,13 @@ class CanPacketType(AbstractUdsPacketType):
     :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` values that are specific for CAN bus.
     """
 
-    SINGLE_FRAME = CanSingleFrameHandler.SINGLE_FRAME_N_PCI
+    SINGLE_FRAME: "CanPacketType" = CanSingleFrameHandler.SINGLE_FRAME_N_PCI  # type: ignore
     """CAN packet type (N_PCI) value of :ref:`Single Frame (SF) <knowledge-base-can-single-frame>`."""
-    FIRST_FRAME = CanFirstFrameHandler.FIRST_FRAME_N_PCI
+    FIRST_FRAME: "CanPacketType" = CanFirstFrameHandler.FIRST_FRAME_N_PCI  # type: ignore
     """CAN packet type (N_PCI) value of First Frame (FF) <knowledge-base-can-first-frame>`."""
-    CONSECUTIVE_FRAME = CanConsecutiveFrameHandler.CONSECUTIVE_FRAME_N_PCI
+    CONSECUTIVE_FRAME: "CanPacketType" = CanConsecutiveFrameHandler.CONSECUTIVE_FRAME_N_PCI  # type: ignore
     """CAN packet type (N_PCI) value of :ref:`Consecutive Frame (CF) <knowledge-base-can-consecutive-frame>`."""
-    FLOW_CONTROL = CanFlowControlHandler.FLOW_CONTROL_N_PCI
+    FLOW_CONTROL: "CanPacketType" = CanFlowControlHandler.FLOW_CONTROL_N_PCI  # type: ignore
     """CAN packet type (N_PCI) value of :ref:`Flow Control (FC) <knowledge-base-can-flow-control>`."""
 
     @classmethod
@@ -39,7 +39,3 @@ class CanPacketType(AbstractUdsPacketType):
         """
         cls.validate_member(value)
         return value in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
-
-
-CanPacketTypeAlias = Union[CanPacketType, int]
-"""Alias that describes :class:`~uds.packet.can_packet_type.CanPacketType` member type."""

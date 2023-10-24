@@ -7,14 +7,15 @@ from datetime import datetime
 
 from can import Message as PythonCanMessage
 
-from uds.utilities import RawBytesTuple, InconsistentArgumentsError
-from uds.transmission_attributes import AddressingType, AddressingTypeAlias, TransmissionDirectionAlias
-from uds.can import CanAddressingFormat, CanAddressingFormatAlias, \
+from uds.utilities import RawBytesTupleAlias, InconsistentArgumentsError
+from uds.transmission_attributes import AddressingType, TransmissionDirection
+from uds.can import CanAddressingFormat, \
     CanAddressingInformation, AbstractCanAddressingInformation, \
     CanDlcHandler, CanIdHandler
-from .can_packet_type import CanPacketType, CanPacketTypeAlias
+from .can_packet_type import CanPacketType
 from .abstract_can_packet_container import AbstractCanPacketContainer
 from .abstract_packet import AbstractUdsPacketRecord
+
 
 CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
@@ -30,9 +31,9 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
 
     def __init__(self,
                  frame: CanFrameAlias,
-                 direction: TransmissionDirectionAlias,
-                 addressing_type: AddressingTypeAlias,
-                 addressing_format: CanAddressingFormatAlias,
+                 direction: TransmissionDirection,
+                 addressing_type: AddressingType,
+                 addressing_format: CanAddressingFormat,
                  transmission_time: datetime) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
@@ -43,12 +44,10 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         :param addressing_format: CAN addressing format that this CAN packet used.
         :param transmission_time: Time stamp when this packet was fully transmitted on a CAN bus.
         """
-        AddressingType.validate_member(addressing_type)
-        CanAddressingFormat.validate_member(addressing_format)
         super().__init__(frame=frame, direction=direction, transmission_time=transmission_time)
-        self.__addressing_type = AddressingType(addressing_type)
-        self.__addressing_format = CanAddressingFormat(addressing_format)
-        self.__packet_type: CanPacketTypeAlias
+        self.__addressing_type = AddressingType.validate_member(addressing_type)
+        self.__addressing_format = CanAddressingFormat.validate_member(addressing_format)
+        self.__packet_type: CanPacketType
         self.__target_address: Optional[int]
         self.__source_address: Optional[int]
         self.__address_extension: Optional[int]
@@ -56,7 +55,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         self.__assess_ai_attributes()
 
     @property
-    def raw_frame_data(self) -> RawBytesTuple:
+    def raw_frame_data(self) -> RawBytesTupleAlias:
         """Raw data bytes of a frame that carried this CAN packet."""
         if isinstance(self.frame, PythonCanMessage):
             return tuple(self.frame.data)
@@ -70,17 +69,17 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
-    def addressing_format(self) -> CanAddressingFormatAlias:
+    def addressing_format(self) -> CanAddressingFormat:
         """CAN addressing format used by this CAN packet."""
         return self.__addressing_format
 
     @property
-    def addressing_type(self) -> AddressingTypeAlias:
+    def addressing_type(self) -> AddressingType:
         """Addressing type over which this CAN packet was transmitted."""
         return self.__addressing_type
 
     @property
-    def packet_type(self) -> CanPacketTypeAlias:
+    def packet_type(self) -> CanPacketType:
         """CAN packet type value - N_PCI value of this N_PDU."""
         return self.__packet_type
 
@@ -145,8 +144,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         """Assess and set value of Packet Type attribute."""
         ai_data_bytes = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
         n_pci_value = self.raw_frame_data[ai_data_bytes] >> 4
-        CanPacketType.validate_member(n_pci_value)
-        self.__packet_type = CanPacketType(n_pci_value)
+        self.__packet_type = CanPacketType.validate_member(n_pci_value)
 
     def __assess_ai_attributes(self) -> None:
         """

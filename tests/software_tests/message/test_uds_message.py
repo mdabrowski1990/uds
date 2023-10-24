@@ -78,7 +78,7 @@ class TestUdsMessage:
 
     def test_addressing_type__set(self, example_addressing_type):
         UdsMessage.addressing_type.fset(self.mock_uds_message, value=example_addressing_type)
-        assert self.mock_uds_message._UdsMessage__addressing_type == example_addressing_type
+        assert self.mock_uds_message._UdsMessage__addressing_type == self.mock_validate_addressing.return_value
         self.mock_validate_addressing.assert_called_once_with(example_addressing_type)
 
     def test_addressing_type__set_second_call(self, example_addressing_type):

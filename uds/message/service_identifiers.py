@@ -5,13 +5,13 @@ Service Identifier (SID) data parameter implementation.
     and SAE J1979 standards.
 """
 
-__all__ = ["RequestSID", "ResponseSID", "POSSIBLE_REQUEST_SIDS", "POSSIBLE_RESPONSE_SIDS", "UnrecognizedSIDWarning"]
+__all__ = ["RequestSID", "ResponseSID", "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS", "UnrecognizedSIDWarning"]
 
 from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import RawBytesSet, ByteEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import RawBytesSetAlias, ByteEnum, ValidatedEnum, ExtendableEnum
 
 # reserved SID values
 _REQUEST_SIDS_DEFINED_BY_SAEJ1979 = set(range(0x01, 0x10))
@@ -20,9 +20,9 @@ _REQUEST_SIDS_DEFINED_BY_ISO_14229 = set(range(0x10, 0x3F)).union(set(range(0x83
 _RESPONSE_SIDS_DEFINED_BY_ISO_14229 = set(range(0x50, 0x80)).union(set(range(0xC3, 0xC9)), set(range(0xFA, 0xFF)))
 
 # all supported SID values according to UDS
-POSSIBLE_REQUEST_SIDS: RawBytesSet = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
+ALL_REQUEST_SIDS: RawBytesSetAlias = _REQUEST_SIDS_DEFINED_BY_SAEJ1979.union(_REQUEST_SIDS_DEFINED_BY_ISO_14229)
 """Set with all possible values of Request SID data parameter according to SAE J1979 and ISO 14229 standards."""
-POSSIBLE_RESPONSE_SIDS: RawBytesSet = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
+ALL_RESPONSE_SIDS: RawBytesSetAlias = _RESPONSE_SIDS_DEFINED_BY_SAEJ1979.union(_RESPONSE_SIDS_DEFINED_BY_ISO_14229)
 """Set with all possible values of Response SID data parameter according to SAE J1979 and ISO 14229 standards."""
 
 
@@ -58,7 +58,7 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 
         :return: True if value is valid SID, else False.
         """
-        if value in POSSIBLE_REQUEST_SIDS:
+        if value in ALL_REQUEST_SIDS:
             if not cls.is_member(value):
                 warn(message=f"SID 0x{value:X} is not recognized by this version of the package.",
                      category=UnrecognizedSIDWarning)
@@ -66,37 +66,37 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
         return False
 
     # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
-    DiagnosticSessionControl = 0x10  # noqa: F841
-    ECUReset = 0x11  # noqa: F841
-    SecurityAccess = 0x27  # noqa: F841
-    CommunicationControl = 0x28  # noqa: F841
-    Authentication = 0x29  # noqa: F841
-    TesterPresent = 0x3E  # noqa: F841
-    ControlDTCSetting = 0x85  # noqa: F841
-    ResponseOnEvent = 0x86  # noqa: F841
-    LinkControl = 0x87  # noqa: F841
+    DiagnosticSessionControl: "RequestSID" = 0x10  # type: ignore  # noqa: F841
+    ECUReset: "RequestSID" = 0x11  # type: ignore  # noqa: F841
+    SecurityAccess: "RequestSID" = 0x27  # type: ignore  # noqa: F841
+    CommunicationControl: "RequestSID" = 0x28  # type: ignore  # noqa: F841
+    Authentication: "RequestSID" = 0x29  # type: ignore  # noqa: F841
+    TesterPresent: "RequestSID" = 0x3E  # type: ignore  # noqa: F841
+    ControlDTCSetting: "RequestSID" = 0x85  # type: ignore  # noqa: F841
+    ResponseOnEvent: "RequestSID" = 0x86  # type: ignore  # noqa: F841
+    LinkControl: "RequestSID" = 0x87  # type: ignore  # noqa: F841
     # Data transmission - more information in ISO 14229-1:2020, chapter 11
-    ReadDataByIdentifier = 0x22  # noqa: F841
-    ReadMemoryByAddress = 0x23  # noqa: F841
-    ReadScalingDataByIdentifier = 0x24  # noqa: F841
-    ReadDataByPeriodicIdentifier = 0x2A  # noqa: F841
-    DynamicallyDefineDataIdentifier = 0x2C  # noqa: F841
-    WriteDataByIdentifier = 0x2E  # noqa: F841
-    WriteMemoryByAddress = 0x3D  # noqa: F841
+    ReadDataByIdentifier: "RequestSID" = 0x22  # type: ignore  # noqa: F841
+    ReadMemoryByAddress: "RequestSID" = 0x23  # type: ignore  # noqa: F841
+    ReadScalingDataByIdentifier: "RequestSID" = 0x24  # type: ignore  # noqa: F841
+    ReadDataByPeriodicIdentifier: "RequestSID" = 0x2A  # type: ignore  # noqa: F841
+    DynamicallyDefineDataIdentifier: "RequestSID" = 0x2C  # type: ignore  # noqa: F841
+    WriteDataByIdentifier: "RequestSID" = 0x2E  # type: ignore  # noqa: F841
+    WriteMemoryByAddress: "RequestSID" = 0x3D  # type: ignore  # noqa: F841
     # Stored data transmission - more information in ISO 14229-1:2020, chapter 12
-    ClearDiagnosticInformation = 0x14  # noqa: F841
-    ReadDTCInformation = 0x19  # noqa: F841
+    ClearDiagnosticInformation: "RequestSID" = 0x14  # type: ignore  # noqa: F841
+    ReadDTCInformation: "RequestSID" = 0x19  # type: ignore  # noqa: F841
     # InputOutput control - more information in ISO 14229-1:2020, chapter 13
-    InputOutputControlByIdentifier = 0x2F  # noqa: F841
+    InputOutputControlByIdentifier: "RequestSID" = 0x2F  # type: ignore  # noqa: F841
     # Routine - more information in ISO 14229-1:2020, chapter 14
-    RoutineControl = 0x31  # noqa: F841
+    RoutineControl: "RequestSID" = 0x31  # type: ignore  # noqa: F841
     # Upload download - more information in ISO 14229-1:2020, chapter 15
-    RequestDownload = 0x34  # noqa: F841
-    RequestUpload = 0x35  # noqa: F841
-    TransferData = 0x36  # noqa: F841
-    RequestTransferExit = 0x37  # noqa: F841
-    RequestFileTransfer = 0x38  # noqa: F841
-    SecuredDataTransmission = 0x84  # noqa: F841
+    RequestDownload: "RequestSID" = 0x34  # type: ignore  # noqa: F841
+    RequestUpload: "RequestSID" = 0x35  # type: ignore  # noqa: F841
+    TransferData: "RequestSID" = 0x36  # type: ignore  # noqa: F841
+    RequestTransferExit: "RequestSID" = 0x37  # type: ignore  # noqa: F841
+    RequestFileTransfer: "RequestSID" = 0x38  # type: ignore  # noqa: F841
+    SecuredDataTransmission: "RequestSID" = 0x84  # type: ignore  # noqa: F841
 
 
 @unique
@@ -120,14 +120,14 @@ class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 
         :return: True if value is valid RSID, else False.
         """
-        if value in POSSIBLE_RESPONSE_SIDS:
+        if value in ALL_RESPONSE_SIDS:
             if not cls.is_member(value):
                 warn(message=f"RSID 0x{value:X} is not recognized by this version of the package",
                      category=UnrecognizedSIDWarning)
             return True
         return False
 
-    NegativeResponse = 0x7F  # noqa: F841
+    NegativeResponse: "ResponseSID" = 0x7F  # type: ignore  # noqa: F841
 
 
 # extend 'ResponseSID' with members that were defined in RequestSID

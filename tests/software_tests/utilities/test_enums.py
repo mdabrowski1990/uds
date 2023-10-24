@@ -1,5 +1,4 @@
 import pytest
-from mock import patch
 from aenum import IntEnum, StrEnum
 
 from uds.utilities.enums import ExtendableEnum, ValidatedEnum, ByteEnum, NibbleEnum
@@ -111,22 +110,25 @@ class TestValidatedEnum:
 
     # validate_member
 
-    @patch(f"{SCRIPT_LOCATION}.ValidatedEnum.is_member")
     @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
-    @pytest.mark.parametrize("value", [None, ExampleByteEnum1.A, ExampleByteEnum2.Value1.value, 5])
-    def test_validate_member__valid(self, mock_is_member, enum_class, value):
-        mock_is_member.return_value = True
-        assert enum_class.validate_member(value) is None
-        mock_is_member.assert_called_once_with(value)
+    def test_validate_member__valid_instance(self, enum_class):
+        assert all([enum_class.validate_member(member) == member for member in enum_class])
 
-    @patch(f"{SCRIPT_LOCATION}.ValidatedEnum.is_member")
     @pytest.mark.parametrize("enum_class", [ExampleByteEnum1, ExampleByteEnum2])
-    @pytest.mark.parametrize("value", [None, ExampleByteEnum1.A, ExampleByteEnum2.Value1.value, 5])
-    def test_validate_member__invalid(self, mock_is_member, enum_class, value):
-        mock_is_member.return_value = False
+    def test_validate_member__valid_value(self, enum_class):
+        assert all([enum_class.validate_member(member.value) == member for member in enum_class])
+
+    @pytest.mark.parametrize("enum_class, not_member", [
+        (ExampleByteEnum1, ExampleByteEnum2.Value1),
+        (ExampleByteEnum1, ExampleByteEnum2.Value2.value),
+        (ExampleByteEnum1, "not a member"),
+        (ExampleByteEnum2, ExampleByteEnum1.A),
+        (ExampleByteEnum2, ExampleByteEnum1.B.value),
+        (ExampleByteEnum2, "some crap"),
+    ])
+    def test_validate_member__invalid(self, enum_class, not_member):
         with pytest.raises(ValueError):
-            enum_class.validate_member(value)
-        mock_is_member.assert_called_once_with(value)
+            enum_class.validate_member(not_member)
 
 
 class TestExtendableEnum:
@@ -223,22 +225,27 @@ class TestMultipleEnums:
 
     # validate_member
 
-    @patch(f"{SCRIPT_LOCATION}.ValidatedEnum.is_member")
     @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
-    @pytest.mark.parametrize("value", [None, ExtendableByteEnumWithValidated.V1, ValidatedIntEnum.Int1.value, 5])
-    def test_validate_member__valid(self, mock_is_member, enum_class, value):
-        mock_is_member.return_value = True
-        assert enum_class.validate_member(value) is None
-        mock_is_member.assert_called_once_with(value)
+    def test_validate_member__valid_instance(self, enum_class):
+        assert all([enum_class.validate_member(member) == member for member in enum_class])
 
-    @patch(f"{SCRIPT_LOCATION}.ValidatedEnum.is_member")
     @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
-    @pytest.mark.parametrize("value", [None, ExtendableByteEnumWithValidated.V1, ValidatedIntEnum.Int1.value, 5])
-    def test_validate_member__invalid(self, mock_is_member, enum_class, value):
-        mock_is_member.return_value = False
+    def test_validate_member__valid_value(self, enum_class):
+        assert all([enum_class.validate_member(member.value) == member for member in enum_class])
+
+    @pytest.mark.parametrize("enum_class, not_member", [
+        (ExtendableByteEnumWithValidated, ExtendableStrEnum.Text1),
+        (ExtendableByteEnumWithValidated, "not a member"),
+        (ExtendableByteEnumWithValidated, 0xFF),
+        (ExtendableByteEnumWithValidated, 0x00),
+        (ValidatedIntEnum, -1),
+        (ValidatedIntEnum, ExtendableByteEnumWithValidated.V1),
+        (ValidatedIntEnum, None),
+        (ValidatedIntEnum, "some crap"),
+    ])
+    def test_validate_member__invalid(self, enum_class, not_member):
         with pytest.raises(ValueError):
-            enum_class.validate_member(value)
-        mock_is_member.assert_called_once_with(value)
+            enum_class.validate_member(not_member)
 
     # add_member
 

@@ -1,4 +1,4 @@
 """Definition of attributes that describes UDS communication."""
 
-from .addressing import AddressingType, AddressingTypeAlias
-from .transmission_direction import TransmissionDirection, TransmissionDirectionAlias
+from .addressing import AddressingType
+from .transmission_direction import TransmissionDirection
