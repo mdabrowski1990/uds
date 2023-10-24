@@ -66,7 +66,7 @@ class TestNormal11BitCanAddressingInformation:
         assert Normal11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
                                                                       can_id=can_id) == {
                    AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                   AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+                   AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
                    AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
                    AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: None,
                    AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: None,
@@ -159,7 +159,7 @@ class TestNormalFixedCanAddressingInformation:
                                                                       target_address=target_address,
                                                                       source_address=source_address) == {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             AbstractCanAddressingInformation.CAN_ID_NAME: self.mock_can_id_handler_class.encode_normal_fixed_addressed_can_id.return_value,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address,
@@ -170,7 +170,7 @@ class TestNormalFixedCanAddressingInformation:
         self.mock_can_id_handler_class.validate_can_id.assert_not_called()
         self.mock_can_id_handler_class.decode_normal_fixed_addressed_can_id.assert_not_called()
         self.mock_can_id_handler_class.encode_normal_fixed_addressed_can_id.assert_called_once_with(
-            addressing_type=addressing_type,
+            addressing_type=self.mock_validate_addressing_type.return_value,
             target_address=target_address,
             source_address=source_address
         )
@@ -187,7 +187,7 @@ class TestNormalFixedCanAddressingInformation:
         decoded_target_address = target_address or "ta"
         decoded_source_address = source_address or "sa"
         self.mock_can_id_handler_class.decode_normal_fixed_addressed_can_id.return_value = {
-            self.mock_can_id_handler_class.ADDRESSING_TYPE_NAME: addressing_type,
+            self.mock_can_id_handler_class.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             self.mock_can_id_handler_class.TARGET_ADDRESS_NAME: decoded_target_address,
             self.mock_can_id_handler_class.SOURCE_ADDRESS_NAME: decoded_source_address,
         }
@@ -196,7 +196,7 @@ class TestNormalFixedCanAddressingInformation:
                                                                       target_address=target_address,
                                                                       source_address=source_address) == {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_target_address,
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: decoded_source_address,

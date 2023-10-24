@@ -6,7 +6,7 @@ Module with common implementation of all diagnostic messages (requests and respo
 
 __all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
 
-from typing import Any
+from typing import Sequence
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -129,7 +129,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
             and self.direction == other.direction
 
     @staticmethod
-    def __validate_packets_records(value: Any) -> None:
+    def __validate_packets_records(value: PacketsRecordsSequence) -> None:
         """
         Validate whether the argument contains UDS Packets records.
 
@@ -139,9 +139,8 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :raise ValueError: At least one of UDS Packet Records sequence elements is not an object of
             :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` class.
         """
-        if not isinstance(value, (tuple, list)):
-            raise TypeError(f"Provided value is not list or tuple type. "
-                            f"Actual type: {type(value)}")
+        if not isinstance(value, Sequence):
+            raise TypeError(f"Provided value is not a sequence. Actual type: {type(value)}")
         if not value or any(not isinstance(element, AbstractUdsPacketRecord) for element in value):
             raise ValueError(f"Provided value must contain only instances of AbstractUdsPacketRecord class. "
                              f"Actual value: {value}")

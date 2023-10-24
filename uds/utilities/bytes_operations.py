@@ -36,8 +36,7 @@ def bytes_list_to_int(bytes_list: RawBytesAlias, endianness: Endianness = Endian
     :return: The integer value represented by provided list of bytes.
     """
     validate_raw_bytes(bytes_list)
-    Endianness.validate_member(endianness)
-    return int.from_bytes(bytes=bytes_list, byteorder=endianness)
+    return int.from_bytes(bytes=bytes_list, byteorder=Endianness.validate_member(endianness).value)
 
 
 def int_to_bytes_list(int_value: int,

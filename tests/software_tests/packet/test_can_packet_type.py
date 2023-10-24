@@ -24,10 +24,12 @@ class TestCanPacketType:
 
     @pytest.mark.parametrize("value", [2, 3, CanPacketType.CONSECUTIVE_FRAME, CanPacketType.FLOW_CONTROL])
     def test_is_initial_packet_type__false(self, value):
+        self.mock_validate_member.side_effect = lambda arg: arg
         assert CanPacketType.is_initial_packet_type(value) is False
         self.mock_validate_member.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [0, 1, CanPacketType.FIRST_FRAME, CanPacketType.SINGLE_FRAME])
     def test_is_initial_packet_type__true(self, value):
+        self.mock_validate_member.side_effect = lambda arg: arg
         assert CanPacketType.is_initial_packet_type(value) is True
         self.mock_validate_member.assert_called_once_with(value)
