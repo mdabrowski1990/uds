@@ -137,12 +137,12 @@ class CanAddressingInformation:
         """
         from_data_bytes = cls.decode_ai_data_bytes(addressing_format=addressing_format, ai_data_bytes=ai_data_bytes)
         from_can_id = CanIdHandler.decode_can_id(addressing_format=addressing_format, can_id=can_id)
-        items_names = (AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME,
-                       AbstractCanAddressingInformation.TARGET_ADDRESS_NAME,
-                       AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME,
-                       AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME)
-        return {name: from_data_bytes.get(name, None) or from_can_id.get(name, None)
-                for name in items_names}  # type: ignore
+        return cls.DecodedAIParamsAlias(
+            addressing_type=from_can_id.get(AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME, None),  # type: ignore  # noqa: E501
+            target_address=from_data_bytes.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None)  # type: ignore  # noqa: E501
+            or from_can_id.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None),
+            source_address=from_can_id.get(AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME, None),  # type: ignore
+            address_extension=from_data_bytes.get(AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME, None))  # type: ignore  # noqa: E501
 
     @classmethod
     def decode_ai_data_bytes(cls,
@@ -166,12 +166,12 @@ class CanAddressingInformation:
                                    ai_data_bytes=ai_data_bytes)
         if addressing_format in {CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING}:
-            return {}
+            return cls.DataBytesAIParamsAlias()
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            return {AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: ai_data_bytes[0]}  # type: ignore
+            return cls.DataBytesAIParamsAlias(target_address=ai_data_bytes[0])
         if addressing_format in {CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING}:
-            return {AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME:  ai_data_bytes[0]}  # type: ignore
+            return cls.DataBytesAIParamsAlias(address_extension=ai_data_bytes[0])
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod

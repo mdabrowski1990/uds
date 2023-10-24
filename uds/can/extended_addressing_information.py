@@ -52,10 +52,9 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         if not CanIdHandler.is_extended_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Extended Addressing Format. Actual value: {can_id}")
-        return PacketAIParamsAlias(
-            addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
-            addressing_type=addressing_type,
-            can_id=can_id,  # type: ignore
-            target_address=target_address,
-            source_address=source_address,
-            address_extension=address_extension)
+        return PacketAIParamsAlias(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
+                                   addressing_type=addressing_type,
+                                   can_id=can_id,  # type: ignore
+                                   target_address=target_address,
+                                   source_address=source_address,
+                                   address_extension=address_extension)

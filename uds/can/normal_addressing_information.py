@@ -52,13 +52,12 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
         if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
                                              f"Normal 11-bit Addressing Format. Actual value: {can_id}")
-        return PacketAIParamsAlias(
-            addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-            addressing_type=addressing_type,
-            can_id=can_id,  # type: ignore
-            target_address=target_address,
-            source_address=source_address,
-            address_extension=address_extension)
+        return PacketAIParamsAlias(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                   addressing_type=addressing_type,
+                                   can_id=can_id,  # type: ignore
+                                   target_address=target_address,
+                                   source_address=source_address,
+                                   address_extension=address_extension)
 
 
 class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
@@ -111,13 +110,12 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                 addressing_type=addressing_type,
                 target_address=target_address,  # type: ignore
                 source_address=source_address)  # type: ignore
-            return PacketAIParamsAlias(
-                addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                addressing_type=addressing_type,
-                can_id=encoded_can_id,
-                target_address=target_address,
-                source_address=source_address,
-                address_extension=address_extension)
+            return PacketAIParamsAlias(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                       addressing_type=addressing_type,
+                                       can_id=encoded_can_id,
+                                       target_address=target_address,
+                                       source_address=source_address,
+                                       address_extension=address_extension)
         decoded_info = CanIdHandler.decode_normal_fixed_addressed_can_id(can_id)
         if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
@@ -128,10 +126,9 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):  # type: ignore
             raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
                                              f"Actual values: can_id={can_id}, source_address={source_address}")
-        return PacketAIParamsAlias(
-            addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-            addressing_type=addressing_type,
-            can_id=can_id,
-            target_address=decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],  # type: ignore
-            source_address=decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],  # type: ignore
-            address_extension=address_extension)
+        return PacketAIParamsAlias(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                   addressing_type=addressing_type,
+                                   can_id=can_id,
+                                   target_address=decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],  # type: ignore
+                                   source_address=decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],  # type: ignore
+                                   address_extension=address_extension)

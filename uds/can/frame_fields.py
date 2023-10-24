@@ -95,9 +95,9 @@ class CanIdHandler:
         if addressing_format in (CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
                                  CanAddressingFormat.EXTENDED_ADDRESSING,
                                  CanAddressingFormat.MIXED_11BIT_ADDRESSING):
-            return {cls.ADDRESSING_TYPE_NAME: None,  # type: ignore
-                    cls.TARGET_ADDRESS_NAME: None,
-                    cls.SOURCE_ADDRESS_NAME: None}  # no addressing information can be decoded
+            return cls.CanIdAIAlias(addressing_type=None,
+                                    target_address=None,
+                                    source_address=None)  # no addressing information can be decoded
         raise NotImplementedError(f"Unknown addressing format value was provided: {addressing_format}")
 
     @classmethod
@@ -122,15 +122,13 @@ class CanIdHandler:
         source_address = can_id & 0xFF
         can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
         if can_id_offset == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET:
-            addressing_type = AddressingType(AddressingType.PHYSICAL)
-            return {cls.ADDRESSING_TYPE_NAME: addressing_type,  # type: ignore
-                    cls.TARGET_ADDRESS_NAME: target_address,
-                    cls.SOURCE_ADDRESS_NAME: source_address}
+            return cls.CanIdAIAlias(addressing_type=AddressingType.PHYSICAL,
+                                    target_address=target_address,
+                                    source_address=source_address)
         if can_id_offset == cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET:
-            addressing_type = AddressingType(AddressingType.FUNCTIONAL)
-            return {cls.ADDRESSING_TYPE_NAME: addressing_type,  # type: ignore
-                    cls.TARGET_ADDRESS_NAME: target_address,
-                    cls.SOURCE_ADDRESS_NAME: source_address}
+            return cls.CanIdAIAlias(addressing_type=AddressingType.FUNCTIONAL,
+                                    target_address=target_address,
+                                    source_address=source_address)
         raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
                                   f"Actual value: {can_id}")
 
@@ -156,15 +154,13 @@ class CanIdHandler:
         source_address = can_id & 0xFF
         can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
         if can_id_offset == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET:
-            addressing_type = AddressingType(AddressingType.PHYSICAL)
-            return {cls.ADDRESSING_TYPE_NAME: addressing_type,  # type: ignore
-                    cls.TARGET_ADDRESS_NAME: target_address,
-                    cls.SOURCE_ADDRESS_NAME: source_address}
+            return cls.CanIdAIAlias(addressing_type=AddressingType.PHYSICAL,
+                                    target_address=target_address,
+                                    source_address=source_address)
         if can_id_offset == cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET:
-            addressing_type = AddressingType(AddressingType.FUNCTIONAL)
-            return {cls.ADDRESSING_TYPE_NAME: addressing_type,  # type: ignore
-                    cls.TARGET_ADDRESS_NAME: target_address,
-                    cls.SOURCE_ADDRESS_NAME: source_address}
+            return cls.CanIdAIAlias(addressing_type=AddressingType.FUNCTIONAL,
+                                    target_address=target_address,
+                                    source_address=source_address)
         raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
                                   f"Actual value: {can_id}")
 
