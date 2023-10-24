@@ -92,7 +92,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
-        AddressingType.validate_member(addressing_type)
+        addressing_type = AddressingType.validate_member(addressing_type)
         validate_raw_byte(address_extension)  # type: ignore
         if can_id is None:
             if None in (target_address, source_address):
