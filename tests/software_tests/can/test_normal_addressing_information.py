@@ -136,6 +136,7 @@ class TestNormalFixedCanAddressingInformation:
     ])
     def test_validate_packet_ai__inconsistent_can_id_ta_sa(self, can_id, addressing_type, decoded_addressing_type,
                                                            ta, decoded_ta, sa, decoded_sa):
+        self.mock_validate_addressing_type.return_value = addressing_type
         self.mock_can_id_handler_class.decode_normal_fixed_addressed_can_id.return_value = {
             self.mock_can_id_handler_class.ADDRESSING_TYPE_NAME: decoded_addressing_type,
             self.mock_can_id_handler_class.TARGET_ADDRESS_NAME: decoded_ta,
