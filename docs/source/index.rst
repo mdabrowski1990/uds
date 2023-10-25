@@ -6,6 +6,7 @@ Welcome to UDS documentation!
     Home <self>
     pages/installation.rst
     pages/user_guide.rst
+    pages/examples.rst
     autoapi/index.rst
     pages/knowledge_base.rst
     pages/contribution.rst
