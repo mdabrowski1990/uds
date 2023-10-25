@@ -6,7 +6,8 @@ from can import Bus, Message
 from uds.transport_interface import PyCanTransportInterface
 from uds.can import CanAddressingInformation, CanAddressingFormat
 
-if __name__ == "__main__":
+
+def main():
     # configure CAN interfaces
     kvaser_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
     kvaser_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
@@ -44,3 +45,7 @@ if __name__ == "__main__":
     sleep(0.1)  # wait to make sure all tasks are closed
     kvaser_interface_1.shutdown()
     kvaser_interface_2.shutdown()
+
+
+if __name__ == "__main__":
+    main()
