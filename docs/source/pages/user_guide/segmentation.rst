@@ -142,7 +142,3 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         out of provided CAN packets.
 
     .. note:: Desegmentation can be perform for any CAN Packets (not only those targeting this CAN Node) in any format.
-
-
-- Checking whether a CAN packet targets this CAN Node:
-    # TODO: explain the functionality, provide code examples
