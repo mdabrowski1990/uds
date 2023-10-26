@@ -9,8 +9,8 @@ build:
     python: "3.11"
   jobs:
     pre_install:
-      - sudo apt-get update
-      - sudo apt-get install graphviz
+      - apt-get update
+      - apt-get install graphviz
 
 
 # Build documentation in the docs/ directory with Sphinx
