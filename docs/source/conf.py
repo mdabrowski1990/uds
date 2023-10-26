@@ -50,7 +50,8 @@ release = full_version_from_init
 
 extensions = ["sphinx.ext.autodoc",
               "autoapi.extension",
-              "sphinx.ext.viewcode"]
+              "sphinx.ext.viewcode",
+              "sphinx.ext.graphviz"]
 
 autodoc_typehints = "description"
 autodoc_typehints_description_target = "all"
