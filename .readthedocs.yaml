@@ -9,11 +9,12 @@ build:
     python: "3.11"
   jobs:
     pre_install:
-      - apt-get update
-      - apt-get install graphviz
+      - whoami
+      - sudo apg-get update
+      - sudo apg-get install graphviz
 
 
-# Build documentation in the docs/ directory with Sphinx
+      # Build documentation in the docs/ directory with Sphinx
 sphinx:
   builder: html
   fail_on_warning: true
