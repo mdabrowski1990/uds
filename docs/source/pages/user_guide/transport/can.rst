@@ -1,3 +1,3 @@
-CAN Transport Interface  TODO: rework
+CAN Transport Interface
 =======================
-CAN FEATURE IS PLANNED BUT NOT IMPLEMENTED YET, THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.
+TODO: rework
