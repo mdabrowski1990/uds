@@ -10,7 +10,7 @@ Code examples of UDS protocol communication over CAN bus.
 
 Python-CAN
 ``````````
-Examples with `python-can`_ package being used for controlling CAN bus.
+Examples with `python-can`_ package being used for controlling CAN bus (handling CAN frames transmission and reception).
 
 Kvaser interface
 ''''''''''''''''
