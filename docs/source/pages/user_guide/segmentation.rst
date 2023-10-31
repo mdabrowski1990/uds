@@ -24,7 +24,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
   As a user, you are able to configure :class:`~uds.segmentation.can_segmenter.CanSegmenter` parameters which determines
   the addressing (Addressing Format and Addressing Information of input and output CAN packets) and the content
-  (e.g. Filler Byte value and whether to use CAN Frame Data Optimization) of CAN Packets.
+  (e.g. Filler Byte value and whether to use CAN Frame Data Optimization) of CAN packets.
 
   **Example code:**
 
@@ -137,8 +137,8 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         uds_message_1 = can_segmenter.desegmentation(can_packets_1)
         uds_message_2 = can_segmenter.desegmentation(can_packets_2)
 
-    .. warning:: Desegmentation performs only sanity check of CAN Packets content, therefore some inconsistencies
+    .. warning:: Desegmentation performs only sanity check of CAN packets content, therefore some inconsistencies
         with Diagnostic on CAN standard might be silently accepted as long as a message can be unambiguously decoded
         out of provided CAN packets.
 
-    .. note:: Desegmentation can be perform for any CAN Packets (not only those targeting this CAN Node) in any format.
+    .. note:: Desegmentation can be performed for any CAN packets (not only those targeting this CAN Node) in any format.
