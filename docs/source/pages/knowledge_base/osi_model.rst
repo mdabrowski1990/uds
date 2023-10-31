@@ -75,11 +75,9 @@ An overview of features that are required to fully implement UDS protocol is pre
 |              |                                           |                                                       |
 |              |                                           | - :mod:`uds.can`                                      |
 |              |                                           |                                                       |
-|              |                                           | *Currently under development.*                        |
-+--------------+                                           |                                                       |
-| Layer 3      |                                           | *To be extended with support for:*                    |
-| Network      |                                           |                                                       |
-|              |                                           | - *Ethernet*                                          |
++--------------+                                           | *To be extended with support for:*                    |
+| Layer 3      |                                           |                                                       |
+| Network      |                                           | - *Ethernet*                                          |
 |              |                                           |                                                       |
 |              |                                           | - *LIN*                                               |
 |              |                                           |                                                       |
@@ -93,7 +91,7 @@ An overview of features that are required to fully implement UDS protocol is pre
 +--------------+                                           |                                                       |
 | Layer 1      |                                           |   - `python-can <https://python-can.readthedocs.io>`_ |
 | Physical     |                                           |                                                       |
-|              |                                           | *More packages to be decided.*                        |
+|              |                                           | *More packages handling other buses to be decided.*   |
 +--------------+-------------------------------------------+-------------------------------------------------------+
 
 Where:
