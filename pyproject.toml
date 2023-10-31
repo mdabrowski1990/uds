@@ -49,7 +49,7 @@ dynamic = ["version"]
 
 [project.urls]
 "Homepage" = "https://github.com/mdabrowski1990/uds"
-"User Documentation" = "https://uds.readthedocs.io/en/latest/"
+"User Documentation" = "https://uds.readthedocs.io"
 "Repository" = "https://github.com/mdabrowski1990/uds"
 "Issues Tracking System" = "https://github.com/mdabrowski1990/uds/issues"
 "Releases and Changelogs" = "https://github.com/mdabrowski1990/uds/releases"
