@@ -13,7 +13,7 @@ CAN bus specific configuration is set upon calling
 :meth:`uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.__init__` method.
 The following configuration parameters are set in it:
 
-- Addressing Information of this CAN node - attribute
+- :ref:`Addressing Information <knowledge-base-n-ai>` of this CAN node - attribute
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.addressing_information`
 - driver for a CAN bus interface - attribute
   :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.bus_manager`
