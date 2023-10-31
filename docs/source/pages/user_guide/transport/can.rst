@@ -1,19 +1,24 @@
 CAN Transport Interfaces
 ========================
-Implementation for Transport Interfaces that can be used with CAN bus.
+The implementation for Transport Interfaces that can be used with CAN bus is located in
+:mod:`uds.transport_interface.can_transport_interface.py` module.
 
 Common
 ------
 Common implementation for all all CAN Transport Interfaces is included in
 :class:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface`.
 
+.. warning:: A **user shall not use** :class:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface`
+    **directly**, but one is able (and encouraged) to use :class:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface`
+    implementation on any of its children classes.
+
 Configuration
 `````````````
 CAN bus specific configuration is set upon calling
 :meth:`uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.__init__` method.
-The following configuration parameters are set in it:
+The following configuration parameters are set then:
 
-- :ref:`Addressing Information <knowledge-base-n-ai>` of this CAN node - attribute
+- Addressing Information of this CAN node - attribute
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.addressing_information`
 - driver for a CAN bus interface - attribute
   :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.bus_manager`
@@ -26,9 +31,9 @@ The following configuration parameters are set in it:
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.n_ar_timeout`,
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.n_bs_timeout` and
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.n_cr_timeout`
-- UDS message segmentation parameters (:ref:`base DLC of a CAN frame <knowledge-base-can-data-field>`
-  whether to use :ref:`data optimization for CAN frame <knowledge-base-can-data-optimization>`,
-  value of a :ref:`filler byte <knowledge-base-can-frame-data-padding>` to use for CAN frame data padding) - attributes
+- UDS message segmentation parameters (:ref:`base DLC of a CAN frame <knowledge-base-can-data-field>`,
+  flag whether to use :ref:`data optimization for CAN frame <knowledge-base-can-data-optimization>`,
+  and the value to use for :ref:`CAN frame data padding <knowledge-base-can-frame-data-padding>`) - attributes
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.dlc`,
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.use_data_optimization`,
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.filler_byte`,
@@ -46,7 +51,9 @@ and transmitting CAN frames.
 Configuration
 `````````````
 Configuration is set upon calling
-:meth:`uds.transport_interface.can_transport_interface.PyCanTransportInterface.__init__` method.
+:meth:`uds.transport_interface.can_transport_interface.PyCanTransportInterface.__init__` method and from
+the user perspective it does not provide any additional features to common_ implementation provided by
+:meth:`uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.__init__`.
 
 **Example code:**
 
@@ -108,7 +115,8 @@ there are two methods which can be used to transmit CAN packets:
     # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
 
     # define some UDS message to send
-    message = uds.message.UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
+    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+                                     payload=[0x10, 0x03])
 
     # segment the message to create a CAN packet
     can_packet = can_transport_interface.segmenter.segmentation(message)[0]
@@ -124,7 +132,8 @@ there are two methods which can be used to transmit CAN packets:
     # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
 
     # define some UDS message to send
-    message = uds.message.UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
+    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+                                     payload=[0x10, 0x03])
 
     # segment the message to create a CAN packet
     can_packet = can_transport_interface.segmenter.segmentation(message)[0]
