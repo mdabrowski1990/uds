@@ -11,20 +11,20 @@ segmenter classes. Each concrete segmenter class handles segmentation process fo
 
 .. warning:: A **user shall not use** :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter` **directly**,
     but one is able (and encouraged) to use :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter`
-    implementation with any of its children classes.
+    implementation on any of its children classes.
 
 
 CanSegmenter
 ------------
-:class:`~uds.segmentation.can_segmenter.CanSegmenter` handles segmentation process on CAN bus.
+:class:`~uds.segmentation.can_segmenter.CanSegmenter` handles segmentation process specific for CAN bus.
 
 Following functionalities are provided by :class:`~uds.segmentation.can_segmenter.CanSegmenter`:
 
 - Configuration of the segmenter:
 
   As a user, you are able to configure :class:`~uds.segmentation.can_segmenter.CanSegmenter` parameters which determines
-  the format (e.g. Addressing Format), the content (e.g. Filler Byte) of CAN Packets and how they are created
-  (e.g. whether to use CAN Frame Data Optimization).
+  the addressing (Addressing Format and Addressing Information of input and output CAN packets) and the content
+  (e.g. Filler Byte value and whether to use CAN Frame Data Optimization) of CAN packets.
 
   **Example code:**
 
@@ -32,17 +32,27 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
         import uds
 
-        # configure CAN Segmenter
-        can_segmenter = uds.segmentation.CanSegmenter(addressing_format=uds.can.CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
-                                                      physical_ai={"can_id": 0x601},
-                                                      functional_ai={"can_id": 0x6FF},
+        # define Addressing Information for a CAN Node
+        can_node_addressing_information = uds.can.CanAddressingInformation(
+            addressing_format=uds.can.CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+            tx_physical={"can_id": 0x611},
+            rx_physical={"can_id": 0x612},
+            tx_functional={"can_id": 0x6FF},
+            rx_functional={"can_id": 0x6FE})
+
+        # configure CAN Segmenter for this CAN Node
+        can_segmenter = uds.segmentation.CanSegmenter(addressing_information=can_node_addressing_information,
                                                       dlc=8,
                                                       use_data_optimization=False,
                                                       filler_byte=0xFF)
 
-        # change CAN Segmenter configuration  (note: you cannot change addressing_format, create new segmenter instead)
-        can_segmenter.physical_ai = {"can_id": 0x610}
-        can_segmenter.functional_ai = {"can_id": 0x7FF}
+        # change CAN Segmenter configuration
+        can_segmenter.addressing_information = uds.can.CanAddressingInformation(
+            uds.can.CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+            tx_physical={"can_id": 0x612},
+            rx_physical={"can_id": 0x611},
+            tx_functional={"can_id": 0x6FE},
+            rx_functional={"can_id": 0x6FF})
         can_segmenter.dlc=0xF
         can_segmenter.use_data_optimization = True
         can_segmenter.filler_byte = 0xAA
@@ -127,6 +137,8 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         uds_message_1 = can_segmenter.desegmentation(can_packets_1)
         uds_message_2 = can_segmenter.desegmentation(can_packets_2)
 
-    .. warning:: Desegmentation performs only sanity check of CAN Packets content, therefore some inconsistencies
+    .. warning:: Desegmentation performs only sanity check of CAN packets content, therefore some inconsistencies
         with Diagnostic on CAN standard might be silently accepted as long as a message can be unambiguously decoded
         out of provided CAN packets.
+
+    .. note:: Desegmentation can be performed for any CAN packets (not only those targeting this CAN Node) in any format.

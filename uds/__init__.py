@@ -26,9 +26,9 @@ __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"
 
 
-import uds.transmission_attributes
 import uds.can
-import uds.packet
 import uds.message
+import uds.packet
 import uds.segmentation
+import uds.transmission_attributes
 import uds.transport_interface

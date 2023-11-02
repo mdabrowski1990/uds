@@ -11,6 +11,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Natural Language :: English",
@@ -47,14 +48,14 @@ dynamic = ["version"]
 
 
 [project.urls]
-Homepage = "https://github.com/mdabrowski1990/uds"
-"User Documentation" = "https://uds.readthedocs.io/en/latest/"
-Repository = "https://github.com/mdabrowski1990/uds"
+"Homepage" = "https://github.com/mdabrowski1990/uds"
+"User Documentation" = "https://uds.readthedocs.io"
+"Repository" = "https://github.com/mdabrowski1990/uds"
 "Issues Tracking System" = "https://github.com/mdabrowski1990/uds/issues"
 "Releases and Changelogs" = "https://github.com/mdabrowski1990/uds/releases"
 "Security Policy" = "https://github.com/mdabrowski1990/uds/security/policy"
 "PyPI" = "https://pypi.org/project/py-uds/"
-Wiki = "https://github.com/mdabrowski1990/uds/wiki"
+"Wiki" = "https://github.com/mdabrowski1990/uds/wiki"
 "Code Download" = "https://github.com/mdabrowski1990/uds/archive/refs/heads/main.zip"
 
 

@@ -22,10 +22,10 @@ class PacketAIParamsAlias(TypedDict):
     address_extension: Optional[int]
 
 
-class AbstractCanAddressingInformation(ABC):
+class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract class for all buses
     """Abstract definition of CAN Entity (either server or client) Addressing Information."""
 
-    ADDRESSING_FORMAT_NAME: str = "addressing_format"  # noqa: F841
+    ADDRESSING_FORMAT_NAME: str = "addressing_format"
     """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter in Addressing Information."""
     ADDRESSING_TYPE_NAME: str = CanIdHandler.ADDRESSING_TYPE_NAME
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""

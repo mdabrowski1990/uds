@@ -6,6 +6,7 @@ Welcome to UDS documentation!
     Home <self>
     pages/installation.rst
     pages/user_guide.rst
+    pages/examples.rst
     autoapi/index.rst
     pages/knowledge_base.rst
     pages/contribution.rst
@@ -40,16 +41,20 @@ Current implementation status of package features:
 | UDS Messages and Packets                     | Available since version `0.0.2             |
 |                                              | <https://pypi.org/project/py-uds/0.0.2/>`_ |
 +----------------------------------------------+--------------------------------------------+
-| UDS Packets Reception                        | Ongoing                                    |
+| UDS Packets Reception and Transmission       | Available since version `0.3.0             |
+|                                              | <https://pypi.org/project/py-uds/0.3.0/>`_ |
 +----------------------------------------------+--------------------------------------------+
-| UDS Packets Transmission                     | Planned                                    |
+| UDS Messages Reception and Transmission      | Planned                                    |
 +----------------------------------------------+--------------------------------------------+
-| Segmentation                                 | Available since version `0.2.0             |
+| Messages Segmentation                        | Available since version `0.2.0             |
+|                                              | <https://pypi.org/project/py-uds/0.2.0/>`_ |
++----------------------------------------------+--------------------------------------------+
+| UDS Packets Desegmentation                   | Available since version `0.2.0             |
 |                                              | <https://pypi.org/project/py-uds/0.2.0/>`_ |
 +----------------------------------------------+--------------------------------------------+
 | Support for Services with multiple responses | Planned                                    |
 +----------------------------------------------+--------------------------------------------+
-| Client Simulation                            | Ongoing                                    |
+| Client Simulation                            | Planned                                    |
 +----------------------------------------------+--------------------------------------------+
 | Server Simulation                            | Planned                                    |
 +----------------------------------------------+--------------------------------------------+
@@ -64,7 +69,7 @@ Current implementation status of support for communication buses:
 +----------+-----------------------+
 |    Bus   | Implementation Status |
 +==========+=======================+
-| CAN      | Ongoing               |
+| CAN      | Partial               |
 +----------+-----------------------+
 | FlexRay  | Planned               |
 +----------+-----------------------+

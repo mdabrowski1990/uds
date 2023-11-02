@@ -146,6 +146,7 @@ class CanSegmenter(AbstractSegmenter):
         validate_raw_byte(value)
         self.__filler_byte: int = value
 
+    # TODO: consider moving this method to AbstractAddressingInformation (if defined)
     def is_input_packet(self, can_id: int, data: RawBytesAlias) -> Optional[AddressingType]:  # type: ignore # noqa
         """
         Check if provided frame attributes belong to a UDS CAN packet which is an input for this CAN Segmenter.
@@ -161,14 +162,18 @@ class CanSegmenter(AbstractSegmenter):
                 addressing_format=self.addressing_format,
                 can_id=can_id,
                 ai_data_bytes=data[:self.addressing_information.AI_DATA_BYTES_NUMBER])
-            decoded_frame_ai.update(can_id=can_id, addressing_format=self.addressing_format)  # type: ignore
         except ValueError:
             return None
-        decoded_frame_ai[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL  # type: ignore # noqa
-        if self.rx_packets_physical_ai == decoded_frame_ai:
+        frame_ai = {
+            AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
+            AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: self.addressing_format,
+            **decoded_frame_ai
+        }
+        frame_ai[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
+        if self.rx_packets_physical_ai == frame_ai:
             return AddressingType.PHYSICAL
-        decoded_frame_ai[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL  # type: ignore # noqa
-        if self.rx_packets_functional_ai == decoded_frame_ai:
+        frame_ai[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
+        if self.rx_packets_functional_ai == frame_ai:
             return AddressingType.FUNCTIONAL
         return None
 

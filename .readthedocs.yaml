@@ -1,5 +1,16 @@
+# Documentation: https://docs.readthedocs.io/en/stable/config-file/v2.html#configuration-file-v2-readthedocs-yaml
+
 # Required
 version: 2
+
+
+# Set the version of Python and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+  apt_packages:
+    - graphviz
 
 
 # Build documentation in the docs/ directory with Sphinx
@@ -17,7 +28,6 @@ formats:
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: "3.8"
   install:
-    - requirements: docs/requirements_for_docs.txt
     - requirements: requirements.txt
+    - requirements: docs/requirements_for_docs.txt
