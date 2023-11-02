@@ -1,3 +1,5 @@
+# Documentation: https://docs.readthedocs.io/en/stable/config-file/v2.html#configuration-file-v2-readthedocs-yaml
+
 # Required
 version: 2
 
@@ -27,5 +29,5 @@ formats:
 # Optionally set the version of Python and requirements required to build your docs
 python:
   install:
-    - requirements: docs/requirements_for_docs.txt
     - requirements: requirements.txt
+    - requirements: docs/requirements_for_docs.txt
