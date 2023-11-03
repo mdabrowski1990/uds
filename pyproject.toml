@@ -20,7 +20,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Software Development :: Embedded Systems",
     "Topic :: System :: Monitoring",
-    "Topic :: System :: Networking"
+    "Topic :: System :: Networking",
 ]
 keywords = [
     "uds",
@@ -30,7 +30,7 @@ keywords = [
     "obd",
     "on-board-diagnostic",
     "vehicle-diagnostic",
-    "automotive"
+    "automotive",
 ]
 authors = [
     {name="Maciej Dąbrowski", email="maciej.dabrowski@software-quality.pl"},
@@ -61,21 +61,32 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [
+    "mock == 5.*",
     "pytest == 7.*",
     "pytest-cov",
     "pytest-asyncio",
-    "mock == 5.*"
 ]
 docs = [
     "sphinx",
     "sphinx-autoapi",
-    "sphinx-rtd-theme"
+    "sphinx-rtd-theme",
+    "tomli",
+]
+static-code-analysis = [
+    "prospector == 1.10.3",
+    "mypy == 1.6.1",
+    "vulture == 2.10",
+    "bandit == 1.7.5",
+    "pyroma == 4.2",
+]
+dependency-scan = [
+    "safety == 2.3.5",
 ]
 
 
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools >= 42",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
@@ -96,7 +107,9 @@ docs = [
     "source/*.rst",
     "source/pages/*.rst",
     "source/*.png",
-    "source/*.drawio"
+    "source/*.drawio",
+    "source/*.tgn",
+    "source/*.md",
 ]
 
 
@@ -114,6 +127,7 @@ markers = [
 ]
 testpaths = [
     "tests/software_tests",
+    "tests/system_tests",
 ]
 filterwarnings = "ignore:::.*uds*"
 asyncio_mode = "strict"
