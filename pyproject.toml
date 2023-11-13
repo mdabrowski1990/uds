@@ -74,7 +74,7 @@ docs = [
 ]
 static-code-analysis = [
     "prospector == 1.10.3",
-    "mypy == 1.6.1",
+    "mypy == 1.7.0",
     "vulture == 2.10",
     "bandit == 1.7.5",
     "pyroma == 4.2",
