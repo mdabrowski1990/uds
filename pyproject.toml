@@ -80,7 +80,7 @@ static-code-analysis = [
     "pyroma == 4.2",
 ]
 dependency-scan = [
-    "safety == 2.3.5",
+    "safety == 3.0.0",
 ]
 
 
