@@ -62,7 +62,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 test = [
     "mock == 5.*",
-    "pytest == 7.*",
+    "pytest >= 7,< 9",
     "pytest-cov",
     "pytest-asyncio",
 ]
