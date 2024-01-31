@@ -62,7 +62,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 test = [
     "mock == 5.*",
-    "pytest >= 7,< 9",
+    "pytest = 8.*",
     "pytest-cov",
     "pytest-asyncio",
 ]
@@ -120,7 +120,7 @@ include = [
 
 
 [tool.pytest.ini_options]
-minversion = "7.0"
+minversion = "8.0"
 markers = [
     "integration: Software integration tests.",
     "performance: Performance (non-functional) tests."
