@@ -3,7 +3,7 @@
 __all__ = ["TimeMillisecondsAlias", "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
            "validate_nibble", "validate_raw_byte", "validate_raw_bytes"]
 
-from typing import Any, Union, Tuple, List, Set
+from typing import Union, Tuple, List, Set
 
 
 TimeMillisecondsAlias = Union[int, float]
@@ -18,7 +18,7 @@ RawBytesAlias = Union[RawBytesTupleAlias, RawBytesListAlias, bytearray]
 """Alias of a sequence filled with byte values."""
 
 
-def validate_nibble(value: Any) -> None:
+def validate_nibble(value: int) -> None:
     """
     Validate whether provided value stores a nibble value.
 
@@ -33,7 +33,7 @@ def validate_nibble(value: Any) -> None:
         raise ValueError(f"Provided value is out of nibble values range (0x0-0xF). Actual value: {value}")
 
 
-def validate_raw_byte(value: Any) -> None:
+def validate_raw_byte(value: int) -> None:
     """
     Validate whether provided value stores a raw byte value.
 

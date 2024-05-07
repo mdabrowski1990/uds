@@ -1,3 +1,3 @@
-LIN Transport Interface
-=======================
+LIN Transport Interfaces
+========================
 LIN FEATURE IS PLANNED BUT NOT IMPLEMENTED YET, THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.

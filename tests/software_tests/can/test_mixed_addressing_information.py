@@ -136,6 +136,7 @@ class TestMixed29BitCanAddressingInformation:
     @pytest.mark.parametrize("address_extension", ["some AE", 0x5B])
     def test_validate_packet_ai__inconsistent_can_id_ta_sa(self, can_id, addressing_type, decoded_addressing_type,
                                                            ta, decoded_ta, sa, decoded_sa, address_extension):
+        self.mock_validate_addressing_type.return_value = addressing_type
         self.mock_can_id_handler_class.decode_mixed_addressed_29bit_can_id.return_value = {
             self.mock_can_id_handler_class.ADDRESSING_TYPE_NAME: decoded_addressing_type,
             self.mock_can_id_handler_class.TARGET_ADDRESS_NAME: decoded_ta,
@@ -164,7 +165,7 @@ class TestMixed29BitCanAddressingInformation:
                                                                      source_address=source_address,
                                                                      address_extension=address_extension) == {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             AbstractCanAddressingInformation.CAN_ID_NAME: self.mock_can_id_handler_class.encode_mixed_addressed_29bit_can_id.return_value,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: target_address,
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: source_address,
@@ -176,7 +177,7 @@ class TestMixed29BitCanAddressingInformation:
         self.mock_can_id_handler_class.validate_can_id.assert_not_called()
         self.mock_can_id_handler_class.decode_mixed_addressed_29bit_can_id.assert_not_called()
         self.mock_can_id_handler_class.encode_mixed_addressed_29bit_can_id.assert_called_once_with(
-            addressing_type=addressing_type,
+            addressing_type=self.mock_validate_addressing_type.return_value,
             target_address=target_address,
             source_address=source_address)
 
@@ -193,7 +194,7 @@ class TestMixed29BitCanAddressingInformation:
         decoded_target_address = target_address or "ta"
         decoded_source_address = source_address or "sa"
         self.mock_can_id_handler_class.decode_mixed_addressed_29bit_can_id.return_value = {
-            self.mock_can_id_handler_class.ADDRESSING_TYPE_NAME: addressing_type,
+            self.mock_can_id_handler_class.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             self.mock_can_id_handler_class.TARGET_ADDRESS_NAME: decoded_target_address,
             self.mock_can_id_handler_class.SOURCE_ADDRESS_NAME: decoded_source_address,
         }
@@ -203,7 +204,7 @@ class TestMixed29BitCanAddressingInformation:
                                                                      source_address=source_address,
                                                                      address_extension=address_extension) == {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: addressing_type,
+            AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: decoded_target_address,
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: decoded_source_address,

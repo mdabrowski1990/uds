@@ -299,7 +299,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def addressing_information(self) -> AbstractCanAddressingInformation:
-        """Addressing Information of Transport Interface."""
+        """
+        Addressing Information of Transport Interface.
+
+        .. warning:: Once the value is set, it must not be changed as it might cause communication problems.
+        """
         return self.__addressing_information
 
     @property
@@ -371,7 +375,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :param can_bus_manager: Python-can bus object for handling CAN.
 
-            .. warning:: Bus must have capability of receiving transmitted frame (``receive_own_messages=True`` set).
+            .. warning:: Bus must have capability of receiving transmitted frames (``receive_own_messages=True`` set).
 
         :param addressing_information: Addressing Information of CAN Transport Interface.
         :param kwargs: Optional arguments that are specific for CAN bus.

@@ -2,8 +2,6 @@
 
 __all__ = ["CanPacketType"]
 
-from typing import Any
-
 from aenum import unique
 
 from uds.can import CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, CanFlowControlHandler
@@ -29,7 +27,7 @@ class CanPacketType(AbstractUdsPacketType):
     """CAN packet type (N_PCI) value of :ref:`Flow Control (FC) <knowledge-base-can-flow-control>`."""
 
     @classmethod
-    def is_initial_packet_type(cls, value: Any) -> bool:
+    def is_initial_packet_type(cls, value: "CanPacketType") -> bool:
         """
         Check whether given argument is a CAN packet type that initiates a diagnostic message.
 
@@ -37,5 +35,4 @@ class CanPacketType(AbstractUdsPacketType):
 
         :return: True if given argument is a packet type that initiates a diagnostic message, else False.
         """
-        cls.validate_member(value)
-        return value in (cls.SINGLE_FRAME, cls.FIRST_FRAME)
+        return cls.validate_member(value) in (cls.SINGLE_FRAME, cls.FIRST_FRAME)

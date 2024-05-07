@@ -9,7 +9,7 @@ This module contains implementation of :ref:`Flow Control <knowledge-base-can-fl
 
 __all__ = ["CanFlowStatus", "CanSTminTranslator", "CanFlowControlHandler", "UnrecognizedSTminWarning"]
 
-from typing import Optional, Any
+from typing import Optional
 from warnings import warn
 
 from aenum import unique
@@ -119,7 +119,7 @@ class CanSTminTranslator:
         raise ValueError(f"Provided value is out of valid STmin ranges. Actual value: {time_value}")
 
     @classmethod
-    def is_time_value(cls, value: Any) -> bool:
+    def is_time_value(cls, value: TimeMillisecondsAlias) -> bool:
         """
         Check if provided value is a valid time value of STmin.
 
@@ -425,8 +425,8 @@ class CanFlowControlHandler:
         """
         CanFlowStatus.validate_member(flow_status)
         if flow_status == CanFlowStatus.ContinueToSend:
-            validate_raw_byte(block_size)
-            validate_raw_byte(st_min)
+            validate_raw_byte(block_size)  # type: ignore
+            validate_raw_byte(st_min)  # type: ignore
         else:
             if block_size is not None:
                 validate_raw_byte(block_size)

@@ -1,3 +1,3 @@
-Ethernet Transport Interface
-============================
+Ethernet Transport Interfaces
+=============================
 Ethernet FEATURE IS PLANNED BUT NOT IMPLEMENTED YET, THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.

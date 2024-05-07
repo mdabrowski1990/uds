@@ -11,6 +11,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Natural Language :: English",
@@ -19,7 +20,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Software Development :: Embedded Systems",
     "Topic :: System :: Monitoring",
-    "Topic :: System :: Networking"
+    "Topic :: System :: Networking",
 ]
 keywords = [
     "uds",
@@ -29,7 +30,7 @@ keywords = [
     "obd",
     "on-board-diagnostic",
     "vehicle-diagnostic",
-    "automotive"
+    "automotive",
 ]
 authors = [
     {name="Maciej Dąbrowski", email="maciej.dabrowski@software-quality.pl"},
@@ -47,34 +48,45 @@ dynamic = ["version"]
 
 
 [project.urls]
-Homepage = "https://github.com/mdabrowski1990/uds"
-"User Documentation" = "https://uds.readthedocs.io/en/latest/"
-Repository = "https://github.com/mdabrowski1990/uds"
+"Homepage" = "https://github.com/mdabrowski1990/uds"
+"User Documentation" = "https://uds.readthedocs.io"
+"Repository" = "https://github.com/mdabrowski1990/uds"
 "Issues Tracking System" = "https://github.com/mdabrowski1990/uds/issues"
 "Releases and Changelogs" = "https://github.com/mdabrowski1990/uds/releases"
 "Security Policy" = "https://github.com/mdabrowski1990/uds/security/policy"
 "PyPI" = "https://pypi.org/project/py-uds/"
-Wiki = "https://github.com/mdabrowski1990/uds/wiki"
+"Wiki" = "https://github.com/mdabrowski1990/uds/wiki"
 "Code Download" = "https://github.com/mdabrowski1990/uds/archive/refs/heads/main.zip"
 
 
 [project.optional-dependencies]
 test = [
+    "mock == 5.*",
     "pytest == 7.*",
     "pytest-cov",
     "pytest-asyncio",
-    "mock == 5.*"
 ]
 docs = [
     "sphinx",
     "sphinx-autoapi",
-    "sphinx-rtd-theme"
+    "sphinx-rtd-theme",
+    "tomli",
+]
+static-code-analysis = [
+    "prospector == 1.10.3",
+    "mypy == 1.9.0",
+    "vulture == 2.11",
+    "bandit == 1.7.8",
+    "pyroma == 4.2",
+]
+dependency-scan = [
+    "safety == 3.1.0",
 ]
 
 
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools >= 42",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
@@ -95,7 +107,9 @@ docs = [
     "source/*.rst",
     "source/pages/*.rst",
     "source/*.png",
-    "source/*.drawio"
+    "source/*.drawio",
+    "source/*.tgn",
+    "source/*.md",
 ]
 
 
@@ -113,6 +127,7 @@ markers = [
 ]
 testpaths = [
     "tests/software_tests",
+    "tests/system_tests",
 ]
 filterwarnings = "ignore:::.*uds*"
 asyncio_mode = "strict"
