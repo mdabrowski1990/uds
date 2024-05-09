@@ -120,7 +120,7 @@ include = [
 
 
 [tool.pytest.ini_options]
-minversion = "8.0"
+minversion = "7.0"
 markers = [
     "integration: Software integration tests.",
     "performance: Performance (non-functional) tests."
