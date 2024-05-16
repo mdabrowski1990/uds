@@ -150,6 +150,7 @@ jobs:
 
       - name: Install external packages used for dependency scanning
         run: |
+          pip install -U pip
           pip install .[dependency-scan]
 
       - name: Execute dependency scanning [safety]
