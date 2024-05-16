@@ -1,10 +1,12 @@
 import pytest
 from mock import Mock, patch
 
-from uds.packet.abstract_can_packet_container import AbstractCanPacketContainer, \
-    CanPacketType, AbstractCanAddressingInformation
+from uds.packet.abstract_can_packet_container import (
+    AbstractCanAddressingInformation,
+    AbstractCanPacketContainer,
+    CanPacketType,
+)
 from uds.transmission_attributes import AddressingType
-
 
 SCRIPT_LOCATION = "uds.packet.abstract_can_packet_container"
 

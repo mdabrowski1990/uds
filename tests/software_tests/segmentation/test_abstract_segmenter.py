@@ -3,7 +3,6 @@ from mock import Mock, patch
 
 from uds.segmentation.abstract_segmenter import AbstractSegmenter
 
-
 SCRIPT_PATH = "uds.segmentation.abstract_segmenter"
 
 

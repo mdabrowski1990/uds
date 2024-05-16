@@ -1,10 +1,16 @@
 import pytest
-from mock import MagicMock, Mock, AsyncMock, patch
+from mock import AsyncMock, MagicMock, Mock, patch
 
-from uds.transport_interface.can_transport_interface import AbstractCanTransportInterface, PyCanTransportInterface, \
-    AbstractCanAddressingInformation, BusABC, CanPacket, CanPacketType, TransmissionDirection
-from uds.can import CanAddressingInformation, CanAddressingFormat
-
+from uds.can import CanAddressingFormat, CanAddressingInformation
+from uds.transport_interface.can_transport_interface import (
+    AbstractCanAddressingInformation,
+    AbstractCanTransportInterface,
+    BusABC,
+    CanPacket,
+    CanPacketType,
+    PyCanTransportInterface,
+    TransmissionDirection,
+)
 
 SCRIPT_LOCATION = "uds.transport_interface.can_transport_interface"
 

@@ -1,8 +1,9 @@
 """UDS Issue: https://github.com/mdabrowski1990/uds/issues/228"""
 
-from time import time
 from threading import Timer
-from can import Notifier, BufferedReader, Bus, Message
+from time import time
+
+from can import BufferedReader, Bus, Message, Notifier
 
 if __name__ == "__main__":
     kvaser_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)

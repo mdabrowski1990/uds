@@ -2,9 +2,7 @@ import pytest
 from mock import patch
 
 from uds.utilities import ValidatedEnum
-from uds.utilities.bytes_operations import Endianness, bytes_list_to_int, int_to_bytes_list, \
-    InconsistentArgumentsError
-
+from uds.utilities.bytes_operations import Endianness, InconsistentArgumentsError, bytes_list_to_int, int_to_bytes_list
 
 SCRIPT_LOCATION = "uds.utilities.bytes_operations"
 

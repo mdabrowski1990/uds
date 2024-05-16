@@ -1,9 +1,7 @@
 import pytest
 from mock import patch
 
-from uds.message.service_identifiers import RequestSID, ResponseSID, \
-    ByteEnum, ValidatedEnum, ExtendableEnum
-
+from uds.message.service_identifiers import ByteEnum, ExtendableEnum, RequestSID, ResponseSID, ValidatedEnum
 
 SCRIPT_LOCATION = "uds.message.service_identifiers"
 

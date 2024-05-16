@@ -1,6 +1,5 @@
 from uds.packet.abstract_packet_type import AbstractUdsPacketType
-from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum
-
+from uds.utilities import ExtendableEnum, NibbleEnum, ValidatedEnum
 
 SCRIPT_LOCATION = "uds.packet.abstract_packet"
 

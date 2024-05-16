@@ -2,8 +2,8 @@ import asyncio
 from pprint import pprint
 
 from can import Bus, Message
+from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.transport_interface import PyCanTransportInterface
-from uds.can import CanAddressingInformation, CanAddressingFormat
 
 
 async def main():

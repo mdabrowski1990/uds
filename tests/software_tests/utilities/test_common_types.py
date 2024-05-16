@@ -1,6 +1,6 @@
 import pytest
 
-from uds.utilities.common_types import validate_raw_bytes, validate_raw_byte, validate_nibble
+from uds.utilities.common_types import validate_nibble, validate_raw_byte, validate_raw_bytes
 
 
 class TestFunctions:

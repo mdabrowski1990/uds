@@ -1,15 +1,16 @@
-import pytest
 import asyncio
-from threading import Timer
-from time import time, sleep
 from datetime import datetime
-from can import Bus, Message
+from threading import Timer
+from time import sleep, time
 
-from uds.can import CanAddressingInformation, CanAddressingFormat, CanFlowStatus
-from uds.transport_interface import PyCanTransportInterface
-from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.packet import CanPacket, CanPacketType, CanPacketRecord
+import pytest
+
+from can import Bus, Message
+from uds.can import CanAddressingFormat, CanAddressingInformation, CanFlowStatus
 from uds.message import UdsMessage
+from uds.packet import CanPacket, CanPacketRecord, CanPacketType
+from uds.transmission_attributes import AddressingType, TransmissionDirection
+from uds.transport_interface import PyCanTransportInterface
 
 
 class TestPythonCanKvaser:

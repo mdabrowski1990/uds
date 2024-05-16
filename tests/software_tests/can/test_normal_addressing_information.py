@@ -1,9 +1,14 @@
 import pytest
-from mock import Mock, patch, call
+from mock import Mock, call, patch
 
-from uds.can.normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, \
-    CanAddressingFormat, InconsistentArgumentsError, UnusedArgumentError, AbstractCanAddressingInformation
-
+from uds.can.normal_addressing_information import (
+    AbstractCanAddressingInformation,
+    CanAddressingFormat,
+    InconsistentArgumentsError,
+    Normal11BitCanAddressingInformation,
+    NormalFixedCanAddressingInformation,
+    UnusedArgumentError,
+)
 
 SCRIPT_LOCATION = "uds.can.normal_addressing_information"
 

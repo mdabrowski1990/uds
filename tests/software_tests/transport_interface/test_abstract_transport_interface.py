@@ -3,7 +3,6 @@ from mock import Mock
 
 from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface
 
-
 SCRIPT_LOCATION = "uds.transport_interface.abstract_transport_interface"
 
 

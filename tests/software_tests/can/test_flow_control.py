@@ -1,11 +1,15 @@
 import pytest
-from mock import patch, call
+from mock import call, patch
 
-from uds.can.flow_control import CanSTminTranslator, CanFlowStatus, CanFlowControlHandler, \
-    InconsistentArgumentsError, CanDlcHandler
 from uds.can import CanAddressingFormat
-from uds.utilities import ValidatedEnum, NibbleEnum
-
+from uds.can.flow_control import (
+    CanDlcHandler,
+    CanFlowControlHandler,
+    CanFlowStatus,
+    CanSTminTranslator,
+    InconsistentArgumentsError,
+)
+from uds.utilities import NibbleEnum, ValidatedEnum
 
 SCRIPT_LOCATION = "uds.can.flow_control"
 

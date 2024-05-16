@@ -1,12 +1,16 @@
 from pytest import fixture
 
 from can import Message
-
-from uds.transmission_attributes import TransmissionDirection, AddressingType
-from uds.can import CanAddressingFormat, Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, \
-    ExtendedCanAddressingInformation, Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from uds.can import (
+    CanAddressingFormat,
+    ExtendedCanAddressingInformation,
+    Mixed11BitCanAddressingInformation,
+    Mixed29BitCanAddressingInformation,
+    Normal11BitCanAddressingInformation,
+    NormalFixedCanAddressingInformation,
+)
 from uds.segmentation import CanSegmenter
-
+from uds.transmission_attributes import AddressingType, TransmissionDirection
 
 # Common
 

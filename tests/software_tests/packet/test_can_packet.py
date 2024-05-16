@@ -1,11 +1,16 @@
 import pytest
-from mock import patch, Mock, call
+from mock import Mock, call, patch
 
-from uds.packet.can_packet import CanPacket, \
-    CanPacketType, CanAddressingFormat, AbstractCanAddressingInformation, AddressingType, \
-    DEFAULT_FILLER_BYTE, AmbiguityError
 from uds.can import CanFlowStatus
-
+from uds.packet.can_packet import (
+    DEFAULT_FILLER_BYTE,
+    AbstractCanAddressingInformation,
+    AddressingType,
+    AmbiguityError,
+    CanAddressingFormat,
+    CanPacket,
+    CanPacketType,
+)
 
 SCRIPT_LOCATION = "uds.packet.can_packet"
 

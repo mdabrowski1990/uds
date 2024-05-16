@@ -1,8 +1,7 @@
 from pytest import fixture
 
 from can import Message
-
-from uds.can import CanAddressingInformation, CanAddressingFormat
+from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.message import UdsMessage
 from uds.transmission_attributes import AddressingType
 
