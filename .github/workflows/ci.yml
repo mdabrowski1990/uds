@@ -50,10 +50,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Install project dependencies
         run: |
@@ -109,7 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]  # TODO: Add "3.12" when stable
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -150,7 +150,7 @@ jobs:
 
       - name: Install external packages used for dependency scanning
         run: |
-          pip install -U pip
+          python -m pip install --upgrade pip
           pip install .[dependency-scan]
 
       - name: Execute dependency scanning [safety]
