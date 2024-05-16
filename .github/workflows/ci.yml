@@ -28,7 +28,7 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install .[tests]
+          pip install .[test]
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
@@ -63,7 +63,7 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install .[tests]
+          pip install .[test]
 
       - name: Prepare coverage uploader [CodeCov]
         run: |
