@@ -132,3 +132,8 @@ testpaths = [
 ]
 filterwarnings = "ignore:::.*uds*"
 asyncio_mode = "strict"
+
+
+[tool.isort]
+profile = "hug"
+src_paths = ["uds", "tests"]
