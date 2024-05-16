@@ -1,4 +1,4 @@
-name: CI
+name: Testing
 
 
 on: [push, pull_request]
@@ -28,7 +28,7 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install -r tests/requirements_for_software_tests.txt
+          pip install .[test]
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
@@ -50,10 +50,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Install project dependencies
         run: |
@@ -63,7 +63,7 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install -r tests/requirements_for_software_tests.txt
+          pip install .[test]
 
       - name: Prepare coverage uploader [CodeCov]
         run: |
@@ -127,7 +127,7 @@ jobs:
 
       - name: Install external packages used for static tests
         run: |
-          pip install -r tests/requirements_for_static_code_analysis.txt
+          pip install .[static-code-analysis]
 
       - name: Execute static code analysis [prospector]
         run: |
@@ -150,8 +150,13 @@ jobs:
 
       - name: Install external packages used for dependency scanning
         run: |
-          pip install -r tests/requirements_for_dependency_scanning.txt
+          python -m pip install --upgrade pip
+          pip install .[dependency-scan]
 
       - name: Execute dependency scanning [safety]
         run: |
           safety check -r requirements.txt
+
+      - name: Execute dependency scanning [pip-audit]
+        run: |
+          pip-audit
