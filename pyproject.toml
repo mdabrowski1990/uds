@@ -83,6 +83,9 @@ dependency-scan = [
     "safety == 3.1.0",
     "pip-audit == 2.7.3",
 ]
+sorting-imports = [
+    "isort == 5.13.2"
+]
 
 
 [build-system]

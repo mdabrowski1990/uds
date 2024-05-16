@@ -4,12 +4,13 @@ __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacket
            "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Tuple, Sequence
 from datetime import datetime
+from typing import Any, Optional, Sequence, Tuple
 
-from uds.utilities import RawBytesTupleAlias, ReassignmentError
 from uds.transmission_attributes.addressing import AddressingType
 from uds.transmission_attributes.transmission_direction import TransmissionDirection
+from uds.utilities import RawBytesTupleAlias, ReassignmentError
+
 from .abstract_packet_type import AbstractUdsPacketType
 
 

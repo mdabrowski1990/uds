@@ -14,8 +14,18 @@ from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import InconsistentArgumentsError, NibbleEnum, ValidatedEnum, TimeMillisecondsAlias, \
-    RawBytesAlias, RawBytesListAlias, validate_nibble, validate_raw_byte, validate_raw_bytes
+from uds.utilities import (
+    InconsistentArgumentsError,
+    NibbleEnum,
+    RawBytesAlias,
+    RawBytesListAlias,
+    TimeMillisecondsAlias,
+    ValidatedEnum,
+    validate_nibble,
+    validate_raw_byte,
+    validate_raw_bytes,
+)
+
 from .addressing_format import CanAddressingFormat
 from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler

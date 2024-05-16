@@ -2,20 +2,20 @@
 
 __all__ = ["AbstractCanTransportInterface", "PyCanTransportInterface"]
 
-from typing import Any, Optional
 from abc import abstractmethod
-from warnings import warn
-from asyncio import AbstractEventLoop, wait_for, get_running_loop
+from asyncio import AbstractEventLoop, get_running_loop, wait_for
 from datetime import datetime
 from time import time
+from typing import Any, Optional
+from warnings import warn
 
-from can import BusABC, AsyncBufferedReader, BufferedReader, Notifier, Message
-
-from uds.utilities import TimeMillisecondsAlias, ValueWarning
-from uds.can import AbstractCanAddressingInformation, CanIdHandler, CanDlcHandler
+from can import AsyncBufferedReader, BufferedReader, BusABC, Message, Notifier
+from uds.can import AbstractCanAddressingInformation, CanDlcHandler, CanIdHandler
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
-from uds.transmission_attributes import TransmissionDirection
 from uds.segmentation import CanSegmenter
+from uds.transmission_attributes import TransmissionDirection
+from uds.utilities import TimeMillisecondsAlias, ValueWarning
+
 from .abstract_transport_interface import AbstractTransportInterface
 
 

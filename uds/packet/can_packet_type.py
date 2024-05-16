@@ -4,7 +4,13 @@ __all__ = ["CanPacketType"]
 
 from aenum import unique
 
-from uds.can import CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, CanFlowControlHandler
+from uds.can import (
+    CanConsecutiveFrameHandler,
+    CanFirstFrameHandler,
+    CanFlowControlHandler,
+    CanSingleFrameHandler,
+)
+
 from .abstract_packet_type import AbstractUdsPacketType
 
 

@@ -2,7 +2,7 @@
 
 __all__ = ["CanAddressingFormat"]
 
-from aenum import unique, StrEnum
+from aenum import StrEnum, unique
 
 from uds.utilities import ValidatedEnum
 

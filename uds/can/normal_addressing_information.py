@@ -4,11 +4,12 @@ __all__ = ["Normal11BitCanAddressingInformation", "NormalFixedCanAddressingInfor
 
 from typing import Optional
 
-from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
 from uds.transmission_attributes import AddressingType
+from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
+
+from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
-from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 
 
 class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):

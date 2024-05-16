@@ -4,7 +4,7 @@ __all__ = ["AbstractUdsPacketType"]
 
 from abc import abstractmethod
 
-from uds.utilities import NibbleEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import ExtendableEnum, NibbleEnum, ValidatedEnum
 
 
 class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):

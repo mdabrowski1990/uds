@@ -3,8 +3,7 @@
 __all__ = ["TimeMillisecondsAlias", "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
            "validate_nibble", "validate_raw_byte", "validate_raw_bytes"]
 
-from typing import Union, Tuple, List, Set
-
+from typing import List, Set, Tuple, Union
 
 TimeMillisecondsAlias = Union[int, float]
 """Alias of a time value in milliseconds."""

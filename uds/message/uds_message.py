@@ -6,13 +6,19 @@ Module with common implementation of all diagnostic messages (requests and respo
 
 __all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
 
-from typing import Sequence
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Sequence
 
-from uds.utilities import RawBytesAlias, RawBytesTupleAlias, RawBytesListAlias, validate_raw_bytes, ReassignmentError
-from uds.transmission_attributes import TransmissionDirection, AddressingType
-from uds.packet import AbstractUdsPacketRecord, PacketsRecordsTuple, PacketsRecordsSequence
+from uds.packet import AbstractUdsPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
+from uds.transmission_attributes import AddressingType, TransmissionDirection
+from uds.utilities import (
+    RawBytesAlias,
+    RawBytesListAlias,
+    RawBytesTupleAlias,
+    ReassignmentError,
+    validate_raw_bytes,
+)
 
 
 class AbstractUdsMessageContainer(ABC):
