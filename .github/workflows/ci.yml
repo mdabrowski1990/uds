@@ -28,7 +28,7 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install -r tests/requirements_for_software_tests.txt
+          pip install .[tests]
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
@@ -63,7 +63,7 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install -r tests/requirements_for_software_tests.txt
+          pip install .[tests]
 
       - name: Prepare coverage uploader [CodeCov]
         run: |
@@ -127,7 +127,7 @@ jobs:
 
       - name: Install external packages used for static tests
         run: |
-          pip install -r tests/requirements_for_static_code_analysis.txt
+          pip install .[static-code-analysis]
 
       - name: Execute static code analysis [prospector]
         run: |
@@ -150,8 +150,12 @@ jobs:
 
       - name: Install external packages used for dependency scanning
         run: |
-          pip install -r tests/requirements_for_dependency_scanning.txt
+          pip install .[dependency-scan]
 
       - name: Execute dependency scanning [safety]
         run: |
           safety check -r requirements.txt
+
+      - name: Execute dependency scanning [pip-audit]
+        run: |
+          pip-audit
