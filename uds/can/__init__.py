@@ -23,12 +23,6 @@ from .extended_addressing_information import ExtendedCanAddressingInformation
 from .first_frame import CanFirstFrameHandler
 from .flow_control import CanFlowControlHandler, CanFlowStatus, CanSTminTranslator
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler, CanIdHandler
-from .mixed_addressing_information import (
-    Mixed11BitCanAddressingInformation,
-    Mixed29BitCanAddressingInformation,
-)
-from .normal_addressing_information import (
-    Normal11BitCanAddressingInformation,
-    NormalFixedCanAddressingInformation,
-)
+from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
 from .single_frame import CanSingleFrameHandler

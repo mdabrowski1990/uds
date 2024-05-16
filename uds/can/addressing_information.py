@@ -21,14 +21,8 @@ from .abstract_addressing_information import AbstractCanAddressingInformation, P
 from .addressing_format import CanAddressingFormat
 from .extended_addressing_information import ExtendedCanAddressingInformation
 from .frame_fields import CanIdHandler
-from .mixed_addressing_information import (
-    Mixed11BitCanAddressingInformation,
-    Mixed29BitCanAddressingInformation,
-)
-from .normal_addressing_information import (
-    Normal11BitCanAddressingInformation,
-    NormalFixedCanAddressingInformation,
-)
+from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
 
 
 class CanAddressingInformation:

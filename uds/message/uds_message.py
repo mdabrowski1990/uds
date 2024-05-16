@@ -12,13 +12,7 @@ from typing import Sequence
 
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
 from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import (
-    RawBytesAlias,
-    RawBytesListAlias,
-    RawBytesTupleAlias,
-    ReassignmentError,
-    validate_raw_bytes,
-)
+from uds.utilities import RawBytesAlias, RawBytesListAlias, RawBytesTupleAlias, ReassignmentError, validate_raw_bytes
 
 
 class AbstractUdsMessageContainer(ABC):

@@ -138,5 +138,9 @@ asyncio_mode = "strict"
 
 
 [tool.isort]
-profile = "hug"
 src_paths = ["uds", "tests"]
+line_length = 120
+use_parentheses = true
+include_trailing_comma = true
+force_grid_wrap = 0
+multi_line_output = 3

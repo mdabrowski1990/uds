@@ -9,11 +9,5 @@ It provides tools for:
 """
 
 from .nrc import NRC
-from .service_identifiers import (
-    ALL_REQUEST_SIDS,
-    ALL_RESPONSE_SIDS,
-    RequestSID,
-    ResponseSID,
-    UnrecognizedSIDWarning,
-)
+from .service_identifiers import ALL_REQUEST_SIDS, ALL_RESPONSE_SIDS, RequestSID, ResponseSID, UnrecognizedSIDWarning
 from .uds_message import AbstractUdsMessageContainer, UdsMessage, UdsMessageRecord
