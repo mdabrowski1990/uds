@@ -211,4 +211,4 @@ jobs:
 
       - name: Check RST documentation [doc8]
         run: |
-          docs8 docs/source
+          doc8 docs/source
