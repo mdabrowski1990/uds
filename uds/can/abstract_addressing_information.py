@@ -2,11 +2,12 @@
 
 __all__ = ["AbstractCanAddressingInformation", "PacketAIParamsAlias"]
 
-from typing import Optional, TypedDict
 from abc import ABC, abstractmethod
 from copy import deepcopy
+from typing import Optional, TypedDict
 
 from uds.transmission_attributes import AddressingType
+
 from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
 

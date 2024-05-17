@@ -3,8 +3,8 @@ from threading import Timer
 from time import sleep
 
 from can import Bus, Message
+from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.transport_interface import PyCanTransportInterface
-from uds.can import CanAddressingInformation, CanAddressingFormat
 
 
 def main():

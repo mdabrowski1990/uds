@@ -83,6 +83,9 @@ dependency-scan = [
     "safety == 3.1.0",
     "pip-audit == 2.7.3",
 ]
+sorting-imports = [
+    "isort == 5.13.2"
+]
 
 
 [build-system]
@@ -132,3 +135,12 @@ testpaths = [
 ]
 filterwarnings = "ignore:::.*uds*"
 asyncio_mode = "strict"
+
+
+[tool.isort]
+src_paths = ["uds"]
+line_length = 120
+use_parentheses = true
+include_trailing_comma = true
+force_grid_wrap = 0
+multi_line_output = 3

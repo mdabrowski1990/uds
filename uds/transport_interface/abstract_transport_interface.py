@@ -2,13 +2,13 @@
 
 __all__ = ["AbstractTransportInterface"]
 
-from typing import Optional, Any
 from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
+from typing import Any, Optional
 
-from uds.utilities import TimeMillisecondsAlias
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.segmentation import AbstractSegmenter
+from uds.utilities import TimeMillisecondsAlias
 
 
 class AbstractTransportInterface(ABC):

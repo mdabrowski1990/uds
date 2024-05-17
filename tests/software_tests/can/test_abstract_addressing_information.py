@@ -3,7 +3,6 @@ from mock import Mock, patch
 
 from uds.can.abstract_addressing_information import AbstractCanAddressingInformation, AddressingType
 
-
 SCRIPT_LOCATION = "uds.can.abstract_addressing_information"
 
 

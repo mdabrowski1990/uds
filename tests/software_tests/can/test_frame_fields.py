@@ -1,9 +1,7 @@
 import pytest
-from mock import patch, call
+from mock import call, patch
 
-from uds.can.frame_fields import CanIdHandler, CanDlcHandler, \
-    AddressingType, CanAddressingFormat
-
+from uds.can.frame_fields import AddressingType, CanAddressingFormat, CanDlcHandler, CanIdHandler
 
 SCRIPT_LOCATION = "uds.can.frame_fields"
 

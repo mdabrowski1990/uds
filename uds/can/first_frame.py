@@ -9,8 +9,15 @@ __all__ = ["CanFirstFrameHandler"]
 
 from typing import Optional
 
-from uds.utilities import RawBytesAlias, RawBytesListAlias, int_to_bytes_list, bytes_list_to_int, validate_raw_bytes, \
-    InconsistentArgumentsError
+from uds.utilities import (
+    InconsistentArgumentsError,
+    RawBytesAlias,
+    RawBytesListAlias,
+    bytes_list_to_int,
+    int_to_bytes_list,
+    validate_raw_bytes,
+)
+
 from .addressing_format import CanAddressingFormat
 from .addressing_information import CanAddressingInformation
 from .frame_fields import CanDlcHandler

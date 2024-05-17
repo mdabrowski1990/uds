@@ -14,10 +14,11 @@
 # import sys
 # sys.path.insert(0, os.path.abspath("."))
 
-import os
-import sys
 import datetime
+import os
 import re
+import sys
+
 try:  # python 3.11 or newer
     import tomlib
 except ModuleNotFoundError:

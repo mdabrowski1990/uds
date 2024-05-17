@@ -1,12 +1,26 @@
 import pytest
-from mock import Mock, MagicMock, patch, call
+from mock import MagicMock, Mock, call, patch
 
-from uds.segmentation.can_segmenter import CanSegmenter, \
-    CanDlcHandler, CanPacket, CanPacketRecord, CanPacketType, CanFirstFrameHandler, \
-    AddressingType, UdsMessage, DEFAULT_FILLER_BYTE, SegmentationError, AbstractCanAddressingInformation
-from uds.can import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation, \
-    ExtendedCanAddressingInformation, Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
-
+from uds.can import (
+    ExtendedCanAddressingInformation,
+    Mixed11BitCanAddressingInformation,
+    Mixed29BitCanAddressingInformation,
+    Normal11BitCanAddressingInformation,
+    NormalFixedCanAddressingInformation,
+)
+from uds.segmentation.can_segmenter import (
+    DEFAULT_FILLER_BYTE,
+    AbstractCanAddressingInformation,
+    AddressingType,
+    CanDlcHandler,
+    CanFirstFrameHandler,
+    CanPacket,
+    CanPacketRecord,
+    CanPacketType,
+    CanSegmenter,
+    SegmentationError,
+    UdsMessage,
+)
 
 SCRIPT_LOCATION = "uds.segmentation.can_segmenter"
 

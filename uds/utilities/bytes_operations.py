@@ -6,9 +6,9 @@ from typing import Optional
 
 from aenum import StrEnum
 
-from .enums import ValidatedEnum
-from .common_types import RawBytesListAlias, RawBytesAlias, validate_raw_bytes
+from .common_types import RawBytesAlias, RawBytesListAlias, validate_raw_bytes
 from .custom_exceptions import InconsistentArgumentsError
+from .enums import ValidatedEnum
 
 
 class Endianness(StrEnum, ValidatedEnum):

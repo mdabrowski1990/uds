@@ -8,7 +8,6 @@ It provides tools for:
  - Negative Response Codes (NRC) definition
 """
 
-from .uds_message import AbstractUdsMessageContainer, UdsMessage, UdsMessageRecord
-from .service_identifiers import RequestSID, ResponseSID, ALL_REQUEST_SIDS, ALL_RESPONSE_SIDS, \
-    UnrecognizedSIDWarning
 from .nrc import NRC
+from .service_identifiers import ALL_REQUEST_SIDS, ALL_RESPONSE_SIDS, RequestSID, ResponseSID, UnrecognizedSIDWarning
+from .uds_message import AbstractUdsMessageContainer, UdsMessage, UdsMessageRecord

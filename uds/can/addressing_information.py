@@ -6,17 +6,23 @@ This module contains helper class for managing :ref:`Addressing Information <kno
 
 __all__ = ["CanAddressingInformation"]
 
-from typing import Optional, Dict, TypedDict, Type
+from typing import Dict, Optional, Type, TypedDict
 
-from uds.utilities import InconsistentArgumentsError, \
-    RawBytesAlias, RawBytesListAlias, validate_raw_byte, validate_raw_bytes
 from uds.transmission_attributes import AddressingType
-from .addressing_format import CanAddressingFormat
-from .frame_fields import CanIdHandler
+from uds.utilities import (
+    InconsistentArgumentsError,
+    RawBytesAlias,
+    RawBytesListAlias,
+    validate_raw_byte,
+    validate_raw_bytes,
+)
+
 from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
-from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
+from .addressing_format import CanAddressingFormat
 from .extended_addressing_information import ExtendedCanAddressingInformation
+from .frame_fields import CanIdHandler
 from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
 
 
 class CanAddressingInformation:

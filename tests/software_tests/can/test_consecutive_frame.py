@@ -1,10 +1,13 @@
 import pytest
 from mock import patch
 
-from uds.can.consecutive_frame import CanConsecutiveFrameHandler, \
-    InconsistentArgumentsError, CanDlcHandler, DEFAULT_FILLER_BYTE
 from uds.can import CanAddressingFormat
-
+from uds.can.consecutive_frame import (
+    DEFAULT_FILLER_BYTE,
+    CanConsecutiveFrameHandler,
+    CanDlcHandler,
+    InconsistentArgumentsError,
+)
 
 SCRIPT_LOCATION = "uds.can.consecutive_frame"
 

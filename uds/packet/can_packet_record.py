@@ -2,20 +2,23 @@
 
 __all__ = ["CanPacketRecord"]
 
-from typing import Union, Any, Optional
 from datetime import datetime
+from typing import Any, Optional, Union
 
 from can import Message as PythonCanMessage
-
-from uds.utilities import RawBytesTupleAlias, InconsistentArgumentsError
+from uds.can import (
+    AbstractCanAddressingInformation,
+    CanAddressingFormat,
+    CanAddressingInformation,
+    CanDlcHandler,
+    CanIdHandler,
+)
 from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.can import CanAddressingFormat, \
-    CanAddressingInformation, AbstractCanAddressingInformation, \
-    CanDlcHandler, CanIdHandler
-from .can_packet_type import CanPacketType
+from uds.utilities import InconsistentArgumentsError, RawBytesTupleAlias
+
 from .abstract_can_packet_container import AbstractCanPacketContainer
 from .abstract_packet import AbstractUdsPacketRecord
-
+from .can_packet_type import CanPacketType
 
 CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""

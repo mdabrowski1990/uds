@@ -2,16 +2,32 @@
 
 __all__ = ["CanSegmenter"]
 
-from typing import Optional, Union, Type
+from typing import Optional, Type, Union
 
-from uds.utilities import RawBytesListAlias, RawBytesAlias, validate_raw_byte
-from uds.transmission_attributes import AddressingType
-from uds.can import AbstractCanAddressingInformation, CanAddressingInformation, PacketAIParamsAlias, \
-    CanAddressingFormat, \
-    CanDlcHandler, CanSingleFrameHandler, CanFirstFrameHandler, CanConsecutiveFrameHandler, DEFAULT_FILLER_BYTE
-from uds.packet import CanPacket, CanPacketRecord, CanPacketType, \
-    AbstractUdsPacket, AbstractUdsPacketRecord, PacketsContainersSequence, PacketsTuple
+from uds.can import (
+    DEFAULT_FILLER_BYTE,
+    AbstractCanAddressingInformation,
+    CanAddressingFormat,
+    CanAddressingInformation,
+    CanConsecutiveFrameHandler,
+    CanDlcHandler,
+    CanFirstFrameHandler,
+    CanSingleFrameHandler,
+    PacketAIParamsAlias,
+)
 from uds.message import UdsMessage, UdsMessageRecord
+from uds.packet import (
+    AbstractUdsPacket,
+    AbstractUdsPacketRecord,
+    CanPacket,
+    CanPacketRecord,
+    CanPacketType,
+    PacketsContainersSequence,
+    PacketsTuple,
+)
+from uds.transmission_attributes import AddressingType
+from uds.utilities import RawBytesAlias, RawBytesListAlias, validate_raw_byte
+
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
