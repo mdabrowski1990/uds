@@ -211,4 +211,4 @@ jobs:
 
       - name: Check RST documentation [doc8]
         run: |
-          doc8 docs/source
+          doc8 docs/source --config pyproject.toml
