@@ -196,8 +196,8 @@ where:
 Extended Addressing
 '''''''''''''''''''
 If extended addressing format is used, then the value of **the first CAN frame byte informs about a target** of
-a UDS packet and remaining `Network Address Information`_ (a sending entity and :ref:`an addressing type <knowledge-base-addressing>`)
-are determined by CAN Identifier value.
+a UDS packet and remaining `Network Address Information`_ (a sending entity and
+:ref:`an addressing type <knowledge-base-addressing>`) are determined by CAN Identifier value.
 
 Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
  - CAN ID
@@ -402,7 +402,8 @@ Number of payload bytes carried by SF is specified by
 Single Frame Data Length
 ........................
 Single Frame Data Length (SF_DL) is 4-bit (for CAN packets with DLC<=8) or 8-bit (for CAN packets with DLC>8) value
-carried by every Single Frame as presented in :ref:`the table with CAN packet formats<knowledge-base-can-packets-format>`.
+carried by every Single Frame as presented in
+:ref:`the table with CAN packet formats<knowledge-base-can-packets-format>`.
 SF_DL specifies number of diagnostic message payload bytes transmitted in a Single Frame.
 
 .. note:: Maximal value of SF_DL depends on Single Frame :ref:`addressing format <knowledge-base-can-addressing>`
@@ -534,8 +535,9 @@ Block Size (BS) is a one byte value specified by receiving entity that informs a
 Block Size values:
  - 0x00
 
-    The value 0 of the Block Size parameter informs a sender that no more :ref:`Flow Control <knowledge-base-can-flow-control>`
-    frames shall be sent during the transmission of the segmented message.
+    The value 0 of the Block Size parameter informs a sender that no more
+    :ref:`Flow Control <knowledge-base-can-flow-control>` frames shall be sent during the transmission
+    of the segmented message.
 
     Reception of Block Size = 0 shall cause the sender to send all remaining
     :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` without any stop for further

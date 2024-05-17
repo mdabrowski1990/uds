@@ -144,3 +144,11 @@ use_parentheses = true
 include_trailing_comma = true
 force_grid_wrap = 0
 multi_line_output = 3
+
+
+[tool.doc8]
+max-line-length = 120
+ignore = ["D004"]
+ignore-path-errors = [
+    "docs\\source\\pages\\knowledge_base\\diagnostic_message.rst;D001",  # tables
+]
