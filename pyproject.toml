@@ -138,7 +138,7 @@ asyncio_mode = "strict"
 
 
 [tool.isort]
-src_paths = ["uds",]
+src_paths = ["uds"]
 line_length = 120
 use_parentheses = true
 include_trailing_comma = true
