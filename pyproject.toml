@@ -66,12 +66,6 @@ test = [
     "pytest-cov",
     "pytest-asyncio",
 ]
-docs = [
-    "sphinx",
-    "sphinx-autoapi",
-    "sphinx-rtd-theme",
-    "tomli",
-]
 static-code-analysis = [
     "prospector == 1.10.3",
     "mypy == 1.9.0",
@@ -85,6 +79,15 @@ dependency-scan = [
 ]
 sorting-imports = [
     "isort == 5.13.2"
+]
+docs = [
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "tomli",
+]
+docs-checks = [
+    "doc8 == 1.1.1",
 ]
 
 
