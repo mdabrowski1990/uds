@@ -178,7 +178,7 @@ jobs:
           python -m pip install --upgrade setuptools
           pip install -r requirements.txt
 
-      - name: Install external packages used for dynamic tests
+      - name: Install external packages used for sorting imports
         run: |
           pip install .[sorting-imports]
 
@@ -187,3 +187,26 @@ jobs:
           isort uds
           isort tests
           isort examples
+
+  documentation_checks:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install project dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install external packages used for documentation checking
+        run: |
+          pip install .[docs-checks]
+
+      - name: Check RST documentation [doc8]
+        run: |
+          doc8 docs\source
