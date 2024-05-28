@@ -10,6 +10,23 @@ Python package for handling `Unified Diagnostic Services`_ (UDS) protocol define
 It supports different communication buses on both communication sides (client and server).
 
 
+Why another UDS package?
+------------------------
+There are a few already existing python packages, so you might wonder why would you consider using this one?
+
+This package is meant to support multiple buses (CAN, LIN, Ethernet, K-Line, FlexRay and any other) and multiple
+bus managers (any package for transmitting and receiving frames over these buses e.g. `python-can <TODO:link>`_).
+Additionally, it supports both ends - client and server, and contains detailed configuration for full control of timing
+and all transmission parameters. Thanks to all this features, this package can have multiple use cases - from simple
+send-receive communication to comprehensive simulations and testing. Unfortunately, this makes project huge and at
+the time of writing the work is still in progress and architecture supports all these feature but most of them are not
+implemented yet.
+
+Alternatives:
+- `UDSonCAN <https://github.com/pylessard/python-udsoncan>`_ - TODO: features and limitations
+- `python-can <https://github.com/richClubb/python-uds>`_ - TODO: features and limitation
+
+
 Documentation
 -------------
 User documentation is hosted by ReadTheDocs portal and available under the following link: https://uds.readthedocs.io/
