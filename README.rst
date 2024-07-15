@@ -21,23 +21,30 @@ If you want to become a contributor, please read `CONTRIBUTING.md`_ file.
 
 Why another UDS package?
 ------------------------
-There are a few already existing python packages, so you might wonder why would you consider using this one?
+There are a few already existing python packages to handle UDS protocol,
+so you might wonder why would you consider using this one?
 
 This package is meant to support **multiple buses** (including CAN, LIN, Ethernet, K-Line, FlexRay) and **multiple
 bus managers** (e.g. `python-can`_).
-Additionally, it handles both communication nodes (client and server), and contains detailed configuration for full
-control of timing and all transmission parameters.
+Additionally, it handles both communication nodes (client and server), and contains detailed configuration to fully
+control all timing and transmission parameters.
 
-Thanks to all this features, this package can have multiple use cases including:
+Thanks to all these features, this package can have multiple use-cases, including:
+
 - simple send-receive messages
 - comprehensive node simulations
 - testing of UDS protocol communication
 
-Unfortunately, this makes this project a huge effort and at the time of writing the work is still in progress
-(and probably the status will stay the same for a couple more years), but the prepared architecture supports all these
-features and some of them are already implemented and others are in progress (implementation status details are
-available under https://uds.readthedocs.io/en/stable/#features and
-https://uds.readthedocs.io/en/stable/pages/knowledge_base/osi_model.html#uds-functionalities links).
+Unfortunately, all previously mentioned plans make the project a huge effort and at the time of writing,
+the implementation process of these features is still ongoing (and probably the status will stay the same for at least
+a couple more years).
+On the other hand, the architecture to support all these features is already designed and some of the features
+are already implemented with others defined or planned.
+
+To check the current implementation status, visit:
+
+- https://uds.readthedocs.io/en/stable/#features
+- https://uds.readthedocs.io/en/stable/pages/knowledge_base/osi_model.html#uds-functionalities
 
 
 Alternative options
