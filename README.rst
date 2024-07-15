@@ -24,7 +24,7 @@ Why another UDS package?
 There are a few already existing python packages, so you might wonder why would you consider using this one?
 
 This package is meant to support **multiple buses** (including CAN, LIN, Ethernet, K-Line, FlexRay) and **multiple
-bus managers** (e.g. `python-can <https://github.com/hardbyte/python-can>`_).
+bus managers** (e.g. `python-can`_).
 Additionally, it handles both communication nodes (client and server), and contains detailed configuration for full
 control of timing and all transmission parameters.
 
@@ -44,7 +44,7 @@ Alternative options
 ```````````````````
 
 UDSonCAN
-''''''''''
+''''''''
 Link: https://github.com/pylessard/python-udsoncan
 
 - pros:
@@ -84,6 +84,8 @@ Contact
 .. _UDS package development: https://groups.google.com/g/uds-package-development/about
 
 .. _Unified Diagnostic Services: https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
+
+.. _python-can: https://github.com/hardbyte/python-can
 
 .. |CI| image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml/badge.svg?branch=main
    :target: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml
