@@ -23,7 +23,7 @@ Why another UDS package?
 ------------------------
 There are a few already existing python packages, so you might wonder why would you consider using this one?
 
-This package is meant to support **multiple buses** (including CAN, LIN, Ethernet, K-Line, FlexRay ) and **multiple
+This package is meant to support **multiple buses** (including CAN, LIN, Ethernet, K-Line, FlexRay) and **multiple
 bus managers** (e.g. `python-can <https://github.com/hardbyte/python-can>`_).
 Additionally, it handles both communication nodes (client and server), and contains detailed configuration for full
 control of timing and all transmission parameters.
@@ -53,6 +53,7 @@ Link: https://github.com/pylessard/python-udsoncan
 - cons:
     - only positive use case scenarios (where communication is in line with UDS standard) are supported
     - only CAN bus is supported
+    - only Client side communication is handled
     - limited communication parameters configuration
 
 
@@ -65,6 +66,7 @@ Link: https://github.com/richClubb/python-uds
 - cons:
     - modest documentation
     - only a few communication interfaces are supported
+    - only Client side communication is handled
     - limited communication parameters configuration
 
 
