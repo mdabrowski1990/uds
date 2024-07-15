@@ -1,6 +1,6 @@
-*****
+***
 UDS
-*****
+***
 
 |CI| |SecurityScan| |BestPractices| |ReadTheDocs| |CodeCoverage|
 
@@ -8,6 +8,15 @@ UDS
 
 Python package for handling `Unified Diagnostic Services`_ (UDS) protocol defined by ISO 14229.
 It supports different communication buses on both communication sides (client and server).
+
+
+Documentation
+-------------
+User documentation is hosted by ReadTheDocs portal and available under the following link: https://uds.readthedocs.io/
+
+Security policy for this package is defined in `SECURITY.md`_ file.
+
+If you want to become a contributor, please read `CONTRIBUTING.md`_ file.
 
 
 Why another UDS package?
@@ -57,15 +66,6 @@ Link: https://github.com/richClubb/python-uds
     - modest documentation
     - only a few communication interfaces are supported
     - limited communication parameters configuration
-
-
-Documentation
--------------
-User documentation is hosted by ReadTheDocs portal and available under the following link: https://uds.readthedocs.io/
-
-Security policy for this package is defined in `SECURITY.md`_ file.
-
-If you want to become a contributor, please read `CONTRIBUTING.md`_ file.
 
 
 Contact
