@@ -73,7 +73,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.codecov.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unit-tests
 
