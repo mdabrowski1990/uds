@@ -5,9 +5,11 @@ from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.transport_interface.can_transport_interface import (
     AbstractCanAddressingInformation,
     AbstractCanTransportInterface,
+    AbstractFlowControlParametersGenerator,
     BusABC,
     CanPacket,
     CanPacketType,
+    DefaultFlowControlParametersGenerator,
     PyCanTransportInterface,
     TransmissionDirection,
 )
@@ -74,22 +76,23 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface.n_br == self.mock_can_transport_interface.DEFAULT_N_BR
         assert self.mock_can_transport_interface.n_cs == self.mock_can_transport_interface.DEFAULT_N_CS
         assert self.mock_can_transport_interface.n_cr_timeout == self.mock_can_transport_interface.N_CR_TIMEOUT
+        assert self.mock_can_transport_interface.flow_control_parameters_generator == self.mock_can_transport_interface.DEFAULT_FLOW_CONTROL_PARAMETERS
 
     @pytest.mark.parametrize("can_bus_manager, addressing_information", [
         ("can_bus_manager", "addressing_information"),
         (Mock(), Mock()),
     ])
     @pytest.mark.parametrize("n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout, "
-                             "dlc, use_data_optimization, filler_byte", [
+                             "dlc, use_data_optimization, filler_byte, flow_control_parameters_generator", [
         ("n_as_timeout", "n_ar_timeout", "n_bs_timeout", "n_br", "n_cs", "n_cr_timeout", "dlc", "use_data_optimization",
-         "filler_byte"),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+         "filler_byte", "flow_control_parameters_generator"),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
     ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_init__valid_all_args(self, mock_isinstance,
                                   can_bus_manager, addressing_information,
                                   n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout,
-                                  dlc, use_data_optimization, filler_byte):
+                                  dlc, use_data_optimization, filler_byte, flow_control_parameters_generator):
         mock_isinstance.return_value = True
         AbstractCanTransportInterface.__init__(self=self.mock_can_transport_interface,
                                                can_bus_manager=can_bus_manager,
@@ -102,7 +105,8 @@ class TestAbstractCanTransportInterface:
                                                n_cr_timeout=n_cr_timeout,
                                                dlc=dlc,
                                                use_data_optimization=use_data_optimization,
-                                               filler_byte=filler_byte)
+                                               filler_byte=filler_byte,
+                                               flow_control_parameters_generator=flow_control_parameters_generator)
         mock_isinstance.assert_called_once_with(addressing_information, AbstractCanAddressingInformation)
         self.mock_abstract_transport_interface_init.assert_called_once_with(bus_manager=can_bus_manager)
         self.mock_can_segmenter_class.assert_called_once_with(
@@ -120,6 +124,7 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface.n_br == n_br
         assert self.mock_can_transport_interface.n_cs == n_cs
         assert self.mock_can_transport_interface.n_cr_timeout == n_cr_timeout
+        assert self.mock_can_transport_interface.flow_control_parameters_generator == flow_control_parameters_generator
 
     # segmenter
 
@@ -497,6 +502,25 @@ class TestAbstractCanTransportInterface:
     def test_filler_byte__set(self, value):
         AbstractCanTransportInterface.filler_byte.fset(self.mock_can_transport_interface, value)
         assert self.mock_can_transport_interface.segmenter.filler_byte == value
+
+    # flow_control_parameters_generator
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_flow_control_parameters_generator__get(self, value):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator = value
+        assert AbstractCanTransportInterface.flow_control_parameters_generator.fget(self.mock_can_transport_interface) \
+               == value
+
+    @pytest.mark.parametrize("value", [Mock(spec=AbstractFlowControlParametersGenerator),
+                                       Mock(spec=DefaultFlowControlParametersGenerator)])
+    def test_flow_control_parameters_generator__set(self, value):
+        AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface, value)
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator == value
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_flow_control_parameters_generator__set__type_error(self, value):
+        with pytest.raises(TypeError):
+            AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface, value)
 
 
 class TestPyCanTransportInterface:
