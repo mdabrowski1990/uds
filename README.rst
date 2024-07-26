@@ -50,8 +50,8 @@ To check the current implementation status, visit:
 Alternative options
 ```````````````````
 
-UDSonCAN
-''''''''
+python-udsoncan
+'''''''''''''''
 Link: https://github.com/pylessard/python-udsoncan
 
 - pros:
@@ -64,7 +64,7 @@ Link: https://github.com/pylessard/python-udsoncan
     - limited communication parameters configuration
 
 
-python-UDS
+python-uds
 ''''''''''
 Link: https://github.com/richClubb/python-uds
 
