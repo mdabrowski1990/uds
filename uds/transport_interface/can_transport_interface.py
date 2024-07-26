@@ -16,7 +16,6 @@ from uds.can import (
     CanDlcHandler,
     CanIdHandler,
     DefaultFlowControlParametersGenerator,
-    FlowControlParametersAlias,
 )
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
@@ -48,7 +47,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     """Default value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
     DEFAULT_FLOW_CONTROL_PARAMETERS = DefaultFlowControlParametersGenerator()
     """Default value of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters (
-    :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>`, 
+    :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>`,
     :ref:`Separation Time Minimum <knowledge-base-can-st-min>`)."""
 
     def __init__(self,
@@ -369,7 +368,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def flow_control_parameters_generator(self) -> AbstractFlowControlParametersGenerator:
-        """Generator of Flow Control parameters (Flow Status, Block Size, Separation Time Minimum)."""
+        """Get generator of Flow Control parameters (Flow Status, Block Size, Separation Time Minimum)."""
         return self.__flow_control_parameters_generator
 
     @flow_control_parameters_generator.setter
