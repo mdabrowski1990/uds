@@ -89,17 +89,7 @@ jobs:
           files: coverage.xml
           flags: integration-tests
 
-# TODO: uncomment when performance tests are added
-#      - name: Execute performance tests [pytest]
-#        run: |
-#          pytest tests/software_tests --cov-report=xml --cov=uds -m "performance"
-#
-#      - name: Upload performance tests report [CodeCov]
-#        uses: codecov/codecov-action@v3
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          files: coverage.xml
-#          flags: performance-tests
+# TODO: add performance tests upload when added
 
 
   static_code_analysis:
