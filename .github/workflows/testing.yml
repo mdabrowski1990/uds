@@ -65,19 +65,15 @@ jobs:
         run: |
           pip install .[test]
 
-      - name: Prepare coverage uploader [CodeCov]
-        run: |
-          curl -Os https://app.codecov.io/gh/mdabrowski1990/uds/uploader/linux/codecov
-          chmod +x codecov
-
       - name: Execute unit tests [pytest]
         run: |
           pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance"
 
       - name: Upload unit tests report [CodeCov]
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4.2.0
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unit-tests
 
@@ -86,9 +82,10 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
       - name: Upload integration tests report [CodeCov]
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4.2.0
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: integration-tests
 
