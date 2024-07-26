@@ -31,9 +31,9 @@ control all timing and transmission parameters.
 
 Thanks to all these features, this package can have multiple use-cases, including:
 
-- simple send-receive messages
+- simple send-receive messages to/from any network
 - comprehensive node simulations
-- testing of UDS protocol communication
+- testing of UDS protocol communication implementation
 
 Unfortunately, all previously mentioned plans make the project a huge effort and at the time of writing,
 the implementation process of these features is still ongoing (and probably the status will stay the same for at least
@@ -56,11 +56,11 @@ Link: https://github.com/pylessard/python-udsoncan
 
 - pros:
     - comprehensive documentation
-    - handling for multiple diagnostic services is implemented
+    - handlers for multiple diagnostic services is implemented
 - cons:
     - only positive use case scenarios (where communication is in line with UDS standard) are supported
     - only CAN bus is supported
-    - only Client side communication is handled
+    - only Client side communication can be handled
     - limited communication parameters configuration
 
 
@@ -73,7 +73,7 @@ Link: https://github.com/richClubb/python-uds
 - cons:
     - modest documentation
     - only a few communication interfaces are supported
-    - only Client side communication is handled
+    - only Client side communication can be handled
     - limited communication parameters configuration
 
 
