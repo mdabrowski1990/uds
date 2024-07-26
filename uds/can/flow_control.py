@@ -480,7 +480,10 @@ class CanFlowControlHandler:
 
 
 FlowControlParametersAlias = Tuple[int, Optional[int], Optional[int]]
-"""Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters."""
+"""Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters which contains:
+- :ref:`Flow Status <knowledge-base-can-flow-status>`
+- :ref:`Block Size <knowledge-base-can-block-size>`
+- :ref:`Separation Time minimum <knowledge-base-can-st-min>`"""
 
 
 class AbstractFlowControlParametersGenerator(ABC):
@@ -508,10 +511,10 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
 
     def __init__(self, block_size: int = 0, st_min: int = 0):
         """
-        Set values of Block Size and Separation Time Minimum parameters to use.
+        Set values of Block Size and Separation Time minimum parameters to use.
 
         :param block_size: Value of :ref:`Block Size <knowledge-base-can-block-size>` parameter to use.
-        :param st_min: Value of :ref:`Block Size <knowledge-base-can-block-size>` parameter to use.
+        :param st_min: Value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter to use.
         """
         self.block_size = block_size
         self.st_min = st_min
@@ -523,7 +526,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         :return: Tuple with values of Flow Control parameters:
             - Flow Status=0 (continue to send packets)
             - Block Size (user provided)
-            - ST min (user provided)
+            - Separation Time minimum (user provided)
         """
         return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
 
@@ -544,13 +547,13 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
 
     @property
     def st_min(self) -> int:
-        """Value of Separation Time Minimum parameter."""
+        """Value of Separation Time minimum parameter."""
         return self.__st_min
 
     @st_min.setter
     def st_min(self, value: int):
         """
-        Set value of Separation Time Minimum parameter.
+        Set value of Separation Time minimum parameter.
 
         :param value: Value to set.
         """

@@ -48,7 +48,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     DEFAULT_FLOW_CONTROL_PARAMETERS = DefaultFlowControlParametersGenerator()
     """Default value of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters (
     :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>`,
-    :ref:`Separation Time Minimum <knowledge-base-can-st-min>`)."""
+    :ref:`Separation Time minimum <knowledge-base-can-st-min>`)."""
 
     def __init__(self,
                  can_bus_manager: Any,
@@ -368,13 +368,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def flow_control_parameters_generator(self) -> AbstractFlowControlParametersGenerator:
-        """Get generator of Flow Control parameters (Flow Status, Block Size, Separation Time Minimum)."""
+        """Get generator of Flow Control parameters (Flow Status, Block Size, Separation Time minimum)."""
         return self.__flow_control_parameters_generator
 
     @flow_control_parameters_generator.setter
     def flow_control_parameters_generator(self, value: AbstractFlowControlParametersGenerator):
         """
-        Set value of Flow Control parameters (Flow Status, Block Size, Separation Time Minimum) generator.
+        Set value of Flow Control parameters (Flow Status, Block Size, Separation Time minimum) generator.
 
         :param value: Value to set.
         """
