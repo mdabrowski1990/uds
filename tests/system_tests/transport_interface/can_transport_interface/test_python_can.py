@@ -7,7 +7,7 @@ import pytest
 
 from can import Bus, Message
 from uds.can import CanAddressingFormat, CanAddressingInformation, CanFlowStatus
-from uds.message import UdsMessage
+from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
@@ -647,6 +647,59 @@ class TestPythonCanKvaser:
         assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
+
+    # send_message
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        # TODO: add more with https://github.com/mdabrowski1990/uds/issues/267
+    ])
+    def test_send_message(self, example_addressing_information, message):
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        datetime_before_send = datetime.now()
+        message_record = can_transport_interface.send_message(message)
+        datetime_after_send = datetime.now()
+        assert isinstance(message_record, UdsMessageRecord)
+        assert message_record.direction == TransmissionDirection.TRANSMITTED
+        assert message_record.payload == message.payload
+        assert message_record.addressing_type == message.addressing_type
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        assert datetime_before_send < message_record.transmission_start
+        if len(message_record.packets_records) == 1:
+            assert message_record.transmission_start == message_record.transmission_end
+        else:
+            assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_end < datetime_after_send
+
+    # async_send_message
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        # TODO: add more with https://github.com/mdabrowski1990/uds/issues/267
+    ])
+    @pytest.mark.asyncio
+    async def test_async_send_message(self, example_addressing_information, message):
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        datetime_before_send = datetime.now()
+        message_record = await can_transport_interface.async_send_message(message)
+        datetime_after_send = datetime.now()
+        assert isinstance(message_record, UdsMessageRecord)
+        assert message_record.direction == TransmissionDirection.TRANSMITTED
+        assert message_record.payload == message.payload
+        assert message_record.addressing_type == message.addressing_type
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        assert datetime_before_send < message_record.transmission_start
+        if len(message_record.packets_records) == 1:
+            assert message_record.transmission_start == message_record.transmission_end
+        else:
+            assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_end < datetime_after_send
 
     # use cases
 
