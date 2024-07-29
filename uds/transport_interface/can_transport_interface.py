@@ -18,6 +18,7 @@ from uds.can import (
     DefaultFlowControlParametersGenerator,
 )
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
+from uds.message import UdsMessage, UdsMessageRecord
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import TransmissionDirection
 from uds.utilities import TimeMillisecondsAlias, ValueWarning
@@ -713,3 +714,36 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
                                transmission_time=datetime.fromtimestamp(received_frame.timestamp))
+
+    def send_message(self, message: UdsMessage) -> UdsMessageRecord:
+        """
+        Transmit UDS packet over CAN.
+
+        :param message: A message to send.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        packets_to_send = self.segmenter.segmentation(message)
+        if len(packets_to_send) == 1:
+            packet_record = self.send_packet(*packets_to_send)
+            return UdsMessageRecord((packet_record,))
+        else:
+             raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
+
+    async def async_send_message(self,
+                                 message: UdsMessage,
+                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        """
+        Transmit UDS message over CAN asynchronously.
+
+        :param message: A message to send.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        packets_to_send = self.segmenter.segmentation(message)
+        if len(packets_to_send) == 1:
+            packet_record = await self.async_send_packet(*packets_to_send, loop=loop)
+            return UdsMessageRecord((packet_record,))
+        else:
+             raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
