@@ -1,12 +1,14 @@
 import pytest
-from mock import call, patch
+from mock import Mock, call, patch
 
 from uds.can import CanAddressingFormat
 from uds.can.flow_control import (
+    AbstractFlowControlParametersGenerator,
     CanDlcHandler,
     CanFlowControlHandler,
     CanFlowStatus,
     CanSTminTranslator,
+    DefaultFlowControlParametersGenerator,
     InconsistentArgumentsError,
 )
 from uds.utilities import NibbleEnum, ValidatedEnum
@@ -796,3 +798,83 @@ class TestCanFlowControlHandlerIntegration:
         with pytest.raises(ValueError):
             CanFlowControlHandler.validate_frame_data(addressing_format=addressing_format,
                                                       raw_frame_data=raw_frame_data)
+
+
+class TestAbstractFlowControlParametersGenerator:
+    """Unit tests for 'AbstractFlowControlParametersGenerator' class."""
+
+    def setup_method(self):
+        self.mock_flow_control_parameters_generator = Mock(spec=AbstractFlowControlParametersGenerator)
+
+    # __iter__
+
+    def test_iter(self):
+        assert (AbstractFlowControlParametersGenerator.__iter__(self.mock_flow_control_parameters_generator)
+                == self.mock_flow_control_parameters_generator)
+
+
+class TestDefaultFlowControlParametersGenerator:
+    """Unit tests for 'DefaultFlowControlParametersGenerator' class."""
+
+    def setup_method(self):
+        self.mock_flow_control_parameters_generator = Mock(spec=AbstractFlowControlParametersGenerator)
+        # patching
+        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
+        self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
+
+    def teardown_method(self):
+        self._patcher_validate_raw_byte.stop()
+
+    # inheritance
+
+    def test_inheritance(self):
+        assert issubclass(DefaultFlowControlParametersGenerator, AbstractFlowControlParametersGenerator)
+
+    # __init__
+
+    @pytest.mark.parametrize("block_size, st_min", [
+        (0, 0),
+        (0xFF, 0xFF)
+    ])
+    def test_init(self, block_size, st_min):
+        DefaultFlowControlParametersGenerator.__init__(self.mock_flow_control_parameters_generator, block_size, st_min)
+        assert self.mock_flow_control_parameters_generator.block_size == block_size
+        assert self.mock_flow_control_parameters_generator.st_min == st_min
+
+    # next
+
+    @pytest.mark.parametrize("block_size, st_min", [
+        (0, 0),
+        (0xFF, 0xFF)
+    ])
+    def test_next(self, block_size, st_min):
+        self.mock_flow_control_parameters_generator.block_size = block_size
+        self.mock_flow_control_parameters_generator.st_min = st_min
+        assert (DefaultFlowControlParametersGenerator.__next__(self.mock_flow_control_parameters_generator) ==
+                (CanFlowStatus.ContinueToSend, block_size, st_min))
+
+    # block_size
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_block_size__get(self, value):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__block_size = value
+        assert DefaultFlowControlParametersGenerator.block_size.fget(self.mock_flow_control_parameters_generator) == value
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_flow_control_parameters_generator__set(self, value):
+        DefaultFlowControlParametersGenerator.block_size.fset(self.mock_flow_control_parameters_generator, value)
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__block_size == value
+        self.mock_validate_raw_byte.assert_called_once_with(value)
+
+    # st_min
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_st_min__get(self, value):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__st_min = value
+        assert DefaultFlowControlParametersGenerator.st_min.fget(self.mock_flow_control_parameters_generator) == value
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_flow_control_parameters_generator__set(self, value):
+        DefaultFlowControlParametersGenerator.st_min.fset(self.mock_flow_control_parameters_generator, value)
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__st_min == value
+        self.mock_validate_raw_byte.assert_called_once_with(value)

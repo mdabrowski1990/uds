@@ -10,7 +10,13 @@ from typing import Any, Optional
 from warnings import warn
 
 from can import AsyncBufferedReader, BufferedReader, BusABC, Message, Notifier
-from uds.can import AbstractCanAddressingInformation, CanDlcHandler, CanIdHandler
+from uds.can import (
+    AbstractCanAddressingInformation,
+    AbstractFlowControlParametersGenerator,
+    CanDlcHandler,
+    CanIdHandler,
+    DefaultFlowControlParametersGenerator,
+)
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import TransmissionDirection
@@ -39,6 +45,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     """Default value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter."""
     DEFAULT_N_CS: Optional[TimeMillisecondsAlias] = None
     """Default value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
+    DEFAULT_FLOW_CONTROL_PARAMETERS = DefaultFlowControlParametersGenerator()
+    """Default value of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters (
+    :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>`,
+    :ref:`Separation Time minimum <knowledge-base-can-st-min>`)."""
 
     def __init__(self,
                  can_bus_manager: Any,
@@ -60,6 +70,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter dlc: Base CAN DLC value to use for CAN Packets.
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
+            - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
 
         :raise TypeError: Provided Addressing Information value has unexpected type.
         """
@@ -73,6 +84,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.n_cr_timeout = kwargs.pop("n_cr_timeout", self.N_CR_TIMEOUT)
         self.n_br = kwargs.pop("n_br", self.DEFAULT_N_BR)
         self.n_cs = kwargs.pop("n_cs", self.DEFAULT_N_CS)
+        self.flow_control_parameters_generator = kwargs.pop("flow_control_parameters_generator",
+                                                            self.DEFAULT_FLOW_CONTROL_PARAMETERS)
         self.__segmenter = CanSegmenter(addressing_information=addressing_information, **kwargs)
 
     @property
@@ -353,6 +366,22 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         self.segmenter.filler_byte = value
 
+    @property
+    def flow_control_parameters_generator(self) -> AbstractFlowControlParametersGenerator:
+        """Get generator of Flow Control parameters (Flow Status, Block Size, Separation Time minimum)."""
+        return self.__flow_control_parameters_generator
+
+    @flow_control_parameters_generator.setter
+    def flow_control_parameters_generator(self, value: AbstractFlowControlParametersGenerator):
+        """
+        Set value of Flow Control parameters (Flow Status, Block Size, Separation Time minimum) generator.
+
+        :param value: Value to set.
+        """
+        if not isinstance(value, AbstractFlowControlParametersGenerator):
+            raise TypeError("Provided Flow Control parameters generator value has incorrect type.")
+        self.__flow_control_parameters_generator = value
+
 
 class PyCanTransportInterface(AbstractCanTransportInterface):
     """
@@ -389,6 +418,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - :parameter dlc: Base CAN DLC value to use for CAN Packets.
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
+            - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
         """
         self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
