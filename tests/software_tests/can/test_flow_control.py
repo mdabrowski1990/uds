@@ -825,6 +825,8 @@ class TestDefaultFlowControlParametersGenerator:
     def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
 
+    # inheritance
+
     def test_inheritance(self):
         assert issubclass(DefaultFlowControlParametersGenerator, AbstractFlowControlParametersGenerator)
 

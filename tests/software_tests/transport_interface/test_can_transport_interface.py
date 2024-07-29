@@ -76,7 +76,8 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface.n_br == self.mock_can_transport_interface.DEFAULT_N_BR
         assert self.mock_can_transport_interface.n_cs == self.mock_can_transport_interface.DEFAULT_N_CS
         assert self.mock_can_transport_interface.n_cr_timeout == self.mock_can_transport_interface.N_CR_TIMEOUT
-        assert self.mock_can_transport_interface.flow_control_parameters_generator == self.mock_can_transport_interface.DEFAULT_FLOW_CONTROL_PARAMETERS
+        assert (self.mock_can_transport_interface.flow_control_parameters_generator
+                == self.mock_can_transport_interface.DEFAULT_FLOW_CONTROL_PARAMETERS)
 
     @pytest.mark.parametrize("can_bus_manager, addressing_information", [
         ("can_bus_manager", "addressing_information"),
