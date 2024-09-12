@@ -6,8 +6,8 @@ from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 from typing import Any, Optional
 
-from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.message import UdsMessage, UdsMessageRecord
+from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.segmentation import AbstractSegmenter
 from uds.utilities import TimeMillisecondsAlias
 
