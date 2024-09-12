@@ -1,7 +1,9 @@
 import pytest
 from mock import AsyncMock, MagicMock, Mock, patch
+from random import randint
 
 from uds.can import CanAddressingFormat, CanAddressingInformation
+from uds.transmission_attributes import AddressingType
 from uds.transport_interface.can_transport_interface import (
     AbstractCanAddressingInformation,
     AbstractCanTransportInterface,
@@ -12,6 +14,8 @@ from uds.transport_interface.can_transport_interface import (
     DefaultFlowControlParametersGenerator,
     PyCanTransportInterface,
     TransmissionDirection,
+    UdsMessage,
+    UdsMessageRecord
 )
 
 SCRIPT_LOCATION = "uds.transport_interface.can_transport_interface"
@@ -540,6 +544,10 @@ class TestPyCanTransportInterface:
         self.mock_datetime = self._patcher_datetime.start()
         self._patcher_abstract_can_ti_init = patch(f"{SCRIPT_LOCATION}.AbstractCanTransportInterface.__init__")
         self.mock_abstract_can_ti_init = self._patcher_abstract_can_ti_init.start()
+        self._patcher_uds_message = patch(f"{SCRIPT_LOCATION}.UdsMessage")
+        self.mock_uds_message = self._patcher_uds_message.start()
+        self._patcher_uds_message_record = patch(f"{SCRIPT_LOCATION}.UdsMessageRecord")
+        self.mock_uds_message_record = self._patcher_uds_message_record.start()
         self._patcher_can_id_handler = patch(f"{SCRIPT_LOCATION}.CanIdHandler")
         self.mock_can_id_handler = self._patcher_can_id_handler.start()
         self._patcher_can_dlc_handler = patch(f"{SCRIPT_LOCATION}.CanDlcHandler")
@@ -557,6 +565,8 @@ class TestPyCanTransportInterface:
         self._patcher_time.stop()
         self._patcher_datetime.stop()
         self._patcher_abstract_can_ti_init.stop()
+        self._patcher_uds_message.stop()
+        self._patcher_uds_message_record.stop()
         self._patcher_can_id_handler.stop()
         self._patcher_can_dlc_handler.stop()
         self._patcher_can_packet_record.stop()
@@ -998,6 +1008,60 @@ class TestPyCanTransportInterface:
             addressing_type=self.mock_can_transport_interface.segmenter.is_input_packet.return_value,
             addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
             transmission_time=self.mock_datetime.fromtimestamp.return_value)
+
+    # send_message
+
+    @pytest.mark.parametrize("message", [
+        Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86], addressing_type=AddressingType.PHYSICAL),
+        Mock(spec=UdsMessage, payload=[0x3E, 0x80], addressing_type=AddressingType.FUNCTIONAL),
+    ])
+    def test_send_message__single_frame(self, message):
+        mock_segmented_message = [Mock(spec=CanPacket)]
+        self.mock_can_transport_interface.segmenter.segmentation = Mock(return_value=mock_segmented_message)
+        assert PyCanTransportInterface.send_message(self.mock_can_transport_interface,
+                                                    message) == self.mock_uds_message_record.return_value
+        self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
+        self.mock_can_transport_interface.send_packet.assert_called_once_with(mock_segmented_message[0])
+        self.mock_uds_message_record.assert_called_once_with((self.mock_can_transport_interface.send_packet.return_value, ))
+
+    @pytest.mark.parametrize("message", [
+        Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86, 0xF1, 0x87, 0xF1, 0x88], addressing_type=AddressingType.PHYSICAL),
+        Mock(spec=UdsMessage, payload=[0x3E, 0x80], addressing_type=AddressingType.PHYSICAL),
+    ])
+    def test_send_message__multiple_packets(self, message):
+        mock_segmented_message = [Mock(spec=CanPacket) for _ in range(randint(2, 20))]
+        self.mock_can_transport_interface.segmenter.segmentation = Mock(return_value=mock_segmented_message)
+        with pytest.raises(NotImplementedError):
+            PyCanTransportInterface.send_message(self.mock_can_transport_interface, message)
+        self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
+
+    # async_send_message
+
+    @pytest.mark.parametrize("message", [
+        Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86], addressing_type=AddressingType.PHYSICAL),
+        Mock(spec=UdsMessage, payload=[0x3E, 0x80], addressing_type=AddressingType.FUNCTIONAL),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_send_message__single_frame(self, message):
+        mock_segmented_message = [Mock(spec=CanPacket)]
+        self.mock_can_transport_interface.segmenter.segmentation = Mock(return_value=mock_segmented_message)
+        assert await PyCanTransportInterface.async_send_message(self.mock_can_transport_interface, message) \
+               == self.mock_uds_message_record.return_value
+        self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
+        self.mock_can_transport_interface.async_send_packet.assert_called_once_with(mock_segmented_message[0], loop=None)
+        self.mock_uds_message_record.assert_called_once_with((self.mock_can_transport_interface.async_send_packet.return_value, ))
+
+    @pytest.mark.parametrize("message", [
+        Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86, 0xF1, 0x87, 0xF1, 0x88], addressing_type=AddressingType.PHYSICAL),
+        Mock(spec=UdsMessage, payload=[0x3E, 0x80], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_send_message__multiple_packets(self, message):
+        mock_segmented_message = [Mock(spec=CanPacket) for _ in range(randint(2, 20))]
+        self.mock_can_transport_interface.segmenter.segmentation = Mock(return_value=mock_segmented_message)
+        with pytest.raises(NotImplementedError):
+            await PyCanTransportInterface.async_send_message(self.mock_can_transport_interface, message)
+        self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
 
 
 @pytest.mark.integration
