@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 from typing import Any, Optional
 
+from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
 from uds.segmentation import AbstractSegmenter
 from uds.utilities import TimeMillisecondsAlias
@@ -109,4 +110,27 @@ class AbstractTransportInterface(ABC):
         :raise asyncio.TimeoutError: Timeout was reached.
 
         :return: Record with historic information about received UDS packet.
+        """
+
+    @abstractmethod
+    def send_message(self, message: UdsMessage) -> UdsMessageRecord:
+        """
+        Transmit UDS packet.
+
+        :param message: A message to send.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+
+    @abstractmethod
+    async def async_send_message(self,
+                                 message: UdsMessage,
+                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        """
+        Transmit UDS message asynchronously.
+
+        :param message: A message to send.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about transmitted UDS message.
         """

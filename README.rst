@@ -94,7 +94,7 @@ Contact
 
 .. _python-can: https://github.com/hardbyte/python-can
 
-.. |CI| image:: https://github.com/mdabrowski1990/uds/actions/workflows/ci.yml/badge.svg?branch=main
+.. |CI| image:: https://github.com/mdabrowski1990/uds/actions/workflows/testing.yml/badge.svg?branch=main
    :target: https://github.com/mdabrowski1990/uds/actions/workflows/testing.yml
    :alt: Continuous Integration Status
 

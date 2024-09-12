@@ -17,6 +17,7 @@ from uds.can import (
     CanIdHandler,
     DefaultFlowControlParametersGenerator,
 )
+from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import TransmissionDirection
@@ -392,7 +393,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     _MAX_LISTENER_TIMEOUT: float = 4280000.  # ms
     """Maximal timeout value accepted by python-can listeners."""
-    _MIN_NOTIFIER_TIMEOUT: float = 0.0000001  # s
+    _MIN_NOTIFIER_TIMEOUT: float = 0.001  # s
     """Minimal timeout for notifiers that does not cause malfunctioning of listeners."""
 
     def __init__(self,
@@ -575,8 +576,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx \
-                or observed_frame.timestamp < time_start:
+                or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
@@ -659,8 +659,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx \
-                or observed_frame.timestamp < time_start:
+                or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
             observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
         if is_flow_control_packet:
@@ -713,3 +712,34 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
                                transmission_time=datetime.fromtimestamp(received_frame.timestamp))
+
+    def send_message(self, message: UdsMessage) -> UdsMessageRecord:
+        """
+        Transmit UDS packet over CAN.
+
+        :param message: A message to send.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        packets_to_send = self.segmenter.segmentation(message)
+        if len(packets_to_send) == 1:
+            packet_record = self.send_packet(*packets_to_send)
+            return UdsMessageRecord((packet_record,))
+        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
+
+    async def async_send_message(self,
+                                 message: UdsMessage,
+                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        """
+        Transmit UDS message over CAN asynchronously.
+
+        :param message: A message to send.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        packets_to_send = self.segmenter.segmentation(message)
+        if len(packets_to_send) == 1:
+            packet_record = await self.async_send_packet(*packets_to_send, loop=loop)
+            return UdsMessageRecord((packet_record,))  # type
+        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
