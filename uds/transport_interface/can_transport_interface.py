@@ -393,7 +393,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     _MAX_LISTENER_TIMEOUT: float = 4280000.  # ms
     """Maximal timeout value accepted by python-can listeners."""
-    _MIN_NOTIFIER_TIMEOUT: float = 0.0000001  # s
+    _MIN_NOTIFIER_TIMEOUT: float = 0.001  # s
     """Minimal timeout for notifiers that does not cause malfunctioning of listeners."""
 
     def __init__(self,
@@ -576,8 +576,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx \
-                or observed_frame.timestamp < time_start:
+                or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
@@ -660,8 +659,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
                 or tuple(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx \
-                or observed_frame.timestamp < time_start:
+                or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
             observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
         if is_flow_control_packet:

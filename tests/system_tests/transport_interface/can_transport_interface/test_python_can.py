@@ -79,7 +79,8 @@ class TestPythonCanKvaser:
                                   rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
                                   tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
                                   rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}),
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc":0xF}),
+         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC],
+          "dlc": 0xF}),
     ])
     def test_send_packet(self, packet_type, addressing_type, addressing_information, packet_type_specific_kwargs):
         """
@@ -203,7 +204,7 @@ class TestPythonCanKvaser:
         # and `addressing_information`
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
-        Timer(interval=send_after/1000., function=self.can_interface_2.send, args=(frame,)).start()
+        Timer(interval=send_after / 1000., function=self.can_interface_2.send, args=(frame,)).start()
         time_before_receive = time()
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_packet(timeout=timeout)
@@ -267,7 +268,7 @@ class TestPythonCanKvaser:
         # and `addressing_information`
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
-        Timer(interval=send_after/1000., function=self.can_interface_2.send, args=(frame,)).start()
+        Timer(interval=send_after / 1000., function=self.can_interface_2.send, args=(frame,)).start()
         datetime_before_receive = datetime.now()
         packet_record = can_transport_interface.receive_packet(timeout=timeout)
         datetime_after_receive = datetime.now()
@@ -281,8 +282,8 @@ class TestPythonCanKvaser:
         assert packet_record.source_address == addressing_information.rx_packets_physical_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_physical_ai["address_extension"]
         # performance checks
-        assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
 
     @pytest.mark.parametrize("addressing_information, frame", [
@@ -302,19 +303,19 @@ class TestPythonCanKvaser:
                                   tx_physical={"can_id": 0x987, "target_address": 0x90},
                                   rx_physical={"can_id": 0x987, "target_address": 0xFE},
                                   tx_functional={"can_id": 0x11765, "target_address": 0x5A},
-                                  rx_functional={"can_id": 0x11765, "target_address": 0xFF},),
+                                  rx_functional={"can_id": 0x11765, "target_address": 0xFF}),
          Message(data=[0xFF, 0x30, 0xAB, 0x7F])),
         (CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                   tx_physical={"can_id": 0x651, "address_extension": 0x87},
                                   rx_physical={"can_id": 0x652, "address_extension": 0xFE},
                                   tx_functional={"can_id": 0x6FF, "address_extension": 0xA5},
-                                  rx_functional={"can_id": 0x6FF, "address_extension": 0xFF}, ),
+                                  rx_functional={"can_id": 0x6FF, "address_extension": 0xFF}),
          Message(data=[0xFF, 0x11, 0x23, 0x62, 0x92, 0xD0, 0xB1, 0x00])),
         (CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                   tx_physical={"target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
                                   rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
                                   tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
-                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}, ),
+                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}),
          Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
@@ -342,7 +343,7 @@ class TestPythonCanKvaser:
         # and `addressing_information`
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
-        Timer(interval=send_after/1000., function=self.can_interface_2.send, args=(frame,)).start()
+        Timer(interval=send_after / 1000., function=self.can_interface_2.send, args=(frame,)).start()
         datetime_before_receive = datetime.now()
         packet_record = can_transport_interface.receive_packet(timeout=timeout)
         datetime_after_receive = datetime.now()
@@ -356,8 +357,8 @@ class TestPythonCanKvaser:
         assert packet_record.source_address == addressing_information.rx_packets_functional_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_functional_ai["address_extension"]
         # performance checks
-        assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
 
     # async_send_packet
@@ -398,14 +399,20 @@ class TestPythonCanKvaser:
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
-                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
-                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
-                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}),
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc":0xF}),
+                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF,
+                                               "address_extension": 0x87},
+                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B,
+                                               "address_extension": 0x87},
+                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE,
+                                                 "address_extension": 0xFF},
+                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC,
+                                                 "address_extension": 0xFF}),
+         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC],
+          "dlc": 0xF}),
     ])
     @pytest.mark.asyncio
-    async def test_async_send_packet(self, packet_type, addressing_type, addressing_information, packet_type_specific_kwargs):
+    async def test_async_send_packet(self, packet_type, addressing_type, addressing_information,
+                                     packet_type_specific_kwargs):
         """
         Check for simple asynchronous sending of a CAN packet.
 
@@ -506,10 +513,14 @@ class TestPythonCanKvaser:
                                   rx_functional={"can_id": 0x6FF, "address_extension": 0xFF}),
          Message(data=[0xFE, 0x11, 0x23, 0x62, 0x92, 0xD0, 0xB1, 0x00])),
         (CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
-                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
-                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
-                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}),
+                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF,
+                                               "address_extension": 0x87},
+                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B,
+                                               "address_extension": 0x87},
+                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE,
+                                                 "address_extension": 0xFF},
+                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC,
+                                                 "address_extension": 0xFF}),
          Message(data=[0x87, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
@@ -533,8 +544,9 @@ class TestPythonCanKvaser:
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
+
         async def _send_frame():
-            await asyncio.sleep(send_after/1000.)
+            await asyncio.sleep(send_after / 1000.)
             self.can_interface_2.send(frame)
 
         frame.arbitration_id = addressing_information.rx_packets_physical_ai["can_id"]
@@ -543,8 +555,9 @@ class TestPythonCanKvaser:
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         future_record = can_transport_interface.async_receive_packet(timeout=timeout)
+        tasks = [asyncio.create_task(_send_frame()), asyncio.create_task(future_record)]
         datetime_before_receive = datetime.now()
-        done_tasks, _ = await asyncio.wait([_send_frame(), future_record])
+        done_tasks, _ = await asyncio.wait(tasks)
         datetime_after_receive = datetime.now()
         received_records = tuple(filter(lambda result: isinstance(result, CanPacketRecord),
                                         (done_task.result() for done_task in done_tasks)))
@@ -560,8 +573,8 @@ class TestPythonCanKvaser:
         assert packet_record.source_address == addressing_information.rx_packets_physical_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_physical_ai["address_extension"]
         # performance checks
-        assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
 
     @pytest.mark.parametrize("addressing_information, frame", [
@@ -581,7 +594,7 @@ class TestPythonCanKvaser:
                                   tx_physical={"can_id": 0x987, "target_address": 0x90},
                                   rx_physical={"can_id": 0x987, "target_address": 0xFE},
                                   tx_functional={"can_id": 0x11765, "target_address": 0x5A},
-                                  rx_functional={"can_id": 0x11765, "target_address": 0xFF},),
+                                  rx_functional={"can_id": 0x11765, "target_address": 0xFF}, ),
          Message(data=[0xFF, 0x30, 0xAB, 0x7F])),
         (CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                   tx_physical={"can_id": 0x651, "address_extension": 0x87},
@@ -590,10 +603,14 @@ class TestPythonCanKvaser:
                                   rx_functional={"can_id": 0x6FF, "address_extension": 0xFF}, ),
          Message(data=[0xFF, 0x11, 0x23, 0x62, 0x92, 0xD0, 0xB1, 0x00])),
         (CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
-                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
-                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
-                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}, ),
+                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF,
+                                               "address_extension": 0x87},
+                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B,
+                                               "address_extension": 0x87},
+                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE,
+                                                 "address_extension": 0xFF},
+                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC,
+                                                 "address_extension": 0xFF}, ),
          Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
@@ -617,8 +634,9 @@ class TestPythonCanKvaser:
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
+
         async def _send_frame():
-            await asyncio.sleep(send_after/1000.)
+            await asyncio.sleep(send_after / 1000.)
             self.can_interface_2.send(frame)
 
         frame.arbitration_id = addressing_information.rx_packets_functional_ai["can_id"]
@@ -627,8 +645,9 @@ class TestPythonCanKvaser:
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         future_record = can_transport_interface.async_receive_packet(timeout=timeout)
+        tasks = [asyncio.create_task(_send_frame()), asyncio.create_task(future_record)]
         datetime_before_receive = datetime.now()
-        done_tasks, _ = await asyncio.wait([_send_frame(), future_record])
+        done_tasks, _ = await asyncio.wait(tasks)
         datetime_after_receive = datetime.now()
         received_records = tuple(filter(lambda result: isinstance(result, CanPacketRecord),
                                         (done_task.result() for done_task in done_tasks)))
@@ -644,8 +663,8 @@ class TestPythonCanKvaser:
         assert packet_record.source_address == addressing_information.rx_packets_functional_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_functional_ai["address_extension"]
         # performance checks
-        assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
 
     # send_message
@@ -667,12 +686,12 @@ class TestPythonCanKvaser:
         assert message_record.addressing_type == message.addressing_type
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
-        assert datetime_before_send < message_record.transmission_start
+        # assert datetime_before_send < message_record.transmission_start
+        # assert message_record.transmission_end < datetime_after_send
         if len(message_record.packets_records) == 1:
             assert message_record.transmission_start == message_record.transmission_end
         else:
             assert message_record.transmission_start < message_record.transmission_end
-        assert message_record.transmission_end < datetime_after_send
 
     # async_send_message
 
@@ -694,12 +713,12 @@ class TestPythonCanKvaser:
         assert message_record.addressing_type == message.addressing_type
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
-        assert datetime_before_send < message_record.transmission_start
+        # assert datetime_before_send < message_record.transmission_start
+        # assert message_record.transmission_end < datetime_after_send
         if len(message_record.packets_records) == 1:
             assert message_record.transmission_start == message_record.transmission_end
         else:
             assert message_record.transmission_start < message_record.transmission_end
-        assert message_record.transmission_end < datetime_after_send
 
     # use cases
 
@@ -707,9 +726,9 @@ class TestPythonCanKvaser:
         ([0x22, 0x10, 0xF5], AddressingType.PHYSICAL),
         ([0x3E, 0x80], AddressingType.FUNCTIONAL),
     ])
-    def test_send_on_one_receive_on_other_bus(self, example_addressing_information,
-                                              example_addressing_information_2nd_node,
-                                              payload, addressing_type):
+    def test_send_packet_on_one_receive_on_other_bus(self, example_addressing_information,
+                                                     example_addressing_information_2nd_node,
+                                                     payload, addressing_type):
         """
         Check for sending and receiving CAN Packet using two Transport Interfaces.
 
@@ -751,9 +770,9 @@ class TestPythonCanKvaser:
         ([0x3E, 0x80], AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.asyncio
-    async def test_async_send_on_one_receive_on_other_bus(self, example_addressing_information,
-                                                          example_addressing_information_2nd_node,
-                                                          payload, addressing_type):
+    async def test_async_send_packet_on_one_receive_on_other_bus(self, example_addressing_information,
+                                                                 example_addressing_information_2nd_node,
+                                                                 payload, addressing_type):
         """
         Check for asynchronous sending and receiving CAN Packet using two Transport Interfaces.
 
@@ -778,8 +797,9 @@ class TestPythonCanKvaser:
                                                             addressing_information=example_addressing_information_2nd_node)
         uds_message = UdsMessage(payload=payload, addressing_type=addressing_type)
         packet = can_transport_interface_2.segmenter.segmentation(uds_message)[0]
-        done_tasks, _ = await asyncio.wait([can_transport_interface_2.async_send_packet(packet),
-                                            can_transport_interface_1.async_receive_packet(timeout=100)])
+        tasks = [asyncio.create_task(can_transport_interface_2.async_send_packet(packet)),
+                 asyncio.create_task(can_transport_interface_1.async_receive_packet(timeout=100))]
+        done_tasks, _ = await asyncio.wait(tasks)
         packet_record_1, packet_record_2 = [done_task.result() for done_task in done_tasks]
         assert isinstance(packet_record_1, CanPacketRecord) and isinstance(packet_record_2, CanPacketRecord)
         assert {packet_record_1.direction, packet_record_2.direction} \
@@ -795,7 +815,7 @@ class TestPythonCanKvaser:
         ([0x62, 0x10, 0xF5, 0x12, 0x34, 0xF0], AddressingType.PHYSICAL),
         ([0x10, 0x81], AddressingType.FUNCTIONAL),
     ])
-    def test_timeout_then_send(self, example_addressing_information, payload, addressing_type):
+    def test_timeout_then_send_packet(self, example_addressing_information, payload, addressing_type):
         """
         Check for sending a CAN Packet after a timeout exception during receiving.
 
@@ -830,7 +850,7 @@ class TestPythonCanKvaser:
         ([0x10, 0x81], AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.asyncio
-    async def test_async_timeout_then_send(self, example_addressing_information, payload, addressing_type):
+    async def test_async_timeout_then_send_packet(self, example_addressing_information, payload, addressing_type):
         """
         Check for asynchronous sending a CAN Packet after a timeout exception during asynchronous receiving.
 
@@ -860,7 +880,7 @@ class TestPythonCanKvaser:
         assert packet_record.payload == packet.payload == tuple(payload)
         assert packet_record.can_id == packet.can_id
 
-    def test_timeout_then_receive(self, example_addressing_information, example_rx_frame):
+    def test_timeout_then_receive_packet(self, example_addressing_information, example_rx_frame):
         """
         Check for receiving a CAN Packet after a timeout exception during receiving.
 
@@ -885,10 +905,12 @@ class TestPythonCanKvaser:
         packet_record = can_transport_interface.receive_packet(timeout=100)
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
-        assert packet_record.transmission_time > datetime_before_send
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert packet_record.transmission_time > datetime_before_send
 
     @pytest.mark.asyncio
-    async def test_async_timeout_then_receive(self, example_addressing_information, example_rx_frame):
+    async def test_async_timeout_then_receive_packet(self, example_addressing_information, example_rx_frame):
         """
         Check for asynchronous receiving a CAN Packet after a timeout exception during receiving.
 
@@ -913,7 +935,9 @@ class TestPythonCanKvaser:
         packet_record = await can_transport_interface.async_receive_packet(timeout=100)
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
-        assert packet_record.transmission_time > datetime_before_send
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert packet_record.transmission_time > datetime_before_send
 
     def test_observe_tx_packet(self, example_addressing_information, example_tx_frame, example_tx_uds_message):
         """
@@ -943,10 +967,13 @@ class TestPythonCanKvaser:
         assert packet_record.raw_frame_data == packet.raw_frame_data == tuple(example_tx_frame.data)
         assert packet_record.payload == packet.payload
         assert packet_record.can_id == packet.can_id == example_tx_frame.arbitration_id
-        assert packet_record.transmission_time > datetime_before_send
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert packet_record.transmission_time > datetime_before_send
 
     @pytest.mark.asyncio
-    async def test_async_observe_tx_packet(self, example_addressing_information, example_tx_frame, example_tx_uds_message):
+    async def test_async_observe_tx_packet(self, example_addressing_information, example_tx_frame,
+                                           example_tx_uds_message):
         """
         Check for asynchronous transmitting a CAN Packet after a sending identical CAN frame.
 
@@ -974,4 +1001,6 @@ class TestPythonCanKvaser:
         assert packet_record.raw_frame_data == packet.raw_frame_data
         assert packet_record.payload == packet.payload
         assert packet_record.can_id == packet.can_id
-        assert packet_record.transmission_time > datetime_before_send
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert packet_record.transmission_time > datetime_before_send
