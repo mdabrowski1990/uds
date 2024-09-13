@@ -179,7 +179,7 @@ class TestPythonCanKvaser:
          Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1001),   # ms
+        (1000, 1001),  # ms
         (50, 55),
     ])
     def test_receive_packet__timeout(self, addressing_information, addressing_type, frame, timeout, send_after):
@@ -742,7 +742,7 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1001),   # ms
+        (1000, 1001),  # ms
         (50, 55),
     ])
     def test_receive_message__sf__timeout(self, example_addressing_information, example_addressing_information_2nd_node,
@@ -833,7 +833,7 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1001),   # ms
+        (1000, 1001),  # ms
         (50, 55),
     ])
     @pytest.mark.asyncio
