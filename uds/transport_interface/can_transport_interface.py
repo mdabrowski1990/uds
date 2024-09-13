@@ -727,23 +727,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             return UdsMessageRecord((packet_record,))
         raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
 
-    async def async_send_message(self,
-                                 message: UdsMessage,
-                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
-        """
-        Transmit asynchronously UDS message over CAN.
-
-        :param message: A message to send.
-        :param loop: An asyncio event loop to use for scheduling this task.
-
-        :return: Record with historic information about transmitted UDS message.
-        """
-        packets_to_send = self.segmenter.segmentation(message)
-        if len(packets_to_send) == 1:
-            packet_record = await self.async_send_packet(*packets_to_send, loop=loop)
-            return UdsMessageRecord((packet_record,))  # type
-        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
-
     def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
         """
         Receive UDS message over CAN.
@@ -763,6 +746,23 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
             return UdsMessageRecord([received_packet])
         raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/266")
+
+    async def async_send_message(self,
+                                 message: UdsMessage,
+                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        """
+        Transmit asynchronously UDS message over CAN.
+
+        :param message: A message to send.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        packets_to_send = self.segmenter.segmentation(message)
+        if len(packets_to_send) == 1:
+            packet_record = await self.async_send_packet(*packets_to_send, loop=loop)
+            return UdsMessageRecord((packet_record,))  # type
+        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
 
     async def async_receive_message(self,
                                     timeout: Optional[TimeMillisecondsAlias] = None,
