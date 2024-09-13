@@ -759,7 +759,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Provided timeout value is not None neither int nor float type.")
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
-        received_packet = self.receive_packet(timeout)
+        received_packet = self.receive_packet(timeout=timeout)
         if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
             return UdsMessageRecord([received_packet])
         raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/266")
