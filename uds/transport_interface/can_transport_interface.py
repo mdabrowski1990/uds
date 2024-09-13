@@ -633,7 +633,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                 packet: CanPacket,  # type: ignore
                                 loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
         """
-        Transmit CAN packet.
+        Transmit asynchronously CAN packet.
 
         :param packet: CAN packet to send.
         :param loop: An asyncio event loop used for observing messages.
@@ -676,7 +676,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                    timeout: Optional[TimeMillisecondsAlias] = None,
                                    loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
         """
-        Receive CAN packet.
+        Receive asynchronously CAN packet.
 
         :param timeout: Maximal time (in milliseconds) to wait.
         :param loop: An asyncio event loop used for observing messages.
@@ -715,7 +715,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:
         """
-        Transmit UDS packet over CAN.
+        Transmit UDS message over CAN.
 
         :param message: A message to send.
 
@@ -731,7 +731,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                  message: UdsMessage,
                                  loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
         """
-        Transmit UDS message over CAN asynchronously.
+        Transmit asynchronously UDS message over CAN.
 
         :param message: A message to send.
         :param loop: An asyncio event loop to use for scheduling this task.
@@ -743,3 +743,44 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             packet_record = await self.async_send_packet(*packets_to_send, loop=loop)
             return UdsMessageRecord((packet_record,))  # type
         raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
+
+    def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
+        """
+        Receive UDS message over CAN.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS message.
+        """
+        if timeout is not None:
+            if not isinstance(timeout, (int, float)):
+                raise TypeError("Provided timeout value is not None neither int nor float type.")
+            if timeout <= 0:
+                raise ValueError("Provided timeout value is less or equal 0.")
+        received_packet = self.receive_packet(timeout)
+        if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
+            return UdsMessageRecord([received_packet])
+        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/266")
+
+    async def async_receive_message(self,
+                                    timeout: Optional[TimeMillisecondsAlias] = None,
+                                    loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        """
+        Receive asynchronously UDS message over CAN.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about received UDS message.
+        """
+        if timeout is not None:
+            if not isinstance(timeout, (int, float)):
+                raise TypeError("Provided timeout value is not None neither int nor float type.")
+            if timeout <= 0:
+                raise ValueError("Provided timeout value is less or equal 0.")
+        received_packet = await self.async_receive_packet(timeout=timeout, loop=loop)
+        if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
+            return UdsMessageRecord([received_packet])
+        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/266")
