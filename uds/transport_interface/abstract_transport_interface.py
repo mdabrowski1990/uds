@@ -115,7 +115,7 @@ class AbstractTransportInterface(ABC):
     @abstractmethod
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:
         """
-        Transmit UDS packet.
+        Transmit UDS message.
 
         :param message: A message to send.
 
@@ -133,4 +133,29 @@ class AbstractTransportInterface(ABC):
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :return: Record with historic information about transmitted UDS message.
+        """
+
+    @abstractmethod
+    def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
+        """
+        Receive UDS message.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS message.
+        """
+
+    @abstractmethod
+    async def async_receive_message(self,
+                                    timeout: Optional[TimeMillisecondsAlias] = None,
+                                    loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        """
+        Receive UDS message asynchronously.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about received UDS message.
         """
