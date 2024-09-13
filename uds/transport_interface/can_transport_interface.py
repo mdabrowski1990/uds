@@ -731,9 +731,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive UDS message over CAN.
 
-        :param timeout: Maximal time (in milliseconds) to wait.
+        :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
+            This means that receiving might last longer if First Frame was received within provided time.
 
+        :raise TypeError: Provided timeout value is not None neither int nor float type.
+        :raise ValueError: Provided timeout value is less or equal 0.
         :raise TimeoutError: Timeout was reached.
+            Either Single Frame / First Frame not received within [timeout] ms
+            or N_As, N_Ar, N_Bs, N_Cr timeout reached.
 
         :return: Record with historic information about received UDS message.
         """
@@ -770,8 +775,15 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive asynchronously UDS message over CAN.
 
-        :param timeout: Maximal time (in milliseconds) to wait.
+        :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
+            This means that receiving might last longer if First Frame was received within provided time.
         :param loop: An asyncio event loop to use for scheduling this task.
+
+        :raise TypeError: Provided timeout value is not None neither int nor float type.
+        :raise ValueError: Provided timeout value is less or equal 0.
+        :raise TimeoutError: Timeout was reached.
+            Either Single Frame / First Frame not received within [timeout] ms
+            or N_As, N_Ar, N_Bs, N_Cr timeout reached.
 
         :return: Record with historic information about received UDS message.
         """
