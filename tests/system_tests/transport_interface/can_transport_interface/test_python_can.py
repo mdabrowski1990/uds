@@ -9,8 +9,8 @@ from can import Bus, Message
 from uds.can import CanAddressingFormat, CanAddressingInformation, CanFlowStatus
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
-from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.segmentation import CanSegmenter
+from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
 
 
