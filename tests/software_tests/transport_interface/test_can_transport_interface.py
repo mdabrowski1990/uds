@@ -11,6 +11,7 @@ from uds.transport_interface.can_transport_interface import (
     AbstractFlowControlParametersGenerator,
     BusABC,
     CanPacket,
+    CanPacketRecord,
     CanPacketType,
     DefaultFlowControlParametersGenerator,
     PyCanTransportInterface,
@@ -1063,6 +1064,78 @@ class TestPyCanTransportInterface:
         with pytest.raises(NotImplementedError):
             await PyCanTransportInterface.async_send_message(self.mock_can_transport_interface, message)
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
+
+    # receive_message
+
+    @pytest.mark.parametrize("timeout", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_receive_message__type_error(self, mock_isinstance, timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout)
+        mock_isinstance.assert_called_once_with(timeout, (int, float))
+
+    @pytest.mark.parametrize("timeout", [0, -654])
+    def test_receive_message__value_error(self, timeout):
+        with pytest.raises(ValueError):
+            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout)
+
+    @pytest.mark.parametrize("timeout", [0.001, 123.456])
+    def test_receive_message__single_frame(self, timeout):
+        mock_received_packet_record = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
+        self.mock_can_transport_interface.receive_packet.return_value = mock_received_packet_record
+        assert PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout) \
+            == self.mock_uds_message_record.return_value
+        self.mock_can_transport_interface.receive_packet.assert_called_once_with(timeout=timeout)
+        self.mock_uds_message_record.assert_called_once_with([mock_received_packet_record])
+
+    @pytest.mark.parametrize("timeout", [0.001, 123.456])
+    @pytest.mark.parametrize("packets_received", [
+        (Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME),),
+        (Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME),),
+    ])
+    def test_receive_message__multiple_packets(self, timeout, packets_received):
+        self.mock_can_transport_interface.receive_packet.side_effect = packets_received
+        with pytest.raises(NotImplementedError):
+            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout)
+
+    # async_receive_message
+
+    @pytest.mark.parametrize("timeout", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    @pytest.mark.asyncio
+    async def test_async_receive_message__type_error(self, mock_isinstance, timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface, timeout)
+        mock_isinstance.assert_called_once_with(timeout, (int, float))
+
+    @pytest.mark.parametrize("timeout", [0, -654])
+    @pytest.mark.asyncio
+    async def test_async_receive_message__value_error(self, timeout):
+        with pytest.raises(ValueError):
+            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface, timeout)
+
+    @pytest.mark.parametrize("timeout", [0.001, 123.456])
+    @pytest.mark.asyncio
+    async def test_async_receive_message__single_frame(self, timeout):
+        mock_received_packet_record = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
+        self.mock_can_transport_interface.async_receive_packet.return_value = mock_received_packet_record
+        assert await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface, timeout) \
+            == self.mock_uds_message_record.return_value
+        self.mock_can_transport_interface.async_receive_packet.assert_called_once_with(timeout=timeout, loop=None)
+        self.mock_uds_message_record.assert_called_once_with([mock_received_packet_record])
+
+    @pytest.mark.parametrize("timeout", [0.001, 123.456])
+    @pytest.mark.parametrize("packets_received", [
+        (Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME),),
+        (Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME),),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_receive_message__multiple_packets(self, timeout, packets_received):
+        self.mock_can_transport_interface.async_receive_packet.side_effect = packets_received
+        with pytest.raises(NotImplementedError):
+            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface, timeout)
 
 
 @pytest.mark.integration
