@@ -899,7 +899,6 @@ class TestPythonCanKvaser:
         """
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
-
         other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
         packet = other_node_segmenter.segmentation(message)[0]
         frame = Message(arbitration_id=packet.can_id, data=packet.raw_frame_data)
