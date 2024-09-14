@@ -211,7 +211,7 @@ class TestPythonCanKvaser:
             can_transport_interface.receive_packet(timeout=timeout)
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
-        sleep(0.01)
+        sleep((send_after - timeout) * 2 / 1000.)  # wait till packet arrives
 
     @pytest.mark.parametrize("addressing_information, frame", [
         (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
@@ -463,9 +463,12 @@ class TestPythonCanKvaser:
 
     # async_receive_packet
 
-    @pytest.mark.parametrize("timeout", [1000, 50])
+    @pytest.mark.parametrize("timeout, send_after", [
+        (1000, 1001),  # ms
+        (50, 55),
+    ])
     @pytest.mark.asyncio
-    async def test_async_receive_packet__timeout(self, example_addressing_information, timeout):
+    async def test_async_receive_packet__timeout(self, example_addressing_information, timeout, send_after):
         """
         Check for a timeout during packet asynchronous receiving.
 
@@ -477,6 +480,7 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Example Addressing Information of a CAN Node.
         :param timeout: Timeout to pass to receive method [ms].
         """
+        # TODO: add sending packet
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         time_before_receive = time()
@@ -484,6 +488,7 @@ class TestPythonCanKvaser:
             await can_transport_interface.async_receive_packet(timeout=timeout)
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
+        sleep((send_after - timeout) * 2 / 1000.)  # wait till packet arrives
 
     @pytest.mark.parametrize("addressing_information, frame", [
         (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
@@ -570,7 +575,6 @@ class TestPythonCanKvaser:
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
-        sleep(0.01)
 
     @pytest.mark.parametrize("addressing_information, frame", [
         (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
@@ -772,7 +776,7 @@ class TestPythonCanKvaser:
             can_transport_interface.receive_message(timeout=timeout)
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
-        sleep(0.01)
+        sleep((send_after - timeout) * 2 / 1000.)  # wait till message arrives
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
@@ -852,6 +856,7 @@ class TestPythonCanKvaser:
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
+        # TODO: add sending message
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
         time_before_receive = time()
@@ -859,6 +864,7 @@ class TestPythonCanKvaser:
             await can_transport_interface.async_receive_message(timeout=timeout)
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
+        sleep((send_after - timeout) * 2 / 1000.)  # wait till message arrives
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
