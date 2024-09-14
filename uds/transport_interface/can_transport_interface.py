@@ -565,13 +565,13 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             raise TypeError("Provided packet value does not contain a CAN Packet.")
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
-        can_message = Message(arbitration_id=packet.can_id,
-                              is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
-                              data=packet.raw_frame_data,
-                              is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
+        can_frame = Message(arbitration_id=packet.can_id,
+                            is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
+                            data=packet.raw_frame_data,
+                            is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         self._setup_notifier()
         self.clear_frames_buffers()
-        self.bus_manager.send(can_message)
+        self.bus_manager.send(can_frame)
         observed_frame = None
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
@@ -650,11 +650,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         self._setup_async_notifier(loop)
         self.clear_frames_buffers()
-        can_message = Message(arbitration_id=packet.can_id,
-                              is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
-                              data=packet.raw_frame_data,
-                              is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
-        self.bus_manager.send(can_message)
+        can_frame = Message(arbitration_id=packet.can_id,
+                            is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
+                            data=packet.raw_frame_data,
+                            is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
+        self.bus_manager.send(can_frame)
         observed_frame = None
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \

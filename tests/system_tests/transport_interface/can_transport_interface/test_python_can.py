@@ -24,6 +24,7 @@ class TestPythonCanKvaser:
     """
 
     TASK_TIMING_TOLERANCE = 30.  # ms
+    DELAY_AFTER_RECEIVING_FRAME = 1.  # ms
     DELAY_BETWEEN_CONSECUTIVE_FRAMES = 50.  # ms
 
     def setup_class(self):
@@ -255,7 +256,8 @@ class TestPythonCanKvaser:
 
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received CAN packet.
-        2. Call method to receive packet via Transport Interface with timeout set just after CAN packet reaches CAN bus.
+        2. Call method to receive packet via Transport Interface with timeout set just after CAN packet
+            reaches CAN bus.
             Expected: CAN packet is received.
         3. Validate received CAN packet record attributes.
             Expected: Attributes of CAN packet record are in line with the received CAN packet.
@@ -463,32 +465,66 @@ class TestPythonCanKvaser:
 
     # async_receive_packet
 
+    @pytest.mark.parametrize("addressing_type, addressing_information, frame", [
+        (AddressingType.PHYSICAL,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                  tx_physical={"can_id": 0x611},
+                                  rx_physical={"can_id": 0x612},
+                                  tx_functional={"can_id": 0x6FF},
+                                  rx_functional={"can_id": 0x6FE}),
+         Message(data=[0x02, 0x10, 0x03])),
+        (AddressingType.FUNCTIONAL,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                  tx_physical={"target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
+                                  rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
+                                  tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
+                                  rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}),
+         Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
+    ])
     @pytest.mark.parametrize("timeout, send_after", [
         (1000, 1001),  # ms
         (50, 55),
     ])
     @pytest.mark.asyncio
-    async def test_async_receive_packet__timeout(self, example_addressing_information, timeout, send_after):
+    async def test_async_receive_packet__timeout(self, example_addressing_information,
+                                                 addressing_type, addressing_information, frame, timeout, send_after):
         """
         Check for a timeout during packet asynchronous receiving.
 
         Procedure:
-        1. Call async method to receive packet via Transport Interface with timeout set before any CAN packet
+        1. Schedule transmission (using second CAN interface) of a CAN frame that carries received CAN packet.
+        2. Call async method to receive packet via Transport Interface with timeout set before any CAN packet
             reaches CAN bus.
             Expected: Timeout exception is raised.
 
-        :param example_addressing_information: Example Addressing Information of a CAN Node.
+        :param example_addressing_information: Example Addressing Information of CAN Node.
+        :param addressing_type: Addressing Type used to transmit the frame.
+        :param addressing_information: Example Addressing Information of CAN Node.
+        :param frame: CAN frame to send (must be decoded as UDS CAN packet).
         :param timeout: Timeout to pass to receive method [ms].
+        :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
-        # TODO: add sending packet
+        async def _send_frame():
+            await asyncio.sleep(send_after / 1000.)
+            self.can_interface_2.send(frame)
+
+        if addressing_type == AddressingType.PHYSICAL:
+            frame.arbitration_id = addressing_information.rx_packets_physical_ai["can_id"]
+        else:
+            frame.arbitration_id = addressing_information.rx_packets_functional_ai["can_id"]
+        # data parameter of `frame` object must be set manually and according to `addressing_format`
+        # and `addressing_information`
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
+        future_record = can_transport_interface.async_receive_packet(timeout=timeout)
+        frame_sending_task = asyncio.create_task(_send_frame())
         time_before_receive = time()
         with pytest.raises((TimeoutError, asyncio.TimeoutError)):
-            await can_transport_interface.async_receive_packet(timeout=timeout)
+            await future_record
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
-        sleep((send_after - timeout) * 2 / 1000.)  # wait till packet arrives
+        await frame_sending_task
+        sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
     @pytest.mark.parametrize("addressing_information, frame", [
         (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
@@ -533,7 +569,8 @@ class TestPythonCanKvaser:
 
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received CAN packet.
-        2. Call async method to receive packet via Transport Interface with timeout set just after CAN packet reaches CAN bus.
+        2. Call async method to receive packet via Transport Interface with timeout set just after CAN packet
+            reaches CAN bus.
             Expected: CAN packet is received.
         3. Validate received CAN packet record attributes.
             Expected: Attributes of CAN packet record are in line with the received CAN packet.
@@ -619,7 +656,8 @@ class TestPythonCanKvaser:
 
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received CAN packet.
-        2. Call async method to receive packet via Transport Interface with timeout set just after CAN packet reaches CAN bus.
+        2. Call async method to receive packet via Transport Interface with timeout set just after CAN packet
+            reaches CAN bus.
             Expected: CAN packet is received.
         3. Validate received CAN packet record attributes.
             Expected: Attributes of CAN packet record are in line with the received CAN packet.
@@ -756,7 +794,8 @@ class TestPythonCanKvaser:
 
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received UDS message.
-        2. Call method to receive packet via Transport Interface with timeout set just before UDS message reaches CAN bus.
+        2. Call method to receive packet via Transport Interface with timeout set just before UDS message
+            reaches CAN bus.
             Expected: Timeout exception is raised.
 
         :param example_addressing_information: Addressing Information of receiving CAN Node.
@@ -794,8 +833,8 @@ class TestPythonCanKvaser:
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received
             UDS message (Single Frame).
-        2. Call method to receive packet via Transport Interface with timeout set just after UDS message reaches
-            CAN bus.
+        2. Call method to receive packet via Transport Interface with timeout set just after UDS message
+            reaches CAN bus.
             Expected: UDS message is received.
         3. Validate received UDS message record attributes.
             Expected: Attributes of UDS message record are in line with the received UDS message.
@@ -842,12 +881,14 @@ class TestPythonCanKvaser:
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__sf__timeout(self, example_addressing_information,
+                                                      example_addressing_information_2nd_node,
                                                       message, timeout, send_after):
         """
         Check for a timeout during asynchronous receiving of a UDS message.
 
         Procedure:
-        1. Call async method to receive packet via Transport Interface with timeout set before any CAN packet
+        1. Schedule transmission (using second CAN interface) of a CAN frame that carries received UDS message.
+        2. Call async method to receive packet via Transport Interface with timeout set before any CAN packet
             reaches CAN bus.
             Expected: Timeout exception is raised.
 
@@ -856,15 +897,26 @@ class TestPythonCanKvaser:
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
-        # TODO: add sending message
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
+
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        packet = other_node_segmenter.segmentation(message)[0]
+        frame = Message(arbitration_id=packet.can_id, data=packet.raw_frame_data)
+
+        async def _send_frame():
+            await asyncio.sleep(send_after / 1000.)
+            self.can_interface_2.send(frame)
+
+        future_record = can_transport_interface.async_receive_message(timeout=timeout)
+        frame_sending_task = asyncio.create_task(_send_frame())
         time_before_receive = time()
         with pytest.raises(TimeoutError):
-            await can_transport_interface.async_receive_message(timeout=timeout)
+            await future_record
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
-        sleep((send_after - timeout) * 2 / 1000.)  # wait till message arrives
+        await frame_sending_task
+        sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
@@ -884,8 +936,8 @@ class TestPythonCanKvaser:
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received
             UDS message (Single Frame).
-        2. Call async method to receive packet via Transport Interface with timeout set just after UDS message reaches
-            CAN bus.
+        2. Call async method to receive packet via Transport Interface with timeout set just after UDS message
+            reaches CAN bus.
             Expected: UDS message is received.
         3. Validate received UDS message record attributes.
             Expected: Attributes of UDS message record are in line with the received UDS message.
@@ -909,7 +961,7 @@ class TestPythonCanKvaser:
         future_record = can_transport_interface.async_receive_message(timeout=timeout)
         tasks = [asyncio.create_task(_send_frame()), asyncio.create_task(future_record)]
         datetime_before_receive = datetime.now()
-        done_tasks, _ = await asyncio.wait(tasks)
+        done_tasks, _ = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
         datetime_after_receive = datetime.now()
         received_records = tuple(filter(lambda result: isinstance(result, UdsMessageRecord),
                                         (done_task.result() for done_task in done_tasks)))
