@@ -38,7 +38,8 @@ The following configuration parameters are set then:
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.use_data_optimization`,
   :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.filler_byte`,
 
-Most of these attributes (all except :attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.addressing_information`)
+Most of these attributes (all except
+:attr:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.addressing_information`)
 can be changed after object is created.
 
 
@@ -160,8 +161,8 @@ there are two methods which can be used to receive CAN packets:
 
 - :meth:`~uds.transport_interface.can_transport_interface.PyCanTransportInterface.receive_packet` - for synchronous
   implementation
-- :meth:`~uds.transport_interface.can_transport_interface.PyCanTransportInterface.async_receive_packet` - for asynchronous
-  implementation
+- :meth:`~uds.transport_interface.can_transport_interface.PyCanTransportInterface.async_receive_packet` - for
+  asynchronous implementation
 
 **Example synchronous code:**
 

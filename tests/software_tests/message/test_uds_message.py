@@ -1,10 +1,14 @@
 import pytest
 from mock import Mock, patch
 
-from uds.message.uds_message import UdsMessage, UdsMessageRecord, \
-    AddressingType, ReassignmentError, AbstractUdsPacketRecord
+from uds.message.uds_message import (
+    AbstractUdsPacketRecord,
+    AddressingType,
+    ReassignmentError,
+    UdsMessage,
+    UdsMessageRecord,
+)
 from uds.transmission_attributes import TransmissionDirection
-
 
 SCRIPT_LOCATION = "uds.message.uds_message"
 

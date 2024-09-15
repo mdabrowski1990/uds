@@ -1,9 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from uds.packet.abstract_packet import AbstractUdsPacketRecord, \
-    TransmissionDirection, ReassignmentError, datetime
-
+from uds.packet.abstract_packet import AbstractUdsPacketRecord, ReassignmentError, TransmissionDirection, datetime
 
 SCRIPT_LOCATION = "uds.packet.abstract_packet"
 

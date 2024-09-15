@@ -231,8 +231,9 @@ in one or multiple servers' memory.
 ReadDTCInformation
 ``````````````````
 ReadDTCInformation service allows the client to read from any server or group of servers within a vehicle,
-current information about all Diagnostic Trouble Codes. This could be a status of reported Diagnostic Trouble Code (DTC),
-number of currently active DTCs or any other information returned by supported ReadDTCInformation SubFunctions.
+current information about all Diagnostic Trouble Codes.
+This could be a status of reported Diagnostic Trouble Code (DTC), number of currently active DTCs or any other
+information returned by supported ReadDTCInformation SubFunctions.
 
 
 ReadDataByIdentifier

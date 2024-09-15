@@ -1,10 +1,8 @@
 import pytest
 from mock import patch
 
-from uds.can.single_frame import CanSingleFrameHandler, \
-    InconsistentArgumentsError, CanDlcHandler, DEFAULT_FILLER_BYTE
 from uds.can import CanAddressingFormat
-
+from uds.can.single_frame import DEFAULT_FILLER_BYTE, CanDlcHandler, CanSingleFrameHandler, InconsistentArgumentsError
 
 SCRIPT_LOCATION = "uds.can.single_frame"
 

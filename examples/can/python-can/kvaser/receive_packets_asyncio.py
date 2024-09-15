@@ -2,8 +2,8 @@ import asyncio
 from pprint import pprint
 
 from can import Bus, Message
+from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.transport_interface import PyCanTransportInterface
-from uds.can import CanAddressingInformation, CanAddressingFormat
 
 
 async def main():
@@ -24,9 +24,9 @@ async def main():
                                      addressing_information=addressing_information)
 
     # some frames to be received later on
-    frame_1 = Message(arbitration_id=0x6FE, data=[0x10, 0x03])
-    frame_2 = Message(arbitration_id=0x611, data=[0x10, 0x03])  # shall be ignored, as it is not observed CAN ID
-    frame_3 = Message(arbitration_id=0x612, data=[0x3E, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA])
+    frame_1 = Message(arbitration_id=0x6FE, data=[0x02, 0x10, 0x03])
+    frame_2 = Message(arbitration_id=0x611, data=[0x02, 0x10, 0x03])  # shall be ignored, as it is not observed CAN ID
+    frame_3 = Message(arbitration_id=0x612, data=[0x02, 0x3E, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA])
 
     # receive CAN packet 1
     kvaser_interface_2.send(frame_1)  # transmit CAN Frame 1

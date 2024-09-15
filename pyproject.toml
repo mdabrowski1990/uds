@@ -66,12 +66,6 @@ test = [
     "pytest-cov",
     "pytest-asyncio",
 ]
-docs = [
-    "sphinx",
-    "sphinx-autoapi",
-    "sphinx-rtd-theme",
-    "tomli",
-]
 static-code-analysis = [
     "prospector == 1.10.3",
     "mypy == 1.9.0",
@@ -81,6 +75,19 @@ static-code-analysis = [
 ]
 dependency-scan = [
     "safety == 3.1.0",
+    "pip-audit == 2.7.3",
+]
+sorting-imports = [
+    "isort == 5.13.2"
+]
+docs = [
+    "sphinx",
+    "sphinx-autoapi",
+    "sphinx-rtd-theme",
+    "tomli",
+]
+docs-checks = [
+    "doc8 == 1.1.1",
 ]
 
 
@@ -131,3 +138,20 @@ testpaths = [
 ]
 filterwarnings = "ignore:::.*uds*"
 asyncio_mode = "strict"
+
+
+[tool.isort]
+src_paths = ["uds"]
+line_length = 120
+use_parentheses = true
+include_trailing_comma = true
+force_grid_wrap = 0
+multi_line_output = 3
+
+
+[tool.doc8]
+max-line-length = 120
+ignore = ["D004"]
+ignore-path-errors = [
+    "docs\\source\\pages\\knowledge_base\\diagnostic_message.rst;D001",  # tables
+]

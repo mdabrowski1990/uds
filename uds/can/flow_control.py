@@ -7,15 +7,28 @@ This module contains implementation of :ref:`Flow Control <knowledge-base-can-fl
  - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
 """
 
-__all__ = ["CanFlowStatus", "CanSTminTranslator", "CanFlowControlHandler", "UnrecognizedSTminWarning"]
+__all__ = ["CanFlowStatus", "CanSTminTranslator", "CanFlowControlHandler", "UnrecognizedSTminWarning",
+           "AbstractFlowControlParametersGenerator", "DefaultFlowControlParametersGenerator",
+           "FlowControlParametersAlias"]
 
-from typing import Optional
+from abc import ABC, abstractmethod
+from typing import Optional, Tuple
 from warnings import warn
 
 from aenum import unique
 
-from uds.utilities import InconsistentArgumentsError, NibbleEnum, ValidatedEnum, TimeMillisecondsAlias, \
-    RawBytesAlias, RawBytesListAlias, validate_nibble, validate_raw_byte, validate_raw_bytes
+from uds.utilities import (
+    InconsistentArgumentsError,
+    NibbleEnum,
+    RawBytesAlias,
+    RawBytesListAlias,
+    TimeMillisecondsAlias,
+    ValidatedEnum,
+    validate_nibble,
+    validate_raw_byte,
+    validate_raw_bytes,
+)
+
 from .addressing_format import CanAddressingFormat
 from .addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
@@ -464,3 +477,85 @@ class CanFlowControlHandler:
             validate_raw_byte(st_min)
             output.append(st_min)
         return output
+
+
+FlowControlParametersAlias = Tuple[int, Optional[int], Optional[int]]
+"""Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters which contains:
+- :ref:`Flow Status <knowledge-base-can-flow-status>`
+- :ref:`Block Size <knowledge-base-can-block-size>`
+- :ref:`Separation Time minimum <knowledge-base-can-st-min>`"""
+
+
+class AbstractFlowControlParametersGenerator(ABC):
+    """Definition of Flow Control parameters generator."""
+
+    def __iter__(self) -> "AbstractFlowControlParametersGenerator":
+        """Get iterator object - called on each Single Frame reception."""
+        return self
+
+    @abstractmethod
+    def __next__(self) -> FlowControlParametersAlias:
+        """
+        Generate next set of Flow Control parameters - called on each Flow Control message building.
+
+        :return: Tuple with values of Flow Control parameters (Flow Status, Block Size, ST min).
+        """
+
+
+class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerator):
+    """
+    Default (recommended to use) Flow Control parameters generator.
+
+    Every generated Flow Control parameters will contain the same (valid) values.
+    """
+
+    def __init__(self, block_size: int = 0, st_min: int = 0):
+        """
+        Set values of Block Size and Separation Time minimum parameters to use.
+
+        :param block_size: Value of :ref:`Block Size <knowledge-base-can-block-size>` parameter to use.
+        :param st_min: Value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter to use.
+        """
+        self.block_size = block_size
+        self.st_min = st_min
+
+    def __next__(self):
+        """
+        Generate next set of Flow Control parameters.
+
+        :return: Tuple with values of Flow Control parameters:
+            - Flow Status=0 (continue to send packets)
+            - Block Size (user provided)
+            - Separation Time minimum (user provided)
+        """
+        return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
+
+    @property
+    def block_size(self) -> int:
+        """Value of Block Size parameter."""
+        return self.__block_size
+
+    @block_size.setter
+    def block_size(self, value: int):
+        """
+        Set value of Block Size parameter.
+
+        :param value: Value to set.
+        """
+        validate_raw_byte(value)
+        self.__block_size = value
+
+    @property
+    def st_min(self) -> int:
+        """Value of Separation Time minimum parameter."""
+        return self.__st_min
+
+    @st_min.setter
+    def st_min(self, value: int):
+        """
+        Set value of Separation Time minimum parameter.
+
+        :param value: Value to set.
+        """
+        validate_raw_byte(value)
+        self.__st_min = value

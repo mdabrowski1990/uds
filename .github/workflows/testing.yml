@@ -1,4 +1,4 @@
-name: CI
+name: Testing
 
 
 on: [push, pull_request]
@@ -28,7 +28,7 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install -r tests/requirements_for_software_tests.txt
+          pip install .[test]
 
       - name: Execute unit tests with coverage report [pytest]
         run: |
@@ -50,10 +50,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Install project dependencies
         run: |
@@ -63,20 +63,16 @@ jobs:
 
       - name: Install external packages used for dynamic tests
         run: |
-          pip install -r tests/requirements_for_software_tests.txt
-
-      - name: Prepare coverage uploader [CodeCov]
-        run: |
-          curl -Os https://app.codecov.io/gh/mdabrowski1990/uds/uploader/linux/codecov
-          chmod +x codecov
+          pip install .[test]
 
       - name: Execute unit tests [pytest]
         run: |
           pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance"
 
       - name: Upload unit tests report [CodeCov]
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unit-tests
@@ -86,23 +82,14 @@ jobs:
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
       - name: Upload integration tests report [CodeCov]
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: integration-tests
 
-# TODO: uncomment when performance tests are added
-#      - name: Execute performance tests [pytest]
-#        run: |
-#          pytest tests/software_tests --cov-report=xml --cov=uds -m "performance"
-#
-#      - name: Upload performance tests report [CodeCov]
-#        uses: codecov/codecov-action@v3
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          files: coverage.xml
-#          flags: performance-tests
+# TODO: add performance tests upload when added
 
 
   static_code_analysis:
@@ -127,7 +114,7 @@ jobs:
 
       - name: Install external packages used for static tests
         run: |
-          pip install -r tests/requirements_for_static_code_analysis.txt
+          pip install .[static-code-analysis]
 
       - name: Execute static code analysis [prospector]
         run: |
@@ -150,8 +137,63 @@ jobs:
 
       - name: Install external packages used for dependency scanning
         run: |
-          pip install -r tests/requirements_for_dependency_scanning.txt
+          python -m pip install --upgrade pip
+          pip install .[dependency-scan]
 
       - name: Execute dependency scanning [safety]
         run: |
           safety check -r requirements.txt
+
+      - name: Execute dependency scanning [pip-audit]
+        run: |
+          pip-audit
+
+  sorting_imports:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          pip install -r requirements.txt
+
+      - name: Install external packages used for sorting imports
+        run: |
+          pip install .[sorting-imports]
+
+      - name: Check imports are sorted [isort]
+        run: |
+          isort uds
+          isort tests
+          isort examples
+
+  documentation_checks:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install project dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install external packages used for documentation checking
+        run: |
+          pip install .[docs-checks]
+
+      - name: Check RST documentation [doc8]
+        run: |
+          doc8 docs\source

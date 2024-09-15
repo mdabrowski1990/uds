@@ -1,13 +1,18 @@
+from datetime import datetime
+
 import pytest
 from mock import Mock, patch
 
-from datetime import datetime
-
-from uds.packet.can_packet_record import CanPacketRecord, \
-    PythonCanMessage, AbstractCanAddressingInformation, InconsistentArgumentsError, CanAddressingFormat, CanPacketType
-from uds.transmission_attributes import TransmissionDirection, AddressingType
 from uds.can import CanFlowStatus
-
+from uds.packet.can_packet_record import (
+    AbstractCanAddressingInformation,
+    CanAddressingFormat,
+    CanPacketRecord,
+    CanPacketType,
+    InconsistentArgumentsError,
+    PythonCanMessage,
+)
+from uds.transmission_attributes import AddressingType, TransmissionDirection
 
 SCRIPT_LOCATION = "uds.packet.can_packet_record"
 

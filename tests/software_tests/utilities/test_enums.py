@@ -1,8 +1,7 @@
 import pytest
 from aenum import IntEnum, StrEnum
 
-from uds.utilities.enums import ExtendableEnum, ValidatedEnum, ByteEnum, NibbleEnum
-
+from uds.utilities.enums import ByteEnum, ExtendableEnum, NibbleEnum, ValidatedEnum
 
 SCRIPT_LOCATION = "uds.utilities.enums"
 

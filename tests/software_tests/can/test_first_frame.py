@@ -1,10 +1,8 @@
 import pytest
 from mock import patch
 
-from uds.can.first_frame import CanFirstFrameHandler, \
-    InconsistentArgumentsError, CanDlcHandler
 from uds.can import CanAddressingFormat
-
+from uds.can.first_frame import CanDlcHandler, CanFirstFrameHandler, InconsistentArgumentsError
 
 SCRIPT_LOCATION = "uds.can.first_frame"
 

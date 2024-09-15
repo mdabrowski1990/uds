@@ -42,8 +42,8 @@ Timeout value:
   1000 ms
 
 Error handling:
-  If N_As timeout is exceeded, then the transmission of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
-  shall be aborted.
+  If N_As timeout is exceeded, then the transmission of
+  the :ref:`diagnostic message <knowledge-base-diagnostic-message>` shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
   - :ref:`Single Frame <knowledge-base-can-single-frame>`
@@ -75,10 +75,10 @@ Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
 N_Bs
 ````
 N_Bs is a time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` reception
-by a sender.
-It is measured from the end of the last CAN Packet transmission (either transmitted :ref:`First Frame <knowledge-base-can-first-frame>`,
-:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` or received :ref:`Flow Control <knowledge-base-can-flow-control>`),
-till the reception of :ref:`Flow Control <knowledge-base-can-flow-control>`.
+by a sender. It is measured from the end of the last CAN Packet transmission (either transmitted
+:ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+or received :ref:`Flow Control <knowledge-base-can-flow-control>`), till the reception of
+:ref:`Flow Control <knowledge-base-can-flow-control>`.
 
 Timeout value:
   1000 ms
@@ -96,10 +96,10 @@ Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
 N_Br
 ````
 N_Br is a time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` transmission
-by a receiver.
-It is measured from the end of the last CAN Packet transmission (either received :ref:`First Frame <knowledge-base-can-first-frame>`,
-:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` or transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`),
-till the start of :ref:`Flow Control <knowledge-base-can-flow-control>` transmission.
+by a receiver. It is measured from the end of the last CAN Packet transmission (either received
+:ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+or transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`), till the start of
+:ref:`Flow Control <knowledge-base-can-flow-control>` transmission.
 
 Performance requirement:
   A receiving entity is obliged to transmit :ref:`Flow Control <knowledge-base-can-flow-control>` packet before value
@@ -119,9 +119,9 @@ Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
 N_Cs
 ````
 N_Cs is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
-transmission by a sender.
-It is measured from the end of the last CAN Packet transmission (either received :ref:`Flow Control <knowledge-base-can-flow-control>`
-or transmitted :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the start of
+transmission by a sender. It is measured from the end of the last CAN Packet transmission (either received
+:ref:`Flow Control <knowledge-base-can-flow-control>` or transmitted
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the start of
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` transmission.
 
 Performance requirement:
@@ -142,9 +142,9 @@ Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
 N_Cr
 ````
 N_Cr is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
-reception by a receiver.
-It is measured from the end of the last CAN Packet transmission (either transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`
-or received :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the reception of
+reception by a receiver. It is measured from the end of the last CAN Packet transmission (either transmitted
+:ref:`Flow Control <knowledge-base-can-flow-control>` or received
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the reception of
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
 
 Timeout value:

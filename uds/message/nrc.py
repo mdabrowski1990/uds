@@ -9,7 +9,7 @@ __all__ = ["NRC"]
 
 from aenum import unique
 
-from uds.utilities import ByteEnum, ValidatedEnum, ExtendableEnum
+from uds.utilities import ByteEnum, ExtendableEnum, ValidatedEnum
 
 
 @unique
