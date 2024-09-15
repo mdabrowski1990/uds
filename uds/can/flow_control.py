@@ -46,7 +46,7 @@ class UnrecognizedSTminWarning(Warning):
 
 
 @unique
-class CanFlowStatus(NibbleEnum, ValidatedEnum):
+class CanFlowStatus(ValidatedEnum, NibbleEnum):
     """
     Definition of Flow Status values.
 

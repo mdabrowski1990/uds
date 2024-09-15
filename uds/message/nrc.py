@@ -13,7 +13,7 @@ from uds.utilities import ByteEnum, ExtendableEnum, ValidatedEnum
 
 
 @unique
-class NRC(ByteEnum, ValidatedEnum, ExtendableEnum):
+class NRC(ValidatedEnum, ExtendableEnum, ByteEnum):
     """
     Negative Response Codes (NRC) values.
 

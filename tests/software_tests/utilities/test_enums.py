@@ -184,38 +184,42 @@ class TestExtendableEnum:
 class TestMultipleEnums:
     """Integration tests for multiple Enum classes."""
 
-    class ExtendableByteEnumWithValidated(ByteEnum, ValidatedEnum, ExtendableEnum):
+    class ExtendableNibbleEnum(ExtendableEnum, NibbleEnum):
+        Value_0 = 0
+        Value_F = 15
+
+    class ExtendableValidatedByteEnum(ExtendableEnum, ValidatedEnum, ByteEnum):
         V1 = 11
         V2 = 0x11
         V3 = 0xE5
 
-    class ExtendableStrEnum(StrEnum, ExtendableEnum):
+    class ExtendableStrEnum(ExtendableEnum, StrEnum):
         Text1 = "Text 1"
         Text2 = "ABCDEF"
         Text3 = "G H I J K"
         Text4 = "NoThInG"
 
-    class ValidatedIntEnum(IntEnum, ValidatedEnum):
+    class ValidatedIntEnum(ValidatedEnum, IntEnum):
         Int1 = -5
         Int2 = 99
 
     # is_member
 
-    @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
+    @pytest.mark.parametrize("enum_class", [ExtendableValidatedByteEnum, ValidatedIntEnum])
     def test_is_member__true_instance(self, enum_class):
         assert all([enum_class.is_member(member) is True for member in enum_class])
 
-    @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
+    @pytest.mark.parametrize("enum_class", [ExtendableValidatedByteEnum, ValidatedIntEnum])
     def test_is_member__true_value(self, enum_class):
         assert all([enum_class.is_member(member.value) is True for member in enum_class])
 
     @pytest.mark.parametrize("enum_class, not_member", [
-        (ExtendableByteEnumWithValidated, ExtendableStrEnum.Text1),
-        (ExtendableByteEnumWithValidated, "not a member"),
-        (ExtendableByteEnumWithValidated, 0xFF),
-        (ExtendableByteEnumWithValidated, 0x00),
+        (ExtendableValidatedByteEnum, ExtendableStrEnum.Text1),
+        (ExtendableValidatedByteEnum, "not a member"),
+        (ExtendableValidatedByteEnum, 0xFF),
+        (ExtendableValidatedByteEnum, 0x00),
         (ValidatedIntEnum, -1),
-        (ValidatedIntEnum, ExtendableByteEnumWithValidated.V1),
+        (ValidatedIntEnum, ExtendableValidatedByteEnum.V1),
         (ValidatedIntEnum, None),
         (ValidatedIntEnum, "some crap"),
     ])
@@ -224,21 +228,21 @@ class TestMultipleEnums:
 
     # validate_member
 
-    @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
+    @pytest.mark.parametrize("enum_class", [ExtendableValidatedByteEnum, ValidatedIntEnum])
     def test_validate_member__valid_instance(self, enum_class):
         assert all([enum_class.validate_member(member) == member for member in enum_class])
 
-    @pytest.mark.parametrize("enum_class", [ExtendableByteEnumWithValidated, ValidatedIntEnum])
+    @pytest.mark.parametrize("enum_class", [ExtendableValidatedByteEnum, ValidatedIntEnum])
     def test_validate_member__valid_value(self, enum_class):
         assert all([enum_class.validate_member(member.value) == member for member in enum_class])
 
     @pytest.mark.parametrize("enum_class, not_member", [
-        (ExtendableByteEnumWithValidated, ExtendableStrEnum.Text1),
-        (ExtendableByteEnumWithValidated, "not a member"),
-        (ExtendableByteEnumWithValidated, 0xFF),
-        (ExtendableByteEnumWithValidated, 0x00),
+        (ExtendableValidatedByteEnum, ExtendableStrEnum.Text1),
+        (ExtendableValidatedByteEnum, "not a member"),
+        (ExtendableValidatedByteEnum, 0xFF),
+        (ExtendableValidatedByteEnum, 0x00),
         (ValidatedIntEnum, -1),
-        (ValidatedIntEnum, ExtendableByteEnumWithValidated.V1),
+        (ValidatedIntEnum, ExtendableValidatedByteEnum.V1),
         (ValidatedIntEnum, None),
         (ValidatedIntEnum, "some crap"),
     ])
@@ -249,28 +253,33 @@ class TestMultipleEnums:
     # add_member
 
     @pytest.mark.parametrize("enum_class, name, value", [
-        (ExtendableByteEnumWithValidated, "NewMember", -1),
-        (ExtendableByteEnumWithValidated, "SomeName", 256),
+        (ExtendableValidatedByteEnum, "NewMember", -1),
+        (ExtendableValidatedByteEnum, "SomeName", 256),
+        (ExtendableNibbleEnum, "NewValue", -1),
+        (ExtendableNibbleEnum, "WrongValue", 0x10),
     ])
     def test_add_member__invalid_value(self, enum_class, name, value):
         with pytest.raises(ValueError):
             enum_class.add_member(name=name, value=value)
 
     @pytest.mark.parametrize("enum_class, name, value", [
-        (ExtendableByteEnumWithValidated, "SomeName", None),
-        (ExtendableByteEnumWithValidated, "SomeName", 5.5),
+        (ExtendableValidatedByteEnum, "SomeName1", None),
+        (ExtendableValidatedByteEnum, "SomeName2", 5.5),
         (ExtendableStrEnum, "MEMBER", None),
         (ExtendableStrEnum, "A", 6),
+        (ExtendableNibbleEnum, "NewValue2", "Something"),
+        (ExtendableNibbleEnum, "WrongValue2", (1, 2)),
     ])
     def test_add_member__invalid_type(self, enum_class, name, value):
         with pytest.raises(TypeError):
             enum_class.add_member(name=name, value=value)
 
     @pytest.mark.parametrize("enum_class, name, value", [
-        (ExtendableByteEnumWithValidated, "Min", 0x00),
-        (ExtendableByteEnumWithValidated, "Max", 0xFF),
+        (ExtendableValidatedByteEnum, "Min", 0x00),
+        (ExtendableValidatedByteEnum, "Max", 0xFF),
         (ExtendableStrEnum, "SomeOtherVariable", "Some non existing string"),
         (ExtendableStrEnum, "NewVar", "-=.,';[;31413n2qtgbhj6"),
+        (ExtendableNibbleEnum, "Value_5", 5),
     ])
     def test_add_member__valid(self, enum_class, name, value):
         member = enum_class.add_member(name=name, value=value)
