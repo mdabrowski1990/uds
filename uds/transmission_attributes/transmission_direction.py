@@ -8,7 +8,7 @@ from uds.utilities import ValidatedEnum
 
 
 @unique
-class TransmissionDirection(StrEnum, ValidatedEnum):
+class TransmissionDirection(ValidatedEnum, StrEnum):
     """Direction of a communication."""
 
     RECEIVED: "TransmissionDirection" = "Rx"  # type: ignore  # noqa: F841

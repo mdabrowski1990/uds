@@ -8,7 +8,7 @@ from uds.utilities import ValidatedEnum
 
 
 @unique
-class CanAddressingFormat(StrEnum, ValidatedEnum):
+class CanAddressingFormat(ValidatedEnum, StrEnum):
     """
     Definition of CAN addressing formats.
 

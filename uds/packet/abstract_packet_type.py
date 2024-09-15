@@ -7,7 +7,7 @@ from abc import abstractmethod
 from uds.utilities import ExtendableEnum, NibbleEnum, ValidatedEnum
 
 
-class AbstractUdsPacketType(NibbleEnum, ValidatedEnum, ExtendableEnum):
+class AbstractUdsPacketType(ValidatedEnum, ExtendableEnum, NibbleEnum):
     """
     Abstract definition of UDS packet type.
 

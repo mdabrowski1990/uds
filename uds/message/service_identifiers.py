@@ -42,7 +42,7 @@ class UnrecognizedSIDWarning(Warning):
 
 
 @unique
-class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
+class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     """
     Request Service Identifier values.
 
@@ -100,7 +100,7 @@ class RequestSID(ByteEnum, ValidatedEnum, ExtendableEnum):
 
 
 @unique
-class ResponseSID(ByteEnum, ValidatedEnum, ExtendableEnum):
+class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     """
     Response Service Identifier values.
 
