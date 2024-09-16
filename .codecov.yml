@@ -25,6 +25,9 @@ coverage:
       integration-tests-branch:
         flags:
           - integration-tests-branch
+      performance-tests:
+        flags:
+          - performance-tests
 
 comment:
   layout: "reach, diff, flags, files"

@@ -79,7 +79,7 @@ jobs:
 
       - name: Execute unit tests with branch coverage [pytest]
         run: |
-          pytest tests/software_tests --cov-branch --cov-report=xml --cov=uds -m "not integration and not performance"
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance" --cov-branch
 
       - name: Upload unit tests report with branch coverage [CodeCov]
         uses: codecov/codecov-action@v4
@@ -103,7 +103,7 @@ jobs:
 
       - name: Execute integration tests with branch coverage [pytest]
         run: |
-          pytest tests/software_tests --cov-branch --cov-report=xml --cov=uds -m "integration"
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "integration" --cov-branch
 
       - name: Upload integration tests report with branch coverage [CodeCov]
         uses: codecov/codecov-action@v4
