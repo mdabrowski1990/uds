@@ -65,11 +65,11 @@ jobs:
         run: |
           pip install .[test]
 
-      - name: Execute unit tests [pytest]
+      - name: Execute unit tests with instruction coverage [pytest]
         run: |
           pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance"
 
-      - name: Upload unit tests report [CodeCov]
+      - name: Upload unit tests report with instruction coverage [CodeCov]
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
@@ -77,17 +77,41 @@ jobs:
           files: coverage.xml
           flags: unit-tests
 
-      - name: Execute integration tests [pytest]
+      - name: Execute unit tests with branch coverage [pytest]
+        run: |
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "not integration and not performance" --cov-branch
+
+      - name: Upload unit tests report with branch coverage [CodeCov]
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: unit-tests-branch
+
+      - name: Execute integration tests with instruction coverage [pytest]
         run: |
           pytest tests/software_tests --cov-report=xml --cov=uds -m "integration"
 
-      - name: Upload integration tests report [CodeCov]
+      - name: Upload integration tests report with instruction coverage [CodeCov]
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           flags: integration-tests
+
+      - name: Execute integration tests with branch coverage [pytest]
+        run: |
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "integration" --cov-branch
+
+      - name: Upload integration tests report with branch coverage [CodeCov]
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: integration-tests-branch
 
 # TODO: add performance tests upload when added
 

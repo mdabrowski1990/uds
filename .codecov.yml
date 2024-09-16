@@ -14,10 +14,20 @@ coverage:
         target: 100%
         flags:
           - unit-tests
+      unit-tests-branch:
+        target: 100%
+        flags:
+          - unit-tests-branch
       integration-tests:
         target: 80%
         flags:
           - integration-tests
+      integration-tests-branch:
+        flags:
+          - integration-tests-branch
+      performance-tests:
+        flags:
+          - performance-tests
 
 comment:
   layout: "reach, diff, flags, files"

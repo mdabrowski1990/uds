@@ -1080,7 +1080,7 @@ class TestPyCanTransportInterface:
         with pytest.raises(ValueError):
             PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout)
 
-    @pytest.mark.parametrize("timeout", [0.001, 123.456])
+    @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
     def test_receive_message__single_frame(self, timeout):
         mock_received_packet_record = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
         self.mock_can_transport_interface.receive_packet.return_value = mock_received_packet_record
@@ -1116,7 +1116,7 @@ class TestPyCanTransportInterface:
         with pytest.raises(ValueError):
             await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface, timeout)
 
-    @pytest.mark.parametrize("timeout", [0.001, 123.456])
+    @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
     @pytest.mark.asyncio
     async def test_async_receive_message__single_frame(self, timeout):
         mock_received_packet_record = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
