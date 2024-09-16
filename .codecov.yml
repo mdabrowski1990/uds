@@ -15,6 +15,7 @@ coverage:
         flags:
           - unit-tests
       unit-tests-branch:
+        target: 100%
         flags:
           - unit-tests-branch
       integration-tests:

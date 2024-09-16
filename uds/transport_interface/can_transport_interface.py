@@ -500,12 +500,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             self.__async_notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
             self.__async_notifier = None
             if not suppress_warning:
-                if not suppress_warning:
-                    warn(message="Asynchronous (`PyCanTransportInterface.async_send_packet`, "
-                                 "`PyCanTransportInterface.async_receive_packet methods`) "
-                                 "and synchronous (`PyCanTransportInterface.send_packet`, "
-                                 "`PyCanTransportInterface.receive_packet methods`) shall not be used together.",
-                         category=UserWarning)
+                warn(message="Asynchronous (`PyCanTransportInterface.async_send_packet`, "
+                             "`PyCanTransportInterface.async_receive_packet methods`) "
+                             "and synchronous (`PyCanTransportInterface.send_packet`, "
+                             "`PyCanTransportInterface.receive_packet methods`) shall not be used together.",
+                     category=UserWarning)
 
     def _setup_notifier(self) -> None:
         """Configure CAN frame notifier for synchronous communication."""
