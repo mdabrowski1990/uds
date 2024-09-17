@@ -724,7 +724,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         if len(packets_to_send) == 1:
             packet_record = self.send_packet(*packets_to_send)
             return UdsMessageRecord((packet_record,))
-        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/267")
+        # TODO: implementation
 
     def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
         """

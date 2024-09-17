@@ -705,9 +705,8 @@ class TestPythonCanKvaser:
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
-        # TODO: add more with https://github.com/mdabrowski1990/uds/issues/267
     ])
-    def test_send_message(self, example_addressing_information, message):
+    def test_send_message__sf(self, example_addressing_information, message):
         """
         Check for a simple synchronous UDS message sending.
 
@@ -729,24 +728,72 @@ class TestPythonCanKvaser:
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
+        assert message_record.transmission_start == message_record.transmission_end
+        assert len(message_record.packets_records) == 1
+        assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
-        if len(message_record.packets_records) == 1:
-            assert message_record.transmission_start == message_record.transmission_end
-        else:
-            assert message_record.transmission_start < message_record.transmission_end
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("send_after", [5, 45])
+    def test_send_message__multi_packets(self, example_addressing_information,
+                                         example_addressing_information_2nd_node,
+                                         message, send_after):
+        """
+        Check for a simple synchronous UDS message sending.
+
+        Procedure:
+        1. Schedule Flow Control CAN Packet with information to continue sending all consecutive frame packets at once.
+        2. Send a UDS message using Transport Interface (via CAN Interface).
+            Expected: UDS message record returned.
+        3. Validate transmitted UDS message record attributes.
+            Expected: Attributes of UDS message record are in line with the transmitted UDS message.
+
+        :param example_addressing_information: Example Addressing Information of a CAN Node.
+        :param example_addressing_information_2nd_node: Example Addressing Information of a CAN Node.
+        :param message: UDS message to send.
+        :param send_after: Delay to use for sending CAN flow control.
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
+                                                                           block_size=0,
+                                                                           st_min=0)
+        flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
+        Timer(interval=send_after / 1000., function=self.can_interface_2.send, args=(flow_control_frame,)).start()
+        datetime_before_send = datetime.now()
+        message_record = can_transport_interface.send_message(message)
+        datetime_after_send = datetime.now()
+        assert isinstance(message_record, UdsMessageRecord)
+        assert message_record.direction == TransmissionDirection.TRANSMITTED
+        assert message_record.payload == message.payload
+        assert message_record.addressing_type == message.addressing_type
+        assert message_record.transmission_start < message_record.transmission_end
+        assert len(message_record.packets_records) > 1
+        assert message_record.packets_records[0].packet_type == CanPacketType.FIRST_FRAME
+        assert message_record.packets_records[1].packet_type == CanPacketType.FLOW_CONTROL
+        assert message_record.packets_records[1].direction == TransmissionDirection.RECEIVED
+        assert all(following_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
+                   for following_packet in message_record.packets_records[2:])
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert datetime_before_send < message_record.transmission_start
+        # assert message_record.transmission_end < datetime_after_send
 
     # async_send_message
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
-        # TODO: add more with https://github.com/mdabrowski1990/uds/issues/267
     ])
     @pytest.mark.asyncio
-    async def test_async_send_message(self, example_addressing_information, message):
+    async def test_async_send_message__sf(self, example_addressing_information, message):
         """
         Check for a simple asynchronous UDS message sending.
 
@@ -768,14 +815,73 @@ class TestPythonCanKvaser:
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
+        assert message_record.transmission_start == message_record.transmission_end
+        assert len(message_record.packets_records) == 1
+        assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
-        if len(message_record.packets_records) == 1:
-            assert message_record.transmission_start == message_record.transmission_end
-        else:
-            assert message_record.transmission_start < message_record.transmission_end
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+    ])
+    @pytest.mark.parametrize("send_after", [5, 45])
+    @pytest.mark.asyncio
+    async def test_send_message__multi_packets(self, example_addressing_information,
+                                               example_addressing_information_2nd_node,
+                                               message, send_after):
+        """
+        Check for a simple synchronous UDS message sending.
+
+        Procedure:
+        1. Schedule Flow Control CAN Packet with information to continue sending all consecutive frame packets at once.
+        2. Send (using async method) a UDS message using Transport Interface (via CAN Interface).
+            Expected: UDS message record returned.
+        3. Validate transmitted UDS message record attributes.
+            Expected: Attributes of UDS message record are in line with the transmitted UDS message.
+
+        :param example_addressing_information: Example Addressing Information of a CAN Node.
+        :param example_addressing_information_2nd_node: Example Addressing Information of a CAN Node.
+        :param message: UDS message to send.
+        :param send_after: Delay to use for sending CAN flow control.
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
+                                                                           block_size=0,
+                                                                           st_min=0)
+        flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
+
+        async def _send_frame():
+            await asyncio.sleep(send_after / 1000.)
+            self.can_interface_2.send(flow_control_frame)
+
+        future_record = can_transport_interface.async_send_message(message)
+        tasks = [asyncio.create_task(_send_frame()), asyncio.create_task(future_record)]
+        datetime_before_send = datetime.now()
+        done_tasks, _ = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+        datetime_after_send = datetime.now()
+        sent_records = tuple(filter(lambda result: isinstance(result, UdsMessageRecord),
+                                        (done_task.result() for done_task in done_tasks)))
+        assert len(sent_records) == 1, "UDS message was sent"
+        message_record = sent_records[0]
+        assert isinstance(message_record, UdsMessageRecord)
+        assert message_record.direction == TransmissionDirection.TRANSMITTED
+        assert message_record.payload == message.payload
+        assert message_record.addressing_type == message.addressing_type
+        assert len(message_record.packets_records) > 1
+        assert message_record.packets_records[0].packet_type == CanPacketType.FIRST_FRAME
+        assert message_record.packets_records[1].packet_type == CanPacketType.FLOW_CONTROL
+        assert message_record.packets_records[1].direction == TransmissionDirection.RECEIVED
+        assert all(following_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
+                   for following_packet in message_record.packets_records[2:])
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert datetime_before_send < message_record.transmission_start
+        # assert message_record.transmission_end < datetime_after_send
 
     # receive_message
 
@@ -1076,7 +1182,8 @@ class TestPythonCanKvaser:
         #  https://github.com/mdabrowski1990/uds/issues/267
     ])
     def test_send_message_on_one_receive_on_other_bus(self, example_addressing_information,
-                                                      example_addressing_information_2nd_node, message):
+                                                      example_addressing_information_2nd_node,
+                                                      message):
         """
         Check for sending and receiving UDS message using two Transport Interfaces.
 
@@ -1115,7 +1222,8 @@ class TestPythonCanKvaser:
     ])
     @pytest.mark.asyncio
     async def test_async_send_message_on_one_receive_on_other_bus(self, example_addressing_information,
-                                                                  example_addressing_information_2nd_node, message):
+                                                                  example_addressing_information_2nd_node,
+                                                                  message):
         """
         Check for asynchronous sending and receiving UDS message using two Transport Interfaces.
 
@@ -1146,6 +1254,8 @@ class TestPythonCanKvaser:
                == {TransmissionDirection.TRANSMITTED, TransmissionDirection.RECEIVED}
         assert message_record_1.addressing_type == message_record_2.addressing_type == message.addressing_type
         assert message_record_1.payload == message_record_2.payload == message.payload
+
+    # TODO: Flow Control CONTINUE TO SEND with changing block size and STmin (including max value)
 
     # error guessing
 
@@ -1342,3 +1452,7 @@ class TestPythonCanKvaser:
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert packet_record.transmission_time > datetime_before_send
+
+    # TODO: Flow Control max WAIT, then continue transmission
+    # TODO: Flow Control spam WAIT till timeout
+    # TODO: Flow Control OVERFLOW
