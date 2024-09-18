@@ -740,7 +740,7 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("send_after", [5, 45])
+    @pytest.mark.parametrize("send_after", [5, 970])
     def test_send_message__multi_packets(self, example_addressing_information,
                                          example_addressing_information_2nd_node,
                                          message, send_after):
@@ -786,6 +786,8 @@ class TestPythonCanKvaser:
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
 
+    # TODO: timeout after FF
+
     # async_send_message
 
     @pytest.mark.parametrize("message", [
@@ -827,7 +829,7 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
     ])
-    @pytest.mark.parametrize("send_after", [5, 45])
+    @pytest.mark.parametrize("send_after", [5, 970])
     @pytest.mark.asyncio
     async def test_async_send_message__multi_packets(self, example_addressing_information,
                                                example_addressing_information_2nd_node,
@@ -1458,7 +1460,7 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("send_after", [5, 45])
+    @pytest.mark.parametrize("send_after", [5, 970])
     def test_overflow_during_message_sending(self, example_addressing_information,
                                              example_addressing_information_2nd_node,
                                              message, send_after):
@@ -1481,14 +1483,14 @@ class TestPythonCanKvaser:
         flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.Overflow)
         flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
         Timer(interval=send_after / 1000., function=self.can_interface_2.send, args=(flow_control_frame,)).start()
-        with pytest.raises(Exception):  # TODO: replace with overflow exception
+        with pytest.raises(OverflowError):
             can_transport_interface.send_message(message)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("send_after", [5, 45])
+    @pytest.mark.parametrize("send_after", [5, 970])
     @pytest.mark.asyncio
     async def test_overflow_during_async_message_sending(self, example_addressing_information,
                                                          example_addressing_information_2nd_node,

@@ -5,8 +5,8 @@ __all__ = ["AbstractCanTransportInterface", "PyCanTransportInterface"]
 from abc import abstractmethod
 from asyncio import AbstractEventLoop, get_running_loop, wait_for
 from datetime import datetime
-from time import time
-from typing import Any, Optional
+from time import sleep, time
+from typing import Any, List, Optional, Tuple
 from warnings import warn
 
 from can import AsyncBufferedReader, BufferedReader, BusABC, Message, Notifier
@@ -14,14 +14,21 @@ from uds.can import (
     AbstractCanAddressingInformation,
     AbstractFlowControlParametersGenerator,
     CanDlcHandler,
+    CanFlowStatus,
     CanIdHandler,
+    CanSTminTranslator,
     DefaultFlowControlParametersGenerator,
 )
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import TransmissionDirection
-from uds.utilities import TimeMillisecondsAlias, ValueWarning
+from uds.utilities import (
+    TimeMillisecondsAlias,
+    TransmissionInterruptionError,
+    TransmissionInterruptionWarning,
+    ValueWarning,
+)
 
 from .abstract_transport_interface import AbstractTransportInterface
 
@@ -527,6 +534,26 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                              timeout=self._MIN_NOTIFIER_TIMEOUT,
                                              loop=loop)
 
+    def _send_packets_block(self,
+                            packets: List[CanPacket],
+                            delay: TimeMillisecondsAlias) -> Tuple[CanPacketRecord, ...]:
+        """
+        Send block of packets
+
+        :param packets: CAN packets to send.
+        :param delay: Minimal delay between sending following packets [ms].
+
+        :return: Records with historic information about transmitted CAN packets.
+        """
+        packet_records = []
+        for packet in packets:
+            sleep(delay / 1000.)
+            if self.__frames_buffer.buffer.qsize():
+                ...
+                # TODO: handle packets that were received
+            packet_records.append(self.send_packet(packet))
+        return tuple(packet_records)
+
     def clear_frames_buffers(self) -> None:
         """
         Clear buffers with transmitted and received frames.
@@ -718,13 +745,33 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :param message: A message to send.
 
+        :raise OverflowError: TODO
+        :raise TODO: ERROR
+
         :return: Record with historic information about transmitted UDS message.
         """
-        packets_to_send = self.segmenter.segmentation(message)
-        if len(packets_to_send) == 1:
-            packet_record = self.send_packet(*packets_to_send)
-            return UdsMessageRecord((packet_record,))
-        # TODO: implementation
+        # TODO: update: n_as_measured, n_bs_measured
+        packets_to_send = list(self.segmenter.segmentation(message))
+        packet_records = [self.send_packet(packets_to_send.pop(0))]
+        while packets_to_send:
+            fc_record = self.receive_packet(timeout=self.N_BS_TIMEOUT)
+            packet_records.append(fc_record)
+            if fc_record.packet_type != fc_record.packet_type.FLOW_CONTROL:
+                if CanPacketType.is_initial_packet_type(fc_record.packet_type):
+                    raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
+                warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
+                     category=TransmissionInterruptionWarning)
+            if fc_record.flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+            if fc_record.flow_status == CanFlowStatus.ContinueToSend:
+                number_of_packets = len(packets_to_send) if fc_record.block_size == 0 else fc_record.block_size
+                delay_between_cf = CanSTminTranslator.decode(fc_record.flow_status) if self.n_cs is None else self.n_cs
+                packet_records.extend(self._send_packets_block(packets=packets_to_send[:number_of_packets],
+                                                               delay=delay_between_cf))
+                packets_to_send = packets_to_send[number_of_packets:]
+            elif fc_record.flow_status != CanFlowStatus.Wait:
+                raise NotImplementedError(f"Unknown Flow Status received: {fc_record.flow_status}")
+        return UdsMessageRecord(packet_records)
 
     def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
         """

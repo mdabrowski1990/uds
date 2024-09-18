@@ -12,9 +12,9 @@ from uds.can import (
     CanConsecutiveFrameHandler,
     CanDlcHandler,
     CanFirstFrameHandler,
+    CanFlowStatus,
     CanSingleFrameHandler,
     PacketAIParamsAlias,
-    CanFlowStatus
 )
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import (
@@ -313,7 +313,13 @@ class CanSegmenter(AbstractSegmenter):
 
         :return: Flow Control CAN packet with provided parameters.
         """
-        # TODO: add code
+        return CanPacket(packet_type=CanPacketType.FLOW_CONTROL,
+                         flow_status=flow_status,
+                         block_size=block_size,
+                         st_min=st_min,
+                         filler_byte=self.filler_byte,
+                         dlc=None if self.use_data_optimization else self.dlc,
+                         **self.tx_packets_physical_ai)
 
     def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
