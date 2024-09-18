@@ -14,7 +14,7 @@ from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
 
 
-class TestPythonCanKvaser:
+class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_cs, etc)
     """
     System Tests for `PyCanTransportInterface` with Kvaser as bus manager.
 
@@ -731,6 +731,8 @@ class TestPythonCanKvaser:
         assert message_record.transmission_start == message_record.transmission_end
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
+        # timing parameters
+        assert can_transport_interface.n_bs_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
@@ -781,12 +783,51 @@ class TestPythonCanKvaser:
         assert message_record.packets_records[1].direction == TransmissionDirection.RECEIVED
         assert all(following_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                    for following_packet in message_record.packets_records[2:])
+        # timing parameters
+        assert isinstance(can_transport_interface.n_bs_measured, tuple)
+        assert len(can_transport_interface.n_bs_measured) == 1
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
+        # assert send_after - 5 <= can_transport_interface.n_bs_measured[0] <= send_after + 5
 
-    # TODO: timeout after FF
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    def test_send_message__multi_packets__timeout(self, example_addressing_information,
+                                                  example_addressing_information_2nd_node,
+                                                  message):
+        """
+        Check for a timeout (N_Bs timeout exceeded) during synchronous multi packet (FF + CF) UDS message sending.
+
+        Procedure:
+        1. Schedule Flow Control CAN Packet just after N_Bs timeout.
+        2. Send a UDS message using Transport Interface (via CAN Interface).
+            Expected: Timeout exception is raised.
+
+        :param example_addressing_information: Example Addressing Information of a CAN Node.
+        :param example_addressing_information_2nd_node: Example Addressing Information of a CAN Node.
+        :param message: UDS message to send.
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
+                                                                           block_size=0,
+                                                                           st_min=0)
+        flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
+        Timer(interval=(can_transport_interface.n_bs_timeout + 1) / 1000.,
+              function=self.can_interface_2.send, args=(flow_control_frame,)).start()
+        time_before_receive = time()
+        with pytest.raises(TimeoutError):
+            can_transport_interface.send_message(message)
+        time_after_receive = time()
+        assert (can_transport_interface.n_bs_timeout
+                < (time_after_receive - time_before_receive) * 1000.
+                < can_transport_interface.n_bs_timeout + self.TASK_TIMING_TOLERANCE)
+        sleep(self.TASK_TIMING_TOLERANCE / 1000.)  # wait till packet arrives
 
     # async_send_message
 
@@ -820,6 +861,8 @@ class TestPythonCanKvaser:
         assert message_record.transmission_start == message_record.transmission_end
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
+        # timing parameters
+        assert can_transport_interface.n_bs_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
@@ -880,10 +923,58 @@ class TestPythonCanKvaser:
         assert message_record.packets_records[1].direction == TransmissionDirection.RECEIVED
         assert all(following_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                    for following_packet in message_record.packets_records[2:])
+        # timing parameters
+        assert isinstance(can_transport_interface.n_bs_measured, tuple)
+        assert len(can_transport_interface.n_bs_measured) == 1
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
+        # assert send_after - 5 <= can_transport_interface.n_bs_measured[0] <= send_after + 5
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_send_message__multi_packets__timeout(self, example_addressing_information,
+                                                              example_addressing_information_2nd_node,
+                                                              message):
+        """
+        Check for a timeout (N_Bs timeout exceeded) during asynchronous multi packet (FF + CF) UDS message sending.
+
+        Procedure:
+        1. Schedule Flow Control CAN Packet just after N_Bs timeout.
+        2. Send (using async method) a UDS message using Transport Interface (via CAN Interface).
+            Expected: Timeout exception is raised.
+
+        :param example_addressing_information: Example Addressing Information of a CAN Node.
+        :param example_addressing_information_2nd_node: Example Addressing Information of a CAN Node.
+        :param message: UDS message to send.
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
+                                                                           block_size=0,
+                                                                           st_min=0)
+        flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
+
+        async def _send_frame():
+            await asyncio.sleep((can_transport_interface.n_bs_timeout + 1) / 1000.)
+            self.can_interface_2.send(flow_control_frame)
+
+        future_record = can_transport_interface.async_send_message(message)
+        frame_sending_task = asyncio.create_task(_send_frame())
+        time_before_receive = time()
+        with pytest.raises(TimeoutError):
+            await future_record
+        time_after_receive = time()
+        assert (can_transport_interface.n_bs_timeout
+                < (time_after_receive - time_before_receive) * 1000.
+                < can_transport_interface.n_bs_timeout + self.TASK_TIMING_TOLERANCE)
+        await frame_sending_task
+        sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
     # receive_message
 
@@ -966,14 +1057,11 @@ class TestPythonCanKvaser:
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
+        assert message_record.transmission_start == message_record.transmission_end
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
-        if len(message_record.packets_records) == 1:
-            assert message_record.transmission_start == message_record.transmission_end
-        else:
-            assert message_record.transmission_start < message_record.transmission_end
 
     # TODO: add more with https://github.com/mdabrowski1990/uds/issues/266
 
@@ -1077,14 +1165,11 @@ class TestPythonCanKvaser:
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
+        assert message_record.transmission_start == message_record.transmission_end
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
-        if len(message_record.packets_records) == 1:
-            assert message_record.transmission_start == message_record.transmission_end
-        else:
-            assert message_record.transmission_start < message_record.transmission_end
 
     # TODO: add more with https://github.com/mdabrowski1990/uds/issues/266
 
