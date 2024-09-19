@@ -14,7 +14,7 @@ from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
 
 
-class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_cs, etc)
+class TestPythonCanKvaser:
     """
     System Tests for `PyCanTransportInterface` with Kvaser as bus manager.
 
@@ -132,6 +132,15 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
         assert packet_record.target_address == packet.target_address == target_address
         assert packet_record.source_address == packet.source_address == source_address
         assert packet_record.address_extension == packet.address_extension == address_extension
+        # timing parameters
+        if packet_type == CanPacketType.FLOW_CONTROL:
+            assert can_transport_interface.n_as_measured is None
+            # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+            # assert 0 < can_transport_interface.n_ar_measured
+        else:
+            # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+            # assert 0 < can_transport_interface.n_as_measured
+            assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < packet_record.transmission_time < datetime_after_send
@@ -212,7 +221,11 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
             can_transport_interface.receive_packet(timeout=timeout)
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
-        sleep((send_after - timeout) * 2 / 1000.)  # wait till packet arrives
+        # timing parameters
+        assert can_transport_interface.n_as_measured is None
+        assert can_transport_interface.n_ar_measured is None
+        # wait till packet arrives
+        sleep((send_after - timeout) * 2 / 1000.)
 
     @pytest.mark.parametrize("addressing_information, frame", [
         (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
@@ -285,6 +298,9 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
         assert packet_record.target_address == addressing_information.rx_packets_physical_ai["target_address"]
         assert packet_record.source_address == addressing_information.rx_packets_physical_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_physical_ai["address_extension"]
+        # timing parameters
+        assert can_transport_interface.n_as_measured is None
+        assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
@@ -360,6 +376,9 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
         assert packet_record.target_address == addressing_information.rx_packets_functional_ai["target_address"]
         assert packet_record.source_address == addressing_information.rx_packets_functional_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_functional_ai["address_extension"]
+        # timing parameters
+        assert can_transport_interface.n_as_measured is None
+        assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
@@ -459,9 +478,19 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
         assert packet_record.target_address == packet.target_address == target_address
         assert packet_record.source_address == packet.source_address == source_address
         assert packet_record.address_extension == packet.address_extension == address_extension
+        # timing parameters
+        if packet_type == CanPacketType.FLOW_CONTROL:
+            assert can_transport_interface.n_as_measured is None
+            # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+            # assert 0 < can_transport_interface.n_ar_measured
+        else:
+            # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+            # assert 0 < can_transport_interface.n_as_measured
+            assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < packet_record.transmission_time < datetime_after_send
+
 
     # async_receive_packet
 
@@ -523,6 +552,10 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
             await future_record
         time_after_receive = time()
         assert timeout < (time_after_receive - time_before_receive) * 1000. < timeout + self.TASK_TIMING_TOLERANCE
+        # timing parameters
+        assert can_transport_interface.n_as_measured is None
+        assert can_transport_interface.n_ar_measured is None
+        # wait till frame arrives
         await frame_sending_task
         sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
@@ -608,6 +641,9 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
         assert packet_record.target_address == addressing_information.rx_packets_physical_ai["target_address"]
         assert packet_record.source_address == addressing_information.rx_packets_physical_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_physical_ai["address_extension"]
+        # timing parameters
+        assert can_transport_interface.n_as_measured is None
+        assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
@@ -695,6 +731,9 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
         assert packet_record.target_address == addressing_information.rx_packets_functional_ai["target_address"]
         assert packet_record.source_address == addressing_information.rx_packets_functional_ai["source_address"]
         assert packet_record.address_extension == addressing_information.rx_packets_functional_ai["address_extension"]
+        # timing parameters
+        assert can_transport_interface.n_as_measured is None
+        assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert send_after <= (datetime_after_receive - datetime_before_receive).total_seconds() * 1000. < timeout
@@ -869,8 +908,8 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
         # assert message_record.transmission_end < datetime_after_send
 
     @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
-        UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("send_after", [5, 970])
     @pytest.mark.asyncio
@@ -905,7 +944,7 @@ class TestPythonCanKvaser:  # TODO: add checks for all measured times (n_br, n_c
             self.can_interface_2.send(flow_control_frame)
 
         future_record = can_transport_interface.async_send_message(message)
-        tasks = [asyncio.create_task(_send_frame()), asyncio.create_task(future_record)]
+        tasks = [asyncio.create_task(future_record), asyncio.create_task(_send_frame())]
         datetime_before_send = datetime.now()
         done_tasks, _ = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
         datetime_after_send = datetime.now()
