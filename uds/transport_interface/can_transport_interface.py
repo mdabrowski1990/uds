@@ -654,9 +654,56 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
             observed_frame = self.__frames_buffer.get_message(timeout=timeout_left)
         if is_flow_control_packet:
-            self.__n_ar_measured = observed_frame.timestamp - time_start
+            # self.__n_ar_measured = observed_frame.timestamp - time_start
+            self.__n_ar_measured = time() - time_start
         else:
-            self.__n_as_measured = observed_frame.timestamp - time_start
+            # self.__n_as_measured = observed_frame.timestamp - time_start
+            self.__n_as_measured = time() - time_start
+        return CanPacketRecord(frame=observed_frame,
+                               direction=TransmissionDirection.TRANSMITTED,
+                               addressing_type=packet.addressing_type,
+                               addressing_format=packet.addressing_format,
+                               transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
+
+    async def async_send_packet(self,
+                                packet: CanPacket,  # type: ignore
+                                loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
+        """
+        Transmit asynchronously CAN packet.
+
+        :param packet: CAN packet to send.
+        :param loop: An asyncio event loop used for observing messages.
+
+        :raise TypeError: Provided packet is not CAN Packet.
+
+        :return: Record with historic information about transmitted CAN packet.
+        """
+        if not isinstance(packet, CanPacket):
+            raise TypeError("Provided packet value does not contain a CAN Packet.")
+        loop = get_running_loop() if loop is None else loop
+        is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
+        timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
+        self._setup_async_notifier(loop)
+        self.clear_frames_buffers()
+        can_frame = Message(arbitration_id=packet.can_id,
+                            is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
+                            data=packet.raw_frame_data,
+                            is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
+        time_start = time()
+        self.bus_manager.send(can_frame)
+        observed_frame = None
+        while observed_frame is None \
+                or observed_frame.arbitration_id != packet.can_id \
+                or tuple(observed_frame.data) != packet.raw_frame_data \
+                or not observed_frame.is_rx:
+            timeout_left = timeout / 1000. - (time() - time_start)
+            observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
+        if is_flow_control_packet:
+            # self.__n_ar_measured = observed_frame.timestamp - time_start
+            self.__n_ar_measured = time() - time_start
+        else:
+            # self.__n_as_measured = observed_frame.timestamp - time_start
+            self.__n_as_measured = time() - time_start
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
@@ -700,49 +747,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
                                transmission_time=datetime.fromtimestamp(received_frame.timestamp))
-
-    async def async_send_packet(self,
-                                packet: CanPacket,  # type: ignore
-                                loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
-        """
-        Transmit asynchronously CAN packet.
-
-        :param packet: CAN packet to send.
-        :param loop: An asyncio event loop used for observing messages.
-
-        :raise TypeError: Provided packet is not CAN Packet.
-
-        :return: Record with historic information about transmitted CAN packet.
-        """
-        if not isinstance(packet, CanPacket):
-            raise TypeError("Provided packet value does not contain a CAN Packet.")
-        loop = get_running_loop() if loop is None else loop
-        is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
-        timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
-        self._setup_async_notifier(loop)
-        self.clear_frames_buffers()
-        can_frame = Message(arbitration_id=packet.can_id,
-                            is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
-                            data=packet.raw_frame_data,
-                            is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
-        time_start = time()
-        self.bus_manager.send(can_frame)
-        observed_frame = None
-        while observed_frame is None \
-                or observed_frame.arbitration_id != packet.can_id \
-                or tuple(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx:
-            timeout_left = timeout / 1000. - (time() - time_start)
-            observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
-        if is_flow_control_packet:
-            self.__n_ar_measured = observed_frame.timestamp - time_start
-        else:
-            self.__n_as_measured = observed_frame.timestamp - time_start
-        return CanPacketRecord(frame=observed_frame,
-                               direction=TransmissionDirection.TRANSMITTED,
-                               addressing_type=packet.addressing_type,
-                               addressing_format=packet.addressing_format,
-                               transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
     async def async_receive_packet(self,
                                    timeout: Optional[TimeMillisecondsAlias] = None,
@@ -804,24 +808,65 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             fc_record = self.receive_packet(timeout=self.N_BS_TIMEOUT)
             n_bs_measurements.append((time()-time_n_bs_measurement_start)*1000.)
             packet_records.append(fc_record)
-            if fc_record.packet_type != fc_record.packet_type.FLOW_CONTROL:
+            if fc_record.packet_type != CanPacketType.FLOW_CONTROL:
                 if CanPacketType.is_initial_packet_type(fc_record.packet_type):
                     raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
                 warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
                      category=TransmissionInterruptionWarning)
-            if fc_record.flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
-            if fc_record.flow_status == CanFlowStatus.ContinueToSend:
+            elif fc_record.flow_status == CanFlowStatus.ContinueToSend:
                 number_of_packets = len(packets_to_send) if fc_record.block_size == 0 else fc_record.block_size
                 delay_between_cf = CanSTminTranslator.decode(fc_record.flow_status) if self.n_cs is None else self.n_cs
                 packet_records.extend(self._send_packets_block(packets=packets_to_send[:number_of_packets],
                                                                delay=delay_between_cf))
                 time_n_bs_measurement_start = time()
                 packets_to_send = packets_to_send[number_of_packets:]
-            elif fc_record.flow_status != CanFlowStatus.Wait:
-                raise NotImplementedError(f"Unknown Flow Status received: {fc_record.flow_status}")
-            else:
+            elif fc_record.flow_status == CanFlowStatus.Wait:
                 time_n_bs_measurement_start = time()
+            elif fc_record.flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+            else:
+                raise NotImplementedError(f"Unknown Flow Status received: {fc_record.flow_status}")
+        self.__n_bs_measured = tuple(n_bs_measurements) if n_bs_measurements else None
+        return UdsMessageRecord(packet_records)
+
+    async def async_send_message(self,
+                                 message: UdsMessage,
+                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        """
+        Transmit asynchronously UDS message over CAN.
+
+        :param message: A message to send.
+        :param loop: An asyncio event loop to use for scheduling this task.
+
+        :return: Record with historic information about transmitted UDS message.
+        """
+        n_bs_measurements = []
+        packets_to_send = list(self.segmenter.segmentation(message))
+        packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
+        time_n_bs_measurement_start = time()
+        while packets_to_send:
+            fc_record = await self.async_receive_packet(timeout=self.N_BS_TIMEOUT, loop=loop)
+            n_bs_measurements.append((time() - time_n_bs_measurement_start) * 1000.)
+            packet_records.append(fc_record)
+            if fc_record.packet_type != CanPacketType.FLOW_CONTROL:
+                if CanPacketType.is_initial_packet_type(fc_record.packet_type):
+                    raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
+                warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
+                     category=TransmissionInterruptionWarning)
+            if fc_record.flow_status == CanFlowStatus.ContinueToSend:
+                number_of_packets = len(packets_to_send) if fc_record.block_size == 0 else fc_record.block_size
+                delay_between_cf = CanSTminTranslator.decode(fc_record.flow_status) if self.n_cs is None else self.n_cs
+                packet_records.extend(await self._async_send_packets_block(packets=packets_to_send[:number_of_packets],
+                                                                           delay=delay_between_cf,
+                                                                           loop=loop))
+                time_n_bs_measurement_start = time()
+                packets_to_send = packets_to_send[number_of_packets:]
+            elif fc_record.flow_status == CanFlowStatus.Wait:
+                time_n_bs_measurement_start = time()
+            elif fc_record.flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+            else:
+                raise NotImplementedError(f"Unknown Flow Status received: {fc_record.flow_status}")
         self.__n_bs_measured = tuple(n_bs_measurements) if n_bs_measurements else None
         return UdsMessageRecord(packet_records)
 
@@ -849,47 +894,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
             return UdsMessageRecord([received_packet])
         raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/266")
-
-    async def async_send_message(self,
-                                 message: UdsMessage,
-                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
-        """
-        Transmit asynchronously UDS message over CAN.
-
-        :param message: A message to send.
-        :param loop: An asyncio event loop to use for scheduling this task.
-
-        :return: Record with historic information about transmitted UDS message.
-        """
-        n_bs_measurements = []
-        packets_to_send = list(self.segmenter.segmentation(message))
-        packet_records = [await self.async_send_packet(packets_to_send.pop(0))]
-        time_n_bs_measurement_start = time()
-        while packets_to_send:
-            fc_record = await self.async_receive_packet(timeout=self.N_BS_TIMEOUT, loop=loop)
-            n_bs_measurements.append((time() - time_n_bs_measurement_start) * 1000.)
-            packet_records.append(fc_record)
-            if fc_record.packet_type != fc_record.packet_type.FLOW_CONTROL:
-                if CanPacketType.is_initial_packet_type(fc_record.packet_type):
-                    raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
-                warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
-                     category=TransmissionInterruptionWarning)
-            if fc_record.flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
-            if fc_record.flow_status == CanFlowStatus.ContinueToSend:
-                number_of_packets = len(packets_to_send) if fc_record.block_size == 0 else fc_record.block_size
-                delay_between_cf = CanSTminTranslator.decode(fc_record.flow_status) if self.n_cs is None else self.n_cs
-                packet_records.extend(await self._async_send_packets_block(packets=packets_to_send[:number_of_packets],
-                                                                           delay=delay_between_cf,
-                                                                           loop=loop))
-                time_n_bs_measurement_start = time()
-                packets_to_send = packets_to_send[number_of_packets:]
-            elif fc_record.flow_status != CanFlowStatus.Wait:
-                raise NotImplementedError(f"Unknown Flow Status received: {fc_record.flow_status}")
-            else:
-                time_n_bs_measurement_start = time()
-        self.__n_bs_measured = tuple(n_bs_measurements) if n_bs_measurements else None
-        return UdsMessageRecord(packet_records)
 
     async def async_receive_message(self,
                                     timeout: Optional[TimeMillisecondsAlias] = None,
