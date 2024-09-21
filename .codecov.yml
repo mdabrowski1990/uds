@@ -34,3 +34,4 @@ comment:
   layout: "reach, diff, flags, files"
   behavior: default
   require_changes: false
+  show_carryforward_flags: true
