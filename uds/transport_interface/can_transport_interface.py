@@ -196,7 +196,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property  # noqa
     @abstractmethod
-    def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias]]:
+    def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
         Get the last measured values (during the last message transmission) of N_Bs time parameter.
 
@@ -310,7 +310,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property  # noqa
     @abstractmethod
-    def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias]]:
+    def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
         Get the last measured values (during the last message reception) of N_Cr time parameter.
 
@@ -431,8 +431,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
-        self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias]] = None
-        self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias]] = None
+        self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
+        self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         super().__init__(can_bus_manager=can_bus_manager,
                          addressing_information=addressing_information,
                          **kwargs)
@@ -464,8 +464,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return self.__n_ar_measured
 
-    @property
-    def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias]]:
+    @property  # noqa
+    def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
         Get the last measured value of N_Bs time parameter.
 
@@ -473,8 +473,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return self.__n_bs_measured
 
-    @property
-    def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias]]:
+    @property  # noqa
+    def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
         Get the last measured value of N_Cr time parameter.
 
@@ -561,7 +561,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                       transmission_time=datetime.fromtimestamp(
                                                           received_frame.timestamp))
                     if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                        raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
+                        raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
                     warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
                          category=TransmissionInterruptionWarning)
             packet_records.append(self.send_packet(packet))
@@ -594,7 +594,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                       transmission_time=datetime.fromtimestamp(
                                                           received_frame.timestamp))
                     if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                        raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
+                        raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
                     warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
                          category=TransmissionInterruptionWarning)
             packet_records.append(await self.async_send_packet(packet, loop=loop))
@@ -805,27 +805,29 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         packet_records = [self.send_packet(packets_to_send.pop(0))]
         time_n_bs_measurement_start = time()
         while packets_to_send:
-            fc_record = self.receive_packet(timeout=self.N_BS_TIMEOUT)
-            n_bs_measurements.append((time()-time_n_bs_measurement_start)*1000.)
-            packet_records.append(fc_record)
-            if fc_record.packet_type != CanPacketType.FLOW_CONTROL:
-                if CanPacketType.is_initial_packet_type(fc_record.packet_type):
-                    raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
+            record = self.receive_packet(timeout=self.N_BS_TIMEOUT)
+            n_bs_measurements.append((time() - time_n_bs_measurement_start) * 1000.)
+            if record.packet_type == CanPacketType.FLOW_CONTROL:
+                packet_records.append(record)
+                if record.flow_status == CanFlowStatus.ContinueToSend:
+                    number_of_packets = len(packets_to_send) if record.block_size == 0 else record.block_size
+                    delay_between_cf = self.n_cs if self.n_cs is not None else \
+                        CanSTminTranslator.decode(record.st_min)  # type: ignore
+                    packet_records.extend(self._send_packets_block(packets=packets_to_send[:number_of_packets],
+                                                                   delay=delay_between_cf))
+                    time_n_bs_measurement_start = time()
+                    packets_to_send = packets_to_send[number_of_packets:]
+                elif record.flow_status == CanFlowStatus.Wait:
+                    time_n_bs_measurement_start = time()
+                elif record.flow_status == CanFlowStatus.Overflow:
+                    raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+                else:
+                    raise NotImplementedError(f"Unknown Flow Status received: {record.flow_status}")
+            elif CanPacketType.is_initial_packet_type(record.packet_type):
+                raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
+            else:
                 warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
                      category=TransmissionInterruptionWarning)
-            elif fc_record.flow_status == CanFlowStatus.ContinueToSend:
-                number_of_packets = len(packets_to_send) if fc_record.block_size == 0 else fc_record.block_size
-                delay_between_cf = CanSTminTranslator.decode(fc_record.flow_status) if self.n_cs is None else self.n_cs
-                packet_records.extend(self._send_packets_block(packets=packets_to_send[:number_of_packets],
-                                                               delay=delay_between_cf))
-                time_n_bs_measurement_start = time()
-                packets_to_send = packets_to_send[number_of_packets:]
-            elif fc_record.flow_status == CanFlowStatus.Wait:
-                time_n_bs_measurement_start = time()
-            elif fc_record.flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
-            else:
-                raise NotImplementedError(f"Unknown Flow Status received: {fc_record.flow_status}")
         self.__n_bs_measured = tuple(n_bs_measurements) if n_bs_measurements else None
         return UdsMessageRecord(packet_records)
 
@@ -845,28 +847,31 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
         time_n_bs_measurement_start = time()
         while packets_to_send:
-            fc_record = await self.async_receive_packet(timeout=self.N_BS_TIMEOUT, loop=loop)
+            record = await self.async_receive_packet(timeout=self.N_BS_TIMEOUT, loop=loop)
             n_bs_measurements.append((time() - time_n_bs_measurement_start) * 1000.)
-            packet_records.append(fc_record)
-            if fc_record.packet_type != CanPacketType.FLOW_CONTROL:
-                if CanPacketType.is_initial_packet_type(fc_record.packet_type):
-                    raise TransmissionInterruptionError(f"UDS message transmission interrupted by a new message.")
+            if record.packet_type == CanPacketType.FLOW_CONTROL:
+                packet_records.append(record)
+                if record.flow_status == CanFlowStatus.ContinueToSend:
+                    number_of_packets = len(packets_to_send) if record.block_size == 0 else record.block_size
+                    delay_between_cf = self.n_cs if self.n_cs is not None else \
+                        CanSTminTranslator.decode(record.st_min)  # type: ignore
+                    packet_records.extend(
+                        await self._async_send_packets_block(packets=packets_to_send[:number_of_packets],
+                                                             delay=delay_between_cf,
+                                                             loop=loop))
+                    time_n_bs_measurement_start = time()
+                    packets_to_send = packets_to_send[number_of_packets:]
+                elif record.flow_status == CanFlowStatus.Wait:
+                    time_n_bs_measurement_start = time()
+                elif record.flow_status == CanFlowStatus.Overflow:
+                    raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
+                else:
+                    raise NotImplementedError(f"Unknown Flow Status received: {record.flow_status}")
+            elif CanPacketType.is_initial_packet_type(record.packet_type):
+                raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
+            else:
                 warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
                      category=TransmissionInterruptionWarning)
-            if fc_record.flow_status == CanFlowStatus.ContinueToSend:
-                number_of_packets = len(packets_to_send) if fc_record.block_size == 0 else fc_record.block_size
-                delay_between_cf = CanSTminTranslator.decode(fc_record.flow_status) if self.n_cs is None else self.n_cs
-                packet_records.extend(await self._async_send_packets_block(packets=packets_to_send[:number_of_packets],
-                                                                           delay=delay_between_cf,
-                                                                           loop=loop))
-                time_n_bs_measurement_start = time()
-                packets_to_send = packets_to_send[number_of_packets:]
-            elif fc_record.flow_status == CanFlowStatus.Wait:
-                time_n_bs_measurement_start = time()
-            elif fc_record.flow_status == CanFlowStatus.Overflow:
-                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
-            else:
-                raise NotImplementedError(f"Unknown Flow Status received: {fc_record.flow_status}")
         self.__n_bs_measured = tuple(n_bs_measurements) if n_bs_measurements else None
         return UdsMessageRecord(packet_records)
 
