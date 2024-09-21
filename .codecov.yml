@@ -23,6 +23,7 @@ coverage:
         flags:
           - integration-tests
       integration-tests-branch:
+        target: 50%
         flags:
           - integration-tests-branch
       performance-tests:
