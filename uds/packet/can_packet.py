@@ -85,7 +85,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                 Flow status information carried by this Flow Control frame.
             - :parameter block_size: (required for: FC with ContinueToSend Flow Status)
                 Block size information carried by this Flow Control frame.
-            - :parameter **: (required for: FC with ContinueToSend Flow Status)
+            - :parameter st_min: (required for: FC with ContinueToSend Flow Status)
                 Separation Time minimum information carried by this Flow Control frame.
         """
         # initialize the variables

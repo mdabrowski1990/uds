@@ -24,5 +24,5 @@ class TransmissionInterruptionWarning(RuntimeWarning):
     """
     An unexpected packet was received during UDS message transmission.
 
-    According to UDS ISO Standards it shall be ignored.
+    According to UDS ISO Standards a received packet shall be ignored.
     """

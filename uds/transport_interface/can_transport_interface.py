@@ -80,6 +80,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
+            # TODO: Add N_WFTmax
 
         :raise TypeError: Provided Addressing Information value has unexpected type.
         """
@@ -87,6 +88,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             raise TypeError("Unsupported type of Addressing Information was provided.")
         self.__addressing_information: AbstractCanAddressingInformation = addressing_information
         super().__init__(bus_manager=can_bus_manager)
+        self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
+        self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.n_as_timeout = kwargs.pop("n_as_timeout", self.N_AS_TIMEOUT)
         self.n_ar_timeout = kwargs.pop("n_ar_timeout", self.N_AR_TIMEOUT)
         self.n_bs_timeout = kwargs.pop("n_bs_timeout", self.N_BS_TIMEOUT)
@@ -97,6 +100,40 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                                                             self.DEFAULT_FLOW_CONTROL_PARAMETERS)
         self.__segmenter = CanSegmenter(addressing_information=addressing_information, **kwargs)
 
+    # Common
+
+    def _update_n_bs_measured(self, message: UdsMessageRecord) -> None:
+        """
+        Update measured values of N_Bs according to timestamps of CAN packet records.
+
+        :param message: Record of UDS message transmitted over CAN.
+        """
+        if len(message.packets_records) == 1:
+            self.__n_bs_measured = None
+        else:
+            n_bs_measured = []
+            for i, packet_record in enumerate(message.packets_records[1:]):
+                if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
+                    n_bs = packet_record.transmission_time - message.packets_records[i].transmission_time
+                    n_bs_measured.append(round(n_bs.total_seconds()*1000, 3))
+            self.__n_bs_measured = tuple(n_bs_measured)
+
+    def _update_n_cr_measured(self, message: UdsMessageRecord) -> None:
+        """
+        Update measured values of N_Cr according to timestamps of CAN packet records.
+
+        :param message: Record of UDS message transmitted over CAN.
+        """
+        if len(message.packets_records) == 1:
+            self.__n_cr_measured = None
+        else:
+            n_cr_measured = []
+            for i, packet_record in enumerate(message.packets_records[1:]):
+                if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+                    n_cr = packet_record.transmission_time - message.packets_records[i].transmission_time
+                    n_cr_measured.append(round(n_cr.total_seconds()*1000, 3))
+            self.__n_cr_measured = tuple(n_cr_measured)
+
     @property
     def segmenter(self) -> CanSegmenter:
         """Value of the segmenter used by this CAN Transport Interface."""
@@ -106,13 +143,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def n_as_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for N_As time parameter."""
+        """Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter."""
         return self.__n_as_timeout
 
     @n_as_timeout.setter
     def n_as_timeout(self, value: TimeMillisecondsAlias):
         """
-        Set timeout value for N_As time parameter.
+        Set timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -132,20 +169,20 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @abstractmethod
     def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the last measured value of N_As time parameter.
+        Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
 
     @property
     def n_ar_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for N_Ar time parameter."""
+        """Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter."""
         return self.__n_ar_timeout
 
     @n_ar_timeout.setter
     def n_ar_timeout(self, value: TimeMillisecondsAlias):
         """
-        Set timeout value for N_Ar time parameter.
+        Set timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -165,20 +202,20 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @abstractmethod
     def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the last measured value of N_Ar time parameter.
+        Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
 
     @property
     def n_bs_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for N_Bs time parameter."""
+        """Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter."""
         return self.__n_bs_timeout
 
     @n_bs_timeout.setter
     def n_bs_timeout(self, value: TimeMillisecondsAlias):
         """
-        Set timeout value for N_Bs time parameter.
+        Set timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -195,18 +232,23 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.__n_bs_timeout = value
 
     @property  # noqa
-    @abstractmethod
     def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
-        Get the last measured values (during the last message transmission) of N_Bs time parameter.
+        Get the last measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
-        :return: Tuple with times in milliseconds or None if the values were never measured.
+        .. note:: The last measurement comes from the last transmission of UDS message using either
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_message`
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_send_message`
+            method.
+
+        :return: Tuple with times in milliseconds or None if the values could not be measured.
         """
+        return self.__n_bs_measured
 
     @property
     def n_br(self) -> TimeMillisecondsAlias:
         """
-        Get the value of N_Br time parameter which is currently set.
+        Get the value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter which is currently set.
 
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
@@ -216,7 +258,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @n_br.setter
     def n_br(self, value: TimeMillisecondsAlias):
         """
-        Set the value of N_Br time parameter to use.
+        Set the value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use.
 
         :param value: The value to set.
 
@@ -232,12 +274,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_br_max(self) -> TimeMillisecondsAlias:
         """
-        Get the maximum valid value of N_Br time parameter.
+        Get the maximum valid value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter.
 
         .. warning:: To assess maximal value of :ref:`N_Br <knowledge-base-can-n-br>`, the actual value of
             :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter is required.
-            Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
-            no measurement result).
+            Either the latest measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` would be used,
+            or 0ms would be assumed (if there are no measurement result).
         """
         n_ar_measured = 0 if self.n_ar_measured is None else self.n_ar_measured
         return 0.9 * self.n_bs_timeout - n_ar_measured
@@ -245,7 +287,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_cs(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the value of N_Cs time parameter which is currently set.
+        Get the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter which is currently set.
 
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
@@ -255,7 +297,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @n_cs.setter
     def n_cs(self, value: Optional[TimeMillisecondsAlias]):
         """
-        Set the value of N_Cs time parameter to use.
+        Set the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use.
 
         :param value: The value to set.
             - None - use timing compatible with STmin value received in a preceding Flow Control packet
@@ -274,25 +316,25 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def n_cs_max(self) -> TimeMillisecondsAlias:
         """
-        Get the maximum valid value of N_Cs time parameter.
+        Get the maximum valid value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter.
 
         .. warning:: To assess maximal value of :ref:`N_Cs <knowledge-base-can-n-cs>`, the actual value of
             :ref:`N_As <knowledge-base-can-n-as>` time parameter is required.
-            Either the latest measured value of N_Ar would be used, or 0ms would be assumed (if there are
-            no measurement result).
+            Either the latest measured value of :ref:`N_As <knowledge-base-can-n-as>` would be used,
+            or 0ms would be assumed (if there are no measurement result).
         """
         n_as_measured = 0 if self.n_as_measured is None else self.n_as_measured
         return 0.9 * self.n_cr_timeout - n_as_measured
 
     @property
     def n_cr_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for N_Cr time parameter."""
+        """Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter."""
         return self.__n_cr_timeout
 
     @n_cr_timeout.setter
     def n_cr_timeout(self, value: TimeMillisecondsAlias):
         """
-        Set timeout value for N_Cr time parameter.
+        Set timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -309,13 +351,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.__n_cr_timeout = value
 
     @property  # noqa
-    @abstractmethod
     def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
-        Get the last measured values (during the last message reception) of N_Cr time parameter.
+        Get the last measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
-        :return: Tuple with times in milliseconds or None if the values were never measured.
+        .. note:: The last measurement comes from the last reception of UDS message using either
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.receive_message`
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_receive_message`
+            method.
+
+        :return: Tuple with times in milliseconds or None if the values could not be measured.
         """
+        return self.__n_cr_measured
 
     # Communication parameters
 
@@ -431,8 +478,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
-        self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
-        self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         super().__init__(can_bus_manager=can_bus_manager,
                          addressing_information=addressing_information,
                          **kwargs)
@@ -449,7 +494,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     @property
     def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the last measured value of N_As time parameter.
+        Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
@@ -458,29 +503,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     @property
     def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the last measured value of N_Ar time parameter.
+        Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
         return self.__n_ar_measured
-
-    @property  # noqa
-    def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
-        """
-        Get the last measured value of N_Bs time parameter.
-
-        :return: Time in milliseconds or None if the value was never measured.
-        """
-        return self.__n_bs_measured
-
-    @property  # noqa
-    def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
-        """
-        Get the last measured value of N_Cr time parameter.
-
-        :return: Time in milliseconds or None if the value was never measured.
-        """
-        return self.__n_cr_measured
 
     def _teardown_notifier(self, suppress_warning: bool = False) -> None:
         """
@@ -535,20 +562,23 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                              timeout=self._MIN_NOTIFIER_TIMEOUT,
                                              loop=loop)
 
-    def _send_packets_block(self,
-                            packets: List[CanPacket],
-                            delay: TimeMillisecondsAlias) -> Tuple[CanPacketRecord, ...]:
+    def _send_cf_packets_block(self,
+                               cf_packets_block: List[CanPacket],
+                               delay: TimeMillisecondsAlias) -> Tuple[CanPacketRecord, ...]:
         """
-        Send block of CAN packets.
+        Send block of Consecutive Frame CAN packets.
 
-        :param packets: CAN packets to send.
-        :param delay: Minimal delay between sending following packets [ms].
+        :param cf_packets_block: Consecutive Frame CAN packets to send.
+        :param delay: Minimal delay between sending following Consecutive Frames [ms].
 
-        :return: Records with historic information about transmitted CAN packets.
+        :raise TransmissionInterruptionError: A new UDS message transmission was started while sending this message.
+
+        :return: Records with historic information about transmitted Consecutive Frame CAN packets.
         """
         packet_records = []
-        for packet in packets:
+        for cf_packet in cf_packets_block:
             sleep(delay / 1000.)
+            # handle errors - check whether another UDS message transmission was started while waiting
             while self.__frames_buffer.buffer.qsize() > 0:
                 received_frame = self.__frames_buffer.buffer.get_nowait()
                 packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
@@ -561,27 +591,32 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                       transmission_time=datetime.fromtimestamp(
                                                           received_frame.timestamp))
                     if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                        raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
-                    warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
+                        raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
+                                                            "this message.")
+                    warn(message="An unrelated CAN packet was received during UDS message transmission.",
                          category=TransmissionInterruptionWarning)
-            packet_records.append(self.send_packet(packet))
+            packet_records.append(self.send_packet(cf_packet))
         return tuple(packet_records)
 
-    async def _async_send_packets_block(self, packets: List[CanPacket],
-                                        delay: TimeMillisecondsAlias,
-                                        loop: Optional[AbstractEventLoop] = None) -> Tuple[CanPacketRecord, ...]:
+    async def _async_send_cf_packets_block(self,
+                                           cf_packets_block: List[CanPacket],
+                                           delay: TimeMillisecondsAlias,
+                                           loop: Optional[AbstractEventLoop] = None) -> Tuple[CanPacketRecord, ...]:
         """
-        Send block of CAN packets asynchronously.
+        Send block of Consecutive Frame CAN packets asynchronously.
 
-        :param packets: CAN packets to send.
-        :param delay: Minimal delay between sending following packets [ms].
+        :param cf_packets_block: Consecutive Frame CAN packets to send.
+        :param delay: Minimal delay between sending following Consecutive Frames [ms].
         :param loop: An asyncio event loop to use for scheduling this task.
 
-        :return: Records with historic information about transmitted CAN packets.
+        :raise TransmissionInterruptionError: A new UDS message transmission was started while sending this message.
+
+        :return: Records with historic information about transmitted Consecutive Frame CAN packets.
         """
         packet_records = []
-        for packet in packets:
+        for cf_packet in cf_packets_block:
             await asyncio.sleep(delay / 1000.)
+            # handle errors - check whether another UDS message transmission was started while waiting
             while self.__frames_buffer.buffer.qsize() > 0:
                 received_frame = self.__frames_buffer.buffer.get_nowait()
                 packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
@@ -594,10 +629,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                       transmission_time=datetime.fromtimestamp(
                                                           received_frame.timestamp))
                     if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                        raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
-                    warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
+                        raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
+                                                            "this message.")
+                    warn(message="An unrelated CAN packet was received during UDS message transmission.",
                          category=TransmissionInterruptionWarning)
-            packet_records.append(await self.async_send_packet(packet, loop=loop))
+            packet_records.append(await self.async_send_packet(cf_packet, loop=loop))
         return tuple(packet_records)
 
     def clear_frames_buffers(self) -> None:
@@ -654,9 +690,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
             observed_frame = self.__frames_buffer.get_message(timeout=timeout_left)
         if is_flow_control_packet:
+            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
             # self.__n_ar_measured = observed_frame.timestamp - time_start
             self.__n_ar_measured = time() - time_start
         else:
+            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
             # self.__n_as_measured = observed_frame.timestamp - time_start
             self.__n_as_measured = time() - time_start
         return CanPacketRecord(frame=observed_frame,
@@ -699,9 +737,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             timeout_left = timeout / 1000. - (time() - time_start)
             observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
         if is_flow_control_packet:
+            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
             # self.__n_ar_measured = observed_frame.timestamp - time_start
             self.__n_ar_measured = time() - time_start
         else:
+            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
             # self.__n_as_measured = observed_frame.timestamp - time_start
             self.__n_as_measured = time() - time_start
         return CanPacketRecord(frame=observed_frame,
@@ -793,43 +833,47 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Transmit UDS message over CAN.
 
+        .. warning:: Must not be called within an asynchronous function.
+
         :param message: A message to send.
 
-        :raise OverflowError: Flow Control packet Flow Status equal to OVERFLOW was received.
-        :raise TransmissionInterruptionError: A new UDS message transmission interrupted this message sending.
+        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
+        :raise TransmissionInterruptionError: A new UDS message transmission was started while sending this message.
+        :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
 
         :return: Record with historic information about transmitted UDS message.
         """
-        n_bs_measurements = []
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [self.send_packet(packets_to_send.pop(0))]
         time_n_bs_measurement_start = time()
         while packets_to_send:
             record = self.receive_packet(timeout=self.N_BS_TIMEOUT)
-            n_bs_measurements.append((time() - time_n_bs_measurement_start) * 1000.)
             if record.packet_type == CanPacketType.FLOW_CONTROL:
                 packet_records.append(record)
                 if record.flow_status == CanFlowStatus.ContinueToSend:
                     number_of_packets = len(packets_to_send) if record.block_size == 0 else record.block_size
                     delay_between_cf = self.n_cs if self.n_cs is not None else \
                         CanSTminTranslator.decode(record.st_min)  # type: ignore
-                    packet_records.extend(self._send_packets_block(packets=packets_to_send[:number_of_packets],
-                                                                   delay=delay_between_cf))
-                    time_n_bs_measurement_start = time()
+                    packet_records.extend(self._send_cf_packets_block(
+                        cf_packets_block=packets_to_send[:number_of_packets],
+                        delay=delay_between_cf))
                     packets_to_send = packets_to_send[number_of_packets:]
                 elif record.flow_status == CanFlowStatus.Wait:
-                    time_n_bs_measurement_start = time()
+                    # TODO: Handle N_WFTmax
+                    continue
                 elif record.flow_status == CanFlowStatus.Overflow:
                     raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
                 else:
                     raise NotImplementedError(f"Unknown Flow Status received: {record.flow_status}")
             elif CanPacketType.is_initial_packet_type(record.packet_type):
-                raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
+                raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
+                                                    "this message.")
             else:
-                warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
+                warn(message="An unrelated CAN packet was received during UDS message transmission.",
                      category=TransmissionInterruptionWarning)
-        self.__n_bs_measured = tuple(n_bs_measurements) if n_bs_measurements else None
-        return UdsMessageRecord(packet_records)
+        message_records = UdsMessageRecord(packet_records)
+        self._update_n_bs_measured(message_records)
+        return message_records
 
     async def async_send_message(self,
                                  message: UdsMessage,
@@ -840,15 +884,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param message: A message to send.
         :param loop: An asyncio event loop to use for scheduling this task.
 
+        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was received.
+        :raise TransmissionInterruptionError: A new UDS message transmission was started while sending this message.
+        :raise NotImplementedError: Flow Control CAN packet with unknown Flow Status was received.
+
         :return: Record with historic information about transmitted UDS message.
         """
-        n_bs_measurements = []
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
-        time_n_bs_measurement_start = time()
         while packets_to_send:
             record = await self.async_receive_packet(timeout=self.N_BS_TIMEOUT, loop=loop)
-            n_bs_measurements.append((time() - time_n_bs_measurement_start) * 1000.)
             if record.packet_type == CanPacketType.FLOW_CONTROL:
                 packet_records.append(record)
                 if record.flow_status == CanFlowStatus.ContinueToSend:
@@ -856,28 +901,32 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     delay_between_cf = self.n_cs if self.n_cs is not None else \
                         CanSTminTranslator.decode(record.st_min)  # type: ignore
                     packet_records.extend(
-                        await self._async_send_packets_block(packets=packets_to_send[:number_of_packets],
-                                                             delay=delay_between_cf,
-                                                             loop=loop))
-                    time_n_bs_measurement_start = time()
+                        await self._async_send_cf_packets_block(cf_packets_block=packets_to_send[:number_of_packets],
+                                                                delay=delay_between_cf,
+                                                                loop=loop))
                     packets_to_send = packets_to_send[number_of_packets:]
                 elif record.flow_status == CanFlowStatus.Wait:
-                    time_n_bs_measurement_start = time()
+                    # TODO: Handle N_WFTmax
+                    continue
                 elif record.flow_status == CanFlowStatus.Overflow:
                     raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
                 else:
                     raise NotImplementedError(f"Unknown Flow Status received: {record.flow_status}")
             elif CanPacketType.is_initial_packet_type(record.packet_type):
-                raise TransmissionInterruptionError("UDS message transmission interrupted by a new message.")
+                raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
+                                                    "this message.")
             else:
-                warn(message="CAN message transmission interrupted by an unrelated CAN packet.",
+                warn(message="An unrelated CAN packet was received during UDS message transmission.",
                      category=TransmissionInterruptionWarning)
-        self.__n_bs_measured = tuple(n_bs_measurements) if n_bs_measurements else None
-        return UdsMessageRecord(packet_records)
+        message_records = UdsMessageRecord(packet_records)
+        self._update_n_bs_measured(message_records)
+        return message_records
 
     def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
         """
         Receive UDS message over CAN.
+
+        .. warning:: Must not be called within an asynchronous function.
 
         :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
             This means that receiving might last longer if First Frame was received within provided time.
