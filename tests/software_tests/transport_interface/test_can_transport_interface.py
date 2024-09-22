@@ -931,7 +931,7 @@ class TestPyCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_send_cf_packets_block(self, packets, delay):
         mock_qsize = Mock(return_value=0)
-        self.mock_can_transport_interface._PyCanTransportInterface__frames_buffer = Mock(buffer=Mock(qsize=mock_qsize))
+        self.mock_can_transport_interface._PyCanTransportInterface__async_frames_buffer = Mock(buffer=Mock(qsize=mock_qsize))
         packet_records = await PyCanTransportInterface._async_send_cf_packets_block(self=self.mock_can_transport_interface,
                                                                                     cf_packets_block=packets, delay=delay)
         assert isinstance(packet_records, tuple)
@@ -952,7 +952,7 @@ class TestPyCanTransportInterface:
     async def test_async_send_cf_packets_block__other_traffic(self, packets, delay):
         mock_get_nowait = Mock(return_value=Mock(spec=Message))
         mock_qsize = Mock(side_effect=[3, 2, 1, 0] * len(packets))
-        self.mock_can_transport_interface._PyCanTransportInterface__frames_buffer = Mock(buffer=Mock(
+        self.mock_can_transport_interface._PyCanTransportInterface__async_frames_buffer = Mock(buffer=Mock(
             get_nowait=mock_get_nowait,
             qsize=mock_qsize
         ))
@@ -977,7 +977,7 @@ class TestPyCanTransportInterface:
     async def test_async_send_cf_packets_block__packets_traffic(self, packets, delay):
         mock_get_nowait = Mock(return_value=Mock(spec=Message))
         mock_qsize = Mock(side_effect=[1, 0] * len(packets))
-        self.mock_can_transport_interface._PyCanTransportInterface__frames_buffer = Mock(buffer=Mock(
+        self.mock_can_transport_interface._PyCanTransportInterface__async_frames_buffer = Mock(buffer=Mock(
             get_nowait=mock_get_nowait,
             qsize=mock_qsize
         ))
@@ -1004,7 +1004,7 @@ class TestPyCanTransportInterface:
     async def test_async_send_cf_packets_block__transmission_interruption(self, packets, delay):
         mock_get_nowait = Mock(return_value=Mock(spec=Message))
         mock_qsize = Mock(side_effect=[1, 0] * len(packets))
-        self.mock_can_transport_interface._PyCanTransportInterface__frames_buffer = Mock(buffer=Mock(
+        self.mock_can_transport_interface._PyCanTransportInterface__async_frames_buffer = Mock(buffer=Mock(
             get_nowait=mock_get_nowait,
             qsize=mock_qsize
         ))

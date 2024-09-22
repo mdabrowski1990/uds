@@ -114,7 +114,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             for i, packet_record in enumerate(message.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
                     n_bs = packet_record.transmission_time - message.packets_records[i].transmission_time
-                    n_bs_measured.append(round(n_bs.total_seconds()*1000, 3))
+                    n_bs_measured.append(round(n_bs.total_seconds() * 1000, 3))
             self.__n_bs_measured = tuple(n_bs_measured)
 
     def _update_n_cr_measured(self, message: UdsMessageRecord) -> None:
@@ -130,7 +130,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             for i, packet_record in enumerate(message.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
                     n_cr = packet_record.transmission_time - message.packets_records[i].transmission_time
-                    n_cr_measured.append(round(n_cr.total_seconds()*1000, 3))
+                    n_cr_measured.append(round(n_cr.total_seconds() * 1000, 3))
             self.__n_cr_measured = tuple(n_cr_measured)
 
     @property
@@ -480,10 +480,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         super().__init__(can_bus_manager=can_bus_manager,
                          addressing_information=addressing_information,
                          **kwargs)
-        self.__notifier: Optional[Notifier] = None
         self.__frames_buffer = BufferedReader()
-        self.__async_notifier: Optional[Notifier] = None
+        self.__notifier: Optional[Notifier] = None
         self.__async_frames_buffer = AsyncBufferedReader()
+        self.__async_notifier: Optional[Notifier] = None
 
     def __del__(self):
         """Safely close all threads open by this object."""
@@ -616,8 +616,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         for cf_packet in cf_packets_block:
             await asyncio.sleep(delay / 1000.)
             # handle errors - check whether another UDS message transmission was started while waiting
-            while self.__frames_buffer.buffer.qsize() > 0:
-                received_frame = self.__frames_buffer.buffer.get_nowait()
+            while self.__async_frames_buffer.buffer.qsize() > 0:
+                received_frame = self.__async_frames_buffer.buffer.get_nowait()
                 packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                         data=received_frame.data)
                 if packet_addressing_type is not None:

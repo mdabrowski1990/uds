@@ -12,6 +12,7 @@ from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
+from uds.utilities import TransmissionInterruptionError
 
 
 class TestPythonCanKvaser:
@@ -1620,3 +1621,113 @@ class TestPythonCanKvaser:
         with pytest.raises(OverflowError):
             await future_record
         await frame_sending_task
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("new_message", [
+        UdsMessage([0x10, 0x81], AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("fc_after, new_message_after, st_min", [
+        (5, 100, 50),
+        (50, 1, 100),
+        (1, 10, 1),
+    ])
+    def test_new_message_started_when_multi_packet_message_sending(self, example_addressing_information,
+                                                                   example_addressing_information_2nd_node,
+                                                                   message, new_message, fc_after, new_message_after,
+                                                                   st_min):
+        """
+        Check for a synchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
+
+        Procedure:
+        1. Schedule Flow Control CAN packet with information to continue sending all consecutive frame packets at once.
+        2. Schedule Single Frame/First Frame CAN packet starting a transmission of a new message.
+        3. Send a UDS message using Transport Interface (via CAN Interface).
+            Expected: UDS message transmission stopped and an exception raised.
+
+        :param example_addressing_information: Example Addressing Information of a CAN Node.
+        :param example_addressing_information_2nd_node: Example Addressing Information of a CAN Node.
+        :param message: UDS message to send.
+        :param new_message: UDS message to interrupt.
+        :param fc_after: Delay to use for sending CAN flow control.
+        :param new_message_after: Delay to use for sending interrupting message.
+        :param st_min: STmin value to transmit in Flow Control.
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
+                                                                           block_size=0,
+                                                                           st_min=st_min)
+        flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
+        interrupting_packet = other_node_segmenter.segmentation(new_message)[0]
+        interrupting_frame = Message(arbitration_id=interrupting_packet.can_id, data=interrupting_packet.raw_frame_data)
+        Timer(interval=fc_after / 1000., function=self.can_interface_2.send, args=(flow_control_frame,)).start()
+        Timer(interval=new_message_after / 1000., function=self.can_interface_2.send,
+              args=(interrupting_frame,)).start()
+        with pytest.raises(TransmissionInterruptionError):
+            can_transport_interface.send_message(message)
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("new_message", [
+        UdsMessage([0x10, 0x81], AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("fc_after, new_message_after, st_min", [
+        (5, 100, 50),
+        (50, 1, 100),
+        (1, 10, 1),
+    ])
+    @pytest.mark.asyncio
+    async def test_new_message_started_when_multi_packet_async_message_sending(self, example_addressing_information,
+                                                                               example_addressing_information_2nd_node,
+                                                                               message, new_message, fc_after,
+                                                                               new_message_after, st_min):
+        """
+        Check for a synchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
+
+        Procedure:
+        1. Schedule Flow Control CAN packet with information to continue sending all consecutive frame packets at once.
+        2. Schedule Single Frame/First Frame CAN packet starting a transmission of a new message.
+        3. Send a UDS message using Transport Interface (via CAN Interface).
+            Expected: UDS message transmission stopped and an exception raised.
+
+        :param example_addressing_information: Example Addressing Information of a CAN Node.
+        :param example_addressing_information_2nd_node: Example Addressing Information of a CAN Node.
+        :param message: UDS message to send.
+        :param new_message: UDS message to interrupt.
+        :param fc_after: Delay to use for sending CAN flow control.
+        :param new_message_after: Delay to use for sending interrupting message after Flow Control.
+        :param st_min: STmin value to transmit in Flow Control.
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
+                                                                           block_size=0,
+                                                                           st_min=st_min)
+        flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
+        interrupting_packet = other_node_segmenter.segmentation(new_message)[0]
+        interrupting_frame = Message(arbitration_id=interrupting_packet.can_id, data=interrupting_packet.raw_frame_data)
+
+        async def _send_fc():
+            await asyncio.sleep(fc_after / 1000.)
+            self.can_interface_2.send(flow_control_frame)
+
+        async def _send_message():
+            await asyncio.sleep(new_message_after / 1000.)
+            self.can_interface_2.send(interrupting_frame)
+
+        send_fc_task = asyncio.create_task(_send_fc())
+        send_message_task = asyncio.create_task(_send_message())
+        with pytest.raises(TransmissionInterruptionError):
+            await can_transport_interface.async_send_message(message)
+
+        await send_fc_task
+        await send_message_task
