@@ -80,7 +80,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
-            # TODO: Add N_WFTmax
 
         :raise TypeError: Provided Addressing Information value has unexpected type.
         """
@@ -845,7 +844,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [self.send_packet(packets_to_send.pop(0))]
-        time_n_bs_measurement_start = time()
         while packets_to_send:
             record = self.receive_packet(timeout=self.N_BS_TIMEOUT)
             if record.packet_type == CanPacketType.FLOW_CONTROL:
@@ -859,7 +857,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                         delay=delay_between_cf))
                     packets_to_send = packets_to_send[number_of_packets:]
                 elif record.flow_status == CanFlowStatus.Wait:
-                    # TODO: Handle N_WFTmax
                     continue
                 elif record.flow_status == CanFlowStatus.Overflow:
                     raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
@@ -906,7 +903,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                                 loop=loop))
                     packets_to_send = packets_to_send[number_of_packets:]
                 elif record.flow_status == CanFlowStatus.Wait:
-                    # TODO: Handle N_WFTmax
                     continue
                 elif record.flow_status == CanFlowStatus.Overflow:
                     raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
