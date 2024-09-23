@@ -1,4 +1,4 @@
-from random import choice, randint
+from random import randint
 
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
@@ -15,7 +15,6 @@ from uds.transport_interface.can_transport_interface import (
     CanPacketRecord,
     CanPacketType,
     DefaultFlowControlParametersGenerator,
-    Message,
     PyCanTransportInterface,
     TransmissionDirection,
     TransmissionInterruptionError,

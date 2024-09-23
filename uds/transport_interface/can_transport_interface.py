@@ -631,8 +631,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         for _ in range(self.__frames_buffer.buffer.qsize()):
             self.__frames_buffer.buffer.get_nowait()
         for _ in range(self.__async_frames_buffer.buffer.qsize()):
-            print("ERROR - clearing frames")
-            print(_)
             self.__async_frames_buffer.buffer.get_nowait()
 
     @staticmethod
