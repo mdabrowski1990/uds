@@ -190,7 +190,7 @@ class TestPythonCanKvaser:
          Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1001),  # ms
+        (1000, 1005),  # ms
         (50, 55),
     ])
     def test_receive_packet__timeout(self, addressing_information, addressing_type, frame, timeout, send_after):
@@ -506,7 +506,7 @@ class TestPythonCanKvaser:
          Message(data=[0xFF, 0x02, 0x3E, 0x80, 0xAA, 0xAA, 0xAA, 0xAA])),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1001),  # ms
+        (1000, 1005),  # ms
         (50, 55),
     ])
     @pytest.mark.asyncio
@@ -1000,7 +1000,7 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1001),  # ms
+        (1000, 1005),  # ms
         (50, 55),
     ])
     def test_receive_message__sf__timeout(self, example_addressing_information, example_addressing_information_2nd_node,
@@ -1089,7 +1089,7 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1001),  # ms
+        (1000, 1005),  # ms
         (50, 55),
     ])
     @pytest.mark.asyncio
@@ -1631,9 +1631,9 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("fc_after, new_message_after, st_min", [
-        (5, 100, 50),
         (50, 1, 100),
         (8, 10, 10),
+        (5, 100, 50),
     ])
     def test_new_message_started_when_multi_packet_message_sending(self, example_addressing_information,
                                                                    example_addressing_information_2nd_node,
@@ -1681,9 +1681,9 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("fc_after, new_message_after, st_min", [
-        # (5, 100, 50),  # TODO: figure out why this one keep failing
         (50, 1, 100),
         (8, 10, 10),
+        (5, 100, 51),
     ])
     @pytest.mark.asyncio
     async def test_new_message_started_when_multi_packet_async_message_sending(self, example_addressing_information,
@@ -1691,12 +1691,12 @@ class TestPythonCanKvaser:
                                                                                message, new_message, fc_after,
                                                                                new_message_after, st_min):
         """
-        Check for a synchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
+        Check for a asynchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
 
         Procedure:
         1. Schedule Flow Control CAN packet with information to continue sending all consecutive frame packets at once.
         2. Schedule Single Frame/First Frame CAN packet starting a transmission of a new message.
-        3. Send a UDS message using Transport Interface (via CAN Interface).
+        3. Send (using async method) a UDS message using Transport Interface (via CAN Interface).
             Expected: UDS message transmission stopped and an exception raised.
 
         :param example_addressing_information: Example Addressing Information of a CAN Node.

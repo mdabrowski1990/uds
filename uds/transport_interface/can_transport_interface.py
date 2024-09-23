@@ -576,19 +576,13 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         packet_records = []
         for cf_packet in cf_packets_block:
-            sleep(delay / 1000.)
-            # handle errors - check whether another UDS message transmission was started while waiting
-            while self.__frames_buffer.buffer.qsize() > 0:
-                received_frame = self.__frames_buffer.buffer.get_nowait()
-                packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
-                                                                        data=received_frame.data)
-                if packet_addressing_type is not None:
-                    received_packet = CanPacketRecord(frame=received_frame,
-                                                      direction=TransmissionDirection.RECEIVED,
-                                                      addressing_type=packet_addressing_type,
-                                                      addressing_format=self.segmenter.addressing_format,
-                                                      transmission_time=datetime.fromtimestamp(
-                                                          received_frame.timestamp))
+            time_end = time() + (delay / 1000.)
+            while time() < time_end:
+                try:
+                    received_packet = self.receive_packet(timeout=(time_end - time()))
+                except TimeoutError:
+                    pass
+                else:
                     if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                         raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
                                                             "this message.")
@@ -614,19 +608,13 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         packet_records = []
         for cf_packet in cf_packets_block:
-            await asyncio.sleep(delay / 1000.)
-            # handle errors - check whether another UDS message transmission was started while waiting
-            while self.__async_frames_buffer.buffer.qsize() > 0:
-                received_frame = self.__async_frames_buffer.buffer.get_nowait()
-                packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
-                                                                        data=received_frame.data)
-                if packet_addressing_type is not None:
-                    received_packet = CanPacketRecord(frame=received_frame,
-                                                      direction=TransmissionDirection.RECEIVED,
-                                                      addressing_type=packet_addressing_type,
-                                                      addressing_format=self.segmenter.addressing_format,
-                                                      transmission_time=datetime.fromtimestamp(
-                                                          received_frame.timestamp))
+            time_end = time() + (delay / 1000.)
+            while time() < time_end:
+                try:
+                    received_packet = await self.async_receive_packet(timeout=(time_end - time()))
+                except TimeoutError:
+                    pass
+                else:
                     if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                         raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
                                                             "this message.")
@@ -644,6 +632,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         for _ in range(self.__frames_buffer.buffer.qsize()):
             self.__frames_buffer.buffer.get_nowait()
         for _ in range(self.__async_frames_buffer.buffer.qsize()):
+            print("ERROR - clearing frames")
+            print(_)
             self.__async_frames_buffer.buffer.get_nowait()
 
     @staticmethod
