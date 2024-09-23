@@ -2,11 +2,10 @@
 
 __all__ = ["AbstractCanTransportInterface", "PyCanTransportInterface"]
 
-import asyncio
 from abc import abstractmethod
 from asyncio import AbstractEventLoop, get_running_loop, wait_for
 from datetime import datetime
-from time import sleep, time
+from time import time
 from typing import Any, List, Optional, Tuple
 from warnings import warn
 
@@ -579,7 +578,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             time_end = time() + (delay / 1000.)
             while time() < time_end:
                 try:
-                    received_packet = self.receive_packet(timeout=(time_end - time()))
+                    received_packet = self.receive_packet(timeout=time_end - time())
                 except TimeoutError:
                     pass
                 else:
@@ -611,7 +610,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             time_end = time() + (delay / 1000.)
             while time() < time_end:
                 try:
-                    received_packet = await self.async_receive_packet(timeout=(time_end - time()))
+                    received_packet = await self.async_receive_packet(timeout=time_end - time())
                 except TimeoutError:
                     pass
                 else:
