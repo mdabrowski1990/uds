@@ -3,7 +3,7 @@ codecov:
     uploads: false
 
 coverage:
-  range: 80...100
+  range: 50...100
   round: down
   precision: 2
   status:
@@ -23,6 +23,7 @@ coverage:
         flags:
           - integration-tests
       integration-tests-branch:
+        target: 50%
         flags:
           - integration-tests-branch
       performance-tests:
@@ -33,3 +34,4 @@ comment:
   layout: "reach, diff, flags, files"
   behavior: default
   require_changes: false
+  show_carryforward_flags: true

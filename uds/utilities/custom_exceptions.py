@@ -43,3 +43,11 @@ class UnusedArgumentError(ValueError):
 
 class AmbiguityError(ValueError):
     """Operation cannot be executed because it is ambiguous."""
+
+
+class TransmissionInterruptionError(RuntimeError):
+    """
+    An unexpected packet was received during UDS message transmission.
+
+    According to UDS ISO Standards the transmission shall be stopped.
+    """

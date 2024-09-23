@@ -1,6 +1,5 @@
 """UDS Issue: https://github.com/mdabrowski1990/uds/issues/228"""
 
-from threading import Timer
 from time import time
 
 from can import BufferedReader, Bus, Message, Notifier
@@ -16,8 +15,7 @@ if __name__ == "__main__":
 
     for _ in range(10):
         timestamp_before_send = time()
-        Timer(interval=0.1, function=kvaser_interface_1.send, args=(message,)).start()
-
+        kvaser_interface_1.send(message)
         sent_message = buffered_reader.get_message(timeout=1)
         timestamp_after_send = time()
 
@@ -26,6 +24,8 @@ if __name__ == "__main__":
               f"Timestamp before send: {timestamp_before_send}\n"
               f"Message timestamp: {sent_message.timestamp}\n"
               f"Current timestamp: {timestamp_after_send}\n"
+              f"Message timestamp - Timestamp before send: {sent_message.timestamp - timestamp_before_send} (expected > 0)\n"
+              f"Current timestamp - Message timestamp: {timestamp_after_send - sent_message.timestamp} (expected > 0)\n"
               f"Timestamp before send <= Message timestamp <= Current timestamp: {timestamp_before_send <= sent_message.timestamp <= timestamp_after_send} (expected `True`)")
 
     kvaser_interface_1.shutdown()

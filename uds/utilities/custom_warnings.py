@@ -18,3 +18,11 @@ class UnusedArgumentWarning(Warning):
 
 class ValueWarning(Warning):
     """Value of the argument is out of typical range, but the package is able to handle it."""
+
+
+class TransmissionInterruptionWarning(RuntimeWarning):
+    """
+    An unexpected packet was received during UDS message transmission.
+
+    According to UDS ISO Standards a received packet shall be ignored.
+    """

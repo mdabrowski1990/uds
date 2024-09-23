@@ -199,275 +199,6 @@ class TestCanSegmenter:
         self.mock_validate_raw_byte.assert_called_once_with(value)
         assert self.mock_can_segmenter._CanSegmenter__filler_byte == value
 
-    # is_input_packet
-
-    @pytest.mark.parametrize("frame_can_id, frame_data", [
-        ("some ID", "some data"),
-        (Mock(), MagicMock()),
-    ])
-    def test_is_input_packet__decoding_error(self, frame_can_id, frame_data):
-        self.mock_can_ai_class.decode_packet_ai.side_effect = ValueError
-        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) is None
-
-    @pytest.mark.parametrize("frame_can_id, frame_data, decoded_ai", [
-        ("some ID", "some data", {"a": 1, "b": 2}),
-        (Mock(), MagicMock(), MagicMock()),
-    ])
-    def test_is_input_packet__physical(self, frame_can_id, frame_data, decoded_ai):
-        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
-        mock_eq_physical = Mock(return_value=True)
-        self.mock_can_segmenter.rx_packets_physical_ai = MagicMock(__eq__=mock_eq_physical)
-        self.mock_can_segmenter.rx_packets_functional_ai = MagicMock(__eq__=Mock(return_value=False))
-        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) \
-               == AddressingType.PHYSICAL
-        mock_eq_physical.assert_called_once()
-
-    @pytest.mark.parametrize("frame_can_id, frame_data, decoded_ai", [
-        ("some ID", "some data", {"a": 1, "b": 2}),
-        (Mock(), MagicMock(), MagicMock()),
-    ])
-    def test_is_input_packet__functional(self, frame_can_id, frame_data, decoded_ai):
-        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
-        mock_eq_functional = Mock(return_value=True)
-        self.mock_can_segmenter.rx_packets_physical_ai = MagicMock(__eq__=Mock(return_value=False))
-        self.mock_can_segmenter.rx_packets_functional_ai = MagicMock(__eq__=mock_eq_functional)
-        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) \
-               == AddressingType.FUNCTIONAL
-        mock_eq_functional.assert_called_once()
-
-    @pytest.mark.parametrize("frame_can_id, frame_data, decoded_ai", [
-        ("some ID", "some data", {"a": 1, "b": 2}),
-        (Mock(), MagicMock(), MagicMock()),
-    ])
-    def test_is_input_packet__no_match(self, frame_can_id, frame_data, decoded_ai):
-        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
-        mock_eq_physical = Mock(return_value=False)
-        mock_eq_functional = Mock(return_value=False)
-        self.mock_can_segmenter.rx_packets_physical_ai = MagicMock(__eq__=mock_eq_physical)
-        self.mock_can_segmenter.rx_packets_functional_ai = MagicMock(__eq__=mock_eq_functional)
-        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) is None
-        mock_eq_physical.assert_called_once()
-        mock_eq_functional.assert_called_once()
-
-    # is_desegmented_message
-
-    @pytest.mark.parametrize("packets", ["some packets", range(4)])
-    def test_is_desegmented_message__value_error(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = False
-        with pytest.raises(ValueError):
-            CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets)
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock()],
-        (Mock(), Mock(), Mock()),
-    ])
-    def test_is_desegmented_message__not_implemented_error(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
-        self.mock_is_initial_packet_type.return_value = True
-        with pytest.raises(NotImplementedError):
-            CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets)
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-        self.mock_is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock()],
-        (Mock(), Mock(), Mock()),
-    ])
-    def test_is_desegmented_message__false__not_initial_packet(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
-        self.mock_is_initial_packet_type.return_value = False
-        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-        self.mock_is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(packet_type=CanPacketType.SINGLE_FRAME)],
-        [Mock(packet_type=CanPacketType.SINGLE_FRAME), Mock()],
-        (Mock(packet_type=CanPacketType.SINGLE_FRAME), Mock(), Mock()),
-    ])
-    def test_is_desegmented_message__single_frame(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
-        self.mock_is_initial_packet_type.return_value = True
-        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) \
-               is (len(packets) == 1)
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-        self.mock_is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(packet_type=CanPacketType.FIRST_FRAME, payload=[]), Mock()],
-        (Mock(packet_type=CanPacketType.FIRST_FRAME, payload=range(5)), Mock(), Mock()),
-    ])
-    def test_is_desegmented_message__first_frame__multiple_initial_packets(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
-        self.mock_is_initial_packet_type.return_value = True
-        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-        self.mock_is_initial_packet_type.assert_has_calls(
-            [call(packets[0].packet_type), call(packets[1].packet_type)])
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=11, payload=range(4)), Mock(payload=range(6))],
-        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=143, payload=[0xFF] * 10), Mock(payload=None),
-         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
-    ])
-    def test_is_desegmented_message__first_frame__too_little_packets(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
-        self.mock_is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
-        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-        self.mock_is_initial_packet_type.assert_has_calls(
-            [call(packet.packet_type) for packet in packets])
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=10, payload=range(4)), Mock(payload=range(6)),
-         Mock(payload=None)],
-        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=54, payload=[0xFF] * 10), Mock(payload=None),
-         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
-    ])
-    def test_is_desegmented_message__first_frame__too_many_packets(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
-        self.mock_is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
-        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-        self.mock_is_initial_packet_type.assert_has_calls(
-            [call(packet.packet_type) for packet in packets])
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=11, payload=range(4)), Mock(payload=range(7))],
-        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=100, payload=[0xFF] * 10), Mock(payload=None),
-         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
-    ])
-    def test_is_desegmented_message__first_frame__true(self, packets):
-        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
-        self.mock_is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
-        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is True
-        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
-        self.mock_is_initial_packet_type.assert_has_calls(
-            [call(packet.packet_type) for packet in packets])
-
-    # desegmentation
-
-    @pytest.mark.parametrize("packets", [
-        [Mock()],
-        (Mock(), Mock()),
-    ])
-    def test_desegmentation__segmentation_error(self, packets):
-        self.mock_can_segmenter.is_desegmented_message.return_value = False
-        with pytest.raises(SegmentationError):
-            CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
-        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock()],
-        (Mock(), Mock()),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_desegmentation__not_implemented(self, mock_isinstance, packets):
-        self.mock_can_segmenter.is_desegmented_message.return_value = True
-        mock_isinstance.return_value = False
-        with pytest.raises(NotImplementedError):
-            CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
-        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
-        mock_isinstance.assert_called()
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(spec=CanPacketRecord)],
-        (Mock(spec=CanPacketRecord), Mock(spec=CanPacketRecord)),
-    ])
-    def test_desegmentation__records(self, packets):
-        self.mock_can_segmenter.is_desegmented_message.return_value = True
-        assert CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets) \
-               == self.mock_uds_message_record_class.return_value
-        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
-        self.mock_uds_message_record_class.assert_called_once_with(packets)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(spec=CanPacket, packet_type=CanPacketType.SINGLE_FRAME)],
-        (Mock(spec=CanPacket, packet_type=CanPacketType.SINGLE_FRAME),),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_desegmentation__definition__unsegmented_message(self, mock_isinstance, packets):
-        self.mock_can_segmenter.is_desegmented_message.return_value = True
-        mock_isinstance.side_effect = lambda value, types: types == self.mock_can_packet_class and isinstance(value, CanPacket)
-        assert CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets) \
-               == self.mock_uds_message_class.return_value
-        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
-        self.mock_uds_message_class.assert_called_once_with(payload=packets[0].payload,
-                                                            addressing_type=packets[0].addressing_type)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME, data_length=10, payload=range(4)),
-         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=range(4, 10))],
-        (Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME, data_length=214, payload=list(range(0, 100, 2))),
-         Mock(spec=CanPacket, packet_type=CanPacketType.FLOW_CONTROL, payload=None),
-         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=list(range(100, 162))),
-         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=list(range(100, 162))),
-         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=list(range(0, 124, 2)))),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_desegmentation__definitions__segmented_message(self, mock_isinstance, packets):
-        self.mock_can_segmenter.is_desegmented_message.return_value = True
-        mock_isinstance.side_effect = lambda value, types: types == self.mock_can_packet_class and isinstance(value, CanPacket)
-        assert CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets) \
-               == self.mock_uds_message_class.return_value
-        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
-        total_payload = []
-        for packet in packets:
-            if packet.payload is not None:
-                total_payload.extend(packet.payload)
-        self.mock_uds_message_class.assert_called_once_with(payload=total_payload[:packets[0].data_length],
-                                                            addressing_type=packets[0].addressing_type)
-
-    @pytest.mark.parametrize("packets", [
-        [Mock(spec=CanPacket)],
-        (Mock(spec=CanPacket), Mock(spec=CanPacket)),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_desegmentation__definitions__segmentation_error(self, mock_isinstance, packets):
-        self.mock_can_segmenter.is_desegmented_message.return_value = True
-        mock_isinstance.side_effect = lambda value, types: types == self.mock_can_packet_class and isinstance(value, CanPacket)
-        with pytest.raises(SegmentationError):
-            CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
-        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
-
-    # segmentation
-
-    @pytest.mark.parametrize("message", [Mock(), "not a message"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_segmentation__type_error(self, mock_isinstance, message):
-        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
-                                                                                                               UdsMessage)
-        with pytest.raises(TypeError):
-            CanSegmenter.segmentation(self=self.mock_can_segmenter, message=message)
-
-    @pytest.mark.parametrize("message", [Mock(spec=UdsMessage, addressing_type=None),
-                                         Mock(spec=UdsMessage, addressing_type="Something new")])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_segmentation__not_implemented_error(self, mock_isinstance, message):
-        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
-                                                                                                               UdsMessage)
-        with pytest.raises(NotImplementedError):
-            CanSegmenter.segmentation(self=self.mock_can_segmenter, message=message)
-
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_segmentation__functional(self, mock_isinstance):
-        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
-                                                                                                               UdsMessage)
-        mock_message = Mock(spec=UdsMessage, addressing_type=AddressingType.FUNCTIONAL)
-        assert CanSegmenter.segmentation(self=self.mock_can_segmenter, message=mock_message) \
-               == self.mock_can_segmenter._CanSegmenter__functional_segmentation.return_value
-        self.mock_can_segmenter._CanSegmenter__functional_segmentation.assert_called_once_with(mock_message)
-
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_segmentation__physical(self, mock_isinstance):
-        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
-                                                                                                               UdsMessage)
-        mock_message = Mock(spec=UdsMessage, addressing_type=AddressingType.PHYSICAL)
-        assert CanSegmenter.segmentation(self=self.mock_can_segmenter, message=mock_message) \
-               == self.mock_can_segmenter._CanSegmenter__physical_segmentation.return_value
-        self.mock_can_segmenter._CanSegmenter__physical_segmentation.assert_called_once_with(mock_message)
-
     # __physical_segmentation
 
     @pytest.mark.parametrize("message_payload_size", [CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE + 1,
@@ -657,6 +388,315 @@ class TestCanSegmenter:
                                                            dlc=self.mock_can_segmenter.dlc,
                                                            filler_byte=self.mock_can_segmenter.filler_byte,
                                                            **functional_ai)
+
+    # is_input_packet
+
+    @pytest.mark.parametrize("frame_can_id, frame_data", [
+        ("some ID", "some data"),
+        (Mock(), MagicMock()),
+    ])
+    def test_is_input_packet__decoding_error(self, frame_can_id, frame_data):
+        self.mock_can_ai_class.decode_packet_ai.side_effect = ValueError
+        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) is None
+
+    @pytest.mark.parametrize("frame_can_id, frame_data, decoded_ai", [
+        ("some ID", "some data", {"a": 1, "b": 2}),
+        (Mock(), MagicMock(), MagicMock()),
+    ])
+    def test_is_input_packet__physical(self, frame_can_id, frame_data, decoded_ai):
+        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
+        mock_eq_physical = Mock(return_value=True)
+        self.mock_can_segmenter.rx_packets_physical_ai = MagicMock(__eq__=mock_eq_physical)
+        self.mock_can_segmenter.rx_packets_functional_ai = MagicMock(__eq__=Mock(return_value=False))
+        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) \
+               == AddressingType.PHYSICAL
+        mock_eq_physical.assert_called_once()
+
+    @pytest.mark.parametrize("frame_can_id, frame_data, decoded_ai", [
+        ("some ID", "some data", {"a": 1, "b": 2}),
+        (Mock(), MagicMock(), MagicMock()),
+    ])
+    def test_is_input_packet__functional(self, frame_can_id, frame_data, decoded_ai):
+        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
+        mock_eq_functional = Mock(return_value=True)
+        self.mock_can_segmenter.rx_packets_physical_ai = MagicMock(__eq__=Mock(return_value=False))
+        self.mock_can_segmenter.rx_packets_functional_ai = MagicMock(__eq__=mock_eq_functional)
+        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) \
+               == AddressingType.FUNCTIONAL
+        mock_eq_functional.assert_called_once()
+
+    @pytest.mark.parametrize("frame_can_id, frame_data, decoded_ai", [
+        ("some ID", "some data", {"a": 1, "b": 2}),
+        (Mock(), MagicMock(), MagicMock()),
+    ])
+    def test_is_input_packet__no_match(self, frame_can_id, frame_data, decoded_ai):
+        self.mock_can_ai_class.decode_packet_ai.return_value = decoded_ai
+        mock_eq_physical = Mock(return_value=False)
+        mock_eq_functional = Mock(return_value=False)
+        self.mock_can_segmenter.rx_packets_physical_ai = MagicMock(__eq__=mock_eq_physical)
+        self.mock_can_segmenter.rx_packets_functional_ai = MagicMock(__eq__=mock_eq_functional)
+        assert CanSegmenter.is_input_packet(self.mock_can_segmenter, can_id=frame_can_id, data=frame_data) is None
+        mock_eq_physical.assert_called_once()
+        mock_eq_functional.assert_called_once()
+
+    # is_desegmented_message
+
+    @pytest.mark.parametrize("packets", ["some packets", range(4)])
+    def test_is_desegmented_message__value_error(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = False
+        with pytest.raises(ValueError):
+            CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets)
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock()],
+        (Mock(), Mock(), Mock()),
+    ])
+    def test_is_desegmented_message__not_implemented_error(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
+        self.mock_is_initial_packet_type.return_value = True
+        with pytest.raises(NotImplementedError):
+            CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets)
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+        self.mock_is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock()],
+        (Mock(), Mock(), Mock()),
+    ])
+    def test_is_desegmented_message__false__not_initial_packet(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
+        self.mock_is_initial_packet_type.return_value = False
+        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+        self.mock_is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.SINGLE_FRAME)],
+        [Mock(packet_type=CanPacketType.SINGLE_FRAME), Mock()],
+        (Mock(packet_type=CanPacketType.SINGLE_FRAME), Mock(), Mock()),
+    ])
+    def test_is_desegmented_message__single_frame(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
+        self.mock_is_initial_packet_type.return_value = True
+        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) \
+               is (len(packets) == 1)
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+        self.mock_is_initial_packet_type.assert_called_once_with(packets[0].packet_type)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, payload=[]), Mock()],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, payload=range(5)), Mock(), Mock()),
+    ])
+    def test_is_desegmented_message__first_frame__multiple_initial_packets(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
+        self.mock_is_initial_packet_type.return_value = True
+        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+        self.mock_is_initial_packet_type.assert_has_calls(
+            [call(packets[0].packet_type), call(packets[1].packet_type)])
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=11, payload=range(4)), Mock(payload=range(6))],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=143, payload=[0xFF] * 10), Mock(payload=None),
+         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
+    ])
+    def test_is_desegmented_message__first_frame__too_little_packets(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
+        self.mock_is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
+        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+        self.mock_is_initial_packet_type.assert_has_calls(
+            [call(packet.packet_type) for packet in packets])
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=10, payload=range(4)), Mock(payload=range(6)),
+         Mock(payload=None)],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=54, payload=[0xFF] * 10), Mock(payload=None),
+         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
+    ])
+    def test_is_desegmented_message__first_frame__too_many_packets(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
+        self.mock_is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
+        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is False
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+        self.mock_is_initial_packet_type.assert_has_calls(
+            [call(packet.packet_type) for packet in packets])
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=11, payload=range(4)), Mock(payload=range(7))],
+        (Mock(packet_type=CanPacketType.FIRST_FRAME, data_length=100, payload=[0xFF] * 10), Mock(payload=None),
+         Mock(payload=range(50, 100)), Mock(payload=range(150, 200))),
+    ])
+    def test_is_desegmented_message__first_frame__true(self, packets):
+        self.mock_can_segmenter.is_supported_packets_sequence_type.return_value = True
+        self.mock_is_initial_packet_type.side_effect = [True] + (len(packets) - 1) * [False]
+        assert CanSegmenter.is_desegmented_message(self=self.mock_can_segmenter, packets=packets) is True
+        self.mock_can_segmenter.is_supported_packets_sequence_type.assert_called_once_with(packets)
+        self.mock_is_initial_packet_type.assert_has_calls(
+            [call(packet.packet_type) for packet in packets])
+
+    # get_flow_control_packet
+
+    @pytest.mark.parametrize("flow_status, block_size, st_min", [
+        (Mock(), Mock(), Mock()),
+        ("flow_status", "block_size", "st_min"),
+    ])
+    @pytest.mark.parametrize("physical_ai", [{"p1": 1, "p2": 2, "p3": 3}, {"abc": "something", "xyz": "else"}])
+    def test_get_flow_control_packet__data_optimization(self, flow_status, block_size, st_min, physical_ai):
+        self.mock_can_segmenter.tx_packets_physical_ai = physical_ai
+        self.mock_can_segmenter.use_data_optimization = True
+        assert CanSegmenter.get_flow_control_packet(self=self.mock_can_segmenter, flow_status=flow_status,
+                                                    block_size=block_size, st_min=st_min) \
+               == self.mock_can_packet_class.return_value
+        self.mock_can_packet_class.assert_called_once_with(packet_type=CanPacketType.FLOW_CONTROL,
+                                                           dlc=None,
+                                                           filler_byte=self.mock_can_segmenter.filler_byte,
+                                                           flow_status=flow_status,
+                                                           block_size=block_size,
+                                                           st_min=st_min,
+                                                           **physical_ai)
+
+    @pytest.mark.parametrize("flow_status, block_size, st_min", [
+        (Mock(), Mock(), Mock()),
+        ("flow_status", "block_size", "st_min"),
+    ])
+    @pytest.mark.parametrize("physical_ai", [{"p1": 1, "p2": 2, "p3": 3}, {"abc": "something", "xyz": "else"}])
+    def test_get_flow_control_packet__no_data_optimization(self, flow_status, block_size, st_min, physical_ai):
+        self.mock_can_segmenter.tx_packets_physical_ai = physical_ai
+        self.mock_can_segmenter.use_data_optimization = False
+        assert CanSegmenter.get_flow_control_packet(self=self.mock_can_segmenter, flow_status=flow_status,
+                                                    block_size=block_size, st_min=st_min) \
+               == self.mock_can_packet_class.return_value
+        self.mock_can_packet_class.assert_called_once_with(packet_type=CanPacketType.FLOW_CONTROL,
+                                                           dlc=self.mock_can_segmenter.dlc,
+                                                           filler_byte=self.mock_can_segmenter.filler_byte,
+                                                           flow_status=flow_status,
+                                                           block_size=block_size,
+                                                           st_min=st_min,
+                                                           **physical_ai)
+
+    # desegmentation
+
+    @pytest.mark.parametrize("packets", [
+        [Mock()],
+        (Mock(), Mock()),
+    ])
+    def test_desegmentation__segmentation_error(self, packets):
+        self.mock_can_segmenter.is_desegmented_message.return_value = False
+        with pytest.raises(SegmentationError):
+            CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
+        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock()],
+        (Mock(), Mock()),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_desegmentation__not_implemented(self, mock_isinstance, packets):
+        self.mock_can_segmenter.is_desegmented_message.return_value = True
+        mock_isinstance.return_value = False
+        with pytest.raises(NotImplementedError):
+            CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
+        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
+        mock_isinstance.assert_called()
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(spec=CanPacketRecord)],
+        (Mock(spec=CanPacketRecord), Mock(spec=CanPacketRecord)),
+    ])
+    def test_desegmentation__records(self, packets):
+        self.mock_can_segmenter.is_desegmented_message.return_value = True
+        assert CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets) \
+               == self.mock_uds_message_record_class.return_value
+        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
+        self.mock_uds_message_record_class.assert_called_once_with(packets)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(spec=CanPacket, packet_type=CanPacketType.SINGLE_FRAME)],
+        (Mock(spec=CanPacket, packet_type=CanPacketType.SINGLE_FRAME),),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_desegmentation__definition__unsegmented_message(self, mock_isinstance, packets):
+        self.mock_can_segmenter.is_desegmented_message.return_value = True
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_can_packet_class and isinstance(value, CanPacket)
+        assert CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets) \
+               == self.mock_uds_message_class.return_value
+        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
+        self.mock_uds_message_class.assert_called_once_with(payload=packets[0].payload,
+                                                            addressing_type=packets[0].addressing_type)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME, data_length=10, payload=range(4)),
+         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=range(4, 10))],
+        (Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME, data_length=214, payload=list(range(0, 100, 2))),
+         Mock(spec=CanPacket, packet_type=CanPacketType.FLOW_CONTROL, payload=None),
+         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=list(range(100, 162))),
+         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=list(range(100, 162))),
+         Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME, payload=list(range(0, 124, 2)))),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_desegmentation__definitions__segmented_message(self, mock_isinstance, packets):
+        self.mock_can_segmenter.is_desegmented_message.return_value = True
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_can_packet_class and isinstance(value, CanPacket)
+        assert CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets) \
+               == self.mock_uds_message_class.return_value
+        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
+        total_payload = []
+        for packet in packets:
+            if packet.payload is not None:
+                total_payload.extend(packet.payload)
+        self.mock_uds_message_class.assert_called_once_with(payload=total_payload[:packets[0].data_length],
+                                                            addressing_type=packets[0].addressing_type)
+
+    @pytest.mark.parametrize("packets", [
+        [Mock(spec=CanPacket)],
+        (Mock(spec=CanPacket), Mock(spec=CanPacket)),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_desegmentation__definitions__segmentation_error(self, mock_isinstance, packets):
+        self.mock_can_segmenter.is_desegmented_message.return_value = True
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_can_packet_class and isinstance(value, CanPacket)
+        with pytest.raises(SegmentationError):
+            CanSegmenter.desegmentation(self=self.mock_can_segmenter, packets=packets)
+        self.mock_can_segmenter.is_desegmented_message.assert_called_once_with(packets)
+
+    # segmentation
+
+    @pytest.mark.parametrize("message", [Mock(), "not a message"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_segmentation__type_error(self, mock_isinstance, message):
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
+                                                                                                               UdsMessage)
+        with pytest.raises(TypeError):
+            CanSegmenter.segmentation(self=self.mock_can_segmenter, message=message)
+
+    @pytest.mark.parametrize("message", [Mock(spec=UdsMessage, addressing_type=None),
+                                         Mock(spec=UdsMessage, addressing_type="Something new")])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_segmentation__not_implemented_error(self, mock_isinstance, message):
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
+                                                                                                               UdsMessage)
+        with pytest.raises(NotImplementedError):
+            CanSegmenter.segmentation(self=self.mock_can_segmenter, message=message)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_segmentation__functional(self, mock_isinstance):
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
+                                                                                                               UdsMessage)
+        mock_message = Mock(spec=UdsMessage, addressing_type=AddressingType.FUNCTIONAL)
+        assert CanSegmenter.segmentation(self=self.mock_can_segmenter, message=mock_message) \
+               == self.mock_can_segmenter._CanSegmenter__functional_segmentation.return_value
+        self.mock_can_segmenter._CanSegmenter__functional_segmentation.assert_called_once_with(mock_message)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_segmentation__physical(self, mock_isinstance):
+        mock_isinstance.side_effect = lambda value, types: types == self.mock_uds_message_class and isinstance(value,
+                                                                                                               UdsMessage)
+        mock_message = Mock(spec=UdsMessage, addressing_type=AddressingType.PHYSICAL)
+        assert CanSegmenter.segmentation(self=self.mock_can_segmenter, message=mock_message) \
+               == self.mock_can_segmenter._CanSegmenter__physical_segmentation.return_value
+        self.mock_can_segmenter._CanSegmenter__physical_segmentation.assert_called_once_with(mock_message)
 
 
 @pytest.mark.integration

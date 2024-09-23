@@ -86,7 +86,7 @@
         <DIR Name="Fmt0">
           <STR Name="Name">StandardText</STR>
           <INT Name="Octal">0</INT>
-          <INT Name="Hex">0</INT>
+          <INT Name="Hex">1</INT>
           <INT Name="DeltaTime">0</INT>
           <INT Name="ShowAscii">0</INT>
           <INT Name="DefaultBase">0</INT>
@@ -162,7 +162,7 @@
         <STR Name="FileName"></STR>
         <INT Name="AutoStart">1</INT>
       </DIR>
-      <STR Name="ReverseZOrder">1,0,2</STR>
+      <STR Name="ReverseZOrder">0,1,2</STR>
     </DIR>
     <DIR Name="Connections">
       <STR Name="C0">0,1,0,0</STR>
@@ -215,7 +215,7 @@
     <INT Name="MdiMode">0</INT>
   </DIR>
   <DIR Name="Global">
-    <INT Name="UseHex">0</INT>
+    <INT Name="UseHex">1</INT>
   </DIR>
 </DIR>
 </CK>
