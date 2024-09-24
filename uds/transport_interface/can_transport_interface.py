@@ -26,7 +26,7 @@ from uds.transmission_attributes import TransmissionDirection
 from uds.utilities import (
     TimeMillisecondsAlias,
     TransmissionInterruptionError,
-    TransmissionInterruptionWarning,
+    UnexpectedPacketWarning,
     ValueWarning,
 )
 
@@ -75,7 +75,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
             - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
             - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
-            - :parameter dlc: Base CAN DLC value to use for CAN Packets.
+            - :parameter dlc: Base CAN DLC value to use for CAN packets.
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
@@ -376,9 +376,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @property
     def dlc(self) -> int:
         """
-        Value of base CAN DLC to use for output CAN Packets.
+        Value of base CAN DLC to use for output CAN packets.
 
-        .. note:: All output CAN Packets will have this DLC value set unless
+        .. note:: All output CAN packets will have this DLC value set unless
             :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
         """
         return self.segmenter.dlc
@@ -386,7 +386,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @dlc.setter
     def dlc(self, value: int):
         """
-        Set value of base CAN DLC to use for output CAN Packets.
+        Set value of base CAN DLC to use for output CAN packets.
 
         :param value: Value to set.
         """
@@ -394,13 +394,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def use_data_optimization(self) -> bool:
-        """Information whether to use CAN Frame Data Optimization during CAN Packets creation."""
+        """Information whether to use CAN Frame Data Optimization during CAN packets creation."""
         return self.segmenter.use_data_optimization
 
     @use_data_optimization.setter
     def use_data_optimization(self, value: bool):
         """
-        Set whether to use CAN Frame Data Optimization during CAN Packets creation.
+        Set whether to use CAN Frame Data Optimization during CAN packets creation.
 
         :param value: Value to set.
         """
@@ -469,7 +469,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - :parameter n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
             - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
             - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
-            - :parameter dlc: Base CAN DLC value to use for CAN Packets.
+            - :parameter dlc: Base CAN DLC value to use for CAN packets.
             - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
             - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
@@ -586,7 +586,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                         raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
                                                             "this message.")
                     warn(message="An unrelated CAN packet was received during UDS message transmission.",
-                         category=TransmissionInterruptionWarning)
+                         category=UnexpectedPacketWarning)
             packet_records.append(self.send_packet(cf_packet))
         return tuple(packet_records)
 
@@ -618,9 +618,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                         raise TransmissionInterruptionError("A new UDS message transmission was started while sending "
                                                             "this message.")
                     warn(message="An unrelated CAN packet was received during UDS message transmission.",
-                         category=TransmissionInterruptionWarning)
+                         category=UnexpectedPacketWarning)
             packet_records.append(await self.async_send_packet(cf_packet, loop=loop))
         return tuple(packet_records)
+
+    def _receive_consecutive_frames(self, first_frame: CanPacketRecord) -> UdsMessageRecord:
+        ...
+
+    async def _async_receive_consecutive_frames(self,
+                                                first_frame: CanPacketRecord,
+                                                loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+        ...
 
     def clear_frames_buffers(self) -> None:
         """
@@ -655,7 +663,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about transmitted CAN packet.
         """
         if not isinstance(packet, CanPacket):
-            raise TypeError("Provided packet value does not contain a CAN Packet.")
+            raise TypeError("Provided packet value does not contain a CAN packet.")
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         can_frame = Message(arbitration_id=packet.can_id,
@@ -673,7 +681,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 or not observed_frame.is_rx:
             timeout_left = timeout / 1000. - (time() - time_start)
             if timeout_left <= 0:
-                raise TimeoutError("Timeout was reached before observing a CAN Packet being transmitted.")
+                raise TimeoutError("Timeout was reached before observing a CAN packet being transmitted.")
             observed_frame = self.__frames_buffer.get_message(timeout=timeout_left)
         if is_flow_control_packet:
             # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
@@ -698,12 +706,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param packet: CAN packet to send.
         :param loop: An asyncio event loop used for observing messages.
 
-        :raise TypeError: Provided packet is not CAN Packet.
+        :raise TypeError: Provided packet is not CAN packet.
 
         :return: Record with historic information about transmitted CAN packet.
         """
         if not isinstance(packet, CanPacket):
-            raise TypeError("Provided packet value does not contain a CAN Packet.")
+            raise TypeError("Provided packet value does not contain a CAN packet.")
         loop = get_running_loop() if loop is None else loop
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
@@ -762,10 +770,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             time_now = time()
             timeout_left = self._MAX_LISTENER_TIMEOUT if timeout is None else timeout / 1000. - (time_now - time_start)
             if timeout_left <= 0:
-                raise TimeoutError("Timeout was reached before a CAN Packet was received.")
+                raise TimeoutError("Timeout was reached before a CAN packet was received.")
             received_frame = self.__frames_buffer.get_message(timeout=timeout_left)
             if received_frame is None:
-                raise TimeoutError("Timeout was reached before a CAN Packet was received.")
+                raise TimeoutError("Timeout was reached before a CAN packet was received.")
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
         return CanPacketRecord(frame=received_frame,
@@ -804,7 +812,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             else:
                 timeout_left = timeout / 1000. - (time() - time_start)
                 if timeout_left <= 0:
-                    raise TimeoutError("Timeout was reached before a CAN Packet was received.")
+                    raise TimeoutError("Timeout was reached before a CAN packet was received.")
             received_frame = await wait_for(self.__async_frames_buffer.get_message(),
                                             timeout=timeout_left)
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
@@ -854,7 +862,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                     "this message.")
             else:
                 warn(message="An unrelated CAN packet was received during UDS message transmission.",
-                     category=TransmissionInterruptionWarning)
+                     category=UnexpectedPacketWarning)
         message_records = UdsMessageRecord(packet_records)
         self._update_n_bs_measured(message_records)
         return message_records
@@ -900,7 +908,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                     "this message.")
             else:
                 warn(message="An unrelated CAN packet was received during UDS message transmission.",
-                     category=TransmissionInterruptionWarning)
+                     category=UnexpectedPacketWarning)
         message_records = UdsMessageRecord(packet_records)
         self._update_n_bs_measured(message_records)
         return message_records
@@ -927,10 +935,20 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Provided timeout value is not None neither int nor float type.")
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
-        received_packet = self.receive_packet(timeout=timeout)
-        if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
-            return UdsMessageRecord([received_packet])
-        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/266")
+        if timeout is not None:
+            time_end = time() + (timeout / 1000.)
+        while True:
+            if timeout is not None:
+                if time_end <= time():
+                    raise TimeoutError("Timeout was reached before a UDS message was received.")
+                timeout = time_end - time()
+            received_packet = self.receive_packet(timeout=timeout)
+            if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
+                return UdsMessageRecord([received_packet])
+            if received_packet.packet_type == CanPacketType.FIRST_FRAME:
+                return self._receive_consecutive_frames(first_frame=received_packet)
+            warn(message="A CAN packet that does not start UDS message transmission was received.",
+                 category=UnexpectedPacketWarning)
 
     async def async_receive_message(self,
                                     timeout: Optional[TimeMillisecondsAlias] = None,
@@ -955,7 +973,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Provided timeout value is not None neither int nor float type.")
             if timeout <= 0:
                 raise ValueError("Provided timeout value is less or equal 0.")
-        received_packet = await self.async_receive_packet(timeout=timeout, loop=loop)
-        if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
-            return UdsMessageRecord([received_packet])
-        raise NotImplementedError("TODO: https://github.com/mdabrowski1990/uds/issues/266")
+        if timeout is not None:
+            time_end = time() + (timeout / 1000.)
+        while True:
+            if timeout is not None:
+                if time_end <= time():
+                    raise TimeoutError("Timeout was reached before a UDS message was received.")
+                timeout = time_end - time()
+            received_packet = await self.async_receive_packet(timeout=timeout, loop=loop)
+            if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
+                return UdsMessageRecord([received_packet])
+            if received_packet.packet_type == CanPacketType.FIRST_FRAME:
+                return await self._async_receive_consecutive_frames(first_frame=received_packet, loop=loop)
+            warn(message="A CAN packet that does not start UDS message transmission was received.",
+                 category=UnexpectedPacketWarning)

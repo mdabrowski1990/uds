@@ -18,5 +18,5 @@ from .custom_exceptions import (
     TransmissionInterruptionError,
     UnusedArgumentError,
 )
-from .custom_warnings import TransmissionInterruptionWarning, UnusedArgumentWarning, ValueWarning
+from .custom_warnings import UnexpectedPacketWarning, UnusedArgumentWarning, ValueWarning
 from .enums import ByteEnum, ExtendableEnum, NibbleEnum, ValidatedEnum

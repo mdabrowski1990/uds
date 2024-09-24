@@ -1010,7 +1010,7 @@ class TestPythonCanKvaser:
 
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received UDS message.
-        2. Call method to receive packet via Transport Interface with timeout set just before UDS message
+        2. Call method to receive message via Transport Interface with timeout set just before UDS message
             reaches CAN bus.
             Expected: Timeout exception is raised.
 
@@ -1049,7 +1049,7 @@ class TestPythonCanKvaser:
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received
             UDS message (Single Frame).
-        2. Call method to receive packet via Transport Interface with timeout set just after UDS message
+        2. Call method to receive message via Transport Interface with timeout set just after UDS message
             reaches CAN bus.
             Expected: UDS message is received.
         3. Validate received UDS message record attributes.
@@ -1080,7 +1080,98 @@ class TestPythonCanKvaser:
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
 
-    # TODO: add more with https://github.com/mdabrowski1990/uds/issues/266
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("send_after, delay", [
+        (5, 10),  # ms
+        (10, 5),
+    ])
+    def test_receive_message__multi_packets(self, example_addressing_information,
+                                            example_addressing_information_2nd_node, message,
+                                            timeout, send_after, delay):
+        """
+        Check for receiving of a UDS message (carried by First Frame and Consecutive Frame packets).
+
+        Procedure:
+        1. Schedule transmission (using second CAN interface) of a CAN frames that carry received
+            UDS message (First Frame and then Consecutive Frames).
+        2. Call method to receive message via Transport Interface.
+            Expected: UDS message is received.
+        3. Validate received UDS message record attributes.
+            Expected: Attributes of UDS message record are in line with the received UDS message.
+
+        :param example_addressing_information: Addressing Information of receiving CAN Node.
+        :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
+        :param message: UDS message to transmit.
+        :param send_after: Time when to send First Frame after call of receive method [ms].
+        :param delay: Time distance to use for sending Consecutive Frames [ms].
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        packets = other_node_segmenter.segmentation(message)
+        frame = Message(arbitration_id=packets[0].can_id, data=packets[0].raw_frame_data)
+        Timer(interval=send_after / 1000., function=self.can_interface_2.send, args=(frame,)).start()
+        for i, cf_packet in enumerate(packets[1:], start=1):
+            frame = Message(arbitration_id=cf_packet.can_id, data=cf_packet.raw_frame_data)
+            Timer(interval=(send_after + i * delay) / 1000., function=self.can_interface_2.send, args=(frame,)).start()
+        datetime_before_receive = datetime.now()
+        message_record = can_transport_interface.receive_message(timeout=timeout)
+        datetime_after_receive = datetime.now()
+        assert isinstance(message_record, UdsMessageRecord)
+        assert len(message_record.packets_records) == len(packets) + 1, "All packets (including Flow Control) are stored"
+        assert message_record.direction == TransmissionDirection.RECEIVED
+        assert message_record.payload == message.payload
+        assert message_record.addressing_type == message.addressing_type
+        assert message_record.transmission_start == message_record.transmission_end
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert datetime_before_send < message_record.transmission_start
+        # assert message_record.transmission_end < datetime_after_send
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("send_after, delay", [
+        (5, 10),  # ms
+        (10, 5),
+    ])
+    def test_receive_message__multi_packets__timeout(self, example_addressing_information,
+                                                     example_addressing_information_2nd_node, message,
+                                                     timeout, send_after, delay):
+        """
+        Check for a timeout during receiving of a UDS message (carried by First Frame and Consecutive Frame packets).
+
+        Procedure:
+        1. Schedule transmission (using second CAN interface) of a CAN frames that carries part of received
+            UDS message (First Frame and then Consecutive Frames with one Consecutive Frame missing).
+        2. Call method to receive message via Transport Interface.
+            Expected: Timeout exception is raised.
+
+        :param example_addressing_information: Addressing Information of receiving CAN Node.
+        :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
+        :param message: UDS message to transmit.
+        :param send_after: Time when to send First Frame after call of receive method [ms].
+        :param delay: Time distance to use for sending Consecutive Frames [ms].
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        packets = other_node_segmenter.segmentation(message)
+        frame = Message(arbitration_id=packets[0].can_id, data=packets[0].raw_frame_data)
+        Timer(interval=send_after / 1000., function=self.can_interface_2.send, args=(frame,)).start()
+        for i, cf_packet in enumerate(packets[1:-1], start=1):
+            frame = Message(arbitration_id=cf_packet.can_id, data=cf_packet.raw_frame_data)
+            Timer(interval=(send_after + i * delay) / 1000., function=self.can_interface_2.send, args=(frame,)).start()
+        datetime_before_receive = datetime.now()
+        with pytest.raises(TimeoutError):
+            can_transport_interface.receive_message(timeout=timeout)
+        datetime_after_receive = datetime.now()
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - define when resolved
 
     # async_receive_message
 
@@ -1101,7 +1192,7 @@ class TestPythonCanKvaser:
 
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received UDS message.
-        2. Call async method to receive packet via Transport Interface with timeout set before any CAN packet
+        2. Call async method to receive message via Transport Interface with timeout set before any CAN packet
             reaches CAN bus.
             Expected: Timeout exception is raised.
 
@@ -1147,7 +1238,7 @@ class TestPythonCanKvaser:
         Procedure:
         1. Schedule transmission (using second CAN interface) of a CAN frame that carries received
             UDS message (Single Frame).
-        2. Call async method to receive packet via Transport Interface with timeout set just after UDS message
+        2. Call async method to receive message via Transport Interface with timeout set just after UDS message
             reaches CAN bus.
             Expected: UDS message is received.
         3. Validate received UDS message record attributes.
@@ -1183,7 +1274,114 @@ class TestPythonCanKvaser:
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
 
-    # TODO: add more with https://github.com/mdabrowski1990/uds/issues/266
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("send_after, delay", [
+        (5, 10),  # ms
+        (10, 5),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_receive_message__multi_packets(self, example_addressing_information,
+                                                        example_addressing_information_2nd_node, message,
+                                                        timeout, send_after, delay):
+        """
+        Check for asynchronous receiving of a UDS message (carried by First Frame and Consecutive Frame packets).
+
+        Procedure:
+        1. Schedule transmission (using second CAN interface) of a CAN frames that carry received
+            UDS message (First Frame and then Consecutive Frames).
+        2. Call async method to receive message via Transport Interface.
+            Expected: UDS message is received.
+        3. Validate received UDS message record attributes.
+            Expected: Attributes of UDS message record are in line with the received UDS message.
+
+        :param example_addressing_information: Addressing Information of receiving CAN Node.
+        :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
+        :param message: UDS message to transmit.
+        :param send_after: Time when to send First Frame after call of receive method [ms].
+        :param delay: Time distance to use for sending Consecutive Frames [ms].
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        packets = other_node_segmenter.segmentation(message)
+
+        async def _send_message():
+            for packet in packets:
+                if packet == packets[0]:
+                    await asyncio.sleep(send_after / 1000.)
+                else:
+                    await asyncio.sleep(delay / 1000.)
+                frame = Message(arbitration_id=packet.can_id, data=packet.raw_frame_data)
+                self.can_interface_2.send(frame)
+
+        send_message_task = asyncio.create_task(_send_message())
+        datetime_before_receive = datetime.now()
+        message_record = await can_transport_interface.async_receive_message(timeout=timeout)
+        datetime_after_receive = datetime.now()
+        await send_message_task
+        assert isinstance(message_record, UdsMessageRecord)
+        assert len(message_record.packets_records) == len(packets) + 1, "All packets (including Flow Control) are stored"
+        assert message_record.direction == TransmissionDirection.RECEIVED
+        assert message_record.payload == message.payload
+        assert message_record.addressing_type == message.addressing_type
+        assert message_record.transmission_start == message_record.transmission_end
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
+        # assert datetime_before_send < message_record.transmission_start
+        # assert message_record.transmission_end < datetime_after_send
+
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("send_after, delay", [
+        (5, 10),  # ms
+        (10, 5),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_receive_message__multi_packets__timeout(self, example_addressing_information,
+                                                                 example_addressing_information_2nd_node, message,
+                                                                 timeout, send_after, delay):
+        """
+        Check for a timeout during asynchronous receiving of a UDS message (carried by First Frame and Consecutive Frame packets).
+
+        Procedure:
+        1. Schedule transmission (using second CAN interface) of a CAN frames that carry received
+            UDS message (First Frame and then Consecutive Frames).
+        2. Call async method to receive message via Transport Interface.
+            Expected: Timeout exception is raised.
+
+        :param example_addressing_information: Addressing Information of receiving CAN Node.
+        :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
+        :param message: UDS message to transmit.
+        :param send_after: Time when to send First Frame after call of receive method [ms].
+        :param delay: Time distance to use for sending Consecutive Frames [ms].
+        """
+        can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
+                                                          addressing_information=example_addressing_information)
+        other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
+        packets = other_node_segmenter.segmentation(message)
+
+        async def _send_message():
+            for packet in packets[:-1]:
+                if packet == packets[0]:
+                    await asyncio.sleep(send_after / 1000.)
+                else:
+                    await asyncio.sleep(delay / 1000.)
+                frame = Message(arbitration_id=packet.can_id, data=packet.raw_frame_data)
+                self.can_interface_2.send(frame)
+
+        send_message_task = asyncio.create_task(_send_message())
+        datetime_before_receive = datetime.now()
+        with pytest.raises(TimeoutError):
+            await can_transport_interface.async_receive_message(timeout=timeout)
+        datetime_after_receive = datetime.now()
+        await send_message_task
+        # performance checks
+        # TODO: https://github.com/mdabrowski1990/uds/issues/228 - define when resolved
 
     # use cases
 
@@ -1277,7 +1475,8 @@ class TestPythonCanKvaser:
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
-        # TODO: add more after https://github.com/mdabrowski1990/uds/issues/266
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
     def test_send_message_on_one_receive_on_other_bus(self, example_addressing_information,
                                                       example_addressing_information_2nd_node,
@@ -1315,7 +1514,8 @@ class TestPythonCanKvaser:
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
-        # TODO: add more after https://github.com/mdabrowski1990/uds/issues/266
+        UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.asyncio
     async def test_async_send_message_on_one_receive_on_other_bus(self, example_addressing_information,

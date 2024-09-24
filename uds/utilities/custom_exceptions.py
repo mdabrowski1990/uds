@@ -47,7 +47,13 @@ class AmbiguityError(ValueError):
 
 class TransmissionInterruptionError(RuntimeError):
     """
-    An unexpected packet was received during UDS message transmission.
+    An unexpected packet was received.
 
-    According to UDS ISO Standards the transmission shall be stopped.
+    TODO: refer to knowledge-base section of error handling, remove note then
+
+    .. note::
+        According to UDS ISO 15765-2 Standard:
+
+        As a general rule, arrival of an unexpected N_PDU from any node shall be ignored, with the exception of
+        SF N_PDUs and physically addressed FF N_PDUs; functionally addressed FirstFrames shall be ignored.
     """
