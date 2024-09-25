@@ -12,7 +12,7 @@ from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
-from uds.utilities import TransmissionInterruptionError
+from uds.utilities import MessageTransmissionError
 
 
 class TestPythonCanKvaser:
@@ -26,6 +26,7 @@ class TestPythonCanKvaser:
 
     TASK_TIMING_TOLERANCE = 30.  # ms
     DELAY_AFTER_RECEIVING_FRAME = 10.  # ms
+    DELAY_AFTER_RECEIVING_MESSAGE = 1000.  # ms
     DELAY_BETWEEN_CONSECUTIVE_FRAMES = 50.  # ms
 
     def setup_class(self):
@@ -1000,8 +1001,8 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x10, 0x01], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        (1000, 1005),  # ms
-        (50, 55),
+        (1000, 1020),  # ms
+        (50, 70),
     ])
     def test_receive_message__sf__timeout(self, example_addressing_information, example_addressing_information_2nd_node,
                                           message, timeout, send_after):
@@ -1084,9 +1085,9 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("send_after, delay", [
-        (5, 10),  # ms
-        (10, 5),
+    @pytest.mark.parametrize("timeout, send_after, delay", [
+        (1000, 5, 20),  # ms
+        (20, 10, 50),
     ])
     def test_receive_message__multi_packets(self, example_addressing_information,
                                             example_addressing_information_2nd_node, message,
@@ -1125,19 +1126,20 @@ class TestPythonCanKvaser:
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start < message_record.transmission_end
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
+        sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("send_after, delay", [
-        (5, 10),  # ms
-        (10, 5),
+    @pytest.mark.parametrize("timeout, send_after, delay", [
+        (1000, 5, 20),  # ms
+        (20, 10, 50),
     ])
     def test_receive_message__multi_packets__timeout(self, example_addressing_information,
                                                      example_addressing_information_2nd_node, message,
@@ -1172,6 +1174,7 @@ class TestPythonCanKvaser:
         datetime_after_receive = datetime.now()
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - define when resolved
+        sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
     # async_receive_message
 
@@ -1278,9 +1281,9 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("send_after, delay", [
-        (5, 10),  # ms
-        (10, 5),
+    @pytest.mark.parametrize("timeout, send_after, delay", [
+        (1000, 5, 20),  # ms
+        (20, 10, 50),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__multi_packets(self, example_addressing_information,
@@ -1327,7 +1330,7 @@ class TestPythonCanKvaser:
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start < message_record.transmission_end
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < message_record.transmission_start
@@ -1337,9 +1340,9 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("send_after, delay", [
-        (5, 10),  # ms
-        (10, 5),
+    @pytest.mark.parametrize("timeout, send_after, delay", [
+        (1000, 5, 20),  # ms
+        (20, 10, 50),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__multi_packets__timeout(self, example_addressing_information,
@@ -1427,6 +1430,7 @@ class TestPythonCanKvaser:
         assert sent_packet_record.can_id == received_packet_record.can_id
         assert sent_packet_record.raw_frame_data == received_packet_record.raw_frame_data
         assert sent_packet_record.addressing_type == received_packet_record.addressing_type
+        sleep(self.DELAY_AFTER_RECEIVING_MESSAGE / 1000.)
 
     @pytest.mark.parametrize("payload, addressing_type", [
         ([0x22, 0x10, 0xF5], AddressingType.PHYSICAL),
@@ -1478,9 +1482,13 @@ class TestPythonCanKvaser:
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
     ])
+    @pytest.mark.parametrize("send_after, timeout", [
+        (10, 50),
+        (950, 1000)
+    ])
     def test_send_message_on_one_receive_on_other_bus(self, example_addressing_information,
                                                       example_addressing_information_2nd_node,
-                                                      message):
+                                                      message, send_after, timeout):
         """
         Check for sending and receiving UDS message using two Transport Interfaces.
 
@@ -1502,8 +1510,18 @@ class TestPythonCanKvaser:
                                                             addressing_information=example_addressing_information)
         can_transport_interface_2 = PyCanTransportInterface(can_bus_manager=self.can_interface_2,
                                                             addressing_information=example_addressing_information_2nd_node)
-        sent_message_record = can_transport_interface_2.send_message(message)
-        received_message_record = can_transport_interface_1.receive_message(timeout=100)
+
+        sent_message_record = None
+
+        def _send_message():
+            nonlocal sent_message_record
+            sent_message_record = can_transport_interface_2.send_message(message)
+
+        timer = Timer(interval=send_after/1000., function=_send_message)
+        timer.start()
+        received_message_record = can_transport_interface_1.receive_message(timeout=timeout)
+        while not timer.finished.is_set():
+            sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
         assert isinstance(sent_message_record, UdsMessageRecord)
         assert isinstance(received_message_record, UdsMessageRecord)
         assert sent_message_record.direction == TransmissionDirection.TRANSMITTED
@@ -1868,9 +1886,9 @@ class TestPythonCanKvaser:
         Timer(interval=fc_after / 1000., function=self.can_interface_2.send, args=(flow_control_frame,)).start()
         Timer(interval=new_message_after / 1000., function=self.can_interface_2.send,
               args=(interrupting_frame,)).start()
-        with pytest.raises(TransmissionInterruptionError):
+        with pytest.raises(MessageTransmissionError):
             can_transport_interface.send_message(message)
-        sleep(self.DELAY_AFTER_RECEIVING_FRAME / 100.)
+        sleep(self.DELAY_AFTER_RECEIVING_MESSAGE / 1000.)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
@@ -1930,8 +1948,8 @@ class TestPythonCanKvaser:
                 self.can_interface_2.send(interrupting_frame)
 
         send_fc_and_message_task = asyncio.create_task(_send_fc_and_message())
-        with pytest.raises(TransmissionInterruptionError):
+        with pytest.raises(MessageTransmissionError):
             await can_transport_interface.async_send_message(message)
 
         await send_fc_and_message_task
-        await asyncio.sleep(self.DELAY_AFTER_RECEIVING_FRAME / 100.)
+        await asyncio.sleep(self.DELAY_AFTER_RECEIVING_MESSAGE / 1000.)

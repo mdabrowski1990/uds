@@ -45,9 +45,9 @@ class AmbiguityError(ValueError):
     """Operation cannot be executed because it is ambiguous."""
 
 
-class TransmissionInterruptionError(RuntimeError):
+class MessageTransmissionError(RuntimeError):
     """
-    An unexpected packet was received.
+    An unexpected packet was received while in process of transmitting UDS message.
 
     TODO: refer to knowledge-base section of error handling, remove note then
 

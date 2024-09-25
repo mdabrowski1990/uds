@@ -20,9 +20,23 @@ class ValueWarning(Warning):
     """Value of the argument is out of typical range, but the package is able to handle it."""
 
 
-class UnexpectedPacketWarning(RuntimeWarning):
+class UnexpectedPacketReceptionWarning(RuntimeWarning):
     """
     An unexpected packet was received.
+
+    TODO: refer to knowledge-base section of error handling, remove note then
+
+    .. note::
+        According to UDS ISO 15765-2 Standard:
+
+        As a general rule, arrival of an unexpected N_PDU from any node shall be ignored, with the exception of
+        SF N_PDUs and physically addressed FF N_PDUs; functionally addressed FirstFrames shall be ignored.
+    """
+
+
+class MessageReceptionWarning(RuntimeWarning):
+    """
+    A new UDS message transmission was started while in process of receiving UDS message.
 
     TODO: refer to knowledge-base section of error handling, remove note then
 

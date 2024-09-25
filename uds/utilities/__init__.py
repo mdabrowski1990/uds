@@ -15,8 +15,8 @@ from .custom_exceptions import (
     AmbiguityError,
     InconsistentArgumentsError,
     ReassignmentError,
-    TransmissionInterruptionError,
+    MessageTransmissionError,
     UnusedArgumentError,
 )
-from .custom_warnings import UnexpectedPacketWarning, UnusedArgumentWarning, ValueWarning
+from .custom_warnings import UnexpectedPacketReceptionWarning, UnusedArgumentWarning, ValueWarning, MessageReceptionWarning
 from .enums import ByteEnum, ExtendableEnum, NibbleEnum, ValidatedEnum

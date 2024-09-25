@@ -479,7 +479,7 @@ class CanFlowControlHandler:
         return output
 
 
-FlowControlParametersAlias = Tuple[int, Optional[int], Optional[int]]
+FlowControlParametersAlias = Tuple[CanFlowStatus, Optional[int], Optional[int]]
 """Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters which contains:
 - :ref:`Flow Status <knowledge-base-can-flow-status>`
 - :ref:`Block Size <knowledge-base-can-block-size>`
@@ -519,7 +519,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         self.block_size = block_size
         self.st_min = st_min
 
-    def __next__(self):
+    def __next__(self) -> FlowControlParametersAlias:
         """
         Generate next set of Flow Control parameters.
 
