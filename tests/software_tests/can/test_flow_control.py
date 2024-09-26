@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock, call, patch
+from mock import Mock, MagicMock, call, patch
 
 from uds.can import CanAddressingFormat
 from uds.can.flow_control import (
@@ -821,9 +821,12 @@ class TestDefaultFlowControlParametersGenerator:
         # patching
         self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
+        self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
+        self.mock_deepcopy = self._patcher_deepcopy.start()
 
     def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
+        self._patcher_deepcopy.stop()
 
     # inheritance
 
@@ -832,14 +835,35 @@ class TestDefaultFlowControlParametersGenerator:
 
     # __init__
 
-    @pytest.mark.parametrize("block_size, st_min", [
-        (0, 0),
-        (0xFF, 0xFF)
+    @pytest.mark.parametrize("block_size, st_min, wait_count, repeat_wait", [
+        (0, 0, 0, False),
+        (0xFF, 0xFF, 1234, True)
     ])
-    def test_init(self, block_size, st_min):
-        DefaultFlowControlParametersGenerator.__init__(self.mock_flow_control_parameters_generator, block_size, st_min)
+    def test_init(self, block_size, st_min, wait_count, repeat_wait):
+        DefaultFlowControlParametersGenerator.__init__(self.mock_flow_control_parameters_generator,
+                                                       block_size, st_min, wait_count, repeat_wait)
         assert self.mock_flow_control_parameters_generator.block_size == block_size
         assert self.mock_flow_control_parameters_generator.st_min == st_min
+        assert self.mock_flow_control_parameters_generator.wait_count == wait_count
+        assert self.mock_flow_control_parameters_generator.repeat_wait == repeat_wait
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait is None
+
+    # iter
+
+    def test_iter__no_wait(self):
+        self.mock_deepcopy.return_value.wait_count = 0
+        iterator = DefaultFlowControlParametersGenerator.__iter__(self.mock_flow_control_parameters_generator)
+        assert iterator == self.mock_deepcopy.return_value
+        assert iterator._DefaultFlowControlParametersGenerator__remaining_wait is None
+        self.mock_deepcopy.assert_called_once_with(self.mock_flow_control_parameters_generator)
+
+    @pytest.mark.parametrize("wait_count", [1, 6543])
+    def test_iter__with_wait(self, wait_count):
+        self.mock_deepcopy.return_value.wait_count = wait_count
+        iterator = DefaultFlowControlParametersGenerator.__iter__(self.mock_flow_control_parameters_generator)
+        assert iterator == self.mock_deepcopy.return_value
+        assert iterator._DefaultFlowControlParametersGenerator__remaining_wait == wait_count
+        self.mock_deepcopy.assert_called_once_with(self.mock_flow_control_parameters_generator)
 
     # next
 
@@ -847,11 +871,47 @@ class TestDefaultFlowControlParametersGenerator:
         (0, 0),
         (0xFF, 0xFF)
     ])
-    def test_next(self, block_size, st_min):
+    def test_next__no_wait(self, block_size, st_min):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait = None
         self.mock_flow_control_parameters_generator.block_size = block_size
         self.mock_flow_control_parameters_generator.st_min = st_min
         assert (DefaultFlowControlParametersGenerator.__next__(self.mock_flow_control_parameters_generator) ==
                 (CanFlowStatus.ContinueToSend, block_size, st_min))
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait is None
+
+    @pytest.mark.parametrize("block_size, st_min", [
+        (0, 0),
+        (0xFF, 0xFF)
+    ])
+    def test_next__wait_0__without_repeat(self, block_size, st_min):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait = 0
+        self.mock_flow_control_parameters_generator.repeat_wait = False
+        self.mock_flow_control_parameters_generator.block_size = block_size
+        self.mock_flow_control_parameters_generator.st_min = st_min
+        assert (DefaultFlowControlParametersGenerator.__next__(self.mock_flow_control_parameters_generator) ==
+                (CanFlowStatus.ContinueToSend, block_size, st_min))
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait == 0
+
+    @pytest.mark.parametrize("block_size, st_min, wait_count", [
+        (0, 0, 1),
+        (0xFF, 0xFF, 54)
+    ])
+    def test_next__wait_0__with_repeat(self, block_size, st_min, wait_count):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait = 0
+        self.mock_flow_control_parameters_generator.repeat_wait = True
+        self.mock_flow_control_parameters_generator.wait_count = wait_count
+        self.mock_flow_control_parameters_generator.block_size = block_size
+        self.mock_flow_control_parameters_generator.st_min = st_min
+        assert (DefaultFlowControlParametersGenerator.__next__(self.mock_flow_control_parameters_generator) ==
+                (CanFlowStatus.ContinueToSend, block_size, st_min))
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait == wait_count
+
+    @pytest.mark.parametrize("remaining_wait", [1, 6543])
+    def test_next__wait(self, remaining_wait):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait = remaining_wait
+        assert (DefaultFlowControlParametersGenerator.__next__(self.mock_flow_control_parameters_generator) ==
+                (CanFlowStatus.Wait, None, None))
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__remaining_wait == remaining_wait - 1
 
     # block_size
 
@@ -878,3 +938,52 @@ class TestDefaultFlowControlParametersGenerator:
         DefaultFlowControlParametersGenerator.st_min.fset(self.mock_flow_control_parameters_generator, value)
         assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__st_min == value
         self.mock_validate_raw_byte.assert_called_once_with(value)
+
+    # wait_count
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_wait_count__get(self, value):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__wait_count = value
+        assert DefaultFlowControlParametersGenerator.wait_count.fget(self.mock_flow_control_parameters_generator) == value
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_flow_control_parameters_generator__set__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            DefaultFlowControlParametersGenerator.wait_count.fset(self.mock_flow_control_parameters_generator, value)
+        mock_isinstance.assert_called_once_with(value, int)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_flow_control_parameters_generator__set__value_error(self, mock_isinstance):
+        mock_isinstance.return_value = True
+        mock_lt = Mock(return_value=True)
+        mock_value = MagicMock(__lt__=mock_lt)
+        with pytest.raises(ValueError):
+            DefaultFlowControlParametersGenerator.wait_count.fset(self.mock_flow_control_parameters_generator, mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, int)
+        mock_lt.assert_called_once_with(0)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_flow_control_parameters_generator__set(self, mock_isinstance):
+        mock_isinstance.return_value = True
+        mock_lt = Mock(return_value=False)
+        mock_value = MagicMock(__lt__=mock_lt)
+        DefaultFlowControlParametersGenerator.wait_count.fset(self.mock_flow_control_parameters_generator, mock_value)
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__wait_count == mock_value
+        mock_isinstance.assert_called_once_with(mock_value, int)
+        mock_lt.assert_called_once_with(0)
+        
+    # repeat_wait
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_repeat_wait__get(self, value):
+        self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__repeat_wait = value
+        assert DefaultFlowControlParametersGenerator.repeat_wait.fget(self.mock_flow_control_parameters_generator) == value
+
+    @patch(f"{SCRIPT_LOCATION}.bool")
+    def test_flow_control_parameters_generator__set(self, mock_bool):
+        mock_value = Mock()
+        DefaultFlowControlParametersGenerator.repeat_wait.fset(self.mock_flow_control_parameters_generator, mock_value)
+        assert self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__repeat_wait == mock_bool.return_value
+        mock_bool.assert_called_once_with(mock_value)
