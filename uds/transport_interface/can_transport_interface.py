@@ -670,6 +670,53 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 remaining_timeout = (time_start_ms + self.n_cr_timeout) - time_now_ms
         return tuple(received_cf)
 
+    async def _async_receive_cf_packets_block(self,
+                                              sequence_number: int,
+                                              block_size: int,
+                                              remaining_data_length: int,
+                                              loop: Optional[AbstractEventLoop] = None) \
+            -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
+        """
+        Receive asynchronously block of Consecutive Frames.
+
+        :param sequence_number: Current Sequence Number (next Consecutive Frame shall have this value set).
+        :param block_size: Block Size value sent in the last Flow Control CAN packet.
+        :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
+
+        :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
+
+        :return: Either:
+            - Record of UDS message if reception was interrupted by a new UDS message transmission.
+            - Tuple with records of received Consecutive Frames.
+        """
+        received_cf = []
+        received_payload_size = 0
+        remaining_timeout = self.n_cr_timeout
+        time_start_ms = time() * 1000
+        while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
+            received_packet = await self.async_receive_packet(timeout=remaining_timeout, loop=loop)
+            if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                warn(message="A new UDS message is transmitted. Aborted reception of previous message.",
+                     category=MessageReceptionWarning)
+                if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
+                    return UdsMessageRecord([received_packet])
+                if received_packet.packet_type == CanPacketType.FIRST_FRAME:
+                    return await self._async_receive_consecutive_frames(first_frame=received_packet, loop=loop)
+                raise NotImplementedError(f"CAN packet of unhandled type was received.")
+            if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
+                    and received_packet.sequence_number == sequence_number):
+                received_cf.append(received_packet)
+                received_payload_size += len(received_packet.payload)
+                sequence_number = (received_packet.sequence_number + 1) & 0xF
+                remaining_timeout = self.n_cr_timeout
+                time_start_ms = time() * 1000
+            else:
+                warn(message="An unrelated CAN packet was received during UDS message transmission.",
+                     category=UnexpectedPacketReceptionWarning)
+                time_now_ms = time() * 1000
+                remaining_timeout = (time_start_ms + self.n_cr_timeout) - time_now_ms
+        return tuple(received_cf)
+
     def _receive_consecutive_frames(self, first_frame: CanPacketRecord) -> UdsMessageRecord:
         """
         Receive Consecutive Frames after reception of First Frame.
@@ -728,7 +775,60 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     async def _async_receive_consecutive_frames(self,
                                                 first_frame: CanPacketRecord,
                                                 loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
-        ...
+        """
+        Receive asynchronously Consecutive Frames after reception of First Frame.
+
+        :param first_frame: First Frame that was received.
+
+        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr> timeout was reached.
+        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was sent.
+        :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
+
+        :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
+        """
+        packets_records = [first_frame]
+        message_data_length = first_frame.data_length
+        received_data_length = len(first_frame.payload)
+        sequence_number = 1
+        flow_control_iterator = iter(self.flow_control_parameters_generator)
+        while True:
+            try:
+                received_packet = await self.async_receive_packet(timeout=self.n_br, loop=loop)
+            except (TimeoutError, ValueError):
+                pass
+            else:
+                if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                    warn(message="A new UDS message is transmitted. Aborted reception of previous message.",
+                         category=MessageReceptionWarning)
+                    if received_packet.packet_type == CanPacketType.SINGLE_FRAME:
+                        return UdsMessageRecord([received_packet])
+                    if received_packet.packet_type == CanPacketType.FIRST_FRAME:
+                        return await self._async_receive_consecutive_frames(first_frame=received_packet, loop=loop)
+                    raise NotImplementedError(f"CAN packet of unhandled type was received.")
+                else:
+                    warn(message="An unrelated CAN packet was received during UDS message transmission.",
+                         category=UnexpectedPacketReceptionWarning)
+            flow_status, block_size, st_min = next(flow_control_iterator)
+            fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
+                                                               block_size=block_size,
+                                                               st_min=st_min)
+            packets_records.append(await self.async_send_packet(fc_packet))
+            if flow_status == CanFlowStatus.Overflow:
+                raise OverflowError("Flow Control with Flow Status `OVERFLOW` was transmitted.")
+            if flow_status == CanFlowStatus.ContinueToSend:
+                remaining_data_length = message_data_length - received_data_length
+                cf_block = await self._async_receive_cf_packets_block(sequence_number=sequence_number,
+                                                                      block_size=block_size,
+                                                                      remaining_data_length=remaining_data_length,
+                                                                      loop=loop)
+                if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
+                    return cf_block
+                packets_records.extend(cf_block)
+                received_data_length += len(cf_block[0].payload) * len(cf_block)
+                if received_data_length >= message_data_length:
+                    break
+                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF
+        return UdsMessageRecord(packets_records)
 
     def clear_frames_buffers(self) -> None:
         """

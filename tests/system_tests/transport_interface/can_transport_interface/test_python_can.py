@@ -992,7 +992,7 @@ class TestPythonCanKvaser:
                 < (time_after_receive - time_before_receive) * 1000.
                 < can_transport_interface.n_bs_timeout + self.TASK_TIMING_TOLERANCE)
         await send_frame_task
-        sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
+        sleep(self.DELAY_AFTER_RECEIVING_MESSAGE / 1000.)
 
     # receive_message
 
@@ -1087,7 +1087,7 @@ class TestPythonCanKvaser:
     ])
     @pytest.mark.parametrize("timeout, send_after, delay", [
         (1000, 5, 20),  # ms
-        (20, 10, 50),
+        (50, 10, 50),
     ])
     def test_receive_message__multi_packets(self, example_addressing_information,
                                             example_addressing_information_2nd_node, message,
@@ -1283,7 +1283,7 @@ class TestPythonCanKvaser:
     ])
     @pytest.mark.parametrize("timeout, send_after, delay", [
         (1000, 5, 20),  # ms
-        (20, 10, 50),
+        (50, 10, 50),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__multi_packets(self, example_addressing_information,
@@ -1589,7 +1589,7 @@ class TestPythonCanKvaser:
             return await can_transport_interface_2.async_send_message(message)
 
         receive_message_task = asyncio.create_task(can_transport_interface_1.async_receive_message(timeout=timeout))
-        sent_message_record = _send_message()
+        sent_message_record = await _send_message()
         received_message_record = await receive_message_task
         assert isinstance(sent_message_record, UdsMessageRecord)
         assert isinstance(received_message_record, UdsMessageRecord)
@@ -1870,15 +1870,15 @@ class TestPythonCanKvaser:
         UdsMessage([0x10, 0x81], AddressingType.FUNCTIONAL),
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("fc_after, new_message_after, st_min", [
-        (50, 1, 100),
-        (8, 10, 10),
-        (5, 100, 50),
+    @pytest.mark.parametrize("fc_after, new_message_after, block_size, st_min", [
+        (8, 10, 1, 10),
+        (5, 100, 2, 51),
+        (50, 1, 0, 100),
     ])
     def test_new_message_started_when_multi_packet_message_sending(self, example_addressing_information,
                                                                    example_addressing_information_2nd_node,
                                                                    message, new_message, fc_after, new_message_after,
-                                                                   st_min):
+                                                                   block_size, st_min):
         """
         Check for a synchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
 
@@ -1900,7 +1900,7 @@ class TestPythonCanKvaser:
                                                           addressing_information=example_addressing_information)
         other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
         flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
-                                                                           block_size=0,
+                                                                           block_size=block_size,
                                                                            st_min=st_min)
         flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
         interrupting_packet = other_node_segmenter.segmentation(new_message)[0]
@@ -1920,16 +1920,16 @@ class TestPythonCanKvaser:
         UdsMessage([0x10, 0x81], AddressingType.FUNCTIONAL),
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 200)], addressing_type=AddressingType.PHYSICAL),
     ])
-    @pytest.mark.parametrize("fc_after, new_message_after, st_min", [
-        (50, 1, 100),
-        (8, 10, 10),
-        (5, 100, 51),
+    @pytest.mark.parametrize("fc_after, new_message_after, block_size, st_min", [
+        (8, 10, 1, 10),
+        (5, 100, 2, 51),
+        (50, 1, 0, 100),
     ])
     @pytest.mark.asyncio
     async def test_new_message_started_when_multi_packet_async_message_sending(self, example_addressing_information,
                                                                                example_addressing_information_2nd_node,
                                                                                message, new_message, fc_after,
-                                                                               new_message_after, st_min):
+                                                                               new_message_after, block_size, st_min):
         """
         Check for a asynchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
 
@@ -1951,7 +1951,7 @@ class TestPythonCanKvaser:
                                                           addressing_information=example_addressing_information)
         other_node_segmenter = CanSegmenter(addressing_information=example_addressing_information_2nd_node)
         flow_control_packet = other_node_segmenter.get_flow_control_packet(flow_status=CanFlowStatus.ContinueToSend,
-                                                                           block_size=0,
+                                                                           block_size=block_size,
                                                                            st_min=st_min)
         flow_control_frame = Message(arbitration_id=flow_control_packet.can_id, data=flow_control_packet.raw_frame_data)
         interrupting_packet = other_node_segmenter.segmentation(new_message)[0]
