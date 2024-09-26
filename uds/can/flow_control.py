@@ -527,15 +527,15 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         self.st_min = st_min
         self.wait_count = wait_count
         self.repeat_wait = repeat_wait
-        self.__remaining_wait: Optional[int] = None
+        self._remaining_wait: Optional[int] = None
 
     def __iter__(self) -> "DefaultFlowControlParametersGenerator":
         """Get iterator object."""
         iterator = deepcopy(self)
         if iterator.wait_count > 0:
-            iterator.__remaining_wait = iterator.wait_count
+            iterator._remaining_wait = iterator.wait_count
         else:
-            iterator.__remaining_wait = None
+            iterator._remaining_wait = None
         return iterator
 
     def __next__(self) -> FlowControlParametersAlias:
@@ -547,13 +547,13 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
             - :ref:`Block Size <knowledge-base-can-block-size>`
             - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
         """
-        if self.__remaining_wait is None:
+        if self._remaining_wait is None:
             return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
-        if self.__remaining_wait == 0:
+        if self._remaining_wait == 0:
             if self.repeat_wait:
-                self.__remaining_wait = self.wait_count
+                self._remaining_wait = self.wait_count
             return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
-        self.__remaining_wait -= 1
+        self._remaining_wait -= 1
         return CanFlowStatus.Wait, None, None
 
     @property
@@ -588,7 +588,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
 
     @property
     def wait_count(self) -> int:
-        """Number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`."""
+        """Get number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`."""
         return self.__wait_count
 
     @wait_count.setter

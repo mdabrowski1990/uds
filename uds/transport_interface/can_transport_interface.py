@@ -24,11 +24,11 @@ from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import TransmissionDirection
 from uds.utilities import (
-    TimeMillisecondsAlias,
+    MessageReceptionWarning,
     MessageTransmissionError,
+    TimeMillisecondsAlias,
     UnexpectedPacketReceptionWarning,
     ValueWarning,
-    MessageReceptionWarning
 )
 
 from .abstract_transport_interface import AbstractTransportInterface
@@ -642,7 +642,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - Record of UDS message if reception was interrupted by a new UDS message transmission.
             - Tuple with records of received Consecutive Frames.
         """
-        received_cf = []
+        received_cf: List[CanPacketRecord] = []
         received_payload_size = 0
         remaining_timeout = self.n_cr_timeout
         time_start_ms = time() * 1000
@@ -655,11 +655,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     return UdsMessageRecord([received_packet])
                 if received_packet.packet_type == CanPacketType.FIRST_FRAME:
                     return self._receive_consecutive_frames(first_frame=received_packet)
-                raise NotImplementedError(f"CAN packet of unhandled type was received.")
+                raise NotImplementedError("CAN packet of unhandled type was received.")
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
                 received_cf.append(received_packet)
-                received_payload_size += len(received_packet.payload)
+                received_payload_size += len(received_packet.payload)  # type: ignore
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
                 remaining_timeout = self.n_cr_timeout
                 time_start_ms = time() * 1000
@@ -689,8 +689,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - Record of UDS message if reception was interrupted by a new UDS message transmission.
             - Tuple with records of received Consecutive Frames.
         """
-        received_cf = []
-        received_payload_size = 0
+        received_cf: List[CanPacketRecord] = []
+        received_payload_size: int = 0
         remaining_timeout = self.n_cr_timeout
         time_start_ms = time() * 1000
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
@@ -702,11 +702,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     return UdsMessageRecord([received_packet])
                 if received_packet.packet_type == CanPacketType.FIRST_FRAME:
                     return await self._async_receive_consecutive_frames(first_frame=received_packet, loop=loop)
-                raise NotImplementedError(f"CAN packet of unhandled type was received.")
+                raise NotImplementedError("CAN packet of unhandled type was received.")
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
                 received_cf.append(received_packet)
-                received_payload_size += len(received_packet.payload)
+                received_payload_size += len(received_packet.payload)  # type: ignore
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
                 remaining_timeout = self.n_cr_timeout
                 time_start_ms = time() * 1000
@@ -729,10 +729,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
         """
-        packets_records = [first_frame]
-        message_data_length = first_frame.data_length
-        received_data_length = len(first_frame.payload)
-        sequence_number = 1
+        packets_records: List[CanPacketRecord] = [first_frame]
+        message_data_length: int = first_frame.data_length  # type: ignore
+        received_data_length: int = len(first_frame.payload)  # type: ignore
+        sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
             try:
@@ -747,10 +747,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                         return UdsMessageRecord([received_packet])
                     if received_packet.packet_type == CanPacketType.FIRST_FRAME:
                         return self._receive_consecutive_frames(first_frame=received_packet)
-                    raise NotImplementedError(f"CAN packet of unhandled type was received.")
-                else:
-                    warn(message="An unrelated CAN packet was received during UDS message transmission.",
-                         category=UnexpectedPacketReceptionWarning)
+                    raise NotImplementedError("CAN packet of unhandled type was received.")
+                warn(message="An unrelated CAN packet was received during UDS message transmission.",
+                     category=UnexpectedPacketReceptionWarning)
             flow_status, block_size, st_min = next(flow_control_iterator)
             fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
                                                                block_size=block_size,
@@ -761,15 +760,15 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if flow_status == CanFlowStatus.ContinueToSend:
                 remaining_data_length = message_data_length - received_data_length
                 cf_block = self._receive_cf_packets_block(sequence_number=sequence_number,
-                                                          block_size=block_size,
+                                                          block_size=block_size,  # type: ignore
                                                           remaining_data_length=remaining_data_length)
                 if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
-                received_data_length += len(cf_block[0].payload) * len(cf_block)
+                received_data_length += len(cf_block[0].payload) * len(cf_block)  # type: ignore
                 if received_data_length >= message_data_length:
                     break
-                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF
+                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
         return UdsMessageRecord(packets_records)
 
     async def _async_receive_consecutive_frames(self,
@@ -786,10 +785,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
         """
-        packets_records = [first_frame]
-        message_data_length = first_frame.data_length
-        received_data_length = len(first_frame.payload)
-        sequence_number = 1
+        packets_records: List[CanPacketRecord] = [first_frame]
+        message_data_length: int = first_frame.data_length  # type: ignore
+        received_data_length: int = len(first_frame.payload)  # type: ignore
+        sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
             try:
@@ -804,10 +803,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                         return UdsMessageRecord([received_packet])
                     if received_packet.packet_type == CanPacketType.FIRST_FRAME:
                         return await self._async_receive_consecutive_frames(first_frame=received_packet, loop=loop)
-                    raise NotImplementedError(f"CAN packet of unhandled type was received.")
-                else:
-                    warn(message="An unrelated CAN packet was received during UDS message transmission.",
-                         category=UnexpectedPacketReceptionWarning)
+                    raise NotImplementedError("CAN packet of unhandled type was received.")
+                warn(message="An unrelated CAN packet was received during UDS message transmission.",
+                     category=UnexpectedPacketReceptionWarning)
             flow_status, block_size, st_min = next(flow_control_iterator)
             fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
                                                                block_size=block_size,
@@ -818,16 +816,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if flow_status == CanFlowStatus.ContinueToSend:
                 remaining_data_length = message_data_length - received_data_length
                 cf_block = await self._async_receive_cf_packets_block(sequence_number=sequence_number,
-                                                                      block_size=block_size,
+                                                                      block_size=block_size,  # type: ignore
                                                                       remaining_data_length=remaining_data_length,
                                                                       loop=loop)
                 if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
-                received_data_length += len(cf_block[0].payload) * len(cf_block)
+                received_data_length += len(cf_block[0].payload) * len(cf_block)  # type: ignore
                 if received_data_length >= message_data_length:
                     break
-                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF
+                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
         return UdsMessageRecord(packets_records)
 
     def clear_frames_buffers(self) -> None:
