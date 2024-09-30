@@ -7,6 +7,7 @@ from uds.can import (
     Mixed29BitCanAddressingInformation,
     Normal11BitCanAddressingInformation,
     NormalFixedCanAddressingInformation,
+    CanFlowStatus
 )
 from uds.segmentation.can_segmenter import (
     DEFAULT_FILLER_BYTE,
@@ -780,6 +781,45 @@ class TestCanSegmenterIntegration:
     def test_is_input_packet__false(self, addressing_information, frame_can_id, frame_data):
         can_segmenter = CanSegmenter(addressing_information=addressing_information)
         assert can_segmenter.is_input_packet(can_id=frame_can_id, data=frame_data) is None
+
+    @pytest.mark.parametrize("addressing_information", [
+        Normal11BitCanAddressingInformation(rx_physical={"can_id": 0x611},
+                                            tx_physical={"can_id": 0x612},
+                                            rx_functional={"can_id": 0x6FE},
+                                            tx_functional={"can_id": 0x6FF}),
+        NormalFixedCanAddressingInformation(rx_physical={"can_id": 0x18DA1234, "target_address": 0x12, "source_address": 0x34},
+                                            tx_physical={"can_id": 0x18DA3412, "target_address": 0x34, "source_address": 0x12},
+                                            rx_functional={"can_id": 0x18DBF0E1, "target_address": 0xF0, "source_address": 0xE1},
+                                            tx_functional={"can_id": 0x18DBE1F0}),
+        ExtendedCanAddressingInformation(rx_physical={"can_id": 0x1234, "target_address": 0xF0},
+                                         tx_physical={"can_id": 0x1234, "target_address": 0xE2,},
+                                         rx_functional={"can_id": 0xFEDCBA, "target_address": 0xBB},
+                                         tx_functional={"can_id": 0xFEDCBA, "target_address": 0x12}),
+        Mixed11BitCanAddressingInformation(rx_physical={"can_id": 0x645, "address_extension": 0x01},
+                                           tx_physical={"can_id": 0x646, "address_extension": 0xFE},
+                                           rx_functional={"can_id": 0x6DE, "address_extension": 0x05},
+                                           tx_functional={"can_id": 0x6DF, "address_extension": 0xFF}),
+        Mixed29BitCanAddressingInformation(rx_physical={"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
+                                           tx_physical={"can_id": 0x18CED0C2, "address_extension": 0xD8, "target_address": 0xD0, "source_address": 0xC2},
+                                           rx_functional={"can_id": 0x18CD7186, "address_extension": 0x05, "target_address": 0x71, "source_address": 0x86},
+                                           tx_functional={"can_id": 0x18CD8671, "address_extension": 0xFF}),
+    ])
+    @pytest.mark.parametrize("flow_Status, block_size, st_min", [
+        (CanFlowStatus.Overflow, None, None),
+        (CanFlowStatus.Wait, None, None),
+        (CanFlowStatus.ContinueToSend, 0x00, 0xFF),
+        (CanFlowStatus.ContinueToSend, 0xFF, 0x00),
+    ])
+    def test_get_flow_control_packet(self, addressing_information, flow_Status, block_size, st_min):
+        can_segmenter = CanSegmenter(addressing_information=addressing_information)
+        flow_control = can_segmenter.get_flow_control_packet(flow_status=flow_Status, block_size=block_size, st_min=st_min)
+        assert flow_control.addressing_format == addressing_information.addressing_format
+        assert flow_control.addressing_type == AddressingType.PHYSICAL
+        assert flow_control.packet_type == CanPacketType.FLOW_CONTROL
+        assert flow_control.flow_status == flow_Status
+        if flow_Status == CanFlowStatus.ContinueToSend:
+            assert flow_control.block_size == block_size
+            assert flow_control.st_min == st_min
 
     @pytest.mark.parametrize("uds_message", [
         UdsMessage(payload=bytearray([0x54]), addressing_type=AddressingType.PHYSICAL),
