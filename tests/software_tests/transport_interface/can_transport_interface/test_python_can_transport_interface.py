@@ -1838,3 +1838,7 @@ class TestPyCanTransportInterfaceIntegration:
         assert py_can_ti.n_br == init_kwargs.get("n_br", AbstractCanTransportInterface.DEFAULT_N_BR)
         assert py_can_ti.n_cs == init_kwargs.get("n_cs", AbstractCanTransportInterface.DEFAULT_N_CS)
         assert py_can_ti.n_cr_timeout == init_kwargs.get("n_cr_timeout", AbstractCanTransportInterface.N_CR_TIMEOUT)
+        fc_param_iter = iter(py_can_ti.flow_control_parameters_generator)
+        for _ in range(5):
+            assert next(fc_param_iter) == (CanFlowStatus.ContinueToSend, 0, 0)
+
