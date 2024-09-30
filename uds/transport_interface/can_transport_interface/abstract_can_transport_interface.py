@@ -61,8 +61,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
             - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
             - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
-            - :parameter use_data_optimization: Information whether to use CAN Frame Data Optimization.
-            - :parameter filler_byte: Filler byte value to use for CAN Frame Data Padding.
+            - :parameter use_data_optimization: Information whether to use
+                :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
+            - :parameter filler_byte: Filler byte value to use for
+                :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
 
         :raise TypeError: Provided Addressing Information value has unexpected type.
@@ -87,7 +89,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     def _update_n_bs_measured(self, message: UdsMessageRecord) -> None:
         """
-        Update measured values of N_Bs according to timestamps of CAN packet records.
+        Update measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` according to timestamps of CAN packet records.
 
         :param message: Record of UDS message transmitted over CAN.
         """
@@ -103,7 +105,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     def _update_n_cr_measured(self, message: UdsMessageRecord) -> None:
         """
-        Update measured values of N_Cr according to timestamps of CAN packet records.
+        Update measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` according to timestamps of CAN packet records.
 
         :param message: Record of UDS message transmitted over CAN.
         """
@@ -379,7 +381,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def use_data_optimization(self) -> bool:
-        """Information whether to use CAN Frame Data Optimization during CAN packets creation."""
+        """
+        Information whether to use CAN Frame Data Optimization during CAN packets creation.
+
+        .. seealso::
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+        """
         return self.segmenter.use_data_optimization
 
     @use_data_optimization.setter
@@ -387,19 +394,30 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         Set whether to use CAN Frame Data Optimization during CAN packets creation.
 
+        .. seealso::
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+
         :param value: Value to set.
         """
         self.segmenter.use_data_optimization = value
 
     @property
     def filler_byte(self) -> int:
-        """Filler byte value to use for output CAN Frame Data Padding during segmentation."""
+        """
+        Filler byte value to use for output CAN Frame Data Padding during segmentation.
+
+        .. seealso::
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
+        """
         return self.segmenter.filler_byte
 
     @filler_byte.setter
     def filler_byte(self, value: int):
         """
         Set value of filler byte to use for output CAN Frame Data Padding.
+
+        .. seealso::
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
 
         :param value: Value to set.
         """
