@@ -406,14 +406,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                     warn(message="A new UDS message is transmitted. Aborted reception of previous message.",
                          category=MessageReceptionWarning)
-                    return await self._async_message_receive_start(initial_packet=received_packet)
+                    return await self._async_message_receive_start(initial_packet=received_packet, loop=loop)
                 warn(message="An unrelated CAN packet was received during UDS message transmission.",
                      category=UnexpectedPacketReceptionWarning)
             flow_status, block_size, st_min = next(flow_control_iterator)
             fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
                                                                block_size=block_size,
                                                                st_min=st_min)
-            packets_records.append(await self.async_send_packet(fc_packet))
+            packets_records.append(await self.async_send_packet(fc_packet, loop=loop))
             if flow_status == CanFlowStatus.Overflow:
                 raise OverflowError("Flow Control with Flow Status `OVERFLOW` was transmitted.")
             if flow_status == CanFlowStatus.ContinueToSend:
