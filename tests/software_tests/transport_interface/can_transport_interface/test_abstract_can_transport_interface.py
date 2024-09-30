@@ -372,7 +372,7 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_timeout == mock_value
 
     @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_n_bs_measured(self, value):
+    def test_n_bs_measured__get(self, value):
         self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured = value
         assert AbstractCanTransportInterface.n_bs_measured.fget(self.mock_can_transport_interface) == value
 
@@ -552,14 +552,14 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_timeout == mock_value
 
     @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_n_cr_measured(self, value):
+    def test_n_cr_measured__get(self, value):
         self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured = value
         assert AbstractCanTransportInterface.n_cr_measured.fget(self.mock_can_transport_interface) == value
 
     # addressing_information
 
     @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_addressing_information(self, value):
+    def test_addressing_information__get(self, value):
         self.mock_can_transport_interface._AbstractCanTransportInterface__addressing_information = value
         assert AbstractCanTransportInterface.addressing_information.fget(self.mock_can_transport_interface) \
                == self.mock_can_transport_interface._AbstractCanTransportInterface__addressing_information
