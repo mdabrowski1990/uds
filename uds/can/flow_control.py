@@ -1,7 +1,7 @@
 """
 Implementation specific for Flow Control CAN packets.
 
-This module contains implementation of :ref:`Flow Control <knowledge-base-can-flow-control>` packet attributes:
+This module contains implementation of :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>` attributes:
  - :ref:`Flow Status <knowledge-base-can-flow-status>`
  - :ref:`Block Size <knowledge-base-can-block-size>`
  - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
@@ -119,7 +119,7 @@ class CanSTminTranslator:
 
         :param time_value: STmin time in milliseconds.
 
-        :raise TypeError: Provided value is not time in milliseconds.
+        :raise TypeError: Provided value is not int or flow type.
         :raise ValueError: Value out of supported range.
 
         :return: Raw value of STmin.

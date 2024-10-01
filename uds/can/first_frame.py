@@ -257,8 +257,8 @@ class CanFirstFrameHandler:
         :param addressing_format: Value of CAN Addressing Format to use for First Frame Data Length value validation.
             Leave None if you do not want to validate whether First Frame shall be used in this case.
 
-        :raise TypeError: Provided value of First Frame Data Length is not integer.
-        :raise ValueError: Provided value of First Frame Data Length is out of range.
+        :raise TypeError: Provided value of First Frame Data Length is not int type.
+        :raise ValueError: Provided value of First Frame Data Length is out of range (0 <= value <= MAX FF_DL).
         :raise InconsistentArgumentsError: Single Frame shall be used instead of First Frame to transmit provided
             number of payload bytes represented by FF_DL value.
         """

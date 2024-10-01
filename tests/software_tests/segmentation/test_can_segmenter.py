@@ -2,12 +2,12 @@ import pytest
 from mock import MagicMock, Mock, call, patch
 
 from uds.can import (
+    CanFlowStatus,
     ExtendedCanAddressingInformation,
     Mixed11BitCanAddressingInformation,
     Mixed29BitCanAddressingInformation,
     Normal11BitCanAddressingInformation,
     NormalFixedCanAddressingInformation,
-    CanFlowStatus
 )
 from uds.segmentation.can_segmenter import (
     DEFAULT_FILLER_BYTE,

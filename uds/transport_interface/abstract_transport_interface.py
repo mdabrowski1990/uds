@@ -72,18 +72,6 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> AbstractUdsPacketRecord:
-        """
-        Receive UDS packet.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-
-        :raise TimeoutError: Timeout was reached.
-
-        :return: Record with historic information about received UDS packet.
-        """
-
-    @abstractmethod
     async def async_send_packet(self,
                                 packet: AbstractUdsPacket,
                                 loop: Optional[AbstractEventLoop] = None) -> AbstractUdsPacketRecord:
@@ -94,6 +82,18 @@ class AbstractTransportInterface(ABC):
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :return: Record with historic information about transmitted UDS packet.
+        """
+
+    @abstractmethod
+    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> AbstractUdsPacketRecord:
+        """
+        Receive UDS packet.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS packet.
         """
 
     @abstractmethod
@@ -123,18 +123,6 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
-        """
-        Receive UDS message.
-
-        :param timeout: Maximal time (in milliseconds) to wait.
-
-        :raise TimeoutError: Timeout was reached.
-
-        :return: Record with historic information about received UDS message.
-        """
-
-    @abstractmethod
     async def async_send_message(self,
                                  message: UdsMessage,
                                  loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
@@ -145,6 +133,18 @@ class AbstractTransportInterface(ABC):
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :return: Record with historic information about transmitted UDS message.
+        """
+
+    @abstractmethod
+    def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
+        """
+        Receive UDS message.
+
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :raise TimeoutError: Timeout was reached.
+
+        :return: Record with historic information about received UDS message.
         """
 
     @abstractmethod

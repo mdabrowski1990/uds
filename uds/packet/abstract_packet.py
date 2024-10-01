@@ -191,8 +191,8 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
 
         :param value: Value to validate.
 
-        :raise TypeError: The frame argument has unsupported.
-        :raise ValueError: Some attribute of the frame argument is missing or its value is unexpected.
+        :raise TypeError: Provided frame object has unsupported type.
+        :raise ValueError: At least one attribute of the frame object is missing or its value is unexpected.
         """
 
 

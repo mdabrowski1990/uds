@@ -39,8 +39,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     DEFAULT_N_CS: Optional[TimeMillisecondsAlias] = None
     """Default value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
     DEFAULT_FLOW_CONTROL_PARAMETERS = DefaultFlowControlParametersGenerator()
-    """Default value of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters (
-    :ref:`Flow Status <knowledge-base-can-flow-status>`, :ref:`Block Size <knowledge-base-can-block-size>`,
+    """Default value of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters
+    (:ref:`Flow Status <knowledge-base-can-flow-status>`,
+    :ref:`Block Size <knowledge-base-can-block-size>`,
     :ref:`Separation Time minimum <knowledge-base-can-st-min>`)."""
 
     def __init__(self,
@@ -138,7 +139,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value of timeout to set.
 
-        :raise TypeError: Provided value is not int or float.
+        :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided value is less or equal 0.
         """
         if not isinstance(value, (int, float)):
@@ -156,6 +157,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
+        .. note:: The last measurement comes from the last transmission of Single Frame or First Fame CAN Packet using
+            either :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_packet`
+            or :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_send_packet`
+            method.
+
         :return: Time in milliseconds or None if the value was never measured.
         """
 
@@ -171,7 +177,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value of timeout to set.
 
-        :raise TypeError: Provided value is not int or float.
+        :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided value is less or equal 0.
         """
         if not isinstance(value, (int, float)):
@@ -189,6 +195,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         """
         Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
+        .. note:: The last measurement comes from the last transmission of Flow Control CAN Packet using either
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_packet` or
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_send_packet`
+            method.
+
         :return: Time in milliseconds or None if the value was never measured.
         """
 
@@ -204,7 +215,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value of timeout to set.
 
-        :raise TypeError: Provided value is not int or float.
+        :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided value is less or equal 0.
         """
         if not isinstance(value, (int, float)):
@@ -222,7 +233,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Get the last measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of UDS message using either
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_message`
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_message` or
             :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_send_message`
             method.
 
@@ -247,8 +258,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: The value to set.
 
-        :raise TypeError: Provided value is not int or float.
-        :raise ValueError: Provided value is out of range.
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range (0 <= value < MAX N_Br).
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -285,11 +296,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use.
 
         :param value: The value to set.
-            - None - use timing compatible with STmin value received in a preceding Flow Control packet
-            - int/float type - timing value to be used regardless of a received STmin value
+            - None - use timing compatible with :ref:`STmin <knowledge-base-can-st-min>` value received in a preceding
+                :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`
+            - int/float type - timing value to be used regardless of a received
+                :ref:`STmin <knowledge-base-can-st-min>` value
 
-        :raise TypeError: Provided value is not int or float.
-        :raise ValueError: Provided value is out of range.
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range (0 <= value < MAX N_Cs).
         """
         if value is not None:
             if not isinstance(value, (int, float)):
@@ -323,7 +336,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :param value: Value of timeout to set.
 
-        :raise TypeError: Provided value is not int or float.
+        :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided value is less or equal 0.
         """
         if not isinstance(value, (int, float)):
@@ -341,7 +354,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Get the last measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
         .. note:: The last measurement comes from the last reception of UDS message using either
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.receive_message`
+            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.receive_message` or
             :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_receive_message`
             method.
 

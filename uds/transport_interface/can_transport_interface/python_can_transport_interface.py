@@ -1,4 +1,4 @@
-"""Implementation of UDS Transport Interface for CAN bus using python-can."""
+"""Implementation of UDS Transport Interface for CAN bus using python-can as bus manager."""
 
 __all__ = ["PyCanTransportInterface"]
 
@@ -79,8 +79,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     @property
     def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
+        # pylint: disable=line-too-long
         """
         Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
+
+        .. note:: The last measurement comes from the last transmission of Single Frame or First Fame CAN Packet using
+            either
+            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.send_packet`
+            or
+            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
+            method.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
@@ -88,8 +96,15 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     @property
     def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
+        # pylint: disable=line-too-long
         """
         Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
+
+        .. note:: The last measurement comes from the last transmission of Flow Control CAN Packet using either
+            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.send_packet`
+            or
+            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
+            method.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
@@ -252,10 +267,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def _receive_cf_packets_block(self, sequence_number: int, block_size: int, remaining_data_length: int) \
             -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
         """
-        Receive block of Consecutive Frames.
+        Receive block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
-        :param sequence_number: Current Sequence Number (next Consecutive Frame shall have this value set).
-        :param block_size: Block Size value sent in the last Flow Control CAN packet.
+        :param sequence_number: Current :ref:`Sequence Number <knowledge-base-can-sequence-number>`
+            (next Consecutive Frame shall have this value set).
+        :param block_size: :ref:`Block Size <knowledge-base-can-block-size>` value sent in the last
+            :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`.
         :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
 
         :return: Either:
@@ -294,10 +311,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                               loop: Optional[AbstractEventLoop] = None) \
             -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
         """
-        Receive asynchronously block of Consecutive Frames.
+        Receive asynchronously block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
-        :param sequence_number: Current Sequence Number (next Consecutive Frame shall have this value set).
-        :param block_size: Block Size value sent in the last Flow Control CAN packet.
+        :param sequence_number: Current :ref:`Sequence Number <knowledge-base-can-sequence-number>`
+            (next Consecutive Frame shall have this value set).
+        :param block_size: :ref:`Block Size <knowledge-base-can-block-size>` value sent in the last
+            :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`.
         :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
         :param loop: An asyncio event loop used for observing messages.
 
@@ -334,10 +353,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive Consecutive Frames after reception of First Frame.
 
-        :param first_frame: First Frame that was received.
+        :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
 
-        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr> timeout was reached.
-        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was sent.
+        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
+        :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
+            OVERFLOW was sent.
 
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
         """
@@ -385,11 +405,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive asynchronously Consecutive Frames after reception of First Frame.
 
-        :param first_frame: First Frame that was received.
+        :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
         :param loop: An asyncio event loop used for observing messages.
 
-        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr> timeout was reached.
-        :raise OverflowError: Flow Control packet with Flow Status equal to OVERFLOW was sent.
+        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
+        :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
+            OVERFLOW was sent.
         :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
 
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
