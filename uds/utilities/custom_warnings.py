@@ -24,25 +24,15 @@ class UnexpectedPacketReceptionWarning(RuntimeWarning):
     """
     An unexpected packet was received.
 
-    TODO: refer to knowledge-base section of error handling, remove note then
-
-    .. note::
-        According to UDS ISO 15765-2 Standard:
-
-        As a general rule, arrival of an unexpected N_PDU from any node shall be ignored, with the exception of
-        SF N_PDUs and physically addressed FF N_PDUs; functionally addressed FirstFrames shall be ignored.
+    .. seealso::
+        :ref:`Unexpected CAN Packet handling <knowledge-base-can-unexpected-packet-arrival>`
     """
 
 
-class MessageReceptionWarning(RuntimeWarning):
+class NewMessageReceptionWarning(RuntimeWarning):
     """
     A new UDS message transmission was started while in process of receiving UDS message.
 
-    TODO: refer to knowledge-base section of error handling, remove note then
-
     .. note::
-        According to UDS ISO 15765-2 Standard:
-
-        As a general rule, arrival of an unexpected N_PDU from any node shall be ignored, with the exception of
-        SF N_PDUs and physically addressed FF N_PDUs; functionally addressed FirstFrames shall be ignored.
+        :ref:`Unexpected CAN Packet handling <knowledge-base-can-unexpected-packet-arrival>`
     """

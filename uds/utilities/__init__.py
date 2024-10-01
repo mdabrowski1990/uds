@@ -14,12 +14,11 @@ from .common_types import (
 from .custom_exceptions import (
     AmbiguityError,
     InconsistentArgumentsError,
-    MessageTransmissionError,
     ReassignmentError,
     UnusedArgumentError,
 )
 from .custom_warnings import (
-    MessageReceptionWarning,
+    NewMessageReceptionWarning,
     UnexpectedPacketReceptionWarning,
     UnusedArgumentWarning,
     ValueWarning,
