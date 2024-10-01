@@ -203,8 +203,8 @@ class TestPythonCanKvaser:
         2. Call method to receive packet via Transport Interface with timeout set just before CAN packet reaches CAN bus.
             Expected: Timeout exception is raised.
 
-        :param addressing_type: Addressing type to use for transmitting a CAN packet.
         :param addressing_information: Example Addressing Information of CAN Node.
+        :param addressing_type: Addressing type to use for transmitting a CAN packet.
         :param frame: CAN frame to send (must be decoded as UDS CAN packet).
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
@@ -486,7 +486,6 @@ class TestPythonCanKvaser:
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
         # assert datetime_before_send < packet_record.transmission_time < datetime_after_send
-
 
     # async_receive_packet
 
@@ -1106,6 +1105,7 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Addressing Information of receiving CAN Node.
         :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
         :param message: UDS message to transmit.
+        :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
@@ -1156,6 +1156,7 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Addressing Information of receiving CAN Node.
         :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
         :param message: UDS message to transmit.
+        :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
@@ -1201,7 +1202,7 @@ class TestPythonCanKvaser:
 
         :param example_addressing_information: Addressing Information of receiving CAN Node.
         :param message: UDS message to transmit.
-        :param timeout: Timeout to pass to receive method [ms].
+        :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
@@ -1250,7 +1251,7 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Addressing Information of receiving CAN Node.
         :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
         :param message: UDS message to transmit.
-        :param timeout: Timeout to pass to receive method [ms].
+        :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
@@ -1303,6 +1304,7 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Addressing Information of receiving CAN Node.
         :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
         :param message: UDS message to transmit.
+        :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
@@ -1360,6 +1362,7 @@ class TestPythonCanKvaser:
         :param example_addressing_information: Addressing Information of receiving CAN Node.
         :param example_addressing_information_2nd_node: Addressing Information of transmitting CAN Node.
         :param message: UDS message to transmit.
+        :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
@@ -1507,6 +1510,14 @@ class TestPythonCanKvaser:
         :param example_addressing_information_2nd_node: Addressing Information for a transmitting CAN Node.
             It is compatible with `example_addressing_information`.
         :param message: UDS message to send.
+        :param send_after: Delay after which message to be sent after message reception [ms].
+        :param timeout: Timeout value to pass to receive message method [ms].
+        :param n_cs: Value of N_Cs time parameter to use by sending node [ms].
+        :param n_br: Value of N_Br time parameter to use by receiving node [ms].
+        :param block_size: Block size parameter to send in Flow Control packets by receiving node.
+        :param st_min: STmin parameter to send in Flow Control packets by receiving node.
+        :param wait_count: Number of Flow Control frames with WAIT Flow Status to send by receiving node.
+        :param repeat_wait: Whether receiving node shall repeat Flow Control frames with WAIT Flow Status.
         """
         flow_control_parameters_generator = DefaultFlowControlParametersGenerator(block_size=block_size,
                                                                                   st_min=st_min,
@@ -1571,6 +1582,14 @@ class TestPythonCanKvaser:
         :param example_addressing_information_2nd_node: Addressing Information for a transmitting CAN Node.
             It is compatible with `example_addressing_information`.
         :param message: UDS message to send.
+        :param send_after: Delay after which message to be sent after message reception [ms].
+        :param timeout: Timeout value to pass to receive message method [ms].
+        :param n_cs: Value of N_Cs time parameter to use by sending node [ms].
+        :param n_br: Value of N_Br time parameter to use by receiving node [ms].
+        :param block_size: Block size parameter to send in Flow Control packets by receiving node.
+        :param st_min: STmin parameter to send in Flow Control packets by receiving node.
+        :param wait_count: Number of Flow Control frames with WAIT Flow Status to send by receiving node.
+        :param repeat_wait: Whether receiving node shall repeat Flow Control frames with WAIT Flow Status.
         """
         flow_control_parameters_generator = DefaultFlowControlParametersGenerator(block_size=block_size,
                                                                                   st_min=st_min,
@@ -1894,7 +1913,8 @@ class TestPythonCanKvaser:
         :param new_message: UDS message to interrupt.
         :param fc_after: Delay to use for sending CAN flow control.
         :param new_message_after: Delay to use for sending interrupting message.
-        :param st_min: STmin value to transmit in Flow Control.
+        :param block_size: Value of Block Size parameter to transmit in Flow Control.
+        :param st_min: Value of STmin parameter to transmit in Flow Control.
         """
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
@@ -1931,7 +1951,7 @@ class TestPythonCanKvaser:
                                                                                message, new_message, fc_after,
                                                                                new_message_after, block_size, st_min):
         """
-        Check for a asynchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
+        Check for an asynchronous multi packet (FF + CF) UDS message sending being interrupted by a new message.
 
         Procedure:
         1. Schedule Flow Control CAN packet with information to continue sending all consecutive frame packets at once.
@@ -1945,7 +1965,8 @@ class TestPythonCanKvaser:
         :param new_message: UDS message to interrupt.
         :param fc_after: Delay to use for sending CAN flow control.
         :param new_message_after: Delay to use for sending interrupting message after Flow Control.
-        :param st_min: STmin value to transmit in Flow Control.
+        :param block_size: Value of Block Size parameter to transmit in Flow Control.
+        :param st_min: Value of STmin parameter to transmit in Flow Control.
         """
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=example_addressing_information)
