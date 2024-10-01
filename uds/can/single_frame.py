@@ -318,7 +318,7 @@ class CanSingleFrameHandler:
         :param addressing_format: Value of CAN Addressing Format to use for Single Frame Data Length value validation.
             Leave None if you do not want to validate whether payload can fit into a CAN Frame with considered DLC.
 
-        :raise TypeError: Provided value of Single Frame Data Length is not integer.
+        :raise TypeError: Provided value of Single Frame Data Length is not int type.
         :raise ValueError: Provided value of Single Frame Data Length is too small.
         :raise InconsistentArgumentsError: It is impossible for a Single Frame with provided DLC to contain as many
             payload bytes as the provided value of Single Frame Data Length.
@@ -343,7 +343,7 @@ class CanSingleFrameHandler:
         :param payload_length: Value to validate.
         :param ai_data_bytes_number: Number of data byte that carry Addressing Information.
 
-        :raise TypeError: Provided value of payload length is not integer.
+        :raise TypeError: Provided value of payload length is not int type.
         :raise ValueError: Provided value of payload length is less or equal to 0.
         :raise InconsistentArgumentsError: Provided value of payload length is greater than maximum value.
         """

@@ -81,7 +81,7 @@ html_logo = "images/UDS_logo_without_background.png"
 html_theme_options = {
     "sticky_navigation": False,
     "collapse_navigation": False,
-    "navigation_depth": 6,
+    "navigation_depth": 8,
 }
 
 html_static_path = []

@@ -1,7 +1,7 @@
 """
 Implementation specific for Flow Control CAN packets.
 
-This module contains implementation of :ref:`Flow Control <knowledge-base-can-flow-control>` packet attributes:
+This module contains implementation of :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>` attributes:
  - :ref:`Flow Status <knowledge-base-can-flow-status>`
  - :ref:`Block Size <knowledge-base-can-block-size>`
  - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
@@ -12,6 +12,7 @@ __all__ = ["CanFlowStatus", "CanSTminTranslator", "CanFlowControlHandler", "Unre
            "FlowControlParametersAlias"]
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Optional, Tuple
 from warnings import warn
 
@@ -118,7 +119,7 @@ class CanSTminTranslator:
 
         :param time_value: STmin time in milliseconds.
 
-        :raise TypeError: Provided value is not time in milliseconds.
+        :raise TypeError: Provided value is not int or flow type.
         :raise ValueError: Value out of supported range.
 
         :return: Raw value of STmin.
@@ -479,7 +480,7 @@ class CanFlowControlHandler:
         return output
 
 
-FlowControlParametersAlias = Tuple[int, Optional[int], Optional[int]]
+FlowControlParametersAlias = Tuple[CanFlowStatus, Optional[int], Optional[int]]
 """Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters which contains:
 - :ref:`Flow Status <knowledge-base-can-flow-status>`
 - :ref:`Block Size <knowledge-base-can-block-size>`
@@ -490,7 +491,7 @@ class AbstractFlowControlParametersGenerator(ABC):
     """Definition of Flow Control parameters generator."""
 
     def __iter__(self) -> "AbstractFlowControlParametersGenerator":
-        """Get iterator object - called on each Single Frame reception."""
+        """Get iterator object - called on each First Frame reception."""
         return self
 
     @abstractmethod
@@ -509,36 +510,61 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
     Every generated Flow Control parameters will contain the same (valid) values.
     """
 
-    def __init__(self, block_size: int = 0, st_min: int = 0):
+    def __init__(self, block_size: int = 0, st_min: int = 0, wait_count: int = 0, repeat_wait: bool = False) -> None:
         """
         Set values of Block Size and Separation Time minimum parameters to use.
 
         :param block_size: Value of :ref:`Block Size <knowledge-base-can-block-size>` parameter to use.
         :param st_min: Value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter to use.
+        :param wait_count: Number of Flow Control packets to send with
+            :ref:`Flow Status <knowledge-base-can-flow-status>` equal 1 (wait).
+        :param repeat_wait: How to send Flow Control packets with WAIT Flow Status:
+
+            - True - send them before every Flow Control packet with Flow Status=0 (continue to send)
+            - False - send them only once before the first Flow Control packet with Flow Status=0 (continue to send)
         """
         self.block_size = block_size
         self.st_min = st_min
+        self.wait_count = wait_count
+        self.repeat_wait = repeat_wait
+        self._remaining_wait: Optional[int] = None
 
-    def __next__(self):
+    def __iter__(self) -> "DefaultFlowControlParametersGenerator":
+        """Get iterator object."""
+        iterator = deepcopy(self)
+        if iterator.wait_count > 0:
+            iterator._remaining_wait = iterator.wait_count
+        else:
+            iterator._remaining_wait = None
+        return iterator
+
+    def __next__(self) -> FlowControlParametersAlias:
         """
         Generate next set of Flow Control parameters.
 
         :return: Tuple with values of Flow Control parameters:
-            - Flow Status=0 (continue to send packets)
-            - Block Size (user provided)
-            - Separation Time minimum (user provided)
+            - :ref:`Flow Status <knowledge-base-can-flow-status>`
+            - :ref:`Block Size <knowledge-base-can-block-size>`
+            - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
         """
-        return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
+        if self._remaining_wait is None:
+            return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
+        if self._remaining_wait == 0:
+            if self.repeat_wait:
+                self._remaining_wait = self.wait_count
+            return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
+        self._remaining_wait -= 1
+        return CanFlowStatus.Wait, None, None
 
     @property
     def block_size(self) -> int:
-        """Value of Block Size parameter."""
+        """Value of :ref:`Block Size <knowledge-base-can-block-size>` parameter."""
         return self.__block_size
 
     @block_size.setter
     def block_size(self, value: int):
         """
-        Set value of Block Size parameter.
+        Set value of :ref:`Block Size <knowledge-base-can-block-size>` parameter.
 
         :param value: Value to set.
         """
@@ -547,15 +573,53 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
 
     @property
     def st_min(self) -> int:
-        """Value of Separation Time minimum parameter."""
+        """Value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter."""
         return self.__st_min
 
     @st_min.setter
     def st_min(self, value: int):
         """
-        Set value of Separation Time minimum parameter.
+        Set value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter.
 
         :param value: Value to set.
         """
         validate_raw_byte(value)
         self.__st_min = value
+
+    @property
+    def wait_count(self) -> int:
+        """Get number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`."""
+        return self.__wait_count
+
+    @wait_count.setter
+    def wait_count(self, value: int):
+        """
+        Set number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`.
+
+        :param value: Value to set.
+        """
+        if not isinstance(value, int):
+            raise TypeError("Provided value is not int type.")
+        if value < 0:
+            raise ValueError("Provided value is les than 0.")
+        self.__wait_count = value
+
+    @property
+    def repeat_wait(self) -> bool:
+        """
+        Flag informing how to send Flow Control packets with WAIT Flow Status.
+
+        - True - send them before every Flow Control packet with Flow Status=0 (continue to send)
+        - False - send them only once before the first Flow Control packet with Flow Status=0 (continue to send)
+        """
+        return self.__repeat_wait
+
+    @repeat_wait.setter
+    def repeat_wait(self, value: bool):
+        """
+        Set flag informing how to send Flow Control packets with WAIT Flow Status.
+
+        - True - send them before every Flow Control packet with Flow Status=0 (continue to send)
+        - False - send them only once before the first Flow Control packet with Flow Status=0 (continue to send)
+        """
+        self.__repeat_wait = bool(value)

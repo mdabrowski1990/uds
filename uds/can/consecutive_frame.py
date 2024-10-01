@@ -209,8 +209,8 @@ class CanConsecutiveFrameHandler:
         :param addressing_format: CAN addressing format that considered CAN packet uses.
         :param payload_length: Number of payload bytes that considered CAN packet carries.
 
-        :raise TypeError: Provided value of Payload Length is not integer value.
-        :raise ValueError: Provided value of Payload Length is out of range.
+        :raise TypeError: Provided value of Payload Length is not int type.
+        :raise ValueError: Provided value of Payload Length is out of range (1 <= value <= MAX Payload Length).
         :raise InconsistentArgumentsError: Provided Addressing Format and Payload Length values cannot be used together.
 
         :return: The lowest value of DLC that enables to fit in provided Consecutive Frame packet data.

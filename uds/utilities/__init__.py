@@ -14,9 +14,14 @@ from .common_types import (
 from .custom_exceptions import (
     AmbiguityError,
     InconsistentArgumentsError,
+    MessageTransmissionError,
     ReassignmentError,
-    TransmissionInterruptionError,
     UnusedArgumentError,
 )
-from .custom_warnings import TransmissionInterruptionWarning, UnusedArgumentWarning, ValueWarning
+from .custom_warnings import (
+    MessageReceptionWarning,
+    UnexpectedPacketReceptionWarning,
+    UnusedArgumentWarning,
+    ValueWarning,
+)
 from .enums import ByteEnum, ExtendableEnum, NibbleEnum, ValidatedEnum
