@@ -11,12 +11,7 @@ from .common_types import (
     validate_raw_byte,
     validate_raw_bytes,
 )
-from .custom_exceptions import (
-    AmbiguityError,
-    InconsistentArgumentsError,
-    ReassignmentError,
-    UnusedArgumentError,
-)
+from .custom_exceptions import AmbiguityError, InconsistentArgumentsError, ReassignmentError, UnusedArgumentError
 from .custom_warnings import (
     NewMessageReceptionWarning,
     UnexpectedPacketReceptionWarning,

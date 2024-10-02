@@ -13,13 +13,9 @@ from uds.can import AbstractCanAddressingInformation, CanDlcHandler, CanFlowStat
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.transmission_attributes import TransmissionDirection
-from uds.utilities import (
-    NewMessageReceptionWarning,
-    TimeMillisecondsAlias,
-    UnexpectedPacketReceptionWarning,
-)
+from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning
 
-from .abstract_can_transport_interface import AbstractCanTransportInterface
+from .common import AbstractCanTransportInterface
 
 
 class PyCanTransportInterface(AbstractCanTransportInterface):
