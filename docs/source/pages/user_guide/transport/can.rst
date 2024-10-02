@@ -42,6 +42,8 @@ The following configuration parameters are set then:
   :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.use_data_optimization`,
   :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.filler_byte`,
 
+TODO: flow control generator
+
 Most of these attributes (all except
 :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.addressing_information`)
 can be changed after object is created.
@@ -60,6 +62,8 @@ Configuration is set upon calling
 :meth:`uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.__init__` method and from
 the user perspective it does not provide any additional features to common_ implementation provided by
 :meth:`uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.__init__`.
+
+TODO: flow control generator
 
 **Example code:**
 
