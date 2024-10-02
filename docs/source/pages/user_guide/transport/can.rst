@@ -41,8 +41,8 @@ The following configuration parameters are set then:
   :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.dlc`,
   :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.use_data_optimization`,
   :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.filler_byte`,
-
-TODO: flow control generator
+- Flow Control generator - attribute
+  :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.flow_control_parameters_generator`
 
 Most of these attributes (all except
 :attr:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.addressing_information`)
@@ -62,8 +62,6 @@ Configuration is set upon calling
 :meth:`uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.__init__` method and from
 the user perspective it does not provide any additional features to common_ implementation provided by
 :meth:`uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface.__init__`.
-
-TODO: flow control generator
 
 **Example code:**
 
@@ -95,7 +93,11 @@ TODO: flow control generator
         n_cr_timeout = 900,
         dlc=0xF,
         use_data_optimization=True,
-        filler_byte=0x55)
+        filler_byte=0x55,
+        flow_control_parameters_generator=uds.can.DefaultFlowControlParametersGenerator(st_min=0,
+                                                                                        block_size=5,
+                                                                                        wait_count=0,
+                                                                                        repeat_wait=False))
 
     # change CAN Transport Interface configuration
     can_transport_interface.n_as_timeout = uds.transport_interface.PyCanTransportInterface.N_AS_TIMEOUT
@@ -107,17 +109,22 @@ TODO: flow control generator
     can_transport_interface.dlc = 8
     can_transport_interface.use_data_optimization = False
     can_transport_interface.filler_byte = 0xAA
+    can_transport_interface.flow_control_parameters_generator = uds.can.DefaultFlowControlParametersGenerator(
+        st_min=100,
+        block_size=15,
+        wait_count=1,
+        repeat_wait=True)
 
 
 Send Packet
 ```````````
-Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class is created,
-there are two methods which can be used to transmit CAN packets:
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, there are two methods which can be used to transmit CAN packets:
 
-- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet` - for synchronous
-  implementation
-- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet` - for asynchronous
-  implementation
+- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet` - for
+  synchronous implementation
+- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet` - for
+  asynchronous implementation
 
 **Example synchronous code:**
 
@@ -157,10 +164,11 @@ there are two methods which can be used to transmit CAN packets:
 
 .. warning:: Synchronous and asynchronous implementation shall not be mixed, so use either
     :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet` and
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet` (synchronous)
+    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
+    (synchronous)
     or :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet` and
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet` (asynchronous)
-    methods for transmitting and receiving CAN Packets.
+    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+    (asynchronous) methods for transmitting and receiving CAN Packets.
 
 .. seealso:: :ref:`Examples for python-can Transport Interface <example-python-can>`
 
