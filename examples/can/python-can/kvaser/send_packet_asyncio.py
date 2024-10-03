@@ -11,9 +11,11 @@ from uds.transport_interface import PyCanTransportInterface
 async def main():
     # configure CAN interfaces
     kvaser_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
+    # second interface is only used to acknowledge CAN frames sent by `kvaser_interface_1`,
+    # you might comment it out if you have another device to do that
     kvaser_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
 
-    # configure Addressing Information of a CAN Node
+    # configure Addressing Information of a CAN Node (example values set)
     addressing_information = CanAddressingInformation(
         addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
         tx_physical={"can_id": 0x611},
@@ -26,24 +28,17 @@ async def main():
                                      addressing_information=addressing_information)
 
     # define UDS Messages to send
-    message_1 = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
-    message_2 = UdsMessage(addressing_type=AddressingType.FUNCTIONAL, payload=[0x3E])
+    message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
 
     # create CAN packets that carries those UDS Messages
-    packet_1 = can_ti.segmenter.segmentation(message_1)[0]
-    packet_2 = can_ti.segmenter.segmentation(message_2)[0]
+    packet = can_ti.segmenter.segmentation(message)[0]
 
-    # send CAN Packet 1
-    record_1 = await can_ti.async_send_packet(packet_1)
-    pprint(record_1.__dict__)
-
-    # send CAN Packet 2
-    record_2 = await can_ti.async_send_packet(packet_2)
-    pprint(record_2.__dict__)
+    # send CAN Packet
+    packet_record = await can_ti.async_send_packet(packet)
+    pprint(packet_record.__dict__)
 
     # close connections with CAN interfaces
     del can_ti
-    await asyncio.sleep(0.1)  # wait to make sure all tasks are closed
     kvaser_interface_1.shutdown()
     kvaser_interface_2.shutdown()
 

@@ -13,14 +13,9 @@ from uds.can import AbstractCanAddressingInformation, CanDlcHandler, CanFlowStat
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.transmission_attributes import TransmissionDirection
-from uds.utilities import (
-    MessageReceptionWarning,
-    MessageTransmissionError,
-    TimeMillisecondsAlias,
-    UnexpectedPacketReceptionWarning,
-)
+from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning
 
-from .abstract_can_transport_interface import AbstractCanTransportInterface
+from .common import AbstractCanTransportInterface
 
 
 class PyCanTransportInterface(AbstractCanTransportInterface):
@@ -182,13 +177,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             time_end_ms = time_now_ms + delay
             while time_now_ms < time_end_ms:
                 try:
-                    received_packet = self.receive_packet(timeout=time_end_ms - time_now_ms)
+                    self.receive_packet(timeout=time_end_ms - time_now_ms)
                 except TimeoutError:
                     pass
                 else:
-                    if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                        raise MessageTransmissionError("A new UDS message transmission was started while sending "
-                                                       "this message.")
                     warn(message="An unrelated CAN packet was received during UDS message transmission.",
                          category=UnexpectedPacketReceptionWarning)
                 time_now_ms = time() * 1000
@@ -216,13 +208,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             time_end_ms = time_now_ms + delay
             while time_now_ms < time_end_ms:
                 try:
-                    received_packet = await self.async_receive_packet(timeout=time_end_ms - time_now_ms, loop=loop)
+                    await self.async_receive_packet(timeout=time_end_ms - time_now_ms, loop=loop)
                 except TimeoutError:
                     pass
                 else:
-                    if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                        raise MessageTransmissionError("A new UDS message transmission was started while sending "
-                                                       "this message.")
                     warn(message="An unrelated CAN packet was received during UDS message transmission.",
                          category=UnexpectedPacketReceptionWarning)
                 time_now_ms = time() * 1000
@@ -287,7 +276,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             received_packet = self.receive_packet(timeout=remaining_timeout)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 warn(message="A new UDS message is transmitted. Aborted reception of previous message.",
-                     category=MessageReceptionWarning)
+                     category=NewMessageReceptionWarning)
                 return self._message_receive_start(initial_packet=received_packet)
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
@@ -332,7 +321,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             received_packet = await self.async_receive_packet(timeout=remaining_timeout, loop=loop)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 warn(message="A new UDS message is transmitted. Aborted reception of previous message.",
-                     category=MessageReceptionWarning)
+                     category=NewMessageReceptionWarning)
                 return await self._async_message_receive_start(initial_packet=received_packet, loop=loop)
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
@@ -374,7 +363,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             else:
                 if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                     warn(message="A new UDS message is transmitted. Aborted reception of previous message.",
-                         category=MessageReceptionWarning)
+                         category=NewMessageReceptionWarning)
                     return self._message_receive_start(initial_packet=received_packet)
                 warn(message="An unrelated CAN packet was received during UDS message transmission.",
                      category=UnexpectedPacketReceptionWarning)
@@ -428,7 +417,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             else:
                 if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                     warn(message="A new UDS message is transmitted. Aborted reception of previous message.",
-                         category=MessageReceptionWarning)
+                         category=NewMessageReceptionWarning)
                     return await self._async_message_receive_start(initial_packet=received_packet, loop=loop)
                 warn(message="An unrelated CAN packet was received during UDS message transmission.",
                      category=UnexpectedPacketReceptionWarning)
@@ -692,8 +681,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
                 else:
                     raise NotImplementedError(f"Unknown Flow Status received: {record.flow_status}")
-            elif CanPacketType.is_initial_packet_type(record.packet_type):
-                raise MessageTransmissionError("A new UDS message transmission was started while sending this message.")
             else:
                 warn(message="An unrelated CAN packet was received during UDS message transmission.",
                      category=UnexpectedPacketReceptionWarning)
@@ -737,8 +724,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     raise OverflowError("Flow Control with Flow Status `OVERFLOW` was received.")
                 else:
                     raise NotImplementedError(f"Unknown Flow Status received: {record.flow_status}")
-            elif CanPacketType.is_initial_packet_type(record.packet_type):
-                raise MessageTransmissionError("A new UDS message transmission was started while sending this message.")
             else:
                 warn(message="An unrelated CAN packet was received during UDS message transmission.",
                      category=UnexpectedPacketReceptionWarning)

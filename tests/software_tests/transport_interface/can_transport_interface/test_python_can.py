@@ -5,21 +5,19 @@ from mock import AsyncMock, MagicMock, Mock, call, patch
 
 from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.transmission_attributes import AddressingType
-from uds.transport_interface.can_transport_interface.python_can_transport_interface import (
+from uds.transport_interface.can_transport_interface.python_can import (
     AbstractCanTransportInterface,
     BusABC,
     CanFlowStatus,
     CanPacket,
     CanPacketRecord,
     CanPacketType,
-    MessageTransmissionError,
     PyCanTransportInterface,
     TransmissionDirection,
     UdsMessage,
-    UdsMessageRecord,
 )
 
-SCRIPT_LOCATION = "uds.transport_interface.can_transport_interface.python_can_transport_interface"
+SCRIPT_LOCATION = "uds.transport_interface.can_transport_interface.python_can"
 
 
 class TestPyCanTransportInterface:
@@ -269,7 +267,7 @@ class TestPyCanTransportInterface:
         (Mock(spec=CanPacket), Mock(spec=CanPacket), Mock(spec=CanPacket)),
     ])
     @pytest.mark.parametrize("delay", [0, 12.34])
-    def test_send_cf_packets_block__packets_traffic(self, packets, delay):
+    def test_send_cf_packets_block__unexpected_packet(self, packets, delay):
         called = 0
 
         def once_true_once_false(*args):
@@ -284,7 +282,6 @@ class TestPyCanTransportInterface:
                                                 __lt__=mock_lt)
         mock_received_packet_records = Mock(spec=CanPacketRecord)
         self.mock_can_transport_interface.receive_packet.return_value = mock_received_packet_records
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
         packet_records = PyCanTransportInterface._send_cf_packets_block(self=self.mock_can_transport_interface,
                                                                         cf_packets_block=packets, delay=delay)
         assert isinstance(packet_records, tuple)
@@ -292,38 +289,7 @@ class TestPyCanTransportInterface:
                    for packet_record in packet_records)
         self.mock_can_transport_interface.send_packet.assert_has_calls(calls=[call(packet) for packet in packets])
         self.mock_can_transport_interface.receive_packet.assert_called()
-        self.mock_can_packet_type_is_initial_packet_type.assert_has_calls(
-            calls=[call(mock_received_packet_records.packet_type) for _ in packets])
         self.mock_warn.assert_called()
-
-    @pytest.mark.parametrize("packets", [
-        (Mock(spec=CanPacket), Mock(spec=CanPacket)),
-        (Mock(spec=CanPacket), Mock(spec=CanPacket), Mock(spec=CanPacket)),
-    ])
-    @pytest.mark.parametrize("delay", [0, 12.34])
-    def test_send_cf_packets_block__transmission_interruption(self, packets, delay):
-        called = 0
-
-        def once_true_once_false(*args):
-            nonlocal called
-            called += 1
-            return called % 2
-
-        mock_lt = Mock(side_effect=once_true_once_false)
-        self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                __add__=lambda this, other: this,
-                                                __mul__=lambda this, other: this,
-                                                __lt__=mock_lt)
-        mock_received_packet_records = Mock(spec=CanPacketRecord)
-        self.mock_can_transport_interface.receive_packet.return_value = mock_received_packet_records
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        with pytest.raises(MessageTransmissionError):
-            PyCanTransportInterface._send_cf_packets_block(self=self.mock_can_transport_interface,
-                                                           cf_packets_block=packets, delay=delay)
-        self.mock_can_transport_interface.receive_packet.assert_called()
-        self.mock_can_packet_type_is_initial_packet_type.assert_called_once_with(
-            mock_received_packet_records.packet_type)
-        self.mock_warn.assert_not_called()
 
     # _async_send_cf_packets_block
 
@@ -363,7 +329,7 @@ class TestPyCanTransportInterface:
     ])
     @pytest.mark.parametrize("delay", [0, 1234])
     @pytest.mark.asyncio
-    async def test_async_send_cf_packets_block__packets_traffic(self, packets, delay):
+    async def test_async_send_cf_packets_block__unexpected_packet(self, packets, delay):
         called = 0
 
         def once_true_once_false(*args):
@@ -378,7 +344,6 @@ class TestPyCanTransportInterface:
                                                 __lt__=mock_lt)
         mock_received_packet_records = Mock(spec=CanPacketRecord)
         self.mock_can_transport_interface.async_receive_packet.return_value = mock_received_packet_records
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
         packet_records = await PyCanTransportInterface._async_send_cf_packets_block(
             self=self.mock_can_transport_interface, cf_packets_block=packets, delay=delay)
         assert isinstance(packet_records, tuple)
@@ -387,39 +352,7 @@ class TestPyCanTransportInterface:
         self.mock_can_transport_interface.async_send_packet.assert_has_calls(
             calls=[call(packet, loop=None) for packet in packets])
         self.mock_can_transport_interface.async_receive_packet.assert_called()
-        self.mock_can_packet_type_is_initial_packet_type.assert_has_calls(
-            calls=[call(mock_received_packet_records.packet_type) for _ in packets])
         self.mock_warn.assert_called()
-
-    @pytest.mark.parametrize("packets", [
-        (Mock(spec=CanPacket), Mock(spec=CanPacket)),
-        (Mock(spec=CanPacket), Mock(spec=CanPacket), Mock(spec=CanPacket)),
-    ])
-    @pytest.mark.parametrize("delay", [0, 1234])
-    @pytest.mark.asyncio
-    async def test_async_send_cf_packets_block__transmission_interruption(self, packets, delay):
-        called = 0
-
-        def once_true_once_false(*args):
-            nonlocal called
-            called += 1
-            return called % 2
-
-        mock_lt = Mock(side_effect=once_true_once_false)
-        self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                __add__=lambda this, other: this,
-                                                __mul__=lambda this, other: this,
-                                                __lt__=mock_lt)
-        mock_received_packet_records = Mock(spec=CanPacketRecord)
-        self.mock_can_transport_interface.async_receive_packet.return_value = mock_received_packet_records
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        with pytest.raises(MessageTransmissionError):
-            await PyCanTransportInterface._async_send_cf_packets_block(
-                self=self.mock_can_transport_interface, cf_packets_block=packets, delay=delay)
-        self.mock_can_transport_interface.async_receive_packet.assert_called()
-        self.mock_can_packet_type_is_initial_packet_type.assert_called_once_with(
-            mock_received_packet_records.packet_type)
-        self.mock_warn.assert_not_called()
 
     # _message_receive_start
 
@@ -1365,26 +1298,6 @@ class TestPyCanTransportInterface:
         Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86, 0xF1, 0x87, 0xF1, 0x88], addressing_type=AddressingType.PHYSICAL),
         Mock(spec=UdsMessage, payload=[0x3E, 0x80], addressing_type=AddressingType.PHYSICAL),
     ])
-    def test_send_message__multiple_packets__transmission_interruption(self, message):
-        mock_segmented_message = [Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME)]
-        mock_segmented_message.extend([Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME)
-                                       for _ in range(randint(1, 20))])
-        self.mock_can_transport_interface.segmenter.segmentation = Mock(return_value=mock_segmented_message)
-        mock_interrupting_record = Mock(spec=CanPacketRecord,
-                                        packet_type=Mock())
-        self.mock_can_transport_interface.receive_packet = Mock(return_value=mock_interrupting_record)
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        with pytest.raises(MessageTransmissionError):
-            PyCanTransportInterface.send_message(self.mock_can_transport_interface, message)
-        self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
-        self.mock_can_packet_type_is_initial_packet_type.assert_called_once_with(mock_interrupting_record.packet_type)
-        self.mock_warn.assert_not_called()
-        self.mock_can_transport_interface._update_n_bs_measured.assert_not_called()
-
-    @pytest.mark.parametrize("message", [
-        Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86, 0xF1, 0x87, 0xF1, 0x88], addressing_type=AddressingType.PHYSICAL),
-        Mock(spec=UdsMessage, payload=[0x3E, 0x80], addressing_type=AddressingType.PHYSICAL),
-    ])
     def test_send_message__multiple_packets__overflow(self, message):
         mock_segmented_message = [Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME)]
         mock_segmented_message.extend([Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME)
@@ -1578,7 +1491,6 @@ class TestPyCanTransportInterface:
                                         packet_type=Mock())
         self.mock_can_transport_interface.async_receive_packet = AsyncMock(
             side_effect=[mock_interrupting_record, mock_flow_control_record])
-        self.mock_can_packet_type_is_initial_packet_type.return_value = False
         mock_sent_packet_record = Mock(spec=CanPacketRecord)
         self.mock_can_transport_interface._async_send_cf_packets_block.return_value = [mock_sent_packet_record]
         assert await PyCanTransportInterface.async_send_message(
@@ -1596,27 +1508,6 @@ class TestPyCanTransportInterface:
         self.mock_warn.assert_called()
         self.mock_can_transport_interface._update_n_bs_measured.assert_called_once_with(
             self.mock_uds_message_record.return_value)
-
-    @pytest.mark.parametrize("message", [
-        Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86, 0xF1, 0x87, 0xF1, 0x88], addressing_type=AddressingType.PHYSICAL),
-        Mock(spec=UdsMessage, payload=[0x3E, 0x80], addressing_type=AddressingType.PHYSICAL),
-    ])
-    @pytest.mark.asyncio
-    async def test_async_send_message__multiple_packets__transmission_interruption(self, message):
-        mock_segmented_message = [Mock(spec=CanPacket, packet_type=CanPacketType.FIRST_FRAME)]
-        mock_segmented_message.extend([Mock(spec=CanPacket, packet_type=CanPacketType.CONSECUTIVE_FRAME)
-                                       for _ in range(randint(1, 20))])
-        self.mock_can_transport_interface.segmenter.segmentation = Mock(return_value=mock_segmented_message)
-        mock_interrupting_record = Mock(spec=CanPacketRecord,
-                                        packet_type=Mock())
-        self.mock_can_transport_interface.async_receive_packet = AsyncMock(return_value=mock_interrupting_record)
-        self.mock_can_packet_type_is_initial_packet_type.return_value = True
-        with pytest.raises(MessageTransmissionError):
-            await PyCanTransportInterface.async_send_message(self.mock_can_transport_interface, message)
-        self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
-        self.mock_can_packet_type_is_initial_packet_type.assert_called_once_with(mock_interrupting_record.packet_type)
-        self.mock_warn.assert_not_called()
-        self.mock_can_transport_interface._update_n_bs_measured.assert_not_called()
 
     @pytest.mark.parametrize("message", [
         Mock(spec=UdsMessage, payload=[0x22, 0xF1, 0x86, 0xF1, 0x87, 0xF1, 0x88], addressing_type=AddressingType.PHYSICAL),
@@ -1841,4 +1732,3 @@ class TestPyCanTransportInterfaceIntegration:
         fc_param_iter = iter(py_can_ti.flow_control_parameters_generator)
         for _ in range(5):
             assert next(fc_param_iter) == (CanFlowStatus.ContinueToSend, 0, 0)
-
