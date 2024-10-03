@@ -116,17 +116,72 @@ the user perspective it does not provide any additional features to common_ impl
         repeat_wait=True)
 
 
-Send Packet
-```````````
+Synchronous communication
+`````````````````````````
+.. warning:: Synchronous and asynchronous implementation shall not be mixed, therefore for transmitting and receiving
+    UDS Messages and CAN Packets use either:
+
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
+
+    or
+
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+
+.. seealso:: :ref:`Examples for python-can Transport Interface <example-python-can>`
+
+Send Message
+''''''''''''
 Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
-is created, there are two methods which can be used to transmit CAN packets:
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_message`
+method to receive UDS messages over CAN.
 
-- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet` - for
-  synchronous implementation
-- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet` - for
-  asynchronous implementation
+**Example code:**
 
-**Example synchronous code:**
+.. code-block::  python
+
+    # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
+
+    # define some UDS message to send
+    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+                                     payload=[0x10, 0x03])
+
+    # send UDS Message and receive UDS message record with historic information about the transmission
+    message_record = can_transport_interface.send_message(message)
+
+
+Receive Message
+'''''''''''''''
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_message`
+method to receive UDS messages over CAN.
+
+**Example code:**
+
+.. code-block::  python
+
+    # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
+
+    # receive an UDS message with timeout set to 1000 ms
+    message_record = can_transport_interface.receive_message(timeout=1000)
+
+
+
+Send Packet
+'''''''''''
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet`
+method to send CAN packets.
+
+**Example code:**
 
 .. code-block::  python
 
@@ -142,8 +197,89 @@ is created, there are two methods which can be used to transmit CAN packets:
     # send CAN packet and receive CAN packet record with historic information about the transmission and the transmitted CAN packet
     can_packet_record = can_transport_interface.send_packet(can_packet)
 
+Receive Packet
+''''''''''''''
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
+method to receive CAN packets.
 
-**Example asynchronous code:**
+**Example code:**
+
+.. code-block::  python
+
+    # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
+
+    # receive a CAN packet with timeout set to 1000 ms
+    can_packet_record = can_transport_interface.receive_packet(timeout=1000)
+
+
+Asynchronous communication
+``````````````````````````
+.. warning:: Synchronous and asynchronous implementation shall not be mixed, therefore for transmitting and receiving
+    UDS Messages and CAN Packets use either:
+
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
+
+    or
+
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_message`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
+    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+
+.. seealso:: :ref:`Examples for python-can Transport Interface <example-python-can>`
+
+.. note:: In all examples, only a coroutine code was presented. If you need a manual how to run an asynchronous code,
+    visit https://docs.python.org/3/library/asyncio-runner.html#running-an-asyncio-program.
+
+Send Message
+''''''''''''
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_message`
+method to receive UDS messages over CAN.
+
+**Example code:**
+
+.. code-block::  python
+
+    # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
+
+    # define some UDS message to send
+    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+                                     payload=[0x10, 0x03])
+
+    # send UDS Message and receive UDS message record with historic information about the transmission
+    message_record = await can_transport_interface.async_send_message(message)
+
+Receive Message
+'''''''''''''''
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_message`
+method to receive UDS messages over CAN.
+
+**Example code:**
+
+.. code-block::  python
+
+    # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
+
+    # receive an UDS message with timeout set to 1000 ms
+    message_record = await can_transport_interface.async_receive_message(timeout=1000)
+
+Send Packet
+'''''''''''
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
+method to send CAN packets.
+
+**Example code:**
 
 .. code-block::  python
 
@@ -159,41 +295,14 @@ is created, there are two methods which can be used to transmit CAN packets:
     # send CAN packet and receive CAN packet record with historic information about the transmission and the transmitted CAN packet
     can_packet_record = await can_transport_interface.async_send_packet(can_packet)
 
-.. note:: In the example above, only a coroutine code was presented. If you need a manual how to run an asynchronous
-    program, visit https://docs.python.org/3/library/asyncio-runner.html#running-an-asyncio-program.
-
-.. warning:: Synchronous and asynchronous implementation shall not be mixed, so use either
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet` and
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
-    (synchronous)
-    or :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet` and
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
-    (asynchronous) methods for transmitting and receiving CAN Packets.
-
-.. seealso:: :ref:`Examples for python-can Transport Interface <example-python-can>`
-
-
 Receive Packet
-``````````````
-Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class is created,
-there are two methods which can be used to receive CAN packets:
+''''''''''''''
+Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
+is created, use
+:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+method to receive CAN packets.
 
-- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet` - for synchronous
-  implementation
-- :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet` - for
-  asynchronous implementation
-
-**Example synchronous code:**
-
-.. code-block::  python
-
-    # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
-
-    # receive a CAN packet with timeout set to 1000 ms
-    can_packet_record = can_transport_interface.receive_packet(timeout=1000)
-
-
-**Example asynchronous code:**
+**Example code:**
 
 .. code-block::  python
 
@@ -202,23 +311,3 @@ there are two methods which can be used to receive CAN packets:
     # receive a CAN packet with timeout set to 1000 ms
     can_packet_record = await can_transport_interface.async_receive_packet(timeout=1000)
 
-.. note:: In the example above, only a coroutine code was presented. If you need a manual how to run an asynchronous
-    program, visit https://docs.python.org/3/library/asyncio-runner.html#running-an-asyncio-program.
-
-.. warning:: Synchronous and asynchronous implementation shall not be mixed, so use either
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet` and
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet` (synchronous)
-    or :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet` and
-    :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet` (asynchronous)
-    methods for transmitting and receiving CAN Packets.
-
-.. seealso:: :ref:`Examples for python-can Transport Interface <example-python-can>`
-
-
-Send Message
-````````````
-TODO: explanation + code snippets + links to examples
-
-Receive Message
-```````````````
-TODO: explanation + code snippets + links to examples
