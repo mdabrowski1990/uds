@@ -184,31 +184,41 @@ That means that each node has up to one role (either sender or receiver) at any 
 
 Handling of unexpected CAN packets in case of half-duplex communication:
 
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
-|       Status      |          Single Frame          |           First Frame          |         Consecutive Frame        | Flow Control | Unknown |
-+===================+================================+================================+==================================+==============+=========+
-| Idle              | Process the Single Frame       | Process the First Frame        | Ignore                           | Ignore       | Ignore  |
-|                   |                                |                                |                                  |              |         |
-|                   | as the start of a new message. | as the start of a new message. |                                  |              |         |
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
-| Segmented message | Ignore                         | Ignore                         | Ignore                           | Ignore       | Ignore  |
-|                   |                                |                                |                                  |              |         |
-| transmission      |                                |                                |                                  |              |         |
-|                   |                                |                                |                                  |              |         |
-| in progress       |                                |                                |                                  |              |         |
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
-| Segmented message | Terminate the current message  | Terminate the current message  | If awaited, then process         | Ignore       | Ignore  |
-|                   |                                |                                |                                  |              |         |
-| reception         | reception and process          | reception and process          | the Consecutive Frame in         |              |         |
-|                   |                                |                                |                                  |              |         |
-| in progress       | the Single Frame as the start  | the First Frame as the start   | the on-going reception           |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   | of a new message.              | of a new message.              | and perform required checks      |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   |                                |                                | (e.g. Sequence Number in order). |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   |                                |                                | Otherwise, ignore it.            |              |         |
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
++--------------+--------------------------+-------------------------+-----------------------+--------------+---------+
+|    Status    |       Single Frame       |       First Frame       |   Consecutive Frame   | Flow Control | Unknown |
++==============+==========================+=========================+=======================+==============+=========+
+| Idle         | Process the Single Frame | Process the First Frame | Ignore                | Ignore       | Ignore  |
+|              |                          |                         |                       |              |         |
+|              | as the start of          | as the start of         |                       |              |         |
+|              |                          |                         |                       |              |         |
+|              | a new message.           | a new message.          |                       |              |         |
++--------------+--------------------------+-------------------------+-----------------------+--------------+---------+
+| Segmented    | Ignore                   | Ignore                  | Ignore                | Ignore       | Ignore  |
+|              |                          |                         |                       |              |         |
+| message      |                          |                         |                       |              |         |
+|              |                          |                         |                       |              |         |
+| transmission |                          |                         |                       |              |         |
+|              |                          |                         |                       |              |         |
+| in progress  |                          |                         |                       |              |         |
++--------------+--------------------------+-------------------------+-----------------------+--------------+---------+
+| Segmented    | Terminate the current    | Terminate the current   | If awaited,           | Ignore       | Ignore  |
+|              |                          |                         |                       |              |         |
+| message      | message reception        | message reception and   | then process          |              |         |
+|              |                          |                         |                       |              |         |
+| reception    | and process              | process the First Frame | the Consecutive Frame |              |         |
+|              |                          |                         |                       |              |         |
+| in progress  | the Single Frame         | as the start of         | in the on-going       |              |         |
+|              |                          |                         |                       |              |         |
+|              | as the start of          | a new message.          | reception and perform |              |         |
+|              |                          |                         |                       |              |         |
+|              | a new message.           |                         | required checks       |              |         |
+|              |                          |                         |                       |              |         |
+|              |                          |                         | (e.g. Sequence Number |              |         |
+|              |                          |                         |                       |              |         |
+|              |                          |                         | in order).            |              |         |
+|              |                          |                         |                       |              |         |
+|              |                          |                         | Otherwise, ignore it. |              |         |
++--------------+--------------------------+-------------------------+-----------------------+--------------+---------+
 
 
 Full-duplex
@@ -217,36 +227,45 @@ Full-duplex means that UDS message can be transmitted in both directions at once
 That means that a node could be sender of one UDS message and receiver of another one at the same time.
 
 Handling of unexpected CAN packets in case of full-duplex communication:
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
-|       Status      |          Single Frame          |           First Frame          |         Consecutive Frame        | Flow Control | Unknown |
-+===================+================================+================================+==================================+==============+=========+
-| Idle              | Process the Single Frame       | Process the First Frame        | Ignore                           | Ignore       | Ignore  |
-|                   |                                |                                |                                  |              |         |
-|                   | as the start of a new message. | as the start of a new message. |                                  |              |         |
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
-| Segmented message | If a message reception is in   | If a message reception is in   | If a message reception is in     | Ignore       | Ignore  |
-|                   |                                |                                |                                  |              |         |
-| transmission      | progress then see              | progress then see              | progress then see                |              |         |
-|                   |                                |                                |                                  |              |         |
-| in progress       | the corresponding cell in      | the corresponding cell in      | the corresponding cell in        |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   | the row below.                 | the row below.                 | the row below.                   |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   | Otherwise, process             | Otherwise, process             | Otherwise, ignore it.            |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   | the Single Frame as the start  | the First Frame as the start   |                                  |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   | of a new message.              | of a new message.              |                                  |              |         |
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
-| Segmented message | Terminate the current message  | Terminate the current message  | If awaited, then process         | Ignore       | Ignore  |
-|                   |                                |                                |                                  |              |         |
-| reception         | reception and process          | reception and process          | the Consecutive Frame in         |              |         |
-|                   |                                |                                |                                  |              |         |
-| in progress       | the Single Frame as the start  | the First Frame as the start   | the on-going reception           |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   | of a new message.              | of a new message.              | and perform required checks      |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   |                                |                                | (e.g. Sequence Number in order). |              |         |
-|                   |                                |                                |                                  |              |         |
-|                   |                                |                                | Otherwise, ignore it.            |              |         |
-+-------------------+--------------------------------+--------------------------------+----------------------------------+--------------+---------+
+
++--------------+--------------------------+-------------------------+-------------------------+--------------+---------+
+|    Status    |       Single Frame       |       First Frame       |    Consecutive Frame    | Flow Control | Unknown |
++==============+==========================+=========================+=========================+==============+=========+
+| Idle         | Process the Single Frame | Process the First Frame | Ignore                  | Ignore       | Ignore  |
+|              |                          |                         |                         |              |         |
+|              | as the start of          | as the start of         |                         |              |         |
+|              |                          |                         |                         |              |         |
+|              | a new message.           | a new message.          |                         |              |         |
++--------------+--------------------------+-------------------------+-------------------------+--------------+---------+
+| Segmented    | If a message reception   | If a message reception  | If a message reception  | Ignore       | Ignore  |
+|              |                          |                         |                         |              |         |
+| message      | is in progress then see  | is in progress then see | is in progress then see |              |         |
+|              |                          |                         |                         |              |         |
+| transmission | the corresponding cell   | the corresponding cell  | the corresponding cell  |              |         |
+|              |                          |                         |                         |              |         |
+| in progress  | in the row below.        | in the row below.       | in the row below.       |              |         |
+|              |                          |                         |                         |              |         |
+|              | Otherwise, process       | Otherwise, process      | Otherwise, ignore it.   |              |         |
+|              |                          |                         |                         |              |         |
+|              | the Single Frame as      | the First Frame as      |                         |              |         |
+|              |                          |                         |                         |              |         |
+|              | the start of             | the start of            |                         |              |         |
+|              |                          |                         |                         |              |         |
+|              | a new message.           | a new message.          |                         |              |         |
++--------------+--------------------------+-------------------------+-------------------------+--------------+---------+
+| Segmented    | Terminate the current    | Terminate the current   | If awaited, then        | Ignore       | Ignore  |
+|              |                          |                         |                         |              |         |
+| message      | message reception and    | message reception and   | process the Consecutive |              |         |
+|              |                          |                         |                         |              |         |
+| reception    | process the Single       | process the First Frame | Frame in the on-going   |              |         |
+|              |                          |                         |                         |              |         |
+| in progress  | Frame as the start       | as the start of         | reception and perform   |              |         |
+|              |                          |                         |                         |              |         |
+|              | of a new message.        | a new message.          | required checks (e.g.   |              |         |
+|              |                          |                         |                         |              |         |
+|              |                          |                         | Sequence Number in      |              |         |
+|              |                          |                         |                         |              |         |
+|              |                          |                         | order).                 |              |         |
+|              |                          |                         |                         |              |         |
+|              |                          |                         | Otherwise, ignore it.   |              |         |
++--------------+--------------------------+-------------------------+-------------------------+--------------+---------+
