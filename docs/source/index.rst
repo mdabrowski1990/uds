@@ -14,12 +14,16 @@ Welcome to UDS documentation!
 
 Overview
 --------
-The purpose of this project is to provide python tools for simulation (on both sides - client and server) and
-monitoring of diagnostic communication defined by ISO-14229. It can be used with any bus type (e.g. CAN, Ethernet, LIN).
+The purpose of this project is to provide python tool to handle
+`Unified Diagnostic Services (UDS) <https://en.wikipedia.org/wiki/Unified_Diagnostic_Services>`_ protocol defined
+by ISO-14229. The created package helps to simulate either communication side (client or server), monitoring
+and decode diagnostic communication.
+
+The architecture enables to use it with various communication buses (e.g. CAN, LIN).
 
 The most likely use cases of this package are:
  - communication with your vehicle (e.g. reading Diagnostic Trouble Codes)
- - monitoring and decoding ongoing UDS communication
+ - monitoring and decoding UDS communication
  - performing tests against on-board ECU (server)
  - performing tests against OBD Tester (client)
 
@@ -44,7 +48,8 @@ Current implementation status of package features:
 | UDS Packets Reception and Transmission       | Available since version `0.3.0             |
 |                                              | <https://pypi.org/project/py-uds/0.3.0/>`_ |
 +----------------------------------------------+--------------------------------------------+
-| UDS Messages Reception and Transmission      | Planned                                    |
+| UDS Messages Reception and Transmission      | Available since version `1.0.0             |
+|                                              | <https://pypi.org/project/py-uds/1.0.0/>`_ |
 +----------------------------------------------+--------------------------------------------+
 | Messages Segmentation                        | Available since version `0.2.0             |
 |                                              | <https://pypi.org/project/py-uds/0.2.0/>`_ |
@@ -69,7 +74,7 @@ Current implementation status of support for communication buses:
 +----------+-----------------------+
 |    Bus   | Implementation Status |
 +==========+=======================+
-| CAN      | Partial               |
+| CAN      | Full                  |
 +----------+-----------------------+
 | FlexRay  | Planned               |
 +----------+-----------------------+

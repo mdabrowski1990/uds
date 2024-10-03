@@ -17,7 +17,7 @@ The package is created with an idea to support any communication bus:
  - `K-Line <https://en.wikipedia.org/wiki/K-Line>`_
 """
 
-__version__ = "0.3.0"
+__version__ = "1.0.0"
 __author__ = "Maciej Dąbrowski"
 __maintainer__ = "Maciej Dąbrowski"
 __credits__ = ["Maciej Dąbrowski (https://www.linkedin.com/in/maciej-dabrowski-test-engineer/)",
