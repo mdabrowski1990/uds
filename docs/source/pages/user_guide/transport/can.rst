@@ -55,6 +55,11 @@ Class :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanT
 the implementation of CAN Transport Interface that uses `python-can <https://python-can.readthedocs.io>`_ package for
 receiving and transmitting CAN frames.
 
+.. note:: Right now only half-duplex communication is implemented.
+
+    The matter is further explained in
+    :ref:`handling unexpected CAN packets arrivals <knowledge-base-can-unexpected-packet-arrival>` chapter.
+
 
 Configuration
 `````````````
@@ -133,7 +138,7 @@ Synchronous communication
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
 
-.. seealso:: :ref:`Examples for python-can Transport Interface <example-python-can>`
+.. seealso:: :ref:`Examples for python-can Transport Interface <examples-python-can>`
 
 Send Message
 ''''''''''''
@@ -231,7 +236,7 @@ Asynchronous communication
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
 
-.. seealso:: :ref:`Examples for python-can Transport Interface <example-python-can>`
+.. seealso:: :ref:`Examples for python-can Transport Interface <examples-python-can>`
 
 .. note:: In all examples, only a coroutine code was presented. If you need a manual how to run an asynchronous code,
     visit https://docs.python.org/3/library/asyncio-runner.html#running-an-asyncio-program.

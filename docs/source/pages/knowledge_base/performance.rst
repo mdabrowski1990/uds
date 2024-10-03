@@ -223,7 +223,7 @@ Handling of unexpected CAN packets in case of half-duplex communication:
 
 Full-duplex
 '''''''''''
-Full-duplex means that UDS message can be transmitted in both directions at once.
+Full-duplex means that UDS messages can be transmitted in both directions at once.
 That means that a node could be sender of one UDS message and receiver of another one at the same time.
 
 Handling of unexpected CAN packets in case of full-duplex communication:
