@@ -4,6 +4,14 @@ description = "UDS (Unified Diagnostic Services) protocol handler."
 readme = "README.rst"
 requires-python = ">=3.8"
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Telecommunications Industry",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -12,25 +20,23 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Natural Language :: English",
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Software Development :: Embedded Systems :: Unified Diagnostic Services (UDS)",
     "Topic :: System :: Monitoring",
     "Topic :: System :: Networking",
 ]
 keywords = [
     "uds",
     "unified-diagnostic-services",
+    "automotive",
+    "on-board-diagnostic",
+    "obd",
+    "vehicle-diagnostic",
     "iso14229",
     "iso-14229",
-    "obd",
-    "on-board-diagnostic",
-    "vehicle-diagnostic",
-    "automotive",
+    "iso15765",
+    "iso-15765",
 ]
 authors = [
     {name="Maciej Dąbrowski", email="maciej.dabrowski@software-quality.pl"},
