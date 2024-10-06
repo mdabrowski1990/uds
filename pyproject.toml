@@ -22,6 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Software Development :: Embedded Systems :: Unified Diagnostic Services (UDS)",
     "Topic :: System :: Monitoring",
     "Topic :: System :: Networking",
 ]
