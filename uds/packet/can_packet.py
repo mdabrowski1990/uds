@@ -19,7 +19,7 @@ from uds.can import (
     ExtendedCanAddressingInformation,
     Mixed11BitCanAddressingInformation,
     Mixed29BitCanAddressingInformation,
-    Normal11BitCanAddressingInformation,
+    NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
 from uds.transmission_attributes import AddressingType
@@ -140,7 +140,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             with detailed description if you face this error.
         """
         CanAddressingFormat.validate_member(addressing_format)
-        if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
+        if addressing_format == CanAddressingFormat.NORMAL_ADDRESSING:
             self.set_address_information_normal_11bit(addressing_type=addressing_type,
                                                       can_id=can_id)  # type: ignore
             if (target_address, source_address, address_extension) != (None, None, None):
@@ -189,9 +189,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
         """
-        Normal11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type, can_id=can_id)
-        self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        NormalCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type, can_id=can_id)
+        self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_ADDRESSING)
+        self.__addressing_format = CanAddressingFormat.NORMAL_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = None

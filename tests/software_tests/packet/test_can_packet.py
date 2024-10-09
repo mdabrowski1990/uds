@@ -27,8 +27,8 @@ class TestCanPacket:
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
         self._patcher_ai_class = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_ai_class = self._patcher_ai_class.start()
-        self._patcher_normal_11bit_ai_class = patch(f"{SCRIPT_LOCATION}.Normal11BitCanAddressingInformation")
-        self.mock_normal_11bit_ai_class = self._patcher_normal_11bit_ai_class.start()
+        self._patcher_normal_ai_class = patch(f"{SCRIPT_LOCATION}.NormalCanAddressingInformation")
+        self.mock_normal_ai_class = self._patcher_normal_ai_class.start()
         self._patcher_normal_fixed_ai_class = patch(f"{SCRIPT_LOCATION}.NormalFixedCanAddressingInformation")
         self.mock_normal_fixed_ai_class = self._patcher_normal_fixed_ai_class.start()
         self._patcher_extended_ai_class = patch(f"{SCRIPT_LOCATION}.ExtendedCanAddressingInformation")
@@ -56,7 +56,7 @@ class TestCanPacket:
         self._patcher_warn.stop()
         self._patcher_can_dlc_handler_class.stop()
         self._patcher_ai_class.stop()
-        self._patcher_normal_11bit_ai_class.stop()
+        self._patcher_normal_ai_class.stop()
         self._patcher_normal_fixed_ai_class.stop()
         self._patcher_extended_ai_class.stop()
         self._patcher_mixed_11bit_ai_class.stop()
@@ -77,7 +77,7 @@ class TestCanPacket:
     ])
     @pytest.mark.parametrize("addressing_type, addressing_format, dlc", [
         ("some addressing type", "some addressing format", "some dlc"),
-        (AddressingType.FUNCTIONAL, CanAddressingFormat.NORMAL_11BIT_ADDRESSING, 8),
+        (AddressingType.FUNCTIONAL, CanAddressingFormat.NORMAL_ADDRESSING, 8),
     ])
     @pytest.mark.parametrize("can_id, target_address, source_address, address_extension", [
         (None, 1, 2, 3),
@@ -132,7 +132,7 @@ class TestCanPacket:
     def test_set_address_information__normal_11_bit(self, addressing_type, can_id):
         CanPacket.set_address_information(self=self.mock_can_packet,
                                           addressing_type=addressing_type,
-                                          addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                          addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                           can_id=can_id)
         self.mock_can_packet.set_address_information_normal_11bit.assert_called_once_with(
             addressing_type=addressing_type, can_id=can_id)
@@ -146,7 +146,7 @@ class TestCanPacket:
                                                               target_address, source_address, address_extension):
         CanPacket.set_address_information(self=self.mock_can_packet,
                                           addressing_type=addressing_type,
-                                          addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                                          addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                           can_id=can_id,
                                           target_address=target_address,
                                           source_address=source_address,
@@ -287,13 +287,13 @@ class TestCanPacket:
         CanPacket.set_address_information_normal_11bit(self=self.mock_can_packet,
                                                        addressing_type=addressing_type,
                                                        can_id=can_id)
-        self.mock_normal_11bit_ai_class.validate_packet_ai.assert_called_once_with(
+        self.mock_normal_ai_class.validate_packet_ai.assert_called_once_with(
             addressing_type=addressing_type, can_id=can_id)
         self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
-            CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
+            CanAddressingFormat.NORMAL_ADDRESSING)
         self.mock_addressing_type_class.assert_called_once_with(addressing_type)
         self.mock_can_packet._CanPacket__update_ai_data_byte.assert_called_once_with()
-        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        assert self.mock_can_packet._CanPacket__addressing_format == CanAddressingFormat.NORMAL_ADDRESSING
         assert self.mock_can_packet._CanPacket__addressing_type == self.mock_addressing_type_class.return_value
         assert self.mock_can_packet._CanPacket__can_id == can_id
         assert self.mock_can_packet._CanPacket__target_address is None
@@ -783,7 +783,7 @@ class TestCanPacket:
 
     # __update_ai_data_byte
 
-    @pytest.mark.parametrize("addressing_format", ["some CAN Addressing", CanAddressingFormat.NORMAL_11BIT_ADDRESSING])
+    @pytest.mark.parametrize("addressing_format", ["some CAN Addressing", CanAddressingFormat.NORMAL_ADDRESSING])
     @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), tuple(range(10))])
     def test_update_ai_data_byte__ignore(self, addressing_format, raw_frame_data):
         self.mock_can_packet._CanPacket__raw_frame_data = None
@@ -792,7 +792,7 @@ class TestCanPacket:
         assert self.mock_can_packet._CanPacket__raw_frame_data is None
         self.mock_ai_class.encode_ai_data_bytes.assert_not_called()
 
-    @pytest.mark.parametrize("addressing_format", ["some CAN Addressing", CanAddressingFormat.NORMAL_11BIT_ADDRESSING])
+    @pytest.mark.parametrize("addressing_format", ["some CAN Addressing", CanAddressingFormat.NORMAL_ADDRESSING])
     @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), tuple(range(10))])
     @pytest.mark.parametrize("ai_data_bytes", [[], [0xF2]])
     def test_update_ai_data_byte(self, addressing_format, raw_frame_data, ai_data_bytes):
@@ -889,7 +889,7 @@ class TestCanPacketIntegration:
           "st_min": None}),
         # FC
         ({"packet_type": CanPacketType.FLOW_CONTROL,
-          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "addressing_type": AddressingType.PHYSICAL,
           "can_id": 0x688,
           "flow_status": CanFlowStatus.ContinueToSend,
@@ -897,7 +897,7 @@ class TestCanPacketIntegration:
           "st_min": 0xE0},
          {"raw_frame_data": (0x30, 0xF9, 0xE0),
           "addressing_type": AddressingType.PHYSICAL,
-          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "packet_type": CanPacketType.FLOW_CONTROL,
           "can_id": 0x688,
           "dlc": 3,

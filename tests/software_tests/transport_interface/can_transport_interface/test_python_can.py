@@ -1693,7 +1693,7 @@ class TestPyCanTransportInterfaceIntegration:
         {
             "can_bus_manager": Mock(spec=BusABC),
             "addressing_information": CanAddressingInformation(
-                addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                 rx_physical={"can_id": 0x641},
                 tx_physical={"can_id": 0x642},
                 rx_functional={"can_id": 0x6FE},

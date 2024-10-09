@@ -152,7 +152,7 @@ Following parameters specifies `Network Address Information`_ when Normal Addres
  - CAN ID
 
 .. note:: Correspondence between `Network Address Information`_ and the value of CAN Identifier is left open for
-   a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` subformat is used.
+   a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` sub-format is used.
 
 .. note:: `Network Protocol Control Information`_ is placed in the **first byte** of
    :ref:`CAN frame data field <knowledge-base-can-data-field>` if normal addressing format is used.

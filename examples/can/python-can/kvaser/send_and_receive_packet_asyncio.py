@@ -15,13 +15,13 @@ async def main():
 
     # configure Addressing Information of a CAN Node (example values)
     ai_receive = CanAddressingInformation(
-        addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
         tx_physical={"can_id": 0x611},
         rx_physical={"can_id": 0x612},
         tx_functional={"can_id": 0x6FF},
         rx_functional={"can_id": 0x6FE})
     ai_send = CanAddressingInformation(
-        addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
         tx_physical={"can_id": 0x612},
         rx_physical={"can_id": 0x611},
         tx_functional={"can_id": 0x6FE},

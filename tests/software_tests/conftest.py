@@ -6,7 +6,7 @@ from uds.can import (
     ExtendedCanAddressingInformation,
     Mixed11BitCanAddressingInformation,
     Mixed29BitCanAddressingInformation,
-    Normal11BitCanAddressingInformation,
+    NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
 from uds.segmentation import CanSegmenter
@@ -58,10 +58,10 @@ def example_can_addressing_format(request):
 
 
 @fixture(params=[
-    CanSegmenter(addressing_information=Normal11BitCanAddressingInformation(rx_physical={"can_id": 0x643},
-                                                                            tx_physical={"can_id": 0x644},
-                                                                            rx_functional={"can_id": 0x7DE},
-                                                                            tx_functional={"can_id": 0x7DF})),
+    CanSegmenter(addressing_information=NormalCanAddressingInformation(rx_physical={"can_id": 0x643},
+                                                                       tx_physical={"can_id": 0x644},
+                                                                       rx_functional={"can_id": 0x7DE},
+                                                                       tx_functional={"can_id": 0x7DF})),
     CanSegmenter(addressing_information=NormalFixedCanAddressingInformation(rx_physical={"target_address": 0x12, "source_address": 0xF8},
                                                                             tx_physical={"can_id": 0x18DAF812,"target_address": 0xF8, "source_address": 0x12},
                                                                             rx_functional={"can_id": 0x18DB0BFF, "target_address": 0x0B, "source_address": 0xFF},
