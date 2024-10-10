@@ -46,17 +46,13 @@ class CanIdHandler:
     J1339_ADDRESSING_MASK: int = 0x3ff0000
     """CAN ID mask with bits enforced by SAE J1939 set to 1."""
     NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE: int = 0xDA0000
-    """Masked value of physically addressed CAN ID in 
-    :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>` format."""
+    """Masked value of physically addressed CAN ID in Normal Fixed Addressing format."""
     NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE: int = 0xDB0000
-    """Masked value of functionally addressed CAN ID in 
-    :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>` format."""
+    """Masked value of functionally addressed CAN ID in Normal Fixed Addressing format."""
     MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE: int = 0xCE0000
-    """Masked value of physically addressed CAN ID in 
-    :ref:`Mixed 29-bit Addressing format <knowledge-base-can-mixed-29-bit-addressing>` format."""
+    """Masked value of physically addressed CAN ID in Mixed 29-bit Addressing format."""
     MIXED_29BIT_FUNCTIONAL_ADDRESSING_MASKED_VALUE: int = 0xCD0000
-    """Masked value of functionally addressed CAN ID in 
-    :ref:`Mixed 29-bit Addressing format <knowledge-base-can-mixed-29-bit-addressing>` format."""
+    """Masked value of functionally addressed CAN ID in Mixed 29-bit Addressing format."""
     PRIORITY_BIT_OFFSET: int = 26
     """Bit offset of Priority parameter defined by SAE J1939."""
     DEFAULT_PRIORITY_VALUE: int = 0b110
@@ -200,7 +196,7 @@ class CanIdHandler:
         validate_raw_byte(source_address)
         cls.validate_priority(priority)
         priority_value = priority << cls.PRIORITY_BIT_OFFSET
-        target_address_value = (target_address << 8)
+        target_address_value = target_address << 8
         source_address_value = source_address
         if addressing_type == AddressingType.PHYSICAL:
             return (priority_value + cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE + target_address_value
@@ -236,7 +232,7 @@ class CanIdHandler:
         validate_raw_byte(source_address)
         cls.validate_priority(priority)
         priority_value = priority << cls.PRIORITY_BIT_OFFSET
-        target_address_value = (target_address << 8)
+        target_address_value = target_address << 8
         source_address_value = source_address
         if addressing_type == AddressingType.PHYSICAL:
             return (priority_value + cls.MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE + target_address_value
