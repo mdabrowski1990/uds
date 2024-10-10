@@ -2,7 +2,7 @@ import pytest
 from mock import Mock, call, patch
 
 from uds.can import CanFlowStatus
-from uds.packet.can_packet import (
+from uds.packet.can.can_packet import (
     DEFAULT_FILLER_BYTE,
     AbstractCanAddressingInformation,
     AddressingType,
@@ -12,7 +12,7 @@ from uds.packet.can_packet import (
     CanPacketType,
 )
 
-SCRIPT_LOCATION = "uds.packet.can_packet"
+SCRIPT_LOCATION = "uds.packet.can.can_packet"
 
 
 class TestCanPacket:
@@ -129,12 +129,12 @@ class TestCanPacket:
         ("something", "CAN ID"),
         (AddressingType.PHYSICAL, 0x754),
     ])
-    def test_set_address_information__normal_11_bit(self, addressing_type, can_id):
+    def test_set_address_information__normal(self, addressing_type, can_id):
         CanPacket.set_address_information(self=self.mock_can_packet,
                                           addressing_type=addressing_type,
                                           addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                           can_id=can_id)
-        self.mock_can_packet.set_address_information_normal_11bit.assert_called_once_with(
+        self.mock_can_packet.set_address_information_normal.assert_called_once_with(
             addressing_type=addressing_type, can_id=can_id)
         self.mock_warn.assert_not_called()
 
@@ -142,7 +142,7 @@ class TestCanPacket:
         ("something", "CAN ID", "TA", "SA", "AE"),
         (AddressingType.PHYSICAL, 0x754, 0x31, 0xD0, 0xE3),
     ])
-    def test_set_address_information__normal_11_bit_with_warn(self, addressing_type, can_id,
+    def test_set_address_information__normal_with_warn(self, addressing_type, can_id,
                                                               target_address, source_address, address_extension):
         CanPacket.set_address_information(self=self.mock_can_packet,
                                           addressing_type=addressing_type,
@@ -151,7 +151,7 @@ class TestCanPacket:
                                           target_address=target_address,
                                           source_address=source_address,
                                           address_extension=address_extension)
-        self.mock_can_packet.set_address_information_normal_11bit.assert_called_once_with(
+        self.mock_can_packet.set_address_information_normal.assert_called_once_with(
             addressing_type=addressing_type, can_id=can_id)
         self.mock_warn.assert_called_once()
 
@@ -277,16 +277,16 @@ class TestCanPacket:
                                                                                          address_extension=address_extension)
         self.mock_warn.assert_not_called()
 
-    # set_address_information_normal_11bit
+    # set_address_information_normal
 
     @pytest.mark.parametrize("can_id, addressing_type", [
         ("some CAN ID", "some addressing type"),
         (0x64A, AddressingType.PHYSICAL),
     ])
-    def test_set_address_information_normal_11bit(self, can_id, addressing_type):
-        CanPacket.set_address_information_normal_11bit(self=self.mock_can_packet,
-                                                       addressing_type=addressing_type,
-                                                       can_id=can_id)
+    def test_set_address_information_normal(self, can_id, addressing_type):
+        CanPacket.set_address_information_normal(self=self.mock_can_packet,
+                                                 addressing_type=addressing_type,
+                                                 can_id=can_id)
         self.mock_normal_ai_class.validate_packet_ai.assert_called_once_with(
             addressing_type=addressing_type, can_id=can_id)
         self.mock_can_packet._CanPacket__validate_unambiguous_ai_change.assert_called_once_with(
@@ -891,7 +891,7 @@ class TestCanPacketIntegration:
         ({"packet_type": CanPacketType.FLOW_CONTROL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "addressing_type": AddressingType.PHYSICAL,
-          "can_id": 0x688,
+          "can_id": 0x12688,
           "flow_status": CanFlowStatus.ContinueToSend,
           "block_size": 0xF9,
           "st_min": 0xE0},
@@ -899,7 +899,7 @@ class TestCanPacketIntegration:
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "packet_type": CanPacketType.FLOW_CONTROL,
-          "can_id": 0x688,
+          "can_id": 0x12688,
           "dlc": 3,
           "target_address": None,
           "source_address": None,

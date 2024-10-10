@@ -8,7 +8,6 @@ It provides tools for:
  - storing historic information about packets that were either received or transmitted
 """
 
-from .abstract_can_packet_container import AbstractCanPacketContainer
 from .abstract_packet import (
     AbstractUdsPacket,
     AbstractUdsPacketContainer,
@@ -19,6 +18,4 @@ from .abstract_packet import (
     PacketsTuple,
 )
 from .abstract_packet_type import AbstractUdsPacketType
-from .can_packet import CanPacket
-from .can_packet_record import CanPacketRecord
-from .can_packet_type import CanPacketType
+from .can import AbstractCanPacketContainer, CanPacket, CanPacketRecord, CanPacketType

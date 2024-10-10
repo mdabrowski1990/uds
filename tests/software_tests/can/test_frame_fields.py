@@ -1,5 +1,5 @@
 import pytest
-from mock import call, patch, Mock
+from mock import Mock, call, patch
 
 from uds.can.frame_fields import AddressingType, CanAddressingFormat, CanDlcHandler, CanIdHandler
 

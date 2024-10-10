@@ -22,12 +22,12 @@ from uds.can import (
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
+from uds.packet.abstract_packet import AbstractUdsPacket
+from uds.packet.can.can_packet_type import CanPacketType
 from uds.transmission_attributes import AddressingType
 from uds.utilities import AmbiguityError, RawBytesAlias, RawBytesTupleAlias, UnusedArgumentWarning
 
-from .abstract_can_packet_container import AbstractCanPacketContainer
-from .abstract_packet import AbstractUdsPacket
-from .can_packet_type import CanPacketType
+from .abstract_can_container import AbstractCanPacketContainer
 
 
 class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
@@ -141,8 +141,8 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         """
         CanAddressingFormat.validate_member(addressing_format)
         if addressing_format == CanAddressingFormat.NORMAL_ADDRESSING:
-            self.set_address_information_normal_11bit(addressing_type=addressing_type,
-                                                      can_id=can_id)  # type: ignore
+            self.set_address_information_normal(addressing_type=addressing_type,
+                                                can_id=can_id)  # type: ignore
             if (target_address, source_address, address_extension) != (None, None, None):
                 warn(message=f"Unused arguments were provided to {CanPacket.set_address_information}. Expected: None."
                              f"Actual values: target_address={target_address}, source_address={source_address}, "
@@ -182,9 +182,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         else:
             raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
-    def set_address_information_normal_11bit(self, addressing_type: AddressingType, can_id: int) -> None:
+    def set_address_information_normal(self, addressing_type: AddressingType, can_id: int) -> None:
         """
-        Change addressing information for this CAN packet to use Normal 11-bit Addressing format.
+        Change addressing information for this CAN packet to use Normal Addressing format.
 
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
