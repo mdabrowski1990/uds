@@ -136,8 +136,9 @@ The exchange of UDS Packets on CAN is supported by three addressing formats:
    (`Network Address Information`_, `Network Data Field`_ and `Network Protocol Control Information`_)
    that is not compatible with other addressing formats.
 
-.. note:: Regardless of addressing format used, to transmit a :ref:`functionally addressed <knowledge-base-functional-addressing>`
-   message over CAN, a sender is allowed to use :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
+.. note:: Regardless of addressing format used, to transmit
+   a :ref:`functionally addressed <knowledge-base-functional-addressing>` message over CAN, a sender is allowed to use
+   :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
 
 
 .. _knowledge-base-can-normal-addressing:
@@ -152,7 +153,8 @@ Following parameters specifies `Network Address Information`_ when Normal Addres
  - CAN ID
 
 .. note:: Correspondence between `Network Address Information`_ and the value of CAN Identifier is left open for
-   a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` sub-format is used.
+   a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` sub-format
+   is used.
 
 .. note:: `Network Protocol Control Information`_ is placed in the **first byte** of
    :ref:`CAN frame data field <knowledge-base-can-data-field>` if normal addressing format is used.
@@ -322,15 +324,15 @@ that is required to sent a desired number of data bytes in a single CAN packet.
 
 .. note:: CAN Frame Data Optimization might always be used for CAN Packets with less than 8 bytes of data to send.
 
-.. warning:: CAN Frame Data Optimization might not always be able to replace `CAN Frame Data Padding`_ when CAN FD is used.
-   This is a consequence of DLC values from 9 to 15 meaning as these values are mapped into CAN frame data bytes numbers
-   in a non-linear way (e.g. DLC=9 represents 12 data bytes).
+.. warning:: CAN Frame Data Optimization might not always be able to replace `CAN Frame Data Padding`_ when CAN FD
+   is used. This is a consequence of DLC values from 9 to 15 meaning as these values are mapped into CAN frame data
+   bytes numbers in a non-linear way (e.g. DLC=9 represents 12 data bytes).
 
    Example:
 
    *When a CAN Packet with 47 bytes of data is planned for a transmission, then DLC=14 can be used instead of DLC=15,*
-   *to choose 48-byte instead of 64-byte long CAN frame. Unfortunately, the last byte of CAN Frame data has to be padded*
-   *as there is no way to send over CAN a frame with exactly 47 bytes of data.*
+   *to choose 48-byte instead of 64-byte long CAN frame. Unfortunately, the last byte of CAN Frame data has to be *
+   *padded as there is no way to send over CAN a frame with exactly 47 bytes of data.*
 
 
 .. _knowledge-base-can-n-pci:
@@ -505,10 +507,11 @@ Values of Flow Status:
 
  - 0x2 - Overflow (OVFLW)
 
-    Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with OVFLW)
-    is not able to receive a full diagnostic message as it is too big and reception of the message would result in
-    `Buffer Overflow <https://en.wikipedia.org/wiki/Buffer_overflow>`_ on receiving side. In other words, the value of
-    :ref:`FF_DL <knowledge-base-can-first-frame-data-length>` exceeds the buffer size of the receiving entity.
+    Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
+    with OVFLW) is not able to receive a full diagnostic message as it is too big and reception of the message would
+    result in `Buffer Overflow <https://en.wikipedia.org/wiki/Buffer_overflow>`_ on receiving side.
+    In other words, the value of :ref:`FF_DL <knowledge-base-can-first-frame-data-length>` exceeds the buffer size of
+    the receiving entity.
 
     Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with Overflow value shall cause
     the sender to abort the transmission of a diagnostic message.
