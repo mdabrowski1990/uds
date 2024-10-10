@@ -178,21 +178,72 @@ CAN Identifier values used for UDS communication using normal fixed addressing:
  - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
    as presented below:
 
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+|                | Priority    | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data          |
+|                |             |              |           | unit format   | Address | Address |               |
++================+=============+==============+===========+===============+=========+=========+===============+
+| Bits number    |      3      |       1      |     1     |       8       |    8    |    8    |     16-512    |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| Content        |    0 - 7    |       0      |     0     |      218      |   N_TA  |   N_SA  | N_PCI, N_Data |
+|                | default = 6 |              |           |               |         |         |               |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| CAN field      |                               CAN Identifier                               |    CAN Data   |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| CAN ID bits    |    28-26    |      25      |     24    |     23-16     |   15-8  |   7-0   |       -       |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| CAN data bytes |      -      |       -      |     -     |       -       |    -    |    -    |      1-64     |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+
    .. code-block::
 
+      # assuming priority parameter equals 0
+      CAN_ID = 0xDATTSS
+
+      # assuming priority parameter equals 6 (default value)
       CAN_ID = 0x18DATTSS
+
+      # assuming priority parameter equals 7
+      CAN_ID = 0x1CDATTSS
+
 
  - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
    as presented below:
 
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+|                | Priority    | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data          |
+|                |             |              |           | unit format   | Address | Address |               |
++================+=============+==============+===========+===============+=========+=========+===============+
+| Bits number    |      3      |       1      |     1     |       8       |    8    |    8    |     16-512    |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| Content        |    0 - 7    |       0      |     0     |      219      |   N_TA  |   N_SA  | N_PCI, N_Data |
+|                | default = 6 |              |           |               |         |         |               |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| CAN field      |                               CAN Identifier                               |    CAN Data   |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| CAN ID bits    |    28-26    |      25      |     24    |     23-16     |   15-8  |   7-0   |       -       |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+| CAN data bytes |      -      |       -      |     -     |       -       |    -    |    -    |      1-64     |
++----------------+-------------+--------------+-----------+---------------+---------+---------+---------------+
+
    .. code-block::
 
+      # assuming priority parameter equals 0
+      CAN_ID = 0xDBTTSS
+
+      # assuming priority parameter equals 6 (default value)
       CAN_ID = 0x18DBTTSS
+
+      # assuming priority parameter equals 7
+      CAN_ID = 0x1CDBTTSS
 
 where:
  - CAN_ID - value of **CAN Identifier**
  - TT - two (hexadecimal) digits of a 8-bit **Target Address** value
  - SS - two (hexadecimal) digits of a 8-bit **Source Address** value
+ - N_TA - Network **Target Address** parameter
+ - N_SA - Network **Source Address** parameter
+ - :ref:`N_PCI <knowledge-base-n-pci>` - Network Protocol Control Information
+ - :ref:`N_Data <knowledge-base-n-data>` - Network Data Field
 
 
 .. _knowledge-base-can-extended-addressing:
@@ -252,21 +303,72 @@ CAN Identifier values used for UDS communication using mixed 29-bit addressing:
  - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
    as presented below:
 
++----------------+-------------+--------------+-----------+---------------+---------+---------+----------------------+
+|                | Priority    | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data                 |
+|                |             |              |           | unit format   | Address | Address |                      |
++================+=============+==============+===========+===============+=========+=========+======+===============+
+| Bits number    |      3      |       1      |     1     |       8       |    8    |    8    |   8  |     16-504    |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| Content        |    0 - 7    |       0      |     0     |      206      |   N_TA  |   N_SA  | N_AE | N_PCI, N_Data |
+|                | default = 6 |              |           |               |         |         |      |               |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| CAN field      |                               CAN Identifier                               |       CAN Data       |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| CAN ID bits    |    28-26    |      25      |     24    |     23-16     |   15-8  |   7-0   |   -  |       -       |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| CAN data bytes |      -      |       -      |     -     |       -       |    -    |    -    |   1  |      2-64     |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+
    .. code-block::
 
+      # assuming priority parameter equals 0
+      CAN_ID = 0xCETTSS
+
+      # assuming priority parameter equals 6 (default value)
       CAN_ID = 0x18CETTSS
+
+      # assuming priority parameter equals 7
+      CAN_ID = 0x1CCETTSS
 
  - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
    as presented below:
 
++----------------+-------------+--------------+-----------+---------------+---------+---------+----------------------+
+|                | Priority    | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data                 |
+|                |             |              |           | unit format   | Address | Address |                      |
++================+=============+==============+===========+===============+=========+=========+======+===============+
+| Bits number    |      3      |       1      |     1     |       8       |    8    |    8    |   8  |     16-504    |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| Content        |    0 - 7    |       0      |     0     |      205      |   N_TA  |   N_SA  | N_AE | N_PCI, N_Data |
+|                | default = 6 |              |           |               |         |         |      |               |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| CAN field      |                               CAN Identifier                               |       CAN Data       |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| CAN ID bits    |    28-26    |      25      |     24    |     23-16     |   15-8  |   7-0   |   -  |       -       |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+| CAN data bytes |      -      |       -      |     -     |       -       |    -    |    -    |   1  |      2-64     |
++----------------+-------------+--------------+-----------+---------------+---------+---------+------+---------------+
+
    .. code-block::
 
+      # assuming priority parameter equals 0
+      CAN_ID = 0xCDTTSS
+
+      # assuming priority parameter equals 6 (default value)
       CAN_ID = 0x18CDTTSS
+
+      # assuming priority parameter equals 7
+      CAN_ID = 0x1CCDTTSS
 
 where:
  - CAN_ID - value of **CAN Identifier**
  - TT - two (hexadecimal) digits of a 8-bit **Target Address** value
  - SS - two (hexadecimal) digits of a 8-bit **Source Address** value
+ - N_TA - Network **Target Address** parameter
+ - N_SA - Network **Source Address** parameter
+ - N_AE - Network **Addressing Extension** parameter
+ - :ref:`N_PCI <knowledge-base-n-pci>` - Network Protocol Control Information
+ - :ref:`N_Data <knowledge-base-n-data>` - Network Data Field
 
 
 .. _knowledge-base-can-data-field:
