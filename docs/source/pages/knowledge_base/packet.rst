@@ -149,6 +149,8 @@ If normal addressing format is used, then the value of CAN Identifier carries an
 Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>`,
 a sender and a target/targets entities of a packet.
 
+.. note:: With normal addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
+
 Following parameters specifies `Network Address Information`_ when Normal Addressing is used:
  - CAN ID
 
@@ -167,7 +169,7 @@ Normal Fixed Addressing
 Normal fixed addressing format is a special case of :ref:`normal addressing <knowledge-base-can-normal-addressing>`
 in which the mapping of the address information into the CAN identifier is further defined.
 
-.. note:: For normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
+.. note:: With normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
 
 Following parameters specifies `Network Address Information`_ when Normal Fixed Addressing is used:
  - CAN ID (with embedded **Target Address** and **Source Address**)
@@ -200,6 +202,8 @@ Extended Addressing
 If extended addressing format is used, then the value of **the first CAN frame byte informs about a target** of
 a UDS packet and remaining `Network Address Information`_ (a sending entity and
 :ref:`an addressing type <knowledge-base-addressing>`) are determined by CAN Identifier value.
+
+.. note:: With extended addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
 
 Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
  - CAN ID
