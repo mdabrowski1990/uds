@@ -46,7 +46,7 @@ class TestPythonCanKvaser:
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_information, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
-         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},
@@ -150,7 +150,7 @@ class TestPythonCanKvaser:
 
     @pytest.mark.parametrize("addressing_type, addressing_information, frame", [
         (AddressingType.PHYSICAL,
-         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},
@@ -229,7 +229,7 @@ class TestPythonCanKvaser:
         sleep((send_after - timeout) * 2 / 1000.)
 
     @pytest.mark.parametrize("addressing_information, frame", [
-        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},
@@ -305,7 +305,7 @@ class TestPythonCanKvaser:
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
 
     @pytest.mark.parametrize("addressing_information, frame", [
-        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},
@@ -384,7 +384,7 @@ class TestPythonCanKvaser:
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_information, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
-         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},
@@ -490,7 +490,7 @@ class TestPythonCanKvaser:
 
     @pytest.mark.parametrize("addressing_type, addressing_information, frame", [
         (AddressingType.PHYSICAL,
-         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},
@@ -551,7 +551,7 @@ class TestPythonCanKvaser:
         sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
     @pytest.mark.parametrize("addressing_information, frame", [
-        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},
@@ -635,7 +635,7 @@ class TestPythonCanKvaser:
         # assert datetime_before_receive < packet_record.transmission_time < datetime_after_receive
 
     @pytest.mark.parametrize("addressing_information, frame", [
-        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        (CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                   tx_physical={"can_id": 0x611},
                                   rx_physical={"can_id": 0x612},
                                   tx_functional={"can_id": 0x6FF},

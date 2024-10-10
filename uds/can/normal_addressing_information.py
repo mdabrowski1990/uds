@@ -1,6 +1,6 @@
 """Implementation of Normal Addressing Information handlers."""
 
-__all__ = ["Normal11BitCanAddressingInformation", "NormalFixedCanAddressingInformation"]
+__all__ = ["NormalCanAddressingInformation", "NormalFixedCanAddressingInformation"]
 
 from typing import Optional
 
@@ -12,8 +12,8 @@ from .addressing_format import CanAddressingFormat
 from .frame_fields import CanIdHandler
 
 
-class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
-    """Addressing Information of CAN Entity (either server or client) that uses Normal 11-bit Addressing format."""
+class NormalCanAddressingInformation(AbstractCanAddressingInformation):
+    """Addressing Information of CAN Entity (either server or client) that uses Normal Addressing format."""
 
     AI_DATA_BYTES_NUMBER: int = 0
     """Number of CAN Frame data bytes that are used to carry Addressing Information."""
@@ -21,7 +21,7 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
     @property
     def addressing_format(self) -> CanAddressingFormat:
         """CAN Addressing format used."""
-        return CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        return CanAddressingFormat.NORMAL_ADDRESSING
 
     @classmethod
     def validate_packet_ai(cls,
@@ -31,7 +31,7 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
                            source_address: Optional[int] = None,
                            address_extension: Optional[int] = None) -> PacketAIParamsAlias:
         """
-        Validate Addressing Information parameters of a CAN packet that uses Normal 11-bit Addressing format.
+        Validate Addressing Information parameters of a CAN packet that uses Normal Addressing format.
 
         :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
@@ -46,13 +46,13 @@ class Normal11BitCanAddressingInformation(AbstractCanAddressingInformation):
         """
         if (target_address, source_address, address_extension) != (None, None, None):
             raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are "
-                                      "not supported by Normal 11-bit Addressing format and all must be None.")
+                                      "not supported by Normal Addressing format and all must be None.")
         addressing_type = AddressingType.validate_member(addressing_type)
         CanIdHandler.validate_can_id(can_id)  # type: ignore
-        if not CanIdHandler.is_normal_11bit_addressed_can_id(can_id):  # type: ignore
-            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
-                                             f"Normal 11-bit Addressing Format. Actual value: {can_id}")
-        return PacketAIParamsAlias(addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        if not CanIdHandler.is_normal_addressed_can_id(can_id):  # type: ignore
+            raise InconsistentArgumentsError("Provided value of CAN ID is not compatible with "
+                                             "Normal Addressing Format.")
+        return PacketAIParamsAlias(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                    addressing_type=addressing_type,
                                    can_id=can_id,  # type: ignore
                                    target_address=target_address,
@@ -99,10 +99,8 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         addressing_type = AddressingType.validate_member(addressing_type)
         if can_id is None:
             if None in (target_address, source_address):
-                raise InconsistentArgumentsError(f"Values of target_address and source_address must be provided,"
-                                                 f"if can_id value is None for Normal Fixed Addressing Format. "
-                                                 f"Actual values: "
-                                                 f"target_address={target_address}, source_address={source_address}")
+                raise InconsistentArgumentsError("Values of target_address and source_address must be provided, "
+                                                 "if can_id value is None for Normal Fixed Addressing Format.")
             validate_raw_byte(target_address)  # type: ignore
             validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = CanIdHandler.encode_normal_fixed_addressed_can_id(

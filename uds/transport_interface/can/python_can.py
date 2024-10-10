@@ -80,9 +80,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         .. note:: The last measurement comes from the last transmission of Single Frame or First Fame CAN Packet using
             either
-            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.send_packet`
+            :meth:`~uds.transport_interface.can.python_can_transport_interface.PyCanTransportInterface.send_packet`
             or
-            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
+            :meth:`~uds.transport_interface.can.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
             method.
 
         :return: Time in milliseconds or None if the value was never measured.
@@ -96,9 +96,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of Flow Control CAN Packet using either
-            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.send_packet`
+            :meth:`~uds.transport_interface.can.python_can_transport_interface.PyCanTransportInterface.send_packet`
             or
-            :meth:`~uds.transport_interface.can_transport_interface.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
+            :meth:`~uds.transport_interface.can.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
             method.
 
         :return: Time in milliseconds or None if the value was never measured.

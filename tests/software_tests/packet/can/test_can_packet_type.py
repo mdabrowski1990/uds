@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 
 from uds.packet import AbstractUdsPacketType
-from uds.packet.can_packet_type import CanPacketType
+from uds.packet.can.can_packet_type import CanPacketType
 
 
 class TestCanPacketType:

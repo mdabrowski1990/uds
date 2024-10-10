@@ -79,8 +79,7 @@ class CanFirstFrameHandler:
         frame_length = CanDlcHandler.decode_dlc(dlc)
         if len(ff_data_bytes) != frame_length:
             raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes to fit "
-                                             f"them into a valid CAN Frame. You can Use {cls.get_payload_size} to get "
-                                             f"the expected value.")
+                                             "them into a valid CAN Frame.")
         return ff_data_bytes
 
     @classmethod
@@ -124,8 +123,7 @@ class CanFirstFrameHandler:
         frame_length = CanDlcHandler.decode_dlc(dlc)
         if len(ff_data_bytes) != frame_length:
             raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes to fit "
-                                             f"them into a valid CAN Frame. You can Use {cls.get_payload_size} to get "
-                                             f"the expected value.")
+                                             "them into a valid CAN Frame.")
         return ff_data_bytes
 
     @classmethod
@@ -224,8 +222,7 @@ class CanFirstFrameHandler:
         """
         validate_raw_bytes(raw_frame_data)
         if not cls.is_first_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a First Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+            raise ValueError("Provided `raw_frame_data` value does not carry a First Frame packet.")
         ff_dl = cls.decode_ff_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
         ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
@@ -263,7 +260,7 @@ class CanFirstFrameHandler:
             number of payload bytes represented by FF_DL value.
         """
         if not isinstance(ff_dl, int):
-            raise TypeError(f"Provided value of First Frame Data Length is not integer. Actual type: {type(ff_dl)}")
+            raise TypeError("Provided value of First Frame Data Length is not int type.")
         if not 0 <= ff_dl <= cls.MAX_LONG_FF_DL_VALUE:
             raise ValueError(f"Provided value of First Frame Data Length is out of range. "
                              f"Expected: 0 <= ff_dl <= {cls.MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")

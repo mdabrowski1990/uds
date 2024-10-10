@@ -4,7 +4,7 @@ import pytest
 from mock import Mock, patch
 
 from uds.can import CanFlowStatus
-from uds.packet.can_packet_record import (
+from uds.packet.can.can_packet_record import (
     AbstractCanAddressingInformation,
     CanAddressingFormat,
     CanPacketRecord,
@@ -14,7 +14,7 @@ from uds.packet.can_packet_record import (
 )
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 
-SCRIPT_LOCATION = "uds.packet.can_packet_record"
+SCRIPT_LOCATION = "uds.packet.can.can_packet_record"
 
 
 class TestCanPacketRecord:
@@ -245,11 +245,11 @@ class TestCanPacketRecordIntegration:
                                     data=[0x01, 0x3E]),
           "direction": TransmissionDirection.RECEIVED,
           "addressing_type": AddressingType.PHYSICAL,
-          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "transmission_time": datetime.now()},
          {"raw_frame_data": (0x01, 0x3E),
           "addressing_type": AddressingType.PHYSICAL,
-          "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "packet_type": CanPacketType.SINGLE_FRAME,
           "payload": (0x3E, ),
           "data_length": 1,
@@ -303,7 +303,7 @@ class TestCanPacketRecordIntegration:
                                    data=[0xFF] * 8),
          "direction": TransmissionDirection.TRANSMITTED,
          "addressing_type": AddressingType.PHYSICAL,
-         "addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
          "transmission_time": datetime.now()},
         {"frame": PythonCanMessage(arbitration_id=0x12345678,
                                    is_extended_id=True,

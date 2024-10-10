@@ -495,7 +495,7 @@ class TestCanSingleFrameHandlerIntegration:
     # create_valid_frame_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
-        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "payload": [0x9A],
           "sequence_number": 0}, [0x20, 0x9A]),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
@@ -524,7 +524,7 @@ class TestCanSingleFrameHandlerIntegration:
         assert CanConsecutiveFrameHandler.create_valid_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
-        {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
          "payload": [0x9A],
          "dlc": 1,
          "sequence_number": 0},
@@ -555,7 +555,7 @@ class TestCanSingleFrameHandlerIntegration:
     # create_any_frame_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
-        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "payload": [],
           "dlc": 1,
           "sequence_number": 0}, [0x20]),
@@ -579,7 +579,7 @@ class TestCanSingleFrameHandlerIntegration:
         assert CanConsecutiveFrameHandler.create_any_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
-        {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
          "payload": [0x9A],
          "dlc": 1,
          "sequence_number": 0},
@@ -605,7 +605,7 @@ class TestCanSingleFrameHandlerIntegration:
     # validate_frame_data
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
-        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, (0x20, 0x12, 0x34, 0x45, 0x67, 0x89, 0x9A, 0xBC)),
+        (CanAddressingFormat.NORMAL_ADDRESSING, (0x20, 0x12, 0x34, 0x45, 0x67, 0x89, 0x9A, 0xBC)),
         (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, (0x2F, 0x2F)),
         (CanAddressingFormat.EXTENDED_ADDRESSING, (0xF0, 0x26, 0x00)),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, [0x30, 0x21] + (46 * [0xFF])),
@@ -616,7 +616,7 @@ class TestCanSingleFrameHandlerIntegration:
                                                               raw_frame_data=raw_frame_data) is None
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
-        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, [0x20]),
+        (CanAddressingFormat.NORMAL_ADDRESSING, [0x20]),
         (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, tuple([0x2F] + ([0xFF] * 64))),
         (CanAddressingFormat.EXTENDED_ADDRESSING, [0x2F, 0x2F]),
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, (0x8B, 0x2E)),

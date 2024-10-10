@@ -655,7 +655,7 @@ class TestCanFlowControlHandlerIntegration:
     # create_valid_frame_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
-        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "flow_status": CanFlowStatus.Overflow}, [0x32, 0xCC, 0xCC]),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "flow_status": CanFlowStatus.ContinueToSend,
@@ -688,7 +688,7 @@ class TestCanFlowControlHandlerIntegration:
         assert CanFlowControlHandler.create_valid_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
-        {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
          "flow_status": CanFlowStatus.Overflow,
          "dlc": 4},
         {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
@@ -717,7 +717,7 @@ class TestCanFlowControlHandlerIntegration:
     # create_any_frame_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
-        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "flow_status": CanFlowStatus.ContinueToSend,
           "dlc": 1}, [0x30]),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
@@ -747,7 +747,7 @@ class TestCanFlowControlHandlerIntegration:
         assert CanFlowControlHandler.create_any_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
-        {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
          "flow_status": 0x10,
          "dlc": 3},
         {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
@@ -777,7 +777,7 @@ class TestCanFlowControlHandlerIntegration:
     # validate_frame_data
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
-        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, [0x30, 0x12, 0x34]),
+        (CanAddressingFormat.NORMAL_ADDRESSING, [0x30, 0x12, 0x34]),
         (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, (0x31, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA)),
         (CanAddressingFormat.EXTENDED_ADDRESSING, (0xA1, 0x32, 0xCC, 0xCC)),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0xBC, 0x30, 0xCC, 0xCC)),
@@ -788,7 +788,7 @@ class TestCanFlowControlHandlerIntegration:
                                                          raw_frame_data=raw_frame_data) is None
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
-        (CanAddressingFormat.NORMAL_11BIT_ADDRESSING, [0x30, 0x12]),
+        (CanAddressingFormat.NORMAL_ADDRESSING, [0x30, 0x12]),
         (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, (0x31, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA)),
         (CanAddressingFormat.EXTENDED_ADDRESSING, (0xA1, 0x32, 0xCC)),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0xBC, 0x34, 0xCC, 0xCC)),
