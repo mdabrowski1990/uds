@@ -67,6 +67,10 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         self.tx_packets_physical_ai = tx_physical  # type: ignore
         self.rx_packets_functional_ai = rx_functional  # type: ignore
         self.tx_packets_functional_ai = tx_functional  # type: ignore
+        self._validate_node_ai(rx_packets_physical_ai=self.rx_packets_physical_ai,
+                               tx_packets_physical_ai=self.tx_packets_physical_ai,
+                               rx_packets_functional_ai=self.rx_packets_functional_ai,
+                               tx_packets_functional_ai=self.tx_packets_functional_ai)
 
     @property
     @abstractmethod
@@ -155,4 +159,25 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         :raise UnusedArgumentError: Provided parameter is not supported by Addressing format used.
 
         :return: Normalized dictionary with the provided information.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def _validate_node_ai(rx_packets_physical_ai: PacketAIParamsAlias,
+                          tx_packets_physical_ai: PacketAIParamsAlias,
+                          rx_packets_functional_ai: PacketAIParamsAlias,
+                          tx_packets_functional_ai: PacketAIParamsAlias) -> None:
+        """
+        Validate Node Addressing Information parameters.
+
+        :param rx_packets_physical_ai: Addressing Information parameters of incoming physically addressed
+            CAN packets to validate.
+        :param tx_packets_physical_ai: Addressing Information parameters of outgoing physically addressed
+            CAN packets to validate.
+        :param rx_packets_functional_ai: Addressing Information parameters of incoming functionally addressed
+            CAN packets to validate.
+        :param tx_packets_functional_ai: Addressing Information parameters of outgoing functionally addressed
+            CAN packets to validate.
+
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """

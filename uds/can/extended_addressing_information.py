@@ -59,3 +59,29 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
                                    target_address=target_address,
                                    source_address=source_address,
                                    address_extension=address_extension)
+
+    @staticmethod
+    def _validate_node_ai(rx_packets_physical_ai: PacketAIParamsAlias,
+                          tx_packets_physical_ai: PacketAIParamsAlias,
+                          rx_packets_functional_ai: PacketAIParamsAlias,
+                          tx_packets_functional_ai: PacketAIParamsAlias) -> None:
+        """
+        Validate Node Addressing Information parameters.
+
+        :param rx_packets_physical_ai: Addressing Information parameters of incoming physically addressed
+            CAN packets to validate.
+        :param tx_packets_physical_ai: Addressing Information parameters of outgoing physically addressed
+            CAN packets to validate.
+        :param rx_packets_functional_ai: Addressing Information parameters of incoming functionally addressed
+            CAN packets to validate.
+        :param tx_packets_functional_ai: Addressing Information parameters of outgoing functionally addressed
+            CAN packets to validate.
+
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        """
+        if len({(rx_packets_physical_ai["can_id"], rx_packets_physical_ai["target_address"]),
+                (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["target_address"]),
+                (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["target_address"]),
+                (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["target_address"])}) != 4:
+            raise InconsistentArgumentsError("Combination of CAN ID and Target Address for incoming and outgoing "
+                                             "CAN packets must be unique")

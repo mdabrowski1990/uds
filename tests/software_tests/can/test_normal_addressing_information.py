@@ -81,6 +81,60 @@ class TestNormalCanAddressingInformation:
         self.mock_can_id_handler_class.is_normal_addressed_can_id.assert_called_once_with(can_id)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
 
+    # _validate_node_ai
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 1},
+            {"can_id": 2},
+            {"can_id": 3},
+            {"can_id": 3},
+        ),
+        (
+            {"can_id": 0x4321},
+            {"can_id": 0x4321},
+            {"can_id": 0x4321},
+            {"can_id": 0x4321},
+        ),
+    ])
+    def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        with pytest.raises(InconsistentArgumentsError):
+            NormalCanAddressingInformation._validate_node_ai(rx_packets_physical_ai=rx_packets_physical_ai,
+                                                               tx_packets_physical_ai=tx_packets_physical_ai,
+                                                               rx_packets_functional_ai=rx_packets_functional_ai,
+                                                               tx_packets_functional_ai=tx_packets_functional_ai)
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 1},
+            {"can_id": 2},
+            {"can_id": 3},
+            {"can_id": 4},
+        ),
+        (
+            {"can_id": 0x711},
+            {"can_id": 0x712},
+            {"can_id": 0x6FE},
+            {"can_id": 0x6FF},
+        ),
+        (
+            {"can_id": 0xABC1},
+            {"can_id": 0xABC2},
+            {"can_id": 0xABC3},
+            {"can_id": 0xABC4},
+        ),
+    ])
+    def test_validate_node_ai__valid(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        assert NormalCanAddressingInformation._validate_node_ai(
+            rx_packets_physical_ai=rx_packets_physical_ai,
+            tx_packets_physical_ai=tx_packets_physical_ai,
+            rx_packets_functional_ai=rx_packets_functional_ai,
+            tx_packets_functional_ai=tx_packets_functional_ai) is None
+
 
 class TestNormalFixedCanAddressingInformation:
     """Unit tests for `NormalFixedCanAddressingInformation` class."""
@@ -211,3 +265,57 @@ class TestNormalFixedCanAddressingInformation:
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_not_called()
         self.mock_can_id_handler_class.decode_normal_fixed_addressed_can_id.assert_called_once_with(can_id)
+
+    # _validate_node_ai
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
+            {"can_id": 0xDA3413, "target_address": 0x34, "source_address": 0x13},
+            {"can_id": 0xDB01FF, "target_address": 0x01, "source_address": 0xFF},
+            {"can_id": 0xDBFF01, "target_address": 0xFF, "source_address": 0x01},
+        ),
+        (
+            {"can_id": 0x18DAFEDC, "target_address": 0xFE, "source_address": 0xDC},
+            {"can_id": 0x18DADCDE, "target_address": 0xDC, "source_address": 0xFE},
+            {"can_id": 0x18DB543F, "target_address": 0x54, "source_address": 0x3F},
+            {"can_id": 0x18DB543F, "target_address": 0x54, "source_address": 0x3F},
+        ),
+    ])
+    def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        with pytest.raises(InconsistentArgumentsError):
+            NormalFixedCanAddressingInformation._validate_node_ai(rx_packets_physical_ai=rx_packets_physical_ai,
+                                                                  tx_packets_physical_ai=tx_packets_physical_ai,
+                                                                  rx_packets_functional_ai=rx_packets_functional_ai,
+                                                                  tx_packets_functional_ai=tx_packets_functional_ai)
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
+            {"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
+            {"can_id": 0xDB01FF, "target_address": 0x01, "source_address": 0xFF},
+            {"can_id": 0xDBFF01, "target_address": 0xFF, "source_address": 0x01},
+        ),
+        (
+            {"can_id": 0x18DAFEDC, "target_address": 0xFE, "source_address": 0xDC},
+            {"can_id": 0x18DADCDE, "target_address": 0xDC, "source_address": 0xFE},
+            {"can_id": 0x18DB543F, "target_address": 0x54, "source_address": 0x3F},
+            {"can_id": 0x18DB3F54, "target_address": 0x3F, "source_address": 0x54},
+        ),
+        (
+            {"can_id": 0x1CDA2F71, "target_address": 0x2F, "source_address": 0x71},
+            {"can_id": 0x1CDA712F, "target_address": 0x71, "source_address": 0x2F},
+            {"can_id": 0x8DB5580, "target_address": 0x55, "source_address": 0x80},
+            {"can_id": 0x8DB8055, "target_address": 0x80, "source_address": 0x55},
+        ),
+    ])
+    def test_validate_node_ai__valid(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        assert NormalFixedCanAddressingInformation._validate_node_ai(
+            rx_packets_physical_ai=rx_packets_physical_ai,
+            tx_packets_physical_ai=tx_packets_physical_ai,
+            rx_packets_functional_ai=rx_packets_functional_ai,
+            tx_packets_functional_ai=tx_packets_functional_ai) is None

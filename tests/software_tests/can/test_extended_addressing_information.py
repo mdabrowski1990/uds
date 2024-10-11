@@ -85,3 +85,57 @@ class TestExtendedCanAddressingInformation:
         self.mock_can_id_handler_class.is_extended_addressed_can_id.assert_called_once_with(can_id)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_called_once_with(target_address)
+
+    # _validate_node_ai
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 1, "target_address": 2},
+            {"can_id": 2, "target_address": 1},
+            {"can_id": 3, "target_address": 4},
+            {"can_id": 3, "target_address": 4},
+        ),
+        (
+            {"can_id": 0x4321, "target_address": 0xFF},
+            {"can_id": 0x4321, "target_address": 0xFF},
+            {"can_id": 0x4321, "target_address": 0xFE},
+            {"can_id": 0x4321, "target_address": 0xFD},
+        ),
+    ])
+    def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        with pytest.raises(InconsistentArgumentsError):
+            ExtendedCanAddressingInformation._validate_node_ai(rx_packets_physical_ai=rx_packets_physical_ai,
+                                                               tx_packets_physical_ai=tx_packets_physical_ai,
+                                                               rx_packets_functional_ai=rx_packets_functional_ai,
+                                                               tx_packets_functional_ai=tx_packets_functional_ai)
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 1, "target_address": 2},
+            {"can_id": 2, "target_address": 1},
+            {"can_id": 3, "target_address": 4},
+            {"can_id": 4, "target_address": 3},
+        ),
+        (
+            {"can_id": 0x4321, "target_address": 0xFF},
+            {"can_id": 0x4321, "target_address": 0x00},
+            {"can_id": 0x4321, "target_address": 0xFE},
+            {"can_id": 0x4321, "target_address": 0xFD},
+        ),
+        (
+            {"can_id": 0xABC1, "target_address": 0xFF},
+            {"can_id": 0xABC2, "target_address": 0xFF},
+            {"can_id": 0xABC3, "target_address": 0xFF},
+            {"can_id": 0xABC4, "target_address": 0xFF},
+        ),
+    ])
+    def test_validate_node_ai__valid(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        assert ExtendedCanAddressingInformation._validate_node_ai(
+            rx_packets_physical_ai=rx_packets_physical_ai,
+            tx_packets_physical_ai=tx_packets_physical_ai,
+            rx_packets_functional_ai=rx_packets_functional_ai,
+            tx_packets_functional_ai=tx_packets_functional_ai) is None
