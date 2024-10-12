@@ -776,7 +776,7 @@ class TestCanSegmenterIntegration:
         (Mixed29BitCanAddressingInformation(rx_physical={"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
                                             tx_physical={"can_id": 0x18CED0C2, "address_extension": 0x52, "target_address": 0xD0, "source_address": 0xC2},
                                             rx_functional={"can_id": 0x18CD7186, "address_extension": 0xFF, "target_address": 0x71, "source_address": 0x86},
-                                            tx_functional={"can_id": 0x18CD8671, "address_extension": 0xFF}), 0x18CD7186, [0x52, 0x3E]),
+                                            tx_functional={"can_id": 0x18CD8671, "address_extension": 0xFF}), 0x18CEC2D0, [0xFF, 0x3E]),
     ])
     def test_is_input_packet__false(self, addressing_information, frame_can_id, frame_data):
         can_segmenter = CanSegmenter(addressing_information=addressing_information)
