@@ -22,12 +22,12 @@ from uds.can import (
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
-from uds.packet.abstract_packet import AbstractUdsPacket
-from uds.packet.can.can_packet_type import CanPacketType
 from uds.transmission_attributes import AddressingType
 from uds.utilities import AmbiguityError, RawBytesAlias, RawBytesTupleAlias, UnusedArgumentWarning
 
+from ..abstract_packet import AbstractUdsPacket
 from .abstract_can_container import AbstractCanPacketContainer
+from .can_packet_type import CanPacketType
 
 
 class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
