@@ -43,8 +43,8 @@ class CanIdHandler:
     MAX_EXTENDED_VALUE: int = (1 << 29) - 1
     """Maximum value of Extended (29-bit) CAN ID."""
 
-    J1339_ADDRESSING_MASK: int = 0x3ff0000
-    """CAN ID mask with bits enforced by SAE J1939 set to 1."""
+    ADDRESSING_MASK: int = 0x3ff0000
+    """CAN ID mask for bits enforced by SAE J1939 (Normal Fixed of Mixed 29bit addressing formats)."""
     NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE: int = 0xDA0000
     """Masked value of physically addressed CAN ID in Normal Fixed Addressing format."""
     NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE: int = 0xDB0000
@@ -129,7 +129,7 @@ class CanIdHandler:
             raise ValueError("Provided CAN ID value is out of range.")
         target_address = (can_id >> 8) & 0xFF
         source_address = can_id & 0xFF
-        can_id_masked_value = can_id & cls.J1339_ADDRESSING_MASK
+        can_id_masked_value = can_id & cls.ADDRESSING_MASK
         if can_id_masked_value == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE:
             return cls.CanIdAIAlias(addressing_type=AddressingType.PHYSICAL,
                                     target_address=target_address,
@@ -159,7 +159,7 @@ class CanIdHandler:
             raise ValueError("Provided CAN ID value is out of range.")
         target_address = (can_id >> 8) & 0xFF
         source_address = can_id & 0xFF
-        can_id_masked_value = can_id & cls.J1339_ADDRESSING_MASK
+        can_id_masked_value = can_id & cls.ADDRESSING_MASK
         if can_id_masked_value == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE:
             return cls.CanIdAIAlias(addressing_type=AddressingType.PHYSICAL,
                                     target_address=target_address,
@@ -302,7 +302,7 @@ class CanIdHandler:
         """
         if addressing_type is not None:
             addressing_type = AddressingType.validate_member(addressing_type)
-        masked_can_id = can_id & cls.J1339_ADDRESSING_MASK
+        masked_can_id = can_id & cls.ADDRESSING_MASK
         if (masked_can_id == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE
                 and addressing_type in {None, AddressingType.PHYSICAL}):
             return True
@@ -349,7 +349,7 @@ class CanIdHandler:
         """
         if addressing_type is not None:
             addressing_type = AddressingType.validate_member(addressing_type)
-        masked_can_id = can_id & cls.J1339_ADDRESSING_MASK
+        masked_can_id = can_id & cls.ADDRESSING_MASK
         if (masked_can_id == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE
                 and addressing_type in {None, AddressingType.PHYSICAL}):
             return True
