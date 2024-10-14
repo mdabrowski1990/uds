@@ -5,7 +5,7 @@ from mock import AsyncMock, MagicMock, Mock, call, patch
 
 from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.transmission_attributes import AddressingType
-from uds.transport_interface.can_transport_interface.python_can import (
+from uds.transport_interface.can.python_can import (
     AbstractCanTransportInterface,
     BusABC,
     CanFlowStatus,
@@ -17,7 +17,7 @@ from uds.transport_interface.can_transport_interface.python_can import (
     UdsMessage,
 )
 
-SCRIPT_LOCATION = "uds.transport_interface.can_transport_interface.python_can"
+SCRIPT_LOCATION = "uds.transport_interface.can.python_can"
 
 
 class TestPyCanTransportInterface:
@@ -1693,7 +1693,7 @@ class TestPyCanTransportInterfaceIntegration:
         {
             "can_bus_manager": Mock(spec=BusABC),
             "addressing_information": CanAddressingInformation(
-                addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                 rx_physical={"can_id": 0x641},
                 tx_physical={"can_id": 0x642},
                 rx_functional={"can_id": 0x6FE},

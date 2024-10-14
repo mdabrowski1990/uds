@@ -39,6 +39,11 @@ class TestAbstractCanAddressingInformation:
         assert self.mock_addressing_information.tx_packets_physical_ai == tx_physical
         assert self.mock_addressing_information.rx_packets_functional_ai == rx_functional
         assert self.mock_addressing_information.tx_packets_functional_ai == tx_functional
+        self.mock_addressing_information._validate_node_ai.assert_called_once_with(
+            rx_packets_physical_ai=self.mock_addressing_information.rx_packets_physical_ai,
+            tx_packets_physical_ai=self.mock_addressing_information.tx_packets_physical_ai,
+            rx_packets_functional_ai=self.mock_addressing_information.rx_packets_functional_ai,
+            tx_packets_functional_ai=self.mock_addressing_information.tx_packets_functional_ai)
 
     # rx_packets_physical_ai
 

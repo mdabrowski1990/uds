@@ -15,7 +15,7 @@ async def main():
 
     # configure Addressing Information of a CAN Nodes (example values)
     ai_receive = CanAddressingInformation(
-        addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
         tx_physical={"can_id": 0x611},
         rx_physical={"can_id": 0x612},
         tx_functional={"can_id": 0x6FF},

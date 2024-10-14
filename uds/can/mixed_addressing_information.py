@@ -51,14 +51,46 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         CanIdHandler.validate_can_id(can_id)  # type: ignore
         validate_raw_byte(address_extension)  # type: ignore
         if not CanIdHandler.is_mixed_11bit_addressed_can_id(can_id):  # type: ignore
-            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with "
-                                             f"Mixed 11-bit Addressing Format. Actual value: {can_id}")
+            raise InconsistentArgumentsError("Provided value of CAN ID is not compatible with "
+                                             "Mixed 11-bit Addressing Format.")
         return PacketAIParamsAlias(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                    addressing_type=addressing_type,
                                    can_id=can_id,  # type: ignore
                                    target_address=target_address,
                                    source_address=source_address,
                                    address_extension=address_extension)
+
+    @staticmethod
+    def _validate_node_ai(rx_packets_physical_ai: PacketAIParamsAlias,
+                          tx_packets_physical_ai: PacketAIParamsAlias,
+                          rx_packets_functional_ai: PacketAIParamsAlias,
+                          tx_packets_functional_ai: PacketAIParamsAlias) -> None:
+        """
+        Validate Node Addressing Information parameters.
+
+        :param rx_packets_physical_ai: Addressing Information parameters of incoming physically addressed
+            CAN packets to validate.
+        :param tx_packets_physical_ai: Addressing Information parameters of outgoing physically addressed
+            CAN packets to validate.
+        :param rx_packets_functional_ai: Addressing Information parameters of incoming functionally addressed
+            CAN packets to validate.
+        :param tx_packets_functional_ai: Addressing Information parameters of outgoing functionally addressed
+            CAN packets to validate.
+
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        """
+        if rx_packets_physical_ai["address_extension"] != tx_packets_physical_ai["address_extension"]:
+            raise InconsistentArgumentsError("Addressing Extension parameter must be the same for incoming and "
+                                             "outgoing physically addressed CAN packets.")
+        if rx_packets_functional_ai["address_extension"] != tx_packets_functional_ai["address_extension"]:
+            raise InconsistentArgumentsError("Addressing Extension parameter must be the same for incoming and "
+                                             "outgoing functionally addressed CAN packets.")
+        if len({(rx_packets_physical_ai["can_id"], rx_packets_physical_ai["address_extension"]),
+                (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["address_extension"]),
+                (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["address_extension"]),
+                (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["address_extension"])}) != 4:
+            raise InconsistentArgumentsError("Combination of CAN ID and Target Address for incoming and outgoing "
+                                             "CAN packets must be unique")
 
 
 class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
@@ -97,10 +129,8 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
         validate_raw_byte(address_extension)  # type: ignore
         if can_id is None:
             if None in (target_address, source_address):
-                raise InconsistentArgumentsError(f"Values of target_address and source_address must be provided,"
-                                                 f"if can_id value is None for Mixed 29-bit Addressing Format. "
-                                                 f"Actual values: "
-                                                 f"target_address={target_address}, source_address={source_address}")
+                raise InconsistentArgumentsError("Values of target_address and source_address must be provided,"
+                                                 "if can_id value is None for Mixed 29-bit Addressing Format.")
             validate_raw_byte(target_address)  # type: ignore
             validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = CanIdHandler.encode_mixed_addressed_29bit_can_id(
@@ -115,17 +145,50 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
                                        address_extension=address_extension)
         decoded_info = CanIdHandler.decode_mixed_addressed_29bit_can_id(can_id)
         if addressing_type != decoded_info[CanIdHandler.ADDRESSING_TYPE_NAME]:  # type: ignore
-            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Addressing Type."
-                                             f"Actual values: can_id={can_id}, addressing={addressing_type}")
+            raise InconsistentArgumentsError("Provided value of CAN ID is not compatible with Addressing Type.")
         if target_address not in (decoded_info[CanIdHandler.TARGET_ADDRESS_NAME], None):  # type: ignore
-            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Target Address."
-                                             f"Actual values: can_id={can_id}, target_address={target_address}")
+            raise InconsistentArgumentsError("Provided value of CAN ID is not compatible with Target Address.")
         if source_address not in (decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME], None):  # type: ignore
-            raise InconsistentArgumentsError(f"Provided value of CAN ID is not compatible with Source Address."
-                                             f"Actual values: can_id={can_id}, source_address={source_address}")
+            raise InconsistentArgumentsError("Provided value of CAN ID is not compatible with Source Address.")
         return PacketAIParamsAlias(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                    addressing_type=addressing_type,
                                    can_id=can_id,
                                    target_address=decoded_info[CanIdHandler.TARGET_ADDRESS_NAME],  # type: ignore
                                    source_address=decoded_info[CanIdHandler.SOURCE_ADDRESS_NAME],  # type: ignore
                                    address_extension=address_extension)
+
+    @staticmethod
+    def _validate_node_ai(rx_packets_physical_ai: PacketAIParamsAlias,
+                          tx_packets_physical_ai: PacketAIParamsAlias,
+                          rx_packets_functional_ai: PacketAIParamsAlias,
+                          tx_packets_functional_ai: PacketAIParamsAlias) -> None:
+        """
+        Validate Node Addressing Information parameters.
+
+        :param rx_packets_physical_ai: Addressing Information parameters of incoming physically addressed
+            CAN packets to validate.
+        :param tx_packets_physical_ai: Addressing Information parameters of outgoing physically addressed
+            CAN packets to validate.
+        :param rx_packets_functional_ai: Addressing Information parameters of incoming functionally addressed
+            CAN packets to validate.
+        :param tx_packets_functional_ai: Addressing Information parameters of outgoing functionally addressed
+            CAN packets to validate.
+
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        """
+        if rx_packets_physical_ai["address_extension"] != tx_packets_physical_ai["address_extension"]:
+            raise InconsistentArgumentsError("Addressing Extension parameter must be the same for incoming and "
+                                             "outgoing physically addressed CAN packets.")
+        if rx_packets_functional_ai["address_extension"] != tx_packets_functional_ai["address_extension"]:
+            raise InconsistentArgumentsError("Addressing Extension parameter must be the same for incoming and "
+                                             "outgoing functionally addressed CAN packets.")
+        if (rx_packets_physical_ai["target_address"] != tx_packets_physical_ai["source_address"]
+                or rx_packets_physical_ai["source_address"] != tx_packets_physical_ai["target_address"]):
+            raise InconsistentArgumentsError("Target Address and Source Address for incoming physically addressed "
+                                             "CAN packets must equal Source Address and Target Address for outgoing "
+                                             "physically addressed CAN packets.")
+        if (rx_packets_functional_ai["target_address"] != tx_packets_functional_ai["source_address"]
+                or rx_packets_functional_ai["source_address"] != tx_packets_functional_ai["target_address"]):
+            raise InconsistentArgumentsError("Target Address and Source Address for incoming functionally addressed "
+                                             "CAN packets must equal Source Address and Target Address for outgoing "
+                                             "functionally addressed CAN packets.")

@@ -1,15 +1,15 @@
 Welcome to UDS documentation!
 =============================
 .. toctree::
-    :hidden:
+  :hidden:
 
-    Home <self>
-    pages/installation.rst
-    pages/user_guide.rst
-    pages/examples.rst
-    autoapi/index.rst
-    pages/knowledge_base.rst
-    pages/contribution.rst
+  Home <self>
+  pages/installation.rst
+  pages/user_guide.rst
+  pages/examples.rst
+  autoapi/index.rst
+  pages/knowledge_base.rst
+  pages/contribution.rst
 
 
 Overview
@@ -22,10 +22,11 @@ and decode diagnostic communication.
 The architecture enables to use it with various communication buses (e.g. CAN, LIN).
 
 The most likely use cases of this package are:
- - communication with your vehicle (e.g. reading Diagnostic Trouble Codes)
- - monitoring and decoding UDS communication
- - performing tests against on-board ECU (server)
- - performing tests against OBD Tester (client)
+
+- communication with your vehicle (e.g. reading Diagnostic Trouble Codes)
+- monitoring and decoding UDS communication
+- performing tests against on-board ECU (server)
+- performing tests against OBD Tester (client)
 
 
 Implementation Status
@@ -39,32 +40,32 @@ Features
 ````````
 Current implementation status of package features:
 
-+----------------------------------------------+--------------------------------------------+
-|                    Feature                   |            Implementation Status           |
-+==============================================+============================================+
-| UDS Messages and Packets                     | Available since version `0.0.2             |
-|                                              | <https://pypi.org/project/py-uds/0.0.2/>`_ |
-+----------------------------------------------+--------------------------------------------+
-| UDS Packets Reception and Transmission       | Available since version `0.3.0             |
-|                                              | <https://pypi.org/project/py-uds/0.3.0/>`_ |
-+----------------------------------------------+--------------------------------------------+
-| UDS Messages Reception and Transmission      | Available since version `1.0.0             |
-|                                              | <https://pypi.org/project/py-uds/1.0.0/>`_ |
-+----------------------------------------------+--------------------------------------------+
-| Messages Segmentation                        | Available since version `0.2.0             |
-|                                              | <https://pypi.org/project/py-uds/0.2.0/>`_ |
-+----------------------------------------------+--------------------------------------------+
-| UDS Packets Desegmentation                   | Available since version `0.2.0             |
-|                                              | <https://pypi.org/project/py-uds/0.2.0/>`_ |
-+----------------------------------------------+--------------------------------------------+
-| Support for Services with multiple responses | Planned                                    |
-+----------------------------------------------+--------------------------------------------+
-| Client Simulation                            | Planned                                    |
-+----------------------------------------------+--------------------------------------------+
-| Server Simulation                            | Planned                                    |
-+----------------------------------------------+--------------------------------------------+
-| Support for Messages Databases               | Planned                                    |
-+----------------------------------------------+--------------------------------------------+
++-----------------------------------------+--------------------------------------------+
+|                 Feature                 |            Implementation Status           |
++=========================================+============================================+
+| UDS Messages and Packets                | Available since version `0.0.2             |
+|                                         | <https://pypi.org/project/py-uds/0.0.2/>`_ |
++-----------------------------------------+--------------------------------------------+
+| UDS Packets Reception and Transmission  | Available since version `0.3.0             |
+|                                         | <https://pypi.org/project/py-uds/0.3.0/>`_ |
++-----------------------------------------+--------------------------------------------+
+| UDS Messages Reception and Transmission | Available since version `1.0.0             |
+|                                         | <https://pypi.org/project/py-uds/1.0.0/>`_ |
++-----------------------------------------+--------------------------------------------+
+| Messages Segmentation                   | Available since version `0.2.0             |
+|                                         | <https://pypi.org/project/py-uds/0.2.0/>`_ |
++-----------------------------------------+--------------------------------------------+
+| UDS Packets Desegmentation              | Available since version `0.2.0             |
+|                                         | <https://pypi.org/project/py-uds/0.2.0/>`_ |
++-----------------------------------------+--------------------------------------------+
+| Client Simulation                       | Planned                                    |
++-----------------------------------------+--------------------------------------------+
+| Server Simulation                       | Planned                                    |
++-----------------------------------------+--------------------------------------------+
+| UDS Sniffer                             | Planned                                    |
++-----------------------------------------+--------------------------------------------+
+| Support for Messages Databases          | Planned                                    |
++-----------------------------------------+--------------------------------------------+
 
 
 Buses supported
@@ -100,4 +101,4 @@ Contact
 
 .. admonition:: Documentation generated
 
-    |today|
+  |today|

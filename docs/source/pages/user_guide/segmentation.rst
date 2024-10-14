@@ -34,7 +34,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
         # define Addressing Information for a CAN Node
         can_node_addressing_information = uds.can.CanAddressingInformation(
-            addressing_format=uds.can.CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+            addressing_format=uds.can.CanAddressingFormat.NORMAL_ADDRESSING,
             tx_physical={"can_id": 0x611},
             rx_physical={"can_id": 0x612},
             tx_functional={"can_id": 0x6FF},
@@ -48,7 +48,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
         # change CAN Segmenter configuration
         can_segmenter.addressing_information = uds.can.CanAddressingInformation(
-            uds.can.CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+            uds.can.CanAddressingFormat.NORMAL_ADDRESSING,
             tx_physical={"can_id": 0x612},
             rx_physical={"can_id": 0x611},
             tx_functional={"can_id": 0x6FE},

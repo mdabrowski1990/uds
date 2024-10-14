@@ -21,16 +21,6 @@ class TestCanAddressingInformation:
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
         self._patcher_validate_addressing_format = patch(f"{SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
         self.mock_validate_addressing_format = self._patcher_validate_addressing_format.start()
-        self._patcher_normal_11bit_ai_class = patch(f"{SCRIPT_LOCATION}.Normal11BitCanAddressingInformation")
-        self.mock_normal_11bit_ai_class = self._patcher_normal_11bit_ai_class.start()
-        self._patcher_normal_fixed_ai_class = patch(f"{SCRIPT_LOCATION}.NormalFixedCanAddressingInformation")
-        self.mock_normal_fixed_ai_class = self._patcher_normal_fixed_ai_class.start()
-        self._patcher_extended_ai_class = patch(f"{SCRIPT_LOCATION}.ExtendedCanAddressingInformation")
-        self.mock_extended_ai_class = self._patcher_extended_ai_class.start()
-        self._patcher_mixed_11bit_ai_class = patch(f"{SCRIPT_LOCATION}.Mixed11BitCanAddressingInformation")
-        self.mock_mixed_11bit_ai_class = self._patcher_mixed_11bit_ai_class.start()
-        self._patcher_mixed_29bit_ai_class = patch(f"{SCRIPT_LOCATION}.Mixed29BitCanAddressingInformation")
-        self.mock_mixed_29bit_ai_class = self._patcher_mixed_29bit_ai_class.start()
         self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
         self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
@@ -39,11 +29,6 @@ class TestCanAddressingInformation:
     def teardown_method(self):
         self._patcher_can_id_handler_class.stop()
         self._patcher_validate_addressing_format.stop()
-        self._patcher_normal_11bit_ai_class.stop()
-        self._patcher_normal_fixed_ai_class.stop()
-        self._patcher_extended_ai_class.stop()
-        self._patcher_mixed_11bit_ai_class.stop()
-        self._patcher_mixed_29bit_ai_class.stop()
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_raw_byte.stop()
 
@@ -156,7 +141,7 @@ class TestCanAddressingInformation:
         mock_validate_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                             ai_data_bytes=ai_data_bytes)
 
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_ADDRESSING,
                                                    CanAddressingFormat.NORMAL_FIXED_ADDRESSING])
     @pytest.mark.parametrize("ai_data_bytes", [[], (0xCF,)])
     @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.validate_ai_data_bytes")
@@ -190,7 +175,7 @@ class TestCanAddressingInformation:
 
     # encode_ai_data_bytes
 
-    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+    @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.NORMAL_ADDRESSING,
                                                    CanAddressingFormat.NORMAL_FIXED_ADDRESSING])
     @pytest.mark.parametrize("target_address, address_extension", [
         (None, None),
@@ -257,40 +242,71 @@ class TestCanAddressingInformationIntegration:
     """Integration tests for `CanAddressingInformation` class."""
 
     @pytest.mark.parametrize("input_params, expected_attributes", [
-        ({"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        # Normal
+        ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "rx_physical": {"can_id": 0x601},
           "tx_physical": {"can_id": 0x602},
           "rx_functional": {"can_id": 0x6FE},
           "tx_functional": {"can_id": 0x6FF}},
-         {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+         {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
                                      "can_id": 0x601,
                                      "target_address": None,
                                      "source_address": None,
                                      "address_extension": None},
-          "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
                                      "can_id": 0x602,
                                      "target_address": None,
                                      "source_address": None,
                                      "address_extension": None},
-          "rx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "rx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
                                        "addressing_type": AddressingType.FUNCTIONAL,
                                        "can_id": 0x6FE,
                                        "target_address": None,
                                        "source_address": None,
                                        "address_extension": None},
-          "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+          "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
                                        "addressing_type": AddressingType.FUNCTIONAL,
                                        "can_id": 0x6FF,
                                        "target_address": None,
                                        "source_address": None,
                                        "address_extension": None}}),
+        ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
+          "rx_physical": {"can_id": 0x1},
+          "tx_physical": {"can_id": 0x2},
+          "rx_functional": {"can_id": 0x1FFFFFFE},
+          "tx_functional": {"can_id": 0x1FFFFFFF}},
+         {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
+                                     "addressing_type": AddressingType.PHYSICAL,
+                                     "can_id": 0x1,
+                                     "target_address": None,
+                                     "source_address": None,
+                                     "address_extension": None},
+          "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
+                                     "addressing_type": AddressingType.PHYSICAL,
+                                     "can_id": 0x2,
+                                     "target_address": None,
+                                     "source_address": None,
+                                     "address_extension": None},
+          "rx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
+                                       "addressing_type": AddressingType.FUNCTIONAL,
+                                       "can_id": 0x1FFFFFFE,
+                                       "target_address": None,
+                                       "source_address": None,
+                                       "address_extension": None},
+          "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
+                                       "addressing_type": AddressingType.FUNCTIONAL,
+                                       "can_id": 0x1FFFFFFF,
+                                       "target_address": None,
+                                       "source_address": None,
+                                       "address_extension": None}}),
+        # Normal Fixed
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "rx_physical": {"can_id": 0x18DA0E2B},
           "tx_physical": {"target_address": 0x2B, "source_address": 0x0E},
           "rx_functional": {"can_id": 0x18DBFEDC, "target_address": 0xFE},
-          "tx_functional": {"can_id": 0x18DBFD92, "target_address": 0xFD, "source_address": 0x92}},
+          "tx_functional": {"can_id": 0x18DBDCFE, "target_address": 0xDC, "source_address": 0xFE}},
          {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
                                      "can_id": 0x18DA0E2B,
@@ -311,10 +327,40 @@ class TestCanAddressingInformationIntegration:
                                        "address_extension": None},
           "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
                                        "addressing_type": AddressingType.FUNCTIONAL,
-                                       "can_id": 0x18DBFD92,
-                                       "target_address": 0xFD,
-                                       "source_address": 0x92,
+                                       "can_id": 0x18DBDCFE,
+                                       "target_address": 0xDC,
+                                       "source_address": 0xFE,
                                        "address_extension": None}}),
+        ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+          "rx_physical": {"can_id": 0xDA00FF},
+          "tx_physical": {"can_id": 0xDAFF00},
+          "rx_functional": {"can_id": 0x1CDBFF00},
+          "tx_functional": {"can_id": 0x1CDB00FF, "target_address": 0x00, "source_address": 0xFF}},
+         {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                     "addressing_type": AddressingType.PHYSICAL,
+                                     "can_id": 0xDA00FF,
+                                     "target_address": 0x00,
+                                     "source_address": 0xFF,
+                                     "address_extension": None},
+          "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                     "addressing_type": AddressingType.PHYSICAL,
+                                     "can_id": 0xDAFF00,
+                                     "target_address": 0xFF,
+                                     "source_address": 0x00,
+                                     "address_extension": None},
+          "rx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                       "addressing_type": AddressingType.FUNCTIONAL,
+                                       "can_id": 0x1CDBFF00,
+                                       "target_address": 0xFF,
+                                       "source_address": 0x00,
+                                       "address_extension": None},
+          "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                                       "addressing_type": AddressingType.FUNCTIONAL,
+                                       "can_id": 0x1CDB00FF,
+                                       "target_address": 0x00,
+                                       "source_address": 0xFF,
+                                       "address_extension": None}}),
+        # Extended
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "rx_physical": {"can_id": 0x621, "target_address": 0x1F},
           "tx_physical": {"can_id": 0x621, "target_address": 0x91},
@@ -344,11 +390,12 @@ class TestCanAddressingInformationIntegration:
                                        "target_address": 0x83,
                                        "source_address": None,
                                        "address_extension": None}}),
+        # Mixed 11-bit
         ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
           "rx_physical": {"can_id": 0x641, "address_extension": 0x00},
-          "tx_physical": {"can_id": 0x642, "address_extension": 0xFF},
+          "tx_physical": {"can_id": 0x642, "address_extension": 0x00},
           "rx_functional": {"can_id": 0x6DE, "address_extension": 0xFE},
-          "tx_functional": {"can_id": 0x6DF, "address_extension": 0xFF}},
+          "tx_functional": {"can_id": 0x6DF, "address_extension": 0xFE}},
          {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
                                      "can_id": 0x641,
@@ -358,7 +405,7 @@ class TestCanAddressingInformationIntegration:
           "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
                                      "can_id": 0x642,
-                                     "address_extension": 0xFF,
+                                     "address_extension": 0x00,
                                      "target_address": None,
                                      "source_address": None},
           "rx_packets_functional_ai": {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
@@ -370,14 +417,15 @@ class TestCanAddressingInformationIntegration:
           "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                        "addressing_type": AddressingType.FUNCTIONAL,
                                        "can_id": 0x6DF,
-                                       "address_extension": 0xFF,
+                                       "address_extension": 0xFE,
                                        "target_address": None,
                                        "source_address": None}}),
+        # Mixed 29-bit
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "rx_physical": {"can_id": 0x18CE1234, "target_address": 0x12, "source_address": 0x34, "address_extension": 0x00},
-          "tx_physical": {"can_id": 0x18CEFF0F, "target_address": 0xFF, "address_extension": 0x5E},
-          "rx_functional": {"can_id": 0x18CDFF00, "address_extension": 0xFE},
-          "tx_functional": {"target_address": 0x09, "source_address": 0x23, "address_extension": 0xFF}},
+          "tx_physical": {"can_id": 0x18CE3412, "source_address": 0x12, "address_extension": 0x00},
+          "rx_functional": {"can_id": 0x18CDBD87, "target_address": 0xBD, "address_extension": 0xFF},
+          "tx_functional": {"target_address": 0x87, "source_address": 0xBD, "address_extension": 0xFF}},
          {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
                                      "can_id": 0x18CE1234,
@@ -386,22 +434,51 @@ class TestCanAddressingInformationIntegration:
                                      "address_extension": 0x00},
           "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                      "addressing_type": AddressingType.PHYSICAL,
-                                     "can_id": 0x18CEFF0F,
-                                     "target_address": 0xFF,
-                                     "source_address": 0x0F,
-                                     "address_extension": 0x5E},
+                                     "can_id": 0x18CE3412,
+                                     "target_address": 0x34,
+                                     "source_address": 0x12,
+                                     "address_extension": 0x00},
           "rx_packets_functional_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                        "addressing_type": AddressingType.FUNCTIONAL,
-                                       "can_id": 0x18CDFF00,
-                                       "target_address": 0xFF,
-                                       "source_address": 0x00,
-                                       "address_extension": 0xFE},
+                                       "can_id": 0x18CDBD87,
+                                       "target_address": 0xBD,
+                                       "source_address": 0x87,
+                                       "address_extension": 0xFF},
           "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
                                        "addressing_type": AddressingType.FUNCTIONAL,
-                                       "can_id": 0x18CD0923,
-                                       "target_address": 0x09,
-                                       "source_address": 0x23,
+                                       "can_id": 0x18CD87BD,
+                                       "target_address": 0x87,
+                                       "source_address": 0xBD,
                                        "address_extension": 0xFF}}),
+        ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+          "rx_physical": {"can_id": 0xCE00FF, "address_extension": 0x32},
+          "tx_physical": {"can_id": 0xCEFF00, "address_extension": 0x32},
+          "rx_functional": {"can_id": 0x1CCDFF00, "address_extension": 0xA1},
+          "tx_functional": {"can_id": 0x1CCD00FF, "address_extension": 0xA1}},
+         {"rx_packets_physical_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                     "addressing_type": AddressingType.PHYSICAL,
+                                     "can_id": 0xCE00FF,
+                                     "target_address": 0x00,
+                                     "source_address": 0xFF,
+                                     "address_extension": 0x32},
+          "tx_packets_physical_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                     "addressing_type": AddressingType.PHYSICAL,
+                                     "can_id": 0xCEFF00,
+                                     "target_address": 0xFF,
+                                     "source_address": 0x00,
+                                     "address_extension": 0x32},
+          "rx_packets_functional_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                       "addressing_type": AddressingType.FUNCTIONAL,
+                                       "can_id": 0x1CCDFF00,
+                                       "target_address": 0xFF,
+                                       "source_address": 0x00,
+                                       "address_extension": 0xA1},
+          "tx_packets_functional_ai": {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                                       "addressing_type": AddressingType.FUNCTIONAL,
+                                       "can_id": 0x1CCD00FF,
+                                       "target_address": 0x00,
+                                       "source_address": 0xFF,
+                                       "address_extension": 0xA1}}),
     ])
     def test_new(self, input_params, expected_attributes):
         ai = CanAddressingInformation(**input_params)

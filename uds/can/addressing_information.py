@@ -22,14 +22,14 @@ from .addressing_format import CanAddressingFormat
 from .extended_addressing_information import ExtendedCanAddressingInformation
 from .frame_fields import CanIdHandler
 from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
-from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
+from .normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
 
 
 class CanAddressingInformation:
     """CAN Entity (either server or client) Addressing Information."""
 
     ADDRESSING_INFORMATION_MAPPING: Dict[CanAddressingFormat, Type[AbstractCanAddressingInformation]] = {
-        CanAddressingFormat.NORMAL_11BIT_ADDRESSING: Normal11BitCanAddressingInformation,
+        CanAddressingFormat.NORMAL_ADDRESSING: NormalCanAddressingInformation,
         CanAddressingFormat.NORMAL_FIXED_ADDRESSING: NormalFixedCanAddressingInformation,
         CanAddressingFormat.EXTENDED_ADDRESSING: ExtendedCanAddressingInformation,
         CanAddressingFormat.MIXED_11BIT_ADDRESSING: Mixed11BitCanAddressingInformation,
@@ -170,7 +170,7 @@ class CanAddressingInformation:
         """
         cls.validate_ai_data_bytes(addressing_format=addressing_format,
                                    ai_data_bytes=ai_data_bytes)
-        if addressing_format in {CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        if addressing_format in {CanAddressingFormat.NORMAL_ADDRESSING,
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING}:
             return cls.DataBytesAIParamsAlias()
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
@@ -199,7 +199,7 @@ class CanAddressingInformation:
         :return: List of data bytes that carry Addressing Information in CAN frame Data field.
         """
         CanAddressingFormat.validate_member(addressing_format)
-        if addressing_format in (CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        if addressing_format in (CanAddressingFormat.NORMAL_ADDRESSING,
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
             return []
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
