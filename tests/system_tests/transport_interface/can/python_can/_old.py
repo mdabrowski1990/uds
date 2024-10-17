@@ -1,3 +1,5 @@
+# TODO: will be removed later, but plenty of copy paste to be done from here
+
 import asyncio
 from datetime import datetime
 from threading import Timer
@@ -26,7 +28,6 @@ class TestPythonCanKvaser:
     TASK_TIMING_TOLERANCE = 30.  # ms
     DELAY_AFTER_RECEIVING_FRAME = 10.  # ms
     DELAY_AFTER_RECEIVING_MESSAGE = 1000.  # ms
-    DELAY_BETWEEN_CONSECUTIVE_FRAMES = 50.  # ms
 
     def setup_class(self):
         self.can_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
@@ -137,10 +138,10 @@ class TestPythonCanKvaser:
         if packet_type == CanPacketType.FLOW_CONTROL:
             assert can_transport_interface.n_as_measured is None
             # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
-            # assert 0 < can_transport_interface.n_ar_measured
+            # assert 0 < can.n_ar_measured
         else:
             # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
-            # assert 0 < can_transport_interface.n_as_measured
+            # assert 0 < can.n_as_measured
             assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
@@ -477,10 +478,10 @@ class TestPythonCanKvaser:
         if packet_type == CanPacketType.FLOW_CONTROL:
             assert can_transport_interface.n_as_measured is None
             # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
-            # assert 0 < can_transport_interface.n_ar_measured
+            # assert 0 < can.n_ar_measured
         else:
             # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
-            # assert 0 < can_transport_interface.n_as_measured
+            # assert 0 < can.n_as_measured
             assert can_transport_interface.n_ar_measured is None
         # performance checks
         # TODO: https://github.com/mdabrowski1990/uds/issues/228 - uncomment when resolved
@@ -808,7 +809,7 @@ class TestPythonCanKvaser:
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
         # assert (send_after - self.TASK_TIMING_TOLERANCE
-        #         <= can_transport_interface.n_bs_measured[0]
+        #         <= can.n_bs_measured[0]
         #         <= send_after + self.TASK_TIMING_TOLERANCE)
 
     @pytest.mark.parametrize("message", [
@@ -946,7 +947,7 @@ class TestPythonCanKvaser:
         # assert datetime_before_send < message_record.transmission_start
         # assert message_record.transmission_end < datetime_after_send
         # assert (send_after - self.TASK_TIMING_TOLERANCE
-        #         <= can_transport_interface.n_bs_measured[0]
+        #         <= can.n_bs_measured[0]
         #         <= send_after + self.TASK_TIMING_TOLERANCE)
 
     @pytest.mark.parametrize("message", [
