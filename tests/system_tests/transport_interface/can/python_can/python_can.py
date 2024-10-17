@@ -1,17 +1,12 @@
-from abc import abstractmethod
-from typing import Optional
-
-
-from tests.system_tests.transport_interface.can.common import AbstractCanTests
-
-from uds.utilities import TimeMillisecondsAlias
-
 import asyncio
+from abc import abstractmethod
 from datetime import datetime
 from threading import Timer
 from time import sleep, time
+from typing import Optional
 
 import pytest
+from tests.system_tests.transport_interface.can.common import AbstractCanTests
 
 from can import Bus, Message
 from uds.can import CanAddressingFormat, CanAddressingInformation, CanFlowStatus, DefaultFlowControlParametersGenerator
@@ -20,6 +15,7 @@ from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
+from uds.utilities import TimeMillisecondsAlias
 
 
 class AbstractPythonCanTests(AbstractCanTests):

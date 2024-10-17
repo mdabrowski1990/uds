@@ -1,5 +1,12 @@
-from .python_can import AbstractPythonCanTests, AbstractCanPacketTests, AbstractMessageTests, AbstractUseCaseTests, AbstractErrorGuessingTests
 from can import Bus
+
+from .python_can import (
+    AbstractCanPacketTests,
+    AbstractErrorGuessingTests,
+    AbstractMessageTests,
+    AbstractPythonCanTests,
+    AbstractUseCaseTests,
+)
 
 
 class KvaserConfig(AbstractPythonCanTests):
