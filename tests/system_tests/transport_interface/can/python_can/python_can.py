@@ -1,5 +1,5 @@
 import asyncio
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from datetime import datetime
 from threading import Timer
 from time import sleep, time
@@ -129,7 +129,7 @@ class AbstractPythonCanTests(AbstractCanTests):
         return await can_transport_interface.async_send_message(message=message)
 
 
-class AbstractCanPacketTests(AbstractPythonCanTests):
+class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
     """Common implementation of system tests related to sending and receiving CAN packets."""
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_information, packet_type_specific_kwargs", [
@@ -833,7 +833,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests):
         sleep(self.DELAY_AFTER_RECEIVING_FRAME / 1000.)
 
 
-class AbstractMessageTests(AbstractPythonCanTests):
+class AbstractMessageTests(AbstractPythonCanTests, ABC):
     """Abstract class for tests related to sending a UDS message."""
 
     def test_send_message__sf(self):
@@ -880,7 +880,7 @@ class AbstractMessageTests(AbstractPythonCanTests):
         """Check for a timeout during asynchronous receiving of a UDS message (carried by First Frame and Consecutive Frame packets)."""
 
 
-class AbstractUseCaseTests(AbstractCanPacketTests):
+class AbstractUseCaseTests(AbstractCanPacketTests, ABC):
 
     def test_send_packet_on_one_receive_on_other_bus(self):
         """Check for sending and receiving CAN packet using two Transport Interfaces."""
@@ -895,7 +895,7 @@ class AbstractUseCaseTests(AbstractCanPacketTests):
         """Check for asynchronous sending and receiving UDS message using two Transport Interfaces."""
 
 
-class AbstractErrorGuessingTests(AbstractPythonCanTests):
+class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
 
     def test_timeout_then_send_packet(self):
         """Check for sending a CAN packet after a timeout exception during receiving."""
