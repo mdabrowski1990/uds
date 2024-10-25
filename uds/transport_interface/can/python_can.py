@@ -664,7 +664,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [self.send_packet(packets_to_send.pop(0))]
         while packets_to_send:
-            record = self.receive_packet(timeout=self.N_BS_TIMEOUT)
+            record = self.receive_packet(timeout=self.n_bs_timeout)
             if record.packet_type == CanPacketType.FLOW_CONTROL:
                 packet_records.append(record)
                 if record.flow_status == CanFlowStatus.ContinueToSend:
@@ -706,7 +706,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
         while packets_to_send:
-            record = await self.async_receive_packet(timeout=self.N_BS_TIMEOUT, loop=loop)
+            record = await self.async_receive_packet(timeout=self.n_bs_timeout, loop=loop)
             if record.packet_type == CanPacketType.FLOW_CONTROL:
                 packet_records.append(record)
                 if record.flow_status == CanFlowStatus.ContinueToSend:
