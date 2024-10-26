@@ -108,3 +108,11 @@ class TestAbstractCanAddressingInformation:
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.FUNCTIONAL, **value)
         assert self.mock_addressing_information._AbstractCanAddressingInformation__tx_packets_functional_ai \
                == self.mock_addressing_information.validate_packet_ai.return_value
+
+    # get_other_end
+
+    @patch(f"{'.'.join(SCRIPT_LOCATION.split('.')[:-1])}.addressing_information.CanAddressingInformation")
+    def test_get_other_end(self, mock_can_addressing_information_class):
+        assert (AbstractCanAddressingInformation.get_other_end(self.mock_addressing_information)
+                == mock_can_addressing_information_class.return_value)
+        mock_can_addressing_information_class.assert_called_once()

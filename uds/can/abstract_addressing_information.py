@@ -137,6 +137,31 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         self.__tx_packets_functional_ai: PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
 
+    def get_other_end(self) -> "AbstractCanAddressingInformation":
+        """
+        Get CAN Addressing Information of CAN Entity on the other end.
+
+        :return: CAN Addressing Information of a CAN node that this object communicates with.
+        """
+        from .addressing_information import CanAddressingInformation
+        rx_physical = self.tx_packets_physical_ai
+        rx_physical.pop("addressing_format")
+        rx_physical.pop("addressing_type")
+        tx_physical = self.rx_packets_physical_ai
+        tx_physical.pop("addressing_format")
+        tx_physical.pop("addressing_type")
+        rx_functional = self.tx_packets_functional_ai
+        rx_functional.pop("addressing_format")
+        rx_functional.pop("addressing_type")
+        tx_functional = self.rx_packets_functional_ai
+        tx_functional.pop("addressing_format")
+        tx_functional.pop("addressing_type")
+        return CanAddressingInformation(addressing_format=self.addressing_format,
+                                        rx_physical=rx_physical,
+                                        tx_physical=tx_physical,
+                                        rx_functional=rx_functional,
+                                        tx_functional=tx_functional)
+
     @classmethod
     @abstractmethod
     def validate_packet_ai(cls,

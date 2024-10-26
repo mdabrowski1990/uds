@@ -480,7 +480,12 @@ class TestCanAddressingInformationIntegration:
                                        "source_address": 0xFF,
                                        "address_extension": 0xA1}}),
     ])
-    def test_new(self, input_params, expected_attributes):
+    def test_new_and_other_end(self, input_params, expected_attributes):
         ai = CanAddressingInformation(**input_params)
         for attr_name, attr_value in expected_attributes.items():
             assert getattr(ai, attr_name) == attr_value
+        ai_other_end = ai.get_other_end()
+        assert ai.rx_packets_physical_ai == ai_other_end.tx_packets_physical_ai
+        assert ai.tx_packets_physical_ai == ai_other_end.rx_packets_physical_ai
+        assert ai.rx_packets_functional_ai == ai_other_end.tx_packets_functional_ai
+        assert ai.tx_packets_functional_ai == ai_other_end.rx_packets_functional_ai
