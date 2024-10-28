@@ -21,27 +21,27 @@ If you want to become a contributor, please read `CONTRIBUTING.md`_ file.
 
 Why another UDS package?
 ------------------------
-There are a few already existing python packages to handle UDS protocol,
-so you might wonder why would you consider using this one?
+There are a few already existing python packages to handle UDS protocol, so you might wonder why would you consider
+using this one?
 
 This package is meant to support **multiple buses** (including CAN, LIN, Ethernet, K-Line, FlexRay) and **multiple
 bus managers** (e.g. `python-can`_).
-Additionally, it handles both communication nodes (client and server),
-decoding monitored UDS communication,
+Additionally, it handles both communication nodes (client and server), decoding monitored UDS communication,
 and contains detailed configuration to fully control all timing and transmission parameters.
 
 Thanks to all these features, this package can have multiple use-cases, including:
 
-- simple send-receive messages to/from any network
+- simple send-receive packets/messages to/from any network
 - comprehensive node simulations
-- testing of UDS protocol communication implementation
-- sniffing UDS communication
+- testing of UDS protocol communication implementation - either on client (diagnostic tester / ECU) or server (ECU) side
+- sniffing (and decoding) UDS communication
 
-Unfortunately, all previously mentioned plans make the project a huge effort and at the time of writing,
-the implementation process of these features is still ongoing (and probably the development would slowly progress over
-a couple more years unless more people get engaged in the project and/or more sponsors are found).
-On the other hand, the architecture to support all these features is already designed and some of these features
-are already implemented with others defined or planned.
+Unfortunately, all previously mentioned plans make the project quite huge.
+At the time of writing, the implementation process of these features is still ongoing (and probably the development
+would slowly progress over at least a few more years, unless more people get engaged in the project and/or
+more sponsors are found).
+On the other hand, the architecture to support all these features is already designed and some of them are already
+implemented with others defined or planned.
 
 To check the current implementation status, visit:
 
