@@ -2,8 +2,8 @@ import asyncio
 from abc import ABC, abstractmethod
 from datetime import datetime
 from threading import Timer
-from time import sleep, time
-from typing import Optional, List
+from time import sleep
+from typing import List, Optional
 
 import pytest
 from tests.system_tests.transport_interface.can.common import AbstractCanTests
@@ -12,7 +12,6 @@ from can import Bus, Message
 from uds.can import CanAddressingFormat, CanAddressingInformation, CanFlowStatus, DefaultFlowControlParametersGenerator
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
-from uds.segmentation import CanSegmenter
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.transport_interface import PyCanTransportInterface
 from uds.utilities import TimeMillisecondsAlias
@@ -28,10 +27,6 @@ class AbstractPythonCanTests(AbstractCanTests):
             CAN cables connection
     """
 
-    DELAY_AFTER_RECEIVING_FRAME = 10.  # ms
-    DELAY_AFTER_RECEIVING_MESSAGE = 1000.  # ms
-
-    # TODO: https://github.com/mdabrowski1990/uds/issues/228 - set MAKE_TIMING_CHECKS to true when resolved
     MAKE_TIMING_CHECKS: bool = True
 
     can_interface_1: Bus
@@ -55,6 +50,7 @@ class AbstractPythonCanTests(AbstractCanTests):
         self._timers: List[Timer] = []
 
     def teardown_method(self):
+        """Finish all tasks that were open during test."""
         for _timer in self._timers:
             if not _timer.finished.is_set():
                 sleep(0.001)
@@ -835,7 +831,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
 
 
 class AbstractMessageTests(AbstractPythonCanTests, ABC):
-    """Abstract class for tests related to sending a UDS message."""
+    """Common implementation of system tests related to sending and receiving UDS messages."""
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
@@ -1583,6 +1579,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
 
 
 class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
+    """Common implementation of system tests wih typical use case scenarios."""
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_information, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -1931,6 +1928,7 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
 
 
 class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
+    """Common implementation of guessing errors system tests."""
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_information, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,

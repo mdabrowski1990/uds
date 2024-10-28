@@ -1,6 +1,6 @@
 from pytest import fixture
 
-from uds.can import CanAddressingFormat, CanAddressingInformation, AbstractCanAddressingInformation
+from uds.can import AbstractCanAddressingInformation, CanAddressingFormat, CanAddressingInformation
 from uds.message import UdsMessage
 from uds.transmission_attributes import AddressingType
 
@@ -47,14 +47,3 @@ def example_addressing_information_2nd_node(example_addressing_information) -> A
         these two CAN nodes can communicate with each other over physical and functional addressing.
     """
     return example_addressing_information.get_other_end()
-
-
-@fixture(params=[
-    UdsMessage(payload=[0x10, 0x03], addressing_type=AddressingType.PHYSICAL),
-    UdsMessage(payload=[0x62, *range(194)], addressing_type=AddressingType.PHYSICAL),
-    UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
-    UdsMessage(payload=[0x22, 0xF1, 0x86], addressing_type=AddressingType.FUNCTIONAL),
-])
-def example_tx_uds_message(request):
-    """Example UDS message."""
-    return request.param

@@ -17,13 +17,3 @@ class AbstractCanTests(ABC):
     @abstractmethod
     def teardown_class(self):
         """Safely close CAN bus connections."""
-
-    @property
-    @abstractmethod
-    def DELAY_AFTER_RECEIVING_FRAME(self) -> TimeMillisecondsAlias:
-        ...
-
-    @property
-    @abstractmethod
-    def DELAY_AFTER_RECEIVING_MESSAGE(self) -> TimeMillisecondsAlias:
-        ...
