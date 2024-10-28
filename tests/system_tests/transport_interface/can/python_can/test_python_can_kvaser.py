@@ -20,14 +20,22 @@ class KvaserConfig(AbstractPythonCanTests):
 class TestKvaserCanPacket(AbstractCanPacketTests, KvaserConfig):
     """CAN packets related system tests for Python CAN Transport Interface."""
 
+    MAKE_TIMING_CHECKS: bool = False
+
 
 class TestKvaserMessage(AbstractMessageTests, KvaserConfig):
     """UDS message related system tests for Python CAN Transport Interface."""
+
+    MAKE_TIMING_CHECKS: bool = False
 
 
 class TestKvaserUseCase(AbstractUseCaseTests, KvaserConfig):
     """Use case based system tests for Python CAN Transport Interface."""
 
+    MAKE_TIMING_CHECKS: bool = True
+
 
 class TestKvaserErrorGuessing(AbstractErrorGuessingTests, KvaserConfig):
     """Error guessing system tests for Python CAN Transport Interface."""
+
+    MAKE_TIMING_CHECKS: bool = False
