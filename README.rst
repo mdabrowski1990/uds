@@ -21,25 +21,27 @@ If you want to become a contributor, please read `CONTRIBUTING.md`_ file.
 
 Why another UDS package?
 ------------------------
-There are a few already existing python packages to handle UDS protocol,
-so you might wonder why would you consider using this one?
+There are a few already existing python packages to handle UDS protocol, so you might wonder why would you consider
+using this one?
 
 This package is meant to support **multiple buses** (including CAN, LIN, Ethernet, K-Line, FlexRay) and **multiple
 bus managers** (e.g. `python-can`_).
-Additionally, it handles both communication nodes (client and server), and contains detailed configuration to fully
-control all timing and transmission parameters.
+Additionally, it handles both communication nodes (client and server), decoding monitored UDS communication,
+and contains detailed configuration to fully control all timing and transmission parameters.
 
 Thanks to all these features, this package can have multiple use-cases, including:
 
-- simple send-receive messages to/from any network
+- simple send-receive packets/messages to/from any network
 - comprehensive node simulations
-- testing of UDS protocol communication implementation
+- testing of UDS protocol communication implementation - either on client (diagnostic tester / ECU) or server (ECU) side
+- sniffing (and decoding) UDS communication
 
-Unfortunately, all previously mentioned plans make the project a huge effort and at the time of writing,
-the implementation process of these features is still ongoing (and probably the status will stay the same for at least
-a couple more years).
-On the other hand, the architecture to support all these features is already designed and some of the features
-are already implemented with others defined or planned.
+Unfortunately, all previously mentioned plans make the project quite huge.
+At the time of writing, the implementation process of these features is still ongoing (and probably the development
+would slowly progress over at least a few more years, unless more people get engaged in the project and/or
+more sponsors are found).
+On the other hand, the architecture to support all these features is already designed and some of them are already
+implemented with others defined or planned.
 
 To check the current implementation status, visit:
 
@@ -55,13 +57,28 @@ python-udsoncan
 Link: https://github.com/pylessard/python-udsoncan
 
 - pros:
-    - comprehensive documentation
-    - handlers for multiple diagnostic services is implemented
+
+  - comprehensive documentation -
+    https://udsoncan.readthedocs.io/en/latest/index.html
+  - maintained with active community - https://udsoncan.readthedocs.io/en/latest/udsoncan/questions_answers.html
+  - various connection types are supported -
+    https://udsoncan.readthedocs.io/en/latest/udsoncan/connection.html#available-connections
+  - CAN bus fully supported with possibility to extension for other buses (requires custom code)
+  - possibility to configure all transmission parameters for CAN using can-isotp package -
+    https://can-isotp.readthedocs.io/en/latest/isotp/implementation.html#
+  - handlers for multiple diagnostic services are implemented -
+    https://udsoncan.readthedocs.io/en/latest/udsoncan/services.html
+  - positive and negatives scenarios are handled - https://udsoncan.readthedocs.io/en/latest/udsoncan/exceptions.html
+  - control over CAN Network parameters (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) via can-isotp package -
+    https://can-isotp.readthedocs.io/en/latest/isotp/socket.html
+    https://can-isotp.readthedocs.io/en/latest/isotp/implementation.html
+  - possibility to inject some errors on Transport/Network layer -
+    https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#overriding-the-output
+
 - cons:
-    - only positive use case scenarios (where communication is in line with UDS standard) are supported
-    - only CAN bus is supported
-    - only Client side communication can be handled
-    - limited communication parameters configuration
+
+  - no support for full-duplex communication (sending and receiving at the same time)
+  - only Client side communication is implemented - https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#
 
 
 python-uds
@@ -69,12 +86,22 @@ python-uds
 Link: https://github.com/richClubb/python-uds
 
 - pros:
-    - CAN and LIN buses are supported
+
+  - CAN and LIN buses are supported
+
 - cons:
-    - modest documentation
-    - only a few communication interfaces are supported
-    - only Client side communication can be handled
-    - limited communication parameters configuration
+
+  - very modest documentation - https://python-uds.readthedocs.io/en/latest/
+  - is not maintained with the last release in March 2019 - https://pypi.org/project/python-uds/
+  - only a few communication interfaces (I have only found examples with python-can) are supported -
+    https://python-uds.readthedocs.io/en/latest/interface.html
+  - no support for full-duplex communication (sending and receiving at the same time)
+  - only Client side communication is implemented
+  - limited communication parameters configuration - https://python-uds.readthedocs.io/en/latest/configuration.html
+  - no option for injecting errors on Transport/Network layer, e.g.
+
+    - Overflow / Wait value of Flow Status (parameter of Flow Control packet)
+    - CAN packets in wrong order (e.g. incorrect Sequence Numbers order in Consecutive Frames)
 
 
 Contact
