@@ -69,16 +69,21 @@ Link: https://github.com/pylessard/python-udsoncan
   - handlers for multiple diagnostic services are implemented -
     https://udsoncan.readthedocs.io/en/latest/udsoncan/services.html
   - positive and negatives scenarios are handled - https://udsoncan.readthedocs.io/en/latest/udsoncan/exceptions.html
+  - control over CAN Network parameters (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) via can-isotp package -
+    https://can-isotp.readthedocs.io/en/latest/isotp/socket.html
+    https://can-isotp.readthedocs.io/en/latest/isotp/implementation.html
+  - feature for simulation of some negative scenarios -
+    https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#overriding-the-output
 
 - cons:
 
-  - does not support simulating negatives scenarios on Transport/Network layer, e.g.
+  - no direct implementation for simulating negative scenarios on Transport/Network layer, e.g.
 
-    - cannot force Overflow / Wait value of Flow Status (parameter of Flow Control packet)
-    - cannot send CAN packets in wrong order (e.g. incorrect Sequence Numbers order in Consecutive Frames)
+    - Overflow / Wait value of Flow Status (parameter of Flow Control packet)
+    - CAN packets in wrong order (e.g. incorrect Sequence Numbers order in Consecutive Frames)
 
   - only Client side communication is implemented - https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#
-  - no control or measurement of CAN timing parameters (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr)
+  - no support for full-duplex communication (sending and receiving at the same time)
 
 
 python-uds
@@ -92,11 +97,12 @@ Link: https://github.com/richClubb/python-uds
 - cons:
 
   - very modest documentation - https://python-uds.readthedocs.io/en/latest/
-  - is not maintained with last release in March 2019 - https://pypi.org/project/python-uds/
+  - is not maintained with the last release in March 2019 - https://pypi.org/project/python-uds/
   - only a few communication interfaces (I have only found examples with python-can) are supported -
     https://python-uds.readthedocs.io/en/latest/interface.html
   - only Client side communication is implemented
   - limited communication parameters configuration - https://python-uds.readthedocs.io/en/latest/configuration.html
+  - no support for full-duplex communication (sending and receiving at the same time)
 
 
 Contact
