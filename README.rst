@@ -72,18 +72,13 @@ Link: https://github.com/pylessard/python-udsoncan
   - control over CAN Network parameters (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) via can-isotp package -
     https://can-isotp.readthedocs.io/en/latest/isotp/socket.html
     https://can-isotp.readthedocs.io/en/latest/isotp/implementation.html
-  - feature for simulation of some negative scenarios -
+  - possibility to inject errors on Transport/Network layer -
     https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#overriding-the-output
 
 - cons:
 
-  - no direct implementation for simulating negative scenarios on Transport/Network layer, e.g.
-
-    - Overflow / Wait value of Flow Status (parameter of Flow Control packet)
-    - CAN packets in wrong order (e.g. incorrect Sequence Numbers order in Consecutive Frames)
-
-  - only Client side communication is implemented - https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#
   - no support for full-duplex communication (sending and receiving at the same time)
+  - only Client side communication is implemented - https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#
 
 
 python-uds
@@ -100,9 +95,13 @@ Link: https://github.com/richClubb/python-uds
   - is not maintained with the last release in March 2019 - https://pypi.org/project/python-uds/
   - only a few communication interfaces (I have only found examples with python-can) are supported -
     https://python-uds.readthedocs.io/en/latest/interface.html
+  - no support for full-duplex communication (sending and receiving at the same time)
   - only Client side communication is implemented
   - limited communication parameters configuration - https://python-uds.readthedocs.io/en/latest/configuration.html
-  - no support for full-duplex communication (sending and receiving at the same time)
+  - no option for injecting errors on Transport/Network layer, e.g.
+
+    - Overflow / Wait value of Flow Status (parameter of Flow Control packet)
+    - CAN packets in wrong order (e.g. incorrect Sequence Numbers order in Consecutive Frames)
 
 
 Contact
