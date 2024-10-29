@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock, patch
+from mock import MagicMock, Mock, patch
 
 from uds.can.abstract_addressing_information import AbstractCanAddressingInformation, AddressingType
 
@@ -15,7 +15,11 @@ class TestAbstractCanAddressingInformation:
                                                 ADDRESSING_TYPE_NAME="addressing_type",
                                                 TARGET_ADDRESS_NAME="target_address",
                                                 SOURCE_ADDRESS_NAME="source_address",
-                                                ADDRESS_EXTENSION_NAME="address_extension")
+                                                ADDRESS_EXTENSION_NAME="address_extension",
+                                                tx_packets_physical_ai=MagicMock(),
+                                                rx_packets_physical_ai=MagicMock(),
+                                                tx_packets_functional_ai=MagicMock(),
+                                                rx_packets_functional_ai=MagicMock())
         # patching
         self._patcher_deepcopy = patch(f"{SCRIPT_LOCATION}.deepcopy")
         self.mock_deepcopy = self._patcher_deepcopy.start()
@@ -108,3 +112,10 @@ class TestAbstractCanAddressingInformation:
         self.mock_addressing_information.validate_packet_ai(addressing_type=AddressingType.FUNCTIONAL, **value)
         assert self.mock_addressing_information._AbstractCanAddressingInformation__tx_packets_functional_ai \
                == self.mock_addressing_information.validate_packet_ai.return_value
+
+    # get_other_end
+
+    def test_get_other_end(self):
+        assert (AbstractCanAddressingInformation.get_other_end(self.mock_addressing_information)
+                == self.mock_deepcopy.return_value)
+        self.mock_deepcopy.assert_called_once_with(self.mock_addressing_information)

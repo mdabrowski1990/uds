@@ -46,9 +46,9 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
 
         can_id: int
-        target_address: int
-        source_address: int
-        address_extension: int
+        target_address: Optional[int]
+        source_address: Optional[int]
+        address_extension: Optional[int]
 
     def __init__(self,
                  rx_physical: InputAIParamsAlias,
@@ -136,6 +136,39 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         """
         self.__tx_packets_functional_ai: PacketAIParamsAlias \
             = self.validate_packet_ai(**{self.ADDRESSING_TYPE_NAME: AddressingType.FUNCTIONAL}, **value)
+
+    def get_other_end(self) -> "AbstractCanAddressingInformation":
+        """
+        Get CAN Addressing Information of CAN Entity on the other end.
+
+        :return: CAN Addressing Information of a CAN node that this object communicates with.
+        """
+        other = deepcopy(self)
+        rx_physical = self.InputAIParamsAlias(
+            can_id=self.tx_packets_physical_ai["can_id"],
+            source_address=self.tx_packets_physical_ai["source_address"],
+            target_address=self.tx_packets_physical_ai["target_address"],
+            address_extension=self.tx_packets_physical_ai["address_extension"])
+        tx_physical = self.InputAIParamsAlias(
+            can_id=self.rx_packets_physical_ai["can_id"],
+            source_address=self.rx_packets_physical_ai["source_address"],
+            target_address=self.rx_packets_physical_ai["target_address"],
+            address_extension=self.rx_packets_physical_ai["address_extension"])
+        rx_functional = self.InputAIParamsAlias(
+            can_id=self.tx_packets_functional_ai["can_id"],
+            source_address=self.tx_packets_functional_ai["source_address"],
+            target_address=self.tx_packets_functional_ai["target_address"],
+            address_extension=self.tx_packets_functional_ai["address_extension"])
+        tx_functional = self.InputAIParamsAlias(
+            can_id=self.rx_packets_functional_ai["can_id"],
+            source_address=self.rx_packets_functional_ai["source_address"],
+            target_address=self.rx_packets_functional_ai["target_address"],
+            address_extension=self.rx_packets_functional_ai["address_extension"])
+        other.rx_packets_physical_ai = rx_physical  # type: ignore
+        other.tx_packets_physical_ai = tx_physical  # type: ignore
+        other.rx_packets_functional_ai = rx_functional  # type: ignore
+        other.tx_packets_functional_ai = tx_functional  # type: ignore
+        return other
 
     @classmethod
     @abstractmethod

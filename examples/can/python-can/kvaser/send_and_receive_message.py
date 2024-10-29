@@ -21,12 +21,7 @@ def main():
         rx_physical={"can_id": 0x612},
         tx_functional={"can_id": 0x6FF},
         rx_functional={"can_id": 0x6FE})
-    ai_send = CanAddressingInformation(
-        addressing_format=ai_receive.addressing_format,
-        tx_physical={"can_id": 0x612},
-        rx_physical={"can_id": 0x611},
-        tx_functional={"can_id": 0x6FE},
-        rx_functional={"can_id": 0x6FF})
+    ai_send = ai_receive.get_other_end()
 
     # create Transport Interface objects for UDS communication
     can_ti_1 = PyCanTransportInterface(can_bus_manager=kvaser_interface_1,
