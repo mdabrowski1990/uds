@@ -43,14 +43,24 @@ class CanIdHandler:
     MAX_EXTENDED_VALUE: int = (1 << 29) - 1
     """Maximum value of Extended (29-bit) CAN ID."""
 
-    NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET: int = 0x18DA0000
-    """Minimum value of physically addressed CAN ID in Normal Fixed Addressing format."""
-    NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18DB0000
-    """Minimum value of functionally addressed CAN ID in Normal Fixed Addressing format."""
-    MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET: int = 0x18CE0000
-    """Minimum value of physically addressed CAN ID in Mixed 29-bit Addressing format."""
-    MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET: int = 0x18CD0000
-    """Minimum value of functionally addressed CAN ID in Mixed 29-bit Addressing format."""
+    ADDRESSING_MASK: int = 0x3ff0000
+    """CAN ID mask for bits enforced by SAE J1939 (Normal Fixed of Mixed 29bit addressing formats)."""
+    NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE: int = 0xDA0000
+    """Masked value of physically addressed CAN ID in Normal Fixed Addressing format."""
+    NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE: int = 0xDB0000
+    """Masked value of functionally addressed CAN ID in Normal Fixed Addressing format."""
+    MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE: int = 0xCE0000
+    """Masked value of physically addressed CAN ID in Mixed 29-bit Addressing format."""
+    MIXED_29BIT_FUNCTIONAL_ADDRESSING_MASKED_VALUE: int = 0xCD0000
+    """Masked value of functionally addressed CAN ID in Mixed 29-bit Addressing format."""
+    PRIORITY_BIT_OFFSET: int = 26
+    """Bit offset of Priority parameter defined by SAE J1939."""
+    DEFAULT_PRIORITY_VALUE: int = 0b110
+    """Default value of Priority parameter defined by SAE J1939."""
+    MIN_PRIORITY_VALUE: int = 0b000
+    """Minimal value of Priority parameter defined by SAE J1939."""
+    MAX_PRIORITY_VALUE: int = 0b111
+    """Maximal value of Priority parameter defined by SAE J1939."""
 
     ADDRESSING_TYPE_NAME: str = "addressing_type"
     """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
@@ -75,7 +85,7 @@ class CanIdHandler:
             information are system specific.
 
             For example, Addressing Type (even though it always depends on CAN ID value) will not be decoded when
-            either Normal 11bit, Extended or Mixed 11bit addressing format is used as the Addressing Type (in such case)
+            either Normal, Extended or Mixed 11bit addressing format is used as the Addressing Type (in such case)
             depends on system specific behaviour.
 
         :param addressing_format: Addressing format used.
@@ -92,13 +102,13 @@ class CanIdHandler:
             return cls.decode_normal_fixed_addressed_can_id(can_id)
         if addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
             return cls.decode_mixed_addressed_29bit_can_id(can_id)
-        if addressing_format in (CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        if addressing_format in (CanAddressingFormat.NORMAL_ADDRESSING,
                                  CanAddressingFormat.EXTENDED_ADDRESSING,
                                  CanAddressingFormat.MIXED_11BIT_ADDRESSING):
             return cls.CanIdAIAlias(addressing_type=None,
                                     target_address=None,
                                     source_address=None)  # no addressing information can be decoded
-        raise NotImplementedError(f"Unknown addressing format value was provided: {addressing_format}")
+        raise NotImplementedError("Unhandled addressing type value was provided.")
 
     @classmethod
     def decode_normal_fixed_addressed_can_id(cls, can_id: int) -> CanIdAIAlias:
@@ -116,21 +126,19 @@ class CanIdHandler:
         """
         cls.validate_can_id(can_id)
         if not cls.is_normal_fixed_addressed_can_id(can_id):
-            raise ValueError(f"Provided CAN ID value is out of range. "
-                             f"Expected CAN ID using Normal Fixed Addressing format. Actual value: {can_id}")
+            raise ValueError("Provided CAN ID value is out of range.")
         target_address = (can_id >> 8) & 0xFF
         source_address = can_id & 0xFF
-        can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
-        if can_id_offset == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET:
+        can_id_masked_value = can_id & cls.ADDRESSING_MASK
+        if can_id_masked_value == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE:
             return cls.CanIdAIAlias(addressing_type=AddressingType.PHYSICAL,
                                     target_address=target_address,
                                     source_address=source_address)
-        if can_id_offset == cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET:
+        if can_id_masked_value == cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE:
             return cls.CanIdAIAlias(addressing_type=AddressingType.FUNCTIONAL,
                                     target_address=target_address,
                                     source_address=source_address)
-        raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
-                                  f"Actual value: {can_id}")
+        raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled.")
 
     @classmethod
     def decode_mixed_addressed_29bit_can_id(cls, can_id: int) -> CanIdAIAlias:
@@ -148,33 +156,33 @@ class CanIdHandler:
         """
         cls.validate_can_id(can_id)
         if not cls.is_mixed_29bit_addressed_can_id(can_id):
-            raise ValueError(f"Provided CAN ID value is out of range. "
-                             f"Expected 29-bit CAN ID using Mixed Addressing format. Actual value: {can_id}")
+            raise ValueError("Provided CAN ID value is out of range.")
         target_address = (can_id >> 8) & 0xFF
         source_address = can_id & 0xFF
-        can_id_offset = can_id & (~0xFFFF)  # value with Target Address and Source Address information erased
-        if can_id_offset == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET:
+        can_id_masked_value = can_id & cls.ADDRESSING_MASK
+        if can_id_masked_value == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE:
             return cls.CanIdAIAlias(addressing_type=AddressingType.PHYSICAL,
                                     target_address=target_address,
                                     source_address=source_address)
-        if can_id_offset == cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET:
+        if can_id_masked_value == cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_MASKED_VALUE:
             return cls.CanIdAIAlias(addressing_type=AddressingType.FUNCTIONAL,
                                     target_address=target_address,
                                     source_address=source_address)
-        raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled."
-                                  f"Actual value: {can_id}")
+        raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but cannot be handled.")
 
     @classmethod
     def encode_normal_fixed_addressed_can_id(cls,
                                              addressing_type: AddressingType,
                                              target_address: int,
-                                             source_address: int) -> int:
+                                             source_address: int,
+                                             priority: int = DEFAULT_PRIORITY_VALUE) -> int:
         """
         Generate CAN ID value for Normal Fixed CAN Addressing format.
 
         :param addressing_type: Addressing type used.
-        :param target_address: Target address value to use.
-        :param source_address: Source address value to use.
+        :param target_address: Target Address value to use.
+        :param source_address: Source Address value to use.
+        :param priority: Priority parameter value to use.
 
         :raise NotImplementedError: There is missing implementation for the provided Addressing Type.
             Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
@@ -186,23 +194,31 @@ class CanIdHandler:
         AddressingType.validate_member(addressing_type)
         validate_raw_byte(target_address)
         validate_raw_byte(source_address)
+        cls.validate_priority(priority)
+        priority_value = priority << cls.PRIORITY_BIT_OFFSET
+        target_address_value = target_address << 8
+        source_address_value = source_address
         if addressing_type == AddressingType.PHYSICAL:
-            return cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET + (target_address << 8) + source_address
+            return (priority_value + cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE + target_address_value
+                    + source_address_value)
         if addressing_type == AddressingType.FUNCTIONAL:
-            return cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET + (target_address << 8) + source_address
-        raise NotImplementedError(f"Unknown addressing type value was provided: {addressing_type}")
+            return (priority_value + cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE + target_address_value
+                    + source_address_value)
+        raise NotImplementedError("Unhandled addressing type value was provided.")
 
     @classmethod
     def encode_mixed_addressed_29bit_can_id(cls,
                                             addressing_type: AddressingType,
                                             target_address: int,
-                                            source_address: int) -> int:
+                                            source_address: int,
+                                            priority: int = DEFAULT_PRIORITY_VALUE) -> int:
         """
         Generate CAN ID value for Mixed 29-bit CAN Addressing format.
 
         :param addressing_type: Addressing type used.
-        :param target_address: Target address value to use.
-        :param source_address: Source address value to use.
+        :param target_address: Target Address value to use.
+        :param source_address: Source Address value to use.
+        :param priority: Priority parameter value to use.
 
         :raise NotImplementedError: There is missing implementation for the provided Addressing Type.
             Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
@@ -214,11 +230,17 @@ class CanIdHandler:
         AddressingType.validate_member(addressing_type)
         validate_raw_byte(target_address)
         validate_raw_byte(source_address)
+        cls.validate_priority(priority)
+        priority_value = priority << cls.PRIORITY_BIT_OFFSET
+        target_address_value = target_address << 8
+        source_address_value = source_address
         if addressing_type == AddressingType.PHYSICAL:
-            return cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET + (target_address << 8) + source_address
+            return (priority_value + cls.MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE + target_address_value
+                    + source_address_value)
         if addressing_type == AddressingType.FUNCTIONAL:
-            return cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET + (target_address << 8) + source_address
-        raise NotImplementedError(f"Unknown addressing type value was provided: {addressing_type}")
+            return (priority_value + cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_MASKED_VALUE + target_address_value
+                    + source_address_value)
+        raise NotImplementedError("Unhandled addressing type value was provided.")
 
     @classmethod
     def is_compatible_can_id(cls,
@@ -241,8 +263,8 @@ class CanIdHandler:
         """
         cls.validate_can_id(can_id)
         CanAddressingFormat.validate_member(addressing_format)
-        if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
-            return cls.is_normal_11bit_addressed_can_id(can_id=can_id)
+        if addressing_format == CanAddressingFormat.NORMAL_ADDRESSING:
+            return cls.is_normal_addressed_can_id(can_id=can_id)
         if addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
             return cls.is_normal_fixed_addressed_can_id(can_id=can_id, addressing_type=addressing_type)
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
@@ -251,18 +273,18 @@ class CanIdHandler:
             return cls.is_mixed_11bit_addressed_can_id(can_id=can_id)
         if addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
             return cls.is_mixed_29bit_addressed_can_id(can_id=can_id, addressing_type=addressing_type)
-        raise NotImplementedError(f"Missing implementation for: {addressing_format}")
+        raise NotImplementedError("Unhandled addressing type value was provided.")
 
     @classmethod
-    def is_normal_11bit_addressed_can_id(cls, can_id: int) -> bool:
+    def is_normal_addressed_can_id(cls, can_id: int) -> bool:
         """
-        Check if the provided value of CAN ID is compatible with Normal 11-bit Addressing format.
+        Check if the provided value of CAN ID is compatible with Normal Addressing format.
 
         :param can_id: Value to check.
 
         :return: True if value is a valid CAN ID for Normal 11-bit Addressing format, False otherwise.
         """
-        return cls.is_standard_can_id(can_id)
+        return cls.is_can_id(can_id)
 
     @classmethod
     def is_normal_fixed_addressed_can_id(cls,
@@ -279,14 +301,13 @@ class CanIdHandler:
             Addressing Type, False otherwise.
         """
         if addressing_type is not None:
-            AddressingType.validate_member(addressing_type)
-        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) \
-                and cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET <= can_id \
-                <= cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF:
+            addressing_type = AddressingType.validate_member(addressing_type)
+        masked_can_id = can_id & cls.ADDRESSING_MASK
+        if (masked_can_id == cls.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE
+                and addressing_type in {None, AddressingType.PHYSICAL}):
             return True
-        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) \
-                and cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
-                <= cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF:
+        if (masked_can_id == cls.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE
+                and addressing_type in {None, AddressingType.FUNCTIONAL}):
             return True
         return False
 
@@ -327,14 +348,13 @@ class CanIdHandler:
             Addressing Type, False otherwise.
         """
         if addressing_type is not None:
-            AddressingType.validate_member(addressing_type)
-        if (addressing_type is None or addressing_type == AddressingType.PHYSICAL) \
-                and cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET <= can_id \
-                <= cls.MIXED_29BIT_PHYSICAL_ADDRESSING_OFFSET + 0xFFFF:
+            addressing_type = AddressingType.validate_member(addressing_type)
+        masked_can_id = can_id & cls.ADDRESSING_MASK
+        if (masked_can_id == cls.MIXED_29BIT_PHYSICAL_ADDRESSING_MASKED_VALUE
+                and addressing_type in {None, AddressingType.PHYSICAL}):
             return True
-        if (addressing_type is None or addressing_type == AddressingType.FUNCTIONAL) \
-                and cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET <= can_id \
-                <= cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_OFFSET + 0xFFFF:
+        if (masked_can_id == cls.MIXED_29BIT_FUNCTIONAL_ADDRESSING_MASKED_VALUE
+                and addressing_type in {None, AddressingType.FUNCTIONAL}):
             return True
         return False
 
@@ -387,18 +407,31 @@ class CanIdHandler:
         :raise ValueError: Provided value is out of CAN Identifier values range.
         """
         if not isinstance(value, int):
-            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+            raise TypeError("Provided value is not int type.")
         if extended_can_id is None:
             if not cls.is_can_id(value):
-                raise ValueError(f"Provided value is out of CAN Identifier values range. Actual value: {value}")
+                raise ValueError("Provided value is out of CAN Identifier values range.")
         elif extended_can_id:
             if not cls.is_extended_can_id(value):
-                raise ValueError(f"Provided value is out of Extended (29-bit) CAN Identifier values range. "
-                                 f"Actual value: {value}")
+                raise ValueError("Provided value is out of Extended (29-bit) CAN Identifier values range.")
         else:
             if not cls.is_standard_can_id(value):
-                raise ValueError(f"Provided value is out of Standard (11-bit) CAN Identifier values range. "
-                                 f"Actual value: {value}")
+                raise ValueError("Provided value is out of Standard (11-bit) CAN Identifier values range.")
+
+    @classmethod
+    def validate_priority(cls, value: int) -> None:
+        """
+        Validate whether provided priority value is in line with SAE J1939 definition.
+
+        :param value: Value to validate.
+
+        :raise TypeError: Provided value is not int type.
+        :raise ValueError: Provided value is out of Priority values range.
+        """
+        if not isinstance(value, int):
+            raise TypeError("Provided value is not int type.")
+        if not cls.MIN_PRIORITY_VALUE <= value <= cls.MAX_PRIORITY_VALUE:
+            raise ValueError("Provided value is not in Priority values range.")
 
 
 class CanDlcHandler:
@@ -491,9 +524,9 @@ class CanDlcHandler:
         :raise ValueError: Provided value is not a valid DLC value.
         """
         if not isinstance(value, int):
-            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+            raise TypeError("Provided value is not int type.")
         if not cls.MIN_DLC_VALUE <= value <= cls.MAX_DLC_VALUE:
-            raise ValueError(f"Provided value is out of DLC values range. Actual value: {value}")
+            raise ValueError("Provided value is out of DLC values range.")
 
     @classmethod
     def validate_data_bytes_number(cls, value: int, exact_value: bool = True) -> None:
@@ -511,10 +544,10 @@ class CanDlcHandler:
         :raise ValueError: Provided value is not number of data bytes that matches the criteria.
         """
         if not isinstance(value, int):
-            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+            raise TypeError("Provided value is not int type.")
         if exact_value:
             if cls.__DATA_BYTES_NUMBER_MAPPING.get(value, None) is None:
-                raise ValueError(f"Provided value is not a valid CAN Frame data bytes number. Actual value: {value}")
+                raise ValueError("Provided value is not a valid CAN Frame data bytes number.")
         else:
             if not cls.MIN_DATA_BYTES_NUMBER <= value <= cls.MAX_DATA_BYTES_NUMBER:
-                raise ValueError(f"Provided value is out of CAN Frame data bytes number range. Actual value: {value}")
+                raise ValueError("Provided value is out of CAN Frame data bytes number range.")

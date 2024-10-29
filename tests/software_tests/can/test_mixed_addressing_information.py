@@ -87,6 +87,78 @@ class TestMixed11BitCanAddressingInformation:
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_called_once_with(address_extension)
 
+    # _validate_node_ai
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 1, "address_extension": 1},
+            {"can_id": 2, "address_extension": 1},
+            {"can_id": 3, "address_extension": 4},
+            {"can_id": 3, "address_extension": 4},
+        ),
+        (
+            {"can_id": 0x4321, "address_extension": 0xFF},
+            {"can_id": 0x4321, "address_extension": 0xFF},
+            {"can_id": 0x4321, "address_extension": 0xFE},
+            {"can_id": 0x4321, "address_extension": 0xFE},
+        ),
+        (
+            {"can_id": 0xABC, "address_extension": 0xFF},
+            {"can_id": 0xDEF, "address_extension": 0xFF},
+            {"can_id": 0xADD, "address_extension": 0xFE},
+            {"can_id": 0xFEE, "address_extension": 0xF1},
+        ),
+        (
+            {"can_id": 0xABC, "address_extension": 0x4E},
+            {"can_id": 0xDEF, "address_extension": 0x43},
+            {"can_id": 0xABC, "address_extension": 0x70},
+            {"can_id": 0xDEF, "address_extension": 0x70},
+        ),
+    ])
+    def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        with pytest.raises(InconsistentArgumentsError):
+            Mixed11BitCanAddressingInformation._validate_node_ai(rx_packets_physical_ai=rx_packets_physical_ai,
+                                                                 tx_packets_physical_ai=tx_packets_physical_ai,
+                                                                 rx_packets_functional_ai=rx_packets_functional_ai,
+                                                                 tx_packets_functional_ai=tx_packets_functional_ai)
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 1, "address_extension": 1},
+            {"can_id": 2, "address_extension": 1},
+            {"can_id": 3, "address_extension": 4},
+            {"can_id": 4, "address_extension": 4},
+        ),
+        (
+            {"can_id": 0x4321, "address_extension": 0xFF},
+            {"can_id": 0x4322, "address_extension": 0xFF},
+            {"can_id": 0x4323, "address_extension": 0xFE},
+            {"can_id": 0x4324, "address_extension": 0xFE},
+        ),
+        (
+            {"can_id": 0xABC, "address_extension": 0xFF},
+            {"can_id": 0xDEF, "address_extension": 0xFF},
+            {"can_id": 0xADD, "address_extension": 0xF1},
+            {"can_id": 0xFEE, "address_extension": 0xF1},
+        ),
+        (
+            {"can_id": 0xABC, "address_extension": 0x43},
+            {"can_id": 0xDEF, "address_extension": 0x43},
+            {"can_id": 0xABC, "address_extension": 0x70},
+            {"can_id": 0xDEF, "address_extension": 0x70},
+        ),
+    ])
+    def test_validate_node_ai__valid(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                     rx_packets_functional_ai, tx_packets_functional_ai):
+        assert Mixed11BitCanAddressingInformation._validate_node_ai(
+            rx_packets_physical_ai=rx_packets_physical_ai,
+            tx_packets_physical_ai=tx_packets_physical_ai,
+            rx_packets_functional_ai=rx_packets_functional_ai,
+            tx_packets_functional_ai=tx_packets_functional_ai) is None
+
 
 class TestMixed29BitCanAddressingInformation:
     """Unit tests for `Mixed29BitCanAddressingInformation` class."""
@@ -218,3 +290,69 @@ class TestMixed29BitCanAddressingInformation:
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_called_once_with(address_extension)
         self.mock_can_id_handler_class.decode_mixed_addressed_29bit_can_id.assert_called_once_with(can_id)
+
+    # _validate_node_ai
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 0xCE1234, "target_address": 0x12, "source_address": 0x34, "address_extension": 0x01},
+            {"can_id": 0xCE3413, "target_address": 0x34, "source_address": 0x13, "address_extension": 0x01},
+            {"can_id": 0xCD01FF, "target_address": 0x01, "source_address": 0xFF, "address_extension": 0xFF},
+            {"can_id": 0xCDFF01, "target_address": 0xFF, "source_address": 0x01, "address_extension": 0xFF},
+        ),
+        (
+            {"can_id": 0x18CEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0x00},
+            {"can_id": 0x18CEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0x00},
+            {"can_id": 0x18CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xFF},
+            {"can_id": 0x18CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xFF},
+        ),
+        (
+            {"can_id": 0x1CCEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0xCD},
+            {"can_id": 0x1CCEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0xCD},
+            {"can_id": 0x10CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xCD},
+            {"can_id": 0x10CD3F54, "target_address": 0x3F, "source_address": 0x54, "address_extension": 0x01},
+        ),
+        (
+            {"can_id": 0xCCE00FF, "target_address": 0x00, "source_address": 0xFF, "address_extension": 0x43},
+            {"can_id": 0xCCEFF00, "target_address": 0xFF, "source_address": 0x00, "address_extension": 0x65},
+            {"can_id": 0x8CDFF00, "target_address": 0xFF, "source_address": 0x00, "address_extension": 0x43},
+            {"can_id": 0x8CD00FF, "target_address": 0x00, "source_address": 0xFF, "address_extension": 0x65},
+        ),
+    ])
+    def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                            rx_packets_functional_ai, tx_packets_functional_ai):
+        with pytest.raises(InconsistentArgumentsError):
+            Mixed29BitCanAddressingInformation._validate_node_ai(rx_packets_physical_ai=rx_packets_physical_ai,
+                                                                 tx_packets_physical_ai=tx_packets_physical_ai,
+                                                                 rx_packets_functional_ai=rx_packets_functional_ai,
+                                                                 tx_packets_functional_ai=tx_packets_functional_ai)
+
+    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+        (
+            {"can_id": 0xCE1234, "target_address": 0x12, "source_address": 0x34, "address_extension": 0x01},
+            {"can_id": 0xCE3413, "target_address": 0x34, "source_address": 0x12, "address_extension": 0x01},
+            {"can_id": 0xCD01FF, "target_address": 0x01, "source_address": 0xFF, "address_extension": 0xFF},
+            {"can_id": 0xCDFF01, "target_address": 0xFF, "source_address": 0x01, "address_extension": 0xFF},
+        ),
+        (
+            {"can_id": 0x18CEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0x00},
+            {"can_id": 0x18CEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0x00},
+            {"can_id": 0x18CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xFF},
+            {"can_id": 0x18CD3F54, "target_address": 0x3F, "source_address": 0x54, "address_extension": 0xFF},
+        ),
+        (
+            {"can_id": 0x1CCEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0xCD},
+            {"can_id": 0x1CCEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0xCD},
+            {"can_id": 0x10CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xCD},
+            {"can_id": 0x10CD3F54, "target_address": 0x3F, "source_address": 0x54, "address_extension": 0xCD},
+        ),
+    ])
+    def test_validate_node_ai__valid(self, rx_packets_physical_ai, tx_packets_physical_ai,
+                                     rx_packets_functional_ai, tx_packets_functional_ai):
+        assert Mixed29BitCanAddressingInformation._validate_node_ai(
+            rx_packets_physical_ai=rx_packets_physical_ai,
+            tx_packets_physical_ai=tx_packets_physical_ai,
+            rx_packets_functional_ai=rx_packets_functional_ai,
+            tx_packets_functional_ai=tx_packets_functional_ai) is None

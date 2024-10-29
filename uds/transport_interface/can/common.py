@@ -158,9 +158,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of Single Frame or First Fame CAN Packet using
-            either :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_packet`
-            or :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_send_packet`
-            method.
+            either :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.send_packet`
+            or :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.async_send_packet` method.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
@@ -196,9 +195,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of Flow Control CAN Packet using either
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_packet` or
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_send_packet`
-            method.
+            :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.send_packet` or
+            :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.async_send_packet` method.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
@@ -233,9 +231,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Get the last measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of UDS message using either
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.send_message` or
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_send_message`
-            method.
+            :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.send_message` or
+            :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.async_send_message` method.
 
         :return: Tuple with times in milliseconds or None if the values could not be measured.
         """
@@ -354,9 +351,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Get the last measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
         .. note:: The last measurement comes from the last reception of UDS message using either
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.receive_message` or
-            :meth:`~uds.transport_interface.can_transport_interface.AbstractCanTransportInterface.async_receive_message`
-            method.
+            :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.receive_message` or
+            :meth:`~uds.transport_interface.can.AbstractCanTransportInterface.async_receive_message` method.
 
         :return: Tuple with times in milliseconds or None if the values could not be measured.
         """

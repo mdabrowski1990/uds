@@ -9,9 +9,10 @@ There are some packets which does not carry any diagnostic message data as they 
 other packets.
 
 UDS packet consists of following fields:
- - `Network Address Information`_ (N_AI) - packet addressing
- - `Network Data Field`_ (N_Data) - packet data
- - `Network Protocol Control Information`_ (N_PCI) - packet type
+
+  - `Network Address Information`_ (N_AI) - packet addressing
+  - `Network Data Field`_ (N_Data) - packet data
+  - `Network Protocol Control Information`_ (N_PCI) - packet type
 
 
 .. _knowledge-base-n-ai:
@@ -67,7 +68,6 @@ influenced by UDS protocol) are listed below:
   There are two formats of CAN ID:
 
   - Standard (11-bit Identifier)
-
   - Extended (29-bit identifier)
 
 - Data Length Code (DLC)
@@ -116,7 +116,7 @@ influenced by UDS protocol) are listed below:
   +-----+--------------------------+----------------------------+---------------------+
 
 .. note:: To learn more about CAN bus and CAN frame structure, you are encouraged to visit
-   `e-learning portal of Vector Informatik GmbH <https://elearning.vector.com/>`_.
+  `e-learning portal of Vector Informatik GmbH <https://elearning.vector.com/>`_.
 
 
 .. _knowledge-base-can-addressing:
@@ -127,17 +127,19 @@ Each CAN packet addressing format describes a different way of providing `Networ
 recipients of CAN packets.
 
 The exchange of UDS Packets on CAN is supported by three addressing formats:
- - :ref:`Normal addressing <knowledge-base-can-normal-addressing>`
- - :ref:`Extended addressing <knowledge-base-can-extended-addressing>`
- - :ref:`Mixed addressing <knowledge-base-can-mixed-addressing>`
+
+- :ref:`Normal addressing <knowledge-base-can-normal-addressing>`
+- :ref:`Extended addressing <knowledge-base-can-extended-addressing>`
+- :ref:`Mixed addressing <knowledge-base-can-mixed-addressing>`
 
 .. warning:: Addressing format must be predefined and configured before any CAN packet is received as every
-   CAN packet addressing format determines a different way of decoding CAN packets information
-   (`Network Address Information`_, `Network Data Field`_ and `Network Protocol Control Information`_)
-   that is not compatible with other addressing formats.
+  CAN packet addressing format determines a different way of decoding CAN packets information
+  (`Network Address Information`_, `Network Data Field`_ and `Network Protocol Control Information`_)
+  that is not compatible with other addressing formats.
 
-.. note:: Regardless of addressing format used, to transmit a :ref:`functionally addressed <knowledge-base-functional-addressing>`
-   message over CAN, a sender is allowed to use :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
+.. note:: Regardless of addressing format used, to transmit
+  a :ref:`functionally addressed <knowledge-base-functional-addressing>` message over CAN, a sender is allowed to use
+  :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
 
 
 .. _knowledge-base-can-normal-addressing:
@@ -148,14 +150,18 @@ If normal addressing format is used, then the value of CAN Identifier carries an
 Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>`,
 a sender and a target/targets entities of a packet.
 
+.. note:: With normal addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
+
 Following parameters specifies `Network Address Information`_ when Normal Addressing is used:
- - CAN ID
+
+- CAN ID - informs about transmitting and receiving nodes
 
 .. note:: Correspondence between `Network Address Information`_ and the value of CAN Identifier is left open for
-   a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` subformat is used.
+  a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` sub-format
+  is used.
 
 .. note:: `Network Protocol Control Information`_ is placed in the **first byte** of
-   :ref:`CAN frame data field <knowledge-base-can-data-field>` if normal addressing format is used.
+  :ref:`CAN frame data field <knowledge-base-can-data-field>` if normal addressing format is used.
 
 
 .. _knowledge-base-can-normal-fixed-addressing:
@@ -165,30 +171,83 @@ Normal Fixed Addressing
 Normal fixed addressing format is a special case of :ref:`normal addressing <knowledge-base-can-normal-addressing>`
 in which the mapping of the address information into the CAN identifier is further defined.
 
-.. note:: For normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
+.. note:: With normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
 
 Following parameters specifies `Network Address Information`_ when Normal Fixed Addressing is used:
- - CAN ID (with embedded **Target Address** and **Source Address**)
+
+- CAN ID (with embedded **Target Address** and **Source Address**) - **Source Address** informs about transmitting node
+  and **Target Address** informs about receiving node
 
 CAN Identifier values used for UDS communication using normal fixed addressing:
- - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
-   as presented below:
 
-   .. code-block::
+- For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
+  as presented below:
 
-      CAN_ID = 0x18DATTSS
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  |                | Priority | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data          |
+  |                |          |              |           | unit format   | Address | Address |               |
+  +================+==========+==============+===========+===============+=========+=========+===============+
+  | Bits number    |     3    |       1      |     1     |       8       |    8    |    8    |     16-512    |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | Content        |   0 - 7  |       0      |     0     |      218      |   N_TA  |   N_SA  | N_PCI, N_Data |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | CAN field      |                              CAN Identifier                             |    CAN Data   |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | CAN ID bits    |   28-26  |      25      |     24    |     23-16     |   15-8  |   7-0   |      ---      |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | CAN data bytes |    ---   |      ---     |    ---    |      ---      |   ---   |   ---   |      1-64     |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
 
- - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
-   as presented below:
+  .. code-block::
 
-   .. code-block::
+    # assuming priority parameter equals 0
+    CAN_ID = 0xDATTSS
 
-      CAN_ID = 0x18DBTTSS
+    # assuming priority parameter equals 6 (default value)
+    CAN_ID = 0x18DATTSS
+
+    # assuming priority parameter equals 7
+    CAN_ID = 0x1CDATTSS
+
+
+- For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
+  as presented below:
+
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  |                | Priority | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data          |
+  |                |          |              |           | unit format   | Address | Address |               |
+  +================+==========+==============+===========+===============+=========+=========+===============+
+  | Bits number    |     3    |       1      |     1     |       8       |    8    |    8    |     16-512    |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | Content        |   0 - 7  |       0      |     0     |      219      |   N_TA  |   N_SA  | N_PCI, N_Data |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | CAN field      |                              CAN Identifier                             |    CAN Data   |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | CAN ID bits    |   28-26  |      25      |     24    |     23-16     |   15-8  |   7-0   |      ---      |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+  | CAN data bytes |    ---   |      ---     |    ---    |      ---      |   ---   |   ---   |      1-64     |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+---------------+
+
+  .. code-block::
+
+    # assuming priority parameter equals 0
+    CAN_ID = 0xDBTTSS
+
+    # assuming priority parameter equals 6 (default value)
+    CAN_ID = 0x18DBTTSS
+
+    # assuming priority parameter equals 7
+    CAN_ID = 0x1CDBTTSS
 
 where:
- - CAN_ID - value of **CAN Identifier**
- - TT - two (hexadecimal) digits of a 8-bit **Target Address** value
- - SS - two (hexadecimal) digits of a 8-bit **Source Address** value
+
+- CAN_ID - value of **CAN Identifier**
+- TT - two (hexadecimal) digits of a 8-bit **Target Address** value
+- SS - two (hexadecimal) digits of a 8-bit **Source Address** value
+- N_TA - Network **Target Address** parameter
+- N_SA - Network **Source Address** parameter
+- :ref:`N_PCI <knowledge-base-n-pci>` - Network Protocol Control Information
+- :ref:`N_Data <knowledge-base-n-data>` - Network Data Field
 
 
 .. _knowledge-base-can-extended-addressing:
@@ -199,9 +258,13 @@ If extended addressing format is used, then the value of **the first CAN frame b
 a UDS packet and remaining `Network Address Information`_ (a sending entity and
 :ref:`an addressing type <knowledge-base-addressing>`) are determined by CAN Identifier value.
 
+.. note:: With extended addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
+
 Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
- - CAN ID
- - Target Address (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`)
+
+- CAN ID - identifies network and message direction
+- Target Address (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - informs about
+  receiving and transmitting nodes within the network
 
 .. note:: `Network Protocol Control Information`_ is placed in the **second byte** of
    :ref:`CAN frame data field <knowledge-base-can-data-field>` if extended addressing format is used.
@@ -226,8 +289,11 @@ If mixed addressing format is used with 11-bit CAN Identifiers, then the value o
 the CAN Identifier and a combination of these data forms the entire `Network Address Information`_ of a CAN packet.
 
 Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
- - CAN ID
- - Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`)
+
+- CAN ID - informs about transmitting and receiving nodes withing the network (combining with **Addressing Extension**
+  identifies those)
+- Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - selects
+  network (the same value is used during communication in both directions)
 
 
 .. _knowledge-base-can-mixed-29-bit-addressing:
@@ -239,28 +305,83 @@ the CAN Identifier (that contains **Target Address** and **Sender Address** valu
 a combination of these data forms the entire `Network Address Information`_ of a CAN packet.
 
 Following parameters specifies `Network Address Information`_ when Extended Addressing is used:
- - CAN ID (with embedded **Target Address** and **Source Address**)
- - Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`)
+
+- CAN ID (with embedded **Target Address** and **Source Address**) - **Source Address** informs about transmitting node
+  and **Target Address** informs about receiving node in the network (combining with **Addressing Extension** identifies
+  those)
+- Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - selects
+  network (the same value is used during communication in both directions)
 
 CAN Identifier values used for UDS communication using mixed 29-bit addressing:
- - For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
-   as presented below:
 
-   .. code-block::
+- For :ref:`physical addressed <knowledge-base-physical-addressing>` messages, CAN Identifier value is defined
+  as presented below:
 
-      CAN_ID = 0x18CETTSS
+  +----------------+----------+--------------+-----------+---------------+---------+---------+----------------------+
+  |                | Priority | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data                 |
+  |                |          |              |           | unit format   | Address | Address |                      |
+  +================+==========+==============+===========+===============+=========+=========+======+===============+
+  | Bits number    |     3    |       1      |     1     |       8       |    8    |    8    |   8  |     16-504    |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | Content        |   0 - 7  |       0      |     0     |      206      |   N_TA  |   N_SA  | N_AE | N_PCI, N_Data |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | CAN field      |                              CAN Identifier                             |       CAN Data       |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | CAN ID bits    |   28-26  |      25      |     24    |     23-16     |   15-8  |   7-0   |  --- |      ---      |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | CAN data bytes |    ---   |      ---     |    ---    |      ---      |   ---   |   ---   |   1  |      2-64     |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
 
- - For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
-   as presented below:
+  .. code-block::
 
-   .. code-block::
+    # assuming priority parameter equals 0
+    CAN_ID = 0xCETTSS
 
-      CAN_ID = 0x18CDTTSS
+    # assuming priority parameter equals 6 (default value)
+    CAN_ID = 0x18CETTSS
+
+    # assuming priority parameter equals 7
+    CAN_ID = 0x1CCETTSS
+
+- For :ref:`functional addressed <knowledge-base-functional-addressing>` messages, CAN Identifier value is defined
+  as presented below:
+
+  +----------------+----------+--------------+-----------+---------------+---------+---------+----------------------+
+  |                | Priority | Reserved Bit | Data Page | Protocol data | Target  | Source  | Data                 |
+  |                |          |              |           | unit format   | Address | Address |                      |
+  +================+==========+==============+===========+===============+=========+=========+======+===============+
+  | Bits number    |     3    |       1      |     1     |       8       |    8    |    8    |   8  |     16-504    |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | Content        |   0 - 7  |       0      |     0     |      205      |   N_TA  |   N_SA  | N_AE | N_PCI, N_Data |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | CAN field      |                              CAN Identifier                             |       CAN Data       |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | CAN ID bits    |   28-26  |      25      |     24    |     23-16     |   15-8  |   7-0   |  --- |      ---      |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+  | CAN data bytes |    ---   |      ---     |    ---    |      ---      |   ---   |   ---   |   1  |      2-64     |
+  +----------------+----------+--------------+-----------+---------------+---------+---------+------+---------------+
+
+  .. code-block::
+
+    # assuming priority parameter equals 0
+    CAN_ID = 0xCDTTSS
+
+    # assuming priority parameter equals 6 (default value)
+    CAN_ID = 0x18CDTTSS
+
+    # assuming priority parameter equals 7
+    CAN_ID = 0x1CCDTTSS
 
 where:
- - CAN_ID - value of **CAN Identifier**
- - TT - two (hexadecimal) digits of a 8-bit **Target Address** value
- - SS - two (hexadecimal) digits of a 8-bit **Source Address** value
+
+- CAN_ID - value of **CAN Identifier**
+- TT - two (hexadecimal) digits of a 8-bit **Target Address** value
+- SS - two (hexadecimal) digits of a 8-bit **Source Address** value
+- N_TA - Network **Target Address** parameter
+- N_SA - Network **Source Address** parameter
+- N_AE - Network **Addressing Extension** parameter
+- :ref:`N_PCI <knowledge-base-n-pci>` - Network Protocol Control Information
+- :ref:`N_Data <knowledge-base-n-data>` - Network Data Field
 
 
 .. _knowledge-base-can-data-field:
@@ -290,10 +411,11 @@ The only exception is usage of `CAN Frame Data Optimization`_.
 +-----+------------------------------------------------------------------------+
 
 where:
- - DLC - Data Length Code of a :ref:`CAN frame <knowledge-base-can-frame>`
+
+- DLC - Data Length Code of a :ref:`CAN frame <knowledge-base-can-frame>`
 
 .. note:: Number of bytes that carry diagnostic message payload depends on a type and a format of a CAN packet as it is
-   presented in :ref:`the table with CAN packets formats <knowledge-base-can-packets-format>`.
+  presented in :ref:`the table with CAN packets formats <knowledge-base-can-packets-format>`.
 
 
 .. _knowledge-base-can-frame-data-padding:
@@ -308,7 +430,7 @@ If not specified differently, the default value 0xCC shall be used for the frame
 insertions and bit alteration on the wire.
 
 .. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8 and
-   optional for frames with DLC=8.
+  optional for frames with DLC=8.
 
 
 .. _knowledge-base-can-data-optimization:
@@ -322,15 +444,15 @@ that is required to sent a desired number of data bytes in a single CAN packet.
 
 .. note:: CAN Frame Data Optimization might always be used for CAN Packets with less than 8 bytes of data to send.
 
-.. warning:: CAN Frame Data Optimization might not always be able to replace `CAN Frame Data Padding`_ when CAN FD is used.
-   This is a consequence of DLC values from 9 to 15 meaning as these values are mapped into CAN frame data bytes numbers
-   in a non-linear way (e.g. DLC=9 represents 12 data bytes).
+.. warning:: CAN Frame Data Optimization might not always be able to replace `CAN Frame Data Padding`_ when CAN FD
+  is used. This is a consequence of DLC values from 9 to 15 meaning as these values are mapped into CAN frame data
+  bytes numbers in a non-linear way (e.g. DLC=9 represents 12 data bytes).
 
-   Example:
+  Example:
 
-   *When a CAN Packet with 47 bytes of data is planned for a transmission, then DLC=14 can be used instead of DLC=15,*
-   *to choose 48-byte instead of 64-byte long CAN frame. Unfortunately, the last byte of CAN Frame data has to be padded*
-   *as there is no way to send over CAN a frame with exactly 47 bytes of data.*
+  *When a CAN Packet with 47 bytes of data is planned for a transmission, then DLC=14 can be used instead of DLC=15,*
+  *to choose 48-byte instead of 64-byte long CAN frame. Unfortunately, the last byte of CAN Frame data has to be *
+  *padded as there is no way to send over CAN a frame with exactly 47 bytes of data.*
 
 
 .. _knowledge-base-can-n-pci:
@@ -340,11 +462,12 @@ CAN Packet Types
 According to ISO 15765-2, CAN bus supports 4 types of UDS packets.
 
 List of all values of `Network Protocol Control Information`_ supported by CAN bus:
- - 0x0 - :ref:`Single Frame <knowledge-base-can-single-frame>`
- - 0x1 - :ref:`First Frame <knowledge-base-can-first-frame>`
- - 0x2 - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
- - 0x3 - :ref:`Flow Control <knowledge-base-can-flow-control>`
- - 0x4-0xF - values range reserved for future extension by ISO 15765
+
+- 0x0 - :ref:`Single Frame <knowledge-base-can-single-frame>`
+- 0x1 - :ref:`First Frame <knowledge-base-can-first-frame>`
+- 0x2 - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+- 0x3 - :ref:`Flow Control <knowledge-base-can-flow-control>`
+- 0x4-0xF - values range reserved for future extension by ISO 15765
 
 The format of all CAN packets is presented in the table below.
 
@@ -377,14 +500,15 @@ The format of all CAN packets is presented in the table below.
 +-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
 
 where:
- - DLC - Data Length Code of a CAN frame, it is equal to number of data bytes carried by this CAN frame
- - SF_DL - :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
- - FF_DL - :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
- - SN - :ref:`Sequence Number <knowledge-base-can-sequence-number>`
- - FS - :ref:`Flow Status <knowledge-base-can-flow-status>`
- - BS - :ref:`Block Size <knowledge-base-can-block-size>`
- - ST_min - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
- - N/A - Not Applicable (byte does not carry any information)
+
+- DLC - Data Length Code of a CAN frame, it is equal to number of data bytes carried by this CAN frame
+- SF_DL - :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
+- FF_DL - :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
+- SN - :ref:`Sequence Number <knowledge-base-can-sequence-number>`
+- FS - :ref:`Flow Status <knowledge-base-can-flow-status>`
+- BS - :ref:`Block Size <knowledge-base-can-block-size>`
+- ST_min - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
+- N/A - Not Applicable (byte does not carry any information)
 
 
 .. _knowledge-base-can-single-frame:
@@ -407,7 +531,7 @@ carried by every Single Frame as presented in
 SF_DL specifies number of diagnostic message payload bytes transmitted in a Single Frame.
 
 .. note:: Maximal value of SF_DL depends on Single Frame :ref:`addressing format <knowledge-base-can-addressing>`
-    and :ref:`DLC of a CAN message <knowledge-base-can-data-field>` that carries this packet.
+  and :ref:`DLC of a CAN message <knowledge-base-can-data-field>` that carries this packet.
 
 
 .. _knowledge-base-can-first-frame:
@@ -430,7 +554,7 @@ First Frame. FF_DL specifies number of diagnostic message payload bytes of a dia
 was initiated by a First Frame.
 
 .. note:: Maximal value of FF_DL is 4294967295 (0xFFFFFFFF). It means that CAN bus is capable of transmitting
-    diagnostic messages that contains up to nearly 4,3 GB of payload bytes.
+  diagnostic messages that contains up to nearly 4,3 GB of payload bytes.
 
 
 .. _knowledge-base-can-consecutive-frame:
@@ -452,12 +576,13 @@ Sequence Number
 Sequence Number (SN) is 4-bit value used to specify the order of Consecutive Frames.
 
 The rules of proper Sequence Number value assignment are following:
- - SN value of the first :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` that directly follows
-   a :ref:`First Frame <knowledge-base-can-first-frame>` shall be set to 1
- - SN shall be incremented by 1 for each following :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
- - SN value shall not be affected by :ref:`Flow Control <knowledge-base-can-flow-control>` frames
- - when SN reaches the value of 15, it shall wraparound and be set to 0 in the next
-   :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+  - SN value of the first :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` that directly follows
+    a :ref:`First Frame <knowledge-base-can-first-frame>` shall be set to 1
+  - SN shall be incremented by 1 for each following :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+  - SN value shall not be affected by :ref:`Flow Control <knowledge-base-can-flow-control>` frames
+  - when SN reaches the value of 15, it shall wraparound and be set to 0 in the next
+    :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
 .. _knowledge-base-can-flow-control:
@@ -468,9 +593,10 @@ Flow Control (FC) is used by receiving CAN entities to instruct sending entities
 transmission of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
 Flow Control packet contains following parameters:
- - :ref:`Flow Status <knowledge-base-can-flow-status>`
- - :ref:`Block Size <knowledge-base-can-block-size>`
- - :ref:`Separation Time Minimum <knowledge-base-can-st-min>`
+
+- :ref:`Flow Status <knowledge-base-can-flow-status>`
+- :ref:`Block Size <knowledge-base-can-block-size>`
+- :ref:`Separation Time Minimum <knowledge-base-can-st-min>`
 
 
 .. _knowledge-base-can-flow-status:
@@ -481,48 +607,50 @@ Flow Status (FS) is 4-bit value that is used to inform a sending network entity 
 a Consecutive Frames transmission.
 
 Values of Flow Status:
- - 0x0 - ContinueToSend (CTS)
 
-    ContinueToSend value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
-    with CTS) is ready to receive a maximum of :ref:`Block Size <knowledge-base-can-block-size>` number of
-    :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+- 0x0 - ContinueToSend (CTS)
 
-    Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with ContinueToSend value shall cause
-    the sender to resume ConsecutiveFrames sending.
+  ContinueToSend value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
+  with CTS) is ready to receive a maximum of :ref:`Block Size <knowledge-base-can-block-size>` number of
+  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
- - 0x1 - wait (WAIT)
+  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with ContinueToSend value shall cause
+  the sender to resume ConsecutiveFrames sending.
 
-    Wait value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with WAIT)
-    is not ready to receive another :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+- 0x1 - wait (WAIT)
 
-    Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with WAIT value shall cause
-    the sender to pause ConsecutiveFrames sending and wait for another
-    :ref:`Flow Control <knowledge-base-can-flow-control>` frame.
+  Wait value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with WAIT)
+  is not ready to receive another :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
-    Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
-    the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains WAIT value of Flow Status)
-    are not relevant and shall be ignored.
+  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with WAIT value shall cause
+  the sender to pause ConsecutiveFrames sending and wait for another
+  :ref:`Flow Control <knowledge-base-can-flow-control>` frame.
 
- - 0x2 - Overflow (OVFLW)
+  Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
+  the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains WAIT value of Flow Status)
+  are not relevant and shall be ignored.
 
-    Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with OVFLW)
-    is not able to receive a full diagnostic message as it is too big and reception of the message would result in
-    `Buffer Overflow <https://en.wikipedia.org/wiki/Buffer_overflow>`_ on receiving side. In other words, the value of
-    :ref:`FF_DL <knowledge-base-can-first-frame-data-length>` exceeds the buffer size of the receiving entity.
+- 0x2 - Overflow (OVFLW)
 
-    Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with Overflow value shall cause
-    the sender to abort the transmission of a diagnostic message.
+  Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
+  with OVFLW) is not able to receive a full diagnostic message as it is too big and reception of the message would
+  result in `Buffer Overflow <https://en.wikipedia.org/wiki/Buffer_overflow>`_ on receiving side.
+  In other words, the value of :ref:`FF_DL <knowledge-base-can-first-frame-data-length>` exceeds the buffer size of
+  the receiving entity.
 
-    Overflow value shall only be sent in a :ref:`Flow Control <knowledge-base-can-flow-control>` frame that directly
-    follows a :ref:`First Frame <knowledge-base-can-first-frame>`.
+  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with Overflow value shall cause
+  the sender to abort the transmission of a diagnostic message.
 
-    Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
-    the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains OVFLW value of Flow Status)
-    are not relevant and shall be ignored.
+  Overflow value shall only be sent in a :ref:`Flow Control <knowledge-base-can-flow-control>` frame that directly
+  follows a :ref:`First Frame <knowledge-base-can-first-frame>`.
 
- - 0x3-0xF - Reserved
+  Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
+  the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains OVFLW value of Flow Status)
+  are not relevant and shall be ignored.
 
-    This range of values is reserved for future extension by ISO 15765.
+- 0x3-0xF - Reserved
+
+  This range of values is reserved for future extension by ISO 15765.
 
 
 .. _knowledge-base-can-block-size:
@@ -533,21 +661,22 @@ Block Size (BS) is a one byte value specified by receiving entity that informs a
 :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` to be sent in a one block of packets.
 
 Block Size values:
- - 0x00
 
-    The value 0 of the Block Size parameter informs a sender that no more
-    :ref:`Flow Control <knowledge-base-can-flow-control>` frames shall be sent during the transmission
-    of the segmented message.
+- 0x00
 
-    Reception of Block Size = 0 shall cause the sender to send all remaining
-    :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` without any stop for further
-    :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
+  The value 0 of the Block Size parameter informs a sender that no more
+  :ref:`Flow Control <knowledge-base-can-flow-control>` frames shall be sent during the transmission
+  of the segmented message.
 
- - 0x01-0xFF
+  Reception of Block Size = 0 shall cause the sender to send all remaining
+  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` without any stop for further
+  :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
 
-    This range of Block Size values informs a sender the maximum number of
-    :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` that can be transmitted without an intermediate
-    :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
+- 0x01-0xFF
+
+  This range of Block Size values informs a sender the maximum number of
+  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` that can be transmitted without an intermediate
+  :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
 
 
 .. _knowledge-base-can-st-min:
@@ -558,34 +687,35 @@ Separation Time minimum (STmin) is a one byte value specified by receiving entit
 between the transmission of two following :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
 STmin values:
- - 0x00-0x7F - Separation Time minimum range 0-127 ms
 
-    The value of STmin in this range represents the value in milliseconds (ms).
+- 0x00-0x7F - Separation Time minimum range 0-127 ms
 
-    0x00 = 0 ms
+  The value of STmin in this range represents the value in milliseconds (ms).
 
-    0xFF = 127 ms
+  0x00 = 0 ms
 
- - 0x80-0xF0 - Reserved
+  0xFF = 127 ms
 
-    This range of values is reserved for future extension by ISO 15765.
+- 0x80-0xF0 - Reserved
 
- - 0xF1-0xF9 - Separation Time minimum range 100-900 μs
+  This range of values is reserved for future extension by ISO 15765.
 
-    The value of STmin in this range represents the value in microseconds (μs) according to the formula:
+- 0xF1-0xF9 - Separation Time minimum range 100-900 μs
 
-    .. code-block::
+  The value of STmin in this range represents the value in microseconds (μs) according to the formula:
 
-        (STmin - 0xF0) * 100 μs
+  .. code-block::
 
-    Meaning of example values:
+    (STmin - 0xF0) * 100 μs
 
-    0xF1 -> 100 μs
+  Meaning of example values:
 
-    0xF5 -> 500 μs
+  0xF1 -> 100 μs
 
-    0xF9 -> 900 μs
+  0xF5 -> 500 μs
 
- - 0xFA-0xFF - Reserved
+  0xF9 -> 900 μs
 
-    This range of values is reserved for future extension by ISO 15765.
+- 0xFA-0xFF - Reserved
+
+  This range of values is reserved for future extension by ISO 15765.

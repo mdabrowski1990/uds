@@ -19,14 +19,14 @@ from uds.can import (
     ExtendedCanAddressingInformation,
     Mixed11BitCanAddressingInformation,
     Mixed29BitCanAddressingInformation,
-    Normal11BitCanAddressingInformation,
+    NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
 from uds.transmission_attributes import AddressingType
 from uds.utilities import AmbiguityError, RawBytesAlias, RawBytesTupleAlias, UnusedArgumentWarning
 
-from .abstract_can_packet_container import AbstractCanPacketContainer
-from .abstract_packet import AbstractUdsPacket
+from ..abstract_packet import AbstractUdsPacket
+from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
 
@@ -140,9 +140,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             with detailed description if you face this error.
         """
         CanAddressingFormat.validate_member(addressing_format)
-        if addressing_format == CanAddressingFormat.NORMAL_11BIT_ADDRESSING:
-            self.set_address_information_normal_11bit(addressing_type=addressing_type,
-                                                      can_id=can_id)  # type: ignore
+        if addressing_format == CanAddressingFormat.NORMAL_ADDRESSING:
+            self.set_address_information_normal(addressing_type=addressing_type,
+                                                can_id=can_id)  # type: ignore
             if (target_address, source_address, address_extension) != (None, None, None):
                 warn(message=f"Unused arguments were provided to {CanPacket.set_address_information}. Expected: None."
                              f"Actual values: target_address={target_address}, source_address={source_address}, "
@@ -182,16 +182,16 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         else:
             raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
-    def set_address_information_normal_11bit(self, addressing_type: AddressingType, can_id: int) -> None:
+    def set_address_information_normal(self, addressing_type: AddressingType, can_id: int) -> None:
         """
-        Change addressing information for this CAN packet to use Normal 11-bit Addressing format.
+        Change addressing information for this CAN packet to use Normal Addressing format.
 
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
         """
-        Normal11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type, can_id=can_id)
-        self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_11BIT_ADDRESSING)
-        self.__addressing_format = CanAddressingFormat.NORMAL_11BIT_ADDRESSING
+        NormalCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type, can_id=can_id)
+        self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_ADDRESSING)
+        self.__addressing_format = CanAddressingFormat.NORMAL_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
         self.__can_id = can_id
         self.__target_address = None

@@ -5,7 +5,7 @@ from mock import AsyncMock, MagicMock, Mock, call, patch
 
 from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.transmission_attributes import AddressingType
-from uds.transport_interface.can_transport_interface.python_can import (
+from uds.transport_interface.can.python_can import (
     AbstractCanTransportInterface,
     BusABC,
     CanFlowStatus,
@@ -17,7 +17,7 @@ from uds.transport_interface.can_transport_interface.python_can import (
     UdsMessage,
 )
 
-SCRIPT_LOCATION = "uds.transport_interface.can_transport_interface.python_can"
+SCRIPT_LOCATION = "uds.transport_interface.can.python_can"
 
 
 class TestPyCanTransportInterface:
@@ -1167,7 +1167,7 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.receive_packet.assert_called_once_with(
-            timeout=self.mock_can_transport_interface.N_BS_TIMEOUT)
+            timeout=self.mock_can_transport_interface.n_bs_timeout)
         self.mock_can_transport_interface._send_cf_packets_block.assert_called_once_with(
             cf_packets_block=mock_segmented_message[1:],
             delay=self.mock_can_st_min_handler.decode.return_value)
@@ -1207,7 +1207,7 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.receive_packet.assert_has_calls([
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT) for _ in mock_segmented_message[1:]
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout) for _ in mock_segmented_message[1:]
         ])
         self.mock_can_transport_interface._send_cf_packets_block.assert_has_calls([
             call(cf_packets_block=[packet], delay=n_cs) for packet in mock_segmented_message[1:]
@@ -1245,8 +1245,8 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.receive_packet.assert_has_calls([
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT),
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT)
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout),
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout)
         ])
         self.mock_uds_message_record.assert_called_once_with([
             self.mock_can_transport_interface.send_packet.return_value,
@@ -1282,8 +1282,8 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.receive_packet.assert_has_calls([
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT),
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT)
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout),
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout)
         ])
         self.mock_uds_message_record.assert_called_once_with([
             self.mock_can_transport_interface.send_packet.return_value,
@@ -1311,7 +1311,7 @@ class TestPyCanTransportInterface:
             PyCanTransportInterface.send_message(self.mock_can_transport_interface, message)
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.receive_packet.assert_called_once_with(
-            timeout=self.mock_can_transport_interface.N_BS_TIMEOUT)
+            timeout=self.mock_can_transport_interface.n_bs_timeout)
         self.mock_warn.assert_not_called()
         self.mock_can_transport_interface._update_n_bs_measured.assert_not_called()
 
@@ -1332,7 +1332,7 @@ class TestPyCanTransportInterface:
             PyCanTransportInterface.send_message(self.mock_can_transport_interface, message)
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.receive_packet.assert_called_once_with(
-            timeout=self.mock_can_transport_interface.N_BS_TIMEOUT)
+            timeout=self.mock_can_transport_interface.n_bs_timeout)
         self.mock_warn.assert_not_called()
         self.mock_can_transport_interface._update_n_bs_measured.assert_not_called()
 
@@ -1379,7 +1379,7 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.async_receive_packet.assert_called_once_with(
-            timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None)
+            timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None)
         self.mock_can_transport_interface._async_send_cf_packets_block.assert_called_once_with(
             cf_packets_block=mock_segmented_message[1:],
             delay=self.mock_can_st_min_handler.decode.return_value,
@@ -1421,7 +1421,7 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.async_receive_packet.assert_has_calls([
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None) for _ in mock_segmented_message[1:]
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None) for _ in mock_segmented_message[1:]
         ])
         self.mock_can_transport_interface._async_send_cf_packets_block.assert_has_calls([
             call(cf_packets_block=[packet], delay=n_cs, loop=None) for packet in mock_segmented_message[1:]
@@ -1460,8 +1460,8 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.async_receive_packet.assert_has_calls([
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None),
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None)
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None),
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None)
         ])
         self.mock_uds_message_record.assert_called_once_with([
             self.mock_can_transport_interface.async_send_packet.return_value,
@@ -1497,8 +1497,8 @@ class TestPyCanTransportInterface:
             self.mock_can_transport_interface, message) == self.mock_uds_message_record.return_value
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.async_receive_packet.assert_has_calls([
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None),
-            call(timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None)
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None),
+            call(timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None)
         ])
         self.mock_uds_message_record.assert_called_once_with([
             self.mock_can_transport_interface.async_send_packet.return_value,
@@ -1528,7 +1528,7 @@ class TestPyCanTransportInterface:
             await PyCanTransportInterface.async_send_message(self.mock_can_transport_interface, message)
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.async_receive_packet.assert_called_once_with(
-            timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None)
+            timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None)
         self.mock_warn.assert_not_called()
         self.mock_can_transport_interface._update_n_bs_measured.assert_not_called()
 
@@ -1551,7 +1551,7 @@ class TestPyCanTransportInterface:
             await PyCanTransportInterface.async_send_message(self.mock_can_transport_interface, message)
         self.mock_can_transport_interface.segmenter.segmentation.assert_called_once_with(message)
         self.mock_can_transport_interface.async_receive_packet.assert_called_once_with(
-            timeout=self.mock_can_transport_interface.N_BS_TIMEOUT, loop=None)
+            timeout=self.mock_can_transport_interface.n_bs_timeout, loop=None)
         self.mock_warn.assert_not_called()
         self.mock_can_transport_interface._update_n_bs_measured.assert_not_called()
 
@@ -1693,7 +1693,7 @@ class TestPyCanTransportInterfaceIntegration:
         {
             "can_bus_manager": Mock(spec=BusABC),
             "addressing_information": CanAddressingInformation(
-                addressing_format=CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+                addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                 rx_physical={"can_id": 0x641},
                 tx_physical={"can_id": 0x642},
                 rx_functional={"can_id": 0x6FE},

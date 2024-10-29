@@ -31,5 +31,5 @@ from .flow_control import (
 )
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler, CanIdHandler
 from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
-from .normal_addressing_information import Normal11BitCanAddressingInformation, NormalFixedCanAddressingInformation
+from .normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
 from .single_frame import CanSingleFrameHandler

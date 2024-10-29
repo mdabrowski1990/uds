@@ -80,7 +80,7 @@ the user perspective it does not provide any additional features to common_ impl
 
     # define Addressing Information for a CAN Node
     can_node_addressing_information = uds.can.CanAddressingInformation(
-        addressing_format=uds.can.CanAddressingFormat.NORMAL_11BIT_ADDRESSING,
+        addressing_format=uds.can.CanAddressingFormat.NORMAL_ADDRESSING,
         tx_physical={"can_id": 0x611},
         rx_physical={"can_id": 0x612},
         tx_functional={"can_id": 0x6FF},

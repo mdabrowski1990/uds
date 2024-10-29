@@ -16,8 +16,8 @@ from uds.can import (
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.utilities import InconsistentArgumentsError, RawBytesTupleAlias
 
-from .abstract_can_packet_container import AbstractCanPacketContainer
-from .abstract_packet import AbstractUdsPacketRecord
+from ..abstract_packet import AbstractUdsPacketRecord
+from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
 CanFrameAlias = Union[PythonCanMessage]
