@@ -17,10 +17,11 @@ The package is created with an idea to support any communication bus:
  - `K-Line <https://en.wikipedia.org/wiki/K-Line>`_
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "Maciej Dąbrowski"
 __maintainer__ = "Maciej Dąbrowski"
 __credits__ = ["Maciej Dąbrowski (https://www.linkedin.com/in/maciej-dabrowski-test-engineer/)",
+               "Igor Jabłoński (https://www.linkedin.com/in/igor-jab%C5%82o%C5%84ski/)"
                "Merit Automotive (https://merit-automotive.com/)"]
 __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"
