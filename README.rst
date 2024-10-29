@@ -72,7 +72,7 @@ Link: https://github.com/pylessard/python-udsoncan
   - control over CAN Network parameters (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) via can-isotp package -
     https://can-isotp.readthedocs.io/en/latest/isotp/socket.html
     https://can-isotp.readthedocs.io/en/latest/isotp/implementation.html
-  - possibility to inject errors on Transport/Network layer -
+  - possibility to inject some errors on Transport/Network layer -
     https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#overriding-the-output
 
 - cons:
