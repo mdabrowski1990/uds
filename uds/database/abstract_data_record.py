@@ -21,7 +21,7 @@ class DecodedDataRecord(TypedDict):
 
     name: str
     raw_value: int
-    physical_value: DataRecordPhysicalValueAlias
+    physical_value: DataRecordPhysicalValueAlias  # noqa: F841
 
 
 class DataRecordType(ValidatedEnum):
@@ -40,7 +40,7 @@ class AbstractDataRecord(ABC):
 
     def __init__(self, name: str) -> None:
         """
-        Common part of initialization for all Data Records.
+        Initialize common part for all Data Records.
 
         :param name: Name to assign to this Data Record.
 
@@ -55,17 +55,17 @@ class AbstractDataRecord(ABC):
         """Name of this Data Record."""
         return self.__name
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def data_record_type(self) -> DataRecordType:
         """Type of this Data Record."""
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def length(self) -> int:
-        """Number of bits that this Data Record is carried over."""
+        """Get number of bits that this Data Record is stored over."""
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def is_reoccurring(self) -> bool:
         """
@@ -76,7 +76,7 @@ class AbstractDataRecord(ABC):
         - True - number of occurrences might vary
         """
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def min_occurrences(self) -> int:
         """
@@ -86,7 +86,7 @@ class AbstractDataRecord(ABC):
             equals True.
         """
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def max_occurrences(self) -> int:
         """
@@ -97,13 +97,13 @@ class AbstractDataRecord(ABC):
         .. warning:: No maximal number (infinite number of occurrences) is represented by `0` value.
         """
 
-    @property
+    @property  # noqa: F841
     @abstractmethod
     def contains(self) -> Tuple["AbstractDataRecord", ...]:
-        """Data Records contained by this Data Record."""
+        """Get Data Records contained by this Data Record."""
 
     @abstractmethod
-    def decode(self, raw_value: int) -> DecodedDataRecord:
+    def decode(self, raw_value: int) -> DecodedDataRecord:  # noqa: F841
         """
         Decode physical value for provided raw value.
 
@@ -113,7 +113,7 @@ class AbstractDataRecord(ABC):
         """
 
     @abstractmethod
-    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
+    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
         """
         Encode raw value for provided physical value.
 
