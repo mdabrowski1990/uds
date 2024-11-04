@@ -43,8 +43,12 @@ class AbstractDataRecord(ABC):
         Common part of initialization for all Data Records.
 
         :param name: Name to assign to this Data Record.
+
+        :raise TypeError: Provided value of name is not str type.
         """
-        self.__name = name
+        if not isinstance(name, str):
+            raise TypeError("Provided name is not str type.")
+        self.__name = name.strip()
 
     @property
     def name(self) -> str:
