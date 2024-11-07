@@ -8,7 +8,7 @@ meaningful information (e.g. physical value, text).
 __all__ = ["DataRecordType", "AbstractDataRecord", "DecodedDataRecord"]
 
 from abc import ABC, abstractmethod
-from typing import Tuple, TypedDict, Union
+from typing import Tuple, TypedDict, Union, Optional
 
 from uds.utilities import ValidatedEnum
 
@@ -82,19 +82,19 @@ class AbstractDataRecord(ABC):
         """
         Minimal number of this Data Record occurrences.
 
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.min_occurrences`
+        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
             equals True.
         """
 
     @property  # noqa: F841
     @abstractmethod
-    def max_occurrences(self) -> int:
+    def max_occurrences(self) -> Optional[int]:
         """
         Maximal number of this Data Record occurrences.
 
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.min_occurrences`
+        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
             equals True.
-        .. warning:: No maximal number (infinite number of occurrences) is represented by `0` value.
+        .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
         """
 
     @property  # noqa: F841
