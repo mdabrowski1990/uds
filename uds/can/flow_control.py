@@ -57,9 +57,9 @@ class CanFlowStatus(ValidatedEnum, NibbleEnum):
 
     ContinueToSend: "CanFlowStatus" = 0x0  # type: ignore
     """Asks to resume Consecutive Frames transmission."""
-    Wait: "CanFlowStatus" = 0x1  # type: ignore  # noqa: F841
+    Wait: "CanFlowStatus" = 0x1  # type: ignore
     """Asks to pause Consecutive Frames transmission."""
-    Overflow: "CanFlowStatus" = 0x2  # type: ignore  # noqa: F841
+    Overflow: "CanFlowStatus" = 0x2  # type: ignore
     """Asks to abort transmission of a diagnostic message."""
 
 

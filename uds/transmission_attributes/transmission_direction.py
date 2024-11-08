@@ -11,7 +11,7 @@ from uds.utilities import ValidatedEnum
 class TransmissionDirection(ValidatedEnum, StrEnum):
     """Direction of a communication."""
 
-    RECEIVED: "TransmissionDirection" = "Rx"  # type: ignore  # noqa: F841
+    RECEIVED: "TransmissionDirection" = "Rx"  # type: ignore
     """Incoming transmission from the perspective of the code."""
-    TRANSMITTED: "TransmissionDirection" = "Tx"  # type: ignore  # noqa: F841
+    TRANSMITTED: "TransmissionDirection" = "Tx"  # type: ignore
     """Outgoing transmission from the perspective of the code."""

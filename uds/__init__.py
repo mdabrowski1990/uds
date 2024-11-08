@@ -28,6 +28,7 @@ __license__ = "MIT"
 
 
 import uds.can
+import uds.database
 import uds.message
 import uds.packet
 import uds.segmentation

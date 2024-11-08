@@ -65,7 +65,7 @@ Link: https://github.com/pylessard/python-udsoncan
     https://udsoncan.readthedocs.io/en/latest/udsoncan/connection.html#available-connections
   - CAN bus fully supported with possibility to extension for other buses (requires custom code)
   - possibility to configure all transmission parameters for CAN using can-isotp package -
-    https://can-isotp.readthedocs.io/en/latest/isotp/implementation.html#
+    https://can-isotp.readthedocs.io/en/latest/isotp/implementation.html
   - handlers for multiple diagnostic services are implemented -
     https://udsoncan.readthedocs.io/en/latest/udsoncan/services.html
   - positive and negatives scenarios are handled - https://udsoncan.readthedocs.io/en/latest/udsoncan/exceptions.html
@@ -78,7 +78,7 @@ Link: https://github.com/pylessard/python-udsoncan
 - cons:
 
   - no support for full-duplex communication (sending and receiving at the same time)
-  - only Client side communication is implemented - https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html#
+  - only Client side communication is implemented - https://udsoncan.readthedocs.io/en/latest/udsoncan/client.html
 
 
 python-uds
