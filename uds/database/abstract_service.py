@@ -17,12 +17,12 @@ DataRecordValueAlias = Union[int, float, str, Iterable[Dict[str, "DataRecordValu
 class AbstractService(ABC):
     """Common interface for all diagnostic services."""
 
-    @abstractmethod
+    @abstractmethod  # noqa: F841
     @property
     def request_sid(self) -> RequestSID:
         """Service Identifier in request messages."""
 
-    @abstractmethod
+    @abstractmethod  # noqa: F841
     @property
     def response_sid(self) -> ResponseSID:
         """Service Identifier in (positive) response messages."""
@@ -38,7 +38,7 @@ class AbstractService(ABC):
         """
 
     @abstractmethod
-    def encode(self, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
+    def encode(self, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:  # noqa: F841
         """
         Encode diagnostic message from data records values.
 
