@@ -8,7 +8,7 @@ meaningful information (e.g. physical value, text).
 __all__ = ["DataRecordType", "AbstractDataRecord", "DecodedDataRecord"]
 
 from abc import ABC, abstractmethod
-from typing import Tuple, TypedDict, Union, Optional
+from typing import Optional, Tuple, TypedDict, Union
 
 from uds.utilities import ValidatedEnum
 
