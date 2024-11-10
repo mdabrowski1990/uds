@@ -5,7 +5,7 @@ Each Data Record contains mapping (translation) of raw data (sequence of bits in
 meaningful information (e.g. physical value, text).
 """
 
-__all__ = ["DataRecordType", "AbstractDataRecord", "DecodedDataRecord"]
+__all__ = ["DataRecordType", "AbstractDataRecord", "DecodedDataRecord", "DataRecordPhysicalValueAlias"]
 
 from abc import ABC, abstractmethod
 from typing import Tuple, TypedDict, Union, Optional
@@ -33,7 +33,7 @@ class DataRecordType(ValidatedEnum):
     #  - https://github.com/mdabrowski1990/uds/issues/9
     #  - https://github.com/mdabrowski1990/uds/issues/10
 
-    RAW = "RAW"
+    RAW: "DataRecordType" = "RAW"  # type: ignore
 
 class AbstractDataRecord(ABC):
     """Common implementation and interface for all Data Records."""

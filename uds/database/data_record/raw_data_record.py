@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 
-from .abstract_data_record import AbstractDataRecord, DataRecordType
+from .abstract_data_record import AbstractDataRecord, DataRecordType, DataRecordPhysicalValueAlias, DecodedDataRecord
 
 
 class RawDataRecord(AbstractDataRecord):
@@ -68,7 +68,7 @@ class RawDataRecord(AbstractDataRecord):
         """Get Data Records contained by this Data Record."""
         return ()
 
-    def decode(self, raw_value: int) -> int:
+    def decode(self, raw_value: int) -> DecodedDataRecord:
         """
         Decode physical value for provided raw value.
 
@@ -76,9 +76,9 @@ class RawDataRecord(AbstractDataRecord):
 
         :return: Dictionary with physical value for this Data Record.
         """
-        return raw_value
+        return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value="Raw Data Record")
 
-    def encode(self, physical_value: int) -> int:
+    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
         """
         Encode raw value for provided physical value.
 
@@ -86,4 +86,4 @@ class RawDataRecord(AbstractDataRecord):
 
         :return: Raw Value of this Data Record.
         """
-        return physical_value
+        return physical_value  # type: ignore
