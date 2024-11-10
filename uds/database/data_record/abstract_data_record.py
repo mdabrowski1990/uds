@@ -28,12 +28,12 @@ class DataRecordType(ValidatedEnum):
     """All Data Record types."""
 
     # TODO: fill with following tasks:
-    #  - https://github.com/mdabrowski1990/uds/issues/2
     #  - https://github.com/mdabrowski1990/uds/issues/6
     #  - https://github.com/mdabrowski1990/uds/issues/8
     #  - https://github.com/mdabrowski1990/uds/issues/9
     #  - https://github.com/mdabrowski1990/uds/issues/10
 
+    RAW = "RAW"
 
 class AbstractDataRecord(ABC):
     """Common implementation and interface for all Data Records."""

@@ -1,9 +1,9 @@
 import pytest
 from mock import Mock, patch
 
-from uds.database.abstract_data_record import AbstractDataRecord
+from uds.database.data_record import AbstractDataRecord
 
-SCRIPT_LOCATION = "uds.database.abstract_data_record"
+SCRIPT_LOCATION = "uds.database.data_record"
 
 
 class TestAbstractDataRecord:
