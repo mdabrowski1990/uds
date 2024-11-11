@@ -1,9 +1,9 @@
 import pytest
 from mock import Mock, patch
 
-from uds.database.data_record import AbstractDataRecord
+from uds.database.data_record.abstract_data_record import AbstractDataRecord
 
-SCRIPT_LOCATION = "uds.database.data_record"
+SCRIPT_LOCATION = "uds.database.data_record.abstract_data_record"
 
 
 class TestAbstractDataRecord:
@@ -35,3 +35,7 @@ class TestAbstractDataRecord:
     def test_name(self):
         self.mock_data_record._AbstractDataRecord__name = Mock()
         assert AbstractDataRecord.name.fget(self.mock_data_record) == self.mock_data_record._AbstractDataRecord__name
+
+    def test_data_record_type(self):
+        self.mock_data_record.__class__.__name__ = "MockDataRecord"
+        assert AbstractDataRecord.data_record_type.fget(self.mock_data_record) == "MockDataRecord"

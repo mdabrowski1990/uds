@@ -1,16 +1,11 @@
 """
-Definition of all Data Records types.
-
-Each Data Record contains mapping (translation) of raw data (sequence of bits in diagnostic message payload) to some
-meaningful information (e.g. physical value, text).
+Definition of AbstractDataRecord which is a base class for all Data Records.
 """
 
-__all__ = ["DataRecordType", "AbstractDataRecord", "DecodedDataRecord", "DataRecordPhysicalValueAlias"]
+__all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord"]
 
 from abc import ABC, abstractmethod
-from typing import Tuple, TypedDict, Union, Optional
-
-from uds.utilities import ValidatedEnum
+from typing import Optional, Tuple, TypedDict, Union
 
 DataRecordPhysicalValueAlias = Union[int, float, str, Tuple["DecodedDataRecord", ...]]
 """Alias of Data Records' physical value."""
@@ -23,17 +18,6 @@ class DecodedDataRecord(TypedDict):
     raw_value: int
     physical_value: DataRecordPhysicalValueAlias  # noqa: F841
 
-
-class DataRecordType(ValidatedEnum):
-    """All Data Record types."""
-
-    # TODO: fill with following tasks:
-    #  - https://github.com/mdabrowski1990/uds/issues/6
-    #  - https://github.com/mdabrowski1990/uds/issues/8
-    #  - https://github.com/mdabrowski1990/uds/issues/9
-    #  - https://github.com/mdabrowski1990/uds/issues/10
-
-    RAW: "DataRecordType" = "RAW"  # type: ignore
 
 class AbstractDataRecord(ABC):
     """Common implementation and interface for all Data Records."""
@@ -56,9 +40,9 @@ class AbstractDataRecord(ABC):
         return self.__name
 
     @property  # noqa: F841
-    @abstractmethod
-    def data_record_type(self) -> DataRecordType:
+    def data_record_type(self) -> str:
         """Type of this Data Record."""
+        return self.__class__.__name__
 
     @property  # noqa: F841
     @abstractmethod

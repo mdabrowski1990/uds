@@ -1,6 +1,10 @@
+"""
+Definition of RawDataRecord.
+"""
+
 from typing import Optional, Tuple
 
-from .abstract_data_record import AbstractDataRecord, DataRecordType, DataRecordPhysicalValueAlias, DecodedDataRecord
+from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
 
 
 class RawDataRecord(AbstractDataRecord):
@@ -17,19 +21,28 @@ class RawDataRecord(AbstractDataRecord):
         :raise ValueError: Provided length is not a positive integer.
         """
         super().__init__(name)
-        if not isinstance(length, int) or length <= 0:
-            raise ValueError("Length must be a positive integer.")
-        self.__length = length
-
-    @property
-    def data_record_type(self) -> DataRecordType:
-        """Type of this Data Record."""
-        return DataRecordType.RAW
+        self.length = length
 
     @property
     def length(self) -> int:
         """Get number of bits that this Data Record is stored over."""
         return self.__length
+
+    @length.setter
+    def length(self, value: int) -> None:
+        """
+        Set the length, ensuring it's an integer and within an acceptable range.
+
+        :param value: Number of bits that this Data Record is stored over.
+
+        :raise TypeError: Provided value is not int type.
+        :raise ValueError: Provided value is less or equal 0.
+        """
+        if not isinstance(value, int):
+            raise TypeError("Length must be an integer.")
+        if value <= 0:
+            raise ValueError("Length must be a positive integer.")
+        self.__length = value
 
     @property
     def is_reoccurring(self) -> bool:
@@ -76,7 +89,7 @@ class RawDataRecord(AbstractDataRecord):
 
         :return: Dictionary with physical value for this Data Record.
         """
-        return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value="Raw Data Record")
+        return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
         """
