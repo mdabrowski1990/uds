@@ -1,6 +1,4 @@
-"""
-Definition of AbstractDataRecord which is a base class for all Data Records.
-"""
+"""Definition of AbstractDataRecord which is a base class for all Data Records."""
 
 __all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord"]
 

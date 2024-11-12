@@ -1,6 +1,6 @@
-"""
-Definition of RawDataRecord.
-"""
+"""Definition of RawDataRecord."""
+
+__all__ = ["RawDataRecord"]
 
 from typing import Optional, Tuple
 
@@ -8,11 +8,11 @@ from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAli
 
 
 class RawDataRecord(AbstractDataRecord):
-    """Common implementation and interface for Raw Data Record."""
+    """Implementation and interface for Raw Data Record."""
 
     def __init__(self, name: str, length: int) -> None:
         """
-        Initialization of Raw Data Record.
+        Initialize Raw Data Record.
 
         :param name: Name to assign to this Data Record.
         :param length: Number of bits that this Raw Data Record is stored over.
@@ -44,7 +44,7 @@ class RawDataRecord(AbstractDataRecord):
             raise ValueError("Length must be a positive integer.")
         self.__length = value
 
-    @property
+    @property  # noqa: F841
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
@@ -55,7 +55,7 @@ class RawDataRecord(AbstractDataRecord):
         """
         return False
 
-    @property
+    @property  # noqa: F841
     def min_occurrences(self) -> int:
         """
         Minimal number of this Data Record occurrences.
@@ -65,7 +65,7 @@ class RawDataRecord(AbstractDataRecord):
         """
         return 1
 
-    @property
+    @property  # noqa: F841
     def max_occurrences(self) -> Optional[int]:
         """
         Maximal number of this Data Record occurrences.
@@ -76,7 +76,7 @@ class RawDataRecord(AbstractDataRecord):
         """
         return 1
 
-    @property
+    @property  # noqa: F841
     def contains(self) -> Tuple[AbstractDataRecord, ...]:
         """Get Data Records contained by this Data Record."""
         return ()
