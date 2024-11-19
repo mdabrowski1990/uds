@@ -1,6 +1,6 @@
 """Definition of UDS Service data encoding and decoding."""
 
-__all__ = ["AbstractService"]
+__all__ = ["AbstractService", "DataRecordValueAlias"]
 
 from abc import ABC, abstractmethod
 from typing import Dict, Iterable, List, Union
@@ -30,24 +30,25 @@ class AbstractService(ABC):
     @abstractmethod
     def decode(self, payload: RawBytesAlias) -> List[DecodedDataRecord]:
         """
-        Decode physical values carried by a diagnostic message.
+        Decode physical values carried in payload of a diagnostic message.
 
         :param payload: Payload of a diagnostic message.
 
-        :return: Decoded values for all Data Records.
+        :return: Decoded Data Records values from provided diagnostic message.
         """
 
     @abstractmethod
     def encode(self, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:  # noqa: F841
         """
-        Encode diagnostic message from data records values.
+        Encode diagnostic message payload from data records values.
 
         :param data_records_values: Value for each Data Record that is part a service message.
             Each type represent other data:
                 - int type - raw value of a Data Record
                 - float type - physical value of a Data Record
                 - str type - text value of a Data Record
-                - iterable type - contains values for children Data Records
+                - iterable type - values for children Data Records
+                - dict type - values of children Data Records
 
             .. warning:: Providing physical value as float might sometime cause issues due
                 :ref:`floating-point precision <https://docs.python.org/3/tutorial/floatingpoint.html>`.
