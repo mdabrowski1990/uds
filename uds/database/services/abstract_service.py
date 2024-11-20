@@ -43,15 +43,17 @@ class AbstractService(ABC):
         Encode diagnostic message payload from data records values.
 
         :param data_records_values: Value for each Data Record that is part a service message.
+
             Each type represent other data:
-                - int type - raw value of a Data Record
-                - float type - physical value of a Data Record
-                - str type - text value of a Data Record
-                - iterable type - values for children Data Records
-                - dict type - values of children Data Records
+
+            - int type - raw value of a Data Record
+            - float type - physical value of a Data Record
+            - str type - text value of a Data Record
+            - iterable type - contains values for children Data Records
+            - dict type - values of children Data Records
 
             .. warning:: Providing physical value as float might sometime cause issues due
-                :ref:`floating-point precision <https://docs.python.org/3/tutorial/floatingpoint.html>`.
+                `floating-point precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
                 The closest raw value would be evaluated and put into a payload.
 
                 To avoid rounding, provide raw value (int type).
