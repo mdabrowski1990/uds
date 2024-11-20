@@ -1,12 +1,12 @@
 """Definition of TextDataRecord which is class for encode and decode values of data records."""
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Dict
 from uds.database.abstract_data_record import (AbstractDataRecord, DataRecordType, DataRecordPhysicalValueAlias,
                                                DecodedDataRecord)
 
 
 class TextDataRecord(AbstractDataRecord):
     """Implementation for Text Data Record."""
-    def __init__(self, name: str, text: str) -> None:
+    def __init__(self, name: str, length: int, mapping: Dict[int, str] = None) -> None:
         """Initialize Text Data Record.
 
         :param name: Name to assign to this Data Record.
@@ -14,7 +14,8 @@ class TextDataRecord(AbstractDataRecord):
         :raise TypeError: Provided value of name is not str type.
         """
         super().__init__(name)
-        self.length = text
+        self.length = length
+        self.mapping = mapping
 
     @property  # noqa: F841
     def length(self) -> int:
@@ -66,23 +67,26 @@ class TextDataRecord(AbstractDataRecord):
         """Get Data Records contained by this Data Record."""
         # TODO
 
-    def decode(self, raw_value: Union[int, str]) -> DecodedDataRecord:  # noqa: F841
+    def decode(self, physical_value: Union[int, str]) -> DecodedDataRecord:  # noqa: F841
         """
         Decode physical value for provided raw value.
 
-        :param raw_value: Raw (bit) value of Data Record.
+        :param physical_value: Raw (bit) value of Data Record.
 
         :return: Dictionary with physical value for this Data Record.
         """
-        if isinstance(raw_value, int):
-            return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
-        elif isinstance(raw_value, str):
-            decoded_value = int.from_bytes(raw_value.encode("utf-8"), byteorder="big")
-            return DecodedDataRecord(name=self.name, raw_value=decoded_value, physical_value=raw_value)
-        else:
-            raise TypeError("Raw_value must be int or str.")
+        if isinstance(physical_value, int):
+            return DecodedDataRecord(name=self.name, raw_value=physical_value, physical_value=physical_value)
 
-    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> Union[int, str]:  # noqa: F841
+        if self.mapping:
+            for k, v in self.mapping.items():
+                if v == physical_value:
+                    return DecodedDataRecord(name=self.name, raw_value=k, physical_value=physical_value)
+            raise ValueError("physical_value not found in provided mapping.")
+        else:
+            raise TypeError("physical_value must be int or mapping must be provided.")
+
+    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
         """
         Encode raw value for provided physical value.
 
@@ -90,18 +94,13 @@ class TextDataRecord(AbstractDataRecord):
 
         :return: Raw Value of this Data Record.
         """
-        def encode_value(value):
-            if isinstance(value, int):
-                return value
-            elif isinstance(value, str):
-                # TODO
-            elif isinstance(value, float):
-                # TODO
-
-        if isinstance(physical_value, (int, str, float)):
-            return encode_value(physical_value)
-        elif isinstance(physical_value, tuple):
-            if isinstance(physical_value, DecodedDataRecord):
-                return tuple(encode_value(elem["raw_value"]) for elem in physical_value)
-        else:
-            raise TypeError("Raw_value must be int or str.")
+        if isinstance(physical_value, int):
+            return physical_value
+        elif isinstance(physical_value, str):
+            if self.mapping:
+                for k, v in self.mapping.items():
+                    if v == physical_value:
+                        return k
+                raise ValueError("physical_value not found in provided mapping.")
+            else:
+                raise TypeError("During encoding of str mapping must be provided.")
