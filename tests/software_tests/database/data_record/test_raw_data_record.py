@@ -66,7 +66,7 @@ class TestRawDataRecord:
     # contains
 
     def test_contains(self):
-        assert self.raw_data_record.contains == ()
+        assert self.raw_data_record.children == ()
 
     # decode
 

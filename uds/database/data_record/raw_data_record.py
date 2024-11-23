@@ -53,40 +53,22 @@ class RawDataRecord(AbstractDataRecord):
         """
         return (1 << self.length) - 1
 
-    @property  # noqa: F841
-    def is_reoccurring(self) -> bool:
-        """
-        Whether this Data Record might occur multiple times.
-
-        Values meaning:
-        - False - exactly one occurrence in every diagnostic message
-        - True - number of occurrences might vary
-        """
-        return False
-
-    @property  # noqa: F841
+    @property
     def min_occurrences(self) -> int:
-        """
-        Minimal number of this Data Record occurrences.
-
-        .. note:: Relevant only if :attr:`~uds.database.data_record.raw_data_record.RawDataRecord.is_reoccurring`
-            equals True.
-        """
+        """Minimal number of this Data Record occurrences."""
         return 1
 
-    @property  # noqa: F841
+    @property
     def max_occurrences(self) -> Optional[int]:
         """
         Maximal number of this Data Record occurrences.
 
-        .. note:: Relevant only if :attr:`~uds.database.data_record.raw_data_record.RawDataRecord.is_reoccurring`
-            equals True.
         .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
         """
         return 1
 
     @property  # noqa: F841
-    def contains(self) -> Tuple[AbstractDataRecord, ...]:
+    def children(self) -> Tuple[AbstractDataRecord, ...]:
         """Get Data Records contained by this Data Record."""
         return ()
 
@@ -108,7 +90,7 @@ class RawDataRecord(AbstractDataRecord):
             raise ValueError(
                 f"Provided value of raw_value is out of range: must be between 0 and {self.max_raw_value}, got {raw_value}."
             )
-        return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
+        return DecodedDataRecord(raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
         """

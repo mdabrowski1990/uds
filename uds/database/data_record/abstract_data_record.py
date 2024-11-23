@@ -3,18 +3,17 @@
 __all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord"]
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, TypedDict, Union
+from typing import Optional, Tuple, TypedDict, Union, Dict
 
-DataRecordPhysicalValueAlias = Union[int, float, str, Tuple["DecodedDataRecord", ...]]
+DataRecordPhysicalValueAlias = Union[int, float, str, Dict[str, "DataRecordPhysicalValueAlias"]]
 """Alias of Data Records' physical value."""
 
 
 class DecodedDataRecord(TypedDict):
     """Structure of decoded Data Record."""
 
-    name: str
     raw_value: int
-    physical_value: DataRecordPhysicalValueAlias  # noqa: F841
+    physical_value: DataRecordPhysicalValueAlias
 
 
 class AbstractDataRecord(ABC):
@@ -43,7 +42,6 @@ class AbstractDataRecord(ABC):
         """Get number of bits that this Data Record is stored over."""
 
     @property  # noqa: F841
-    @abstractmethod
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
@@ -52,31 +50,25 @@ class AbstractDataRecord(ABC):
         - False - exactly one occurrence in every diagnostic message
         - True - number of occurrences might vary
         """
+        return self.min_occurrences == self.max_occurrences
 
-    @property  # noqa: F841
+    @property
     @abstractmethod
     def min_occurrences(self) -> int:
-        """
-        Minimal number of this Data Record occurrences.
+        """Minimal number of this Data Record occurrences."""
 
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
-            equals True.
-        """
-
-    @property  # noqa: F841
+    @property
     @abstractmethod
     def max_occurrences(self) -> Optional[int]:
         """
         Maximal number of this Data Record occurrences.
 
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
-            equals True.
         .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
         """
 
     @property  # noqa: F841
     @abstractmethod
-    def contains(self) -> Tuple["AbstractDataRecord", ...]:
+    def children(self) -> Tuple["AbstractDataRecord", ...]:
         """Get Data Records contained by this Data Record."""
 
     @abstractmethod

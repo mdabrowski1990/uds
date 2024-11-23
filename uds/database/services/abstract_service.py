@@ -28,7 +28,7 @@ class AbstractService(ABC):
         """Service Identifier in (positive) response messages."""
 
     @abstractmethod
-    def decode(self, payload: RawBytesAlias) -> List[DecodedDataRecord]:
+    def decode(self, payload: RawBytesAlias) -> Dict[str, DecodedDataRecord]:
         """
         Decode physical values carried by a diagnostic message.
 
