@@ -44,6 +44,15 @@ class RawDataRecord(AbstractDataRecord):
             raise ValueError("Length must be a positive integer.")
         self.__length = value
 
+    @property
+    def max_raw_value(self):
+        """
+        Maximum raw (bit) value for this Data Record.
+
+        :return: Maximum value that can be represented by `length` bits.
+        """
+        return (1 << self.length) - 1
+
     @property  # noqa: F841
     def is_reoccurring(self) -> bool:
         """
@@ -88,7 +97,17 @@ class RawDataRecord(AbstractDataRecord):
         :param raw_value: Raw (bit) value of Data Record.
 
         :return: Dictionary with physical value for this Data Record.
+
+        :raises TypeError: Provided `raw_value` is not int type.
+        :raises ValueError: Provided `raw_value` is out of range (0 <= raw_value <= max_raw_value).
         """
+        if not isinstance(raw_value, int):
+            raise TypeError(f"Expected raw_value to be an int type, got '{type(raw_value).__name__}' instead.")
+
+        if not (0 <= raw_value <= self.max_raw_value):
+            raise ValueError(
+                f"Provided value of raw_value is out of range: must be between 0 and {self.max_raw_value}, got {raw_value}."
+            )
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
