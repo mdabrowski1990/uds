@@ -67,24 +67,21 @@ class TextDataRecord(AbstractDataRecord):
         """Get Data Records contained by this Data Record."""
         # TODO
 
-    def decode(self, physical_value: Union[int, str]) -> DecodedDataRecord:  # noqa: F841
+    def decode(self, raw_value: int) -> DecodedDataRecord:  # noqa: F841
         """
         Decode physical value for provided raw value.
 
-        :param physical_value: Raw (bit) value of Data Record.
+        :param raw_value: Raw (bit) value of Data Record.
 
         :return: Dictionary with physical value for this Data Record.
         """
-        if isinstance(physical_value, int):
-            return DecodedDataRecord(name=self.name, raw_value=physical_value, physical_value=physical_value)
-
         if self.mapping:
             for k, v in self.mapping.items():
-                if v == physical_value:
-                    return DecodedDataRecord(name=self.name, raw_value=k, physical_value=physical_value)
+                if v == raw_value:
+                    return DecodedDataRecord(name=self.name, raw_value=k, physical_value=raw_value)
             raise ValueError("physical_value not found in provided mapping.")
         else:
-            raise TypeError("physical_value must be int or mapping must be provided.")
+            return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
         """
