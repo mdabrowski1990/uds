@@ -104,9 +104,10 @@ class RawDataRecord(AbstractDataRecord):
         if not isinstance(raw_value, int):
             raise TypeError(f"Expected raw_value to be an int type, got '{type(raw_value).__name__}' instead.")
 
-        if not (0 <= raw_value <= self.max_raw_value):
+        if not 0 <= raw_value <= self.max_raw_value:
             raise ValueError(
-                f"Provided value of raw_value is out of range: must be between 0 and {self.max_raw_value}, got {raw_value}."
+                "Provided value of raw_value is out of range: "
+                f"must be between 0 and {self.max_raw_value}, got {raw_value}."
             )
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
@@ -119,10 +120,13 @@ class RawDataRecord(AbstractDataRecord):
         :return: Raw Value of this Data Record.
         """
         if not isinstance(physical_value, int):
-            raise TypeError(f"Expected physical_value to be an int type, got '{type(physical_value).__name__}' instead.")
+            raise TypeError(
+                f"Expected physical_value to be an int type, got '{type(physical_value).__name__}' instead."
+            )
 
-        if not (0 <= physical_value <= self.max_raw_value):
+        if not 0 <= physical_value <= self.max_raw_value:
             raise ValueError(
-                f"Provided value of physical_value is out of range: must be between 0 and {self.max_raw_value}, got {physical_value}."
+                "Provided value of physical_value is out of range: "
+                f"must be between 0 and {self.max_raw_value}, got {physical_value}."
             )
         return physical_value  # type: ignore
