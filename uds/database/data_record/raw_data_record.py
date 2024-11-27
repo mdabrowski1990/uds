@@ -44,15 +44,6 @@ class RawDataRecord(AbstractDataRecord):
             raise ValueError("Length must be a positive integer.")
         self.__length = value
 
-    @property
-    def max_raw_value(self):
-        """
-        Maximum raw (bit) value for this Data Record.
-
-        :return: Maximum value that can be represented by `length` bits.
-        """
-        return (1 << self.length) - 1
-
     @property  # noqa: F841
     def is_reoccurring(self) -> bool:
         """

@@ -108,6 +108,7 @@ class TestRawDataRecord:
     )
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_decode_type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             RawDataRecord.decode(self.mock_data_record, value)
         mock_isinstance.assert_called_once_with(value, int)
@@ -127,10 +128,14 @@ class TestRawDataRecord:
     # encode
 
     @pytest.mark.parametrize(
-        "value", [1, 4]
+        "value, max_raw_value", [
+            (0, 2),
+            (3, 3),
+            (16, 16),
+        ]
     )
-    def test_encode(self, value):
-        self.mock_data_record.max_raw_value = 8
+    def test_encode(self, value, max_raw_value):
+        self.mock_data_record.max_raw_value = max_raw_value
         assert RawDataRecord.encode(self.mock_data_record, value) == value
 
     @pytest.mark.parametrize(
@@ -138,6 +143,7 @@ class TestRawDataRecord:
     )
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_encode_type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             RawDataRecord.encode(self.mock_data_record, value)
         mock_isinstance.assert_called_once_with(value, int)

@@ -35,3 +35,16 @@ class TestAbstractDataRecord:
     def test_name(self):
         self.mock_data_record._AbstractDataRecord__name = Mock()
         assert AbstractDataRecord.name.fget(self.mock_data_record) == self.mock_data_record._AbstractDataRecord__name
+
+    # max_raw_value
+
+    @pytest.mark.parametrize(
+        "length, value", [
+            (2, 3),
+            (5, 31),
+            (8, 255),
+        ]
+    )
+    def test_max_raw_value_getter(self, length, value):
+        self.mock_data_record.length = length
+        assert AbstractDataRecord.max_raw_value.fget(self.mock_data_record) == value
