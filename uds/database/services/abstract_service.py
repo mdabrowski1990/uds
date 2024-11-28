@@ -8,7 +8,7 @@ from typing import Dict, Iterable, List, Union
 from uds.message import RequestSID, ResponseSID
 from uds.utilities import RawBytesAlias, RawBytesListAlias
 
-from ..abstract_data_record import DecodedDataRecord
+from ..data_record import DecodedDataRecord
 
 DataRecordValueAlias = Union[int, float, str, Iterable[Dict[str, "DataRecordValueAlias"]]]
 "Alias of input with Data Records values."

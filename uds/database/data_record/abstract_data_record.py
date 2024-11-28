@@ -1,16 +1,9 @@
-"""
-Definition of all Data Records types.
+"""Definition of AbstractDataRecord which is a base class for all Data Records."""
 
-Each Data Record contains mapping (translation) of raw data (sequence of bits in diagnostic message payload) to some
-meaningful information (e.g. physical value, text).
-"""
-
-__all__ = ["DataRecordType", "AbstractDataRecord", "DecodedDataRecord"]
+__all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord"]
 
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple, TypedDict, Union
-
-from uds.utilities import ValidatedEnum
 
 DataRecordPhysicalValueAlias = Union[int, float, str, Tuple["DecodedDataRecord", ...]]
 """Alias of Data Records' physical value."""
@@ -22,17 +15,6 @@ class DecodedDataRecord(TypedDict):
     name: str
     raw_value: int
     physical_value: DataRecordPhysicalValueAlias  # noqa: F841
-
-
-class DataRecordType(ValidatedEnum):
-    """All Data Record types."""
-
-    # TODO: fill with following tasks:
-    #  - https://github.com/mdabrowski1990/uds/issues/2
-    #  - https://github.com/mdabrowski1990/uds/issues/6
-    #  - https://github.com/mdabrowski1990/uds/issues/8
-    #  - https://github.com/mdabrowski1990/uds/issues/9
-    #  - https://github.com/mdabrowski1990/uds/issues/10
 
 
 class AbstractDataRecord(ABC):
@@ -57,13 +39,17 @@ class AbstractDataRecord(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def data_record_type(self) -> DataRecordType:
-        """Type of this Data Record."""
-
-    @property  # noqa: F841
-    @abstractmethod
     def length(self) -> int:
         """Get number of bits that this Data Record is stored over."""
+
+    @property
+    def max_raw_value(self):
+        """
+        Maximum raw (bit) value for this Data Record.
+
+        :return: Maximum value that can be represented by `length` bits.
+        """
+        return (1 << self.length) - 1
 
     @property  # noqa: F841
     @abstractmethod
