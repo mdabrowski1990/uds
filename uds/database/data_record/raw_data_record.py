@@ -88,7 +88,18 @@ class RawDataRecord(AbstractDataRecord):
         :param raw_value: Raw (bit) value of Data Record.
 
         :return: Dictionary with physical value for this Data Record.
+
+        :raises TypeError: Provided `raw_value` is not int type.
+        :raises ValueError: Provided `raw_value` is out of range (0 <= raw_value <= max_raw_value).
         """
+        if not isinstance(raw_value, int):
+            raise TypeError(f"Expected raw_value to be an int type, got '{type(raw_value).__name__}' instead.")
+
+        if not 0 <= raw_value <= self.max_raw_value:
+            raise ValueError(
+                "Provided value of raw_value is out of range: "
+                f"must be between 0 and {self.max_raw_value}, got {raw_value}."
+            )
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
@@ -99,4 +110,14 @@ class RawDataRecord(AbstractDataRecord):
 
         :return: Raw Value of this Data Record.
         """
+        if not isinstance(physical_value, int):
+            raise TypeError(
+                f"Expected physical_value to be an int type, got '{type(physical_value).__name__}' instead."
+            )
+
+        if not 0 <= physical_value <= self.max_raw_value:
+            raise ValueError(
+                "Provided value of physical_value is out of range: "
+                f"must be between 0 and {self.max_raw_value}, got {physical_value}."
+            )
         return physical_value  # type: ignore
