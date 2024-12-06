@@ -1,3 +1,3 @@
 """Database implementation for diagnostic services."""
 
-from .abstract_service import AbstractService, DataRecordValueAlias
+from .abstract_service import AbstractService

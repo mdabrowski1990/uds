@@ -8,8 +8,8 @@ from typing import Dict, List, Union
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 from uds.utilities import RawBytesListAlias
 
-from .data_record import DecodedDataRecord
-from .services import AbstractService, DataRecordValueAlias
+from .data_record import DataRecordValueAlias, DecodedDataRecord
+from .services import AbstractService
 
 
 class AbstractDatabase(ABC):

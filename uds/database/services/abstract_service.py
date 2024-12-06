@@ -1,23 +1,14 @@
 """Definition of UDS Service data encoding and decoding."""
 
-__all__ = ["AbstractService", "DataRecordValueAlias"]
+__all__ = ["AbstractService"]
 
 from abc import ABC, abstractmethod
-from typing import Dict, Sequence, List, Union
+from typing import List
 
 from uds.message import RequestSID, ResponseSID
 from uds.utilities import RawBytesAlias, RawBytesListAlias
 
-from ..data_record import DecodedDataRecord
-
-DataRecordValueAlias = Union[
-    int,  # raw value
-    float,  # physical value calculated through formula
-    str,  # text value decoded either through raw value mapping or text encoding
-    Dict[str, "DataRecordValueAlias"],  # value of container's children
-    Sequence[Dict[str, "DataRecordValueAlias"]],  # multiple records' values
-]
-"Alias of input with Data Records values."
+from ..data_record import DataRecordValueAlias, DecodedDataRecord
 
 
 class AbstractService(ABC):

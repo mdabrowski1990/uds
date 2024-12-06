@@ -1,13 +1,26 @@
 """Definition of AbstractDataRecord which is a base class for all Data Records."""
 
-__all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord"]
+__all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord", "DataRecordValueAlias"]
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, TypedDict, Union
+from typing import Dict, Optional, Sequence, Tuple, TypedDict, Union
 
-DataRecordPhysicalValueAlias = Union[int, float, str, Tuple["DecodedDataRecord", ...]]
+DataRecordValueAlias = Union[
+    int,  # raw value
+    float,  # physical value calculated through formula (the closest raw value would be encoded)
+    str,  # carried text value
+    Dict[str, "DataRecordValueAlias"],  # value of container's children
+    Sequence[Dict[str, "DataRecordValueAlias"]],  # values for reoccurring container (or its children)
+]
+"""Alias of Data Records' input value."""
+
+DataRecordPhysicalValueAlias =Union[
+    int,  # physical value is the same as raw value
+    float,  # physical value calculated through formula
+    str,  # decoded text value
+    Tuple[Tuple["DecodedDataRecord", ...], ...]  # decoded container value, each element is another record
+]
 """Alias of Data Records' physical value."""
-
 
 class DecodedDataRecord(TypedDict):
     """Structure of decoded Data Record."""
