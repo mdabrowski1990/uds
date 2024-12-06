@@ -57,7 +57,7 @@ class AbstractDatabase(ABC):
             raise TypeError("Provided SID value is not int type.")
         if sid not in self.services:
             raise ValueError("Database has no encoding defined for provided SID value.")
-        return self.services[sid].encode(**data_records_values)
+        return self.services[sid].encode(sid=sid, **data_records_values)
 
     def decode(self, message: Union[UdsMessage, UdsMessageRecord]) -> List[DecodedDataRecord]:
         """
