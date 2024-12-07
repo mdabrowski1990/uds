@@ -1,7 +1,5 @@
 """Definition of TextDataRecord which is class for encode and decode values of data records."""
-import copy
 from typing import Optional, Tuple, Union, Dict
-from uu import decode
 
 from uds.database.abstract_data_record import (AbstractDataRecord, DataRecordType, DataRecordPhysicalValueAlias,
                                                DecodedDataRecord)
@@ -18,8 +16,7 @@ class TextDataRecord(AbstractDataRecord):
         """
         super().__init__(name)
         self.length = length
-        # self.__reversed_mapping = None ### should it be deleted?
-        self.__mapping = mapping
+        self.mapping = mapping
 
     @property  # noqa: F841
     def length(self) -> int:
@@ -98,12 +95,9 @@ class TextDataRecord(AbstractDataRecord):
 
         :return: Dictionary with physical value for this Data Record.
         """
-        if self.__reversed_mapping:
-            try:
-                decoded_value = self.__reversed_mapping[raw_value]
-                return DecodedDataRecord(name=self.name, raw_value=decoded_value, physical_value=raw_value)
-            except KeyError as error:
-                raise KeyError("raw_value not found in provided mapping.") from error
+        if raw_value in self.mapping:
+            physical_value = self.mapping[raw_value]
+            return DecodedDataRecord(name=self.name, raw_value=physical_value, physical_value=raw_value)
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
@@ -117,10 +111,6 @@ class TextDataRecord(AbstractDataRecord):
         if isinstance(physical_value, int):
             return physical_value
         elif isinstance(physical_value, str):
-            if self.__mapping:
-                try:
-                    return self.__mapping[physical_value]
-                except KeyError as error:
-                    raise KeyError("physical_value not found in provided mapping.") from error
-            else:
-                raise TypeError("During encoding of str mapping must be provided.")
+            if physical_value in self.__reversed_mapping:
+                return self.__reversed_mapping[physical_value]
+            raise KeyError("physical_value not found in provided mapping.")
