@@ -5,5 +5,10 @@ Each Data Record contains mapping (translation) of raw data (sequence of bits in
 meaningful information (e.g. physical value, text).
 """
 
-from .abstract_data_record import AbstractDataRecord, DecodedDataRecord
+from .abstract_data_record import (
+    AbstractDataRecord,
+    DataRecordPhysicalValueAlias,
+    DataRecordValueAlias,
+    DecodedDataRecord,
+)
 from .raw_data_record import RawDataRecord
