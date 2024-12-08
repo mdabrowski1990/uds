@@ -35,57 +35,39 @@ class AbstractService(ABC):
         """
 
     def encode(self, sid: int, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
-        # TODO
+        """
+        Encode diagnostic message payload for this service.
+
+        :param sid: Value of Service Identifier. It should be either equal to either `request_sid` or `response_sid`.
+        :param data_records_values: Value for each data record that is part of a service message.
+
+        :raise ValueError: Provided `sid` value is neither equal to request SID value nor response SID value for this
+            diagnostic service.
+
+        :return: Payload of a diagnostic message.
+        """
         if sid == self.request_sid:
             return self.encode_request(**data_records_values)
         if sid == self.response_sid:
             return self.encode_response(**data_records_values)
-        raise ValueError
+        raise ValueError("Provided SID value is neither request or response SID value for this service.")
 
     @abstractmethod
     def encode_request(self, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
         """
-        Encode diagnostic message payload from data records values.
+        Encode diagnostic message payload for this service's request message.
 
-        :param data_records_values: Value for each Data Record that is part a service message.
+        :param data_records_values: Value for each data record that is part of a service message.
 
-            Each type represent other data:
-
-            - int type - raw value of a Data Record
-            - float type - physical value of a Data Record
-            - str type - text value of a Data Record
-            - sequence - contains values for children Data Records
-            - dict type - values of children Data Records
-
-            .. warning:: Providing physical value as float might sometime cause issues due
-                `floating-point precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
-                The closest raw value would be evaluated and put into a payload.
-
-                To avoid rounding, provide raw value (int type).
-
-        :return: Payload of a diagnostic message.
+        :return: Payload of a request diagnostic message.
         """
 
     @abstractmethod
     def encode_response(self, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
         """
-        Encode diagnostic message payload from data records values.
+        Encode diagnostic message payload for this service's response message.
 
-        :param data_records_values: Value for each Data Record that is part a service message.
+        :param data_records_values: Value for each data record that is part of a service message.
 
-            Each type represent other data:
-
-            - int type - raw value of a Data Record
-            - float type - physical value of a Data Record
-            - str type - text value of a Data Record
-            - sequence - contains values for children Data Records
-            - dict type - values of children Data Records
-
-            .. warning:: Providing physical value as float might sometime cause issues due
-                `floating-point precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
-                The closest raw value would be evaluated and put into a payload.
-
-                To avoid rounding, provide raw value (int type).
-
-        :return: Payload of a diagnostic message.
+        :return: Payload of a response diagnostic message.
         """

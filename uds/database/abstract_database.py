@@ -34,20 +34,6 @@ class AbstractDatabase(ABC):
         :param sid: Service Identifier of a diagnostic message.
         :param data_records_values: Value for each Data Record that is part a service message.
 
-            Each type represent other data:
-
-            - int type - raw value of a Data Record
-            - float type - physical value of a Data Record
-            - str type - text value of a Data Record
-            - iterable type - contains values for children Data Records
-            - dict type - values of children Data Records
-
-            .. warning:: Providing physical value as float might sometime cause issues due
-                `floating-point precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
-                The closest raw value would be evaluated and put into a payload.
-
-                To avoid rounding, provide raw value (int type).
-
         :raise TypeError: Provided SID value is neither int, RequestSID nor ResponseSID type.
         :raise ValueError: This database has no implementation for provided SID value.
 
