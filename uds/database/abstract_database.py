@@ -9,7 +9,7 @@ from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 from uds.utilities import RawBytesListAlias
 
 from .data_record import DataRecordValueAlias, DecodedDataRecord
-from .services import AbstractService
+from .service import AbstractService
 
 
 class AbstractDatabase(ABC):

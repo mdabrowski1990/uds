@@ -6,6 +6,7 @@ from uds.transmission_attributes import AddressingType
 
 SCRIPT_LOCATION = "uds.database.abstract_database"
 
+
 class TestAbstractDatabase:
 
     def setup_method(self):
@@ -48,7 +49,7 @@ class TestAbstractDatabase:
         self.mock_database.services = {sid: mock_service}
         assert (AbstractDatabase.encode(self.mock_database, sid=sid, **data_records_values)
                 == mock_service.encode.return_value)
-        mock_service.encode.assert_called_once_with(**data_records_values)
+        mock_service.encode.assert_called_once_with(sid=sid, **data_records_values)
 
     # decode
 
