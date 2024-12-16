@@ -1,12 +1,53 @@
 """Definition of AbstractDataRecord which is a base class for all Data Records."""
 
-__all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord"]
+__all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord", "DataRecordValueAlias"]
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, TypedDict, Union
+from typing import Dict, Optional, Sequence, Tuple, TypedDict, Union
 
-DataRecordPhysicalValueAlias = Union[int, float, str, Tuple["DecodedDataRecord", ...]]
-"""Alias of Data Records' physical value."""
+DataRecordValueAlias = Union[
+    int,  # raw value
+    float,  # physical value calculated through formula
+    str,  # text (physical) value from either Text Table or Text encoding
+    Dict[str, "DataRecordValueAlias"],  # value of container's children
+    Sequence[Union[int, Dict[str, "DataRecordValueAlias"]]],  # values for reoccurring container
+]
+"""
+Alias of Data Records' input value.
+
+Each type represent other data:
+
+- int type - raw value of a data record
+- float type - physical value of a formula data record
+
+    .. warning:: Providing physical value as float might sometime cause issues due
+        `floating-point precision <https://docs.python.org/3/tutorial/floatingpoint.html>`_.
+        The closest raw value would be evaluated and put into a payload.
+
+        To avoid rounding, provide raw value (int type).
+
+- str type - text (physical) value of either text table or text data record
+- dict type - values for children of a container data records
+- sequence type - values for following occurrences of a container data record
+"""
+
+DataRecordPhysicalValueAlias = Union[
+    int,  # physical value is the same as raw value
+    float,  # physical value calculated through formula
+    str,  # decoded text value
+    Tuple[Tuple["DecodedDataRecord", ...], ...]  # decoded container value, each element is another record
+]
+"""
+Alias of Data Records' physical value.
+
+Each type represent other data:
+
+- int type - physical value is the same as raw value
+- float type - value received through formula calculation
+- str type - text value received either through encoding (e.g. ASCII, UTF-8)
+  or mapping (each value has specific meaning)
+- tuple type - one element for each container occurrence; each element is a tuple with values for children data records
+"""
 
 
 class DecodedDataRecord(TypedDict):
