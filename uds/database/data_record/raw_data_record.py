@@ -77,7 +77,7 @@ class RawDataRecord(AbstractDataRecord):
         return 1
 
     @property  # noqa: F841
-    def contains(self) -> Tuple[AbstractDataRecord, ...]:
+    def children(self) -> Tuple[AbstractDataRecord, ...]:
         """Get Data Records contained by this Data Record."""
         return ()
 

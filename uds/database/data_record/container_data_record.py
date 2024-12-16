@@ -2,6 +2,7 @@ __all__ = ["ContainerDataRecord"]
 
 from typing import Sequence, Optional, Tuple
 from .abstract_data_record import AbstractDataRecord, DecodedDataRecord
+from uds.utilities import InconsistentArgumentsError
 
 
 class ContainerDataRecord(AbstractDataRecord):
@@ -16,9 +17,14 @@ class ContainerDataRecord(AbstractDataRecord):
         self.max_occurrences = max_occurrences
         self.children = children
 
+    @property
     def length(self) -> int:
-        """Get number of bits that this Data Record is stored over."""
-        # TODO
+        """
+        Get number of bits that this Data Record is stored over.
+
+        .. warning:: The length value represents length of a single occurrence.
+        """
+        return sum(data_record.length for data_record in self.children)
 
     @property
     def min_occurrences(self) -> int:
@@ -27,10 +33,20 @@ class ContainerDataRecord(AbstractDataRecord):
 
     @min_occurrences.setter
     def min_occurrences(self, value: int):
+        """
+        Set minimal number of this Data Record occurrences.
+
+        :param value: Minimal number of occurrences to set.
+        """
         if not isinstance(value, int):
-            raise TypeError
+            raise TypeError("Provided value is not int type.")
         if value < 0:
-            raise ValueError
+            raise ValueError("Minimal number of occurrences must not be lower than 0.")
+        if hasattr(self, "max_occurrences"):
+            if self.max_occurrences is not None:
+                if value > self.max_occurrences:
+                    raise InconsistentArgumentsError("Provided value of minimal occurrences must be less or equal "
+                                                     "than the current maximal number of occurrences value.")
         self.__min_occurrences = value
 
     @property
@@ -43,25 +59,41 @@ class ContainerDataRecord(AbstractDataRecord):
         return self.__max_occurrences
 
     @max_occurrences.setter
-    def max_occurrences(self, value: int):
+    def max_occurrences(self, value: Optional[int]):
+        """
+        Set maximal number of this Data Record occurrences.
+
+        :param value: Minimal number of occurrences to set.
+        """
         if isinstance(value, int):
             if value < 1:
-                raise ValueError
+                raise ValueError("Maximal number of occurrences must not be greater or equal 1.")
+            if hasattr(self, "min_occurrences") and value < self.min_occurrences:
+                raise InconsistentArgumentsError("Provided value of maximal occurrences must be greater or equal "
+                                                 "than the current minimal number of occurrences value.")
         elif value is None:
             self.__max_occurrences = None
         else:
-            raise TypeError
+            raise TypeError("Provided value is not None or int type.")
 
     @property
     def children(self) -> Tuple[AbstractDataRecord, ...]:
+        """Get Data Records contained by this Container."""
         return self.__children
 
     @children.setter
     def children(self, value: Sequence[AbstractDataRecord]):
+        """
+        Set Data Records to be contained.
+
+        :param value: Sequence with contained Data Records.
+        """
         if not isinstance(value, Sequence):
             raise TypeError
-        if not all(isinstance(_val, AbstractDataRecord) for _val in value):
+        if not all(isinstance(data_record, AbstractDataRecord) for data_record in value):
             raise ValueError
+        if self.is_reoccurring and any(data_record.is_reoccurring for data_record in value):
+            raise InconsistentArgumentsError
         self.__children = tuple(value)
 
     def decode(self, raw_value: int) -> DecodedDataRecord:

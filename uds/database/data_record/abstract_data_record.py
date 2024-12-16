@@ -126,7 +126,7 @@ class AbstractDataRecord(ABC):
 
     @property  # noqa: F841
     @abstractmethod
-    def contains(self) -> Tuple["AbstractDataRecord", ...]:
+    def children(self) -> Tuple["AbstractDataRecord", ...]:
         """Get Data Records contained by this Data Record."""
 
     @abstractmethod

@@ -86,7 +86,7 @@ class TestRawDataRecord:
     # contains
 
     def test_contains_getter(self):
-        assert RawDataRecord.contains.fget(self.mock_data_record) == ()
+        assert RawDataRecord.children.fget(self.mock_data_record) == ()
 
     # decode
 
