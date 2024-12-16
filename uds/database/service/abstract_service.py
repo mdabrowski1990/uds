@@ -3,7 +3,7 @@
 __all__ = ["AbstractService"]
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 
 from uds.message import RequestSID, ResponseSID
 from uds.utilities import RawBytesAlias, RawBytesListAlias
