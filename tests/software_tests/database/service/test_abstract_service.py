@@ -1,7 +1,6 @@
 import pytest
 from mock import Mock
 
-
 from uds.database.service.abstract_service import AbstractService
 
 

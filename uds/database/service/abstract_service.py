@@ -34,7 +34,9 @@ class AbstractService(ABC):
         :return: Decoded Data Records values from provided diagnostic message.
         """
 
-    def encode(self, sid: Union[int, RequestSID, ResponseSID], **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
+    def encode(self,
+               sid: Union[int, RequestSID, ResponseSID],
+               **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
         """
         Encode diagnostic message payload for this service.
 

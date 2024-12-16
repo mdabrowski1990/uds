@@ -5,7 +5,6 @@ __all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRec
 from abc import ABC, abstractmethod
 from typing import Dict, Optional, Sequence, Tuple, TypedDict, Union
 
-
 DataRecordValueAlias = Union[
     int,  # raw value
     float,  # physical value calculated through formula
