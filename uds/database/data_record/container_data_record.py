@@ -1,7 +1,7 @@
 __all__ = ["ContainerDataRecord"]
 
-from typing import Sequence, Optional, Tuple
-from .abstract_data_record import AbstractDataRecord, DecodedDataRecord
+from typing import Sequence, Optional, Tuple, Dict
+from .abstract_data_record import AbstractDataRecord, DecodedDataRecord, DataRecordValueAlias
 from uds.utilities import InconsistentArgumentsError
 
 
@@ -105,3 +105,25 @@ class ContainerDataRecord(AbstractDataRecord):
         :return: Dictionary with physical value for this Data Record.
         """
         # TODO
+
+    def encode(self, physical_value: DataRecordValueAlias) -> int:  # noqa: F841
+        """
+        Encode raw value for provided physical value.
+
+        :param physical_value: Physical (meaningful e.g. float, str type) value of this Data Record.
+
+        :return: Raw Value of this Data Record.
+        """
+        if not isinstance(physical_value, Sequence):
+            raise TypeError
+        combined_raw_value = 0
+        for single_record_value in physical_value:
+            if isinstance(single_record_value, int):
+                if 0 <= single_record_value <= self.max_raw_value:
+                    entry_raw_value = single_record_value
+            elif isinstance(single_record_value, dict):
+                entry_raw_value = ...  # TODO
+            else:
+                raise ValueError
+            combined_raw_value = (combined_raw_value << self.length) + entry_raw_value
+        return combined_raw_value

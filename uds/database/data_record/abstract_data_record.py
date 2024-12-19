@@ -35,7 +35,7 @@ DataRecordPhysicalValueAlias = Union[
     int,  # physical value is the same as raw value
     float,  # physical value calculated through formula
     str,  # decoded text value
-    Tuple[Tuple["DecodedDataRecord", ...], ...]  # decoded container value, each element is another record
+    Tuple[Tuple["DecodedDataRecord", ...], ...]  # decoded container value, each element is another entry
 ]
 """
 Alias of Data Records' physical value.
@@ -59,7 +59,12 @@ class DecodedDataRecord(TypedDict):
 
 
 class AbstractDataRecord(ABC):
-    """Common implementation and interface for all Data Records."""
+    """
+    Common implementation and interface for all Data Records.
+
+    Data Records are fragments of diagnostic messages.
+    Each Data Record defines how to interpret a single element/signal.
+    """
 
     def __init__(self, name: str) -> None:
         """
@@ -92,26 +97,21 @@ class AbstractDataRecord(ABC):
         """
         return (1 << self.length) - 1
 
-    @property  # noqa: F841
     @abstractmethod
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
 
         Values meaning:
-        - False - exactly one occurrence in every diagnostic message
-        - True - number of occurrences might vary
+         - True - number of occurrences might vary
+         - False - constant number of occurrences in every diagnostic message
         """
+        return self.min_occurrences != self.max_occurrences
 
     @property  # noqa: F841
     @abstractmethod
     def min_occurrences(self) -> int:
-        """
-        Minimal number of this Data Record occurrences.
-
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
-            equals True.
-        """
+        """Minimal number of this Data Record occurrences."""
 
     @property  # noqa: F841
     @abstractmethod
@@ -119,8 +119,6 @@ class AbstractDataRecord(ABC):
         """
         Maximal number of this Data Record occurrences.
 
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
-            equals True.
         .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
         """
 
@@ -140,7 +138,7 @@ class AbstractDataRecord(ABC):
         """
 
     @abstractmethod
-    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
+    def encode(self, physical_value: DataRecordValueAlias) -> int:  # noqa: F841
         """
         Encode raw value for provided physical value.
 

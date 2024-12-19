@@ -4,7 +4,7 @@ __all__ = ["RawDataRecord"]
 
 from typing import Optional, Tuple
 
-from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
+from .abstract_data_record import AbstractDataRecord, DataRecordValueAlias, DecodedDataRecord
 
 
 class RawDataRecord(AbstractDataRecord):
@@ -43,17 +43,6 @@ class RawDataRecord(AbstractDataRecord):
         if value <= 0:
             raise ValueError("Length must be a positive integer.")
         self.__length = value
-
-    @property  # noqa: F841
-    def is_reoccurring(self) -> bool:
-        """
-        Whether this Data Record might occur multiple times.
-
-        Values meaning:
-        - False - exactly one occurrence in every diagnostic message
-        - True - number of occurrences might vary
-        """
-        return False
 
     @property  # noqa: F841
     def min_occurrences(self) -> int:
@@ -102,11 +91,12 @@ class RawDataRecord(AbstractDataRecord):
             )
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
-    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
+    def encode(self, physical_value: DataRecordValueAlias) -> int:
         """
         Encode raw value for provided physical value.
 
-        :param physical_value: Physical (meaningful e.g. float, str type) value of this Data Record.
+        :param physical_value: Physical value of this Data Record.
+            For this Data Record type, it is the same as raw value.
 
         :return: Raw Value of this Data Record.
         """
