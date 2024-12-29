@@ -1,11 +1,10 @@
 """Definition of TextDataRecord which is class for encode and decode values of data records."""
-from typing import Optional, Tuple, Union, Dict
+from typing import Dict
 
-from uds.database.abstract_data_record import (AbstractDataRecord, DataRecordType, DataRecordPhysicalValueAlias,
-                                               DecodedDataRecord)
+from uds.database.data_record import RawDataRecord, AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
 
 
-class TextDataRecord(AbstractDataRecord):
+class TextDataRecord(RawDataRecord, AbstractDataRecord):
     """Implementation for Text Data Record."""
     def __init__(self, name: str, length: int, mapping: Dict[int, str] = None) -> None:
         """Initialize Text Data Record.
@@ -30,43 +29,6 @@ class TextDataRecord(AbstractDataRecord):
         :param value: str contains data record text.
         """
         self.__length = len(value.encode('utf-8')) * 8
-
-    @property  # noqa: F841
-    def is_reoccurring(self) -> bool:
-        """
-        Whether this Data Record might occur multiple times.
-
-        Values meaning:
-        - False - exactly one occurrence in every diagnostic message
-        - True - number of occurrences might vary
-        """
-        # TODO
-
-    @property  # noqa: F841
-    def min_occurrences(self) -> int:
-        """
-        Minimal number of this Data Record occurrences.
-
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
-            equals True.
-        """
-        # TODO
-
-    @property  # noqa: F841
-    def max_occurrences(self) -> Optional[int]:
-        """
-        Maximal number of this Data Record occurrences.
-
-        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
-            equals True.
-        .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
-        """
-        # TODO
-
-    @property  # noqa: F841
-    def contains(self) -> Tuple["AbstractDataRecord", ...]:
-        """Get Data Records contained by this Data Record."""
-        # TODO
 
     @property
     def mapping(self):
