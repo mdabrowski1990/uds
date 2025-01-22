@@ -102,7 +102,7 @@ class RawDataRecord(AbstractDataRecord):
             )
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
-    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
+    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> DataRecordPhysicalValueAlias:
         """
         Encode raw value for provided physical value.
 
@@ -110,9 +110,11 @@ class RawDataRecord(AbstractDataRecord):
 
         :return: Raw Value of this Data Record.
         """
-        if not isinstance(physical_value, int):
+        # TODO: after changing typing for physical_value this method need to be adjusted
+        if not isinstance(physical_value, DataRecordPhysicalValueAlias):
             raise TypeError(
-                f"Expected physical_value to be an int type, got '{type(physical_value).__name__}' instead."
+                f"Expected 'physical_value' to be an type of 'DataRecordPhysicalValueAlias', "
+                f"got '{type(physical_value).__name__}' instead."
             )
 
         if not 0 <= physical_value <= self.max_raw_value:

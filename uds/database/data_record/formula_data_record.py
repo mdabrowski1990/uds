@@ -1,121 +1,82 @@
 """Definition of FormulaDataRecord."""
 
-from typing import Callable, Optional, Tuple
+from dataclasses import dataclass
+from typing import Callable, Optional, Union
 
-from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
+from .abstract_data_record import DataRecordPhysicalValueAlias, DecodedDataRecord
 from .raw_data_record import RawDataRecord
 
 
-class CustomFormulaDataRecord(AbstractDataRecord):
+@dataclass
+class FormulaRange:
+    min_value: int
+    max_value: int
+
+    def __post_init__(self):
+        if not isinstance(self.min_value, int) or not isinstance(self.max_value, int):
+            raise TypeError("Attributes 'min_value' and 'max_value' must be integers.")
+        if self.min_value > self.max_value:
+            raise ValueError("Attribute 'min_value' must be less than 'max_value'.")
+
+
+class CustomFormulaDataRecord(RawDataRecord):
     def __init__(
             self,
             name: str,
             length: int,
-            encode_function: Callable,
-            decode_function: Callable,
-            min_value: Optional[float] = None,
-            max_value: Optional[float] = None,
-            is_reoccurring: bool = False,
-            min_occurrences: int = 1,
-            max_occurrences: Optional[int] = None,
+            decode_formula: Callable,
+            encode_formula: Callable,
+            formula_range: Optional[FormulaRange] = None
     ) -> None:
-        super().__init__(name)
-        self._length = length
-        self._encode_function = encode_function
-        self._decode_function = decode_function
-        self._min_value = min_value
-        self._max_value = max_value
-        self._is_reoccurring = is_reoccurring
-        self._min_occurrences = min_occurrences
-        self._max_occurrences = max_occurrences
+        super().__init__(name=name, length=length)
 
-    @property
-    def length(self) -> int:
-        return self._length
+        if not callable(decode_formula):
+            raise TypeError("Provided 'decode_formula' is not callable.")
+        if not callable(encode_formula):
+            raise TypeError("Provided 'encode_formula' is not callable.")
+        if formula_range is not None and not isinstance(formula_range, FormulaRange):
+            raise TypeError(
+                "Parameter 'formula_range' must be type of 'FormulaRange', "
+                f"provided type: '{type(formula_range).__name__}'."
+            )
+        self.decode_formula = decode_formula
+        self.encode_formula = encode_formula
+        self.formula_range = formula_range
 
-    @property
-    def is_reoccurring(self) -> bool:
-        return self._is_reoccurring
+    def decode(self, raw_value: int) -> Union[int, DecodedDataRecord]:
+        decoded_data: DecodedDataRecord = super().decode(raw_value)
+        if self.formula_range and self.formula_range.min_value < decoded_data.raw_value < self.formula_range.max_value:
+            decoded_data.physical_value = self.decode_formula(decoded_data.raw_value)
+        return decoded_data
 
-    @property
-    def min_occurrences(self) -> int:
-        return self._min_occurrences
-
-    @property
-    def max_occurrences(self) -> Optional[int]:
-        return self._max_occurrences
-
-    @property
-    def contains(self) -> Tuple["AbstractDataRecord", ...]:
-        return ()
-
-    def decode(self, raw_value: int) -> float:
-        raw_value = super().decode(raw_value)
-        return self._decode_function(raw_value)
-
-    def encode(self, physical_value: float) -> int:
-        physical_value = super().encode(physical_value)
-        return self._encode_function(physical_value)
+    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
+        encoded_data: int = super().encode(physical_value)
+        if self.formula_range and self.formula_range.min_value < encoded_data < self.formula_range.max_value:
+            return self.encode_formula(encoded_data)
+        return int(encoded_data)
 
 
 class LinearFormulaDataRecord(RawDataRecord):
+
     def __init__(
             self,
             name: str,
             length: int,
             factor: float,
             offset: float,
-            min_value: Optional[float] = None,
-            max_value: Optional[float] = None,
-            is_reoccurring: bool = False,
-            min_occurrences: int = 1,
-            max_occurrences: Optional[int] = 1
     ) -> None:
         super().__init__(
             name=name,
+            length=length,
         )
-        self._length = length
-        self._factor = factor
-        self._offset = offset
-        self._min_value = min_value
-        self._max_value = max_value
-        self._is_reoccurring = is_reoccurring
-        self._min_occurrences = min_occurrences
-        self._max_occurrences = max_occurrences
+        self._decode_formula = lambda x: (x / factor) + offset
+        self._encode_formula = lambda x: (x - offset) * factor
 
-    @property
-    def length(self) -> int:
-        return self._length
-
-    @property
-    def is_reoccurring(self) -> bool:
-        return self._is_reoccurring
-
-    @property
-    def min_occurrences(self) -> int:
-        return self._min_occurrences
-
-    @property
-    def max_occurrences(self) -> Optional[int]:
-        return self._max_occurrences
-
-    @property
-    def contains(self) -> Tuple["AbstractDataRecord", ...]:
-        return ()
-
-    def decode(self, raw_value: int) -> DecodedDataRecord:
-        decoded_data_record: DecodedDataRecord = super().decode(raw_value)
-        physical_value = (decoded_data_record.raw_value / self._factor) + self._offset
-        if (self._min_value is not None and physical_value < self._min_value) or \
-                (self._max_value is not None and physical_value > self._max_value):
-            raise ValueError("Decoded physical value out of expected range.")
-        decoded_data_record.physical_value = physical_value
-        return decoded_data_record
+    def decode(self, raw_value: int) -> Union[int, DecodedDataRecord]:
+        decoded_data: DecodedDataRecord = super().decode(raw_value)
+        decoded_data.physical_value = self._decode_formula(decoded_data.raw_value)
+        return decoded_data
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
-        physical_value = super().encode(physical_value)
-        if (self._min_value is not None and physical_value < self._min_value) or \
-                (self._max_value is not None and physical_value > self._max_value):
-            raise ValueError("Provided physical value is out of expected range.")
-        raw_value = int((physical_value - self._offset) * self._factor)
-        return raw_value
+        encoded_data: int = super().encode(physical_value)
+        return int(self._encode_formula(encoded_data))
