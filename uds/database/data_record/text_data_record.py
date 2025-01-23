@@ -1,13 +1,19 @@
 """Definition of TextDataRecord which is class for encode and decode values of data records."""
+
+__all__ = ["TextDataRecord"]
+
 from typing import Dict
 
-from uds.database.data_record import RawDataRecord, AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
+from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
+from .raw_data_record import RawDataRecord
 
 
-class TextDataRecord(RawDataRecord, AbstractDataRecord):
+class TextDataRecord(AbstractDataRecord, RawDataRecord):
     """Implementation for Text Data Record."""
+
     def __init__(self, name: str, length: int, mapping: Dict[int, str] = None) -> None:
-        """Initialize Text Data Record.
+        """
+        Initialize Text Data Record.
 
         :param name: Name to assign to this Data Record.
 
@@ -24,7 +30,8 @@ class TextDataRecord(RawDataRecord, AbstractDataRecord):
 
     @length.setter
     def length(self, value: str) -> None:
-        """Set the length.
+        """
+        Set the length.
 
         :param value: str contains data record text.
         """
@@ -37,7 +44,8 @@ class TextDataRecord(RawDataRecord, AbstractDataRecord):
 
     @mapping.setter
     def mapping(self, mapping: dict) -> None:
-        """Set the mapping.
+        """
+        Set the mapping.
 
         :param mapping: dict contains mapping.
         """
@@ -72,7 +80,7 @@ class TextDataRecord(RawDataRecord, AbstractDataRecord):
         """
         if isinstance(physical_value, int):
             return physical_value
-        elif isinstance(physical_value, str):
+        if isinstance(physical_value, str):
             if physical_value in self.__reversed_mapping:
                 return self.__reversed_mapping[physical_value]
             raise KeyError("physical_value not found in provided mapping.")
