@@ -8,7 +8,7 @@ from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAli
 from .raw_data_record import RawDataRecord
 
 
-class TextDataRecord(AbstractDataRecord, RawDataRecord):
+class TextDataRecord(RawDataRecord, AbstractDataRecord):
     """Implementation for Text Data Record."""
 
     def __init__(self, name: str, length: int, mapping: Dict[int, str] = None) -> None:
@@ -19,7 +19,7 @@ class TextDataRecord(AbstractDataRecord, RawDataRecord):
 
         :raise TypeError: Provided value of name is not str type.
         """
-        super().__init__(name)
+        super().__init__(name, length)
         self.length = length
         self.mapping = mapping
 
@@ -67,8 +67,8 @@ class TextDataRecord(AbstractDataRecord, RawDataRecord):
         """
         if raw_value in self.mapping:
             physical_value = self.mapping[raw_value]
-            return DecodedDataRecord(name=self.name, raw_value=physical_value, physical_value=raw_value)
-        return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
+            return DecodedDataRecord(name=self.__name, raw_value=physical_value, physical_value=raw_value)
+        return DecodedDataRecord(name=self.__name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
         """
@@ -80,7 +80,9 @@ class TextDataRecord(AbstractDataRecord, RawDataRecord):
         """
         if isinstance(physical_value, int):
             return physical_value
-        if isinstance(physical_value, str):
+        elif isinstance(physical_value, str):
             if physical_value in self.__reversed_mapping:
                 return self.__reversed_mapping[physical_value]
             raise KeyError("physical_value not found in provided mapping.")
+        else:
+            raise TypeError("physical_value has not expected type.")
