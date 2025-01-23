@@ -84,5 +84,4 @@ class TextDataRecord(RawDataRecord, AbstractDataRecord):
             if physical_value in self.__reversed_mapping:
                 return self.__reversed_mapping[physical_value]
             raise KeyError("physical_value not found in provided mapping.")
-        else:
-            raise TypeError("physical_value has not expected type.")
+        raise TypeError("physical_value has not expected type.")
