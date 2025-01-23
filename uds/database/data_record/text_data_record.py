@@ -2,7 +2,7 @@
 
 __all__ = ["TextDataRecord"]
 
-from typing import Dict
+from typing import Dict, Optional
 
 from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
 from .raw_data_record import RawDataRecord
@@ -11,7 +11,7 @@ from .raw_data_record import RawDataRecord
 class TextDataRecord(RawDataRecord, AbstractDataRecord):
     """Implementation for Text Data Record."""
 
-    def __init__(self, name: str, length: int, mapping: Dict[int, str] = None) -> None:
+    def __init__(self, name: str, length: int, mapping: Optional[Dict[int, str]] = None) -> None:
         """
         Initialize Text Data Record.
 
@@ -80,7 +80,7 @@ class TextDataRecord(RawDataRecord, AbstractDataRecord):
         """
         if isinstance(physical_value, int):
             return physical_value
-        elif isinstance(physical_value, str):
+        if isinstance(physical_value, str):
             if physical_value in self.__reversed_mapping:
                 return self.__reversed_mapping[physical_value]
             raise KeyError("physical_value not found in provided mapping.")
