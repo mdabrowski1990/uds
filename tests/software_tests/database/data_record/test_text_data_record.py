@@ -22,24 +22,6 @@ class TestTextTableDataRecord:
         mock_raw_data.assert_called_once_with(name, length)
         assert self.mock_data_record.length == length
 
-    def test_length_getter(self):
-        self.mock_data_record._TextTableDataRecord__length = Mock()
-        assert TextTableDataRecord.length.fget(self.mock_data_record) == self.mock_data_record._TextTableDataRecord__length
-
-    @pytest.mark.parametrize(
-        "value, expected_value", [("Text", 32), ("Foobar", 48)]
-    )
-    def test_length_setter_valid(self, value, expected_value):
-        TextTableDataRecord.length.fset(self.mock_data_record, value)
-        assert self.mock_data_record._TextTableDataRecord__length == expected_value
-
-    @pytest.mark.parametrize(
-        "value", [23, None]
-    )
-    def test_length_setter_type_error(self, value):
-        with pytest.raises(AttributeError):
-            TextTableDataRecord.length.fset(self.mock_data_record, value)
-
     def test_mapping_getter(self):
         self.mock_data_record._TextTableDataRecord__mapping = Mock()
         assert TextTableDataRecord.mapping.fget(self.mock_data_record) == self.mock_data_record._TextTableDataRecord__mapping

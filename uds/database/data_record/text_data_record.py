@@ -23,20 +23,6 @@ class TextTableDataRecord(RawDataRecord, AbstractDataRecord):
         self.length = length
         self.mapping = mapping
 
-    @property  # noqa: F841
-    def length(self) -> int:
-        """Get number of bits that this Data Record is stored over."""
-        return self.__length
-
-    @length.setter
-    def length(self, value: str) -> None:
-        """
-        Set the length.
-
-        :param value: str contains data record text.
-        """
-        self.__length = len(value.encode('utf-8')) * 8
-
     @property
     def mapping(self):
         """Get mapping dict."""
