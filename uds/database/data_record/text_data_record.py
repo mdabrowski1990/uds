@@ -67,8 +67,8 @@ class TextTableDataRecord(RawDataRecord, AbstractDataRecord):
         """
         if raw_value in self.mapping:
             physical_value = self.mapping[raw_value]
-            return DecodedDataRecord(name=self.__name, raw_value=physical_value, physical_value=raw_value)
-        return DecodedDataRecord(name=self.__name, raw_value=raw_value, physical_value=raw_value)
+            return DecodedDataRecord(name=self.name, raw_value=physical_value, physical_value=raw_value)
+        return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
         """
