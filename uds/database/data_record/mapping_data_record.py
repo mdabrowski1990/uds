@@ -1,23 +1,24 @@
 """Definition of TextDataRecord which is class for encode and decode values of data records."""
 
-__all__ = ["TextTableDataRecord"]
+__all__ = ["MappingDataRecord"]
 
-from typing import Dict, Optional
+from typing import Dict
+from types import MappingProxyType
 
 from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
 from .raw_data_record import RawDataRecord
 
 
-class TextTableDataRecord(RawDataRecord, AbstractDataRecord):
+class MappingDataRecord(RawDataRecord, AbstractDataRecord):
     """Implementation for Text Data Record."""
 
-    def __init__(self, name: str, length: int, mapping: Optional[Dict[int, str]] = None) -> None:
+    def __init__(self, name: str, length: int, mapping: Dict[int, str]) -> None:
         """
         Initialize Text Data Record.
 
         :param name: Name to assign to this Data Record.
-
-        :raise TypeError: Provided value of name is not str type.
+        :param length: Number of bits that this Text Table Data Record is stored over.
+        :param mapping: Bidirectional translation between raw value (int) and meaningful value (e.g. float, str).
         """
         super().__init__(name, length)
         self.length = length
@@ -29,14 +30,14 @@ class TextTableDataRecord(RawDataRecord, AbstractDataRecord):
         return self.__mapping
 
     @mapping.setter
-    def mapping(self, mapping: dict) -> None:
+    def mapping(self, mapping: Dict[int, str]) -> None:
         """
         Set the mapping.
 
         :param mapping: dict contains mapping.
         """
-        self.__mapping = mapping
-        self.__reversed_mapping = {v: k for k, v in self.__mapping.items()}
+        self.__mapping = MappingProxyType(mapping)
+        self.__reversed_mapping = MappingProxyType({v: k for k, v in self.__mapping.items()})
 
     @property
     def reversed_mapping(self):
@@ -53,7 +54,7 @@ class TextTableDataRecord(RawDataRecord, AbstractDataRecord):
         """
         if raw_value in self.mapping:
             physical_value = self.mapping[raw_value]
-            return DecodedDataRecord(name=self.name, raw_value=physical_value, physical_value=raw_value)
+            return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=physical_value)
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
     def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
@@ -67,7 +68,5 @@ class TextTableDataRecord(RawDataRecord, AbstractDataRecord):
         if isinstance(physical_value, int):
             return physical_value
         if isinstance(physical_value, str):
-            if physical_value in self.reversed_mapping:
-                return self.reversed_mapping[physical_value]
-            raise KeyError("physical_value not found in provided mapping.")
+            return self.reversed_mapping[physical_value]
         raise TypeError("physical_value has not expected type.")
