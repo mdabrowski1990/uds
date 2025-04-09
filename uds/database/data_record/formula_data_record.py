@@ -135,7 +135,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
             raise ValueError("Encoded raw_value is out of configured formula_range: "
                              f"must be between {self.formula_range.min_value} "
                              f"and {self.formula_range.max_value}, got {raw_value}.")
-        return raw_value
+        return int(raw_value)
 
 
 class LinearFormulaDataRecord(CustomFormulaDataRecord):
@@ -148,13 +148,11 @@ class LinearFormulaDataRecord(CustomFormulaDataRecord):
             offset: float,
             formula_range: FormulaRange = None,
     ) -> None:
-        self._decode_formula = lambda x: (x / factor) + offset
-        self._encode_formula = lambda x: (x - offset) * factor
         super().__init__(
             name=name,
             length=length,
-            decode_formula=self._decode_formula,
-            encode_formula=self._encode_formula,
+            decode_formula=lambda x: (x / factor) + offset,
+            encode_formula=lambda x: (x - offset) * factor,
             formula_range=formula_range
         )
 
@@ -181,11 +179,11 @@ class LinearFormulaDataRecord(CustomFormulaDataRecord):
 
         :return: Raw value encoded with linear encode formula.
 
-        :raises TypeError: Provided `physical_value` is not int type.
+        :raises TypeError: Provided physical_value is not of type int or float.
         :raises ValueError: Encoded `raw_value` of provided `physical_value` is out of range.
         """
-        if not isinstance(physical_value, int):
+        if not isinstance(physical_value, (int, float)):
             raise TypeError(
-                f"Expected physical_value to be an int type, got '{type(physical_value).__name__}' instead."
+                f"Expected physical_value to be of type int or float, got '{type(physical_value).__name__}' instead."
             )
         return super().encode(physical_value)
