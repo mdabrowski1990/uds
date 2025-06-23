@@ -13,8 +13,8 @@ from uds.utilities import (
     InconsistentArgumentsError,
     RawBytesAlias,
     RawBytesListAlias,
-    bytes_list_to_int,
-    int_to_bytes_list,
+    bytes_to_int,
+    int_to_bytes,
     validate_raw_bytes,
 )
 
@@ -181,9 +181,9 @@ class CanFirstFrameHandler:
         ff_dl_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
         if len(ff_dl_bytes) == cls.SHORT_FF_DL_BYTES_USED:
             ff_dl_bytes[0] = ff_dl_bytes[0] & 0xF
-            return bytes_list_to_int(ff_dl_bytes[-4:])
+            return bytes_to_int(ff_dl_bytes[-4:])
         if len(ff_dl_bytes) == cls.LONG_FF_DL_BYTES_USED:
-            return bytes_list_to_int(ff_dl_bytes[-4:])
+            return bytes_to_int(ff_dl_bytes[-4:])
         raise NotImplementedError("Unknown format of First Frame Data Length was found.")
 
     @classmethod
@@ -339,13 +339,13 @@ class CanFirstFrameHandler:
         """
         cls.validate_ff_dl(ff_dl=ff_dl)
         if long_ff_dl_format:
-            ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.LONG_FF_DL_BYTES_USED)
+            ff_dl_bytes = int_to_bytes(int_value=ff_dl, size=cls.LONG_FF_DL_BYTES_USED)
             ff_dl_bytes[0] ^= (cls.FIRST_FRAME_N_PCI << 4)
             return ff_dl_bytes
         if ff_dl > cls.MAX_SHORT_FF_DL_VALUE:
             raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is too big for the short "
                                              f"FF_DL format. Use lower FF_DL value or change to long format. "
                                              f"Actual value: {ff_dl}")
-        ff_dl_bytes = int_to_bytes_list(int_value=ff_dl, list_size=cls.SHORT_FF_DL_BYTES_USED)
+        ff_dl_bytes = int_to_bytes(int_value=ff_dl, size=cls.SHORT_FF_DL_BYTES_USED)
         ff_dl_bytes[0] ^= (cls.FIRST_FRAME_N_PCI << 4)
         return ff_dl_bytes

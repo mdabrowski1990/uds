@@ -73,7 +73,7 @@ class UdsMessage(AbstractUdsMessageContainer):
         return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
-    def payload(self) -> RawBytesTupleAlias:
+    def payload(self) -> bytearray:
         """Raw payload bytes carried by this diagnostic message."""
         return self.__payload
 
@@ -85,7 +85,7 @@ class UdsMessage(AbstractUdsMessageContainer):
         :param value: Payload value to set.
         """
         validate_raw_bytes(value)
-        self.__payload = tuple(value)
+        self.__payload = bytearray(value)
 
     @property
     def addressing_type(self) -> AddressingType:
@@ -177,14 +177,14 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
             raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
 
     @property
-    def payload(self) -> RawBytesTupleAlias:
+    def payload(self) -> bytes:
         """Raw payload bytes carried by this diagnostic message."""
         number_of_bytes = self.packets_records[0].data_length
         message_payload: RawBytesListAlias = []
         for packet in self.packets_records:
             if packet.payload is not None:
                 message_payload.extend(packet.payload)
-        return tuple(message_payload[:number_of_bytes])
+        return bytes(message_payload[:number_of_bytes])
 
     @property
     def addressing_type(self) -> AddressingType:
