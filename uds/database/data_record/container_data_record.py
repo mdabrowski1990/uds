@@ -1,11 +1,13 @@
 __all__ = ["ContainerDataRecord"]
 
-from typing import Sequence, Optional, Tuple, Dict
+from typing import Sequence, Optional, Tuple, Mapping
+from types import MappingProxyType
 from .abstract_data_record import AbstractDataRecord, DecodedDataRecord, DataRecordValueAlias
 from uds.utilities import InconsistentArgumentsError
 
 
 class ContainerDataRecord(AbstractDataRecord):
+    """Container for multiple Data Records."""
 
     def __init__(self,
                  name: str,
@@ -78,7 +80,7 @@ class ContainerDataRecord(AbstractDataRecord):
 
     @property
     def children(self) -> Tuple[AbstractDataRecord, ...]:
-        """Get Data Records contained by this Container."""
+        """Get contained Data Records."""
         return self.__children
 
     @children.setter
@@ -87,14 +89,33 @@ class ContainerDataRecord(AbstractDataRecord):
         Set Data Records to be contained.
 
         :param value: Sequence with contained Data Records.
+
+        :raise TypeError: Provided value is not a sequence.
+        :raise ValueError: Provided sequence does not contain Data Records objects only.
+        :raise InconsistentArgumentsError: Provided value contains Data Records that could not be unambiguously
+            encoded or decoded.
         """
         if not isinstance(value, Sequence):
-            raise TypeError
-        if not all(isinstance(data_record, AbstractDataRecord) for data_record in value):
-            raise ValueError
-        if self.is_reoccurring and any(data_record.is_reoccurring for data_record in value):
-            raise InconsistentArgumentsError
+            raise TypeError("Provided value is not a sequence.")
+        data_record_names = set()
+        for data_record in value:
+            if not isinstance(data_record, AbstractDataRecord):
+                raise ValueError("Provided sequence does not contain Data Records.")
+            data_record_names.add(data_record.name)
+        if len(data_record_names) != len(value):
+            raise InconsistentArgumentsError("Each children Data Record must have unique name.")
+        if self.is_reoccurring:
+            if any(data_record.is_reoccurring for data_record in value):
+                raise InconsistentArgumentsError("Reoccurring container must not contain reoccurring Data Records.")
+        elif sum(data_record.is_reoccurring for data_record in value) > 1:
+            raise InconsistentArgumentsError("Container must not contain more than one reoccurring Data Records.")
         self.__children = tuple(value)
+        self.__children_map = MappingProxyType({child.name: child for child in self.children})
+
+    @property
+    def children_map(self) -> Mapping[str, AbstractDataRecord]:
+        """Get contained Data Records mapping by names."""
+        return self.__children_map
 
     def decode(self, raw_value: int) -> DecodedDataRecord:
         """
@@ -106,23 +127,35 @@ class ContainerDataRecord(AbstractDataRecord):
         """
         # TODO
 
-    def encode(self, physical_value: DataRecordValueAlias) -> int:  # noqa: F841
+    def encode(self, physical_value: DataRecordValueAlias) -> int:  # TODO: update
         """
         Encode raw value for provided physical value.
 
         :param physical_value: Physical (meaningful e.g. float, str type) value of this Data Record.
 
+        :raise TypeError: Provided value is not a sequence.
+        :raise ValueError: TODO
+
         :return: Raw Value of this Data Record.
         """
         if not isinstance(physical_value, Sequence):
-            raise TypeError
+            raise TypeError("Provided value is not a sequence.")
         combined_raw_value = 0
         for single_record_value in physical_value:
             if isinstance(single_record_value, int):
                 if 0 <= single_record_value <= self.max_raw_value:
                     entry_raw_value = single_record_value
             elif isinstance(single_record_value, dict):
-                entry_raw_value = ...  # TODO
+                entry_raw_value = 0
+                for children_data_record in self.children:
+                    if not children_data_record.name in single_record_value:
+                        raise ValueError
+                    children_value = children_data_record.encode(single_record_value[children_data_record.name])
+                    if children_data_record.is_reoccurring:
+                        ...
+                    else:
+                        length = children_data_record.length
+                    entry_raw_value = (entry_raw_value << length) + children_value
             else:
                 raise ValueError
             combined_raw_value = (combined_raw_value << self.length) + entry_raw_value

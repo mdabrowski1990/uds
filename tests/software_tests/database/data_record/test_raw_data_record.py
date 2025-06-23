@@ -68,11 +68,6 @@ class TestRawDataRecord:
         raw_data_record = RawDataRecord("TestRawDataRecord", length)
         assert raw_data_record.max_raw_value == value
 
-    # is_reoccurring
-
-    def test_is_reoccurring_getter(self):
-        assert RawDataRecord.is_reoccurring.fget(self.mock_data_record) is False
-
     # min_occurrences
 
     def test_min_occurrences_getter(self):

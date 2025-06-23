@@ -97,7 +97,7 @@ class AbstractDataRecord(ABC):
         """
         return (1 << self.length) - 1
 
-    @abstractmethod
+    @property
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
@@ -138,11 +138,11 @@ class AbstractDataRecord(ABC):
         """
 
     @abstractmethod
-    def encode(self, physical_value: DataRecordValueAlias) -> int:  # noqa: F841
+    def encode(self, physical_value: DataRecordValueAlias) -> (int, int):
         """
         Encode raw value for provided physical value.
 
         :param physical_value: Physical (meaningful e.g. float, str type) value of this Data Record.
 
-        :return: Raw Value of this Data Record.
+        :return: Tuple with encoded raw value and length (number of bits this raw value is stored over).
         """

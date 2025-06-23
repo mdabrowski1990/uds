@@ -8,7 +8,7 @@ from .abstract_data_record import AbstractDataRecord, DataRecordValueAlias, Deco
 
 
 class RawDataRecord(AbstractDataRecord):
-    """Implementation and interface for Raw Data Record."""
+    """Data Record storing raw value."""
 
     def __init__(self, name: str, length: int) -> None:
         """
@@ -91,7 +91,7 @@ class RawDataRecord(AbstractDataRecord):
             )
         return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
 
-    def encode(self, physical_value: DataRecordValueAlias) -> int:
+    def encode(self, physical_value: DataRecordValueAlias) -> int:  # TODO: update
         """
         Encode raw value for provided physical value.
 

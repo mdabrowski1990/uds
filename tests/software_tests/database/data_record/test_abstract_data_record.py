@@ -48,3 +48,16 @@ class TestAbstractDataRecord:
     def test_max_raw_value_getter(self, length, value):
         self.mock_data_record.length = length
         assert AbstractDataRecord.max_raw_value.fget(self.mock_data_record) == value
+
+    # is_reoccurring
+
+    @pytest.mark.parametrize("min_occurrences, max_occurrences", [
+        (1, 1),
+        (5, 5),
+        (1, 5),
+        (0,1),
+    ])
+    def test_is_reoccurring(self, min_occurrences, max_occurrences):
+        self.mock_data_record.min_occurrences = min_occurrences
+        self.mock_data_record.max_occurrences = max_occurrences
+        assert AbstractDataRecord.is_reoccurring.fget(self.mock_data_record) is (min_occurrences != max_occurrences)
