@@ -571,4 +571,4 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=self.addressing_format,
                                                                           target_address=self.target_address,
                                                                           address_extension=self.address_extension)
-            self.__raw_frame_data = bytes(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))
+            self.__raw_frame_data = bytes(ai_data_bytes) + bytes(self.__raw_frame_data[len(ai_data_bytes):])

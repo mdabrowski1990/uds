@@ -78,11 +78,11 @@ class TestCanPacketRecord:
 
     # raw_frame_data
 
-    @pytest.mark.parametrize("raw_frame_data", ["some raw data", range(10)])
+    @pytest.mark.parametrize("raw_frame_data", [b"some raw data", range(10)])
     def test_raw_frame_data__python_can(self, raw_frame_data):
         self.mock_can_packet_record.frame = Mock(spec=PythonCanMessage, data=raw_frame_data)
         assert CanPacketRecord.raw_frame_data.fget(self.mock_can_packet_record) \
-               == tuple(self.mock_can_packet_record.frame.data)
+               == bytes(self.mock_can_packet_record.frame.data)
 
     def test_raw_frame_data__not_implemented(self):
         with pytest.raises(NotImplementedError):
@@ -247,11 +247,11 @@ class TestCanPacketRecordIntegration:
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "transmission_time": datetime.now()},
-         {"raw_frame_data": (0x01, 0x3E),
+         {"raw_frame_data": b"\x01\x3E",
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "packet_type": CanPacketType.SINGLE_FRAME,
-          "payload": (0x3E, ),
+          "payload": b"\x3E",
           "data_length": 1,
           "can_id": 0x69C,
           "dlc": 2,
@@ -272,7 +272,7 @@ class TestCanPacketRecordIntegration:
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "transmission_time": datetime.now()},
-         {"raw_frame_data": tuple([0x37, 0x30, 0x08, 0xF1] + ([0x99] * 60)),
+         {"raw_frame_data": bytes([0x37, 0x30, 0x08, 0xF1] + ([0x99] * 60)),
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "packet_type": CanPacketType.FLOW_CONTROL,
