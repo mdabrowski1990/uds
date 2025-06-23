@@ -239,7 +239,7 @@ class CanFlowControlHandler:
             if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
-            return fc_bytes + data_bytes_to_pad * [filler_byte]
+            return fc_bytes + data_bytes_to_pad * bytearray(filler_byte.to_bytes(length=1))
         return fc_bytes
 
     @classmethod
@@ -289,9 +289,7 @@ class CanFlowControlHandler:
         if len(fc_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `dlc` is too small.")
         data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
-        if data_bytes_to_pad > 0:
-            return fc_bytes + data_bytes_to_pad * [filler_byte]
-        return fc_bytes
+        return fc_bytes + data_bytes_to_pad * bytearray(filler_byte.to_bytes(length=1))
 
     @classmethod
     def is_flow_control(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
@@ -438,16 +436,16 @@ class CanFlowControlHandler:
         """
         CanFlowStatus.validate_member(flow_status)
         if flow_status == CanFlowStatus.ContinueToSend:
-            validate_raw_byte(block_size)  # type: ignore
-            validate_raw_byte(st_min)  # type: ignore
+            validate_raw_byte(block_size)
+            validate_raw_byte(st_min)
         else:
             if block_size is not None:
                 validate_raw_byte(block_size)
             if st_min is not None:
                 validate_raw_byte(st_min)
-        return [(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status,
-                block_size if block_size is not None else filler_byte,
-                st_min if st_min is not None else filler_byte]
+        return bytearray([(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status,
+                          block_size if block_size is not None else filler_byte,
+                          st_min if st_min is not None else filler_byte])
 
     @classmethod
     def __encode_any_flow_status(cls,
@@ -469,7 +467,7 @@ class CanFlowControlHandler:
             Some of the parameters might be missing if certain arguments were provided.
         """
         validate_nibble(flow_status)
-        output = [(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status]
+        output = bytearray([(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status])
         if block_size is not None:
             validate_raw_byte(block_size)
             output.append(block_size)

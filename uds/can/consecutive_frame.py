@@ -74,7 +74,7 @@ class CanConsecutiveFrameHandler:
                                                                       target_address=target_address,
                                                                       address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
-        cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
+        cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
         if len(cf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
                                              "Consider increasing DLC value.")
@@ -83,7 +83,7 @@ class CanConsecutiveFrameHandler:
             if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
-            return cf_bytes + data_bytes_to_pad * [filler_byte]
+            return cf_bytes + data_bytes_to_pad * bytearray(filler_byte.to_bytes(length=1))
         return cf_bytes
 
     @classmethod
@@ -126,11 +126,11 @@ class CanConsecutiveFrameHandler:
                                                                       target_address=target_address,
                                                                       address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
-        cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
+        cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
         if len(cf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
                                              "Consider increasing DLC value.")
-        data_padding = ((frame_data_bytes_number - len(cf_bytes)) * [filler_byte])
+        data_padding = ((frame_data_bytes_number - len(cf_bytes)) * bytearray(filler_byte.to_bytes(length=1)))
         return cf_bytes + data_padding
 
     @classmethod
@@ -289,4 +289,4 @@ class CanConsecutiveFrameHandler:
         :return: Consecutive Frame data bytes containing CAN Packet Type and Sequence Number parameters.
         """
         validate_nibble(sequence_number)
-        return [(cls.CONSECUTIVE_FRAME_N_PCI << 4) ^ sequence_number]
+        return bytearray(((cls.CONSECUTIVE_FRAME_N_PCI << 4) ^ sequence_number).to_bytes(length=1))

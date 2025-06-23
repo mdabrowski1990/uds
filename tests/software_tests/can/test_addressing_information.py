@@ -184,33 +184,33 @@ class TestCanAddressingInformation:
     def test_encode_ai_data_bytes__normal(self, addressing_format, target_address, address_extension):
         assert CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
                                                              address_extension=address_extension,
-                                                             target_address=target_address) == []
+                                                             target_address=target_address) == bytearray()
         self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
         self.mock_validate_raw_byte.assert_not_called()
 
     @pytest.mark.parametrize("target_address, address_extension", [
-        (None, None),
+        (0xFF, 0x00),
         (0x5B, 0x9E),
     ])
     def test_encode_ai_data_bytes__extended(self, target_address, address_extension):
         assert CanAddressingInformation.encode_ai_data_bytes(
             addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
             address_extension=address_extension,
-            target_address=target_address) == [target_address]
+            target_address=target_address) == bytearray(target_address.to_bytes(length=1))
         self.mock_validate_addressing_format.assert_called_once_with(CanAddressingFormat.EXTENDED_ADDRESSING)
         self.mock_validate_raw_byte.assert_called_once_with(target_address)
 
     @pytest.mark.parametrize("addressing_format", [CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                                    CanAddressingFormat.MIXED_29BIT_ADDRESSING])
     @pytest.mark.parametrize("target_address, address_extension", [
-        (None, None),
+        (None, 0xFF),
         (0x5B, 0x9E),
     ])
     def test_encode_ai_data_bytes__mixed(self, addressing_format, target_address, address_extension):
         assert CanAddressingInformation.encode_ai_data_bytes(
             addressing_format=addressing_format,
             address_extension=address_extension,
-            target_address=target_address) == [address_extension]
+            target_address=target_address) == bytearray(address_extension.to_bytes(length=1))
         self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
         self.mock_validate_raw_byte.assert_called_once_with(address_extension)
 

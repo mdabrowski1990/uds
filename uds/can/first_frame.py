@@ -74,7 +74,7 @@ class CanFirstFrameHandler:
                                                                       target_address=target_address,
                                                                       address_extension=address_extension)
         ff_dl_data_bytes = cls.__encode_valid_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
-        ff_data_bytes = list(ai_data_bytes) + list(ff_dl_data_bytes) + list(payload)
+        ff_data_bytes = bytearray(ai_data_bytes) + bytearray(ff_dl_data_bytes) + bytearray(payload)
         frame_length = CanDlcHandler.decode_dlc(dlc)
         if len(ff_data_bytes) != frame_length:
             raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes to fit "
@@ -338,13 +338,13 @@ class CanFirstFrameHandler:
         """
         cls.validate_ff_dl(ff_dl=ff_dl)
         if long_ff_dl_format:
-            ff_dl_bytes = int_to_bytes(int_value=ff_dl, size=cls.LONG_FF_DL_BYTES_USED)
+            ff_dl_bytes = bytearray(int_to_bytes(int_value=ff_dl, size=cls.LONG_FF_DL_BYTES_USED))
             ff_dl_bytes[0] ^= (cls.FIRST_FRAME_N_PCI << 4)
             return ff_dl_bytes
         if ff_dl > cls.MAX_SHORT_FF_DL_VALUE:
             raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is too big for the short "
                                              f"FF_DL format. Use lower FF_DL value or change to long format. "
                                              f"Actual value: {ff_dl}")
-        ff_dl_bytes = int_to_bytes(int_value=ff_dl, size=cls.SHORT_FF_DL_BYTES_USED)
+        ff_dl_bytes = bytearray(int_to_bytes(int_value=ff_dl, size=cls.SHORT_FF_DL_BYTES_USED))
         ff_dl_bytes[0] ^= (cls.FIRST_FRAME_N_PCI << 4)
         return ff_dl_bytes
