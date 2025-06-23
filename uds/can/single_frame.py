@@ -12,7 +12,6 @@ from typing import Optional
 from uds.utilities import (
     InconsistentArgumentsError,
     RawBytesAlias,
-    RawBytesListAlias,
     validate_nibble,
     validate_raw_byte,
     validate_raw_bytes,
@@ -45,7 +44,7 @@ class CanSingleFrameHandler:
                                 dlc: Optional[int] = None,
                                 filler_byte: int = DEFAULT_FILLER_BYTE,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesListAlias:
+                                address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a valid Single Frame packet.
 
@@ -103,7 +102,7 @@ class CanSingleFrameHandler:
                               sf_dl_long: Optional[int] = None,
                               filler_byte: int = DEFAULT_FILLER_BYTE,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesListAlias:
+                              address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a Single Frame packet.
 
@@ -162,7 +161,7 @@ class CanSingleFrameHandler:
         return (raw_frame_data[ai_bytes_number] >> 4) == cls.SINGLE_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> RawBytesListAlias:
+    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
         """
         Extract diagnostic message payload from Single Frame data bytes.
 
@@ -179,7 +178,7 @@ class CanSingleFrameHandler:
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         sf_dl_bytes_number = cls.get_sf_dl_bytes_number(dlc)
-        return list(raw_frame_data[ai_data_bytes_number + sf_dl_bytes_number:][:sf_dl])
+        return bytearray(raw_frame_data[ai_data_bytes_number + sf_dl_bytes_number:][:sf_dl])
 
     @classmethod
     def decode_sf_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
@@ -361,7 +360,7 @@ class CanSingleFrameHandler:
     @classmethod
     def __extract_sf_dl_data_bytes(cls,
                                    addressing_format: CanAddressingFormat,
-                                   raw_frame_data: RawBytesAlias) -> RawBytesListAlias:
+                                   raw_frame_data: RawBytesAlias) -> bytearray:
         """
         Extract data bytes that carries CAN Packet Type and Single Frame Data Length parameters.
 
@@ -380,7 +379,7 @@ class CanSingleFrameHandler:
     def __encode_valid_sf_dl(cls,
                              sf_dl: int,
                              dlc: int,
-                             addressing_format: CanAddressingFormat) -> RawBytesListAlias:
+                             addressing_format: CanAddressingFormat) -> bytearray:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
@@ -398,7 +397,7 @@ class CanSingleFrameHandler:
         return cls.__encode_any_sf_dl(sf_dl_long=sf_dl)
 
     @classmethod
-    def __encode_any_sf_dl(cls, sf_dl_short: int = 0, sf_dl_long: Optional[int] = None) -> RawBytesListAlias:
+    def __encode_any_sf_dl(cls, sf_dl_short: int = 0, sf_dl_long: Optional[int] = None) -> bytearray:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 

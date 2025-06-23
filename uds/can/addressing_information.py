@@ -12,7 +12,6 @@ from uds.transmission_attributes import AddressingType
 from uds.utilities import (
     InconsistentArgumentsError,
     RawBytesAlias,
-    RawBytesListAlias,
     validate_raw_byte,
     validate_raw_bytes,
 )
@@ -184,7 +183,7 @@ class CanAddressingInformation:
     def encode_ai_data_bytes(cls,
                              addressing_format: CanAddressingFormat,
                              target_address: Optional[int] = None,
-                             address_extension: Optional[int] = None) -> RawBytesListAlias:
+                             address_extension: Optional[int] = None) -> bytearray:
         """
         Generate a list of data bytes that carry Addressing Information.
 
@@ -201,14 +200,14 @@ class CanAddressingInformation:
         CanAddressingFormat.validate_member(addressing_format)
         if addressing_format in (CanAddressingFormat.NORMAL_ADDRESSING,
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
-            return []
+            return bytearray()
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            validate_raw_byte(target_address)  # type: ignore
-            return [target_address]  # type: ignore
+            validate_raw_byte(target_address)
+            return bytearray(target_address.to_bytes(length=1))
         if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING):
-            validate_raw_byte(address_extension)  # type: ignore
-            return [address_extension]  # type: ignore
+            validate_raw_byte(address_extension)
+            return bytearray(address_extension.to_bytes(length=1))
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod

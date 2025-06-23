@@ -22,7 +22,6 @@ from uds.utilities import (
     InconsistentArgumentsError,
     NibbleEnum,
     RawBytesAlias,
-    RawBytesListAlias,
     TimeMillisecondsAlias,
     ValidatedEnum,
     validate_nibble,
@@ -193,7 +192,7 @@ class CanFlowControlHandler:
                                 dlc: Optional[int] = None,
                                 filler_byte: int = DEFAULT_FILLER_BYTE,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesListAlias:
+                                address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a valid Flow Control packet.
 
@@ -252,7 +251,7 @@ class CanFlowControlHandler:
                               st_min: Optional[int] = None,
                               filler_byte: int = DEFAULT_FILLER_BYTE,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesListAlias:
+                              address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a Flow Control packet.
 
@@ -422,7 +421,7 @@ class CanFlowControlHandler:
                                    flow_status: CanFlowStatus,
                                    block_size: Optional[int] = None,
                                    st_min: Optional[int] = None,
-                                   filler_byte: int = DEFAULT_FILLER_BYTE) -> RawBytesListAlias:
+                                   filler_byte: int = DEFAULT_FILLER_BYTE) -> bytearray:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 
@@ -454,7 +453,7 @@ class CanFlowControlHandler:
     def __encode_any_flow_status(cls,
                                  flow_status: int,
                                  block_size: Optional[int] = None,
-                                 st_min: Optional[int] = None) -> RawBytesListAlias:
+                                 st_min: Optional[int] = None) -> bytearray:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 

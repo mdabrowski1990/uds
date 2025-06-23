@@ -12,7 +12,6 @@ from typing import Optional
 from uds.utilities import (
     InconsistentArgumentsError,
     RawBytesAlias,
-    RawBytesListAlias,
     bytes_to_int,
     int_to_bytes,
     validate_raw_bytes,
@@ -48,7 +47,7 @@ class CanFirstFrameHandler:
                                 dlc: int,
                                 ff_dl: int,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesListAlias:
+                                address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a valid First Frame packet.
 
@@ -90,7 +89,7 @@ class CanFirstFrameHandler:
                               ff_dl: int,
                               long_ff_dl_format: bool = False,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesListAlias:
+                              address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a First Frame packet.
 
@@ -142,7 +141,7 @@ class CanFirstFrameHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.FIRST_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> RawBytesListAlias:
+    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
         """
         Extract a value of payload from First Frame data bytes.
 
@@ -283,7 +282,7 @@ class CanFirstFrameHandler:
     @classmethod
     def __extract_ff_dl_data_bytes(cls,
                                    addressing_format: CanAddressingFormat,
-                                   raw_frame_data: RawBytesAlias) -> RawBytesListAlias:
+                                   raw_frame_data: RawBytesAlias) -> bytearray:
         """
         Extract data bytes that carries CAN Packet Type and First Frame Data Length parameters.
 
@@ -305,7 +304,7 @@ class CanFirstFrameHandler:
     def __encode_valid_ff_dl(cls,
                              ff_dl: int,
                              dlc: int,
-                             addressing_format: CanAddressingFormat) -> RawBytesListAlias:
+                             addressing_format: CanAddressingFormat) -> bytearray:
         """
         Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 
@@ -323,7 +322,7 @@ class CanFirstFrameHandler:
         return cls.__encode_any_ff_dl(ff_dl=ff_dl, long_ff_dl_format=ff_dl > cls.MAX_SHORT_FF_DL_VALUE)
 
     @classmethod
-    def __encode_any_ff_dl(cls, ff_dl: int, long_ff_dl_format: bool = False) -> RawBytesListAlias:
+    def __encode_any_ff_dl(cls, ff_dl: int, long_ff_dl_format: bool = False) -> bytearray:
         """
         Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 

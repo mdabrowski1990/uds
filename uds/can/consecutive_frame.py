@@ -12,7 +12,6 @@ from typing import Optional
 from uds.utilities import (
     InconsistentArgumentsError,
     RawBytesAlias,
-    RawBytesListAlias,
     validate_nibble,
     validate_raw_byte,
     validate_raw_bytes,
@@ -39,7 +38,7 @@ class CanConsecutiveFrameHandler:
                                 dlc: Optional[int] = None,
                                 filler_byte: int = DEFAULT_FILLER_BYTE,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesListAlias:
+                                address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a valid Consecutive Frame packet.
 
@@ -95,7 +94,7 @@ class CanConsecutiveFrameHandler:
                               dlc: int,
                               filler_byte: int = DEFAULT_FILLER_BYTE,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesListAlias:
+                              address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a Consecutive Frame packet.
 
@@ -152,7 +151,7 @@ class CanConsecutiveFrameHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.CONSECUTIVE_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> RawBytesListAlias:
+    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
         """
         Extract diagnostic message payload from Consecutive Frame data bytes.
 
@@ -281,7 +280,7 @@ class CanConsecutiveFrameHandler:
             raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
 
     @classmethod
-    def __encode_sn(cls, sequence_number: int) -> RawBytesListAlias:
+    def __encode_sn(cls, sequence_number: int) -> bytearray:
         """
         Create Consecutive Frame data bytes with CAN Packet Type and Sequence Number parameters.
 

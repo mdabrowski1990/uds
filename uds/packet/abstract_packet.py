@@ -9,7 +9,7 @@ from typing import Any, Optional, Sequence, Tuple
 
 from uds.transmission_attributes.addressing import AddressingType
 from uds.transmission_attributes.transmission_direction import TransmissionDirection
-from uds.utilities import RawBytesTupleAlias, ReassignmentError
+from uds.utilities import ReassignmentError
 
 from .abstract_packet_type import AbstractUdsPacketType
 
@@ -19,7 +19,7 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTupleAlias:
+    def raw_frame_data(self) -> bytes:
         """Raw data bytes of a frame that carries this packet."""
 
     @property
@@ -39,40 +39,15 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> Optional[RawBytesTupleAlias]:
+    def payload(self) -> Optional[bytes]:
         """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
 
-class AbstractUdsPacket(AbstractUdsPacketContainer):
+class AbstractUdsPacket(AbstractUdsPacketContainer, ABC):
     """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
 
-    @property
-    @abstractmethod
-    def raw_frame_data(self) -> RawBytesTupleAlias:
-        """Raw data bytes of a frame that carries this packet."""
 
-    @property
-    @abstractmethod
-    def addressing_type(self) -> AddressingType:
-        """Addressing for which this packet is relevant."""
-
-    @property
-    @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketType:
-        """Type (N_PCI value) of this UDS packet."""
-
-    @property
-    @abstractmethod
-    def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this packet."""
-
-    @property
-    @abstractmethod
-    def payload(self) -> Optional[RawBytesTupleAlias]:
-        """Raw payload bytes of a diagnostic message that are carried by this packet."""
-
-
-class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
+class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
     """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
 
     @abstractmethod
@@ -157,31 +132,6 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer):
             self.__transmission_time = value
         else:
             raise ReassignmentError("You cannot change value of 'transmission_time' attribute once it is assigned.")
-
-    @property
-    @abstractmethod
-    def raw_frame_data(self) -> RawBytesTupleAlias:
-        """Raw data bytes of a frame that carries this packet."""
-
-    @property
-    @abstractmethod
-    def addressing_type(self) -> AddressingType:
-        """Addressing for which this packet is relevant."""
-
-    @property
-    @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketType:
-        """Type (N_PCI value) of this UDS packet."""
-
-    @property
-    @abstractmethod
-    def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this packet."""
-
-    @property
-    @abstractmethod
-    def payload(self) -> Optional[RawBytesTupleAlias]:
-        """Raw payload bytes of a diagnostic message that are carried by this packet."""
 
     @staticmethod
     @abstractmethod

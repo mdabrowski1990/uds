@@ -13,7 +13,7 @@ RawBytesSetAlias = Set[int]
 """Alias of a set filled with byte values."""
 RawBytesListAlias = List[int]
 """Alias of a list filled with byte values."""
-RawBytesAlias = Union[RawBytesTupleAlias, RawBytesListAlias, bytearray, bytes]
+RawBytesAlias = Union[bytes, bytearray, RawBytesTupleAlias, RawBytesListAlias]
 """Alias of a sequence filled with byte values."""
 
 

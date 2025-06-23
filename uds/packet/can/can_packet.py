@@ -23,7 +23,7 @@ from uds.can import (
     NormalFixedCanAddressingInformation,
 )
 from uds.transmission_attributes import AddressingType
-from uds.utilities import AmbiguityError, RawBytesAlias, RawBytesTupleAlias, UnusedArgumentWarning
+from uds.utilities import AmbiguityError, RawBytesAlias, UnusedArgumentWarning
 
 from ..abstract_packet import AbstractUdsPacket
 from .abstract_can_container import AbstractCanPacketContainer
@@ -89,7 +89,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                 Separation Time minimum information carried by this Flow Control frame.
         """
         # initialize the variables
-        self.__raw_frame_data: RawBytesTupleAlias = None  # type: ignore
+        self.__raw_frame_data: bytes = None  # type: ignore
         self.__addressing_type: AddressingType = None  # type: ignore
         self.__addressing_format: CanAddressingFormat = None  # type: ignore
         self.__packet_type: CanPacketType = None  # type: ignore
@@ -383,7 +383,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                        dlc=dlc,
                                                                        payload=payload,
                                                                        filler_byte=filler_byte)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
         self.__packet_type = CanPacketType.SINGLE_FRAME
 
@@ -408,7 +408,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                       dlc=dlc,
                                                                       payload=payload,
                                                                       ff_dl=data_length)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc
         self.__packet_type = CanPacketType.FIRST_FRAME
 
@@ -440,7 +440,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                             payload=payload,
                                                                             sequence_number=sequence_number,
                                                                             filler_byte=filler_byte)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
         self.__packet_type = CanPacketType.CONSECUTIVE_FRAME
 
@@ -475,12 +475,12 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                        block_size=block_size,
                                                                        st_min=st_min,
                                                                        filler_byte=filler_byte)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
         self.__packet_type = CanPacketType.FLOW_CONTROL
 
     @property
-    def raw_frame_data(self) -> RawBytesTupleAlias:
+    def raw_frame_data(self) -> bytes:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
         return self.__raw_frame_data
 
@@ -571,4 +571,4 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=self.addressing_format,
                                                                           target_address=self.target_address,
                                                                           address_extension=self.address_extension)
-            self.__raw_frame_data = tuple(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))
+            self.__raw_frame_data = bytes(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))

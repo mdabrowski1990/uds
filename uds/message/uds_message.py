@@ -8,11 +8,11 @@ __all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Sequence
+from typing import Union, Sequence
 
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
 from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import RawBytesAlias, RawBytesListAlias, RawBytesTupleAlias, ReassignmentError, validate_raw_bytes
+from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes
 
 
 class AbstractUdsMessageContainer(ABC):
@@ -30,7 +30,7 @@ class AbstractUdsMessageContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> RawBytesTupleAlias:
+    def payload(self) -> Union[bytes, bytearray]:
         """Raw payload bytes carried by this diagnostic message."""
 
     @property
@@ -180,10 +180,10 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
     def payload(self) -> bytes:
         """Raw payload bytes carried by this diagnostic message."""
         number_of_bytes = self.packets_records[0].data_length
-        message_payload: RawBytesListAlias = []
+        message_payload = bytearray()
         for packet in self.packets_records:
             if packet.payload is not None:
-                message_payload.extend(packet.payload)
+                message_payload += bytearray(packet.payload)
         return bytes(message_payload[:number_of_bytes])
 
     @property

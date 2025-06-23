@@ -6,7 +6,7 @@ from typing import Optional
 
 from aenum import StrEnum
 
-from .common_types import RawBytesAlias, RawBytesListAlias, validate_raw_bytes
+from .common_types import RawBytesAlias, validate_raw_bytes
 from .custom_exceptions import InconsistentArgumentsError
 from .enums import ValidatedEnum
 
