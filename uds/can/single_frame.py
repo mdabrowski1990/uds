@@ -90,7 +90,7 @@ class CanSingleFrameHandler:
             if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
-        return sf_bytes + data_bytes_to_pad * bytearray(filler_byte.to_bytes(length=1))
+        return sf_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
     @classmethod
     def create_any_frame_data(cls, *,
@@ -139,7 +139,7 @@ class CanSingleFrameHandler:
         if len(sf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
                                              "Consider increasing DLC value.")
-        data_padding = ((frame_data_bytes_number - len(sf_bytes)) * bytearray(filler_byte.to_bytes(length=1)))
+        data_padding = ((frame_data_bytes_number - len(sf_bytes)) * bytearray([filler_byte]))
         return sf_bytes + data_padding
 
     @classmethod
@@ -411,6 +411,6 @@ class CanSingleFrameHandler:
         validate_nibble(sf_dl_short)
         sf_dl_byte_0 = sf_dl_short ^ (cls.SINGLE_FRAME_N_PCI << 4)
         if sf_dl_long is None:
-            return bytearray(sf_dl_byte_0.to_bytes(length=1))
+            return bytearray([sf_dl_byte_0])
         validate_raw_byte(sf_dl_long)
-        return bytearray(sf_dl_byte_0.to_bytes(length=1) + sf_dl_long.to_bytes(length=1))
+        return bytearray([sf_dl_byte_0, sf_dl_long])

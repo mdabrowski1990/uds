@@ -203,11 +203,11 @@ class CanAddressingInformation:
             return bytearray()
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
             validate_raw_byte(target_address)
-            return bytearray(target_address.to_bytes(length=1))
+            return bytearray([target_address])
         if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING):
             validate_raw_byte(address_extension)
-            return bytearray(address_extension.to_bytes(length=1))
+            return bytearray([address_extension])
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod

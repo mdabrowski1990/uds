@@ -239,7 +239,7 @@ class CanFlowControlHandler:
             if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
-            return fc_bytes + data_bytes_to_pad * bytearray(filler_byte.to_bytes(length=1))
+            return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
         return fc_bytes
 
     @classmethod
@@ -289,7 +289,7 @@ class CanFlowControlHandler:
         if len(fc_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `dlc` is too small.")
         data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
-        return fc_bytes + data_bytes_to_pad * bytearray(filler_byte.to_bytes(length=1))
+        return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
     @classmethod
     def is_flow_control(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
