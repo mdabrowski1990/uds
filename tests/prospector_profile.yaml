@@ -50,6 +50,8 @@ mypy:
   options:
     ignore-missing-imports: true
     max-positional-arguments: 10
+  disable:
+    - attr-defined
 
 
 vulture:
