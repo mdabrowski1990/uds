@@ -72,7 +72,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         return self.__frame
 
     @frame.setter
-    def frame(self, value: Any):
+    def frame(self, value: Any) -> None:
         """
         Set value of frame attribute.
 
@@ -94,7 +94,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         return self.__direction
 
     @direction.setter
-    def direction(self, value: TransmissionDirection):
+    def direction(self, value: TransmissionDirection) -> None:
         """
         Set value of direction attribute.
 
@@ -115,7 +115,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         return self.__transmission_time
 
     @transmission_time.setter
-    def transmission_time(self, value: datetime):
+    def transmission_time(self, value: datetime) -> None:
         """
         Set value when this packet was transmitted on a bus.
 

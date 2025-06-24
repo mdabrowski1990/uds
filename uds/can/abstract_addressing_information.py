@@ -4,7 +4,7 @@ __all__ = ["AbstractCanAddressingInformation", "PacketAIParamsAlias"]
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Optional, TypedDict, NoReturn
+from typing import Optional, TypedDict
 
 from uds.transmission_attributes import AddressingType
 
@@ -83,7 +83,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__rx_packets_physical_ai)
 
     @rx_packets_physical_ai.setter
-    def rx_packets_physical_ai(self, value: InputAIParamsAlias) -> NoReturn:
+    def rx_packets_physical_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of incoming physically addressed CAN packets.
 
@@ -98,7 +98,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__tx_packets_physical_ai)
 
     @tx_packets_physical_ai.setter
-    def tx_packets_physical_ai(self, value: InputAIParamsAlias) -> NoReturn:
+    def tx_packets_physical_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of outgoing physically addressed CAN packets.
 
@@ -113,7 +113,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__rx_packets_functional_ai)
 
     @rx_packets_functional_ai.setter
-    def rx_packets_functional_ai(self, value: InputAIParamsAlias) -> NoReturn:
+    def rx_packets_functional_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of incoming functionally addressed CAN packets.
 
@@ -128,7 +128,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__tx_packets_functional_ai)
 
     @tx_packets_functional_ai.setter
-    def tx_packets_functional_ai(self, value: InputAIParamsAlias) -> NoReturn:
+    def tx_packets_functional_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of outgoing functionally addressed CAN packets.
 

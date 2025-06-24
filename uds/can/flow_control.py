@@ -559,7 +559,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__block_size
 
     @block_size.setter
-    def block_size(self, value: int):
+    def block_size(self, value: int) -> None:
         """
         Set value of :ref:`Block Size <knowledge-base-can-block-size>` parameter.
 
@@ -574,7 +574,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__st_min
 
     @st_min.setter
-    def st_min(self, value: int):
+    def st_min(self, value: int) -> None:
         """
         Set value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter.
 
@@ -589,7 +589,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__wait_count
 
     @wait_count.setter
-    def wait_count(self, value: int):
+    def wait_count(self, value: int) -> None:
         """
         Set number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`.
 
@@ -612,7 +612,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__repeat_wait
 
     @repeat_wait.setter
-    def repeat_wait(self, value: bool):
+    def repeat_wait(self, value: bool) -> None:
         """
         Set flag informing how to send Flow Control packets with WAIT Flow Status.
 

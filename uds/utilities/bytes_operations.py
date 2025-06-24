@@ -11,7 +11,7 @@ from .custom_exceptions import InconsistentArgumentsError
 from .enums import ValidatedEnum
 
 
-class Endianness(ValidatedEnum, StrEnum):
+class Endianness(ValidatedEnum, StrEnum):  # type: ignore
     """
     Endianness values definitions.
 

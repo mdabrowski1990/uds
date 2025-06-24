@@ -95,7 +95,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__addressing_information
 
     @addressing_information.setter
-    def addressing_information(self, value: AbstractCanAddressingInformation):
+    def addressing_information(self, value: AbstractCanAddressingInformation) -> None:
         """
         Set Addressing Information configuration to be used for segmentation and desegmentation.
 
@@ -119,7 +119,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__dlc
 
     @dlc.setter
-    def dlc(self, value: int):
+    def dlc(self, value: int) -> None:
         """
         Set value of base CAN DLC to use for CAN Packets.
 
@@ -139,7 +139,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__use_data_optimization
 
     @use_data_optimization.setter
-    def use_data_optimization(self, value: bool):
+    def use_data_optimization(self, value: bool) -> None:
         """
         Set whether to use CAN Frame Data Optimization during CAN Packets creation.
 
@@ -153,7 +153,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__filler_byte
 
     @filler_byte.setter
-    def filler_byte(self, value: int):
+    def filler_byte(self, value: int) -> None:
         """
         Set value of filler byte to use for CAN Frame Data Padding.
 

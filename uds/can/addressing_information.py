@@ -143,11 +143,11 @@ class CanAddressingInformation:
         from_data_bytes = cls.decode_ai_data_bytes(addressing_format=addressing_format, ai_data_bytes=ai_data_bytes)
         from_can_id = CanIdHandler.decode_can_id(addressing_format=addressing_format, can_id=can_id)
         return cls.DecodedAIParamsAlias(
-            addressing_type=from_can_id.get(AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME, None),  # type: ignore  # noqa: E501
-            target_address=from_data_bytes.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None)  # type: ignore  # noqa: E501
+            addressing_type=from_can_id.get(AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME, None),  # type: ignore  # noqa
+            target_address=from_data_bytes.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None)  # type: ignore  # noqa
             or from_can_id.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None),
             source_address=from_can_id.get(AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME, None),  # type: ignore
-            address_extension=from_data_bytes.get(AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME, None))  # type: ignore  # noqa: E501
+            address_extension=from_data_bytes.get(AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME, None))  # type: ignore  # noqa
 
     @classmethod
     def decode_ai_data_bytes(cls,

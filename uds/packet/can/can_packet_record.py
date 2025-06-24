@@ -163,5 +163,5 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         self.__source_address = ai_info[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
         self.__address_extension = ai_info[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]  # type: ignore
         _addressing_type = ai_info[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME]  # type: ignore
-        if _addressing_type not in (self.addressing_type, None):  # type: ignore
+        if _addressing_type not in {self.addressing_type, None}:
             raise InconsistentArgumentsError("Decoded Addressing Type does not match the one that is already set.")

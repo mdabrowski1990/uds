@@ -44,7 +44,7 @@ class RawDataRecord(AbstractDataRecord):
             raise ValueError("Length must be a positive integer.")
         self.__length = value
 
-    @property  # noqa: F841
+    @property  # noqa
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
@@ -55,7 +55,7 @@ class RawDataRecord(AbstractDataRecord):
         """
         return False
 
-    @property  # noqa: F841
+    @property  # noqa
     def min_occurrences(self) -> int:
         """
         Minimal number of this Data Record occurrences.
@@ -65,7 +65,7 @@ class RawDataRecord(AbstractDataRecord):
         """
         return 1
 
-    @property  # noqa: F841
+    @property  # noqa
     def max_occurrences(self) -> Optional[int]:
         """
         Maximal number of this Data Record occurrences.
@@ -76,7 +76,7 @@ class RawDataRecord(AbstractDataRecord):
         """
         return 1
 
-    @property  # noqa: F841
+    @property  # noqa
     def contains(self) -> Tuple[AbstractDataRecord, ...]:
         """Get Data Records contained by this Data Record."""
         return ()
@@ -120,4 +120,4 @@ class RawDataRecord(AbstractDataRecord):
                 "Provided value of physical_value is out of range: "
                 f"must be between 0 and {self.max_raw_value}, got {physical_value}."
             )
-        return physical_value  # type: ignore
+        return physical_value

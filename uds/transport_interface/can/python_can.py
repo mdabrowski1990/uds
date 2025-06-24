@@ -67,7 +67,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         self.__async_frames_buffer = AsyncBufferedReader()
         self.__async_notifier: Optional[Notifier] = None
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Safely close all threads open by this object."""
         self.__teardown_notifier(suppress_warning=True)
         self.__teardown_async_notifier(suppress_warning=True)
@@ -493,7 +493,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         observed_frame = None
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
-                or tuple(observed_frame.data) != packet.raw_frame_data \
+                or bytes(observed_frame.data) != packet.raw_frame_data \
                 or not observed_frame.is_rx:
             timeout_left = timeout_s - (time() - time_start_s)
             if timeout_left <= 0:
@@ -544,7 +544,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         observed_frame = None
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
-                or tuple(observed_frame.data) != packet.raw_frame_data \
+                or bytes(observed_frame.data) != packet.raw_frame_data \
                 or not observed_frame.is_rx:
             timeout_left = timeout_s - (time() - time_start_s)
             if timeout_left <= 0:
@@ -600,11 +600,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TimeoutError("Timeout was reached before a CAN packet was received.")
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        return CanPacketRecord(frame=received_frame,
+        return CanPacketRecord(frame=received_frame,  # type: ignore
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
 
     async def async_receive_packet(self,
                                    timeout: Optional[TimeMillisecondsAlias] = None,
