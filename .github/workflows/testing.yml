@@ -192,9 +192,9 @@ jobs:
 
       - name: Check imports are sorted [isort]
         run: |
-          isort uds
-          isort tests
-          isort examples
+          isort uds -c -v
+          isort tests -c -v
+          isort examples -c -v
 
   documentation_checks:
     runs-on: windows-latest

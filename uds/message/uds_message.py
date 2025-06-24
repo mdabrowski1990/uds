@@ -8,7 +8,7 @@ __all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Union, Sequence
+from typing import Sequence, Union
 
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
 from uds.transmission_attributes import AddressingType, TransmissionDirection
