@@ -8,8 +8,8 @@ __all__ = ["CanAddressingInformation"]
 
 from typing import Dict, Optional, Type, TypedDict
 
-from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_byte, validate_raw_bytes
 from uds.transmission_attributes import AddressingType
+from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_byte, validate_raw_bytes
 
 from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 from .addressing_format import CanAddressingFormat
