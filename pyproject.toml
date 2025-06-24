@@ -80,7 +80,7 @@ static-code-analysis = [
     "pyroma == 4.2",
 ]
 dependency-scan = [
-    "pip-audit == 2.9.8",
+    "pip-audit == 2.9.0",
 ]
 sorting-imports = [
     "isort == 6.0.1"

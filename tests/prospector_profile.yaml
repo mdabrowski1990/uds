@@ -49,6 +49,8 @@ mypy:
   run: true
   options:
     ignore-missing-imports: true
+    max-positional-arguments: 10
+
 
 vulture:
   run: true
