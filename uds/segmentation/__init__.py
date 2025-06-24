@@ -10,10 +10,5 @@ This subpackage contains implementation of:
  - classes that handles segmentation for each bus
 """
 
-__all__ = [
-    "AbstractSegmenter", "SegmentationError",
-    "CanSegmenter",
-]
-
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 from .can_segmenter import CanSegmenter
