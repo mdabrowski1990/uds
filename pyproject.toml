@@ -73,17 +73,17 @@ test = [
     "pytest-asyncio",
 ]
 static-code-analysis = [
-    "prospector == 1.10.3",
-    "mypy == 1.9.0",
-    "vulture == 2.11",
-    "bandit == 1.7.8",
+    "prospector == 1.17.1",
+    "mypy == 1.16.1",
+    "vulture == 2.14",
+    "bandit == 1.8.5",
     "pyroma == 4.2",
 ]
 dependency-scan = [
-    "pip-audit == 2.7.3",
+    "pip-audit == 2.9.8",
 ]
 sorting-imports = [
-    "isort == 5.13.2"
+    "isort == 6.0.1"
 ]
 docs = [
     "sphinx",
@@ -98,7 +98,7 @@ docs-checks = [
 
 [build-system]
 requires = [
-    "setuptools >= 42",
+    "setuptools >= 65.5.1",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
