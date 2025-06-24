@@ -173,10 +173,10 @@ class CanConsecutiveFrameHandler:
             Consecutive Frame.
         """
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-        return list(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
+        return bytearray(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
 
     @classmethod
     def decode_sequence_number(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
@@ -195,7 +195,7 @@ class CanConsecutiveFrameHandler:
         :return: Extracted value of Sequence Number.
         """
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] & 0xF
@@ -272,7 +272,7 @@ class CanConsecutiveFrameHandler:
         """
         validate_raw_bytes(raw_frame_data)
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
         min_dlc = cls.get_min_dlc(addressing_format=addressing_format)
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))

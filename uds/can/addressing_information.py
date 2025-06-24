@@ -114,8 +114,8 @@ class CanAddressingInformation:
         validate_raw_bytes(ai_data_bytes, allow_empty=True)
         expected_ai_bytes_number = cls.get_ai_data_bytes_number(addressing_format)
         if expected_ai_bytes_number != len(ai_data_bytes):
-            raise InconsistentArgumentsError(f"Number of Addressing Information data bytes does not match provided "
-                                             f"Addressing Format. Expected number of AI data bytes: "
+            raise InconsistentArgumentsError("Number of Addressing Information data bytes does not match provided "
+                                             "Addressing Format. Expected number of AI data bytes: "
                                              f"{expected_ai_bytes_number}. Actual value: {ai_data_bytes}")
 
     @classmethod
@@ -202,12 +202,12 @@ class CanAddressingInformation:
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
             return bytearray()
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
-            validate_raw_byte(target_address)
-            return bytearray([target_address])
+            validate_raw_byte(target_address)  # type: ignore
+            return bytearray([target_address])  # type: ignore
         if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING):
-            validate_raw_byte(address_extension)
-            return bytearray([address_extension])
+            validate_raw_byte(address_extension)  # type: ignore
+            return bytearray([address_extension])  # type: ignore
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod

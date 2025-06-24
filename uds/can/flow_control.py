@@ -327,7 +327,7 @@ class CanFlowControlHandler:
         :return: Flow Status value carried by a considered Flow Control.
         """
         if not cls.is_flow_control(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet. "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet. "
                              f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return CanFlowStatus(raw_frame_data[ai_bytes_number] & 0xF)
@@ -351,7 +351,7 @@ class CanFlowControlHandler:
         """
         flow_status = cls.decode_flow_status(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
         if flow_status != CanFlowStatus.ContinueToSend:
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet with "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
                              f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
@@ -376,7 +376,7 @@ class CanFlowControlHandler:
         """
         flow_status = cls.decode_flow_status(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
         if flow_status != CanFlowStatus.ContinueToSend:
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet with "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
                              f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
@@ -436,8 +436,8 @@ class CanFlowControlHandler:
         """
         CanFlowStatus.validate_member(flow_status)
         if flow_status == CanFlowStatus.ContinueToSend:
-            validate_raw_byte(block_size)
-            validate_raw_byte(st_min)
+            validate_raw_byte(block_size)  # type: ignore
+            validate_raw_byte(st_min)  # type: ignore
         else:
             if block_size is not None:
                 validate_raw_byte(block_size)

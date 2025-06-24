@@ -18,7 +18,7 @@ class Endianness(ValidatedEnum, StrEnum):
     `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
     """
 
-    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore
+    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore  # noqa: F841
     """Little Endian stores the most significant byte at the largest memory address and the least significant byte
     at the smallest."""
     BIG_ENDIAN: "Endianness" = "big"  # type: ignore

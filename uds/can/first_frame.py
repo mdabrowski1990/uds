@@ -118,7 +118,7 @@ class CanFirstFrameHandler:
                                                                       target_address=target_address,
                                                                       address_extension=address_extension)
         ff_dl_data_bytes = cls.__encode_any_ff_dl(ff_dl=ff_dl, long_ff_dl_format=long_ff_dl_format)
-        ff_data_bytes = list(ai_data_bytes) + list(ff_dl_data_bytes) + list(payload)
+        ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
         frame_length = CanDlcHandler.decode_dlc(dlc)
         if len(ff_data_bytes) != frame_length:
             raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes to fit "
@@ -157,7 +157,7 @@ class CanFirstFrameHandler:
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         ff_dl_data_bytes = cls.__extract_ff_dl_data_bytes(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
-        return list(raw_frame_data[ai_bytes_number + len(ff_dl_data_bytes):])
+        return bytearray(raw_frame_data[ai_bytes_number + len(ff_dl_data_bytes):])
 
     @classmethod
     def decode_ff_dl(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
@@ -294,10 +294,10 @@ class CanFirstFrameHandler:
         :return: Extracted data bytes with CAN Packet Type and First Frame Data Length parameters.
         """
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-        ff_dl_short = list(raw_frame_data[ai_bytes_number:][:cls.SHORT_FF_DL_BYTES_USED])
+        ff_dl_short = bytearray(raw_frame_data[ai_bytes_number:][:cls.SHORT_FF_DL_BYTES_USED])
         if ff_dl_short[0] & 0xF != 0 or ff_dl_short[1] != 0x00:
             return ff_dl_short
-        ff_dl_long = list(raw_frame_data[ai_bytes_number:][:cls.LONG_FF_DL_BYTES_USED])
+        ff_dl_long = bytearray(raw_frame_data[ai_bytes_number:][:cls.LONG_FF_DL_BYTES_USED])
         return ff_dl_long
 
     @classmethod

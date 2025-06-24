@@ -196,7 +196,7 @@ class TestCanAddressingInformation:
         assert CanAddressingInformation.encode_ai_data_bytes(
             addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
             address_extension=address_extension,
-            target_address=target_address) == bytearray(target_address.to_bytes(length=1))
+            target_address=target_address) == bytearray([target_address])
         self.mock_validate_addressing_format.assert_called_once_with(CanAddressingFormat.EXTENDED_ADDRESSING)
         self.mock_validate_raw_byte.assert_called_once_with(target_address)
 
@@ -210,7 +210,7 @@ class TestCanAddressingInformation:
         assert CanAddressingInformation.encode_ai_data_bytes(
             addressing_format=addressing_format,
             address_extension=address_extension,
-            target_address=target_address) == bytearray(address_extension.to_bytes(length=1))
+            target_address=target_address) == bytearray([address_extension])
         self.mock_validate_addressing_format.assert_called_once_with(addressing_format)
         self.mock_validate_raw_byte.assert_called_once_with(address_extension)
 
