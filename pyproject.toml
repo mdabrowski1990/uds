@@ -1,25 +1,25 @@
 [project]
 name = "py-uds"
 description = "UDS (Unified Diagnostic Services) protocol handler."
+requires-python = ">=3.9"
 readme = "README.rst"
-requires-python = ">=3.8"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Telecommunications Industry",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Software Development :: Embedded Systems",
     "Topic :: System :: Monitoring",
@@ -31,6 +31,7 @@ keywords = [
     "automotive",
     "on-board-diagnostic",
     "obd",
+    "obd2",
     "vehicle-diagnostic",
     "iso14229",
     "iso-14229",
@@ -79,7 +80,6 @@ static-code-analysis = [
     "pyroma == 4.2",
 ]
 dependency-scan = [
-    "safety == 3.1.0",
     "pip-audit == 2.7.3",
 ]
 sorting-imports = [
@@ -127,7 +127,7 @@ docs = [
 
 [tool.setuptools.packages.find]
 include = [
-    "uds.*"
+    "uds*"
 ]
 
 
