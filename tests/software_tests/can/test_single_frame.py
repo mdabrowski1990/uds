@@ -612,9 +612,9 @@ class TestCanSingleFrameHandler:
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         self.mock_encode_dlc.assert_called_once_with(len(raw_frame_data))
         mock_get_sf_dl_bytes_number.assert_called_once_with(self.mock_encode_dlc.return_value)
-        assert isinstance(sf_dl_bytes, list)
+        assert isinstance(sf_dl_bytes, bytearray)
         assert len(sf_dl_bytes) == sf_dl_bytes_number
-        assert sf_dl_bytes == list(raw_frame_data)[ai_data_bytes:][:sf_dl_bytes_number]
+        assert sf_dl_bytes == bytearray(raw_frame_data)[ai_data_bytes:][:sf_dl_bytes_number]
 
     # __encode_valid_sf_dl
 

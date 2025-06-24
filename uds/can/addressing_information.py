@@ -116,7 +116,7 @@ class CanAddressingInformation:
         if expected_ai_bytes_number != len(ai_data_bytes):
             raise InconsistentArgumentsError("Number of Addressing Information data bytes does not match provided "
                                              "Addressing Format. Expected number of AI data bytes: "
-                                             f"{expected_ai_bytes_number}. Actual value: {ai_data_bytes}")
+                                             f"{expected_ai_bytes_number}. Actual value: {ai_data_bytes!r}")
 
     @classmethod
     def decode_packet_ai(cls,

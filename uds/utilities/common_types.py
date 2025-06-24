@@ -63,4 +63,4 @@ def validate_raw_bytes(value: RawBytesAlias, allow_empty: bool = False) -> None:
         raise ValueError("Provided values is empty sequence.")
     if not all(isinstance(raw_byte, int) and 0x00 <= raw_byte <= 0xFF for raw_byte in value):
         raise ValueError("Provided value does not contain raw bytes (int value between 0x00 and 0xFF) only. "
-                         f"Actual value: {value}")
+                         f"Actual value: {value!r}")

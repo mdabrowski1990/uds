@@ -283,7 +283,7 @@ class CanSingleFrameHandler:
         validate_raw_bytes(raw_frame_data)
         if not cls.is_single_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError("Provided `raw_frame_data` value does not carry a Single Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         sf_dl_data_bytes = cls.__extract_sf_dl_data_bytes(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)

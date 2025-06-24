@@ -174,7 +174,7 @@ class CanConsecutiveFrameHandler:
         """
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return bytearray(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
 
@@ -196,7 +196,7 @@ class CanConsecutiveFrameHandler:
         """
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] & 0xF
 
@@ -273,7 +273,7 @@ class CanConsecutiveFrameHandler:
         validate_raw_bytes(raw_frame_data)
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         min_dlc = cls.get_min_dlc(addressing_format=addressing_format)
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         if min_dlc > dlc:

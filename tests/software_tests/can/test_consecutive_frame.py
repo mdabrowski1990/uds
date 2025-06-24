@@ -278,8 +278,8 @@ class TestCanConsecutiveFrameHandler:
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
         payload = CanConsecutiveFrameHandler.decode_payload(addressing_format=addressing_format,
                                                             raw_frame_data=raw_frame_data)
-        assert isinstance(payload, list)
-        assert payload == list(raw_frame_data)[ai_bytes_number + CanConsecutiveFrameHandler.SN_BYTES_USED:]
+        assert isinstance(payload, bytearray)
+        assert payload == bytearray(raw_frame_data)[ai_bytes_number + CanConsecutiveFrameHandler.SN_BYTES_USED:]
         mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)

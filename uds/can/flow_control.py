@@ -328,7 +328,7 @@ class CanFlowControlHandler:
         """
         if not cls.is_flow_control(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
             raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return CanFlowStatus(raw_frame_data[ai_bytes_number] & 0xF)
 
@@ -353,7 +353,7 @@ class CanFlowControlHandler:
         if flow_status != CanFlowStatus.ContinueToSend:
             raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
-                             f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
+                             f"raw_frame_data={raw_frame_data!r}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_data_bytes_number + cls.BS_BYTE_POSITION]
 
@@ -378,7 +378,7 @@ class CanFlowControlHandler:
         if flow_status != CanFlowStatus.ContinueToSend:
             raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
-                             f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
+                             f"raw_frame_data={raw_frame_data!r}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_data_bytes_number + cls.STMIN_BYTE_POSITION]
 
