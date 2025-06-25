@@ -13,6 +13,7 @@ from uds.transmission_attributes import TransmissionDirection
 SCRIPT_LOCATION = "uds.message.uds_message"
 
 
+
 class TestUdsMessage:
     """Unit tests for 'UdsMessage' class."""
 
@@ -66,7 +67,7 @@ class TestUdsMessage:
 
     def test_payload__set(self, example_raw_bytes):
         UdsMessage.payload.fset(self.mock_uds_message, value=example_raw_bytes)
-        assert self.mock_uds_message._UdsMessage__payload == tuple(example_raw_bytes)
+        assert self.mock_uds_message._UdsMessage__payload == bytearray(example_raw_bytes)
         self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
 
     def test_payload__set_second_call(self, example_raw_bytes):
@@ -166,7 +167,7 @@ class TestUdsMessageRecord:
     def test_payload__get(self, packets):
         self.mock_uds_message_record.packets_records = packets
         payload = UdsMessageRecord.payload.fget(self.mock_uds_message_record)
-        assert isinstance(payload, tuple)
+        assert isinstance(payload, bytes)
         assert len(payload) == self.mock_uds_message_record.packets_records[0].data_length
 
     # packets_records

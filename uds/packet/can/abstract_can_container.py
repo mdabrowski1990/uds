@@ -17,7 +17,6 @@ from uds.can import (
     CanSingleFrameHandler,
 )
 from uds.transmission_attributes import AddressingType
-from uds.utilities import RawBytesTupleAlias
 
 from .can_packet_type import CanPacketType
 
@@ -27,7 +26,7 @@ class AbstractCanPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTupleAlias:
+    def raw_frame_data(self) -> bytes:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
 
     @property
@@ -134,7 +133,7 @@ class AbstractCanPacketContainer(ABC):
         return None
 
     @property
-    def payload(self) -> Optional[RawBytesTupleAlias]:
+    def payload(self) -> Optional[bytes]:
         """
         Diagnostic message payload carried by this CAN packet.
 
@@ -152,13 +151,13 @@ class AbstractCanPacketContainer(ABC):
             cannot be determined basing solely on the information contained in this packet object.
         """
         if self.packet_type == CanPacketType.SINGLE_FRAME:
-            return tuple(CanSingleFrameHandler.decode_payload(addressing_format=self.addressing_format,
+            return bytes(CanSingleFrameHandler.decode_payload(addressing_format=self.addressing_format,
                                                               raw_frame_data=self.raw_frame_data))
         if self.packet_type == CanPacketType.FIRST_FRAME:
-            return tuple(CanFirstFrameHandler.decode_payload(addressing_format=self.addressing_format,
+            return bytes(CanFirstFrameHandler.decode_payload(addressing_format=self.addressing_format,
                                                              raw_frame_data=self.raw_frame_data))
         if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-            return tuple(CanConsecutiveFrameHandler.decode_payload(addressing_format=self.addressing_format,
+            return bytes(CanConsecutiveFrameHandler.decode_payload(addressing_format=self.addressing_format,
                                                                    raw_frame_data=self.raw_frame_data))
         return None
 

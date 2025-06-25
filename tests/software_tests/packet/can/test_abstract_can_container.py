@@ -188,7 +188,7 @@ class TestAbstractCanPacketContainer:
     def test_payload__single_frame(self, payload):
         self.mock_can_packet_container.packet_type = CanPacketType.SINGLE_FRAME
         self.mock_single_frame_handler_class.decode_payload.return_value = payload
-        assert AbstractCanPacketContainer.payload.fget(self.mock_can_packet_container) == tuple(payload)
+        assert AbstractCanPacketContainer.payload.fget(self.mock_can_packet_container) == bytes(payload)
         self.mock_single_frame_handler_class.decode_payload.assert_called_once_with(
             addressing_format=self.mock_can_packet_container.addressing_format,
             raw_frame_data=self.mock_can_packet_container.raw_frame_data)
@@ -197,7 +197,7 @@ class TestAbstractCanPacketContainer:
     def test_payload__first_frame(self, payload):
         self.mock_can_packet_container.packet_type = CanPacketType.FIRST_FRAME
         self.mock_first_frame_handler_class.decode_payload.return_value = payload
-        assert AbstractCanPacketContainer.payload.fget(self.mock_can_packet_container) == tuple(payload)
+        assert AbstractCanPacketContainer.payload.fget(self.mock_can_packet_container) == bytes(payload)
         self.mock_first_frame_handler_class.decode_payload.assert_called_once_with(
             addressing_format=self.mock_can_packet_container.addressing_format,
             raw_frame_data=self.mock_can_packet_container.raw_frame_data)
@@ -206,7 +206,7 @@ class TestAbstractCanPacketContainer:
     def test_payload__consecutive_frame(self, payload):
         self.mock_can_packet_container.packet_type = CanPacketType.CONSECUTIVE_FRAME
         self.mock_consecutive_frame_handler_class.decode_payload.return_value = payload
-        assert AbstractCanPacketContainer.payload.fget(self.mock_can_packet_container) == tuple(payload)
+        assert AbstractCanPacketContainer.payload.fget(self.mock_can_packet_container) == bytes(payload)
         self.mock_consecutive_frame_handler_class.decode_payload.assert_called_once_with(
             addressing_format=self.mock_can_packet_container.addressing_format,
             raw_frame_data=self.mock_can_packet_container.raw_frame_data)

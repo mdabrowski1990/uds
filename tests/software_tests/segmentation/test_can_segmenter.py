@@ -647,7 +647,7 @@ class TestCanSegmenter:
         for packet in packets:
             if packet.payload is not None:
                 total_payload.extend(packet.payload)
-        self.mock_uds_message_class.assert_called_once_with(payload=total_payload[:packets[0].data_length],
+        self.mock_uds_message_class.assert_called_once_with(payload=bytes(total_payload[:packets[0].data_length]),
                                                             addressing_type=packets[0].addressing_type)
 
     @pytest.mark.parametrize("packets", [

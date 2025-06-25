@@ -26,7 +26,7 @@ from uds.packet import (
     PacketsContainersSequence,
 )
 from uds.transmission_attributes import AddressingType
-from uds.utilities import RawBytesAlias, RawBytesListAlias, validate_raw_byte
+from uds.utilities import RawBytesAlias, validate_raw_byte
 
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
 
@@ -95,7 +95,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__addressing_information
 
     @addressing_information.setter
-    def addressing_information(self, value: AbstractCanAddressingInformation):
+    def addressing_information(self, value: AbstractCanAddressingInformation) -> None:
         """
         Set Addressing Information configuration to be used for segmentation and desegmentation.
 
@@ -119,7 +119,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__dlc
 
     @dlc.setter
-    def dlc(self, value: int):
+    def dlc(self, value: int) -> None:
         """
         Set value of base CAN DLC to use for CAN Packets.
 
@@ -139,7 +139,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__use_data_optimization
 
     @use_data_optimization.setter
-    def use_data_optimization(self, value: bool):
+    def use_data_optimization(self, value: bool) -> None:
         """
         Set whether to use CAN Frame Data Optimization during CAN Packets creation.
 
@@ -153,7 +153,7 @@ class CanSegmenter(AbstractSegmenter):
         return self.__filler_byte
 
     @filler_byte.setter
-    def filler_byte(self, value: int):
+    def filler_byte(self, value: int) -> None:
         """
         Set value of filler byte to use for CAN Frame Data Padding.
 
@@ -343,10 +343,10 @@ class CanSegmenter(AbstractSegmenter):
                 return UdsMessage(payload=packets[0].payload,  # type: ignore
                                   addressing_type=packets[0].addressing_type)
             if packets[0].packet_type == CanPacketType.FIRST_FRAME:
-                payload_bytes: RawBytesListAlias = []
+                payload_bytes = bytearray()
                 for packet in packets:
                     if packet.payload is not None:
-                        payload_bytes.extend(packet.payload)
+                        payload_bytes += bytearray(packet.payload)
                 return UdsMessage(payload=payload_bytes[:packets[0].data_length],
                                   addressing_type=packets[0].addressing_type)
             raise SegmentationError("Unexpectedly, something went wrong...")

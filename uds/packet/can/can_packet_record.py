@@ -14,7 +14,7 @@ from uds.can import (
     CanIdHandler,
 )
 from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import InconsistentArgumentsError, RawBytesTupleAlias
+from uds.utilities import InconsistentArgumentsError
 
 from ..abstract_packet import AbstractUdsPacketRecord
 from .abstract_can_container import AbstractCanPacketContainer
@@ -58,10 +58,10 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         self.__assess_ai_attributes()
 
     @property
-    def raw_frame_data(self) -> RawBytesTupleAlias:
+    def raw_frame_data(self) -> bytes:
         """Raw data bytes of a frame that carried this CAN packet."""
         if isinstance(self.frame, PythonCanMessage):
-            return tuple(self.frame.data)
+            return bytes(self.frame.data)
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
@@ -163,5 +163,5 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         self.__source_address = ai_info[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
         self.__address_extension = ai_info[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]  # type: ignore
         _addressing_type = ai_info[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME]  # type: ignore
-        if _addressing_type not in (self.addressing_type, None):  # type: ignore
+        if _addressing_type not in {self.addressing_type, None}:
             raise InconsistentArgumentsError("Decoded Addressing Type does not match the one that is already set.")

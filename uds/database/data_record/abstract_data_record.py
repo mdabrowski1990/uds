@@ -80,13 +80,13 @@ class AbstractDataRecord(ABC):
         """Name of this Data Record."""
         return self.__name
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def length(self) -> int:
         """Get number of bits that this Data Record is stored over."""
 
     @property
-    def max_raw_value(self):
+    def max_raw_value(self) -> int:
         """
         Maximum raw (bit) value for this Data Record.
 
@@ -94,7 +94,7 @@ class AbstractDataRecord(ABC):
         """
         return (1 << self.length) - 1
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def is_reoccurring(self) -> bool:
         """
@@ -105,7 +105,7 @@ class AbstractDataRecord(ABC):
         - True - number of occurrences might vary
         """
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def min_occurrences(self) -> int:
         """
@@ -115,7 +115,7 @@ class AbstractDataRecord(ABC):
             equals True.
         """
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def max_occurrences(self) -> Optional[int]:
         """
@@ -126,7 +126,7 @@ class AbstractDataRecord(ABC):
         .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
         """
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def contains(self) -> Tuple["AbstractDataRecord", ...]:
         """Get Data Records contained by this Data Record."""

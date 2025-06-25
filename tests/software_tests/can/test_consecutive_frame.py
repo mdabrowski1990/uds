@@ -56,8 +56,8 @@ class TestCanConsecutiveFrameHandler:
         (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, 0xF),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        ([0x54], 2, [], [0xFA]),
-        (range(50, 110), 64, [0x98], [0x12, 0x34]),
+        ([0x54], 2, bytearray(), bytearray([0xFA])),
+        (range(50, 110), 64, bytearray([0x98]), bytearray([0x12, 0x34])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
     def test_create_valid_frame_data__valid_with_dlc(self, mock_encode_sn,
@@ -81,7 +81,7 @@ class TestCanConsecutiveFrameHandler:
                                                                target_address=target_address,
                                                                address_extension=address_extension)
         mock_encode_sn.assert_called_once_with(sequence_number=sequence_number)
-        assert isinstance(cf_frame_data, list)
+        assert isinstance(cf_frame_data, bytearray)
         assert len(cf_frame_data) == data_bytes_number
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
@@ -93,8 +93,8 @@ class TestCanConsecutiveFrameHandler:
         (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, 0xF),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        ([0x54], 2, [], [0xFA]),
-        (range(50, 110), 64, [0x98], [0x12, 0x34]),
+        ([0x54], 2, bytearray(), bytearray([0xFA])),
+        (range(50, 110), 64, bytearray([0x98]), bytearray([0x12, 0x34])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler.get_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
@@ -122,7 +122,7 @@ class TestCanConsecutiveFrameHandler:
                                                                target_address=target_address,
                                                                address_extension=address_extension)
         mock_encode_sn.assert_called_once_with(sequence_number=sequence_number)
-        assert isinstance(cf_frame_data, list)
+        assert isinstance(cf_frame_data, bytearray)
         assert len(cf_frame_data) == data_bytes_number
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
@@ -134,9 +134,9 @@ class TestCanConsecutiveFrameHandler:
         (0x99, 0xF),
     ])
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        (CanDlcHandler.MIN_BASE_UDS_DLC - 1, range(60), 100, [0xFF], [0x00, 0xFA]),
-        (CanDlcHandler.MIN_BASE_UDS_DLC - 2, [0x3E], 7, [], [0x01]),
-        (CanDlcHandler.MIN_BASE_UDS_DLC + 1, [0x20, 0x30, 0x44], 4, [0xAA], [0x03]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 1, range(60), 100, bytearray([0xFF]), bytearray([0x00, 0xFA])),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 2, [0x3E], 7, bytearray(), bytearray([0x01])),
+        (CanDlcHandler.MIN_BASE_UDS_DLC + 1, [0x20, 0x30, 0x44], 4, bytearray([0xAA]), bytearray([0x03])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
     def test_create_valid_frame_data__inconsistent_args(self, mock_encode_sn,
@@ -173,8 +173,8 @@ class TestCanConsecutiveFrameHandler:
         (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, 0xF),
     ])
     @pytest.mark.parametrize("payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        ([], 8, [], [0x0C]),
-        (range(50, 110), 64, [0x98], [0x12, 0x34]),
+        ([], 8, bytearray(), bytearray([0x0C])),
+        (range(50, 110), 64, bytearray([0x98]), bytearray([0x12, 0x34])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
     def test_create_any_frame_data__valid(self, mock_encode_sn,
@@ -198,7 +198,7 @@ class TestCanConsecutiveFrameHandler:
                                                                target_address=target_address,
                                                                address_extension=address_extension)
         mock_encode_sn.assert_called_once_with(sequence_number=sequence_number)
-        assert isinstance(cf_frame_data, list)
+        assert isinstance(cf_frame_data, bytearray)
         assert len(cf_frame_data) == data_bytes_number
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
@@ -210,8 +210,8 @@ class TestCanConsecutiveFrameHandler:
         (0x99, 0xF),
     ])
     @pytest.mark.parametrize("dlc, payload, data_bytes_number, ai_data_bytes, sn_data_bytes", [
-        (CanDlcHandler.MIN_BASE_UDS_DLC - 1, range(60), 62, [0xFF], [0x00, 0xFA]),
-        (CanDlcHandler.MIN_BASE_UDS_DLC, [0x20, 0x30, 0x44], 3, [], [0x03]),
+        (CanDlcHandler.MIN_BASE_UDS_DLC - 1, range(60), 62, bytearray([0xFF]), bytearray([0x00, 0xFA])),
+        (CanDlcHandler.MIN_BASE_UDS_DLC, [0x20, 0x30, 0x44], 3, bytearray(), bytearray([0x03])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn")
     def test_create_any_frame_data__inconsistent_args(self, mock_encode_sn,
@@ -278,8 +278,8 @@ class TestCanConsecutiveFrameHandler:
         self.mock_get_ai_data_bytes_number.return_value = ai_bytes_number
         payload = CanConsecutiveFrameHandler.decode_payload(addressing_format=addressing_format,
                                                             raw_frame_data=raw_frame_data)
-        assert isinstance(payload, list)
-        assert payload == list(raw_frame_data)[ai_bytes_number + CanConsecutiveFrameHandler.SN_BYTES_USED:]
+        assert isinstance(payload, bytearray)
+        assert payload == bytearray(raw_frame_data)[ai_bytes_number + CanConsecutiveFrameHandler.SN_BYTES_USED:]
         mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
                                                           raw_frame_data=raw_frame_data)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
@@ -484,7 +484,7 @@ class TestCanConsecutiveFrameHandler:
     @pytest.mark.parametrize("sequence_number", [0, 0xF])
     def test_encode_sn(self, sequence_number):
         assert CanConsecutiveFrameHandler._CanConsecutiveFrameHandler__encode_sn(sequence_number=sequence_number) \
-               == [(CanConsecutiveFrameHandler.CONSECUTIVE_FRAME_N_PCI << 4) + sequence_number]
+               == bytearray([(CanConsecutiveFrameHandler.CONSECUTIVE_FRAME_N_PCI << 4) + sequence_number])
         self.mock_validate_nibble.assert_called_once_with(sequence_number)
 
 
@@ -496,44 +496,44 @@ class TestCanSingleFrameHandlerIntegration:
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
-          "payload": [0x9A],
-          "sequence_number": 0}, [0x20, 0x9A]),
+          "payload": b"\x9A",
+          "sequence_number": 0}, bytearray([0x20, 0x9A])),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-          "payload": tuple(range(48)),
-          "sequence_number": 0xF}, [0x2F] + list(range(48)) + (15 * [DEFAULT_FILLER_BYTE])),
+          "payload": bytes(range(48)),
+          "sequence_number": 0xF}, bytearray([0x2F] + list(range(48)) + (15 * [DEFAULT_FILLER_BYTE]))),
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "target_address": 0xF1,
           "dlc": 8,
-          "payload": (0x92, 0xB8),
+          "payload": b"\x92\xB8",
           "sequence_number": 0x5,
-          "filler_byte": 0xD9}, [0xF1, 0x25, 0x92, 0xB8, 0xD9, 0xD9, 0xD9, 0xD9]),
+          "filler_byte": 0xD9}, bytearray([0xF1, 0x25, 0x92, 0xB8, 0xD9, 0xD9, 0xD9, 0xD9])),
         ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
           "address_extension": 0xE8,
           "dlc": 9,
-          "payload": list(range(10, 20)),
+          "payload": bytes(range(10, 20)),
           "sequence_number": 0xB,
-          "filler_byte": 0x99}, [0xE8, 0x2B] + list(range(10, 20))),
+          "filler_byte": 0x99}, bytearray([0xE8, 0x2B] + list(range(10, 20)))),
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "target_address": 0xFE,
           "address_extension": 0xDC,
-          "payload": tuple(range(50, 96)),
+          "payload": bytes(range(50, 96)),
           "sequence_number": 0x1,
-          "filler_byte": 0xD9}, [0xDC, 0x21] + list(range(50, 96))),
+          "filler_byte": 0xD9}, bytearray([0xDC, 0x21] + list(range(50, 96)))),
     ])
     def test_create_valid_frame_data__valid(self, kwargs, expected_raw_frame_data):
         assert CanConsecutiveFrameHandler.create_valid_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
         {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
-         "payload": [0x9A],
+         "payload": b"\x9A",
          "dlc": 1,
          "sequence_number": 0},
         {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         "payload": [],
+         "payload": bytearray(),
          "sequence_number": 0xF},
         {"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
          "target_address": 0xF1,
-         "payload": [0x9A],
+         "payload": b"\x9A",
          "dlc": 8,
          "sequence_number": 0x10},
         {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
@@ -558,22 +558,22 @@ class TestCanSingleFrameHandlerIntegration:
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "payload": [],
           "dlc": 1,
-          "sequence_number": 0}, [0x20]),
+          "sequence_number": 0}, bytearray([0x20])),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "payload": (0xFE, 0xDC),
           "dlc": 5,
-          "sequence_number": 0xF}, [0x2F, 0xFE, 0xDC, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE]),
+          "sequence_number": 0xF}, bytearray([0x2F, 0xFE, 0xDC, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE])),
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "target_address": 0xF1,
           "payload": [],
           "dlc": 2,
           "sequence_number": 0xE,
-          "filler_byte": 0xD9}, [0xF1, 0x2E]),
+          "filler_byte": 0xD9}, bytearray([0xF1, 0x2E])),
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "address_extension": 0xE8,
           "payload": [],
           "dlc": 2,
-          "sequence_number": 0x1}, [0xE8, 0x21]),
+          "sequence_number": 0x1}, bytearray([0xE8, 0x21])),
     ])
     def test_create_any_frame_data__valid(self, kwargs, expected_raw_frame_data):
         assert CanConsecutiveFrameHandler.create_any_frame_data(**kwargs) == expected_raw_frame_data

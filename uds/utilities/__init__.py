@@ -1,6 +1,6 @@
 """Various helper functions, classes and variables that are shared and reused within the project."""
 
-from .bytes_operations import Endianness, bytes_list_to_int, int_to_bytes_list
+from .bytes_operations import Endianness, bytes_to_int, int_to_bytes
 from .common_types import (
     RawBytesAlias,
     RawBytesListAlias,
