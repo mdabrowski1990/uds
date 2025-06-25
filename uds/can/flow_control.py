@@ -22,7 +22,6 @@ from uds.utilities import (
     InconsistentArgumentsError,
     NibbleEnum,
     RawBytesAlias,
-    RawBytesListAlias,
     TimeMillisecondsAlias,
     ValidatedEnum,
     validate_nibble,
@@ -193,7 +192,7 @@ class CanFlowControlHandler:
                                 dlc: Optional[int] = None,
                                 filler_byte: int = DEFAULT_FILLER_BYTE,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesListAlias:
+                                address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a valid Flow Control packet.
 
@@ -240,7 +239,7 @@ class CanFlowControlHandler:
             if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
-            return fc_bytes + data_bytes_to_pad * [filler_byte]
+            return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
         return fc_bytes
 
     @classmethod
@@ -252,7 +251,7 @@ class CanFlowControlHandler:
                               st_min: Optional[int] = None,
                               filler_byte: int = DEFAULT_FILLER_BYTE,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesListAlias:
+                              address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a Flow Control packet.
 
@@ -290,9 +289,7 @@ class CanFlowControlHandler:
         if len(fc_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `dlc` is too small.")
         data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
-        if data_bytes_to_pad > 0:
-            return fc_bytes + data_bytes_to_pad * [filler_byte]
-        return fc_bytes
+        return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
     @classmethod
     def is_flow_control(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
@@ -330,8 +327,8 @@ class CanFlowControlHandler:
         :return: Flow Status value carried by a considered Flow Control.
         """
         if not cls.is_flow_control(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+            raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet. "
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return CanFlowStatus(raw_frame_data[ai_bytes_number] & 0xF)
 
@@ -354,9 +351,9 @@ class CanFlowControlHandler:
         """
         flow_status = cls.decode_flow_status(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
         if flow_status != CanFlowStatus.ContinueToSend:
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet with "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
-                             f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
+                             f"raw_frame_data={raw_frame_data!r}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_data_bytes_number + cls.BS_BYTE_POSITION]
 
@@ -379,9 +376,9 @@ class CanFlowControlHandler:
         """
         flow_status = cls.decode_flow_status(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
         if flow_status != CanFlowStatus.ContinueToSend:
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Flow Control packet with "
+            raise ValueError("Provided `raw_frame_data` value does not carry a Flow Control packet with "
                              f"ContinueToSend Flow Status. Actual values: addressing_format={addressing_format}, "
-                             f"raw_frame_data={raw_frame_data}, flow_status={flow_status}")
+                             f"raw_frame_data={raw_frame_data!r}, flow_status={flow_status}")
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_data_bytes_number + cls.STMIN_BYTE_POSITION]
 
@@ -422,7 +419,7 @@ class CanFlowControlHandler:
                                    flow_status: CanFlowStatus,
                                    block_size: Optional[int] = None,
                                    st_min: Optional[int] = None,
-                                   filler_byte: int = DEFAULT_FILLER_BYTE) -> RawBytesListAlias:
+                                   filler_byte: int = DEFAULT_FILLER_BYTE) -> bytearray:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 
@@ -446,15 +443,15 @@ class CanFlowControlHandler:
                 validate_raw_byte(block_size)
             if st_min is not None:
                 validate_raw_byte(st_min)
-        return [(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status,
-                block_size if block_size is not None else filler_byte,
-                st_min if st_min is not None else filler_byte]
+        return bytearray([(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status,
+                          block_size if block_size is not None else filler_byte,
+                          st_min if st_min is not None else filler_byte])
 
     @classmethod
     def __encode_any_flow_status(cls,
                                  flow_status: int,
                                  block_size: Optional[int] = None,
-                                 st_min: Optional[int] = None) -> RawBytesListAlias:
+                                 st_min: Optional[int] = None) -> bytearray:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 
@@ -470,7 +467,7 @@ class CanFlowControlHandler:
             Some of the parameters might be missing if certain arguments were provided.
         """
         validate_nibble(flow_status)
-        output = [(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status]
+        output = bytearray([(cls.FLOW_CONTROL_N_PCI << 4) ^ flow_status])
         if block_size is not None:
             validate_raw_byte(block_size)
             output.append(block_size)
@@ -562,7 +559,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__block_size
 
     @block_size.setter
-    def block_size(self, value: int):
+    def block_size(self, value: int) -> None:
         """
         Set value of :ref:`Block Size <knowledge-base-can-block-size>` parameter.
 
@@ -577,7 +574,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__st_min
 
     @st_min.setter
-    def st_min(self, value: int):
+    def st_min(self, value: int) -> None:
         """
         Set value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter.
 
@@ -592,7 +589,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__wait_count
 
     @wait_count.setter
-    def wait_count(self, value: int):
+    def wait_count(self, value: int) -> None:
         """
         Set number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`.
 
@@ -615,7 +612,7 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         return self.__repeat_wait
 
     @repeat_wait.setter
-    def repeat_wait(self, value: bool):
+    def repeat_wait(self, value: bool) -> None:
         """
         Set flag informing how to send Flow Control packets with WAIT Flow Status.
 

@@ -3,7 +3,7 @@
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence, Type, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import (
@@ -53,7 +53,7 @@ class AbstractSegmenter(ABC):
         return isinstance(packet, (self.supported_packet_class, self.supported_packet_record_class))
 
     @abstractmethod
-    def is_input_packet(self, **kwargs) -> Optional[AddressingType]:
+    def is_input_packet(self, **kwargs: Any) -> Optional[AddressingType]:
         """
         Check if provided frame attributes belong to a UDS packet which is an input for this Segmenter.
 

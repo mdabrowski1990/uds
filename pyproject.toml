@@ -1,25 +1,25 @@
 [project]
 name = "py-uds"
 description = "UDS (Unified Diagnostic Services) protocol handler."
+requires-python = ">=3.9"
 readme = "README.rst"
-requires-python = ">=3.8"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Telecommunications Industry",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Software Development :: Embedded Systems",
     "Topic :: System :: Monitoring",
@@ -31,6 +31,7 @@ keywords = [
     "automotive",
     "on-board-diagnostic",
     "obd",
+    "obd2",
     "vehicle-diagnostic",
     "iso14229",
     "iso-14229",
@@ -72,18 +73,17 @@ test = [
     "pytest-asyncio",
 ]
 static-code-analysis = [
-    "prospector == 1.10.3",
-    "mypy == 1.9.0",
-    "vulture == 2.11",
-    "bandit == 1.7.8",
+    "prospector == 1.17.1",
+    "mypy == 1.16.1",
+    "vulture == 2.14",
+    "bandit == 1.8.5",
     "pyroma == 4.2",
 ]
 dependency-scan = [
-    "safety == 3.1.0",
-    "pip-audit == 2.7.3",
+    "pip-audit == 2.9.0",
 ]
 sorting-imports = [
-    "isort == 5.13.2"
+    "isort == 6.0.1"
 ]
 docs = [
     "sphinx",
@@ -98,7 +98,7 @@ docs-checks = [
 
 [build-system]
 requires = [
-    "setuptools >= 42",
+    "setuptools >= 65.5.1",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
@@ -127,7 +127,7 @@ docs = [
 
 [tool.setuptools.packages.find]
 include = [
-    "uds.*"
+    "uds*"
 ]
 
 

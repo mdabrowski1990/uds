@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import List, Union
 
 from uds.message import RequestSID, ResponseSID
-from uds.utilities import RawBytesAlias, RawBytesListAlias
+from uds.utilities import RawBytesAlias
 
 from ..data_record import DataRecordValueAlias, DecodedDataRecord
 
@@ -36,7 +36,7 @@ class AbstractService(ABC):
 
     def encode(self,
                sid: Union[int, RequestSID, ResponseSID],
-               **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
+               **data_records_values: DataRecordValueAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service.
 
@@ -55,7 +55,7 @@ class AbstractService(ABC):
         raise ValueError("Provided SID value is neither request or response SID value for this service.")
 
     @abstractmethod
-    def encode_request(self, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
+    def encode_request(self, **data_records_values: DataRecordValueAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service's request message.
 
@@ -65,7 +65,7 @@ class AbstractService(ABC):
         """
 
     @abstractmethod
-    def encode_response(self, **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
+    def encode_response(self, **data_records_values: DataRecordValueAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service's response message.
 

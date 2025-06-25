@@ -63,10 +63,10 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         :param rx_functional: Addressing Information parameters used for incoming functionally addressed communication.
         :param tx_functional: Addressing Information parameters used for outgoing functionally addressed communication.
         """
-        self.rx_packets_physical_ai = rx_physical  # type: ignore
-        self.tx_packets_physical_ai = tx_physical  # type: ignore
-        self.rx_packets_functional_ai = rx_functional  # type: ignore
-        self.tx_packets_functional_ai = tx_functional  # type: ignore
+        self.rx_packets_physical_ai = rx_physical
+        self.tx_packets_physical_ai = tx_physical
+        self.rx_packets_functional_ai = rx_functional
+        self.tx_packets_functional_ai = tx_functional
         self._validate_node_ai(rx_packets_physical_ai=self.rx_packets_physical_ai,
                                tx_packets_physical_ai=self.tx_packets_physical_ai,
                                rx_packets_functional_ai=self.rx_packets_functional_ai,
@@ -83,7 +83,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__rx_packets_physical_ai)
 
     @rx_packets_physical_ai.setter
-    def rx_packets_physical_ai(self, value: InputAIParamsAlias):
+    def rx_packets_physical_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of incoming physically addressed CAN packets.
 
@@ -98,7 +98,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__tx_packets_physical_ai)
 
     @tx_packets_physical_ai.setter
-    def tx_packets_physical_ai(self, value: InputAIParamsAlias):
+    def tx_packets_physical_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of outgoing physically addressed CAN packets.
 
@@ -113,7 +113,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__rx_packets_functional_ai)
 
     @rx_packets_functional_ai.setter
-    def rx_packets_functional_ai(self, value: InputAIParamsAlias):
+    def rx_packets_functional_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of incoming functionally addressed CAN packets.
 
@@ -128,7 +128,7 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
         return deepcopy(self.__tx_packets_functional_ai)
 
     @tx_packets_functional_ai.setter
-    def tx_packets_functional_ai(self, value: InputAIParamsAlias):
+    def tx_packets_functional_ai(self, value: InputAIParamsAlias) -> None:
         """
         Set Addressing Information parameters of outgoing functionally addressed CAN packets.
 
@@ -164,10 +164,10 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
             source_address=self.rx_packets_functional_ai["source_address"],
             target_address=self.rx_packets_functional_ai["target_address"],
             address_extension=self.rx_packets_functional_ai["address_extension"])
-        other.rx_packets_physical_ai = rx_physical  # type: ignore
-        other.tx_packets_physical_ai = tx_physical  # type: ignore
-        other.rx_packets_functional_ai = rx_functional  # type: ignore
-        other.tx_packets_functional_ai = tx_functional  # type: ignore
+        other.rx_packets_physical_ai = rx_physical
+        other.tx_packets_physical_ai = tx_physical
+        other.rx_packets_functional_ai = rx_functional
+        other.tx_packets_functional_ai = tx_functional
         return other
 
     @classmethod

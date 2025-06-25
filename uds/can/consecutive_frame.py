@@ -12,7 +12,6 @@ from typing import Optional
 from uds.utilities import (
     InconsistentArgumentsError,
     RawBytesAlias,
-    RawBytesListAlias,
     validate_nibble,
     validate_raw_byte,
     validate_raw_bytes,
@@ -39,7 +38,7 @@ class CanConsecutiveFrameHandler:
                                 dlc: Optional[int] = None,
                                 filler_byte: int = DEFAULT_FILLER_BYTE,
                                 target_address: Optional[int] = None,
-                                address_extension: Optional[int] = None) -> RawBytesListAlias:
+                                address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a valid Consecutive Frame packet.
 
@@ -75,7 +74,7 @@ class CanConsecutiveFrameHandler:
                                                                       target_address=target_address,
                                                                       address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
-        cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
+        cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
         if len(cf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
                                              "Consider increasing DLC value.")
@@ -84,7 +83,7 @@ class CanConsecutiveFrameHandler:
             if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
                 raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
                                                  f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
-            return cf_bytes + data_bytes_to_pad * [filler_byte]
+            return cf_bytes + data_bytes_to_pad * bytearray([filler_byte])
         return cf_bytes
 
     @classmethod
@@ -95,7 +94,7 @@ class CanConsecutiveFrameHandler:
                               dlc: int,
                               filler_byte: int = DEFAULT_FILLER_BYTE,
                               target_address: Optional[int] = None,
-                              address_extension: Optional[int] = None) -> RawBytesListAlias:
+                              address_extension: Optional[int] = None) -> bytearray:
         """
         Create a data field of a CAN frame that carries a Consecutive Frame packet.
 
@@ -127,11 +126,11 @@ class CanConsecutiveFrameHandler:
                                                                       target_address=target_address,
                                                                       address_extension=address_extension)
         sn_data_bytes = cls.__encode_sn(sequence_number=sequence_number)
-        cf_bytes = ai_data_bytes + sn_data_bytes + list(payload)
+        cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
         if len(cf_bytes) > frame_data_bytes_number:
             raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
                                              "Consider increasing DLC value.")
-        data_padding = ((frame_data_bytes_number - len(cf_bytes)) * [filler_byte])
+        data_padding = ((frame_data_bytes_number - len(cf_bytes)) * bytearray([filler_byte]))
         return cf_bytes + data_padding
 
     @classmethod
@@ -152,7 +151,7 @@ class CanConsecutiveFrameHandler:
         return raw_frame_data[ai_bytes_number] >> 4 == cls.CONSECUTIVE_FRAME_N_PCI
 
     @classmethod
-    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> RawBytesListAlias:
+    def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
         """
         Extract diagnostic message payload from Consecutive Frame data bytes.
 
@@ -174,10 +173,10 @@ class CanConsecutiveFrameHandler:
             Consecutive Frame.
         """
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+            raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-        return list(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
+        return bytearray(raw_frame_data[ai_bytes_number + cls.SN_BYTES_USED:])
 
     @classmethod
     def decode_sequence_number(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
@@ -196,8 +195,8 @@ class CanConsecutiveFrameHandler:
         :return: Extracted value of Sequence Number.
         """
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+            raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] & 0xF
 
@@ -273,15 +272,15 @@ class CanConsecutiveFrameHandler:
         """
         validate_raw_bytes(raw_frame_data)
         if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError(f"Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data}")
+            raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
+                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
         min_dlc = cls.get_min_dlc(addressing_format=addressing_format)
         dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
         if min_dlc > dlc:
             raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
 
     @classmethod
-    def __encode_sn(cls, sequence_number: int) -> RawBytesListAlias:
+    def __encode_sn(cls, sequence_number: int) -> bytearray:
         """
         Create Consecutive Frame data bytes with CAN Packet Type and Sequence Number parameters.
 
@@ -290,4 +289,4 @@ class CanConsecutiveFrameHandler:
         :return: Consecutive Frame data bytes containing CAN Packet Type and Sequence Number parameters.
         """
         validate_nibble(sequence_number)
-        return [(cls.CONSECUTIVE_FRAME_N_PCI << 4) ^ sequence_number]
+        return bytearray([(cls.CONSECUTIVE_FRAME_N_PCI << 4) ^ sequence_number])

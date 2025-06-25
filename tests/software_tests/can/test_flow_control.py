@@ -186,9 +186,9 @@ class TestCanFlowControlHandler:
         (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
-        (3, [], [0x30, 0x12, 0x56]),
-        (4, [0x5A], [0x31, 0x00, 0x00]),
-        (8, [0xF0], [0x32, 0xCC, 0xCC]),
+        (3, bytearray(), bytearray([0x30, 0x12, 0x56])),
+        (4, bytearray([0x5A]), bytearray([0x31, 0x00, 0x00])),
+        (8, bytearray([0xF0]), bytearray([0x32, 0xCC, 0xCC])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler._CanFlowControlHandler__encode_valid_flow_status")
     def test_create_valid_frame_data__valid_with_dlc(self, mock_encode_flow_status,
@@ -215,7 +215,7 @@ class TestCanFlowControlHandler:
                                                         block_size=block_size,
                                                         st_min=st_min,
                                                         filler_byte=filler_byte)
-        assert isinstance(fc_frame_data, list)
+        assert isinstance(fc_frame_data, bytearray)
         assert len(fc_frame_data) == data_bytes_number
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
@@ -227,9 +227,9 @@ class TestCanFlowControlHandler:
         (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
-        (3, [], [0x30, 0x12, 0x56]),
-        (4, [0x5A], [0x31, 0x00, 0x00]),
-        (8, [0xF0], [0x32, 0xCC, 0xCC]),
+        (3, bytearray(), bytearray([0x30, 0x12, 0x56])),
+        (4, bytearray([0x5A]), bytearray([0x31, 0x00, 0x00])),
+        (8, bytearray([0xF0]), bytearray([0x32, 0xCC, 0xCC])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler._CanFlowControlHandler__encode_valid_flow_status")
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler.get_min_dlc")
@@ -259,7 +259,7 @@ class TestCanFlowControlHandler:
                                                         block_size=block_size,
                                                         st_min=st_min,
                                                         filler_byte=filler_byte)
-        assert isinstance(fc_frame_data, list)
+        assert isinstance(fc_frame_data, bytearray)
         assert len(fc_frame_data) == data_bytes_number
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
@@ -311,9 +311,9 @@ class TestCanFlowControlHandler:
         (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
-        (3, [], [0x30, 0x12, 0x56]),
-        (4, [0x5A], [0x31, 0x00, 0x00]),
-        (8, [0xF0], [0x32, 0xCC, 0xCC]),
+        (3, bytearray(), bytearray([0x30, 0x12, 0x56])),
+        (4, bytearray([0x5A]), bytearray([0x31, 0x00, 0x00])),
+        (8, bytearray([0xF0]), bytearray([0x32, 0xCC, 0xCC])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler._CanFlowControlHandler__encode_any_flow_status")
     def test_create_any_frame_data__valid(self, mock_encode_flow_status,
@@ -339,7 +339,7 @@ class TestCanFlowControlHandler:
         mock_encode_flow_status.assert_called_once_with(flow_status=flow_status,
                                                         block_size=block_size,
                                                         st_min=st_min)
-        assert isinstance(fc_frame_data, list)
+        assert isinstance(fc_frame_data, bytearray)
         assert len(fc_frame_data) == data_bytes_number
 
     @pytest.mark.parametrize("addressing_format, target_address, address_extension", [
@@ -351,9 +351,9 @@ class TestCanFlowControlHandler:
         (CanDlcHandler.MIN_BASE_UDS_DLC + 2, 0x99, CanFlowStatus.ContinueToSend, 0x00, 0xFF),
     ])
     @pytest.mark.parametrize("data_bytes_number, ai_data_bytes, fs_data_bytes", [
-        (2, [], [0x30, 0x12, 0x56]),
-        (1, [0x5A], [0x31]),
-        (0, [0xF0], [0x32, 0xCC, 0xCC]),
+        (2, bytearray(), bytearray([0x30, 0x12, 0x56])),
+        (1, bytearray([0x5A]), bytearray([0x31])),
+        (0, bytearray([0xF0]), bytearray([0x32, 0xCC, 0xCC])),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanFlowControlHandler._CanFlowControlHandler__encode_any_flow_status")
     def test_create_any_frame_data__invalid(self, mock_encode_flow_status,
@@ -586,7 +586,7 @@ class TestCanFlowControlHandler:
         fs_data_bytes = CanFlowControlHandler._CanFlowControlHandler__encode_valid_flow_status(flow_status=flow_status,
                                                                                                block_size=block_size,
                                                                                                st_min=st_min)
-        assert fs_data_bytes == [0x30 + flow_status, block_size, st_min]
+        assert fs_data_bytes == bytearray([0x30 + flow_status, block_size, st_min])
         self.mock_validate_flow_status.assert_called_once_with(flow_status)
         self.mock_validate_raw_byte.assert_has_calls([call(block_size), call(st_min)], any_order=True)
 
@@ -597,14 +597,14 @@ class TestCanFlowControlHandler:
     def test_encode_valid_flow_status__fs_only(self, flow_status, filler_byte):
         fs_data_bytes = CanFlowControlHandler._CanFlowControlHandler__encode_valid_flow_status(flow_status=flow_status,
                                                                                                filler_byte=filler_byte)
-        assert fs_data_bytes == [0x30 + flow_status, filler_byte, filler_byte]
+        assert fs_data_bytes == bytearray([0x30 + flow_status, filler_byte, filler_byte])
         self.mock_validate_flow_status.assert_called_once_with(flow_status)
         self.mock_validate_raw_byte.assert_not_called()
 
     @pytest.mark.parametrize("block_size, st_min", [
         (None, 0x34),
         (0xF0, None),
-        ("something", "something else"),
+        (0x00, 0xFF),
     ])
     def test_encode_valid_flow_status__cts(self, block_size, st_min):
         CanFlowControlHandler._CanFlowControlHandler__encode_valid_flow_status(flow_status=CanFlowStatus.ContinueToSend,
@@ -624,7 +624,7 @@ class TestCanFlowControlHandler:
         fs_data_bytes = CanFlowControlHandler._CanFlowControlHandler__encode_any_flow_status(flow_status=flow_status,
                                                                                              block_size=block_size,
                                                                                              st_min=st_min)
-        assert fs_data_bytes == [0x30 + flow_status, block_size, st_min]
+        assert fs_data_bytes == bytearray([0x30 + flow_status, block_size, st_min])
         self.mock_validate_nibble.assert_called_once_with(flow_status)
         self.mock_validate_raw_byte.assert_has_calls([call(block_size), call(st_min)], any_order=True)
 
@@ -636,14 +636,14 @@ class TestCanFlowControlHandler:
         fs_data_bytes = CanFlowControlHandler._CanFlowControlHandler__encode_any_flow_status(flow_status=flow_status,
                                                                                              block_size=block_size,
                                                                                              st_min=st_min)
-        assert fs_data_bytes == [0x30 + flow_status, block_size or st_min or 0]
+        assert fs_data_bytes == bytearray([0x30 + flow_status, block_size or st_min or 0])
         self.mock_validate_nibble.assert_called_once_with(flow_status)
         self.mock_validate_raw_byte.assert_called_once()
 
     @pytest.mark.parametrize("flow_status", [0, 5, 15])
     def test_encode_any_flow_status__fs_only(self, flow_status):
         fs_data_bytes = CanFlowControlHandler._CanFlowControlHandler__encode_any_flow_status(flow_status=flow_status)
-        assert fs_data_bytes == [0x30 + flow_status]
+        assert fs_data_bytes == bytearray([0x30 + flow_status])
         self.mock_validate_nibble.assert_called_once_with(flow_status)
         self.mock_validate_raw_byte.assert_not_called()
 
@@ -656,33 +656,33 @@ class TestCanFlowControlHandlerIntegration:
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
-          "flow_status": CanFlowStatus.Overflow}, [0x32, 0xCC, 0xCC]),
+          "flow_status": CanFlowStatus.Overflow}, bytearray([0x32, 0xCC, 0xCC])),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "flow_status": CanFlowStatus.ContinueToSend,
           "block_size": 0x00,
           "st_min": 0xFF,
           "dlc": 0xF,
           "filler_byte": 0x9B,
-          "target_address": 0xA1}, [0x30, 0x00, 0xFF] + ([0x9B] * 61)),
+          "target_address": 0xA1}, bytearray([0x30, 0x00, 0xFF] + ([0x9B] * 61))),
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "flow_status": CanFlowStatus.ContinueToSend,
           "block_size": 0xFF,
           "st_min": 0x00,
           "dlc": 8,
           "filler_byte": 0x85,
-          "target_address": 0xA1}, [0xA1, 0x30, 0xFF, 0x00, 0x85, 0x85, 0x85, 0x85]),
+          "target_address": 0xA1}, bytearray([0xA1, 0x30, 0xFF, 0x00, 0x85, 0x85, 0x85, 0x85])),
         ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
           "flow_status": CanFlowStatus.Wait,
           "filler_byte": 0x39,
           "dlc": 4,
-          "address_extension": 0x0B}, [0x0B, 0x31, 0x39, 0x39]),
+          "address_extension": 0x0B}, bytearray([0x0B, 0x31, 0x39, 0x39])),
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "flow_status": 1,
           "block_size": 0xED,
           "st_min": 0xCB,
           "filler_byte": 0x99,
           "target_address": 0x9A,
-          "address_extension": 0xFF}, [0xFF, 0x31, 0xED, 0xCB]),
+          "address_extension": 0xFF}, bytearray([0xFF, 0x31, 0xED, 0xCB])),
     ])
     def test_create_valid_frame_data__valid(self, kwargs, expected_raw_frame_data):
         assert CanFlowControlHandler.create_valid_frame_data(**kwargs) == expected_raw_frame_data
@@ -719,29 +719,29 @@ class TestCanFlowControlHandlerIntegration:
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "flow_status": CanFlowStatus.ContinueToSend,
-          "dlc": 1}, [0x30]),
+          "dlc": 1}, bytearray([0x30])),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "flow_status": 0xF,
           "dlc": 0xF,
           "filler_byte": 0x9B,
-          "target_address": 0xA1}, [0x3F] + ([0x9B] * 63)),
+          "target_address": 0xA1}, bytearray([0x3F] + ([0x9B] * 63))),
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "flow_status": CanFlowStatus.Wait,
           "block_size": 0xFF,
           "st_min": 0x00,
           "dlc": 8,
           "filler_byte": 0x85,
-          "target_address": 0xA1}, [0xA1, 0x31, 0xFF, 0x00, 0x85, 0x85, 0x85, 0x85]),
+          "target_address": 0xA1}, bytearray([0xA1, 0x31, 0xFF, 0x00, 0x85, 0x85, 0x85, 0x85])),
         ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
           "flow_status": 5,
           "dlc": 2,
-          "address_extension": 0x0B}, [0x0B, 0x35]),
+          "address_extension": 0x0B}, bytearray([0x0B, 0x35])),
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "flow_status": 3,
           "dlc": 3,
           "filler_byte": 0x99,
           "target_address": 0x9A,
-          "address_extension": 0xFF}, [0xFF, 0x33, 0x99]),
+          "address_extension": 0xFF}, bytearray([0xFF, 0x33, 0x99])),
     ])
     def test_create_any_frame_data__valid(self, kwargs, expected_raw_frame_data):
         assert CanFlowControlHandler.create_any_frame_data(**kwargs) == expected_raw_frame_data

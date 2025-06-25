@@ -18,6 +18,7 @@ pylint:
   options:
     max-line-length: 120
     max-args: 10
+    max-positional-arguments: 10
     max-attributes: 25
     min-public-methods: 1
     max-public-methods: 30
@@ -49,6 +50,9 @@ mypy:
   run: true
   options:
     ignore-missing-imports: true
+  disable:
+    - attr-defined
+
 
 vulture:
   run: true
