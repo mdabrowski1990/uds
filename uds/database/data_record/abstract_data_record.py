@@ -3,6 +3,7 @@
 __all__ = ["AbstractDataRecord", "DataRecordPhysicalValueAlias", "DecodedDataRecord", "DataRecordValueAlias"]
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Dict, Optional, Sequence, Tuple, TypedDict, Union
 
 DataRecordValueAlias = Union[
@@ -50,7 +51,8 @@ Each type represent other data:
 """
 
 
-class DecodedDataRecord(TypedDict):
+@dataclass
+class DecodedDataRecord:
     """Structure of decoded Data Record."""
 
     name: str
