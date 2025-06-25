@@ -8,11 +8,11 @@ __all__ = ["AbstractUdsMessageContainer", "UdsMessage", "UdsMessageRecord"]
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Sequence
+from typing import Sequence, Union
 
 from uds.packet import AbstractUdsPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
 from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import RawBytesAlias, RawBytesListAlias, RawBytesTupleAlias, ReassignmentError, validate_raw_bytes
+from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes
 
 
 class AbstractUdsMessageContainer(ABC):
@@ -30,7 +30,7 @@ class AbstractUdsMessageContainer(ABC):
 
     @property
     @abstractmethod
-    def payload(self) -> RawBytesTupleAlias:
+    def payload(self) -> Union[bytes, bytearray]:
         """Raw payload bytes carried by this diagnostic message."""
 
     @property
@@ -57,7 +57,7 @@ class UdsMessage(AbstractUdsMessageContainer):
         :param payload: Raw payload bytes carried by this diagnostic message.
         :param addressing_type: Addressing for which this diagnostic message is relevant.
         """
-        self.payload = payload  # type: ignore
+        self.payload = payload
         self.addressing_type = addressing_type
 
     def __eq__(self, other: object) -> bool:
@@ -73,19 +73,19 @@ class UdsMessage(AbstractUdsMessageContainer):
         return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
-    def payload(self) -> RawBytesTupleAlias:
+    def payload(self) -> bytearray:
         """Raw payload bytes carried by this diagnostic message."""
         return self.__payload
 
     @payload.setter
-    def payload(self, value: RawBytesAlias):
+    def payload(self, value: RawBytesAlias) -> None:
         """
         Set value of raw payload bytes that this diagnostic message carries.
 
         :param value: Payload value to set.
         """
         validate_raw_bytes(value)
-        self.__payload = tuple(value)
+        self.__payload = bytearray(value)
 
     @property
     def addressing_type(self) -> AddressingType:
@@ -93,7 +93,7 @@ class UdsMessage(AbstractUdsMessageContainer):
         return self.__addressing_type
 
     @addressing_type.setter
-    def addressing_type(self, value: AddressingType):
+    def addressing_type(self, value: AddressingType) -> None:
         """
         Set value of addressing for this diagnostic message.
 
@@ -112,7 +112,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :param packets_records: Sequence (in transmission order) of UDS packets records that carried this
             diagnostic message.
         """
-        self.packets_records = packets_records  # type: ignore
+        self.packets_records = packets_records
 
     def __eq__(self, other: object) -> bool:
         """
@@ -156,7 +156,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return self.__packets_records
 
     @packets_records.setter
-    def packets_records(self, value: PacketsRecordsSequence):
+    def packets_records(self, value: PacketsRecordsSequence) -> None:
         """
         Assign records value of UDS Packets that carried this diagnostic message .
 
@@ -177,14 +177,14 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
             raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
 
     @property
-    def payload(self) -> RawBytesTupleAlias:
+    def payload(self) -> bytes:
         """Raw payload bytes carried by this diagnostic message."""
         number_of_bytes = self.packets_records[0].data_length
-        message_payload: RawBytesListAlias = []
+        message_payload = bytearray()
         for packet in self.packets_records:
             if packet.payload is not None:
-                message_payload.extend(packet.payload)
-        return tuple(message_payload[:number_of_bytes])
+                message_payload += bytearray(packet.payload)
+        return bytes(message_payload[:number_of_bytes])
 
     @property
     def addressing_type(self) -> AddressingType:
@@ -196,7 +196,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """Information whether this message was received or sent."""
         return self.packets_records[0].direction
 
-    @property  # noqa: F841
+    @property  # noqa
     def transmission_start(self) -> datetime:
         """
         Time stamp when transmission of this message was initiated.
@@ -208,7 +208,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """
         return self.packets_records[0].transmission_time
 
-    @property  # noqa: F841
+    @property  # noqa
     def transmission_end(self) -> datetime:
         """
         Time stamp when transmission of this message was completed.

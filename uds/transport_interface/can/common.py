@@ -133,7 +133,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_as_timeout
 
     @n_as_timeout.setter
-    def n_as_timeout(self, value: TimeMillisecondsAlias):
+    def n_as_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
         Set timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
@@ -170,7 +170,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_ar_timeout
 
     @n_ar_timeout.setter
-    def n_ar_timeout(self, value: TimeMillisecondsAlias):
+    def n_ar_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
         Set timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
@@ -207,7 +207,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_bs_timeout
 
     @n_bs_timeout.setter
-    def n_bs_timeout(self, value: TimeMillisecondsAlias):
+    def n_bs_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
         Set timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
@@ -249,7 +249,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_br
 
     @n_br.setter
-    def n_br(self, value: TimeMillisecondsAlias):
+    def n_br(self, value: TimeMillisecondsAlias) -> None:
         """
         Set the value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use.
 
@@ -288,7 +288,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_cs
 
     @n_cs.setter
-    def n_cs(self, value: Optional[TimeMillisecondsAlias]):
+    def n_cs(self, value: Optional[TimeMillisecondsAlias]) -> None:
         """
         Set the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use.
 
@@ -327,7 +327,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_cr_timeout
 
     @n_cr_timeout.setter
-    def n_cr_timeout(self, value: TimeMillisecondsAlias):
+    def n_cr_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
         Set timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
@@ -380,7 +380,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.segmenter.dlc
 
     @dlc.setter
-    def dlc(self, value: int):
+    def dlc(self, value: int) -> None:
         """
         Set value of base CAN DLC to use for output CAN packets.
 
@@ -399,7 +399,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.segmenter.use_data_optimization
 
     @use_data_optimization.setter
-    def use_data_optimization(self, value: bool):
+    def use_data_optimization(self, value: bool) -> None:
         """
         Set whether to use CAN Frame Data Optimization during CAN packets creation.
 
@@ -421,7 +421,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.segmenter.filler_byte
 
     @filler_byte.setter
-    def filler_byte(self, value: int):
+    def filler_byte(self, value: int) -> None:
         """
         Set value of filler byte to use for output CAN Frame Data Padding.
 
@@ -438,7 +438,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__flow_control_parameters_generator
 
     @flow_control_parameters_generator.setter
-    def flow_control_parameters_generator(self, value: AbstractFlowControlParametersGenerator):
+    def flow_control_parameters_generator(self, value: AbstractFlowControlParametersGenerator) -> None:
         """
         Set value of Flow Control parameters (Flow Status, Block Size, Separation Time minimum) generator.
 

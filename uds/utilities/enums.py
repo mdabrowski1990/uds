@@ -14,11 +14,11 @@ from aenum import Enum, IntEnum, extend_enum
 from .common_types import validate_nibble, validate_raw_byte
 
 
-class ExtendableEnum(Enum):
+class ExtendableEnum(Enum):  # type: ignore
     """Enum that supports new members adding."""
 
     @classmethod
-    def add_member(cls, name: str, value: Any) -> Enum:
+    def add_member(cls, name: str, value: Any) -> "ExtendableEnum":
         """
         Register a new member.
 
@@ -29,7 +29,7 @@ class ExtendableEnum(Enum):
 
         :return: The new member that was just created.
         """
-        for member in cls:  # type: ignore
+        for member in cls:
             if member.name == name:
                 raise ValueError(f"Name '{name}' is already in use.")
             if member.value == value:
@@ -38,7 +38,7 @@ class ExtendableEnum(Enum):
         return cls[name]  # type: ignore
 
 
-class ValidatedEnum(Enum):
+class ValidatedEnum(Enum):  # type: ignore
     """Enum that supports members validation."""
 
     @classmethod
@@ -72,10 +72,10 @@ class ValidatedEnum(Enum):
             raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}")
 
 
-class ByteEnum(IntEnum):
+class ByteEnum(IntEnum):  # type: ignore
     """Enum which members are one byte integers (0x00-0xFF) only."""
 
-    def __new__(cls, value: int):
+    def __new__(cls, value: int) -> "ByteEnum":
         """
         Creation of a new member.
 
@@ -83,14 +83,14 @@ class ByteEnum(IntEnum):
         """
         validate_raw_byte(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa: F841
+        member._value_ = value  # noqa
         return member
 
 
-class NibbleEnum(IntEnum):
+class NibbleEnum(IntEnum):  # type: ignore
     """Enum which members are one nibble (4 bits) integers (0x0-0xF) only."""
 
-    def __new__(cls, value: int):
+    def __new__(cls, value: int) -> "NibbleEnum":
         """
         Creation of a new member.
 
@@ -98,5 +98,5 @@ class NibbleEnum(IntEnum):
         """
         validate_nibble(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa: F841
+        member._value_ = value  # noqa
         return member
