@@ -9,7 +9,7 @@ Segmentation
 Message Segmentation
 --------------------
 To transmit a diagnostic message, its information (payload and addressing) must be unambiguously encoded into one
-or more segments (these segments are called :ref:`UDS Packets <knowledge-base-uds-packet>` by this documentation)
+or more segments (these segments are called :ref:`Packets <knowledge-base-packet>` by this documentation)
 that are specific for bus used.
 
 .. note:: Segmentation process is specific for each bus due to various topologies supported by each bus,
@@ -85,7 +85,7 @@ A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-b
 Packets Desegmentation
 ----------------------
 Desegmentation is an unambiguous operation which is the reverse process to a `message segmentation`_.
-It transforms one or more :ref:`UDS packets <knowledge-base-uds-packet>` into
+It transforms one or more :ref:`packets <knowledge-base-packet>` into
 a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
 
 .. note:: There are many ways to segment a diagnostic message into CAN packets, but there is always only one correct way

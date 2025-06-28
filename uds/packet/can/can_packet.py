@@ -1,4 +1,4 @@
-"""CAN bus specific implementation of UDS packets."""
+"""CAN bus specific implementation for packets."""
 
 __all__ = ["CanPacket"]
 

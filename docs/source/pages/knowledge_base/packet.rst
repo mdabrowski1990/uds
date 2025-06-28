@@ -1,14 +1,17 @@
-.. _knowledge-base-uds-packet:
+.. _knowledge-base-packet:
 
-UDS Packet
-==========
-UDS packet might also be called Network Protocol Data Unit (N_PDU). The packets are created during
-:ref:`segmentation <knowledge-base-segmentation>` of a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
-Each :ref:`diagnostic message <knowledge-base-diagnostic-message>` consists of at least one UDS Packet (N_PDU).
+Packet (N_PDU)
+==============
+In ISO Standards, the name Network :ref:`Protocol Data Unit <knowledge-base-pdu>` (N_PDU in short) is used.
+For various reasons we decided to use Packet name instead.
+
+The packets are created during :ref:`segmentation <knowledge-base-segmentation>` of a
+:ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+Each :ref:`diagnostic message <knowledge-base-diagnostic-message>` consists of at least one Packet (N_PDU).
 There are some packets which does not carry any diagnostic message data as they are used to manage the flow of
 other packets.
 
-UDS packet consists of following fields:
+Packet consists of following fields:
 
   - `Network Address Information`_ (N_AI) - packet addressing
   - `Network Data Field`_ (N_Data) - packet data
@@ -38,16 +41,16 @@ a :ref:`diagnostic message <knowledge-base-diagnostic-message>` into smaller par
 
 Network Protocol Control Information
 ------------------------------------
-Network Protocol Control Information (N_PCI) identifies the type of `UDS packet`_ (Network Protocol Data Unit).
+Network Protocol Control Information (N_PCI) identifies the type of `Packet (N_PDU)`_.
 N_PCI values and their interpretation are bus specific.
 
 
 .. _knowledge-base-uds-can-packet:
 
-UDS Packet on CAN
------------------
-In this chapter you will find information about UDS packets that are specific for CAN bus, therefore
-**applicable only for UDS packets that are transmitted over CAN bus**.
+CAN Packet
+----------
+In this chapter you will find information about packets exchanged during UDS communication over CAN.
+This part is specific for Diagnostic on CAN (ISO 15765).
 
 
 .. _knowledge-base-can-frame:
@@ -55,8 +58,8 @@ In this chapter you will find information about UDS packets that are specific fo
 CAN Frame
 `````````
 `CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frames that are used
-during normal UDS communication. CAN data frames are made up of many different fields, but the key in our case (these
-influenced by UDS protocol) are listed below:
+during UDS communication. CAN data frames consist of many different fields, but the key in our case (used during
+UDS communication) are listed below:
 
 - CAN Identifier (CAN ID)
 
@@ -123,10 +126,10 @@ influenced by UDS protocol) are listed below:
 
 CAN Packet Addressing Formats
 `````````````````````````````
-Each CAN packet addressing format describes a different way of providing `Network Address Information`_ to all
-recipients of CAN packets.
+Each CAN Packet Addressing Format describes a different way of providing `Network Address Information`_ to all
+recipients of CAN Packets.
 
-The exchange of UDS Packets on CAN is supported by three addressing formats:
+The exchange of packets on CAN is supported by three addressing formats:
 
 - :ref:`Normal addressing <knowledge-base-can-normal-addressing>`
 - :ref:`Extended addressing <knowledge-base-can-extended-addressing>`
@@ -255,7 +258,7 @@ where:
 Extended Addressing
 '''''''''''''''''''
 If extended addressing format is used, then the value of **the first CAN frame byte informs about a target** of
-a UDS packet and remaining `Network Address Information`_ (a sending entity and
+a packet and remaining `Network Address Information`_ (a sending entity and
 :ref:`an addressing type <knowledge-base-addressing>`) are determined by CAN Identifier value.
 
 .. note:: With extended addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
@@ -422,7 +425,7 @@ where:
 
 CAN Frame Data Padding
 ''''''''''''''''''''''
-If a number of bytes specified in a UDS Packet is shorter than a number of bytes in CAN frame's data field,
+If a number of bytes specified in a Packet is shorter than a number of bytes in CAN frame's data field,
 then the sender has to pad any unused bytes in the frame. This can only be a case for
 :ref:`Single Frame <knowledge-base-can-single-frame>`, :ref:`Flow Control <knowledge-base-can-flow-control>` and
 the last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a segmented message.
@@ -459,7 +462,7 @@ that is required to sent a desired number of data bytes in a single CAN packet.
 
 CAN Packet Types
 ````````````````
-According to ISO 15765-2, CAN bus supports 4 types of UDS packets.
+According to ISO 15765-2, CAN bus supports 4 types of Packets.
 
 List of all values of `Network Protocol Control Information`_ supported by CAN bus:
 

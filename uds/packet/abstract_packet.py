@@ -1,4 +1,4 @@
-"""Abstract definition of UDS packets that is common for all bus types."""
+"""Abstract definition of packets that is common for all bus types."""
 
 __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
@@ -15,7 +15,7 @@ from .abstract_packet_type import AbstractUdsPacketType
 
 
 class AbstractUdsPacketContainer(ABC):
-    """Abstract definition of a container with UDS Packet information."""
+    """Abstract definition of a container with information about a packet."""
 
     @property
     @abstractmethod
@@ -30,7 +30,7 @@ class AbstractUdsPacketContainer(ABC):
     @property
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
-        """Type (N_PCI value) of this UDS packet."""
+        """Type (N_PCI value) of this packet."""
 
     @property
     @abstractmethod
@@ -44,11 +44,11 @@ class AbstractUdsPacketContainer(ABC):
 
 
 class AbstractUdsPacket(AbstractUdsPacketContainer, ABC):
-    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
+    """Abstract definition of a packet (Network Protocol Data Unit - N_PDU)."""
 
 
 class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
-    """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
+    """Abstract definition of a storage for historic information about transmitted or received packet."""
 
     @abstractmethod
     def __init__(self,
@@ -58,7 +58,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         """
         Create a record of historic information about a packet that was either received or transmitted.
 
-        :param frame: Frame that carried this UDS packet.
+        :param frame: Frame that carried this packet.
         :param direction: Information whether this packet was transmitted or received.
         :param transmission_time: Time stamp when this packet was fully transmitted on a bus.
         """
