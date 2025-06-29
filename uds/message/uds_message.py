@@ -148,7 +148,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
     @property
     def packets_records(self) -> PacketsRecordsTuple:
         """
-        Records sequence (in transmission order) of packets that carried this diagnostic message.
+        Sequence (in transmission order) of packets records that carried this diagnostic message.
 
         :ref:`Packets <knowledge-base-packet>` sequence is a complete sequence of packets that was exchanged
         during this diagnostic message transmission.
