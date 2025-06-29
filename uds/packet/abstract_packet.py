@@ -1,4 +1,4 @@
-"""Abstract definition of UDS packets that is common for all bus types."""
+"""Abstract definition of packets that is common for all bus/network types."""
 
 __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
@@ -15,7 +15,7 @@ from .abstract_packet_type import AbstractUdsPacketType
 
 
 class AbstractUdsPacketContainer(ABC):
-    """Abstract definition of a container with UDS Packet information."""
+    """Abstract definition of a container with packet information."""
 
     @property
     @abstractmethod
@@ -30,25 +30,25 @@ class AbstractUdsPacketContainer(ABC):
     @property
     @abstractmethod
     def packet_type(self) -> AbstractUdsPacketType:
-        """Type (N_PCI value) of this UDS packet."""
+        """Type (N_PCI value) of this packet."""
 
     @property
     @abstractmethod
     def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this packet."""
+        """Payload bytes number of a diagnostic message."""
 
     @property
     @abstractmethod
     def payload(self) -> Optional[bytes]:
-        """Raw payload bytes of a diagnostic message that are carried by this packet."""
+        """Diagnostic message payload carried by this packet."""
 
 
 class AbstractUdsPacket(AbstractUdsPacketContainer, ABC):
-    """Abstract definition of UDS Packet (Network Protocol Data Unit - N_PDU)."""
+    """Abstract definition of a packet (Network Protocol Data Unit - N_PDU)."""
 
 
 class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
-    """Abstract definition of a storage for historic information about transmitted or received UDS Packet."""
+    """Abstract definition of a storage for historic information about transmitted or received packet."""
 
     @abstractmethod
     def __init__(self,
@@ -56,9 +56,9 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
                  direction: TransmissionDirection,
                  transmission_time: datetime) -> None:
         """
-        Create a record of historic information about a packet that was either received or transmitted.
+        Create a record of historic information about a packet.
 
-        :param frame: Frame that carried this UDS packet.
+        :param frame: Frame that carried this packet.
         :param direction: Information whether this packet was transmitted or received.
         :param transmission_time: Time stamp when this packet was fully transmitted on a bus.
         """
@@ -78,7 +78,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
 
         :param value: Frame value to set.
 
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
             getattr(self, "_AbstractUdsPacketRecord__frame")
@@ -100,7 +100,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
 
         :param value: Direction value to set.
 
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
             getattr(self, "_AbstractUdsPacketRecord__direction")
@@ -122,7 +122,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         :param value: Value of transmission time to set.
 
         :raise TypeError: Provided value has unexpected type.
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
             getattr(self, "_AbstractUdsPacketRecord__transmission_time")

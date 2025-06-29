@@ -1,4 +1,4 @@
-"""Common (abstract) implementation of UDS Packet Types."""
+"""Common (abstract) implementation of Packet Types."""
 
 __all__ = ["AbstractUdsPacketType"]
 
@@ -9,7 +9,7 @@ from uds.utilities import ExtendableEnum, NibbleEnum, ValidatedEnum
 
 class AbstractUdsPacketType(ValidatedEnum, ExtendableEnum, NibbleEnum):
     """
-    Abstract definition of UDS packet type.
+    Abstract definition of packet type.
 
     Packet type information is carried by :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>`.
     Enums with packet types (N_PCI) values for certain buses (e.g. CAN, LIN, FlexRay) must inherit after this class.

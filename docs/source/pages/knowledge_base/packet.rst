@@ -1,14 +1,15 @@
-.. _knowledge-base-uds-packet:
+.. _knowledge-base-packet:
 
-UDS Packet
-==========
-UDS packet might also be called Network Protocol Data Unit (N_PDU). The packets are created during
-:ref:`segmentation <knowledge-base-segmentation>` of a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
-Each :ref:`diagnostic message <knowledge-base-diagnostic-message>` consists of at least one UDS Packet (N_PDU).
-There are some packets which does not carry any diagnostic message data as they are used to manage the flow of
-other packets.
+Packet (N_PDU)
+==============
+In ISO Standards, the name Network :ref:`Protocol Data Unit <knowledge-base-pdu>` (N_PDU in short) is used.
+For various reasons we decided to use Packet name instead.
 
-UDS packet consists of following fields:
+The packets are created during :ref:`segmentation <knowledge-base-segmentation>` of a
+:ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+Each :ref:`diagnostic message <knowledge-base-diagnostic-message>` consists of at least one Packet (N_PDU).
+
+Packet consists of following fields:
 
   - `Network Address Information`_ (N_AI) - packet addressing
   - `Network Data Field`_ (N_Data) - packet data
@@ -33,21 +34,24 @@ Network Data Field (N_Data) carries diagnostic message data. It might be an enti
 (if :ref:`segmentation <knowledge-base-segmentation>` had to be used to divide
 a :ref:`diagnostic message <knowledge-base-diagnostic-message>` into smaller parts).
 
+For some communication buses, some packets might not carry any data (e.g.
+:ref:`CAN Flow Control <knowledge-base-can-flow-control>`) as they are used to manage the flow of packets.
+
 
 .. _knowledge-base-n-pci:
 
 Network Protocol Control Information
 ------------------------------------
-Network Protocol Control Information (N_PCI) identifies the type of `UDS packet`_ (Network Protocol Data Unit).
+Network Protocol Control Information (N_PCI) identifies the type of `Packet (N_PDU)`_.
 N_PCI values and their interpretation are bus specific.
 
 
 .. _knowledge-base-uds-can-packet:
 
-UDS Packet on CAN
------------------
-In this chapter you will find information about UDS packets that are specific for CAN bus, therefore
-**applicable only for UDS packets that are transmitted over CAN bus**.
+CAN Packet
+----------
+In this chapter you will find information about packets exchanged during UDS communication over CAN.
+This part is specific for CAN bus and Diagnostic on CAN (ISO 15765).
 
 
 .. _knowledge-base-can-frame:
@@ -55,8 +59,8 @@ In this chapter you will find information about UDS packets that are specific fo
 CAN Frame
 `````````
 `CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frames that are used
-during normal UDS communication. CAN data frames are made up of many different fields, but the key in our case (these
-influenced by UDS protocol) are listed below:
+during UDS communication. CAN data frames consist of many different fields, but the key in our case (used during
+UDS communication) are listed below:
 
 - CAN Identifier (CAN ID)
 
@@ -115,7 +119,8 @@ influenced by UDS protocol) are listed below:
   | 0xF |            64            |             NO             |         YES         |
   +-----+--------------------------+----------------------------+---------------------+
 
-.. note:: To learn more about CAN bus and CAN frame structure, you are encouraged to visit
+.. note:: To learn more about CAN bus and CAN frame structure, we encourage you to read
+  `CAN bus specification <http://esd.cs.ucr.edu/webres/can20.pdf>`_ and visit
   `e-learning portal of Vector Informatik GmbH <https://elearning.vector.com/>`_.
 
 
@@ -123,10 +128,10 @@ influenced by UDS protocol) are listed below:
 
 CAN Packet Addressing Formats
 `````````````````````````````
-Each CAN packet addressing format describes a different way of providing `Network Address Information`_ to all
-recipients of CAN packets.
+Each CAN Packet Addressing Format describes a different way of providing `Network Address Information`_ to all
+recipients of CAN Packets.
 
-The exchange of UDS Packets on CAN is supported by three addressing formats:
+The exchange of packets on CAN is supported by three addressing formats:
 
 - :ref:`Normal addressing <knowledge-base-can-normal-addressing>`
 - :ref:`Extended addressing <knowledge-base-can-extended-addressing>`
@@ -134,27 +139,52 @@ The exchange of UDS Packets on CAN is supported by three addressing formats:
 
 .. warning:: Addressing format must be predefined and configured before any CAN packet is received as every
   CAN packet addressing format determines a different way of decoding CAN packets information
-  (`Network Address Information`_, `Network Data Field`_ and `Network Protocol Control Information`_)
-  that is not compatible with other addressing formats.
+  (`Network Address Information`_, `Network Data Field`_ and `Network Protocol Control Information`_).
 
 .. note:: Regardless of addressing format used, to transmit
   a :ref:`functionally addressed <knowledge-base-functional-addressing>` message over CAN, a sender is allowed to use
   :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
+
+.. seealso:: `ISO 15765-4 <https://www.iso.org/standard/78384.html>`_ contains detailed information about
+  CAN addressing formats.
 
 
 .. _knowledge-base-can-normal-addressing:
 
 Normal Addressing
 '''''''''''''''''
-If normal addressing format is used, then the value of CAN Identifier carries an entire `Network Address Information`_.
+Normal Addressing is used when direct communication with servers is possible (Diagnostic Tester is connected to
+the same CAN network as ECUs).
+
+If normal addressing format is used, then the value of CAN Identifier carries the entire `Network Address Information`_.
 Basing on CAN Identifier value, it is possible to distinguish :ref:`an addressing type <knowledge-base-addressing>`,
-a sender and a target/targets entities of a packet.
+a sender and a target/targets entities of a diagnostic packet/message.
 
 .. note:: With normal addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
 
 Following parameters specifies `Network Address Information`_ when Normal Addressing is used:
 
 - CAN ID - informs about transmitting and receiving nodes
+
+ISO 15765-4 recommends to use following CAN Identifiers for Normal Addressing:
+
+- 0x7DF - functionally addressed request message
+- 0x7E0 - physical request to Engine Control Module
+- 0x7E8 - physical response from Engine Control Module
+- 0x7E1 - physical request to Transmission Control Module
+- 0x7E9 - physical response from Transmission Control Module
+- 0x7E2 -  physical request to ECU#3
+- 0x7EA - physical response from ECU#3
+- 0x7E3 -  physical request to ECU#4
+- 0x7EB - physical response from ECU#4
+- 0x7E4 -  physical request to ECU#5
+- 0x7EC - physical response from ECU#5
+- 0x7E5 -  physical request to ECU#6
+- 0x7ED - physical response from ECU#6
+- 0x7E6 -  physical request to ECU#7
+- 0x7EE - physical response from ECU#7
+- 0x7E7 -  physical request to ECU#8
+- 0x7EF - physical response from ECU#8
 
 .. note:: Correspondence between `Network Address Information`_ and the value of CAN Identifier is left open for
   a network designer unless :ref:`normal fixed addressing <knowledge-base-can-normal-fixed-addressing>` sub-format
@@ -249,13 +279,23 @@ where:
 - :ref:`N_PCI <knowledge-base-n-pci>` - Network Protocol Control Information
 - :ref:`N_Data <knowledge-base-n-data>` - Network Data Field
 
+ISO 15765-4 recommends to use following parameters for Normal Fixed Addressing:
+
+- N_TA = 0xF1 and N_SA = 0xF1 - diagnostic tester parameters
+- CAN ID = 0x18DB33F1 (N_TA=0x33, N_SA=0xF1) - functionally addressed request message
+- CAN ID = 0x18DA??F1 (replace ?? with ECU's target address) - physically addressed request messages
+- CAN ID = 0x18DAF1?? (replace ?? with ECU's source address) - physically addressed response messages
+
 
 .. _knowledge-base-can-extended-addressing:
 
 Extended Addressing
 '''''''''''''''''''
+Extended Addressing is used when direct communication with servers is not possible and Gateway is passing on messages
+exchanged by diagnostic tester and targeted ECUs.
+
 If extended addressing format is used, then the value of **the first CAN frame byte informs about a target** of
-a UDS packet and remaining `Network Address Information`_ (a sending entity and
+a packet and remaining `Network Address Information`_ (a sending entity and
 :ref:`an addressing type <knowledge-base-addressing>`) are determined by CAN Identifier value.
 
 .. note:: With extended addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
@@ -274,6 +314,9 @@ Following parameters specifies `Network Address Information`_ when Extended Addr
 
 Mixed Addressing
 ''''''''''''''''
+Mixed Addressing (just like Extended Addressing) is used when direct communication with servers is not possible and
+Gateway is passing on messages exchanged by diagnostic tester and targeted ECUs.
+
 Mixed addressing format specifies that **the first byte of a CAN frame is an extension** of
 `Network Address Information`_.
 
@@ -422,7 +465,7 @@ where:
 
 CAN Frame Data Padding
 ''''''''''''''''''''''
-If a number of bytes specified in a UDS Packet is shorter than a number of bytes in CAN frame's data field,
+If a number of bytes specified in a Packet is shorter than a number of bytes in CAN frame's data field,
 then the sender has to pad any unused bytes in the frame. This can only be a case for
 :ref:`Single Frame <knowledge-base-can-single-frame>`, :ref:`Flow Control <knowledge-base-can-flow-control>` and
 the last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a segmented message.
@@ -459,7 +502,7 @@ that is required to sent a desired number of data bytes in a single CAN packet.
 
 CAN Packet Types
 ````````````````
-According to ISO 15765-2, CAN bus supports 4 types of UDS packets.
+According to ISO 15765-2, CAN bus supports 4 types of Packets.
 
 List of all values of `Network Protocol Control Information`_ supported by CAN bus:
 

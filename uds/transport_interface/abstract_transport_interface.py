@@ -64,11 +64,11 @@ class AbstractTransportInterface(ABC):
     @abstractmethod
     def send_packet(self, packet: AbstractUdsPacket) -> AbstractUdsPacketRecord:
         """
-        Transmit UDS packet.
+        Transmit packet.
 
         :param packet: A packet to send.
 
-        :return: Record with historic information about transmitted UDS packet.
+        :return: Record with historic information about transmitted packet.
         """
 
     @abstractmethod
@@ -76,24 +76,24 @@ class AbstractTransportInterface(ABC):
                                 packet: AbstractUdsPacket,
                                 loop: Optional[AbstractEventLoop] = None) -> AbstractUdsPacketRecord:
         """
-        Transmit asynchronously UDS packet.
+        Transmit packet asynchronously.
 
         :param packet: A packet to send.
         :param loop: An asyncio event loop to use for scheduling this task.
 
-        :return: Record with historic information about transmitted UDS packet.
+        :return: Record with historic information about transmitted packet.
         """
 
     @abstractmethod
     def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> AbstractUdsPacketRecord:
         """
-        Receive UDS packet.
+        Receive packet.
 
         :param timeout: Maximal time (in milliseconds) to wait.
 
         :raise TimeoutError: Timeout was reached.
 
-        :return: Record with historic information about received UDS packet.
+        :return: Record with historic information about received packet.
         """
 
     @abstractmethod
@@ -101,7 +101,7 @@ class AbstractTransportInterface(ABC):
                                    timeout: Optional[TimeMillisecondsAlias] = None,
                                    loop: Optional[AbstractEventLoop] = None) -> AbstractUdsPacketRecord:
         """
-        Receive asynchronously UDS packet.
+        Receive packet asynchronously.
 
         :param timeout: Maximal time (in milliseconds) to wait.
         :param loop: An asyncio event loop to use for scheduling this task.
@@ -109,7 +109,7 @@ class AbstractTransportInterface(ABC):
         :raise TimeoutError: Timeout was reached.
         :raise asyncio.TimeoutError: Timeout was reached.
 
-        :return: Record with historic information about received UDS packet.
+        :return: Record with historic information about received packet.
         """
 
     @abstractmethod

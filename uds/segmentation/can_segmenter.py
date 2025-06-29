@@ -56,12 +56,12 @@ class CanSegmenter(AbstractSegmenter):
 
     @property
     def supported_packet_class(self) -> Type[AbstractUdsPacket]:
-        """Class of UDS Packet supported by CAN segmenter."""
+        """Packet class supported by CAN segmenter."""
         return CanPacket
 
     @property
     def supported_packet_record_class(self) -> Type[AbstractUdsPacketRecord]:
-        """Class of UDS Packet Record supported by CAN segmenter."""
+        """Packet Record class supported by CAN segmenter."""
         return CanPacketRecord
 
     @property
@@ -166,7 +166,7 @@ class CanSegmenter(AbstractSegmenter):
         """
         Segment physically addressed diagnostic message.
 
-        :param message: UDS message to divide into UDS packets.
+        :param message: UDS message to divide into packets.
 
         :raise SegmentationError: Provided diagnostic message cannot be segmented.
 
@@ -215,7 +215,7 @@ class CanSegmenter(AbstractSegmenter):
         """
         Segment functionally addressed diagnostic message.
 
-        :param message: UDS message to divide into UDS packets.
+        :param message: UDS message to divide into packets.
 
         :raise SegmentationError: Provided diagnostic message cannot be segmented.
 
@@ -356,7 +356,7 @@ class CanSegmenter(AbstractSegmenter):
         """
         Perform segmentation of a diagnostic message.
 
-        :param message: UDS message to divide into UDS packets.
+        :param message: UDS message to divide into packets.
 
         :raise TypeError: Provided value is not instance of UdsMessage class.
         :raise NotImplementedError: There is missing implementation for the Addressing Type used by provided message.
