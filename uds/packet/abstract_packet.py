@@ -1,4 +1,4 @@
-"""Abstract definition of packets that is common for all bus types."""
+"""Abstract definition of packets that is common for all bus/network types."""
 
 __all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
            "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
@@ -15,7 +15,7 @@ from .abstract_packet_type import AbstractUdsPacketType
 
 
 class AbstractUdsPacketContainer(ABC):
-    """Abstract definition of a container with information about a packet."""
+    """Abstract definition of a container with packet information."""
 
     @property
     @abstractmethod
@@ -35,12 +35,12 @@ class AbstractUdsPacketContainer(ABC):
     @property
     @abstractmethod
     def data_length(self) -> Optional[int]:
-        """Payload bytes number of a diagnostic message which was carried by this packet."""
+        """Payload bytes number of a diagnostic message."""
 
     @property
     @abstractmethod
     def payload(self) -> Optional[bytes]:
-        """Raw payload bytes of a diagnostic message that are carried by this packet."""
+        """Diagnostic message payload carried by this packet."""
 
 
 class AbstractUdsPacket(AbstractUdsPacketContainer, ABC):
@@ -56,7 +56,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
                  direction: TransmissionDirection,
                  transmission_time: datetime) -> None:
         """
-        Create a record of historic information about a packet that was either received or transmitted.
+        Create a record of historic information about a packet.
 
         :param frame: Frame that carried this packet.
         :param direction: Information whether this packet was transmitted or received.
@@ -78,7 +78,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
 
         :param value: Frame value to set.
 
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
             getattr(self, "_AbstractUdsPacketRecord__frame")
@@ -100,7 +100,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
 
         :param value: Direction value to set.
 
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
             getattr(self, "_AbstractUdsPacketRecord__direction")
@@ -122,7 +122,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         :param value: Value of transmission time to set.
 
         :raise TypeError: Provided value has unexpected type.
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
             getattr(self, "_AbstractUdsPacketRecord__transmission_time")

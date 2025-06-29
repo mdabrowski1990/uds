@@ -485,9 +485,14 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         return self.__raw_frame_data
 
     @property
-    def can_id(self) -> int:
-        """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
-        return self.__can_id
+    def addressing_type(self) -> AddressingType:
+        """Addressing type for which this CAN packet is relevant."""
+        return self.__addressing_type
+
+    @property
+    def packet_type(self) -> CanPacketType:
+        """Type (N_PCI value) of this CAN packet."""
+        return self.__packet_type
 
     @property
     def addressing_format(self) -> CanAddressingFormat:
@@ -495,19 +500,14 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         return self.__addressing_format
 
     @property
-    def addressing_type(self) -> AddressingType:
-        """Addressing type for which this CAN packet is relevant."""
-        return self.__addressing_type
+    def can_id(self) -> int:
+        """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
+        return self.__can_id
 
     @property
     def dlc(self) -> int:
         """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
         return self.__dlc
-
-    @property
-    def packet_type(self) -> CanPacketType:
-        """Type (N_PCI value) of this CAN packet."""
-        return self.__packet_type
 
     @property
     def target_address(self) -> Optional[int]:

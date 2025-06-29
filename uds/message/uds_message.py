@@ -16,7 +16,7 @@ from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes
 
 
 class AbstractUdsMessageContainer(ABC):
-    """Abstract definition of a container with a diagnostic message information."""
+    """Abstract definition of a container with diagnostic message information."""
 
     @abstractmethod
     def __eq__(self, other: object) -> bool:
@@ -107,7 +107,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
     def __init__(self, packets_records: PacketsRecordsSequence) -> None:
         """
-        Create a record of historic information about a diagnostic message that was either received or transmitted.
+        Create a record of historic information about a diagnostic message.
 
         :param packets_records: Sequence (in transmission order) of packets records that carried
             this diagnostic message.
@@ -166,7 +166,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :param value: Sequence of Packet Records to set.
 
-        :raise ReassignmentError: There is a call to change the value after the initial assignment (in __init__).
+        :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
             getattr(self, "_UdsMessageRecord__packets_records")
