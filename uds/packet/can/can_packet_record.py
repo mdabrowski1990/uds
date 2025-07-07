@@ -16,7 +16,7 @@ from uds.can import (
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.utilities import InconsistentArgumentsError
 
-from ..abstract_packet import AbstractUdsPacketRecord
+from ..abstract_packet import AbstractPacketRecord
 from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
@@ -24,7 +24,7 @@ CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
 
 
-class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
+class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
     """
     Definition of a CAN packet record.
 

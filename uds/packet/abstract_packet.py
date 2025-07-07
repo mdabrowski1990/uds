@@ -1,6 +1,6 @@
 """Abstract definition of packets that is common for all bus/network types."""
 
-__all__ = ["AbstractUdsPacketContainer", "AbstractUdsPacket", "AbstractUdsPacketRecord",
+__all__ = ["AbstractPacketContainer", "AbstractPacket", "AbstractPacketRecord",
            "PacketsContainersSequence", "PacketsTuple", "PacketsRecordsTuple", "PacketsRecordsSequence"]
 
 from abc import ABC, abstractmethod
@@ -11,10 +11,10 @@ from uds.transmission_attributes.addressing import AddressingType
 from uds.transmission_attributes.transmission_direction import TransmissionDirection
 from uds.utilities import ReassignmentError
 
-from .abstract_packet_type import AbstractUdsPacketType
+from .abstract_packet_type import AbstractPacketType
 
 
-class AbstractUdsPacketContainer(ABC):
+class AbstractPacketContainer(ABC):
     """Abstract definition of a container with packet information."""
 
     @property
@@ -29,7 +29,7 @@ class AbstractUdsPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def packet_type(self) -> AbstractUdsPacketType:
+    def packet_type(self) -> AbstractPacketType:
         """Type (N_PCI value) of this packet."""
 
     @property
@@ -43,11 +43,11 @@ class AbstractUdsPacketContainer(ABC):
         """Diagnostic message payload carried by this packet."""
 
 
-class AbstractUdsPacket(AbstractUdsPacketContainer, ABC):
+class AbstractPacket(AbstractPacketContainer, ABC):
     """Abstract definition of a packet (Network Protocol Data Unit - N_PDU)."""
 
 
-class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
+class AbstractPacketRecord(AbstractPacketContainer, ABC):
     """Abstract definition of a storage for historic information about transmitted or received packet."""
 
     @abstractmethod
@@ -81,7 +81,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
-            getattr(self, "_AbstractUdsPacketRecord__frame")
+            getattr(self, "_AbstractPacketRecord__frame")
         except AttributeError:
             self._validate_frame(value)
             self.__frame = value
@@ -103,7 +103,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
-            getattr(self, "_AbstractUdsPacketRecord__direction")
+            getattr(self, "_AbstractPacketRecord__direction")
         except AttributeError:
             self.__direction = TransmissionDirection.validate_member(value)
         else:
@@ -125,7 +125,7 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         try:
-            getattr(self, "_AbstractUdsPacketRecord__transmission_time")
+            getattr(self, "_AbstractPacketRecord__transmission_time")
         except AttributeError:
             if not isinstance(value, datetime):
                 raise TypeError(f"Provided value has invalid type: {type(value)}")  # pylint: disable=raise-missing-from
@@ -146,12 +146,12 @@ class AbstractUdsPacketRecord(AbstractUdsPacketContainer, ABC):
         """
 
 
-PacketsContainersSequence = Sequence[AbstractUdsPacketContainer]
+PacketsContainersSequence = Sequence[AbstractPacketContainer]
 """Alias for a sequence filled with packet or packet record object."""
 
-PacketsTuple = Tuple[AbstractUdsPacket, ...]
+PacketsTuple = Tuple[AbstractPacket, ...]
 """Alias for a packet objects tuple."""
-PacketsRecordsTuple = Tuple[AbstractUdsPacketRecord, ...]
+PacketsRecordsTuple = Tuple[AbstractPacketRecord, ...]
 """Alias for a packet record objects tuple."""
-PacketsRecordsSequence = Sequence[AbstractUdsPacketRecord]
+PacketsRecordsSequence = Sequence[AbstractPacketRecord]
 """Alias for a packet record objects sequence."""

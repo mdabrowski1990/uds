@@ -7,9 +7,9 @@ from typing import Any, Optional, Sequence, Type, Union
 
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import (
-    AbstractUdsPacket,
-    AbstractUdsPacketContainer,
-    AbstractUdsPacketRecord,
+    AbstractPacket,
+    AbstractPacketContainer,
+    AbstractPacketRecord,
     PacketsContainersSequence,
     PacketsTuple,
 )
@@ -34,15 +34,15 @@ class AbstractSegmenter(ABC):
 
     @property
     @abstractmethod
-    def supported_packet_class(self) -> Type[AbstractUdsPacket]:
+    def supported_packet_class(self) -> Type[AbstractPacket]:
         """Packet class supported by this segmenter."""
 
     @property
     @abstractmethod
-    def supported_packet_record_class(self) -> Type[AbstractUdsPacketRecord]:
+    def supported_packet_record_class(self) -> Type[AbstractPacketRecord]:
         """Packet Record class supported by this segmenter."""
 
-    def is_supported_packet_type(self, packet: AbstractUdsPacketContainer) -> bool:
+    def is_supported_packet_type(self, packet: AbstractPacketContainer) -> bool:
         """
         Check if the argument value is a packet object of a supported type.
 
@@ -63,7 +63,7 @@ class AbstractSegmenter(ABC):
             the Segmenter (if provided attributes belongs to an input packet), otherwise None.
         """
 
-    def is_supported_packets_sequence_type(self, packets: Sequence[AbstractUdsPacketContainer]) -> bool:
+    def is_supported_packets_sequence_type(self, packets: Sequence[AbstractPacketContainer]) -> bool:
         """
         Check if the argument value is a packets sequence of a supported type.
 

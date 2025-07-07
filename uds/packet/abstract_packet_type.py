@@ -1,13 +1,13 @@
 """Common (abstract) implementation of Packet Types."""
 
-__all__ = ["AbstractUdsPacketType"]
+__all__ = ["AbstractPacketType"]
 
 from abc import abstractmethod
 
 from uds.utilities import ExtendableEnum, NibbleEnum, ValidatedEnum
 
 
-class AbstractUdsPacketType(ValidatedEnum, ExtendableEnum, NibbleEnum):
+class AbstractPacketType(ValidatedEnum, ExtendableEnum, NibbleEnum):
     """
     Abstract definition of packet type.
 
@@ -19,7 +19,7 @@ class AbstractUdsPacketType(ValidatedEnum, ExtendableEnum, NibbleEnum):
 
     @classmethod
     @abstractmethod
-    def is_initial_packet_type(cls, value: "AbstractUdsPacketType") -> bool:
+    def is_initial_packet_type(cls, value: "AbstractPacketType") -> bool:
         """
         Check whether given argument is a member or a value of packet type that initiates a diagnostic message.
 

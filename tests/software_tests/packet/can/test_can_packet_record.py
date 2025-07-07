@@ -35,8 +35,8 @@ class TestCanPacketRecord:
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
         self._patcher_can_dlc_handler_class = patch(f"{SCRIPT_LOCATION}.CanDlcHandler")
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
-        self._patcher_abstract_uds_packet_record_init = patch(f"{SCRIPT_LOCATION}.AbstractUdsPacketRecord.__init__")
-        self.mock_abstract_uds_packet_record_init = self._patcher_abstract_uds_packet_record_init.start()
+        self._patcher_abstract_packet_record_init = patch(f"{SCRIPT_LOCATION}.AbstractPacketRecord.__init__")
+        self.mock_abstract_packet_record_init = self._patcher_abstract_packet_record_init.start()
 
     def teardown_method(self):
         self._patcher_addressing_type_class.stop()
@@ -45,7 +45,7 @@ class TestCanPacketRecord:
         self._patcher_can_packet_type_class.stop()
         self._patcher_can_id_handler_class.stop()
         self._patcher_can_dlc_handler_class.stop()
-        self._patcher_abstract_uds_packet_record_init.stop()
+        self._patcher_abstract_packet_record_init.stop()
 
     # __init__
 
@@ -68,7 +68,7 @@ class TestCanPacketRecord:
                == self.mock_addressing_type_class.validate_member.return_value
         assert self.mock_can_packet_record._CanPacketRecord__addressing_format \
                == self.mock_can_addressing_format_class.validate_member.return_value
-        self.mock_abstract_uds_packet_record_init.assert_called_once_with(frame=frame,
+        self.mock_abstract_packet_record_init.assert_called_once_with(frame=frame,
                                                                           direction=direction,
                                                                           transmission_time=transmission_time)
         self.mock_can_packet_record._CanPacketRecord__assess_packet_type.assert_called_once_with()

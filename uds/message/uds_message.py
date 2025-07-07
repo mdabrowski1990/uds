@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Sequence, Union
 
-from uds.packet import AbstractUdsPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
+from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes
 
@@ -137,12 +137,12 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :raise TypeError: Provided value is not a sequence.
         :raise ValueError: At least one of sequence elements is not an object of
-            :class:`~uds.message.uds_packet.AbstractUdsPacketRecord` class.
+            :class:`~uds.message.uds_packet.AbstractPacketRecord` class.
         """
         if not isinstance(value, Sequence):
             raise TypeError(f"Provided value is not a sequence. Actual type: {type(value)}")
-        if not value or any(not isinstance(element, AbstractUdsPacketRecord) for element in value):
-            raise ValueError(f"Provided value must contain only instances of AbstractUdsPacketRecord class. "
+        if not value or any(not isinstance(element, AbstractPacketRecord) for element in value):
+            raise ValueError("Provided value must contain only instances of AbstractPacketRecord class. "
                              f"Actual value: {value}")
 
     @property

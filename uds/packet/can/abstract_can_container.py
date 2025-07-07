@@ -18,11 +18,11 @@ from uds.can import (
 )
 from uds.transmission_attributes import AddressingType
 
-from ..abstract_packet import AbstractUdsPacketContainer
+from ..abstract_packet import AbstractPacketContainer
 from .can_packet_type import CanPacketType
 
 
-class AbstractCanPacketContainer(AbstractUdsPacketContainer, ABC):
+class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
     """Abstract definition of CAN Packets containers."""
 
     @property

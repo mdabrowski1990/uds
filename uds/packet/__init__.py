@@ -9,13 +9,13 @@ It provides tools for:
 """
 
 from .abstract_packet import (
-    AbstractUdsPacket,
-    AbstractUdsPacketContainer,
-    AbstractUdsPacketRecord,
+    AbstractPacket,
+    AbstractPacketContainer,
+    AbstractPacketRecord,
     PacketsContainersSequence,
     PacketsRecordsSequence,
     PacketsRecordsTuple,
     PacketsTuple,
 )
-from .abstract_packet_type import AbstractUdsPacketType
+from .abstract_packet_type import AbstractPacketType
 from .can import AbstractCanPacketContainer, CanPacket, CanPacketRecord, CanPacketType

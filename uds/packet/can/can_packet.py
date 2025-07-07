@@ -25,12 +25,12 @@ from uds.can import (
 from uds.transmission_attributes import AddressingType
 from uds.utilities import AmbiguityError, RawBytesAlias, UnusedArgumentWarning
 
-from ..abstract_packet import AbstractUdsPacket
+from ..abstract_packet import AbstractPacket
 from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
 
-class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
+class CanPacket(AbstractCanPacketContainer, AbstractPacket):
     """
     Definition of a CAN packet.
 

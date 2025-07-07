@@ -18,8 +18,8 @@ from uds.can import (
 )
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import (
-    AbstractUdsPacket,
-    AbstractUdsPacketRecord,
+    AbstractPacket,
+    AbstractPacketRecord,
     CanPacket,
     CanPacketRecord,
     CanPacketType,
@@ -55,12 +55,12 @@ class CanSegmenter(AbstractSegmenter):
         self.filler_byte = filler_byte
 
     @property
-    def supported_packet_class(self) -> Type[AbstractUdsPacket]:
+    def supported_packet_class(self) -> Type[AbstractPacket]:
         """Packet class supported by CAN segmenter."""
         return CanPacket
 
     @property
-    def supported_packet_record_class(self) -> Type[AbstractUdsPacketRecord]:
+    def supported_packet_record_class(self) -> Type[AbstractPacketRecord]:
         """Packet Record class supported by CAN segmenter."""
         return CanPacketRecord
 
