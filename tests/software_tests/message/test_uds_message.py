@@ -22,11 +22,9 @@ class TestAbstractUdsMessageContainer:
 
     # __str__
 
-    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02]])
-    @pytest.mark.parametrize("addressing_type", list(AddressingType))
-    def test_str(self, payload, addressing_type):
+    @pytest.mark.parametrize("payload", [b"\x00\xFF\x2B\xCD", [0xB0]])
+    def test_str(self, payload):
         self.mock_uds_message_container.payload = payload
-        self.mock_uds_message_container.addressing_type = addressing_type
         output_str = AbstractUdsMessageContainer.__str__(self=self.mock_uds_message_container)
         assert output_str.startswith("AbstractUdsMessageContainer(") and output_str.endswith(")")
         assert "payload=" in output_str
@@ -59,11 +57,9 @@ class TestUdsMessage:
 
     # __str__
 
-    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02]])
-    @pytest.mark.parametrize("addressing_type", list(AddressingType))
-    def test_str(self, payload, addressing_type):
+    @pytest.mark.parametrize("payload", [b"\x00\xFF\x2B\xCD", [0xB0]])
+    def test_str(self, payload):
         self.mock_uds_message.payload = payload
-        self.mock_uds_message.addressing_type = addressing_type
         output_str = UdsMessage.__str__(self=self.mock_uds_message)
         assert output_str.startswith("UdsMessage(") and output_str.endswith(")")
         assert "payload=" in output_str
@@ -146,11 +142,9 @@ class TestUdsMessageRecord:
 
     # __str__
 
-    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02]])
-    @pytest.mark.parametrize("addressing_type", list(AddressingType))
-    def test_str(self, payload, addressing_type):
+    @pytest.mark.parametrize("payload", [b"\x00\xFF\x2B\xCD", [0xB0]])
+    def test_str(self, payload):
         self.mock_uds_message_record.payload = payload
-        self.mock_uds_message_record.addressing_type = addressing_type
         output_str = UdsMessageRecord.__str__(self=self.mock_uds_message_record)
         assert output_str.startswith("UdsMessageRecord(") and output_str.endswith(")")
         assert "payload=" in output_str

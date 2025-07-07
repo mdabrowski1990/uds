@@ -19,7 +19,7 @@ class AbstractUdsMessageContainer(ABC):
     """Abstract definition of a container with diagnostic message information."""
 
     def __str__(self) -> str:
-        """String representation for UDS Message Containers."""
+        """Present object in string format."""
         return (f"{self.__class__.__name__}("
                 f"payload=[{', '.join(hex(byte) for byte in self.payload)}], "
                 f"addressing_type={self.addressing_type})")
@@ -135,7 +135,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
             and self.direction == other.direction
 
     def __str__(self) -> str:
-        """String representation for UDS Message Containers."""
+        """Present object in string format."""
         return (f"{self.__class__.__name__}("
                 f"payload=[{', '.join(hex(byte) for byte in self.payload)}], "
                 f"addressing_type={self.addressing_type}, "

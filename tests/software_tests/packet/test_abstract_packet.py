@@ -21,15 +21,13 @@ class TestAbstractPacketContainer:
 
     # __str__
 
-    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02], None])
-    @pytest.mark.parametrize("addressing_type", list(AddressingType))
-    @pytest.mark.parametrize("raw_frame_data", [bytearray([0xFF, 0x55, 0xAC, 0x00]), b"\x94\x88"])
-    @pytest.mark.parametrize("packet_type", ["Singe Frame", "First Frame", "Something else"])
-    def test_str(self, payload, addressing_type, raw_frame_data, packet_type):
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
         self.mock_packet_container.payload = payload
-        self.mock_packet_container.addressing_type = addressing_type
         self.mock_packet_container.raw_frame_data = raw_frame_data
-        self.mock_packet_container.packet_type = packet_type
         output_str = AbstractPacketContainer.__str__(self=self.mock_packet_container)
         assert output_str.startswith("AbstractPacketContainer(") and output_str.endswith(")")
         assert "payload=" in output_str
@@ -66,15 +64,13 @@ class TestAbstractPacketRecord:
 
     # __str__
 
-    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02], None])
-    @pytest.mark.parametrize("addressing_type", list(AddressingType))
-    @pytest.mark.parametrize("raw_frame_data", [bytearray([0xFF, 0x55, 0xAC, 0x00]), b"\x94\x88"])
-    @pytest.mark.parametrize("packet_type", ["Singe Frame", "First Frame", "Something else"])
-    def test_str(self, payload, addressing_type, raw_frame_data, packet_type):
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
         self.mock_packet_record.payload = payload
-        self.mock_packet_record.addressing_type = addressing_type
         self.mock_packet_record.raw_frame_data = raw_frame_data
-        self.mock_packet_record.packet_type = packet_type
         output_str = AbstractPacketRecord.__str__(self=self.mock_packet_record)
         assert output_str.startswith("AbstractPacketRecord(") and output_str.endswith(")")
         assert "payload=" in output_str

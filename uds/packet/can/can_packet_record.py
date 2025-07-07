@@ -57,6 +57,19 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         self.__assess_packet_type()
         self.__assess_ai_attributes()
 
+    def __str__(self) -> str:
+        """Present object in string format."""
+        payload_str = "None" if self.payload is None else f"[{', '.join(hex(byte) for byte in self.payload)}]"
+        return (f"{self.__class__.__name__}("
+                f"payload={payload_str},"
+                f"addressing_type={self.addressing_type}, "
+                f"addressing_format={self.addressing_format}, "
+                f"packet_type={self.packet_type}, "
+                f"raw_frame_data=[{', '.join(hex(byte) for byte in self.raw_frame_data)}], "
+                f"can_id={self.can_id}, "
+                f"direction={self.direction}, "
+                f"transmission_time={self.transmission_time})")
+
     @property
     def raw_frame_data(self) -> bytes:
         """Raw data bytes of a frame that carried this CAN packet."""

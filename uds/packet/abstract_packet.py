@@ -18,13 +18,13 @@ class AbstractPacketContainer(ABC):
     """Abstract definition of a container with packet information."""
 
     def __str__(self) -> str:
-        """String representation for Packet Containers."""
+        """Present object in string format."""
         payload_str = "None" if self.payload is None else f"[{', '.join(hex(byte) for byte in self.payload)}]"
         return (f"{self.__class__.__name__}("
-                f"raw_frame_data=[{', '.join(hex(byte) for byte in self.raw_frame_data)}], "
                 f"payload={payload_str},"
                 f"addressing_type={self.addressing_type}, "
-                f"packet_type={self.packet_type})")
+                f"packet_type={self.packet_type}, "
+                f"raw_frame_data=[{', '.join(hex(byte) for byte in self.raw_frame_data)}])")
 
     @property
     @abstractmethod
@@ -76,13 +76,13 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         self.transmission_time = transmission_time
 
     def __str__(self) -> str:
-        """String representation for Packet Containers."""
+        """Present object in string format."""
         payload_str = "None" if self.payload is None else f"[{', '.join(hex(byte) for byte in self.payload)}]"
         return (f"{self.__class__.__name__}("
-                f"raw_frame_data=[{', '.join(hex(byte) for byte in self.raw_frame_data)}], "
-                f"payload={payload_str},"
+                f"payload={payload_str}, "
                 f"addressing_type={self.addressing_type}, "
                 f"packet_type={self.packet_type}, "
+                f"raw_frame_data=[{', '.join(hex(byte) for byte in self.raw_frame_data)}], "
                 f"direction={self.direction}, "
                 f"transmission_time={self.transmission_time})")
 
