@@ -3,6 +3,7 @@ from mock import Mock, patch
 
 from uds.message.uds_message import (
     AbstractPacketRecord,
+    AbstractUdsMessageContainer,
     AddressingType,
     ReassignmentError,
     UdsMessage,
@@ -12,6 +13,24 @@ from uds.transmission_attributes import TransmissionDirection
 
 SCRIPT_LOCATION = "uds.message.uds_message"
 
+
+class TestAbstractUdsMessageContainer:
+    """Unit tests for 'AbstractUdsMessageContainer' class."""
+
+    def setup_method(self):
+        self.mock_uds_message_container = Mock(spec=AbstractUdsMessageContainer)
+
+    # __str__
+
+    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02]])
+    @pytest.mark.parametrize("addressing_type", list(AddressingType))
+    def test_str(self, payload, addressing_type):
+        self.mock_uds_message_container.payload = payload
+        self.mock_uds_message_container.addressing_type = addressing_type
+        output_str = AbstractUdsMessageContainer.__str__(self=self.mock_uds_message_container)
+        assert output_str.startswith("AbstractUdsMessageContainer(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
 
 
 class TestUdsMessage:
@@ -37,6 +56,18 @@ class TestUdsMessage:
         UdsMessage.__init__(self=self.mock_uds_message, payload=payload, addressing_type=addressing_type)
         assert self.mock_uds_message.payload == payload
         assert self.mock_uds_message.addressing_type == addressing_type
+
+    # __str__
+
+    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02]])
+    @pytest.mark.parametrize("addressing_type", list(AddressingType))
+    def test_str(self, payload, addressing_type):
+        self.mock_uds_message.payload = payload
+        self.mock_uds_message.addressing_type = addressing_type
+        output_str = UdsMessage.__str__(self=self.mock_uds_message)
+        assert output_str.startswith("UdsMessage(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
 
     # __eq__
 
@@ -112,6 +143,21 @@ class TestUdsMessageRecord:
     def test_init(self, packets_records):
         UdsMessageRecord.__init__(self=self.mock_uds_message_record, packets_records=packets_records)
         assert self.mock_uds_message_record.packets_records == packets_records
+
+    # __str__
+
+    @pytest.mark.parametrize("payload", [b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0", [0x1, 0x02]])
+    @pytest.mark.parametrize("addressing_type", list(AddressingType))
+    def test_str(self, payload, addressing_type):
+        self.mock_uds_message_record.payload = payload
+        self.mock_uds_message_record.addressing_type = addressing_type
+        output_str = UdsMessageRecord.__str__(self=self.mock_uds_message_record)
+        assert output_str.startswith("UdsMessageRecord(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "direction=" in output_str
+        assert "transmission_start=" in output_str
+        assert "transmission_end=" in output_str
 
     # __eq__
 
