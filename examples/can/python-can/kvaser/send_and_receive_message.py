@@ -1,4 +1,3 @@
-from pprint import pprint
 from threading import Timer
 from time import sleep
 
@@ -51,8 +50,8 @@ def main():
         sleep(0.01)
 
     # show results
-    pprint(received_message_record.__dict__)
-    pprint(sent_message_record.__dict__)
+    print(received_message_record)
+    print(sent_message_record)
 
     # close connections with CAN interfaces
     del can_ti_1

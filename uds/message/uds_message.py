@@ -21,7 +21,7 @@ class AbstractUdsMessageContainer(ABC):
     def __str__(self) -> str:
         """Present object in string format."""
         return (f"{self.__class__.__name__}("
-                f"payload=[{', '.join(hex(byte) for byte in self.payload)}], "
+                f"payload=[{', '.join(f'0x{byte:02X}' for byte in self.payload)}], "
                 f"addressing_type={self.addressing_type})")
 
     @abstractmethod
@@ -137,7 +137,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
     def __str__(self) -> str:
         """Present object in string format."""
         return (f"{self.__class__.__name__}("
-                f"payload=[{', '.join(hex(byte) for byte in self.payload)}], "
+                f"payload=[{', '.join(f'0x{byte:02X}' for byte in self.payload)}], "
                 f"addressing_type={self.addressing_type}, "
                 f"direction={self.direction}, "
                 f"transmission_start={self.transmission_start}, "

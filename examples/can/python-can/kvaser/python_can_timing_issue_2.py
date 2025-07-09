@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     message = Message(data=[0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0], arbitration_id=0x100)
 
-    for _ in range(10):
+    for _ in range(100):
         timestamp_before_send = time()
         kvaser_interface_1.send(message)
         sent_message = buffered_reader.get_message(timeout=1)
