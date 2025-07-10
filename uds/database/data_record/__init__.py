@@ -7,8 +7,7 @@ meaningful information (e.g. physical value, text).
 
 from .abstract_data_record import (
     AbstractDataRecord,
-    DataRecordPhysicalValueAlias,
-    DataRecordValueAlias,
-    DecodedDataRecord,
+    PhysicalValueAlias,
 )
-from .raw_data_record import RawDataRecord
+# from .raw_data_record import RawDataRecord  # TODO
+# TODO: mapping and container

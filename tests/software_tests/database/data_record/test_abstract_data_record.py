@@ -13,22 +13,56 @@ class TestAbstractDataRecord:
 
     # __init__
 
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_init__type_error(self, mock_isinstance):
-        mock_isinstance.return_value = False
-        mock_name = Mock()
-        with pytest.raises(TypeError):
-            AbstractDataRecord.__init__(self.mock_data_record, mock_name)
-        mock_isinstance.assert_called_once_with(mock_name, str)
+    @pytest.mark.parametrize("name, length", [
+        ("Some Name", 534),
+        (Mock(), Mock()),
+    ])
+    def test_init__mandatory_args(self, name, length):
+        AbstractDataRecord.__init__(self.mock_data_record, name, length)
+        assert self.mock_data_record.name == name
+        assert self.mock_data_record.length == length
+        assert self.mock_data_record.children == tuple()
+
+    @pytest.mark.parametrize("name, length, children", [
+        ("Some Name", 534, [Mock(), Mock()]),
+        (Mock(), Mock(), Mock()),
+    ])
+    def test_init__all_args(self, name, length, children):
+        AbstractDataRecord.__init__(self.mock_data_record, name=name, length=length, children=children)
+        assert self.mock_data_record.name == name
+        assert self.mock_data_record.length == length
+        assert self.mock_data_record.children == children
+
+    # __validate_raw_value
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_init__valid(self, mock_isinstance):
-        mock_isinstance.return_value = True
-        mock_name = Mock()
-        assert AbstractDataRecord.__init__(self.mock_data_record, mock_name) is None
-        assert self.mock_data_record._AbstractDataRecord__name == mock_name.strip.return_value
-        mock_isinstance.assert_called_once_with(mock_name, str)
-        mock_name.strip.assert_called_once_with()
+    def test_validate_raw_value__type_error(self, mock_isinstance):
+        mock_isinstance.return_value = False
+        mock_value = Mock()
+        with pytest.raises(TypeError):
+            AbstractDataRecord._AbstractDataRecord__validate_raw_value(self.mock_data_record, mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, int)
+
+    @pytest.mark.parametrize("min_value, max_value, value", [
+        (0, 10, 11),
+        (0, 10, -1),
+        (0, 3, 6),
+    ])
+    def test_validate_raw_value__value_error(self, min_value, max_value, value):
+        self.mock_data_record.min_raw_value = min_value
+        self.mock_data_record.max_raw_value = max_value
+        with pytest.raises(ValueError):
+            AbstractDataRecord._AbstractDataRecord__validate_raw_value(self.mock_data_record, value)
+
+    @pytest.mark.parametrize("min_value, max_value, value", [
+        (0, 10, 10),
+        (0, 10, 6),
+        (0, 3, 0),
+    ])
+    def test_validate_raw_value(self, min_value, max_value, value):
+        self.mock_data_record.min_raw_value = min_value
+        self.mock_data_record.max_raw_value = max_value
+        assert AbstractDataRecord._AbstractDataRecord__validate_raw_value(self.mock_data_record, value) is None
 
     # name
 

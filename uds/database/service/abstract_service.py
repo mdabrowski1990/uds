@@ -8,7 +8,7 @@ from typing import List, Union
 from uds.message import RequestSID, ResponseSID
 from uds.utilities import RawBytesAlias
 
-from ..data_record import DataRecordValueAlias, DecodedDataRecord
+from ..data_record import AbstractDataRecord, PhysicalValueAlias
 
 
 class AbstractService(ABC):

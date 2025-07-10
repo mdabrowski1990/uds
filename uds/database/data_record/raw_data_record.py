@@ -4,7 +4,7 @@ __all__ = ["RawDataRecord"]
 
 from typing import Optional, Tuple
 
-from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
+from .abstract_data_record import AbstractDataRecord, PhysicalValueAlias
 
 
 class RawDataRecord(AbstractDataRecord):
