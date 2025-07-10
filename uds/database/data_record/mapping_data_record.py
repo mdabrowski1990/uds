@@ -40,7 +40,7 @@ class MappingDataRecord(RawDataRecord, AbstractDataRecord):
         self.__reversed_mapping = MappingProxyType({v: k for k, v in self.__mapping.items()})
 
     @property
-    def reversed_mapping(self) -> MappingProxyType[int, str]:
+    def reversed_mapping(self) -> MappingProxyType[str, int]:
         """Get reversed mapping dict."""
         return self.__reversed_mapping
 
