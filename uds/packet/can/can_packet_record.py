@@ -1,4 +1,4 @@
-"""CAN bus specific implementation of UDS packets records."""
+"""CAN bus specific implementation of packets records."""
 
 __all__ = ["CanPacketRecord"]
 
@@ -14,9 +14,9 @@ from uds.can import (
     CanIdHandler,
 )
 from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import InconsistentArgumentsError, RawBytesTupleAlias
+from uds.utilities import InconsistentArgumentsError
 
-from ..abstract_packet import AbstractUdsPacketRecord
+from ..abstract_packet import AbstractPacketRecord
 from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
@@ -24,7 +24,7 @@ CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
 
 
-class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
+class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
     """
     Definition of a CAN packet record.
 
@@ -57,12 +57,35 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         self.__assess_packet_type()
         self.__assess_ai_attributes()
 
+    def __str__(self) -> str:
+        """Present object in string format."""
+        payload_str = "None" if self.payload is None else f"[{', '.join(f'0x{byte:02X}' for byte in self.payload)}]"
+        return (f"{self.__class__.__name__}("
+                f"payload={payload_str},"
+                f"addressing_type={self.addressing_type}, "
+                f"addressing_format={self.addressing_format}, "
+                f"packet_type={self.packet_type}, "
+                f"raw_frame_data=[{', '.join(f'0x{byte:02X}' for byte in self.raw_frame_data)}], "
+                f"can_id={self.can_id}, "
+                f"direction={self.direction}, "
+                f"transmission_time={self.transmission_time})")
+
     @property
-    def raw_frame_data(self) -> RawBytesTupleAlias:
+    def raw_frame_data(self) -> bytes:
         """Raw data bytes of a frame that carried this CAN packet."""
         if isinstance(self.frame, PythonCanMessage):
-            return tuple(self.frame.data)
+            return bytes(self.frame.data)
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
+
+    @property
+    def addressing_type(self) -> AddressingType:
+        """Addressing type over which this CAN packet was transmitted."""
+        return self.__addressing_type
+
+    @property
+    def packet_type(self) -> CanPacketType:
+        """CAN packet type value - N_PCI value of this N_PDU."""
+        return self.__packet_type
 
     @property
     def can_id(self) -> int:
@@ -75,16 +98,6 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
     def addressing_format(self) -> CanAddressingFormat:
         """CAN addressing format used by this CAN packet."""
         return self.__addressing_format
-
-    @property
-    def addressing_type(self) -> AddressingType:
-        """Addressing type over which this CAN packet was transmitted."""
-        return self.__addressing_type
-
-    @property
-    def packet_type(self) -> CanPacketType:
-        """CAN packet type value - N_PCI value of this N_PDU."""
-        return self.__packet_type
 
     @property
     def target_address(self) -> Optional[int]:
@@ -163,5 +176,5 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         self.__source_address = ai_info[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
         self.__address_extension = ai_info[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]  # type: ignore
         _addressing_type = ai_info[AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME]  # type: ignore
-        if _addressing_type not in (self.addressing_type, None):  # type: ignore
+        if _addressing_type not in {self.addressing_type, None}:
             raise InconsistentArgumentsError("Decoded Addressing Type does not match the one that is already set.")

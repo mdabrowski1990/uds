@@ -35,7 +35,7 @@ DataRecordPhysicalValueAlias = Union[
     int,  # physical value is the same as raw value
     float,  # physical value calculated through formula
     str,  # decoded text value
-    Tuple[Tuple["DecodedDataRecord", ...], ...]  # decoded container value, each element is another entry
+    Tuple[Tuple["DecodedDataRecord", ...], ...]  # decoded container value, each element is another record
 ]
 """
 Alias of Data Records' physical value.
@@ -59,12 +59,7 @@ class DecodedDataRecord(TypedDict):
 
 
 class AbstractDataRecord(ABC):
-    """
-    Common implementation and interface for all Data Records.
-
-    Data Records are fragments of diagnostic messages.
-    Each Data Record defines how to interpret a single element/signal.
-    """
+    """Common implementation and interface for all Data Records."""
 
     def __init__(self, name: str) -> None:
         """
@@ -83,13 +78,13 @@ class AbstractDataRecord(ABC):
         """Name of this Data Record."""
         return self.__name
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def length(self) -> int:
         """Get number of bits that this Data Record is stored over."""
 
     @property
-    def max_raw_value(self):
+    def max_raw_value(self) -> int:
         """
         Maximum raw (bit) value for this Data Record.
 
@@ -97,34 +92,41 @@ class AbstractDataRecord(ABC):
         """
         return (1 << self.length) - 1
 
-    @property
+    @property  # noqa
+    @abstractmethod
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
 
         Values meaning:
-         - True - number of occurrences might vary
-         - False - constant number of occurrences in every diagnostic message
+        - False - exactly one occurrence in every diagnostic message
+        - True - number of occurrences might vary
         """
-        return self.min_occurrences != self.max_occurrences
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
     def min_occurrences(self) -> int:
-        """Minimal number of this Data Record occurrences."""
+        """
+        Minimal number of this Data Record occurrences.
 
-    @property  # noqa: F841
+        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
+            equals True.
+        """
+
+    @property  # noqa
     @abstractmethod
     def max_occurrences(self) -> Optional[int]:
         """
         Maximal number of this Data Record occurrences.
 
+        .. note:: Relevant only if :attr:`~uds.database.abstract_data_record.AbstractDataRecord.is_reoccurring`
+            equals True.
         .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
         """
 
-    @property  # noqa: F841
+    @property  # noqa
     @abstractmethod
-    def children(self) -> Tuple["AbstractDataRecord", ...]:
+    def contains(self) -> Tuple["AbstractDataRecord", ...]:
         """Get Data Records contained by this Data Record."""
 
     @abstractmethod
@@ -138,11 +140,11 @@ class AbstractDataRecord(ABC):
         """
 
     @abstractmethod
-    def encode(self, physical_value: DataRecordValueAlias) -> (int, int):
+    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:  # noqa: F841
         """
         Encode raw value for provided physical value.
 
         :param physical_value: Physical (meaningful e.g. float, str type) value of this Data Record.
 
-        :return: Tuple with encoded raw value and length (number of bits this raw value is stored over).
+        :return: Raw Value of this Data Record.
         """

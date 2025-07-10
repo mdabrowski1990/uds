@@ -1,5 +1,4 @@
 import asyncio
-from pprint import pprint
 
 from can import Bus
 from uds.can import CanAddressingFormat, CanAddressingInformation
@@ -37,9 +36,9 @@ async def main():
     # send and receive packet CAN packet
     receive_packet_task = asyncio.create_task(can_ti_1.async_receive_packet(timeout=100))
     sent_packet_record = await can_ti_2.async_send_packet(packet)
-    pprint(sent_packet_record.__dict__)
+    print(sent_packet_record)
     received_packet_record = await receive_packet_task
-    pprint(received_packet_record.__dict__)
+    print(received_packet_record)
 
     # close connections with CAN interfaces
     del can_ti_1

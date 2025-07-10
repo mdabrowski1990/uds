@@ -19,11 +19,11 @@ coverage:
         flags:
           - unit-tests-branch
       integration-tests:
-        target: 80%
+        target: 75%
         flags:
           - integration-tests
       integration-tests-branch:
-        target: 50%
+        target: 60%
         flags:
           - integration-tests-branch
       performance-tests:

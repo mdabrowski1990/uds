@@ -2,7 +2,8 @@ import pytest
 from mock import Mock, patch
 
 from uds.message.uds_message import (
-    AbstractUdsPacketRecord,
+    AbstractPacketRecord,
+    AbstractUdsMessageContainer,
     AddressingType,
     ReassignmentError,
     UdsMessage,
@@ -11,6 +12,23 @@ from uds.message.uds_message import (
 from uds.transmission_attributes import TransmissionDirection
 
 SCRIPT_LOCATION = "uds.message.uds_message"
+
+
+class TestAbstractUdsMessageContainer:
+    """Unit tests for 'AbstractUdsMessageContainer' class."""
+
+    def setup_method(self):
+        self.mock_uds_message_container = Mock(spec=AbstractUdsMessageContainer)
+
+    # __str__
+
+    @pytest.mark.parametrize("payload", [b"\x00\xFF\x2B\xCD", [0xB0]])
+    def test_str(self, payload):
+        self.mock_uds_message_container.payload = payload
+        output_str = AbstractUdsMessageContainer.__str__(self=self.mock_uds_message_container)
+        assert output_str.startswith("AbstractUdsMessageContainer(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
 
 
 class TestUdsMessage:
@@ -36,6 +54,16 @@ class TestUdsMessage:
         UdsMessage.__init__(self=self.mock_uds_message, payload=payload, addressing_type=addressing_type)
         assert self.mock_uds_message.payload == payload
         assert self.mock_uds_message.addressing_type == addressing_type
+
+    # __str__
+
+    @pytest.mark.parametrize("payload", [b"\x00\xFF\x2B\xCD", [0xB0]])
+    def test_str(self, payload):
+        self.mock_uds_message.payload = payload
+        output_str = UdsMessage.__str__(self=self.mock_uds_message)
+        assert output_str.startswith("UdsMessage(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
 
     # __eq__
 
@@ -66,7 +94,7 @@ class TestUdsMessage:
 
     def test_payload__set(self, example_raw_bytes):
         UdsMessage.payload.fset(self.mock_uds_message, value=example_raw_bytes)
-        assert self.mock_uds_message._UdsMessage__payload == tuple(example_raw_bytes)
+        assert self.mock_uds_message._UdsMessage__payload == bytearray(example_raw_bytes)
         self.mock_validate_raw_bytes.assert_called_once_with(example_raw_bytes)
 
     def test_payload__set_second_call(self, example_raw_bytes):
@@ -112,6 +140,19 @@ class TestUdsMessageRecord:
         UdsMessageRecord.__init__(self=self.mock_uds_message_record, packets_records=packets_records)
         assert self.mock_uds_message_record.packets_records == packets_records
 
+    # __str__
+
+    @pytest.mark.parametrize("payload", [b"\x00\xFF\x2B\xCD", [0xB0]])
+    def test_str(self, payload):
+        self.mock_uds_message_record.payload = payload
+        output_str = UdsMessageRecord.__str__(self=self.mock_uds_message_record)
+        assert output_str.startswith("UdsMessageRecord(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "direction=" in output_str
+        assert "transmission_start=" in output_str
+        assert "transmission_end=" in output_str
+
     # __eq__
 
     @pytest.mark.parametrize("message1, message2", [
@@ -139,19 +180,19 @@ class TestUdsMessageRecord:
     # __validate_packets_records
 
     @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractUdsPacketRecord),),
-        [Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord)],
-        (Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord), Mock(spec=AbstractUdsPacketRecord))
+        (Mock(spec=AbstractPacketRecord),),
+        [Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord)],
+        (Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord), Mock(spec=AbstractPacketRecord))
     ])
     def test_validate_packets_records__valid(self, value):
         assert UdsMessageRecord._UdsMessageRecord__validate_packets_records(value=value) is None
 
-    @pytest.mark.parametrize("value", [None, False, 0, Mock(spec=AbstractUdsPacketRecord)])
+    @pytest.mark.parametrize("value", [None, False, 0, Mock(spec=AbstractPacketRecord)])
     def test_validate_packets_records__invalid_type(self, value):
         with pytest.raises(TypeError):
             UdsMessageRecord._UdsMessageRecord__validate_packets_records(value=value)
 
-    @pytest.mark.parametrize("value", [tuple(), [], ["a"], (None, ), (Mock(spec=AbstractUdsPacketRecord), "not N_PDU")])
+    @pytest.mark.parametrize("value", [tuple(), [], ["a"], (None, ), (Mock(spec=AbstractPacketRecord), "not N_PDU")])
     def test_validate_packets_records__invalid_value(self, value):
         with pytest.raises(ValueError):
             UdsMessageRecord._UdsMessageRecord__validate_packets_records(value=value)
@@ -166,7 +207,7 @@ class TestUdsMessageRecord:
     def test_payload__get(self, packets):
         self.mock_uds_message_record.packets_records = packets
         payload = UdsMessageRecord.payload.fget(self.mock_uds_message_record)
-        assert isinstance(payload, tuple)
+        assert isinstance(payload, bytes)
         assert len(payload) == self.mock_uds_message_record.packets_records[0].data_length
 
     # packets_records
@@ -198,9 +239,9 @@ class TestUdsMessageRecord:
     # addressing_type
 
     @pytest.mark.parametrize("packets_records", [
-        (Mock(spec=AbstractUdsPacketRecord, addressing_type=AddressingType.PHYSICAL),),
-        (Mock(spec=AbstractUdsPacketRecord, addressing_type=AddressingType.FUNCTIONAL),
-         Mock(spec=AbstractUdsPacketRecord, addressing_type=AddressingType.PHYSICAL)),
+        (Mock(spec=AbstractPacketRecord, addressing_type=AddressingType.PHYSICAL),),
+        (Mock(spec=AbstractPacketRecord, addressing_type=AddressingType.FUNCTIONAL),
+         Mock(spec=AbstractPacketRecord, addressing_type=AddressingType.PHYSICAL)),
     ])
     def test_addressing_type__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
@@ -209,9 +250,9 @@ class TestUdsMessageRecord:
     # direction
 
     @pytest.mark.parametrize("packets_records", [
-        (Mock(spec=AbstractUdsPacketRecord, direction=TransmissionDirection.RECEIVED),),
-        (Mock(spec=AbstractUdsPacketRecord, direction=TransmissionDirection.TRANSMITTED),
-         Mock(spec=AbstractUdsPacketRecord, direction=TransmissionDirection.RECEIVED)),
+        (Mock(spec=AbstractPacketRecord, direction=TransmissionDirection.RECEIVED),),
+        (Mock(spec=AbstractPacketRecord, direction=TransmissionDirection.TRANSMITTED),
+         Mock(spec=AbstractPacketRecord, direction=TransmissionDirection.RECEIVED)),
     ])
     def test_direction__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
@@ -220,10 +261,10 @@ class TestUdsMessageRecord:
     # transmission_start
 
     @pytest.mark.parametrize("packets_records", [
-        (Mock(spec=AbstractUdsPacketRecord, transmission_time=0),),
-        (Mock(spec=AbstractUdsPacketRecord, transmission_time=1), Mock(spec=AbstractUdsPacketRecord, transmission_time=2)),
-        (Mock(spec=AbstractUdsPacketRecord, transmission_time=9654.3), Mock(spec=AbstractUdsPacketRecord, transmission_time=-453),
-         Mock(spec=AbstractUdsPacketRecord, transmission_time=3.2),),
+        (Mock(spec=AbstractPacketRecord, transmission_time=0),),
+        (Mock(spec=AbstractPacketRecord, transmission_time=1), Mock(spec=AbstractPacketRecord, transmission_time=2)),
+        (Mock(spec=AbstractPacketRecord, transmission_time=9654.3), Mock(spec=AbstractPacketRecord, transmission_time=-453),
+         Mock(spec=AbstractPacketRecord, transmission_time=3.2),),
     ])
     def test_transmission_start__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
@@ -233,10 +274,10 @@ class TestUdsMessageRecord:
     # transmission_end
 
     @pytest.mark.parametrize("packets_records", [
-        (Mock(spec=AbstractUdsPacketRecord, transmission_time=0),),
-        (Mock(spec=AbstractUdsPacketRecord, transmission_time=1), Mock(spec=AbstractUdsPacketRecord, transmission_time=2)),
-        (Mock(spec=AbstractUdsPacketRecord, transmission_time=9654.3), Mock(spec=AbstractUdsPacketRecord, transmission_time=-453),
-         Mock(spec=AbstractUdsPacketRecord, transmission_time=3.2),),
+        (Mock(spec=AbstractPacketRecord, transmission_time=0),),
+        (Mock(spec=AbstractPacketRecord, transmission_time=1), Mock(spec=AbstractPacketRecord, transmission_time=2)),
+        (Mock(spec=AbstractPacketRecord, transmission_time=9654.3), Mock(spec=AbstractPacketRecord, transmission_time=-453),
+         Mock(spec=AbstractPacketRecord, transmission_time=3.2),),
     ])
     def test_transmission_end__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records

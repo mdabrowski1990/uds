@@ -70,7 +70,7 @@ An overview of features that are required to fully implement UDS protocol is pre
 |              |                                           |                                                     |
 |              | - sniffing UDS communication              | *To be provided with Sniffer feature.*              |
 +--------------+-------------------------------------------+-----------------------------------------------------+
-| Layer 4      | - UDS packet support                      | - :mod:`uds.packet`                                 |
+| Layer 4      | - packet support                          | - :mod:`uds.packet`                                 |
 | Transport    |                                           |                                                     |
 |              | - bus specific segmentation               | - :mod:`uds.segmentation`                           |
 |              |                                           |                                                     |
@@ -104,6 +104,8 @@ where:
 - Implementation - UDS package implementation that provides mentioned functionalities
 
 
+.. _knowledge-base-pdu:
+
 Protocol Data Units
 -------------------
 Each layer of OSI Model defines their own
@@ -117,10 +119,10 @@ To make things simpler for the users and our developers, in the implementation w
 
   - :ref:`implementation - diagnostic message <implementation-diagnostic-message>`
 
-- Network Protocol Data Unit (N_PDU) - called `UDS packet` in the implementation and documentation.
+- Network Protocol Data Unit (N_PDU) - called `packet` in the implementation and documentation.
   More information about N_PDU can be found in:
 
-  - :ref:`knowledge base section - UDS packet <knowledge-base-uds-packet>`
+  - :ref:`knowledge base section - packet <knowledge-base-packet>`
 
   - implementation - :mod:`uds.packet`
 

@@ -1,7 +1,7 @@
 import pytest
 from mock import patch
 
-from uds.packet import AbstractUdsPacketType
+from uds.packet import AbstractPacketType
 from uds.packet.can.can_packet_type import CanPacketType
 
 
@@ -18,7 +18,7 @@ class TestCanPacketType:
     # inheritance
 
     def test_inheritance__abstract_packet_type(self):
-        assert issubclass(CanPacketType, AbstractUdsPacketType)
+        assert issubclass(CanPacketType, AbstractPacketType)
 
     # is_initial_packet_type
 

@@ -6,11 +6,11 @@ from aenum import unique
 
 from uds.can import CanConsecutiveFrameHandler, CanFirstFrameHandler, CanFlowControlHandler, CanSingleFrameHandler
 
-from ..abstract_packet_type import AbstractUdsPacketType
+from ..abstract_packet_type import AbstractPacketType
 
 
 @unique
-class CanPacketType(AbstractUdsPacketType):
+class CanPacketType(AbstractPacketType):
     """
     Definition of CAN packet types.
 

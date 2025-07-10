@@ -9,13 +9,7 @@ __all__ = ["CanAddressingInformation"]
 from typing import Dict, Optional, Type, TypedDict
 
 from uds.transmission_attributes import AddressingType
-from uds.utilities import (
-    InconsistentArgumentsError,
-    RawBytesAlias,
-    RawBytesListAlias,
-    validate_raw_byte,
-    validate_raw_bytes,
-)
+from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_byte, validate_raw_bytes
 
 from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
 from .addressing_format import CanAddressingFormat
@@ -115,9 +109,9 @@ class CanAddressingInformation:
         validate_raw_bytes(ai_data_bytes, allow_empty=True)
         expected_ai_bytes_number = cls.get_ai_data_bytes_number(addressing_format)
         if expected_ai_bytes_number != len(ai_data_bytes):
-            raise InconsistentArgumentsError(f"Number of Addressing Information data bytes does not match provided "
-                                             f"Addressing Format. Expected number of AI data bytes: "
-                                             f"{expected_ai_bytes_number}. Actual value: {ai_data_bytes}")
+            raise InconsistentArgumentsError("Number of Addressing Information data bytes does not match provided "
+                                             "Addressing Format. Expected number of AI data bytes: "
+                                             f"{expected_ai_bytes_number}. Actual value: {ai_data_bytes!r}")
 
     @classmethod
     def decode_packet_ai(cls,
@@ -144,11 +138,11 @@ class CanAddressingInformation:
         from_data_bytes = cls.decode_ai_data_bytes(addressing_format=addressing_format, ai_data_bytes=ai_data_bytes)
         from_can_id = CanIdHandler.decode_can_id(addressing_format=addressing_format, can_id=can_id)
         return cls.DecodedAIParamsAlias(
-            addressing_type=from_can_id.get(AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME, None),  # type: ignore  # noqa: E501
-            target_address=from_data_bytes.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None)  # type: ignore  # noqa: E501
+            addressing_type=from_can_id.get(AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME, None),  # type: ignore  # noqa
+            target_address=from_data_bytes.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None)  # type: ignore  # noqa
             or from_can_id.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None),
             source_address=from_can_id.get(AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME, None),  # type: ignore
-            address_extension=from_data_bytes.get(AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME, None))  # type: ignore  # noqa: E501
+            address_extension=from_data_bytes.get(AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME, None))  # type: ignore  # noqa
 
     @classmethod
     def decode_ai_data_bytes(cls,
@@ -184,7 +178,7 @@ class CanAddressingInformation:
     def encode_ai_data_bytes(cls,
                              addressing_format: CanAddressingFormat,
                              target_address: Optional[int] = None,
-                             address_extension: Optional[int] = None) -> RawBytesListAlias:
+                             address_extension: Optional[int] = None) -> bytearray:
         """
         Generate a list of data bytes that carry Addressing Information.
 
@@ -201,14 +195,14 @@ class CanAddressingInformation:
         CanAddressingFormat.validate_member(addressing_format)
         if addressing_format in (CanAddressingFormat.NORMAL_ADDRESSING,
                                  CanAddressingFormat.NORMAL_FIXED_ADDRESSING):
-            return []
+            return bytearray()
         if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
             validate_raw_byte(target_address)  # type: ignore
-            return [target_address]  # type: ignore
+            return bytearray([target_address])  # type: ignore
         if addressing_format in (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
                                  CanAddressingFormat.MIXED_29BIT_ADDRESSING):
             validate_raw_byte(address_extension)  # type: ignore
-            return [address_extension]  # type: ignore
+            return bytearray([address_extension])  # type: ignore
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
     @classmethod

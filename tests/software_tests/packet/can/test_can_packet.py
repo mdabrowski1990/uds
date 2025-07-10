@@ -106,6 +106,24 @@ class TestCanPacket:
                                                                      dlc=dlc,
                                                                      **packet_type_specific_kwargs)
 
+    # __str__
+
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
+        self.mock_can_packet.payload = payload
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        output_str = CanPacket.__str__(self=self.mock_can_packet)
+        assert output_str.startswith("CanPacket(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "addressing_format=" in output_str
+        assert "raw_frame_data=" in output_str
+        assert "packet_type=" in output_str
+        assert "can_id=" in output_str
+
     # set_address_information
 
     @pytest.mark.parametrize("addressing_format", [None, "unknown addressing format"])
@@ -518,7 +536,7 @@ class TestCanPacket:
     # set_single_frame_data
 
     @pytest.mark.parametrize("payload", [range(10), [0x50, 0xBC]])
-    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), "some raw frame data"])
+    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), b"\xFE\xDC\xBA\x98\x76\x54\x32\x10"])
     def test_set_single_frame_data__mandatory_args(self, payload, raw_frame_data):
         self.mock_single_frame_handler_class.create_valid_frame_data.return_value = raw_frame_data
         CanPacket.set_single_frame_data(self=self.mock_can_packet,
@@ -531,7 +549,7 @@ class TestCanPacket:
             dlc=None,
             filler_byte=DEFAULT_FILLER_BYTE)
         self.mock_can_dlc_handler_class.encode_dlc.assert_called_once_with(len(raw_frame_data))
-        assert self.mock_can_packet._CanPacket__raw_frame_data == tuple(raw_frame_data)
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(raw_frame_data)
         assert self.mock_can_packet._CanPacket__dlc == self.mock_can_dlc_handler_class.encode_dlc.return_value
         assert self.mock_can_packet._CanPacket__packet_type == CanPacketType.SINGLE_FRAME
 
@@ -539,7 +557,7 @@ class TestCanPacket:
         (range(10), 8, "filler byte"),
         ([0x50, 0xBC], 3, 0xC0),
     ])
-    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), "some raw frame data"])
+    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), b"\xFE\xDC\xBA\x98\x76\x54\x32\x10"])
     def test_set_single_frame_data__all_args(self, payload, dlc, filler_byte, raw_frame_data):
         self.mock_single_frame_handler_class.create_valid_frame_data.return_value = raw_frame_data
         CanPacket.set_single_frame_data(self=self.mock_can_packet,
@@ -554,7 +572,7 @@ class TestCanPacket:
             dlc=dlc,
             filler_byte=filler_byte)
         self.mock_can_dlc_handler_class.encode_dlc.assert_not_called()
-        assert self.mock_can_packet._CanPacket__raw_frame_data == tuple(raw_frame_data)
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(raw_frame_data)
         assert self.mock_can_packet._CanPacket__dlc == dlc
         assert self.mock_can_packet._CanPacket__packet_type == CanPacketType.SINGLE_FRAME
 
@@ -564,7 +582,7 @@ class TestCanPacket:
         ("some payload", "some data length", "DLC"),
         ([0x3E], 0xFEBCA, 8),
     ])
-    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), "some raw frame data"])
+    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), b"\xFE\xDC\xBA\x98\x76\x54\x32\x10"])
     def test_set_first_frame_data(self, payload, data_length, dlc, raw_frame_data):
         self.mock_first_frame_handler_class.create_valid_frame_data.return_value = raw_frame_data
         CanPacket.set_first_frame_data(self=self.mock_can_packet,
@@ -578,7 +596,7 @@ class TestCanPacket:
             payload=payload,
             dlc=dlc,
             ff_dl=data_length)
-        assert self.mock_can_packet._CanPacket__raw_frame_data == tuple(raw_frame_data)
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(raw_frame_data)
         assert self.mock_can_packet._CanPacket__dlc == dlc
         assert self.mock_can_packet._CanPacket__packet_type == CanPacketType.FIRST_FRAME
 
@@ -588,7 +606,7 @@ class TestCanPacket:
         ("some payload", "some sequence number"),
         (range(10), 0xF),
     ])
-    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), "some raw frame data"])
+    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), b"\xFE\xDC\xBA\x98\x76\x54\x32\x10"])
     def test_set_consecutive_frame_data__mandatory_args(self, payload, sequence_number, raw_frame_data):
         self.mock_consecutive_frame_handler_class.create_valid_frame_data.return_value = raw_frame_data
         CanPacket.set_consecutive_frame_data(self=self.mock_can_packet,
@@ -603,7 +621,7 @@ class TestCanPacket:
             filler_byte=DEFAULT_FILLER_BYTE,
             sequence_number=sequence_number)
         self.mock_can_dlc_handler_class.encode_dlc.assert_called_once_with(len(raw_frame_data))
-        assert self.mock_can_packet._CanPacket__raw_frame_data == tuple(raw_frame_data)
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(raw_frame_data)
         assert self.mock_can_packet._CanPacket__dlc == self.mock_can_dlc_handler_class.encode_dlc.return_value
         assert self.mock_can_packet._CanPacket__packet_type == CanPacketType.CONSECUTIVE_FRAME
 
@@ -611,7 +629,7 @@ class TestCanPacket:
         ("some payload", "some sequence number", "DLC", "filler"),
         (range(10), 0xF, 8, 0xAB),
     ])
-    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), "some raw frame data"])
+    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), b"\xFE\xDC\xBA\x98\x76\x54\x32\x10"])
     def test_set_consecutive_frame_data__all_args(self, payload, sequence_number, dlc, filler_byte, raw_frame_data):
         self.mock_consecutive_frame_handler_class.create_valid_frame_data.return_value = raw_frame_data
         CanPacket.set_consecutive_frame_data(self=self.mock_can_packet,
@@ -628,14 +646,14 @@ class TestCanPacket:
             filler_byte=filler_byte,
             sequence_number=sequence_number)
         self.mock_can_dlc_handler_class.encode_dlc.assert_not_called()
-        assert self.mock_can_packet._CanPacket__raw_frame_data == tuple(raw_frame_data)
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(raw_frame_data)
         assert self.mock_can_packet._CanPacket__dlc == dlc
         assert self.mock_can_packet._CanPacket__packet_type == CanPacketType.CONSECUTIVE_FRAME
 
     # set_flow_control_data
 
     @pytest.mark.parametrize("flow_status", ["som flow status", CanFlowStatus.Overflow])
-    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), "some raw frame data"])
+    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), b"\xFE\xDC\xBA\x98\x76\x54\x32\x10"])
     def test_set_flow_control_data__mandatory_args(self, flow_status, raw_frame_data):
         self.mock_flow_control_handler_class.create_valid_frame_data.return_value = raw_frame_data
         CanPacket.set_flow_control_data(self=self.mock_can_packet,
@@ -650,7 +668,7 @@ class TestCanPacket:
             dlc=None,
             filler_byte=DEFAULT_FILLER_BYTE)
         self.mock_can_dlc_handler_class.encode_dlc.assert_called_once_with(len(raw_frame_data))
-        assert self.mock_can_packet._CanPacket__raw_frame_data == tuple(raw_frame_data)
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(raw_frame_data)
         assert self.mock_can_packet._CanPacket__dlc == self.mock_can_dlc_handler_class.encode_dlc.return_value
         assert self.mock_can_packet._CanPacket__packet_type == CanPacketType.FLOW_CONTROL
 
@@ -658,7 +676,7 @@ class TestCanPacket:
         ("some flow status", "some block size", "some STmin", "DLC", "A filler"),
         (CanFlowStatus.ContinueToSend, 0x12, 0xFE, 8, 0x99),
     ])
-    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), "some raw frame data"])
+    @pytest.mark.parametrize("raw_frame_data", [(0x12, 0x34), b"\xFE\xDC\xBA\x98\x76\x54\x32\x10"])
     def test_set_flow_control_data__all_args(self, flow_status, block_size, st_min, dlc, filler_byte, raw_frame_data):
         self.mock_flow_control_handler_class.create_valid_frame_data.return_value = raw_frame_data
         CanPacket.set_flow_control_data(self=self.mock_can_packet,
@@ -676,7 +694,7 @@ class TestCanPacket:
             st_min=st_min,
             dlc=dlc,
             filler_byte=filler_byte)
-        assert self.mock_can_packet._CanPacket__raw_frame_data == tuple(raw_frame_data)
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(raw_frame_data)
         assert self.mock_can_packet._CanPacket__dlc == dlc
         assert self.mock_can_packet._CanPacket__packet_type == CanPacketType.FLOW_CONTROL
 
@@ -800,8 +818,8 @@ class TestCanPacket:
         self.mock_can_packet._CanPacket__raw_frame_data = raw_frame_data
         self.mock_can_packet.addressing_format = addressing_format
         CanPacket._CanPacket__update_ai_data_byte(self=self.mock_can_packet)
-        assert self.mock_can_packet._CanPacket__raw_frame_data[:len(ai_data_bytes)] == tuple(ai_data_bytes)
-        assert self.mock_can_packet._CanPacket__raw_frame_data[len(ai_data_bytes):] == tuple(raw_frame_data[len(ai_data_bytes):])
+        assert self.mock_can_packet._CanPacket__raw_frame_data[:len(ai_data_bytes)] == bytes(ai_data_bytes)
+        assert self.mock_can_packet._CanPacket__raw_frame_data[len(ai_data_bytes):] == bytes(raw_frame_data[len(ai_data_bytes):])
         self.mock_ai_class.encode_ai_data_bytes.assert_called_once_with(
             addressing_format=self.mock_can_packet.addressing_format,
             target_address=self.mock_can_packet.target_address,
@@ -823,8 +841,9 @@ class TestCanPacketIntegration:
           "source_address": 0xB7,
           "address_extension": 0xDB,
           "dlc": 8,
-          "payload": [0x3E]},
-         {"raw_frame_data": (0xDB, 0x01, 0x3E, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE),
+          "payload": b"\x3E"},
+         {"raw_frame_data": bytes([0xDB, 0x01, 0x3E, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE,
+                                   DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE]),
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "packet_type": CanPacketType.SINGLE_FRAME,
@@ -833,7 +852,7 @@ class TestCanPacketIntegration:
           "target_address": 0xE9,
           "source_address": 0xB7,
           "address_extension": 0xDB,
-          "payload": (0x3E, ),
+          "payload": b"\x3E",
           "data_length": 1,
           "sequence_number": None,
           "flow_status": None,
@@ -847,9 +866,9 @@ class TestCanPacketIntegration:
           "target_address": 0x02,
           "source_address": 0x3B,
           "dlc": 0xF,
-          "payload": tuple(range(50, 108)),
+          "payload": bytes(range(50, 108)),
           "data_length": 0xFEDCBA98},
-         {"raw_frame_data": tuple([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98] + list(range(50, 108))),
+         {"raw_frame_data": bytes([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98] + list(range(50, 108))),
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "packet_type": CanPacketType.FIRST_FRAME,
@@ -858,7 +877,7 @@ class TestCanPacketIntegration:
           "target_address": 0x02,
           "source_address": 0x3B,
           "address_extension": None,
-          "payload": tuple(range(50, 108)),
+          "payload": bytes(range(50, 108)),
           "data_length": 0xFEDCBA98,
           "sequence_number": None,
           "flow_status": None,
@@ -870,9 +889,9 @@ class TestCanPacketIntegration:
           "addressing_type": AddressingType.FUNCTIONAL,
           "can_id": 0x743,
           "target_address": 0xB1,
-          "payload": [0x91, 0x82],
+          "payload": b"\x91\x82",
           "sequence_number": 0x1},
-         {"raw_frame_data": (0xB1, 0x21, 0x91, 0x82),
+         {"raw_frame_data": b"\xB1\x21\x91\x82",
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "packet_type": CanPacketType.CONSECUTIVE_FRAME,
@@ -881,7 +900,7 @@ class TestCanPacketIntegration:
           "target_address": 0xB1,
           "source_address": None,
           "address_extension": None,
-          "payload": (0x91, 0x82),
+          "payload": b"\x91\x82",
           "data_length": None,
           "sequence_number": 0x1,
           "flow_status": None,
@@ -895,7 +914,7 @@ class TestCanPacketIntegration:
           "flow_status": CanFlowStatus.ContinueToSend,
           "block_size": 0xF9,
           "st_min": 0xE0},
-         {"raw_frame_data": (0x30, 0xF9, 0xE0),
+         {"raw_frame_data": b"\x30\xF9\xE0",
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "packet_type": CanPacketType.FLOW_CONTROL,
@@ -914,6 +933,7 @@ class TestCanPacketIntegration:
     def test_init(self, init_kwargs, expected_attribute_values):
         packet = CanPacket(**init_kwargs)
         for attr_name, attr_value in expected_attribute_values.items():
+            print([attr_name, attr_value])
             assert getattr(packet, attr_name) == attr_value
 
     # changing addressing information
@@ -926,13 +946,13 @@ class TestCanPacketIntegration:
          "source_address": 0xB7,
          "address_extension": 0xDB,
          "dlc": 8,
-         "payload": [0x3E]},
+         "payload": b"\x3E"},
         {"packet_type": CanPacketType.CONSECUTIVE_FRAME,
          "addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
          "addressing_type": AddressingType.FUNCTIONAL,
          "can_id": 0x743,
          "target_address": 0xB1,
-         "payload": [0x91, 0x82],
+         "payload": b"\x91\x82",
          "sequence_number": 0x1},
     ])
     @pytest.mark.parametrize("addressing_kwargs, ai_data_byte", [

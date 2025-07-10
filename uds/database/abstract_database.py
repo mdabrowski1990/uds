@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Union
 
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
-from uds.utilities import RawBytesListAlias
 
 from .data_record import DataRecordValueAlias, DecodedDataRecord
 from .service import AbstractService
@@ -27,7 +26,7 @@ class AbstractDatabase(ABC):
 
     def encode(self,
                sid: Union[int, RequestSID, ResponseSID],
-               **data_records_values: DataRecordValueAlias) -> RawBytesListAlias:
+               **data_records_values: DataRecordValueAlias) -> bytearray:
         """
         Encode diagnostic message payload from data records values.
 

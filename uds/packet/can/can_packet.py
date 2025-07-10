@@ -1,4 +1,4 @@
-"""CAN bus specific implementation of UDS packets."""
+"""CAN bus specific implementation for packets."""
 
 __all__ = ["CanPacket"]
 
@@ -23,14 +23,14 @@ from uds.can import (
     NormalFixedCanAddressingInformation,
 )
 from uds.transmission_attributes import AddressingType
-from uds.utilities import AmbiguityError, RawBytesAlias, RawBytesTupleAlias, UnusedArgumentWarning
+from uds.utilities import AmbiguityError, RawBytesAlias, UnusedArgumentWarning
 
-from ..abstract_packet import AbstractUdsPacket
+from ..abstract_packet import AbstractPacket
 from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
 
-class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
+class CanPacket(AbstractCanPacketContainer, AbstractPacket):
     """
     Definition of a CAN packet.
 
@@ -89,7 +89,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                 Separation Time minimum information carried by this Flow Control frame.
         """
         # initialize the variables
-        self.__raw_frame_data: RawBytesTupleAlias = None  # type: ignore
+        self.__raw_frame_data: bytes = None  # type: ignore
         self.__addressing_type: AddressingType = None  # type: ignore
         self.__addressing_format: CanAddressingFormat = None  # type: ignore
         self.__packet_type: CanPacketType = None  # type: ignore
@@ -108,6 +108,17 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         self.set_packet_data(packet_type=packet_type,
                              dlc=dlc,
                              **packet_type_specific_kwargs)
+
+    def __str__(self) -> str:
+        """Present object in string format."""
+        payload_str = "None" if self.payload is None else f"[{', '.join(f'0x{byte:02X}' for byte in self.payload)}]"
+        return (f"{self.__class__.__name__}("
+                f"payload={payload_str},"
+                f"addressing_type={self.addressing_type}, "
+                f"addressing_format={self.addressing_format}, "
+                f"packet_type={self.packet_type}, "
+                f"raw_frame_data=[{', '.join(f'0x{byte:02X}' for byte in self.raw_frame_data)}], "
+                f"can_id={self.can_id})")
 
     def set_address_information(self, *,
                                 addressing_format: CanAddressingFormat,
@@ -383,7 +394,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                        dlc=dlc,
                                                                        payload=payload,
                                                                        filler_byte=filler_byte)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
         self.__packet_type = CanPacketType.SINGLE_FRAME
 
@@ -408,7 +419,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                       dlc=dlc,
                                                                       payload=payload,
                                                                       ff_dl=data_length)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc
         self.__packet_type = CanPacketType.FIRST_FRAME
 
@@ -440,7 +451,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                             payload=payload,
                                                                             sequence_number=sequence_number,
                                                                             filler_byte=filler_byte)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
         self.__packet_type = CanPacketType.CONSECUTIVE_FRAME
 
@@ -475,24 +486,14 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
                                                                        block_size=block_size,
                                                                        st_min=st_min,
                                                                        filler_byte=filler_byte)
-        self.__raw_frame_data = tuple(raw_frame_data)
+        self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
         self.__packet_type = CanPacketType.FLOW_CONTROL
 
     @property
-    def raw_frame_data(self) -> RawBytesTupleAlias:
+    def raw_frame_data(self) -> bytes:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
         return self.__raw_frame_data
-
-    @property
-    def can_id(self) -> int:
-        """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
-        return self.__can_id
-
-    @property
-    def addressing_format(self) -> CanAddressingFormat:
-        """CAN addressing format used by this CAN packet."""
-        return self.__addressing_format
 
     @property
     def addressing_type(self) -> AddressingType:
@@ -500,14 +501,24 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
         return self.__addressing_type
 
     @property
-    def dlc(self) -> int:
-        """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
-        return self.__dlc
-
-    @property
     def packet_type(self) -> CanPacketType:
         """Type (N_PCI value) of this CAN packet."""
         return self.__packet_type
+
+    @property
+    def addressing_format(self) -> CanAddressingFormat:
+        """CAN addressing format used by this CAN packet."""
+        return self.__addressing_format
+
+    @property
+    def can_id(self) -> int:
+        """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
+        return self.__can_id
+
+    @property
+    def dlc(self) -> int:
+        """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
+        return self.__dlc
 
     @property
     def target_address(self) -> Optional[int]:
@@ -571,4 +582,4 @@ class CanPacket(AbstractCanPacketContainer, AbstractUdsPacket):
             ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=self.addressing_format,
                                                                           target_address=self.target_address,
                                                                           address_extension=self.address_extension)
-            self.__raw_frame_data = tuple(ai_data_bytes + list(self.__raw_frame_data[len(ai_data_bytes):]))
+            self.__raw_frame_data = bytes(ai_data_bytes) + bytes(self.__raw_frame_data[len(ai_data_bytes):])

@@ -35,8 +35,8 @@ class TestCanPacketRecord:
         self.mock_can_id_handler_class = self._patcher_can_id_handler_class.start()
         self._patcher_can_dlc_handler_class = patch(f"{SCRIPT_LOCATION}.CanDlcHandler")
         self.mock_can_dlc_handler_class = self._patcher_can_dlc_handler_class.start()
-        self._patcher_abstract_uds_packet_record_init = patch(f"{SCRIPT_LOCATION}.AbstractUdsPacketRecord.__init__")
-        self.mock_abstract_uds_packet_record_init = self._patcher_abstract_uds_packet_record_init.start()
+        self._patcher_abstract_packet_record_init = patch(f"{SCRIPT_LOCATION}.AbstractPacketRecord.__init__")
+        self.mock_abstract_packet_record_init = self._patcher_abstract_packet_record_init.start()
 
     def teardown_method(self):
         self._patcher_addressing_type_class.stop()
@@ -45,7 +45,7 @@ class TestCanPacketRecord:
         self._patcher_can_packet_type_class.stop()
         self._patcher_can_id_handler_class.stop()
         self._patcher_can_dlc_handler_class.stop()
-        self._patcher_abstract_uds_packet_record_init.stop()
+        self._patcher_abstract_packet_record_init.stop()
 
     # __init__
 
@@ -68,7 +68,7 @@ class TestCanPacketRecord:
                == self.mock_addressing_type_class.validate_member.return_value
         assert self.mock_can_packet_record._CanPacketRecord__addressing_format \
                == self.mock_can_addressing_format_class.validate_member.return_value
-        self.mock_abstract_uds_packet_record_init.assert_called_once_with(frame=frame,
+        self.mock_abstract_packet_record_init.assert_called_once_with(frame=frame,
                                                                           direction=direction,
                                                                           transmission_time=transmission_time)
         self.mock_can_packet_record._CanPacketRecord__assess_packet_type.assert_called_once_with()
@@ -76,13 +76,33 @@ class TestCanPacketRecord:
         self.mock_addressing_type_class.validate_member.assert_called_once_with(addressing_type)
         self.mock_can_addressing_format_class.validate_member.assert_called_once_with(addressing_format)
 
+    # __str__
+
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
+        self.mock_can_packet_record.payload = payload
+        self.mock_can_packet_record.raw_frame_data = raw_frame_data
+        output_str = CanPacketRecord.__str__(self=self.mock_can_packet_record)
+        assert output_str.startswith("CanPacketRecord(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "addressing_format=" in output_str
+        assert "raw_frame_data=" in output_str
+        assert "packet_type=" in output_str
+        assert "can_id=" in output_str
+        assert "direction=" in output_str
+        assert "transmission_time=" in output_str
+
     # raw_frame_data
 
-    @pytest.mark.parametrize("raw_frame_data", ["some raw data", range(10)])
+    @pytest.mark.parametrize("raw_frame_data", [b"some raw data", range(10)])
     def test_raw_frame_data__python_can(self, raw_frame_data):
         self.mock_can_packet_record.frame = Mock(spec=PythonCanMessage, data=raw_frame_data)
         assert CanPacketRecord.raw_frame_data.fget(self.mock_can_packet_record) \
-               == tuple(self.mock_can_packet_record.frame.data)
+               == bytes(self.mock_can_packet_record.frame.data)
 
     def test_raw_frame_data__not_implemented(self):
         with pytest.raises(NotImplementedError):
@@ -247,11 +267,11 @@ class TestCanPacketRecordIntegration:
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "transmission_time": datetime.now()},
-         {"raw_frame_data": (0x01, 0x3E),
+         {"raw_frame_data": b"\x01\x3E",
           "addressing_type": AddressingType.PHYSICAL,
           "addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "packet_type": CanPacketType.SINGLE_FRAME,
-          "payload": (0x3E, ),
+          "payload": b"\x3E",
           "data_length": 1,
           "can_id": 0x69C,
           "dlc": 2,
@@ -272,7 +292,7 @@ class TestCanPacketRecordIntegration:
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "transmission_time": datetime.now()},
-         {"raw_frame_data": tuple([0x37, 0x30, 0x08, 0xF1] + ([0x99] * 60)),
+         {"raw_frame_data": bytes([0x37, 0x30, 0x08, 0xF1] + ([0x99] * 60)),
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "packet_type": CanPacketType.FLOW_CONTROL,

@@ -17,23 +17,79 @@ from uds.can import (
     CanSingleFrameHandler,
 )
 from uds.transmission_attributes import AddressingType
-from uds.utilities import RawBytesTupleAlias
 
+from ..abstract_packet import AbstractPacketContainer
 from .can_packet_type import CanPacketType
 
 
-class AbstractCanPacketContainer(ABC):
+class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
     """Abstract definition of CAN Packets containers."""
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> RawBytesTupleAlias:
+    def raw_frame_data(self) -> bytes:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
 
     @property
     @abstractmethod
-    def can_id(self) -> int:
-        """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
+    def addressing_type(self) -> AddressingType:
+        """Addressing type for which this CAN packet is relevant."""
+
+    @property
+    def packet_type(self) -> CanPacketType:
+        """Type (N_PCI value) of this CAN packet."""
+        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
+        return CanPacketType(self.raw_frame_data[ai_data_bytes_number] >> 4)
+
+    @property
+    def data_length(self) -> Optional[int]:
+        """
+        Payload bytes number of a diagnostic message that is carried by this CAN packet.
+
+        Data length is only provided by packets of following types:
+         - :ref:`Single Frame <knowledge-base-can-single-frame>` -
+           :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
+         - :ref:`First Frame <knowledge-base-can-first-frame>` -
+           :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
+
+        None in other cases.
+        """
+        if self.packet_type == CanPacketType.SINGLE_FRAME:
+            return CanSingleFrameHandler.decode_sf_dl(addressing_format=self.addressing_format,
+                                                      raw_frame_data=self.raw_frame_data)
+        if self.packet_type == CanPacketType.FIRST_FRAME:
+            return CanFirstFrameHandler.decode_ff_dl(addressing_format=self.addressing_format,
+                                                     raw_frame_data=self.raw_frame_data)
+        return None
+
+    @property
+    def payload(self) -> Optional[bytes]:
+        """
+        Diagnostic message payload carried by this CAN packet.
+
+        Payload is only provided by packets of following types:
+         - :ref:`Single Frame <knowledge-base-can-single-frame>`
+         - :ref:`First Frame <knowledge-base-can-first-frame>`
+         - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+        None in other cases.
+
+        .. warning:: For :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` this value might contain
+            additional filler bytes (they are not part of diagnostic message payload) that were added during
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
+            The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+            cannot be determined basing solely on the information contained in this packet object.
+        """
+        if self.packet_type == CanPacketType.SINGLE_FRAME:
+            return bytes(CanSingleFrameHandler.decode_payload(addressing_format=self.addressing_format,
+                                                              raw_frame_data=self.raw_frame_data))
+        if self.packet_type == CanPacketType.FIRST_FRAME:
+            return bytes(CanFirstFrameHandler.decode_payload(addressing_format=self.addressing_format,
+                                                             raw_frame_data=self.raw_frame_data))
+        if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+            return bytes(CanConsecutiveFrameHandler.decode_payload(addressing_format=self.addressing_format,
+                                                                   raw_frame_data=self.raw_frame_data))
+        return None
 
     @property
     @abstractmethod
@@ -42,19 +98,13 @@ class AbstractCanPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingType:
-        """Addressing type for which this CAN packet is relevant."""
+    def can_id(self) -> int:
+        """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
 
     @property
     def dlc(self) -> int:
         """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
         return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
-
-    @property
-    def packet_type(self) -> CanPacketType:
-        """Type (N_PCI value) of this CAN packet."""
-        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
-        return CanPacketType(self.raw_frame_data[ai_data_bytes_number] >> 4)
 
     @property
     def target_address(self) -> Optional[int]:
@@ -98,27 +148,6 @@ class AbstractCanPacketContainer(ABC):
         return self.get_addressing_information()[AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME]  # type:ignore
 
     @property
-    def data_length(self) -> Optional[int]:
-        """
-        Payload bytes number of a diagnostic message that is carried by this CAN packet.
-
-        Data length is only provided by packets of following types:
-         - :ref:`Single Frame <knowledge-base-can-single-frame>` -
-           :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
-         - :ref:`First Frame <knowledge-base-can-first-frame>` -
-           :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
-
-        None in other cases.
-        """
-        if self.packet_type == CanPacketType.SINGLE_FRAME:
-            return CanSingleFrameHandler.decode_sf_dl(addressing_format=self.addressing_format,
-                                                      raw_frame_data=self.raw_frame_data)
-        if self.packet_type == CanPacketType.FIRST_FRAME:
-            return CanFirstFrameHandler.decode_ff_dl(addressing_format=self.addressing_format,
-                                                     raw_frame_data=self.raw_frame_data)
-        return None
-
-    @property
     def sequence_number(self) -> Optional[int]:
         """
         Sequence Number carried by this CAN packet.
@@ -131,35 +160,6 @@ class AbstractCanPacketContainer(ABC):
         if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
             return CanConsecutiveFrameHandler.decode_sequence_number(addressing_format=self.addressing_format,
                                                                      raw_frame_data=self.raw_frame_data)
-        return None
-
-    @property
-    def payload(self) -> Optional[RawBytesTupleAlias]:
-        """
-        Diagnostic message payload carried by this CAN packet.
-
-        Payload is only provided by packets of following types:
-         - :ref:`Single Frame <knowledge-base-can-single-frame>`
-         - :ref:`First Frame <knowledge-base-can-first-frame>`
-         - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-
-        None in other cases.
-
-        .. warning:: For :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` this value might contain
-            additional filler bytes (they are not part of diagnostic message payload) that were added during
-            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
-            The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-            cannot be determined basing solely on the information contained in this packet object.
-        """
-        if self.packet_type == CanPacketType.SINGLE_FRAME:
-            return tuple(CanSingleFrameHandler.decode_payload(addressing_format=self.addressing_format,
-                                                              raw_frame_data=self.raw_frame_data))
-        if self.packet_type == CanPacketType.FIRST_FRAME:
-            return tuple(CanFirstFrameHandler.decode_payload(addressing_format=self.addressing_format,
-                                                             raw_frame_data=self.raw_frame_data))
-        if self.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-            return tuple(CanConsecutiveFrameHandler.decode_payload(addressing_format=self.addressing_format,
-                                                                   raw_frame_data=self.raw_frame_data))
         return None
 
     @property

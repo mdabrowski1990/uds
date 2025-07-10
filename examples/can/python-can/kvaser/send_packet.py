@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from can import Bus
 from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.message import UdsMessage
@@ -34,7 +32,7 @@ def main():
 
     # send CAN Packet
     packet_record = can_ti.send_packet(packet)
-    pprint(packet_record.__dict__)
+    print(packet_record)
 
     # close connections with CAN interfaces
     del can_ti
