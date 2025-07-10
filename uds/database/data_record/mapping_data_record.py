@@ -2,8 +2,8 @@
 
 __all__ = ["MappingDataRecord"]
 
-from typing import Dict
 from types import MappingProxyType
+from typing import Dict
 
 from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
 from .raw_data_record import RawDataRecord
@@ -25,7 +25,7 @@ class MappingDataRecord(RawDataRecord, AbstractDataRecord):
         self.mapping = mapping
 
     @property
-    def mapping(self):
+    def mapping(self) -> MappingProxyType[int, str]:
         """Get mapping dict."""
         return self.__mapping
 
@@ -40,7 +40,7 @@ class MappingDataRecord(RawDataRecord, AbstractDataRecord):
         self.__reversed_mapping = MappingProxyType({v: k for k, v in self.__mapping.items()})
 
     @property
-    def reversed_mapping(self):
+    def reversed_mapping(self) -> MappingProxyType[int, str]:
         """Get reversed mapping dict."""
         return self.__reversed_mapping
 

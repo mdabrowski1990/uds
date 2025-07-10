@@ -21,6 +21,7 @@ class TestTextTableDataRecord:
         assert MappingDataRecord.__init__(self.mock_data_record, name, length, mapping) is None
         mock_raw_data.assert_called_once_with(name, length)
         assert self.mock_data_record.length == length
+        assert self.mock_data_record.mapping == mapping
 
     def test_mapping_getter(self):
         self.mock_data_record._MappingDataRecord__mapping = Mock()
