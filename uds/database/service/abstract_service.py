@@ -3,12 +3,12 @@
 __all__ = ["AbstractService", "DataRecordOccurrencesValuesAlias", "DecodedMessageAlias"]
 
 from abc import ABC, abstractmethod
-from typing import List, Union, Sequence
+from typing import List, Sequence, Union
 
 from uds.message import RequestSID, ResponseSID
 from uds.utilities import RawBytesAlias
 
-from ..data_record import SingleOccurrenceInfo, MultipleOccurrencesInfo
+from ..data_record import MultipleOccurrencesInfo, SingleOccurrenceInfo
 
 DecodedMessageAlias = List[Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]]
 """Alias for decoded information about a Diagnostic Message."""

@@ -1,12 +1,12 @@
 import pytest
-from mock import Mock, patch
+from mock import Mock, call, patch
 
 from uds.database.data_record.abstract_data_record import (
     AbstractDataRecord,
     InconsistentArgumentsError,
+    OrderedDict,
     ReassignmentError,
     Sequence,
-OrderedDict
 )
 
 SCRIPT_LOCATION = "uds.database.data_record.abstract_data_record"
@@ -329,3 +329,56 @@ class TestAbstractDataRecord:
             child.get_occurrence_info.assert_called_with(children_values[child.name])
 
     # get_occurrence_info
+
+    def test_get_occurrence_info__value_error__no_values(self):
+        with pytest.raises(ValueError):
+            AbstractDataRecord.get_occurrence_info(self.mock_data_record)
+
+    def test_get_occurrence_info__value_error__multiple_values_for_single_occurrence(self):
+        self.mock_data_record.is_reoccurring = False
+        with pytest.raises(ValueError):
+            AbstractDataRecord.get_occurrence_info(self.mock_data_record, Mock(), Mock())
+
+    def test_get_occurrence_info__single_occurrence(self):
+        mock_raw_value = Mock()
+        self.mock_data_record.is_reoccurring = False
+        output = AbstractDataRecord.get_occurrence_info(self.mock_data_record, mock_raw_value)
+        assert isinstance(output, dict)
+        assert output["name"] == self.mock_data_record.name
+        assert output["raw_value"] == mock_raw_value
+        assert output["physical_value"] == self.mock_data_record.get_physical_value.return_value
+        assert output["children"] == self.mock_data_record.get_children_occurrence_info.return_value
+        self.mock_data_record.get_physical_value.assert_called_once_with(mock_raw_value)
+        self.mock_data_record.get_children_occurrence_info.assert_called_once_with(mock_raw_value)
+
+    @pytest.mark.parametrize("raw_values", [range(10), (Mock(), Mock(), Mock())])
+    def test_get_occurrence_info__multiple_occurrences(self, raw_values):
+        self.mock_data_record.is_reoccurring = True
+        output = AbstractDataRecord.get_occurrence_info(self.mock_data_record, *raw_values)
+        assert isinstance(output, dict)
+        assert output["name"] == self.mock_data_record.name
+        assert output["raw_value"] == list(raw_values)
+        assert output["physical_value"] == self.mock_data_record.get_physical_values.return_value
+        assert output["children"] == [self.mock_data_record.get_children_occurrence_info.return_value]*len(raw_values)
+        self.mock_data_record.get_physical_values.assert_called_once_with(*raw_values)
+        self.mock_data_record.get_children_occurrence_info.assert_has_calls([call(raw_value) for raw_value in raw_values])
+
+    # get_physical_values
+
+    def test_get_physical_values__runtime_error(self):
+        self.mock_data_record.is_reoccurring = False
+        with pytest.raises(RuntimeError):
+            AbstractDataRecord.get_physical_values(self.mock_data_record, Mock(), Mock())
+
+    def test_get_physical_values__value_error(self):
+        self.mock_data_record.is_reoccurring = True
+        with pytest.raises(ValueError):
+            AbstractDataRecord.get_physical_values(self.mock_data_record)
+
+    @pytest.mark.parametrize("raw_values", [range(10), (Mock(), Mock(), Mock())])
+    def test_get_physical_values(self, raw_values):
+        self.mock_data_record.is_reoccurring = True
+        output = AbstractDataRecord.get_physical_values(self.mock_data_record, *raw_values)
+        assert isinstance(output, tuple)
+        assert output == tuple([self.mock_data_record.get_physical_value.return_value] * len(raw_values))
+        self.mock_data_record.get_physical_value.assert_has_calls([call(raw_value) for raw_value in raw_values])
