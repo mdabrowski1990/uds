@@ -1,14 +1,20 @@
 """Definition of UDS Service data encoding and decoding."""
 
-__all__ = ["AbstractService"]
+__all__ = ["AbstractService", "DataRecordOccurrencesValuesAlias", "DecodedMessageAlias"]
 
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Union, Sequence
 
 from uds.message import RequestSID, ResponseSID
 from uds.utilities import RawBytesAlias
 
-from ..data_record import AbstractDataRecord, PhysicalValueAlias
+from ..data_record import SingleOccurrenceInfo, MultipleOccurrencesInfo
+
+DecodedMessageAlias = List[Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]]
+"""Alias for decoded information about a Diagnostic Message."""
+
+DataRecordOccurrencesValuesAlias = Union[int, Sequence[int]]
+"""Alias for raw values of Data Records occurrences."""
 
 
 class AbstractService(ABC):
@@ -25,7 +31,7 @@ class AbstractService(ABC):
         """Service Identifier in (positive) response messages."""
 
     @abstractmethod
-    def decode(self, payload: RawBytesAlias) -> List[DecodedDataRecord]:
+    def decode(self, payload: RawBytesAlias) -> DecodedMessageAlias:
         """
         Decode physical values carried in payload of a diagnostic message.
 
@@ -36,12 +42,13 @@ class AbstractService(ABC):
 
     def encode(self,
                sid: Union[int, RequestSID, ResponseSID],
-               **data_records_values: DataRecordValueAlias) -> bytearray:
+               **data_records_raw_values: DataRecordOccurrencesValuesAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service.
 
         :param sid: Value of Service Identifier. It should be either equal to either `request_sid` or `response_sid`.
-        :param data_records_values: Value for each data record that is part of a service message.
+        :param data_records_raw_values: Raw value for each data record that is part of a service message.
+            Use sequences to provide multiple raw values for each occurrence of a Data Record.
 
         :raise ValueError: Provided `sid` value is neither equal to request SID value nor response SID value for this
             diagnostic service.
@@ -49,27 +56,29 @@ class AbstractService(ABC):
         :return: Payload of a diagnostic message.
         """
         if sid == self.request_sid:
-            return self.encode_request(**data_records_values)
+            return self.encode_request(**data_records_raw_values)
         if sid == self.response_sid:
-            return self.encode_response(**data_records_values)
+            return self.encode_response(**data_records_raw_values)
         raise ValueError("Provided SID value is neither request or response SID value for this service.")
 
     @abstractmethod
-    def encode_request(self, **data_records_values: DataRecordValueAlias) -> bytearray:
+    def encode_request(self, **data_records_raw_values: DataRecordOccurrencesValuesAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service's request message.
 
-        :param data_records_values: Value for each data record that is part of a service message.
+        :param data_records_raw_values: Raw value for each data record that is part of a service message.
+            Use sequences to provide multiple raw values for each occurrence of a Data Record.
 
         :return: Payload of a request diagnostic message.
         """
 
     @abstractmethod
-    def encode_response(self, **data_records_values: DataRecordValueAlias) -> bytearray:
+    def encode_response(self, **data_records_raw_values: DataRecordOccurrencesValuesAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service's response message.
 
-        :param data_records_values: Value for each data record that is part of a service message.
+        :param data_records_raw_values: Raw value for each data record that is part of a service message.
+            Use sequences to provide multiple raw values for each occurrence of a Data Record.
 
         :return: Payload of a response diagnostic message.
         """

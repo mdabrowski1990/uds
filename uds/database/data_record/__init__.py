@@ -5,9 +5,7 @@ Each Data Record contains mapping (translation) of raw data (sequence of bits in
 meaningful information (e.g. physical value, text).
 """
 
-from .abstract_data_record import (
-    AbstractDataRecord,
-    PhysicalValueAlias,
-)
+from .abstract_data_record import AbstractDataRecord, MultipleOccurrencesInfo, PhysicalValueAlias, SingleOccurrenceInfo
+
 # from .raw_data_record import RawDataRecord  # TODO
 # TODO: mapping and container

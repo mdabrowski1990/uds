@@ -1,9 +1,11 @@
 __all__ = ["ContainerDataRecord"]
 
-from typing import Sequence, Optional, Tuple, Mapping
 from types import MappingProxyType
-from .abstract_data_record import AbstractDataRecord, DecodedDataRecord, DataRecordValueAlias
+from typing import Mapping, Optional, Sequence, Tuple
+
 from uds.utilities import InconsistentArgumentsError
+
+from .abstract_data_record import AbstractDataRecord, DataRecordValueAlias, DecodedDataRecord
 
 
 class ContainerDataRecord(AbstractDataRecord):
