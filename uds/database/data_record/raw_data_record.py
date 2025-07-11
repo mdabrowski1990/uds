@@ -53,6 +53,6 @@ class RawDataRecord(AbstractDataRecord):
         :return: Raw Value of this Data Record occurrence.
             For Raw Data Record the raw and physical values are the same.
         """
-        raw_value: int = physical_value
+        raw_value: int = physical_value  # type: ignore
         self._validate_raw_value(raw_value)
         return raw_value

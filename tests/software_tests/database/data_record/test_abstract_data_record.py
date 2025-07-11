@@ -174,6 +174,20 @@ class TestAbstractDataRecord:
             AbstractDataRecord.children.fset(self.mock_data_record, children)
 
     @pytest.mark.parametrize("length, children", [
+        (8, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
+             Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4)]),
+        (16, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=8),
+              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
+              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2),
+              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2)]),
+    ])
+    def test_children__set__inconsistent_error__names(self, length, children):
+        self.mock_data_record.length = length
+        children[-1].name = children[0].name
+        with pytest.raises(InconsistentArgumentsError):
+            AbstractDataRecord.children.fset(self.mock_data_record, children)
+
+    @pytest.mark.parametrize("length, children", [
         (9, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=5)]),
         (7, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
