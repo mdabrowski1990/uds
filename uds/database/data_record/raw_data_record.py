@@ -4,7 +4,7 @@ __all__ = ["RawDataRecord"]
 
 from typing import Optional, Sequence
 
-from .abstract_data_record import AbstractDataRecord, PhysicalValueAlias
+from .abstract_data_record import AbstractDataRecord, SinglePhysicalValueAlias
 
 
 class RawDataRecord(AbstractDataRecord):
@@ -14,8 +14,8 @@ class RawDataRecord(AbstractDataRecord):
                  name: str,
                  length: int,
                  children: Sequence[AbstractDataRecord] = tuple(),
-                 min_occurrences: int=1,
-                 max_occurrences: Optional[int]=1) -> None:
+                 min_occurrences: int = 1,
+                 max_occurrences: Optional[int] = 1) -> None:
         """
         Initialize Raw Data Record.
 
@@ -32,7 +32,7 @@ class RawDataRecord(AbstractDataRecord):
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)
 
-    def get_physical_value(self, raw_value: int) -> PhysicalValueAlias:
+    def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
         """
         Decode raw value and provide physical value.
 
@@ -44,7 +44,7 @@ class RawDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return raw_value
 
-    def get_raw_value(self, physical_value: PhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
         """
         Encode physical value into raw value.
 
@@ -53,6 +53,6 @@ class RawDataRecord(AbstractDataRecord):
         :return: Raw Value of this Data Record occurrence.
             For Raw Data Record the raw and physical values are the same.
         """
-        raw_value = physical_value
+        raw_value: int = physical_value
         self._validate_raw_value(raw_value)
         return raw_value

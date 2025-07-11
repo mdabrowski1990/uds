@@ -87,7 +87,7 @@ class AbstractDataRecord(ABC):
     @name.setter
     def name(self, value: str) -> None:
         """
-        Set name for this Data Record
+        Set name for this Data Record.
 
         :param value: Value to set.
 
@@ -197,14 +197,15 @@ class AbstractDataRecord(ABC):
 
     @property
     def max_occurrences(self) -> Optional[int]:
-        """Maximal number of occurrences for this Data Record.
+        """
+        Maximal number of occurrences for this Data Record.
 
         .. info:: No maximal number (infinite number of occurrences) is represented by None value.
         """
         return self.__max_occurrences
 
     @max_occurrences.setter
-    def max_occurrences(self, value: int) -> None:
+    def max_occurrences(self, value: Optional[int]) -> None:
         """
         Set maximal number of occurrences.
 
@@ -275,7 +276,7 @@ class AbstractDataRecord(ABC):
         :return: Children occurrence information.
         """
         children_values = self.get_children_values(raw_value)
-        return tuple(child.get_occurrence_info(children_values[child.name]) for child in self.children)
+        return tuple(child.get_occurrence_info(children_values[child.name]) for child in self.children)  # type: ignore
 
     def get_occurrence_info(self, *raw_values: int) -> Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]:
         """
@@ -305,7 +306,7 @@ class AbstractDataRecord(ABC):
                                         children=self.get_children_occurrence_info(raw_value))
         raise ValueError("Cannot handle multiple occurrences values for non reoccurring Data Record.")
 
-    def get_physical_values(self, *raw_values) -> MultiplePhysicalValues:
+    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValues:
         """
         Decode raw values and provide physical values.
 
@@ -333,7 +334,7 @@ class AbstractDataRecord(ABC):
         """
 
     @abstractmethod
-    def get_raw_value(self, physical_value: PhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
         """
         Encode physical value into raw value.
 

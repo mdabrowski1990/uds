@@ -18,10 +18,10 @@ class MappingDataRecord(RawDataRecord, AbstractDataRecord):
     def __init__(self,
                  name: str,
                  length: int,
-                 values_mapping: Dict[str, int],
+                 values_mapping: Dict[int, str],
                  children: Sequence[AbstractDataRecord] = tuple(),
-                 min_occurrences: int=1,
-                 max_occurrences: Optional[int]=1) -> None:
+                 min_occurrences: int = 1,
+                 max_occurrences: Optional[int] = 1) -> None:
         """
         Initialize Raw Data Record.
 
