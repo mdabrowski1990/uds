@@ -1,6 +1,7 @@
 """Definition of AbstractDataRecord which is a base class for all Data Records."""
 
-__all__ = ["AbstractDataRecord", "PhysicalValueAlias", "SingleOccurrenceInfo", "MultipleOccurrencesInfo"]
+__all__ = ["AbstractDataRecord", "SinglePhysicalValueAlias", "MultiplePhysicalValues", "PhysicalValueAlias",
+           "SingleOccurrenceInfo", "MultipleOccurrencesInfo"]
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -35,7 +36,14 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
 
 
 class AbstractDataRecord(ABC):
-    """Common implementation and interface for all Data Records."""
+    """
+    Common implementation and interface for all Data Records.
+
+    Data Records are parts of diagnostic messages which could be interpreted in various ways.
+    Each subclass is meant to store different methods for translation between physical and raw values.
+    This objects would allow users to operate on meaningful data (e.g. vehicle speed in km/h,
+    temperature in Celsius degrees) instead of raw values.
+    """
 
     def __init__(self,
                  name: str,
@@ -323,7 +331,6 @@ class AbstractDataRecord(ABC):
 
         :return: Decoded physical (meaningful e.g. vehicle speed in km/h) value for this occurrence.
         """
-        self._validate_raw_value(raw_value)
 
     @abstractmethod
     def get_raw_value(self, physical_value: PhysicalValueAlias) -> int:
