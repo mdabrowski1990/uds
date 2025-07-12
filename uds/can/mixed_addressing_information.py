@@ -100,6 +100,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError("The same combination of CAN ID and Target Address cannot be used for "
                                              "incoming and outgoing communication.")
 
+
 class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Mixed 29-bit Addressing format."""
 
