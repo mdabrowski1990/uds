@@ -106,6 +106,24 @@ class TestCanPacket:
                                                                      dlc=dlc,
                                                                      **packet_type_specific_kwargs)
 
+    # __str__
+
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
+        self.mock_can_packet.payload = payload
+        self.mock_can_packet.raw_frame_data = raw_frame_data
+        output_str = CanPacket.__str__(self=self.mock_can_packet)
+        assert output_str.startswith("CanPacket(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "addressing_format=" in output_str
+        assert "raw_frame_data=" in output_str
+        assert "packet_type=" in output_str
+        assert "can_id=" in output_str
+
     # set_address_information
 
     @pytest.mark.parametrize("addressing_format", [None, "unknown addressing format"])
