@@ -1,6 +1,8 @@
 import pytest
 from mock import MagicMock, Mock, patch
 
+from uds.can import NormalCanAddressingInformation, NormalFixedCanAddressingInformation, \
+    ExtendedCanAddressingInformation, Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
 from uds.can.abstract_addressing_information import AbstractCanAddressingInformation, AddressingType
 
 SCRIPT_LOCATION = "uds.can.abstract_addressing_information"
@@ -116,6 +118,22 @@ class TestAbstractCanAddressingInformation:
     # get_other_end
 
     def test_get_other_end(self):
-        assert (AbstractCanAddressingInformation.get_other_end(self.mock_addressing_information)
-                == self.mock_deepcopy.return_value)
-        self.mock_deepcopy.assert_called_once_with(self.mock_addressing_information)
+        mock_addressing_information = MagicMock()
+        other = AbstractCanAddressingInformation.get_other_end(mock_addressing_information)
+        assert other.rx_physical == mock_addressing_information.InputAIParamsAlias.return_value
+        assert other.tx_physical == mock_addressing_information.InputAIParamsAlias.return_value
+        assert other.rx_functional == mock_addressing_information.InputAIParamsAlias.return_value
+        assert other.tx_functional == mock_addressing_information.InputAIParamsAlias.return_value
+
+
+@pytest.mark.integration
+class TestAbstractCanAddressingInformationIntegration:
+    """Integration tests for AbstractCanAddressingInformation."""
+
+    def test_get_other_end(self, example_can_addressing_information):
+        other = example_can_addressing_information.get_other_end()
+        assert other.addressing_format == example_can_addressing_information.addressing_format
+        assert other.rx_packets_physical_ai == example_can_addressing_information.tx_packets_physical_ai
+        assert other.tx_packets_physical_ai == example_can_addressing_information.rx_packets_physical_ai
+        assert other.rx_packets_functional_ai == example_can_addressing_information.tx_packets_functional_ai
+        assert other.tx_packets_functional_ai == example_can_addressing_information.rx_packets_functional_ai

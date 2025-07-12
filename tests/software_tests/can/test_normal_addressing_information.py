@@ -83,8 +83,10 @@ class TestNormalCanAddressingInformation:
 
     # _validate_node_ai
 
-    @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
-                             "rx_packets_functional_ai, tx_packets_functional_ai", [
+    @pytest.mark.parametrize("rx_packets_physical_ai, "
+                             "tx_packets_physical_ai, "
+                             "rx_packets_functional_ai, "
+                             "tx_packets_functional_ai", [
         (
             {"can_id": 1},
             {"can_id": 2},
@@ -93,8 +95,8 @@ class TestNormalCanAddressingInformation:
         ),
         (
             {"can_id": 0x4321},
-            {"can_id": 0x4321},
-            {"can_id": 0x4321},
+            {"can_id": 0x4322},
+            {"can_id": 0x4323},
             {"can_id": 0x4321},
         ),
     ])
@@ -102,9 +104,9 @@ class TestNormalCanAddressingInformation:
                                             rx_packets_functional_ai, tx_packets_functional_ai):
         with pytest.raises(InconsistentArgumentsError):
             NormalCanAddressingInformation._validate_node_ai(rx_packets_physical_ai=rx_packets_physical_ai,
-                                                               tx_packets_physical_ai=tx_packets_physical_ai,
-                                                               rx_packets_functional_ai=rx_packets_functional_ai,
-                                                               tx_packets_functional_ai=tx_packets_functional_ai)
+                                                             tx_packets_physical_ai=tx_packets_physical_ai,
+                                                             rx_packets_functional_ai=rx_packets_functional_ai,
+                                                             tx_packets_functional_ai=tx_packets_functional_ai)
 
     @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
                              "rx_packets_functional_ai, tx_packets_functional_ai", [

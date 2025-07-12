@@ -85,13 +85,20 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         if rx_packets_functional_ai["address_extension"] != tx_packets_functional_ai["address_extension"]:
             raise InconsistentArgumentsError("Addressing Extension parameter must be the same for incoming and "
                                              "outgoing functionally addressed CAN packets.")
-        if len({(rx_packets_physical_ai["can_id"], rx_packets_physical_ai["address_extension"]),
-                (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["address_extension"]),
-                (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["address_extension"]),
-                (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["address_extension"])}) != 4:
-            raise InconsistentArgumentsError("Combination of CAN ID and Target Address for incoming and outgoing "
-                                             "CAN packets must be unique")
-
+        rx_ai_params = {
+            (rx_packets_physical_ai["can_id"], rx_packets_physical_ai["address_extension"]),
+            (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["address_extension"])
+        }
+        tx_ai_params = {
+            (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["address_extension"]),
+            (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["address_extension"])
+        }
+        if ((rx_packets_physical_ai["can_id"], rx_packets_physical_ai["address_extension"]) in tx_ai_params
+                or (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["address_extension"]) in tx_ai_params
+                or (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["address_extension"]) in rx_ai_params
+                or (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["address_extension"]) in rx_ai_params):
+            raise InconsistentArgumentsError("The same combination of CAN ID and Target Address cannot be used for "
+                                             "incoming and outgoing communication.")
 
 class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Mixed 29-bit Addressing format."""

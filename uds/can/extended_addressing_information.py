@@ -79,9 +79,17 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """
-        if len({(rx_packets_physical_ai["can_id"], rx_packets_physical_ai["target_address"]),
-                (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["target_address"]),
-                (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["target_address"]),
-                (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["target_address"])}) != 4:
-            raise InconsistentArgumentsError("Combination of CAN ID and Target Address for incoming and outgoing "
-                                             "CAN packets must be unique")
+        rx_ai_params = {
+            (rx_packets_physical_ai["can_id"], rx_packets_physical_ai["target_address"]),
+            (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["target_address"])
+        }
+        tx_ai_params = {
+            (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["target_address"]),
+            (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["target_address"])
+        }
+        if ((rx_packets_physical_ai["can_id"], rx_packets_physical_ai["target_address"]) in tx_ai_params
+                or (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["target_address"]) in tx_ai_params
+                or (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["target_address"]) in rx_ai_params
+                or (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["target_address"]) in rx_ai_params):
+            raise InconsistentArgumentsError("The same combination of CAN ID and Target Address cannot be used for "
+                                             "incoming and outgoing communication.")

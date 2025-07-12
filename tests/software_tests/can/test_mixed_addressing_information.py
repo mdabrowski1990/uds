@@ -111,9 +111,9 @@ class TestMixed11BitCanAddressingInformation:
         ),
         (
             {"can_id": 0xABC, "address_extension": 0x4E},
-            {"can_id": 0xDEF, "address_extension": 0x43},
-            {"can_id": 0xABC, "address_extension": 0x70},
-            {"can_id": 0xDEF, "address_extension": 0x70},
+            {"can_id": 0xDEF, "address_extension": 0x4E},
+            {"can_id": 0xDEF, "address_extension": 0x4E},
+            {"can_id": 0xABC, "address_extension": 0x4E},
         ),
     ])
     def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
@@ -135,8 +135,8 @@ class TestMixed11BitCanAddressingInformation:
         (
             {"can_id": 0x4321, "address_extension": 0xFF},
             {"can_id": 0x4322, "address_extension": 0xFF},
-            {"can_id": 0x4323, "address_extension": 0xFE},
-            {"can_id": 0x4324, "address_extension": 0xFE},
+            {"can_id": 0x4321, "address_extension": 0xFE},
+            {"can_id": 0x4322, "address_extension": 0xFE},
         ),
         (
             {"can_id": 0xABC, "address_extension": 0xFF},

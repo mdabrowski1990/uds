@@ -78,11 +78,13 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """
-        if len({rx_packets_physical_ai["can_id"],
-                tx_packets_physical_ai["can_id"],
-                rx_packets_functional_ai["can_id"],
-                tx_packets_functional_ai["can_id"]}) != 4:
-            raise InconsistentArgumentsError("Values of CAN ID for incoming and outgoing CAN packets must be unique.")
+        rx_can_id = {rx_packets_physical_ai["can_id"], rx_packets_functional_ai["can_id"]}
+        tx_can_id = {tx_packets_physical_ai["can_id"], tx_packets_functional_ai["can_id"]}
+        if (rx_packets_physical_ai["can_id"] in tx_can_id
+                or rx_packets_functional_ai["can_id"] in tx_can_id
+                or tx_packets_physical_ai["can_id"] in rx_can_id
+                or tx_packets_functional_ai["can_id"] in rx_can_id):
+            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for reception.")
 
 
 class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):

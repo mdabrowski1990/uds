@@ -98,9 +98,9 @@ class TestExtendedCanAddressingInformation:
         ),
         (
             {"can_id": 0x4321, "target_address": 0xFF},
-            {"can_id": 0x4321, "target_address": 0xFF},
             {"can_id": 0x4321, "target_address": 0xFE},
             {"can_id": 0x4321, "target_address": 0xFD},
+            {"can_id": 0x4321, "target_address": 0xFF},
         ),
     ])
     def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
@@ -122,8 +122,8 @@ class TestExtendedCanAddressingInformation:
         (
             {"can_id": 0x4321, "target_address": 0xFF},
             {"can_id": 0x4321, "target_address": 0x00},
-            {"can_id": 0x4321, "target_address": 0xFE},
-            {"can_id": 0x4321, "target_address": 0xFD},
+            {"can_id": 0x4321, "target_address": 0xFF},
+            {"can_id": 0x4321, "target_address": 0x00},
         ),
         (
             {"can_id": 0xABC1, "target_address": 0xFF},

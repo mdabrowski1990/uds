@@ -143,7 +143,6 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
 
         :return: CAN Addressing Information of a CAN node that this object communicates with.
         """
-        other = deepcopy(self)
         rx_physical = self.InputAIParamsAlias(
             can_id=self.tx_packets_physical_ai["can_id"],
             source_address=self.tx_packets_physical_ai["source_address"],
@@ -164,11 +163,10 @@ class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract
             source_address=self.rx_packets_functional_ai["source_address"],
             target_address=self.rx_packets_functional_ai["target_address"],
             address_extension=self.rx_packets_functional_ai["address_extension"])
-        other.rx_packets_physical_ai = rx_physical
-        other.tx_packets_physical_ai = tx_physical
-        other.rx_packets_functional_ai = rx_functional
-        other.tx_packets_functional_ai = tx_functional
-        return other
+        return self.__class__(rx_physical=rx_physical,
+                              tx_physical=tx_physical,
+                              rx_functional=rx_functional,
+                              tx_functional=tx_functional)
 
     @classmethod
     @abstractmethod
