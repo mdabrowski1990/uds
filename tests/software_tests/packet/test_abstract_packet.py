@@ -1,9 +1,39 @@
 import pytest
 from mock import Mock, patch
 
-from uds.packet.abstract_packet import AbstractPacketRecord, ReassignmentError, TransmissionDirection, datetime
+from uds.packet.abstract_packet import (
+    AbstractPacketContainer,
+    AbstractPacketRecord,
+    AddressingType,
+    ReassignmentError,
+    TransmissionDirection,
+    datetime,
+)
 
 SCRIPT_LOCATION = "uds.packet.abstract_packet"
+
+
+class TestAbstractPacketContainer:
+    """Unit tests for 'AbstractPacketContainer' class."""
+
+    def setup_method(self):
+        self.mock_packet_container = Mock(spec=AbstractPacketContainer)
+
+    # __str__
+
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
+        self.mock_packet_container.payload = payload
+        self.mock_packet_container.raw_frame_data = raw_frame_data
+        output_str = AbstractPacketContainer.__str__(self=self.mock_packet_container)
+        assert output_str.startswith("AbstractPacketContainer(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "raw_frame_data=" in output_str
+        assert "packet_type=" in output_str
 
 
 class TestAbstractPacketRecord:
@@ -31,6 +61,24 @@ class TestAbstractPacketRecord:
         assert self.mock_packet_record.frame == frame
         assert self.mock_packet_record.direction == direction
         assert self.mock_packet_record.transmission_time == transmission_time
+
+    # __str__
+
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
+        self.mock_packet_record.payload = payload
+        self.mock_packet_record.raw_frame_data = raw_frame_data
+        output_str = AbstractPacketRecord.__str__(self=self.mock_packet_record)
+        assert output_str.startswith("AbstractPacketRecord(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "raw_frame_data=" in output_str
+        assert "packet_type=" in output_str
+        assert "direction=" in output_str
+        assert "transmission_time=" in output_str
 
     # frame
 

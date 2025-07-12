@@ -1,4 +1,3 @@
-from pprint import pprint
 from threading import Timer
 
 from can import Bus, Message
@@ -31,13 +30,13 @@ def main():
     # receive CAN packet 1
     Timer(interval=0.1, function=kvaser_interface_1.send, args=(frame_1,)).start()  # schedule transmission of frame 1
     record_1 = can_ti.receive_packet(timeout=1000)  # receive CAN packet 1 carried by frame 1
-    pprint(record_1.__dict__)  # show attributes of CAN packet record 1
+    print(record_1)  # show attributes of CAN packet record 1
 
     # receive CAN packet 2
     Timer(interval=0.1, function=kvaser_interface_1.send, args=(frame_2,)).start()  # schedule transmission of frame 2
     Timer(interval=0.2, function=kvaser_interface_1.send, args=(frame_3,)).start()  # schedule transmission of frame 3
     record_2 = can_ti.receive_packet(timeout=1000)  # receive CAN packet 2 carried by frame 3
-    pprint(record_2.__dict__)  # show attributes of CAN packet record 2
+    print(record_2)  # show attributes of CAN packet record 2
 
     # close connections with CAN interfaces
     del can_ti

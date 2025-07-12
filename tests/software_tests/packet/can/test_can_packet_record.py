@@ -76,6 +76,26 @@ class TestCanPacketRecord:
         self.mock_addressing_type_class.validate_member.assert_called_once_with(addressing_type)
         self.mock_can_addressing_format_class.validate_member.assert_called_once_with(addressing_format)
 
+    # __str__
+
+    @pytest.mark.parametrize("payload, raw_frame_data", [
+        (None, b"\x00\xFF\xF1\xB9\x8A"),
+        ([0xBE, 0xEF, 0xFF, 0x00], bytearray([0x50, 0x61, 0x72, 0x83, 0x94, 0xA5, 0xB6, 0xC7, 0xD8, 0xE9, 0xFA])),
+    ])
+    def test_str(self, payload, raw_frame_data):
+        self.mock_can_packet_record.payload = payload
+        self.mock_can_packet_record.raw_frame_data = raw_frame_data
+        output_str = CanPacketRecord.__str__(self=self.mock_can_packet_record)
+        assert output_str.startswith("CanPacketRecord(") and output_str.endswith(")")
+        assert "payload=" in output_str
+        assert "addressing_type=" in output_str
+        assert "addressing_format=" in output_str
+        assert "raw_frame_data=" in output_str
+        assert "packet_type=" in output_str
+        assert "can_id=" in output_str
+        assert "direction=" in output_str
+        assert "transmission_time=" in output_str
+
     # raw_frame_data
 
     @pytest.mark.parametrize("raw_frame_data", [b"some raw data", range(10)])

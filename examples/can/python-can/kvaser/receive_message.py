@@ -1,4 +1,3 @@
-from pprint import pprint
 from threading import Timer
 
 from can import Bus, Message
@@ -33,7 +32,7 @@ def main():
 
     # receive message
     received_message_record = can_ti.receive_message(timeout=1000)  # 1000 [ms]
-    pprint(received_message_record.__dict__)
+    print(received_message_record)
 
     # close connections with CAN interfaces
     del can_ti
