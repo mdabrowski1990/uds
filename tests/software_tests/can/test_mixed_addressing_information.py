@@ -93,27 +93,27 @@ class TestMixed11BitCanAddressingInformation:
                              "rx_packets_functional_ai, tx_packets_functional_ai", [
         (
             {"can_id": 1, "address_extension": 1},
-            {"can_id": 2, "address_extension": 1},
+            {"can_id": 2, "address_extension": 2},
             {"can_id": 3, "address_extension": 4},
             {"can_id": 3, "address_extension": 4},
         ),
         (
             {"can_id": 0x4321, "address_extension": 0xFF},
-            {"can_id": 0x4321, "address_extension": 0xFF},
+            {"can_id": 0x4322, "address_extension": 0xFF},
             {"can_id": 0x4321, "address_extension": 0xFE},
-            {"can_id": 0x4321, "address_extension": 0xFE},
+            {"can_id": 0x4322, "address_extension": 0xF1},
         ),
         (
             {"can_id": 0xABC, "address_extension": 0xFF},
             {"can_id": 0xDEF, "address_extension": 0xFF},
-            {"can_id": 0xADD, "address_extension": 0xFE},
-            {"can_id": 0xFEE, "address_extension": 0xF1},
+            {"can_id": 0xADD, "address_extension": 0xFF},
+            {"can_id": 0xABC, "address_extension": 0xFF},
         ),
         (
             {"can_id": 0xABC, "address_extension": 0x4E},
             {"can_id": 0xDEF, "address_extension": 0x4E},
             {"can_id": 0xDEF, "address_extension": 0x4E},
-            {"can_id": 0xABC, "address_extension": 0x4E},
+            {"can_id": 0xABD, "address_extension": 0x4E},
         ),
     ])
     def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
