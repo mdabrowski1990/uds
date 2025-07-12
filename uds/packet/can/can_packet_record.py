@@ -1,4 +1,4 @@
-"""CAN bus specific implementation of UDS packets records."""
+"""CAN bus specific implementation of packets records."""
 
 __all__ = ["CanPacketRecord"]
 
@@ -16,7 +16,7 @@ from uds.can import (
 from uds.transmission_attributes import AddressingType, TransmissionDirection
 from uds.utilities import InconsistentArgumentsError
 
-from ..abstract_packet import AbstractUdsPacketRecord
+from ..abstract_packet import AbstractPacketRecord
 from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
@@ -24,7 +24,7 @@ CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""
 
 
-class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
+class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
     """
     Definition of a CAN packet record.
 
@@ -65,6 +65,16 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
         raise NotImplementedError(f"Missing implementation for: {self.frame}")
 
     @property
+    def addressing_type(self) -> AddressingType:
+        """Addressing type over which this CAN packet was transmitted."""
+        return self.__addressing_type
+
+    @property
+    def packet_type(self) -> CanPacketType:
+        """CAN packet type value - N_PCI value of this N_PDU."""
+        return self.__packet_type
+
+    @property
     def can_id(self) -> int:
         """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
         if isinstance(self.frame, PythonCanMessage):
@@ -75,16 +85,6 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractUdsPacketRecord):
     def addressing_format(self) -> CanAddressingFormat:
         """CAN addressing format used by this CAN packet."""
         return self.__addressing_format
-
-    @property
-    def addressing_type(self) -> AddressingType:
-        """Addressing type over which this CAN packet was transmitted."""
-        return self.__addressing_type
-
-    @property
-    def packet_type(self) -> CanPacketType:
-        """CAN packet type value - N_PCI value of this N_PDU."""
-        return self.__packet_type
 
     @property
     def target_address(self) -> Optional[int]:

@@ -1,21 +1,21 @@
 """
-A subpackage with tools for handling UDS packets.
+A subpackage with tools for handling packets.
 
 It provides tools for:
- - data definitions for various UDS packet fields (:ref:`N_AI <knowledge-base-n-ai>`,
+ - data definitions for various packet fields (:ref:`N_AI <knowledge-base-n-ai>`,
    :ref:`N_PCI <knowledge-base-n-pci>`, :ref:`N_Data <knowledge-base-n-data>`)
  - creating new packets
  - storing historic information about packets that were either received or transmitted
 """
 
 from .abstract_packet import (
-    AbstractUdsPacket,
-    AbstractUdsPacketContainer,
-    AbstractUdsPacketRecord,
+    AbstractPacket,
+    AbstractPacketContainer,
+    AbstractPacketRecord,
     PacketsContainersSequence,
     PacketsRecordsSequence,
     PacketsRecordsTuple,
     PacketsTuple,
 )
-from .abstract_packet_type import AbstractUdsPacketType
+from .abstract_packet_type import AbstractPacketType
 from .can import AbstractCanPacketContainer, CanPacket, CanPacketRecord, CanPacketType

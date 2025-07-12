@@ -46,7 +46,7 @@ Current implementation status of package features:
 | UDS Messages and Packets                | Available since version `0.0.2             |
 |                                         | <https://pypi.org/project/py-uds/0.0.2/>`_ |
 +-----------------------------------------+--------------------------------------------+
-| UDS Packets Reception and Transmission  | Available since version `0.3.0             |
+| Packets Reception and Transmission      | Available since version `0.3.0             |
 |                                         | <https://pypi.org/project/py-uds/0.3.0/>`_ |
 +-----------------------------------------+--------------------------------------------+
 | UDS Messages Reception and Transmission | Available since version `1.0.0             |
@@ -55,7 +55,7 @@ Current implementation status of package features:
 | Messages Segmentation                   | Available since version `0.2.0             |
 |                                         | <https://pypi.org/project/py-uds/0.2.0/>`_ |
 +-----------------------------------------+--------------------------------------------+
-| UDS Packets Desegmentation              | Available since version `0.2.0             |
+| Packets Desegmentation                  | Available since version `0.2.0             |
 |                                         | <https://pypi.org/project/py-uds/0.2.0/>`_ |
 +-----------------------------------------+--------------------------------------------+
 | Client Simulation                       | Planned                                    |

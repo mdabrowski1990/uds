@@ -7,7 +7,7 @@ from asyncio import AbstractEventLoop
 from typing import Any, Optional
 
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import AbstractUdsPacket, AbstractUdsPacketRecord
+from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter
 from uds.utilities import TimeMillisecondsAlias
 
@@ -62,46 +62,46 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def send_packet(self, packet: AbstractUdsPacket) -> AbstractUdsPacketRecord:
+    def send_packet(self, packet: AbstractPacket) -> AbstractPacketRecord:
         """
-        Transmit UDS packet.
+        Transmit packet.
 
         :param packet: A packet to send.
 
-        :return: Record with historic information about transmitted UDS packet.
+        :return: Record with historic information about transmitted packet.
         """
 
     @abstractmethod
     async def async_send_packet(self,
-                                packet: AbstractUdsPacket,
-                                loop: Optional[AbstractEventLoop] = None) -> AbstractUdsPacketRecord:
+                                packet: AbstractPacket,
+                                loop: Optional[AbstractEventLoop] = None) -> AbstractPacketRecord:
         """
-        Transmit asynchronously UDS packet.
+        Transmit packet asynchronously.
 
         :param packet: A packet to send.
         :param loop: An asyncio event loop to use for scheduling this task.
 
-        :return: Record with historic information about transmitted UDS packet.
+        :return: Record with historic information about transmitted packet.
         """
 
     @abstractmethod
-    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> AbstractUdsPacketRecord:
+    def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> AbstractPacketRecord:
         """
-        Receive UDS packet.
+        Receive packet.
 
         :param timeout: Maximal time (in milliseconds) to wait.
 
         :raise TimeoutError: Timeout was reached.
 
-        :return: Record with historic information about received UDS packet.
+        :return: Record with historic information about received packet.
         """
 
     @abstractmethod
     async def async_receive_packet(self,
                                    timeout: Optional[TimeMillisecondsAlias] = None,
-                                   loop: Optional[AbstractEventLoop] = None) -> AbstractUdsPacketRecord:
+                                   loop: Optional[AbstractEventLoop] = None) -> AbstractPacketRecord:
         """
-        Receive asynchronously UDS packet.
+        Receive packet asynchronously.
 
         :param timeout: Maximal time (in milliseconds) to wait.
         :param loop: An asyncio event loop to use for scheduling this task.
@@ -109,7 +109,7 @@ class AbstractTransportInterface(ABC):
         :raise TimeoutError: Timeout was reached.
         :raise asyncio.TimeoutError: Timeout was reached.
 
-        :return: Record with historic information about received UDS packet.
+        :return: Record with historic information about received packet.
         """
 
     @abstractmethod
