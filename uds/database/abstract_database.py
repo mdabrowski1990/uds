@@ -3,12 +3,11 @@
 __all__ = ["AbstractDatabase"]
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 
-from .data_record import DataRecordValueAlias, DecodedDataRecord
-from .service import AbstractService
+from .service import AbstractService, DataRecordOccurrencesValuesAlias, DecodedMessageAlias
 
 
 class AbstractDatabase(ABC):
@@ -26,12 +25,13 @@ class AbstractDatabase(ABC):
 
     def encode(self,
                sid: Union[int, RequestSID, ResponseSID],
-               **data_records_values: DataRecordValueAlias) -> bytearray:
+               **data_records_raw_values: DataRecordOccurrencesValuesAlias) -> bytearray:
         """
         Encode diagnostic message payload from data records values.
 
         :param sid: Service Identifier of a diagnostic message.
-        :param data_records_values: Value for each Data Record that is part a service message.
+        :param data_records_raw_values: Raw value for each data record that is part of a service message.
+            Use sequences to provide multiple raw values for each occurrence of a Data Record.
 
         :raise TypeError: Provided SID value is neither int, RequestSID nor ResponseSID type.
         :raise ValueError: This database has no implementation for provided SID value.
@@ -42,9 +42,9 @@ class AbstractDatabase(ABC):
             raise TypeError("Provided SID value is not int type.")
         if sid not in self.services:
             raise ValueError("Database has no encoding defined for provided SID value.")
-        return self.services[sid].encode(sid=sid, **data_records_values)
+        return self.services[sid].encode(sid=sid, **data_records_raw_values)
 
-    def decode(self, message: Union[UdsMessage, UdsMessageRecord]) -> List[DecodedDataRecord]:
+    def decode(self, message: Union[UdsMessage, UdsMessageRecord]) -> DecodedMessageAlias:
         """
         Decode physical values carried in payload of a diagnostic message.
 
