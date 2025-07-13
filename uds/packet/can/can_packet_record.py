@@ -7,14 +7,11 @@ from typing import Any, Optional, Union
 
 from can import Message as PythonCanMessage
 from uds.can import (
-    AbstractCanAddressingInformation,
-    CanAddressingFormat,
-    CanAddressingInformation,
     CanDlcHandler,
     CanIdHandler,
 )
-from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import InconsistentArgumentsError
+from uds.addressing import AddressingType,     AbstractCanAddressingInformation,    CanAddressingFormat,    CanAddressingInformation
+from uds.utilities import InconsistentArgumentsError, TransmissionDirection
 
 from ..abstract_packet import AbstractPacketRecord
 from .abstract_can_container import AbstractCanPacketContainer

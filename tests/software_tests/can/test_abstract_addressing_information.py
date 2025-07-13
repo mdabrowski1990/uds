@@ -1,14 +1,13 @@
 import pytest
 from mock import MagicMock, Mock, patch
 
-from uds.can import (
-    ExtendedCanAddressingInformation,
+from uds.addressing.can import (
     Mixed11BitCanAddressingInformation,
     Mixed29BitCanAddressingInformation,
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
-from uds.can.abstract_addressing_information import AbstractCanAddressingInformation, AddressingType
+from uds.addressing.can.abstract_addressing_information import AbstractCanAddressingInformation, AddressingType
 
 SCRIPT_LOCATION = "uds.can.abstract_addressing_information"
 

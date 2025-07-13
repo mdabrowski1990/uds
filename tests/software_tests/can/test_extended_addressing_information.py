@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from uds.can.extended_addressing_information import (
+from uds.addressing.can.extended_addressing_information import (
     AbstractCanAddressingInformation,
     CanAddressingFormat,
     ExtendedCanAddressingInformation,

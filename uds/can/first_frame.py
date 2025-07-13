@@ -11,8 +11,8 @@ from typing import Optional
 
 from uds.utilities import InconsistentArgumentsError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
-from .addressing_format import CanAddressingFormat
-from .addressing_information import CanAddressingInformation
+from uds.addressing.can.addressing_format import CanAddressingFormat
+from uds.addressing.can.addressing_information import CanAddressingInformation
 from .frame_fields import CanDlcHandler
 from .single_frame import CanSingleFrameHandler
 

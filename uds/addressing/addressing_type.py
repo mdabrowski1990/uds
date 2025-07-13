@@ -1,8 +1,4 @@
-"""
-Implementation of diagnostic messages addressing.
-
-:ref:`Addressing <knowledge-base-addressing>` describes a communication model that is used during UDS communication.
-"""
+"""Definition of Addressing Types used for UDS communication."""
 
 __all__ = ["AddressingType"]
 

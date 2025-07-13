@@ -11,8 +11,8 @@ from datetime import datetime
 from typing import Sequence, Union
 
 from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
-from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes
+from uds.addressing import AddressingType
+from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes, TransmissionDirection
 
 
 class AbstractUdsMessageContainer(ABC):

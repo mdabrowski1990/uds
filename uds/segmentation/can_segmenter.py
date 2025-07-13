@@ -6,15 +6,11 @@ from typing import Optional, Tuple, Type, Union
 
 from uds.can import (
     DEFAULT_FILLER_BYTE,
-    AbstractCanAddressingInformation,
-    CanAddressingFormat,
-    CanAddressingInformation,
     CanConsecutiveFrameHandler,
     CanDlcHandler,
     CanFirstFrameHandler,
     CanFlowStatus,
     CanSingleFrameHandler,
-    PacketAIParamsAlias,
 )
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import (
@@ -25,7 +21,7 @@ from uds.packet import (
     CanPacketType,
     PacketsContainersSequence,
 )
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType,     AbstractCanAddressingInformation,    CanAddressingFormat,    CanAddressingInformation,    PacketAIParamsAlias
 from uds.utilities import RawBytesAlias, validate_raw_byte
 
 from .abstract_segmenter import AbstractSegmenter, SegmentationError

@@ -12,10 +12,10 @@ __all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 from bisect import bisect_left
 from typing import Dict, Optional, Set, Tuple, TypedDict
 
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType
 from uds.utilities import validate_raw_byte
 
-from .addressing_format import CanAddressingFormat
+from uds.addressing.can.addressing_format import CanAddressingFormat
 
 DEFAULT_FILLER_BYTE: int = 0xCC
 """Default value of Filler Byte.

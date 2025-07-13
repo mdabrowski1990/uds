@@ -8,15 +8,15 @@ __all__ = ["CanAddressingInformation"]
 
 from typing import Dict, Optional, Type, TypedDict
 
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType
 from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_byte, validate_raw_bytes
 
-from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
-from .addressing_format import CanAddressingFormat
-from .extended_addressing_information import ExtendedCanAddressingInformation
-from .frame_fields import CanIdHandler
-from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
-from .normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
+from uds.addressing.can.abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
+from uds.addressing.can.addressing_format import CanAddressingFormat
+from uds.addressing.can.extended_addressing_information import ExtendedCanAddressingInformation
+from uds.can.frame_fields import CanIdHandler
+from uds.addressing.can.mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from uds.addressing.can.normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
 
 
 class CanAddressingInformation:

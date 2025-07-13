@@ -11,8 +11,9 @@ from uds.packet.can.can_packet_record import (
     CanPacketType,
     InconsistentArgumentsError,
     PythonCanMessage,
+TransmissionDirection,
+AddressingType
 )
-from uds.transmission_attributes import AddressingType, TransmissionDirection
 
 SCRIPT_LOCATION = "uds.packet.can.can_packet_record"
 

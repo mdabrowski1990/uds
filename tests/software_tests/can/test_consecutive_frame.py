@@ -1,7 +1,7 @@
 import pytest
 from mock import patch
 
-from uds.can import CanAddressingFormat
+from uds.addressing import CanAddressingFormat
 from uds.can.consecutive_frame import (
     DEFAULT_FILLER_BYTE,
     CanConsecutiveFrameHandler,

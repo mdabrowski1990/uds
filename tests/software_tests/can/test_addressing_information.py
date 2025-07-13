@@ -1,13 +1,13 @@
 import pytest
 from mock import MagicMock, Mock, patch
 
-from uds.can.addressing_information import (
+from uds.addressing.can.addressing_information import (
     AbstractCanAddressingInformation,
     CanAddressingFormat,
     CanAddressingInformation,
     InconsistentArgumentsError,
 )
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType
 
 SCRIPT_LOCATION = "uds.can.addressing_information"
 

@@ -13,7 +13,7 @@ from uds.packet import (
     PacketsContainersSequence,
     PacketsTuple,
 )
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType
 
 
 class SegmentationError(ValueError):

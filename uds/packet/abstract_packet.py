@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 
-from uds.transmission_attributes.addressing import AddressingType
-from uds.transmission_attributes.transmission_direction import TransmissionDirection
+from uds.addressing.addressing_type import AddressingType
+from uds.utilities.transmission_direction import TransmissionDirection
 from uds.utilities import ReassignmentError
 
 from .abstract_packet_type import AbstractPacketType

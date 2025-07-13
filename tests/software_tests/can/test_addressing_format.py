@@ -1,6 +1,6 @@
 from aenum import StrEnum
 
-from uds.can.addressing_format import CanAddressingFormat
+from uds.addressing.can.addressing_format import CanAddressingFormat
 from uds.utilities import ValidatedEnum
 
 

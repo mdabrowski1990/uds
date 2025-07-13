@@ -4,12 +4,12 @@ __all__ = ["ExtendedCanAddressingInformation"]
 
 from typing import Optional
 
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType
 from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
 
-from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
-from .addressing_format import CanAddressingFormat
-from .frame_fields import CanIdHandler
+from uds.addressing.can.abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
+from uds.addressing.can.addressing_format import CanAddressingFormat
+from uds.can.frame_fields import CanIdHandler
 
 
 class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):

@@ -6,9 +6,6 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from uds.can import (
-    AbstractCanAddressingInformation,
-    CanAddressingFormat,
-    CanAddressingInformation,
     CanConsecutiveFrameHandler,
     CanDlcHandler,
     CanFirstFrameHandler,
@@ -16,7 +13,7 @@ from uds.can import (
     CanFlowStatus,
     CanSingleFrameHandler,
 )
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType, AbstractCanAddressingInformation, CanAddressingFormat, CanAddressingInformation
 
 from ..abstract_packet import AbstractPacketContainer
 from .can_packet_type import CanPacketType

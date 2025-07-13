@@ -7,22 +7,15 @@ from warnings import warn
 
 from uds.can import (
     DEFAULT_FILLER_BYTE,
-    AbstractCanAddressingInformation,
-    CanAddressingFormat,
-    CanAddressingInformation,
     CanConsecutiveFrameHandler,
     CanDlcHandler,
     CanFirstFrameHandler,
     CanFlowControlHandler,
     CanFlowStatus,
     CanSingleFrameHandler,
-    ExtendedCanAddressingInformation,
-    Mixed11BitCanAddressingInformation,
-    Mixed29BitCanAddressingInformation,
-    NormalCanAddressingInformation,
-    NormalFixedCanAddressingInformation,
+
 )
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType, AbstractCanAddressingInformation, CanAddressingFormat, CanAddressingInformation,    ExtendedCanAddressingInformation,    Mixed11BitCanAddressingInformation,    Mixed29BitCanAddressingInformation,    NormalCanAddressingInformation,    NormalFixedCanAddressingInformation
 from uds.utilities import AmbiguityError, RawBytesAlias, UnusedArgumentWarning
 
 from ..abstract_packet import AbstractPacket

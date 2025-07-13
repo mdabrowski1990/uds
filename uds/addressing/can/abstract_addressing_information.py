@@ -6,10 +6,10 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from typing import Optional, TypedDict
 
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType
 
-from .addressing_format import CanAddressingFormat
-from .frame_fields import CanIdHandler
+from uds.addressing.can.addressing_format import CanAddressingFormat
+from ..abstract_addressing_information import AbstractAddressingInformation
 
 
 class PacketAIParamsAlias(TypedDict):
@@ -23,18 +23,16 @@ class PacketAIParamsAlias(TypedDict):
     address_extension: Optional[int]
 
 
-class AbstractCanAddressingInformation(ABC):  # TODO: consider defining abstract class for all buses
+class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     """Abstract definition of CAN Entity (either server or client) Addressing Information."""
 
     ADDRESSING_FORMAT_NAME: str = "addressing_format"
     """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter in Addressing Information."""
-    ADDRESSING_TYPE_NAME: str = CanIdHandler.ADDRESSING_TYPE_NAME
-    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
     CAN_ID_NAME: str = "can_id"
     """Name of CAN Identifier parameter in Addressing Information."""
-    TARGET_ADDRESS_NAME: str = CanIdHandler.TARGET_ADDRESS_NAME
+    TARGET_ADDRESS_NAME: str = "target_address"
     """Name of Target Address parameter in Addressing Information."""
-    SOURCE_ADDRESS_NAME: str = CanIdHandler.SOURCE_ADDRESS_NAME
+    SOURCE_ADDRESS_NAME: str = "source_address"
     """Name of Source Address parameter in Addressing Information."""
     ADDRESS_EXTENSION_NAME: str = "address_extension"
     """Name of Address Extension parameter in Addressing Information."""

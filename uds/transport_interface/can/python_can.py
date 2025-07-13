@@ -9,11 +9,11 @@ from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
 from can import AsyncBufferedReader, BufferedReader, BusABC, Message, Notifier
-from uds.can import AbstractCanAddressingInformation, CanDlcHandler, CanFlowStatus, CanIdHandler, CanSTminTranslator
+from uds.can import CanDlcHandler, CanFlowStatus, CanIdHandler, CanSTminTranslator
+from uds.addressing import AbstractCanAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import CanPacket, CanPacketRecord, CanPacketType
-from uds.transmission_attributes import TransmissionDirection
-from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning
+from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning, TransmissionDirection
 
 from .common import AbstractCanTransportInterface
 

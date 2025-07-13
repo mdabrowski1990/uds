@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, call, patch
 
-from uds.can.normal_addressing_information import (
+from uds.addressing.can.normal_addressing_information import (
     AbstractCanAddressingInformation,
     CanAddressingFormat,
     InconsistentArgumentsError,
