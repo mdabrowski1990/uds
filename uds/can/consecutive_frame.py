@@ -1,8 +1,8 @@
 """
 Implementation specific for Consecutive Frame CAN packets.
 
-This module contains implementation specific for :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-packets - that includes :ref:`Sequence Number (SN) <knowledge-base-can-sequence-number>` parameter.
+This module contains implementation specific for :ref:`Consecutive Frame <knowledge-base-addressing-consecutive-frame>`
+packets - that includes :ref:`Sequence Number (SN) <knowledge-base-addressing-sequence-number>` parameter.
 """
 
 __all__ = ["CanConsecutiveFrameHandler"]
@@ -17,8 +17,8 @@ from uds.utilities import (
     validate_raw_bytes,
 )
 
-from uds.addressing.can.addressing_format import CanAddressingFormat
-from uds.addressing.can.addressing_information import CanAddressingInformation
+from uds.can.addressing import CanAddressingFormat
+from uds.can.addressing.addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
@@ -42,8 +42,8 @@ class CanConsecutiveFrameHandler:
         """
         Create a data field of a CAN frame that carries a valid Consecutive Frame packet.
 
-        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
-            Use :meth:`~uds.can.consecutive_frame.CanConsecutiveFrameHandler.create_any_frame_data` to create data bytes
+        .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+            Use :meth:`~uds.addressing.consecutive_frame.CanConsecutiveFrameHandler.create_any_frame_data` to create data bytes
             for a Consecutive Frame with any (also incompatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Consecutive Frame.
@@ -98,10 +98,10 @@ class CanConsecutiveFrameHandler:
         """
         Create a data field of a CAN frame that carries a Consecutive Frame packet.
 
-        .. note:: You can use this method to create Consecutive Frame data bytes with any (also inconsistent
+        .. note:: You addressing use this method to create Consecutive Frame data bytes with any (also inconsistent
             with ISO 15765) parameters values.
             It is recommended to use
-            :meth:`~uds.can.consecutive_frame.CanConsecutiveFrameHandler.create_valid_frame_data` to create data bytes
+            :meth:`~uds.addressing.consecutive_frame.CanConsecutiveFrameHandler.create_valid_frame_data` to create data bytes
             for a Consecutive Frame with valid (compatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Consecutive Frame.
@@ -139,7 +139,7 @@ class CanConsecutiveFrameHandler:
         Check if provided data bytes encodes a Consecutive Frame packet.
 
         .. warning:: The method does not validate the content of the provided frame data bytes.
-            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-can-n-pci>` parameter is checked whether contain
+            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter is checked whether contain
             Consecutive Frame N_PCI value.
 
         :param addressing_format: CAN Addressing Format used.
@@ -156,8 +156,8 @@ class CanConsecutiveFrameHandler:
         Extract diagnostic message payload from Consecutive Frame data bytes.
 
         .. warning:: The output might contain additional filler bytes (they are not part of diagnostic message payload)
-            that were added during :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
-            The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+            that were added during :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`.
+            The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-addressing-consecutive-frame>`
             cannot be determined basing solely on the information contained in a Consecutive Frame data bytes.
 
         .. warning:: The method does not validate the content of the provided frame data bytes.
@@ -232,7 +232,7 @@ class CanConsecutiveFrameHandler:
                              addressing_format: Optional[CanAddressingFormat] = None,
                              dlc: Optional[int] = None) -> int:
         """
-        Get the maximum size of a payload that can fit into Consecutive Frame data bytes.
+        Get the maximum size of a payload that addressing fit into Consecutive Frame data bytes.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
             Leave None to get the result for CAN addressing format that does not use data bytes for carrying

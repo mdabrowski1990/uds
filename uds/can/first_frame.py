@@ -1,8 +1,8 @@
 """
 Implementation specific for First Frame CAN packets.
 
-This module contains implementation specific for :ref:`First Frame <knowledge-base-can-first-frame>` packets - that
-includes :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` parameter.
+This module contains implementation specific for :ref:`First Frame <knowledge-base-addressing-first-frame>` packets - that
+includes :ref:`First Frame Data Length (FF_DL) <knowledge-base-addressing-first-frame-data-length>` parameter.
 """
 
 __all__ = ["CanFirstFrameHandler"]
@@ -11,8 +11,8 @@ from typing import Optional
 
 from uds.utilities import InconsistentArgumentsError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
-from uds.addressing.can.addressing_format import CanAddressingFormat
-from uds.addressing.can.addressing_information import CanAddressingInformation
+from uds.can.addressing import CanAddressingFormat
+from uds.can.addressing.addressing_information import CanAddressingInformation
 from .frame_fields import CanDlcHandler
 from .single_frame import CanSingleFrameHandler
 
@@ -23,10 +23,10 @@ class CanFirstFrameHandler:
     FIRST_FRAME_N_PCI: int = 0x1
     """First Frame N_PCI value."""
     MAX_SHORT_FF_DL_VALUE: int = 0xFFF
-    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` for which
+    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-addressing-first-frame-data-length>` for which
     short format of FF_DL is used."""
     MAX_LONG_FF_DL_VALUE: int = 0xFFFFFFFF
-    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
+    """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-addressing-first-frame-data-length>`."""
     SHORT_FF_DL_BYTES_USED: int = 2
     """Number of CAN Frame data bytes used to carry CAN Packet Type and First Frame Data Length (FF_DL).
     This value is valid only for the short format using FF_DL <= 4095."""
@@ -45,8 +45,8 @@ class CanFirstFrameHandler:
         """
         Create a data field of a CAN frame that carries a valid First Frame packet.
 
-        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
-            Use :meth:`~uds.can.first_frame.CanFirstFrameHandler.create_any_frame_data` to create data bytes
+        .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+            Use :meth:`~uds.addressing.first_frame.CanFirstFrameHandler.create_any_frame_data` to create data bytes
             for a First Frame with any (also incompatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered First Frame.
@@ -87,9 +87,9 @@ class CanFirstFrameHandler:
         """
         Create a data field of a CAN frame that carries a First Frame packet.
 
-        .. note:: You can use this method to create First Frame data bytes with any (also inconsistent with ISO 15765)
+        .. note:: You addressing use this method to create First Frame data bytes with any (also inconsistent with ISO 15765)
             parameters values.
-            It is recommended to use :meth:`~uds.can.first_frame.CanFirstFrameHandler.create_valid_frame_data` to
+            It is recommended to use :meth:`~uds.addressing.first_frame.CanFirstFrameHandler.create_valid_frame_data` to
             create data bytes for a First Frame with valid (compatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered First Frame.
@@ -185,7 +185,7 @@ class CanFirstFrameHandler:
                          dlc: int,
                          long_ff_dl_format: bool = False) -> int:
         """
-        Get the size of a payload that can fit into First Frame data bytes.
+        Get the size of a payload that addressing fit into First Frame data bytes.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
@@ -302,7 +302,7 @@ class CanFirstFrameHandler:
         """
         Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 
-        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
             First Frame Data Length value validation (whether it is too low according to ISO 15765) is not performed
             though.
 
@@ -320,7 +320,7 @@ class CanFirstFrameHandler:
         """
         Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 
-        .. note:: This method can be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method addressing be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
 
         :param ff_dl: Value to put into a slot of First Frame Data Length.
         :param long_ff_dl_format: Information whether to use long or short format of First Frame Data Length.

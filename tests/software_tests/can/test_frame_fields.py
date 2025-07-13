@@ -3,7 +3,7 @@ from mock import Mock, call, patch
 
 from uds.can.frame_fields import AddressingType, CanAddressingFormat, CanDlcHandler, CanIdHandler
 
-SCRIPT_LOCATION = "uds.can.frame_fields"
+SCRIPT_LOCATION = "uds.addressing.frame_fields"
 
 
 class TestCanIdHandler:

@@ -1,4 +1,4 @@
-"""Definition of API for segmentation and desegmentation strategies."""
+"""Definition of segmentation and desegmentation strategies."""
 
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 

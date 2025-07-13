@@ -24,7 +24,7 @@ from uds.packet import (
 from uds.addressing import AddressingType,     AbstractCanAddressingInformation,    CanAddressingFormat,    CanAddressingInformation,    PacketAIParamsAlias
 from uds.utilities import RawBytesAlias, validate_raw_byte
 
-from .abstract_segmenter import AbstractSegmenter, SegmentationError
+from uds.segmentation.abstract_segmenter import AbstractSegmenter, SegmentationError
 
 
 class CanSegmenter(AbstractSegmenter):
@@ -110,7 +110,7 @@ class CanSegmenter(AbstractSegmenter):
 
         .. note:: All output CAN Packets (created by :meth:`~uds.segmentation.can_segmenter.CanSegmenter.segmentation`)
             will have this DLC value set unless
-            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
+            :ref:`CAN Frame Data Optimization <knowledge-base-addressing-data-optimization>` is used.
         """
         return self.__dlc
 

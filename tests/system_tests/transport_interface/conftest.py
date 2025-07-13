@@ -44,6 +44,6 @@ def example_addressing_information_2nd_node(example_addressing_information) -> A
 
     .. note::
         Values of example_addressing_information and example_addressing_information_2nd_node are compatible, so
-        these two CAN nodes can communicate with each other over physical and functional addressing.
+        these two CAN nodes addressing communicate with each other over physical and functional addressing.
     """
     return example_addressing_information.get_other_end()

@@ -4,7 +4,7 @@ import pytest
 from mock import MagicMock, Mock, patch
 
 from uds.packet import CanPacketRecord
-from uds.transport_interface.can.common import (
+from uds.can.transport_interface.common import (
     AbstractCanAddressingInformation,
     AbstractCanTransportInterface,
     AbstractFlowControlParametersGenerator,
@@ -13,7 +13,7 @@ from uds.transport_interface.can.common import (
     UdsMessageRecord,
 )
 
-SCRIPT_LOCATION = "uds.transport_interface.can.common"
+SCRIPT_LOCATION = "uds.transport_interface.addressing.common"
 
 
 class TestAbstractCanTransportInterface:

@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, call, patch
 
-from uds.addressing.can.mixed_addressing_information import (
+from uds.can.addressing.mixed_addressing_information import (
     AbstractCanAddressingInformation,
     CanAddressingFormat,
     InconsistentArgumentsError,
@@ -10,7 +10,7 @@ from uds.addressing.can.mixed_addressing_information import (
     UnusedArgumentError,
 )
 
-SCRIPT_LOCATION = "uds.can.mixed_addressing_information"
+SCRIPT_LOCATION = "uds.addressing.mixed_addressing_information"
 
 
 class TestMixed11BitCanAddressingInformation:

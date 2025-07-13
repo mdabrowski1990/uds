@@ -1,5 +1,5 @@
 """
-A subpackage with tools for handing segmentation.
+A subpackage with tools for segmentation handing.
 
 :ref:`Segmentation <knowledge-base-segmentation>` defines two processes:
  - :ref:`diagnostic message segmentation <knowledge-base-message-segmentation>`
@@ -11,4 +11,3 @@ This subpackage contains implementation of:
 """
 
 from .abstract_segmenter import AbstractSegmenter, SegmentationError
-from .can_segmenter import CanSegmenter

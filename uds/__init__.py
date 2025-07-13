@@ -28,8 +28,8 @@ __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"
 
 
-import uds.addressing
-import uds.can
+# import uds.addressing
+# import uds.addressing
 import uds.database
 import uds.message
 import uds.packet

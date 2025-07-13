@@ -19,11 +19,11 @@ from uds.utilities import TimeMillisecondsAlias
 
 class AbstractPythonCanTests(AbstractCanTests):
     """
-    Definition of system tests (with hardware) for Diagnostic over CAN (DoCAN) with python-can.
+    Definition of system tests (with hardware) for Diagnostic over CAN (DoCAN) with python-addressing.
 
     Requires hardware setup:
-        - 2x CAN bus hardware interfaces that can be controlled using python-can package
-        - both CAN interfaces are connected (so they can communicate with other) - termination (resistor) is part of
+        - 2x CAN bus hardware interfaces that addressing be controlled using python-addressing package
+        - both CAN interfaces are connected (so they addressing communicate with other) - termination (resistor) is part of
             CAN cables connection
     """
 

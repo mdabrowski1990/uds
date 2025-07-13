@@ -147,7 +147,7 @@ class NRC(ValidatedEnum, ExtendableEnum, ByteEnum):
     equal to the one included in the previous TransferData request message shall be accepted by the server."""
     RequestCorrectlyReceived_ResponsePending: "NRC" = 0x78  # type: ignore  # noqa: F841
     """RequestCorrectlyReceived_ResponsePending (0x78) NRC ndicates that the request message was received correctly,
-    and that all parameters in the request message were valid (these checks can be delayed until after sending this NRC
+    and that all parameters in the request message were valid (these checks addressing be delayed until after sending this NRC
     if executing the boot software), but the action to be performed is not yet completed and the server is not yet
     ready to receive another request. As soon as the requested service has been completed, the server shall send
     a positive response message or negative response message with a response code different from this."""

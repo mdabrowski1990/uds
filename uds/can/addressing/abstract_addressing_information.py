@@ -8,8 +8,8 @@ from typing import Optional, TypedDict
 
 from uds.addressing import AddressingType
 
-from uds.addressing.can.addressing_format import CanAddressingFormat
-from ..abstract_addressing_information import AbstractAddressingInformation
+from uds.can.addressing.addressing_format import CanAddressingFormat
+from uds.addressing.abstract_addressing_information import AbstractAddressingInformation
 
 
 class PacketAIParamsAlias(TypedDict):
@@ -27,7 +27,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     """Abstract definition of CAN Entity (either server or client) Addressing Information."""
 
     ADDRESSING_FORMAT_NAME: str = "addressing_format"
-    """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter in Addressing Information."""
+    """Name of :ref:`CAN Addressing Format <knowledge-base-addressing-addressing>` parameter in Addressing Information."""
     CAN_ID_NAME: str = "can_id"
     """Name of CAN Identifier parameter in Addressing Information."""
     TARGET_ADDRESS_NAME: str = "target_address"

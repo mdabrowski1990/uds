@@ -1,8 +1,8 @@
 """
 Implementation specific for Single Frame CAN packets.
 
-This module contains implementation specific for :ref:`Single Frame <knowledge-base-can-single-frame>` packets - that
-includes :ref:`Single Frame Data Length (SF_DL) <knowledge-base-can-single-frame-data-length>` parameter.
+This module contains implementation specific for :ref:`Single Frame <knowledge-base-addressing-single-frame>` packets - that
+includes :ref:`Single Frame Data Length (SF_DL) <knowledge-base-addressing-single-frame-data-length>` parameter.
 """
 
 __all__ = ["CanSingleFrameHandler"]
@@ -17,8 +17,8 @@ from uds.utilities import (
     validate_raw_bytes,
 )
 
-from uds.addressing.can.addressing_format import CanAddressingFormat
-from uds.addressing.can.addressing_information import CanAddressingInformation
+from uds.can.addressing import CanAddressingFormat
+from uds.can.addressing.addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
@@ -29,7 +29,7 @@ class CanSingleFrameHandler:
     """N_PCI value of Single Frame."""
     MAX_DLC_VALUE_SHORT_SF_DL: int = 8
     """Maximum value of DLC for which short
-    :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` format shall be used."""
+    :ref:`Single Frame Data Length <knowledge-base-addressing-single-frame-data-length>` format shall be used."""
     SHORT_SF_DL_BYTES_USED: int = 1
     """Number of CAN Frame data bytes used to carry CAN Packet Type and Single Frame Data Length (SF_DL).
     This value is valid only for the short format using DLC <= 8."""
@@ -48,8 +48,8 @@ class CanSingleFrameHandler:
         """
         Create a data field of a CAN frame that carries a valid Single Frame packet.
 
-        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
-            Use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_any_frame_data` to create data bytes
+        .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+            Use :meth:`~uds.addressing.single_frame.CanSingleFrameHandler.create_any_frame_data` to create data bytes
             for a Single Frame with any (also incompatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Single Frame.
@@ -105,9 +105,9 @@ class CanSingleFrameHandler:
         """
         Create a data field of a CAN frame that carries a Single Frame packet.
 
-        .. note:: You can use this method to create Single Frame data bytes with any (also inconsistent with ISO 15765)
+        .. note:: You addressing use this method to create Single Frame data bytes with any (also inconsistent with ISO 15765)
             parameters values.
-            It is recommended to use :meth:`~uds.can.single_frame.CanSingleFrameHandler.create_valid_frame_data` to
+            It is recommended to use :meth:`~uds.addressing.single_frame.CanSingleFrameHandler.create_valid_frame_data` to
             create data bytes for a Single Frame with valid (compatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Single Frame.
@@ -148,7 +148,7 @@ class CanSingleFrameHandler:
         Check if provided data bytes encodes a Single Frame packet.
 
         .. warning:: The method does not validate the content (e.g. SF_DL parameter) of the provided frame data bytes.
-            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-can-n-pci>` parameter is checked whether contain
+            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter is checked whether contain
             Single Frame N_PCI value.
 
         :param addressing_format: CAN Addressing Format used.
@@ -229,7 +229,7 @@ class CanSingleFrameHandler:
                              addressing_format: Optional[CanAddressingFormat] = None,
                              dlc: Optional[int] = None) -> int:
         """
-        Get the maximum size of a payload that can fit into Single Frame data bytes.
+        Get the maximum size of a payload that addressing fit into Single Frame data bytes.
 
         :param addressing_format: CAN addressing format that considered CAN packet uses.
             Leave None to get the result for CAN addressing format that does not use data bytes for carrying
@@ -314,7 +314,7 @@ class CanSingleFrameHandler:
         :param sf_dl: Single Frame Data Length value to validate.
         :param dlc: DLC value to validate.
         :param addressing_format: Value of CAN Addressing Format to use for Single Frame Data Length value validation.
-            Leave None if you do not want to validate whether payload can fit into a CAN Frame with considered DLC.
+            Leave None if you do not want to validate whether payload addressing fit into a CAN Frame with considered DLC.
 
         :raise TypeError: Provided value of Single Frame Data Length is not int type.
         :raise ValueError: Provided value of Single Frame Data Length is too small.
@@ -382,7 +382,7 @@ class CanSingleFrameHandler:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
-        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
 
         :param sf_dl: Number of payload bytes carried by a considered Single Frame.
         :param dlc: DLC value of a CAN Frame to carry this information.
@@ -400,7 +400,7 @@ class CanSingleFrameHandler:
         """
         Create Single Frame data bytes with CAN Packet Type and Single Frame Data Length parameters.
 
-        .. note:: This method can be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method addressing be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
 
         :param sf_dl_short: Value to put into a slot of Single Frame Data Length in short format.
         :param sf_dl_long: Value to put into a slot of Single Frame Data Length in long format.

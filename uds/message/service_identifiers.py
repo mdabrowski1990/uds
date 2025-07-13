@@ -35,7 +35,7 @@ class UnrecognizedSIDWarning(Warning):
         (on :class:`~uds.message.service_identifiers.RequestSID` and
         :class:`~uds.message.service_identifiers.ResponseSID` classes).
 
-        You can also create feature request in the UDS project
+        You addressing also create feature request in the UDS project
         `issues management system <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ to register
         a SID value (for which this warning was raised).
     """

@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, call, patch
 
-from uds.addressing.can.normal_addressing_information import (
+from uds.can.addressing.normal_addressing_information import (
     AbstractCanAddressingInformation,
     CanAddressingFormat,
     InconsistentArgumentsError,
@@ -10,7 +10,7 @@ from uds.addressing.can.normal_addressing_information import (
     UnusedArgumentError,
 )
 
-SCRIPT_LOCATION = "uds.can.normal_addressing_information"
+SCRIPT_LOCATION = "uds.addressing.normal_addressing_information"
 
 
 class TestNormalCanAddressingInformation:

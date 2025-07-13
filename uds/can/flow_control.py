@@ -1,10 +1,10 @@
 """
 Implementation specific for Flow Control CAN packets.
 
-This module contains implementation of :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>` attributes:
- - :ref:`Flow Status <knowledge-base-can-flow-status>`
- - :ref:`Block Size <knowledge-base-can-block-size>`
- - :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>`
+This module contains implementation of :ref:`Flow Control CAN packet <knowledge-base-addressing-flow-control>` attributes:
+ - :ref:`Flow Status <knowledge-base-addressing-flow-status>`
+ - :ref:`Block Size <knowledge-base-addressing-block-size>`
+ - :ref:`Separation Time minimum (STmin) <knowledge-base-addressing-st-min>`
 """
 
 __all__ = ["CanFlowStatus", "CanSTminTranslator", "CanFlowControlHandler", "UnrecognizedSTminWarning",
@@ -29,8 +29,8 @@ from uds.utilities import (
     validate_raw_bytes,
 )
 
-from uds.addressing.can.addressing_format import CanAddressingFormat
-from uds.addressing.can.addressing_information import CanAddressingInformation
+from uds.can.addressing import CanAddressingFormat
+from uds.can.addressing.addressing_information import CanAddressingInformation
 from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
@@ -38,7 +38,7 @@ class UnrecognizedSTminWarning(Warning):
     """
     Warning about STmin value that is reserved and therefore not implemented.
 
-    .. note:: If you have a documentation that defines a meaning of :ref:`STmin <knowledge-base-can-st-min>` value
+    .. note:: If you have a documentation that defines a meaning of :ref:`STmin <knowledge-base-addressing-st-min>` value
         for which this warning was raised, please create a request in
         `issues management system <https://github.com/mdabrowski1990/uds/issues/new/choose>`_ and provide this
         documentation for us.
@@ -50,7 +50,7 @@ class CanFlowStatus(ValidatedEnum, NibbleEnum):
     """
     Definition of Flow Status values.
 
-    :ref:`Flow Status (FS) <knowledge-base-can-flow-status>` is a 4-bit value that enables controlling
+    :ref:`Flow Status (FS) <knowledge-base-addressing-flow-status>` is a 4-bit value that enables controlling
     Consecutive Frames transmission.
     """
 
@@ -66,7 +66,7 @@ class CanSTminTranslator:
     """
     Helper class that provides STmin values mapping.
 
-    :ref:`Separation Time minimum (STmin) <knowledge-base-can-st-min>` informs about minimum time gap between
+    :ref:`Separation Time minimum (STmin) <knowledge-base-addressing-st-min>` informs about minimum time gap between
     a transmission of two following Consecutive Frames.
     """
 
@@ -179,9 +179,9 @@ class CanFlowControlHandler:
     FS_BYTES_USED: int = 3
     """Number of CAN Frame data bytes used to carry CAN Packet Type, Flow Status, Block Size and STmin."""
     BS_BYTE_POSITION: int = 1
-    """Position of a data byte with :ref:`Block Size <knowledge-base-can-block-size>` parameter."""
+    """Position of a data byte with :ref:`Block Size <knowledge-base-addressing-block-size>` parameter."""
     STMIN_BYTE_POSITION: int = 2
-    """Position of a data byte with  :ref:`STmin <knowledge-base-can-st-min>` parameter."""
+    """Position of a data byte with  :ref:`STmin <knowledge-base-addressing-st-min>` parameter."""
 
     @classmethod
     def create_valid_frame_data(cls, *,
@@ -196,8 +196,8 @@ class CanFlowControlHandler:
         """
         Create a data field of a CAN frame that carries a valid Flow Control packet.
 
-        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
-            Use :meth:`~uds.can.flow_control.FlowControlHandler.create_any_frame_data` to create data bytes
+        .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+            Use :meth:`~uds.addressing.flow_control.FlowControlHandler.create_any_frame_data` to create data bytes
             for a Flow Control with any (also incompatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Flow Control.
@@ -255,9 +255,9 @@ class CanFlowControlHandler:
         """
         Create a data field of a CAN frame that carries a Flow Control packet.
 
-        .. note:: You can use this method to create Flow Control data bytes with any (also inconsistent with ISO 15765)
+        .. note:: You addressing use this method to create Flow Control data bytes with any (also inconsistent with ISO 15765)
             parameters values.
-            It is recommended to use :meth:`~uds.can.flow_control.FlowControlHandler.create_valid_frame_data` to create
+            It is recommended to use :meth:`~uds.addressing.flow_control.FlowControlHandler.create_valid_frame_data` to create
             data bytes for a Flow Control with valid (compatible with ISO 15765) parameters values.
 
         :param addressing_format: CAN addressing format used by a considered Flow Control.
@@ -297,7 +297,7 @@ class CanFlowControlHandler:
         Check if provided data bytes encodes a Flow Control packet.
 
         .. warning:: The method does not validate the content of the provided frame data bytes.
-            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-can-n-pci>` parameter is checked whether contain
+            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter is checked whether contain
             Flow Control N_PCI value.
 
         :param addressing_format: CAN Addressing Format used.
@@ -423,7 +423,7 @@ class CanFlowControlHandler:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 
-        .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
 
         :param flow_status: Value of Flow Status parameter.
         :param block_size: Value of Block Size parameter.
@@ -455,7 +455,7 @@ class CanFlowControlHandler:
         """
         Create Flow Control data bytes with CAN Packet Type and Flow Status, Block Size and STmin parameters.
 
-        .. note:: This method can be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
+        .. note:: This method addressing be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
 
         :param flow_status: Value of Flow Status parameter.
         :param block_size: Value of Block Size parameter.
@@ -478,10 +478,10 @@ class CanFlowControlHandler:
 
 
 FlowControlParametersAlias = Tuple[CanFlowStatus, Optional[int], Optional[int]]
-"""Alias of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters which contains:
-- :ref:`Flow Status <knowledge-base-can-flow-status>`
-- :ref:`Block Size <knowledge-base-can-block-size>`
-- :ref:`Separation Time minimum <knowledge-base-can-st-min>`"""
+"""Alias of :ref:`Flow Control <knowledge-base-addressing-flow-control>` parameters which contains:
+- :ref:`Flow Status <knowledge-base-addressing-flow-status>`
+- :ref:`Block Size <knowledge-base-addressing-block-size>`
+- :ref:`Separation Time minimum <knowledge-base-addressing-st-min>`"""
 
 
 class AbstractFlowControlParametersGenerator(ABC):
@@ -511,10 +511,10 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         """
         Set values of Block Size and Separation Time minimum parameters to use.
 
-        :param block_size: Value of :ref:`Block Size <knowledge-base-can-block-size>` parameter to use.
-        :param st_min: Value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter to use.
+        :param block_size: Value of :ref:`Block Size <knowledge-base-addressing-block-size>` parameter to use.
+        :param st_min: Value of :ref:`Separation Time minimum <knowledge-base-addressing-st-min>` parameter to use.
         :param wait_count: Number of Flow Control packets to send with
-            :ref:`Flow Status <knowledge-base-can-flow-status>` equal 1 (wait).
+            :ref:`Flow Status <knowledge-base-addressing-flow-status>` equal 1 (wait).
         :param repeat_wait: How to send Flow Control packets with WAIT Flow Status:
 
             - True - send them before every Flow Control packet with Flow Status=0 (continue to send)
@@ -540,9 +540,9 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         Generate next set of Flow Control parameters.
 
         :return: Tuple with values of Flow Control parameters:
-            - :ref:`Flow Status <knowledge-base-can-flow-status>`
-            - :ref:`Block Size <knowledge-base-can-block-size>`
-            - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
+            - :ref:`Flow Status <knowledge-base-addressing-flow-status>`
+            - :ref:`Block Size <knowledge-base-addressing-block-size>`
+            - :ref:`Separation Time minimum <knowledge-base-addressing-st-min>`
         """
         if self._remaining_wait is None:
             return CanFlowStatus.ContinueToSend, self.block_size, self.st_min
@@ -555,13 +555,13 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
 
     @property
     def block_size(self) -> int:
-        """Value of :ref:`Block Size <knowledge-base-can-block-size>` parameter."""
+        """Value of :ref:`Block Size <knowledge-base-addressing-block-size>` parameter."""
         return self.__block_size
 
     @block_size.setter
     def block_size(self, value: int) -> None:
         """
-        Set value of :ref:`Block Size <knowledge-base-can-block-size>` parameter.
+        Set value of :ref:`Block Size <knowledge-base-addressing-block-size>` parameter.
 
         :param value: Value to set.
         """
@@ -570,13 +570,13 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
 
     @property
     def st_min(self) -> int:
-        """Value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter."""
+        """Value of :ref:`Separation Time minimum <knowledge-base-addressing-st-min>` parameter."""
         return self.__st_min
 
     @st_min.setter
     def st_min(self, value: int) -> None:
         """
-        Set value of :ref:`Separation Time minimum <knowledge-base-can-st-min>` parameter.
+        Set value of :ref:`Separation Time minimum <knowledge-base-addressing-st-min>` parameter.
 
         :param value: Value to set.
         """
@@ -585,13 +585,13 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
 
     @property
     def wait_count(self) -> int:
-        """Get number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`."""
+        """Get number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-addressing-flow-status>`."""
         return self.__wait_count
 
     @wait_count.setter
     def wait_count(self, value: int) -> None:
         """
-        Set number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-can-flow-status>`.
+        Set number of Flow Control packets to send with WAIT :ref:`Flow Status <knowledge-base-addressing-flow-status>`.
 
         :param value: Value to set.
         """

@@ -18,7 +18,7 @@ from uds.can import (
 from uds.addressing import AddressingType, AbstractCanAddressingInformation, CanAddressingFormat, CanAddressingInformation,    ExtendedCanAddressingInformation,    Mixed11BitCanAddressingInformation,    Mixed29BitCanAddressingInformation,    NormalCanAddressingInformation,    NormalFixedCanAddressingInformation
 from uds.utilities import AmbiguityError, RawBytesAlias, UnusedArgumentWarning
 
-from ..abstract_packet import AbstractPacket
+from uds.packet.abstract_packet import AbstractPacket
 from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
@@ -28,7 +28,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
     Definition of a CAN packet.
 
     Objects of this class act as a storage for all relevant attributes of a
-    :ref:`CAN packet <knowledge-base-uds-can-packet>`.
+    :ref:`CAN packet <knowledge-base-uds-addressing-packet>`.
     """
 
     def __init__(self, *,
@@ -124,7 +124,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         Change addressing information for this CAN packet.
 
         This function enables to change an entire :ref:`Network Address Information <knowledge-base-n-ai>`
-        for a :ref:`CAN packet <knowledge-base-uds-can-packet>`.
+        for a :ref:`CAN packet <knowledge-base-uds-addressing-packet>`.
 
         :param addressing_format: CAN addressing format that this CAN packet uses.
         :param addressing_type: Addressing type for which this CAN packet is relevant.
@@ -319,7 +319,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`CAN packet <knowledge-base-uds-can-packet>`.
+        a :ref:`CAN packet <knowledge-base-uds-addressing-packet>`.
 
         :param packet_type: Type of this CAN packet.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
@@ -371,7 +371,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`Single Frame <knowledge-base-can-single-frame>`.
+        a :ref:`Single Frame <knowledge-base-addressing-single-frame>`.
 
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
@@ -400,7 +400,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`First Frame <knowledge-base-can-first-frame>`.
+        a :ref:`First Frame <knowledge-base-addressing-first-frame>`.
 
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
@@ -426,7 +426,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`Consecutive Frame <knowledge-base-can-first-frame>`.
+        a :ref:`Consecutive Frame <knowledge-base-addressing-first-frame>`.
 
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param sequence_number: Sequence number value of this Consecutive Frame.
@@ -459,7 +459,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`Flow Control <knowledge-base-can-flow-control>`.
+        a :ref:`Flow Control <knowledge-base-addressing-flow-control>`.
 
         :param flow_status: Flow status information carried by this Flow Control frame.
         :param block_size: Block size information carried by this Flow Control frame.
@@ -518,10 +518,10 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         """
         Target Address (TA) value of this CAN Packet.
 
-        Target Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
-         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
-         - :ref:`Extended Addressing <knowledge-base-can-extended-addressing>`
-         - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
+        Target Address value is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
+         - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
+         - :ref:`Extended Addressing <knowledge-base-addressing-extended-addressing>`
+         - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -532,9 +532,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         """
         Source Address (SA) value of this CAN Packet.
 
-        Source Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
-         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
-         - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
+        Source Address value is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
+         - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
+         - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -545,10 +545,10 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         """
         Address Extension (AE) value of this CAN Packet.
 
-        Address Extension is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
-         - :ref:`Mixed Addressing <knowledge-base-can-mixed-addressing>` - either:
-           - :ref:`Mixed 11-bit Addressing <knowledge-base-can-mixed-11-bit-addressing>`
-           - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
+        Address Extension is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
+         - :ref:`Mixed Addressing <knowledge-base-addressing-mixed-addressing>` - either:
+           - :ref:`Mixed 11-bit Addressing <knowledge-base-addressing-mixed-11-bit-addressing>`
+           - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
 
         None in other cases.
         """

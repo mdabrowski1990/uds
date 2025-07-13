@@ -1,7 +1,7 @@
 """
 Implementation for CAN frame fields that are influenced by UDS.
 
-Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
+Handlers for :ref:`CAN Frame <knowledge-base-addressing-frame>` fields:
  - CAN Identifier
  - DLC
  - Data
@@ -15,11 +15,11 @@ from typing import Dict, Optional, Set, Tuple, TypedDict
 from uds.addressing import AddressingType
 from uds.utilities import validate_raw_byte
 
-from uds.addressing.can.addressing_format import CanAddressingFormat
+from uds.can.addressing import CanAddressingFormat
 
 DEFAULT_FILLER_BYTE: int = 0xCC
 """Default value of Filler Byte.
-Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
+Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`.
 .. note:: The value is specified by ISO 15765-2:2016 (chapter 10.4.2.1)."""
 
 
@@ -63,7 +63,7 @@ class CanIdHandler:
     """Maximal value of Priority parameter defined by SAE J1939."""
 
     ADDRESSING_TYPE_NAME: str = "addressing_type"
-    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
+    """Name of :ref:`Addressing Type <knowledge-base-addressing-addressing>` parameter in Addressing Information."""
     TARGET_ADDRESS_NAME: str = "target_address"
     """Name of Target Address parameter in Addressing Information."""
     SOURCE_ADDRESS_NAME: str = "source_address"
@@ -107,7 +107,7 @@ class CanIdHandler:
                                  CanAddressingFormat.MIXED_11BIT_ADDRESSING):
             return cls.CanIdAIAlias(addressing_type=None,
                                     target_address=None,
-                                    source_address=None)  # no addressing information can be decoded
+                                    source_address=None)  # no addressing information addressing be decoded
         raise NotImplementedError("Unhandled addressing type value was provided.")
 
     @classmethod
@@ -461,8 +461,8 @@ class CanDlcHandler:
     """Maximum value of DLC parameter."""
 
     MIN_BASE_UDS_DLC: int = 8
-    """Minimum CAN DLC value that can be used for UDS communication.
-    Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+    """Minimum CAN DLC value that addressing be used for UDS communication.
+    Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-addressing-data-optimization>`
     is used."""
 
     @classmethod
@@ -538,7 +538,7 @@ class CanDlcHandler:
 
             - True - provided value must be the exact number of data bytes to be carried by a CAN frame.
             - False - provided value must be a number of data bytes that could be carried by a CAN frame
-              (:ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed).
+              (:ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>` is allowed).
 
         :raise TypeError: Provided values is not int type.
         :raise ValueError: Provided value is not number of data bytes that matches the criteria.

@@ -9,7 +9,7 @@ from uds.can import (
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
-from uds.segmentation.can_segmenter import (
+from uds.can.segmenter import (
     DEFAULT_FILLER_BYTE,
     AbstractCanAddressingInformation,
     AddressingType,

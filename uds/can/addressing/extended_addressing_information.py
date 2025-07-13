@@ -7,8 +7,8 @@ from typing import Optional
 from uds.addressing import AddressingType
 from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
 
-from uds.addressing.can.abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
-from uds.addressing.can.addressing_format import CanAddressingFormat
+from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
+from uds.can.addressing.addressing_format import CanAddressingFormat
 from uds.can.frame_fields import CanIdHandler
 
 

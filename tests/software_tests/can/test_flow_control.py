@@ -13,7 +13,7 @@ from uds.can.flow_control import (
 )
 from uds.utilities import NibbleEnum, ValidatedEnum
 
-SCRIPT_LOCATION = "uds.can.flow_control"
+SCRIPT_LOCATION = "uds.addressing.flow_control"
 
 
 class TestCanFlowStatus:

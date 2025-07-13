@@ -1,7 +1,7 @@
 """
-A subpackage with implementation for UDS middle layers (Transport and Network).
+A subpackage with definition of UDS middle layers (Transport and Network).
 
-It provides configurable Transport Interfaces for:
+It provides tools and base for configurable Transport Interfaces. Transport Interfaces features:
  - transmitting and receiving packets
  - transmitting and receiving UDS messages
  - storing historic information about transmitted and received packets
@@ -10,4 +10,3 @@ It provides configurable Transport Interfaces for:
 """
 
 from .abstract_transport_interface import AbstractTransportInterface
-from .can import AbstractCanTransportInterface, PyCanTransportInterface

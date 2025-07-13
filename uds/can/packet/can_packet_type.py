@@ -6,7 +6,7 @@ from aenum import unique
 
 from uds.can import CanConsecutiveFrameHandler, CanFirstFrameHandler, CanFlowControlHandler, CanSingleFrameHandler
 
-from ..abstract_packet_type import AbstractPacketType
+from uds.packet.abstract_packet_type import AbstractPacketType
 
 
 @unique
@@ -14,18 +14,18 @@ class CanPacketType(AbstractPacketType):
     """
     Definition of CAN packet types.
 
-    :ref:`CAN packet types <knowledge-base-can-n-pci>` are
+    :ref:`CAN packet types <knowledge-base-addressing-n-pci>` are
     :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` values that are specific for CAN bus.
     """
 
     SINGLE_FRAME: "CanPacketType" = CanSingleFrameHandler.SINGLE_FRAME_N_PCI  # type: ignore
-    """CAN packet type (N_PCI) value of :ref:`Single Frame (SF) <knowledge-base-can-single-frame>`."""
+    """CAN packet type (N_PCI) value of :ref:`Single Frame (SF) <knowledge-base-addressing-single-frame>`."""
     FIRST_FRAME: "CanPacketType" = CanFirstFrameHandler.FIRST_FRAME_N_PCI  # type: ignore
-    """CAN packet type (N_PCI) value of First Frame (FF) <knowledge-base-can-first-frame>`."""
+    """CAN packet type (N_PCI) value of First Frame (FF) <knowledge-base-addressing-first-frame>`."""
     CONSECUTIVE_FRAME: "CanPacketType" = CanConsecutiveFrameHandler.CONSECUTIVE_FRAME_N_PCI  # type: ignore
-    """CAN packet type (N_PCI) value of :ref:`Consecutive Frame (CF) <knowledge-base-can-consecutive-frame>`."""
+    """CAN packet type (N_PCI) value of :ref:`Consecutive Frame (CF) <knowledge-base-addressing-consecutive-frame>`."""
     FLOW_CONTROL: "CanPacketType" = CanFlowControlHandler.FLOW_CONTROL_N_PCI  # type: ignore
-    """CAN packet type (N_PCI) value of :ref:`Flow Control (FC) <knowledge-base-can-flow-control>`."""
+    """CAN packet type (N_PCI) value of :ref:`Flow Control (FC) <knowledge-base-addressing-flow-control>`."""
 
     @classmethod
     def is_initial_packet_type(cls, value: "CanPacketType") -> bool:

@@ -9,7 +9,7 @@ from uds.can.consecutive_frame import (
     InconsistentArgumentsError,
 )
 
-SCRIPT_LOCATION = "uds.can.consecutive_frame"
+SCRIPT_LOCATION = "uds.addressing.consecutive_frame"
 
 
 class TestCanConsecutiveFrameHandler:

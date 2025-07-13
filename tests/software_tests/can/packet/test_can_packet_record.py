@@ -4,7 +4,7 @@ import pytest
 from mock import Mock, patch
 
 from uds.can import CanFlowStatus
-from uds.packet.can.can_packet_record import (
+from uds.packet.can import (
     AbstractCanAddressingInformation,
     CanAddressingFormat,
     CanPacketRecord,
@@ -15,7 +15,7 @@ TransmissionDirection,
 AddressingType
 )
 
-SCRIPT_LOCATION = "uds.packet.can.can_packet_record"
+SCRIPT_LOCATION = "uds.packet.addressing.can_packet_record"
 
 
 class TestCanPacketRecord:

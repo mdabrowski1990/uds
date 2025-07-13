@@ -2,7 +2,7 @@ import pytest
 from mock import Mock, call, patch
 
 from uds.can import CanFlowStatus
-from uds.packet.can.can_packet import (
+from uds.can.packet.can_packet import (
     DEFAULT_FILLER_BYTE,
     AbstractCanAddressingInformation,
     AddressingType,
@@ -12,7 +12,7 @@ from uds.packet.can.can_packet import (
     CanPacketType,
 )
 
-SCRIPT_LOCATION = "uds.packet.can.can_packet"
+SCRIPT_LOCATION = "uds.packet.addressing.can_packet"
 
 
 class TestCanPacket:
@@ -328,7 +328,7 @@ class TestCanPacket:
         {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: "normal fixed",
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "addressing type",
-            AbstractCanAddressingInformation.CAN_ID_NAME: "can id",
+            AbstractCanAddressingInformation.CAN_ID_NAME: "addressing id",
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: "target address",
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: "source address",
         },
@@ -425,7 +425,7 @@ class TestCanPacket:
         {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: "mixed 29bit",
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: "addressing type",
-            AbstractCanAddressingInformation.CAN_ID_NAME: "can id",
+            AbstractCanAddressingInformation.CAN_ID_NAME: "addressing id",
             AbstractCanAddressingInformation.TARGET_ADDRESS_NAME: "target address",
             AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME: "source address",
             AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME: "address extension",

@@ -1,5 +1,4 @@
-""""""
+"""Packets implementation for Diagnostic on CAN (ISO 15765)."""
 
 from .addressing_type import AddressingType
 from .abstract_addressing_information import AbstractAddressingInformation
-from .can import AbstractCanAddressingInformation, CanAddressingFormat, NormalCanAddressingInformation, NormalFixedCanAddressingInformation, ExtendedCanAddressingInformation, Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation, CanAddressingInformation, PacketAIParamsAlias
