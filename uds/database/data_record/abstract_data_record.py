@@ -161,7 +161,7 @@ class AbstractDataRecord(ABC):
                 raise ValueError("Child Data Record cannot be reoccurring.")
             children_length += child.length
             children_names.add(child.name)
-        if children_length != self.length:
+        if children_length not in {self.length, 0}:
             raise InconsistentArgumentsError("Total children length does not much the length of this Data Record.")
         if len(children_names) != len(value):
             raise InconsistentArgumentsError("Each child has to have unique name.")

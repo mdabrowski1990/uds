@@ -188,6 +188,7 @@ class TestAbstractDataRecord:
             AbstractDataRecord.children.fset(self.mock_data_record, children)
 
     @pytest.mark.parametrize("length, children", [
+        (8, []),
         (9, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),
              Mock(spec=AbstractDataRecord, is_reoccurring=False, length=5)]),
         (7, [Mock(spec=AbstractDataRecord, is_reoccurring=False, length=4),

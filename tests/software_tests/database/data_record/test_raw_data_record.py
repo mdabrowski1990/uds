@@ -62,3 +62,51 @@ class TestRawDataRecord:
     def test_get_raw_value(self, value):
         assert RawDataRecord.get_raw_value(self.mock_data_record, value) == value
         self.mock_data_record._validate_raw_value.assert_called_once_with(value)
+
+
+@pytest.mark.integration
+class TestRawDataRecordIntegration:
+    """Integration tests for the RawDataRecord class."""
+
+    def setup_class(self):
+        self.dtc = RawDataRecord(name="DTC",
+                                 length=24,
+                                 min_occurrences=0,
+                                 max_occurrences=1)
+
+    @pytest.mark.parametrize("value", [0, 0xFFFFFF, 0xA1B2C3])
+    def test_get_physical_value(self, value):
+        assert self.dtc.get_physical_value(value) == value
+
+    @pytest.mark.parametrize("value", [0, 0xFFFFFF, 0xA1B2C3])
+    def test_get_raw_value(self, value):
+        assert self.dtc.get_raw_value(value) == value
+
+    @pytest.mark.parametrize("value, expected_output", [
+        (0, {
+            "name": "DTC",
+            "raw_value": 0,
+            "physical_value": 0,
+            "children": tuple()
+        }),
+        (0xFFFFFF, {
+            "name": "DTC",
+            "raw_value": 0xFFFFFF,
+            "physical_value": 0xFFFFFF,
+            "children": tuple()
+        }),
+        (0xA1B2C3, {
+            "name": "DTC",
+            "raw_value": 0xA1B2C3,
+            "physical_value": 0xA1B2C3,
+            "children": tuple()
+        }),
+    ])
+    def test_get_occurrence_info(self, value, expected_output):
+        assert self.dtc.get_occurrence_info(value) == expected_output
+
+    @pytest.mark.parametrize("value", [0, 0xFFFFFF])
+    def test_get_physical_values__error(self, value):
+        assert self.dtc.is_reoccurring is False
+        with pytest.raises(RuntimeError):
+            self.dtc.get_physical_values(value)
