@@ -9,7 +9,7 @@ The packets are created during :ref:`segmentation <knowledge-base-segmentation>`
 :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
 Each :ref:`diagnostic message <knowledge-base-diagnostic-message>` consists of at least one Packet (N_PDU).
 
-Packet consists of following fields:
+Packet contains following information:
 
   - `Network Address Information`_ (N_AI) - packet addressing
   - `Network Data Field`_ (N_Data) - packet data
