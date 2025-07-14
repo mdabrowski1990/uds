@@ -68,7 +68,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :param frame: Frame that carried this packet.
         :param direction: Information whether this packet was transmitted or received.
-        :param transmission_time: Time stamp when this packet was fully transmitted on a bus.
+        :param transmission_time: Time stamp when this packet was fully transmitted on a bus/network.
         """
         self.frame = frame
         self.direction = direction
@@ -130,13 +130,13 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
     @property
     def transmission_time(self) -> datetime:
-        """Time when this packet was fully transmitted on a bus."""
+        """Time when this packet was fully transmitted on a bus/network."""
         return self.__transmission_time
 
     @transmission_time.setter
     def transmission_time(self, value: datetime) -> None:
         """
-        Set value when this packet was transmitted on a bus.
+        Set value when this packet was transmitted on a bus/network.
 
         :param value: Value of transmission time to set.
 

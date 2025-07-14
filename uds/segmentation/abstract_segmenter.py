@@ -29,7 +29,7 @@ class AbstractSegmenter(ABC):
     :ref:`segmentation <knowledge-base-message-segmentation>` and
     :ref:`desegmentation <knowledge-base-packets-desegmentation>` execution.
 
-    .. note:: Each concrete segmenter class handles exactly one bus.
+    .. note:: Each concrete segmenter class handles exactly one bus/network type.
     """
 
     @property

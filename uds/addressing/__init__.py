@@ -1,4 +1,4 @@
-"""Packets implementation for Diagnostic on CAN (ISO 15765)."""
+"""UDS Addressing implementation that is common for all network types."""
 
 from .addressing_type import AddressingType
 from .abstract_addressing_information import AbstractAddressingInformation

@@ -217,7 +217,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         Time stamp when transmission of this message was initiated.
 
         It is determined by a moment of time when the first packet (that carried this message) was published
-        to a bus (either received or transmitted).
+        to a bus/network (either received or transmitted).
 
         :return: Time stamp when transmission of this message was initiated.
         """
@@ -229,7 +229,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         Time stamp when transmission of this message was completed.
 
         It is determined by a moment of time when the last packet (that carried this message) was published
-        to a bus (either received or transmitted).
+        to a bus/network (either received or transmitted).
 
         :return: Time stamp when transmission of this message was completed.
         """

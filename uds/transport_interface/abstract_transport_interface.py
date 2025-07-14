@@ -23,20 +23,20 @@ class AbstractTransportInterface(ABC):
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
-        :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
+        :param bus_manager: An object that handles the bus/network (Physical and Data layers of OSI Model).
 
-        :raise ValueError: Provided value of bus manager is not supported by this Transport Interface.
+        :raise ValueError: Provided value of bus/network manager is not supported by this Transport Interface.
         """
         if not self.is_supported_bus_manager(bus_manager):
-            raise ValueError("Unsupported bus manager was provided.")
+            raise ValueError("Unsupported bus/network manager was provided.")
         self.__bus_manager = bus_manager
 
     @property
     def bus_manager(self) -> Any:
         """
-        Value of the bus manager used by this Transport Interface.
+        Value of the bus/network manager used by this Transport Interface.
 
-        Bus manager handles Physical and Data layers (OSI Model) of the bus.
+        Bus/network manager handles Physical and Data layers (OSI Model) of the bus/network.
         """
         return self.__bus_manager
 
@@ -54,11 +54,11 @@ class AbstractTransportInterface(ABC):
     @abstractmethod
     def is_supported_bus_manager(bus_manager: Any) -> bool:
         """
-        Check whether provided value is a bus manager that is supported by this Transport Interface.
+        Check whether provided value is a bus/network manager that is supported by this Transport Interface.
 
         :param bus_manager: Value to check.
 
-        :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
+        :return: True if provided object is compatible with this Transport Interface, False otherwise.
         """
 
     @abstractmethod
