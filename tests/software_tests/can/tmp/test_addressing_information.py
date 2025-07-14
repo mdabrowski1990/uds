@@ -68,12 +68,12 @@ class TestCanAddressingInformation:
         mock_returned_class = Mock()
         mock_getitem = Mock(return_value=mock_returned_class)
         mock_ai_mapping.__getitem__ = mock_getitem
-        assert CanAddressingInformation.validate_packet_ai(addressing_format=addressing_format,
-                                                           addressing_type=addressing_type,
-                                                           can_id=can_id,
-                                                           target_address=target_address,
-                                                           source_address=source_address,
-                                                           address_extension=address_extension) \
+        assert CanAddressingInformation.validate_addressing_params(addressing_format=addressing_format,
+                                                                   addressing_type=addressing_type,
+                                                                   can_id=can_id,
+                                                                   target_address=target_address,
+                                                                   source_address=source_address,
+                                                                   address_extension=address_extension) \
                == mock_returned_class.validate_packet_ai.return_value
         mock_getitem.assert_called_once_with(addressing_format)
         mock_returned_class.validate_packet_ai.assert_called_once_with(addressing_type=addressing_type,
@@ -233,7 +233,7 @@ class TestCanAddressingInformation:
     @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.ADDRESSING_INFORMATION_MAPPING")
     def test_get_ai_data_bytes_number(self, mock_ai_mapping, addressing_format):
         assert CanAddressingInformation.get_ai_data_bytes_number(addressing_format=addressing_format) \
-               == mock_ai_mapping.__getitem__.return_value.AI_DATA_BYTES_NUMBER
+               == mock_ai_mapping.__getitem__.return_value.ai_data_bytes_number
         mock_ai_mapping.__getitem__.assert_called_once_with(addressing_format)
 
 

@@ -13,7 +13,7 @@ from uds.utilities import InconsistentArgumentsError, RawBytesAlias, bytes_to_in
 
 from uds.can.addressing import CanAddressingFormat
 from uds.can.addressing.addressing_information import CanAddressingInformation
-from .frame_fields import CanDlcHandler
+from uds.can.frame import CanDlcHandler
 from .single_frame import CanSingleFrameHandler
 
 
@@ -269,7 +269,7 @@ class CanFirstFrameHandler:
         if long_ff_dl_format is not None:
             if (long_ff_dl_format and ff_dl <= cls.MAX_SHORT_FF_DL_VALUE) \
                     or (not long_ff_dl_format and ff_dl > cls.MAX_SHORT_FF_DL_VALUE):
-                raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is not compatible with "
+                raise InconsistentArgumentsError(f"Provided value of First Frame Data Length is incompatible with "
                                                  f"the format used. Actual values: ff_dl={ff_dl}, "
                                                  f"long_ff_dl_format={long_ff_dl_format}")
 

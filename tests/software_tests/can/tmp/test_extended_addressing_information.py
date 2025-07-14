@@ -45,10 +45,10 @@ class TestExtendedCanAddressingInformation:
     ])
     def test_validate_packet_ai__inconsistent_arg(self, unsupported_args):
         with pytest.raises(UnusedArgumentError):
-            ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=Mock(),
-                                                                can_id=Mock(),
-                                                                target_address=Mock(),
-                                                                **unsupported_args)
+            ExtendedCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
+                                                                        can_id=Mock(),
+                                                                        target_address=Mock(),
+                                                                        **unsupported_args)
 
     @pytest.mark.parametrize("addressing_type, can_id", [
         ("some addressing type", "some id"),
@@ -58,9 +58,9 @@ class TestExtendedCanAddressingInformation:
     def test_validate_packet_ai__invalid_can_id(self, addressing_type, can_id, target_address):
         self.mock_can_id_handler_class.is_extended_addressed_can_id.return_value = False
         with pytest.raises(InconsistentArgumentsError):
-            ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                can_id=can_id,
-                                                                target_address=target_address)
+            ExtendedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
+                                                                        can_id=can_id,
+                                                                        target_address=target_address)
         self.mock_can_id_handler_class.validate_can_id.assert_called_once_with(can_id)
         self.mock_can_id_handler_class.is_extended_addressed_can_id.assert_called_once_with(can_id)
 
@@ -71,9 +71,9 @@ class TestExtendedCanAddressingInformation:
     @pytest.mark.parametrize("target_address", ["some TA", 0x5B])
     def test_validate_packet_ai__valid(self, addressing_type, can_id, target_address):
         self.mock_can_id_handler_class.is_extended_addressed_can_id.return_value = True
-        assert ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                   can_id=can_id,
-                                                                   target_address=target_address) == {
+        assert ExtendedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
+                                                                           can_id=can_id,
+                                                                           target_address=target_address) == {
             AbstractCanAddressingInformation.ADDRESSING_FORMAT_NAME: CanAddressingFormat.EXTENDED_ADDRESSING,
             AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME: self.mock_validate_addressing_type.return_value,
             AbstractCanAddressingInformation.CAN_ID_NAME: can_id,
@@ -106,10 +106,10 @@ class TestExtendedCanAddressingInformation:
     def test_validate_node_ai__inconsistent(self, rx_packets_physical_ai, tx_packets_physical_ai,
                                             rx_packets_functional_ai, tx_packets_functional_ai):
         with pytest.raises(InconsistentArgumentsError):
-            ExtendedCanAddressingInformation._validate_node_ai(rx_packets_physical_ai=rx_packets_physical_ai,
-                                                               tx_packets_physical_ai=tx_packets_physical_ai,
-                                                               rx_packets_functional_ai=rx_packets_functional_ai,
-                                                               tx_packets_functional_ai=tx_packets_functional_ai)
+            ExtendedCanAddressingInformation._validate_addressing_information(rx_packets_physical_ai=rx_packets_physical_ai,
+                                                                              tx_packets_physical_ai=tx_packets_physical_ai,
+                                                                              rx_packets_functional_ai=rx_packets_functional_ai,
+                                                                              tx_packets_functional_ai=tx_packets_functional_ai)
 
     @pytest.mark.parametrize("rx_packets_physical_ai, tx_packets_physical_ai, "
                              "rx_packets_functional_ai, tx_packets_functional_ai", [
@@ -134,7 +134,7 @@ class TestExtendedCanAddressingInformation:
     ])
     def test_validate_node_ai__valid(self, rx_packets_physical_ai, tx_packets_physical_ai,
                                             rx_packets_functional_ai, tx_packets_functional_ai):
-        assert ExtendedCanAddressingInformation._validate_node_ai(
+        assert ExtendedCanAddressingInformation._validate_addressing_information(
             rx_packets_physical_ai=rx_packets_physical_ai,
             tx_packets_physical_ai=tx_packets_physical_ai,
             rx_packets_functional_ai=rx_packets_functional_ai,

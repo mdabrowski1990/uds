@@ -1,6 +1,5 @@
-from .abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
+"""UDS addressing implementation for CAN bus."""
+
 from .addressing_format import CanAddressingFormat
+from .abstract_addressing_information import AbstractCanAddressingInformation
 from .normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
-from .extended_addressing_information import ExtendedCanAddressingInformation
-from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
-from .addressing_information import CanAddressingInformation

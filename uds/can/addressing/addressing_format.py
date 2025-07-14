@@ -1,4 +1,4 @@
-"""Implementation of CAN Addressing Formats."""
+"""Definition UDS Addressing Formats for CAN bus."""
 
 __all__ = ["CanAddressingFormat"]
 
@@ -10,10 +10,10 @@ from uds.utilities import ValidatedEnum
 @unique
 class CanAddressingFormat(ValidatedEnum, StrEnum):  # type: ignore
     """
-    Definition of CAN addressing formats.
+    Addressing formats used for UDS communication over CAN bus.
 
-    :ref:`CAN addressing formats <knowledge-base-addressing-addressing>` determines how (in which fields of a CAN Packet)
-    :ref:`Network Address Information (N_AI) <knowledge-base-n-ai>` is provided.
+    :ref:`CAN addressing formats <knowledge-base-addressing-addressing>` determines how
+    :ref:`Network Address Information (N_AI) <knowledge-base-n-ai>` are provided.
     """
 
     NORMAL_ADDRESSING: "CanAddressingFormat" = "Normal Addressing"  # type: ignore

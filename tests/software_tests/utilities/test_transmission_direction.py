@@ -1,6 +1,7 @@
 from aenum import StrEnum
 
-from uds.utilities.transmission_direction import TransmissionDirection, ValidatedEnum
+from uds.utilities.transmission_direction import TransmissionDirection
+from uds.utilities import ValidatedEnum
 
 
 class TestTransmissionDirection:

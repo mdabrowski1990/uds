@@ -245,7 +245,7 @@ class CanSegmenter(AbstractSegmenter):
             decoded_frame_ai = CanAddressingInformation.decode_packet_ai(
                 addressing_format=self.addressing_format,
                 can_id=can_id,
-                ai_data_bytes=data[:self.addressing_information.AI_DATA_BYTES_NUMBER])
+                ai_data_bytes=data[:self.addressing_information.ai_data_bytes_number])
         except ValueError:
             return None
         frame_ai = {

@@ -31,7 +31,7 @@ class TestCanSegmenter:
 
     def setup_method(self):
         self.mock_can_segmenter = Mock(spec=CanSegmenter)
-        self.mock_can_segmenter.addressing_information.AI_DATA_BYTES_NUMBER = 0
+        self.mock_can_segmenter.addressing_information.ai_data_bytes_number = 0
         # patching
         self._patcher_can_ai_class = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_can_ai_class = self._patcher_can_ai_class.start()

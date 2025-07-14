@@ -1,5 +1,5 @@
 """
-Implementation of CAN Addressing Information.
+Implementation of Addressing Information for CAN bus.
 
 This module contains helper class for managing :ref:`Addressing Information <knowledge-base-n-ai>` on CAN bus.
 """
@@ -11,12 +11,12 @@ from typing import Dict, Optional, Type, TypedDict
 from uds.addressing import AddressingType
 from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_byte, validate_raw_bytes
 
-from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
-from uds.can.addressing.addressing_format import CanAddressingFormat
-from uds.can.addressing.extended_addressing_information import ExtendedCanAddressingInformation
-from uds.can.frame_fields import CanIdHandler
-from uds.can.addressing.mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
-from uds.can.addressing.normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
+from .addressing_format import CanAddressingFormat
+from .extended_addressing_information import ExtendedCanAddressingInformation
+from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from .normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
+from ..frame import CanIdHandler
 
 
 class CanAddressingInformation:
@@ -29,7 +29,7 @@ class CanAddressingInformation:
         CanAddressingFormat.MIXED_11BIT_ADDRESSING: Mixed11BitCanAddressingInformation,
         CanAddressingFormat.MIXED_29BIT_ADDRESSING: Mixed29BitCanAddressingInformation,
     }
-    """Dictionary with CAN Addressing format mapping to Addressing Information handler classes."""
+    """Dictionary with CAN Addressing Formats mapped to Addressing Information handler classes."""
 
     class DataBytesAIParamsAlias(TypedDict, total=False):
         """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in data field."""
@@ -47,33 +47,45 @@ class CanAddressingInformation:
 
     def __new__(cls,  # type: ignore
                 addressing_format: CanAddressingFormat,
-                rx_physical: AbstractCanAddressingInformation.InputAIParamsAlias,
-                tx_physical: AbstractCanAddressingInformation.InputAIParamsAlias,
-                rx_functional: AbstractCanAddressingInformation.InputAIParamsAlias,
-                tx_functional: AbstractCanAddressingInformation.InputAIParamsAlias) -> AbstractCanAddressingInformation:
+                rx_physical_params: AbstractCanAddressingInformation.InputAIParams,
+                tx_physical_params: AbstractCanAddressingInformation.InputAIParams,
+                rx_functional_params: AbstractCanAddressingInformation.InputAIParams,
+                tx_functional_params: AbstractCanAddressingInformation.InputAIParams) -> AbstractCanAddressingInformation:
         """
-        Create object of CAN Entity (either server or client) Addressing Information.
+        Create UDS Addressing Information for a CAN node.
 
-        :param addressing_format: CAN Addressing format used by CAN Entity.
-        :param rx_physical: Addressing Information parameters used for incoming physically addressed communication.
-        :param tx_physical: Addressing Information parameters used for outgoing physically addressed communication.
-        :param rx_functional: Addressing Information parameters used for incoming functionally addressed communication.
-        :param tx_functional: Addressing Information parameters used for outgoing functionally addressed communication.
+        :param addressing_format: CAN Addressing format used by CAN node.
+        :param rx_physical_params: Addressing Information parameters used for incoming physically addressed communication.
+        :param tx_physical_params: Addressing Information parameters used for outgoing physically addressed communication.
+        :param rx_functional_params: Addressing Information parameters used for incoming functionally addressed communication.
+        :param tx_functional_params: Addressing Information parameters used for outgoing functionally addressed communication.
         """
         ai_class = cls.ADDRESSING_INFORMATION_MAPPING[addressing_format]
-        return ai_class(rx_physical=rx_physical,
-                        tx_physical=tx_physical,
-                        rx_functional=rx_functional,
-                        tx_functional=tx_functional)
+        return ai_class(rx_physical_params=rx_physical_params,
+                        tx_physical_params=tx_physical_params,
+                        rx_functional_params=rx_functional_params,
+                        tx_functional_params=tx_functional_params)
 
     @classmethod
-    def validate_packet_ai(cls,
-                           addressing_format: CanAddressingFormat,
-                           addressing_type: AddressingType,
-                           can_id: Optional[int] = None,
-                           target_address: Optional[int] = None,
-                           source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None) -> PacketAIParamsAlias:
+    def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormat) -> int:
+        """
+        Get number of data bytes that are used to carry Addressing Information.
+
+        :param addressing_format: CAN Addressing Format used.
+
+        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
+            CAN Addressing Format.
+        """
+        return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].ai_data_bytes_number
+
+    @classmethod
+    def validate_addressing_params(cls,
+                                   addressing_format: CanAddressingFormat,
+                                   addressing_type: AddressingType,
+                                   can_id: Optional[int] = None,
+                                   target_address: Optional[int] = None,
+                                   source_address: Optional[int] = None,
+                                   address_extension: Optional[int] = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet.
 
@@ -87,7 +99,7 @@ class CanAddressingInformation:
         :return: Normalized dictionary with the provided Addressing Information.
         """
         CanAddressingFormat.validate_member(addressing_format)
-        return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].validate_packet_ai(
+        return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].validate_addressing_params(
             addressing_type=addressing_type,
             can_id=can_id,
             target_address=target_address,
@@ -138,11 +150,11 @@ class CanAddressingInformation:
         from_data_bytes = cls.decode_ai_data_bytes(addressing_format=addressing_format, ai_data_bytes=ai_data_bytes)
         from_can_id = CanIdHandler.decode_can_id(addressing_format=addressing_format, can_id=can_id)
         return cls.DecodedAIParamsAlias(
-            addressing_type=from_can_id.get(AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME, None),  # type: ignore  # noqa
-            target_address=from_data_bytes.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None)  # type: ignore  # noqa
+            addressing_type=from_can_id.get(AbstractCanAddressingInformation.ADDRESSING_TYPE_NAME, None),
+            target_address=from_data_bytes.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None)
             or from_can_id.get(AbstractCanAddressingInformation.TARGET_ADDRESS_NAME, None),
-            source_address=from_can_id.get(AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME, None),  # type: ignore
-            address_extension=from_data_bytes.get(AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME, None))  # type: ignore  # noqa
+            source_address=from_can_id.get(AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME, None),
+            address_extension=from_data_bytes.get(AbstractCanAddressingInformation.ADDRESS_EXTENSION_NAME, None))
 
     @classmethod
     def decode_ai_data_bytes(cls,
@@ -205,14 +217,4 @@ class CanAddressingInformation:
             return bytearray([address_extension])  # type: ignore
         raise NotImplementedError(f"Missing implementation for: {addressing_format}")
 
-    @classmethod
-    def get_ai_data_bytes_number(cls, addressing_format: CanAddressingFormat) -> int:
-        """
-        Get number of data bytes that are used to carry Addressing Information.
 
-        :param addressing_format: CAN Addressing Format used.
-
-        :return: Number of data bytes in a CAN Packet that are used to carry Addressing Information for provided
-            CAN Addressing Format.
-        """
-        return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].AI_DATA_BYTES_NUMBER

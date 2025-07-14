@@ -17,9 +17,8 @@ from uds.utilities import (
     validate_raw_bytes,
 )
 
-from uds.can.addressing import CanAddressingFormat
-from uds.can.addressing.addressing_information import CanAddressingInformation
-from .frame_fields import DEFAULT_FILLER_BYTE, CanDlcHandler
+from uds.can.addressing import CanAddressingFormat, CanAddressingInformation
+from uds.can.frame import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
 class CanSingleFrameHandler:

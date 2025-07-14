@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock, Mock, call, patch
 
 from uds.can import CanAddressingFormat
-from uds.can.flow_control import (
+from uds.can.packet.flow_control import (
     AbstractFlowControlParametersGenerator,
     CanDlcHandler,
     CanFlowControlHandler,

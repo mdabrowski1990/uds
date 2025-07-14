@@ -7,15 +7,15 @@ from typing import Optional
 from uds.addressing import AddressingType
 from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
 
-from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation, PacketAIParamsAlias
+from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 from uds.can.addressing.addressing_format import CanAddressingFormat
-from uds.can.frame_fields import CanIdHandler
+from uds.can.frame import CanIdHandler
 
 
 class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Extended Addressing format."""
 
-    AI_DATA_BYTES_NUMBER: int = 1
+    ai_data_bytes_number: int = 1
     """Number of CAN Frame data bytes that are used to carry Addressing Information."""
 
     @property
@@ -29,7 +29,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
                            can_id: Optional[int] = None,
                            target_address: Optional[int] = None,
                            source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None) -> PacketAIParamsAlias:
+                           address_extension: Optional[int] = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet that uses Extended Addressing format.
 
@@ -51,9 +51,9 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         CanIdHandler.validate_can_id(can_id)  # type: ignore
         validate_raw_byte(target_address)  # type: ignore
         if not CanIdHandler.is_extended_addressed_can_id(can_id):  # type: ignore
-            raise InconsistentArgumentsError("Provided value of CAN ID is not compatible with "
+            raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Extended Addressing Format.")
-        return PacketAIParamsAlias(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
+        return CANAddressingParams(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
                                    addressing_type=addressing_type,
                                    can_id=can_id,  # type: ignore
                                    target_address=target_address,
@@ -61,10 +61,10 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
                                    address_extension=address_extension)
 
     @staticmethod
-    def _validate_node_ai(rx_packets_physical_ai: PacketAIParamsAlias,
-                          tx_packets_physical_ai: PacketAIParamsAlias,
-                          rx_packets_functional_ai: PacketAIParamsAlias,
-                          tx_packets_functional_ai: PacketAIParamsAlias) -> None:
+    def _validate_node_ai(rx_packets_physical_ai: CANAddressingParams,
+                          tx_packets_physical_ai: CANAddressingParams,
+                          rx_packets_functional_ai: CANAddressingParams,
+                          tx_packets_functional_ai: CANAddressingParams) -> None:
         """
         Validate Node Addressing Information parameters.
 

@@ -193,7 +193,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         :param addressing_type: Addressing type for which this CAN packet is relevant.
         :param can_id: CAN Identifier value that is used by this packet.
         """
-        NormalCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type, can_id=can_id)
+        NormalCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type, can_id=can_id)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_ADDRESSING)
         self.__addressing_format = CanAddressingFormat.NORMAL_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
@@ -219,10 +219,10 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         :param source_address: Source Address value carried by this CAN packet.
             Leave None if the value of `can_id` parameter is provided.
         """
-        ai_params = NormalFixedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                           can_id=can_id,
-                                                                           target_address=target_address,
-                                                                           source_address=source_address)
+        ai_params = NormalFixedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
+                                                                                   can_id=can_id,
+                                                                                   target_address=target_address,
+                                                                                   source_address=source_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.NORMAL_FIXED_ADDRESSING)
         self.__can_id = ai_params[AbstractCanAddressingInformation.CAN_ID_NAME]  # type: ignore
         self.__source_address = ai_params[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
@@ -243,9 +243,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         :param can_id: CAN Identifier value that is used by this packet.
         :param target_address: Target Address value carried by this CAN Packet.
         """
-        ExtendedCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                            can_id=can_id,
-                                                            target_address=target_address)
+        ExtendedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
+                                                                    can_id=can_id,
+                                                                    target_address=target_address)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.EXTENDED_ADDRESSING)
         self.__addressing_format = CanAddressingFormat.EXTENDED_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
@@ -266,9 +266,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         :param can_id: CAN Identifier value that is used by this packet.
         :param address_extension: Address Extension value carried by this CAN packet.
         """
-        Mixed11BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                              can_id=can_id,
-                                                              address_extension=address_extension)
+        Mixed11BitCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
+                                                                      can_id=can_id,
+                                                                      address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_11BIT_ADDRESSING)
         self.__addressing_format = CanAddressingFormat.MIXED_11BIT_ADDRESSING
         self.__addressing_type = AddressingType(addressing_type)
@@ -296,11 +296,11 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
             Leave None if the value of `can_id` parameter is provided.
         :param address_extension: Address Extension value carried by this CAN packet.
         """
-        ai_params = Mixed29BitCanAddressingInformation.validate_packet_ai(addressing_type=addressing_type,
-                                                                          can_id=can_id,
-                                                                          target_address=target_address,
-                                                                          source_address=source_address,
-                                                                          address_extension=address_extension)
+        ai_params = Mixed29BitCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
+                                                                                  can_id=can_id,
+                                                                                  target_address=target_address,
+                                                                                  source_address=source_address,
+                                                                                  address_extension=address_extension)
         self.__validate_unambiguous_ai_change(CanAddressingFormat.MIXED_29BIT_ADDRESSING)
         self.__can_id = ai_params[AbstractCanAddressingInformation.CAN_ID_NAME]  # type: ignore
         self.__source_address = ai_params[AbstractCanAddressingInformation.SOURCE_ADDRESS_NAME]  # type: ignore
