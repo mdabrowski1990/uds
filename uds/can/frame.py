@@ -10,12 +10,7 @@ Handlers for :ref:`CAN Frame <knowledge-base-addressing-frame>` fields:
 __all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
 from bisect import bisect_left
-from typing import Dict, Optional, Set, Tuple, TypedDict
-
-from uds.addressing import AddressingType
-from uds.utilities import validate_raw_byte
-
-from uds.can.addressing import CanAddressingFormat
+from typing import Dict, Optional, Set, Tuple
 
 
 DEFAULT_FILLER_BYTE: int = 0xCC

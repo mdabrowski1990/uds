@@ -26,8 +26,8 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
         return 0
 
     @staticmethod
-    def is_valid_can_id(can_id: int,
-                        addressing_type: Optional[AddressingType]) -> bool:
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType]=None) -> bool:
         """
         Check whether provided CAN ID is consistent with this Normal Addressing Format.
 
@@ -39,8 +39,8 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
         """
         return CanIdHandler.is_can_id(can_id)
 
-    @classmethod
-    def decode_can_id(cls, can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
+    @staticmethod
+    def decode_can_id(can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
         """Decode Addressing Information parameters from CAN Identifier."""
         return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=None,
                                                               target_address=None,
@@ -72,7 +72,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
             raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are "
                                       "not supported by Normal Addressing format and all must be None.")
         addressing_type = AddressingType.validate_member(addressing_type)
-        if not cls.is_valid_can_id(can_id):
+        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Normal Addressing Format.")
         return CANAddressingParams(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
@@ -88,12 +88,12 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """
-        rx_can_id = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
-        tx_can_id = {self.rx_functional_params["can_id"], self.tx_functional_params["can_id"]}
-        if (self.rx_physical_params["can_id"] in tx_can_id
-                or self.rx_functional_params["can_id"] in tx_can_id
-                or self.tx_physical_params["can_id"] in rx_can_id
-                or self.tx_functional_params["can_id"] in rx_can_id):
+        rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
+        tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
+        if (self.rx_physical_params["can_id"] in tx_can_ids
+                or self.tx_physical_params["can_id"] in rx_can_ids
+                or self.rx_functional_params["can_id"] in tx_can_ids
+                or self.tx_functional_params["can_id"] in rx_can_ids):
             raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for reception.")
 
 
@@ -111,8 +111,8 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         return 0
 
     @staticmethod
-    def is_valid_can_id(can_id: int,
-                        addressing_type: Optional[AddressingType] = None) -> bool:
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType] = None) -> bool:
         """
         Check whether provided CAN ID is consistent with this Normal Fixed Addressing Format.
 
@@ -143,12 +143,12 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         :return: Dictionary with extracted addressing parameters.
         """
         CanIdHandler.validate_can_id(can_id)
-        if not cls.is_valid_can_id(can_id):
+        if not cls.is_compatible_can_id(can_id):
             raise ValueError("Provided CAN ID value is out of range.")
         target_address = (can_id >> CanIdHandler.TARGET_ADDRESS_BIT_OFFSET) & 0xFF
         source_address = (can_id >> CanIdHandler.SOURCE_ADDRESS_BIT_OFFSET) & 0xFF
         can_id_masked_value = can_id & CanIdHandler.ADDRESSING_MASK
-        priority = can_id << CanIdHandler.PRIORITY_BIT_OFFSET
+        priority = can_id >> CanIdHandler.PRIORITY_BIT_OFFSET
         if can_id_masked_value == CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE:
             return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=AddressingType.PHYSICAL,
                                                                   target_address=target_address,

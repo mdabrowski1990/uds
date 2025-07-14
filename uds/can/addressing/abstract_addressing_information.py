@@ -25,17 +25,6 @@ class CANAddressingParams(TypedDict):
 class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     """Abstract definition of storage for addressing related parameters for UDS entity operating on CAN bus."""
 
-    # ADDRESSING_FORMAT_NAME: str = "addressing_format"
-    # """Name of :ref:`CAN Addressing Format <knowledge-base-can-addressing>` parameter."""
-    # CAN_ID_NAME: str = "can_id"
-    # """Name of CAN Identifier parameter."""
-    # TARGET_ADDRESS_NAME: str = "target_address"
-    # """Name of Target Address parameter."""
-    # SOURCE_ADDRESS_NAME: str = "source_address"
-    # """Name of Source Address parameter."""
-    # ADDRESS_EXTENSION_NAME: str = "address_extension"
-    # """Name of Address Extension parameter."""
-
     class InputAIParams(TypedDict, total=False):
         """:ref:`Addressing Information <knowledge-base-n-ai>` configuration parameters."""
 
@@ -44,7 +33,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         source_address: Optional[int]
         address_extension: Optional[int]
 
-    class CanIdAIParams(TypedDict, total=False):
+    class CanIdAIParams(TypedDict):
         """ref:`Addressing Information <knowledge-base-n-ai>` parameters that are carried by CAN Identifier."""
 
         addressing_type: Optional[AddressingType]
@@ -82,8 +71,8 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
 
     @staticmethod
     @abstractmethod
-    def is_valid_can_id(can_id: int,
-                        addressing_type: Optional[AddressingType]) -> bool:
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType]) -> bool:
         """
         Check whether provided CAN ID is consistent with this CAN Addressing Format.
 
@@ -94,9 +83,9 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
         """
 
-    @classmethod
+    @staticmethod
     @abstractmethod
-    def decode_can_id(cls, can_id: int) -> CanIdAIParams:
+    def decode_can_id(can_id: int) -> CanIdAIParams:
         """Decode Addressing Information parameters from CAN Identifier."""
 
     @classmethod
