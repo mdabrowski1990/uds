@@ -29,7 +29,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
     def is_compatible_can_id(can_id: int,
                              addressing_type: Optional[AddressingType]=None) -> bool:
         """
-        Check whether provided CAN ID is consistent with this Normal Addressing Format.
+        Check whether provided CAN ID is consistent with Normal Addressing Format.
 
         :param can_id: Value of CAN ID to check.
         :param addressing_type: Addressing type for which consistency to be performed.
@@ -114,7 +114,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
     def is_compatible_can_id(can_id: int,
                              addressing_type: Optional[AddressingType] = None) -> bool:
         """
-        Check whether provided CAN ID is consistent with this Normal Fixed Addressing Format.
+        Check whether provided CAN ID is consistent with Normal Fixed Addressing Format.
 
         :param can_id: Value of CAN ID to check.
         :param addressing_type: Addressing type for which consistency to be performed.

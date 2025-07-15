@@ -15,21 +15,45 @@ from uds.can.frame import CanIdHandler
 class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Extended Addressing format."""
 
-    ai_data_bytes_number: int = 1
-    """Number of CAN Frame data bytes that are used to carry Addressing Information."""
-
     @property
     def addressing_format(self) -> CanAddressingFormat:
         """CAN Addressing format used."""
         return CanAddressingFormat.EXTENDED_ADDRESSING
 
+    @property
+    def ai_data_bytes_number(self) -> int:
+        """Number of CAN frame data bytes that are used to carry Addressing Information."""
+        return 1
+
+    @staticmethod
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType]=None) -> bool:
+        """
+        Check whether provided CAN ID is consistent with Extended Addressing Format.
+
+        :param can_id: Value of CAN ID to check.
+        :param addressing_type: Addressing type for which consistency to be performed.
+            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
+
+        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
+        """
+        return CanIdHandler.is_can_id(can_id)
+
+    @staticmethod
+    def decode_can_id(can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
+        """Decode Addressing Information parameters from CAN Identifier."""
+        return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=None,
+                                                              target_address=None,
+                                                              source_address=None,
+                                                              priority=None)
+
     @classmethod
-    def validate_packet_ai(cls,
-                           addressing_type: AddressingType,
-                           can_id: Optional[int] = None,
-                           target_address: Optional[int] = None,
-                           source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None) -> CANAddressingParams:
+    def validate_addressing_params(cls,
+                                   addressing_type: AddressingType,
+                                   can_id: Optional[int] = None,
+                                   target_address: Optional[int] = None,
+                                   source_address: Optional[int] = None,
+                                   address_extension: Optional[int] = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet that uses Extended Addressing format.
 
@@ -47,49 +71,28 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         if (source_address, address_extension) != (None, None):
             raise UnusedArgumentError("Values of Source Address and Address Extension are not supported by "
                                       "Extended Addressing format and all must be None.")
-        AddressingType.validate_member(addressing_type)
-        CanIdHandler.validate_can_id(can_id)  # type: ignore
-        validate_raw_byte(target_address)  # type: ignore
-        if not CanIdHandler.is_extended_addressed_can_id(can_id):  # type: ignore
+        addressing_type = AddressingType.validate_member(addressing_type)
+        validate_raw_byte(target_address)
+        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Extended Addressing Format.")
         return CANAddressingParams(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
                                    addressing_type=addressing_type,
-                                   can_id=can_id,  # type: ignore
+                                   can_id=can_id,
                                    target_address=target_address,
                                    source_address=source_address,
                                    address_extension=address_extension)
 
-    @staticmethod
-    def _validate_node_ai(rx_packets_physical_ai: CANAddressingParams,
-                          tx_packets_physical_ai: CANAddressingParams,
-                          rx_packets_functional_ai: CANAddressingParams,
-                          tx_packets_functional_ai: CANAddressingParams) -> None:
+    def _validate_addressing_information(self) -> None:
         """
-        Validate Node Addressing Information parameters.
-
-        :param rx_packets_physical_ai: Addressing Information parameters of incoming physically addressed
-            CAN packets to validate.
-        :param tx_packets_physical_ai: Addressing Information parameters of outgoing physically addressed
-            CAN packets to validate.
-        :param rx_packets_functional_ai: Addressing Information parameters of incoming functionally addressed
-            CAN packets to validate.
-        :param tx_packets_functional_ai: Addressing Information parameters of outgoing functionally addressed
-            CAN packets to validate.
+        Validate Addressing Information parameters.
 
         :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """
-        rx_ai_params = {
-            (rx_packets_physical_ai["can_id"], rx_packets_physical_ai["target_address"]),
-            (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["target_address"])
-        }
-        tx_ai_params = {
-            (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["target_address"]),
-            (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["target_address"])
-        }
-        if ((rx_packets_physical_ai["can_id"], rx_packets_physical_ai["target_address"]) in tx_ai_params
-                or (rx_packets_functional_ai["can_id"], rx_packets_functional_ai["target_address"]) in tx_ai_params
-                or (tx_packets_physical_ai["can_id"], tx_packets_physical_ai["target_address"]) in rx_ai_params
-                or (tx_packets_functional_ai["can_id"], tx_packets_functional_ai["target_address"]) in rx_ai_params):
-            raise InconsistentArgumentsError("The same combination of CAN ID and Target Address cannot be used for "
-                                             "incoming and outgoing communication.")
+        rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
+        tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
+        if (self.rx_physical_params["can_id"] in tx_can_ids
+                or self.tx_physical_params["can_id"] in rx_can_ids
+                or self.rx_functional_params["can_id"] in tx_can_ids
+                or self.tx_functional_params["can_id"] in rx_can_ids):
+            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for reception.")

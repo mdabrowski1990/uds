@@ -1,16 +1,14 @@
 import pytest
 from mock import Mock, call, patch
 
-from uds.addressing import addressing_type
 from uds.can.addressing.normal_addressing_information import (
-    AbstractCanAddressingInformation,
     CanAddressingFormat,
     InconsistentArgumentsError,
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
     UnusedArgumentError,
     CanIdHandler,
-AddressingType
+    AddressingType
 )
 
 SCRIPT_LOCATION = "uds.can.addressing.normal_addressing_information"
@@ -69,32 +67,32 @@ class TestNormalCanAddressingInformation:
     # validate_addressing_params
 
     @pytest.mark.parametrize("unsupported_args", [
-        {"target_address": 1},
-        {"source_address": "something"},
-        {"address_extension": Mock()},
+        {"target_address": 0x2C},
+        {"source_address": 0x96},
+        {"address_extension": 0x02},
         {"target_address": Mock(), "source_address": Mock(), "address_extension": Mock()}
     ])
-    def test_validate_addressing_params__inconsistent_arg(self, unsupported_args):
+    def test_validate_addressing_params__unused_args(self, unsupported_args):
         with pytest.raises(UnusedArgumentError):
             NormalCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
                                                                       can_id=Mock(),
                                                                       **unsupported_args)
 
     @pytest.mark.parametrize("addressing_type, can_id", [
-        ("some addressing type", "some id"),
-        (Mock(), 0x7FF),
+        (Mock(), Mock()),
+        (AddressingType.PHYSICAL, 0x7FF),
     ])
     @patch(f"{SCRIPT_LOCATION}.NormalCanAddressingInformation.is_compatible_can_id")
-    def test_validate_addressing_params__invalid_can_id(self, mock_is_compatible_can_id, addressing_type, can_id):
+    def test_validate_addressing_params__inconsistent(self, mock_is_compatible_can_id, addressing_type, can_id):
         mock_is_compatible_can_id.return_value = False
         with pytest.raises(InconsistentArgumentsError):
             NormalCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type, can_id=can_id)
         mock_is_compatible_can_id.assert_called_once_with(can_id=can_id,
-                                                     addressing_type=self.mock_validate_addressing_type.return_value)
+                                                          addressing_type=self.mock_validate_addressing_type.return_value)
 
     @pytest.mark.parametrize("addressing_type, can_id", [
-        ("some addressing type", "some id"),
-        (Mock(), 0x7FF),
+        (Mock(), Mock()),
+        (AddressingType.PHYSICAL, 0x7FF),
     ])
     @patch(f"{SCRIPT_LOCATION}.NormalCanAddressingInformation.is_compatible_can_id")
     def test_validate_addressing_params__valid(self, mock_is_compatible_can_id, addressing_type, can_id):
@@ -109,7 +107,7 @@ class TestNormalCanAddressingInformation:
                    "address_extension": None,
                }
         mock_is_compatible_can_id.assert_called_once_with(can_id=can_id,
-                                                     addressing_type=self.mock_validate_addressing_type.return_value)
+                                                          addressing_type=self.mock_validate_addressing_type.return_value)
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
 
     # _validate_addressing_information
@@ -285,7 +283,7 @@ class TestNormalFixedCanAddressingInformation:
     @pytest.mark.parametrize("can_id", [0xFFFFFFFFFFFF, "something"])
     @patch(f"{SCRIPT_LOCATION}.NormalFixedCanAddressingInformation.is_compatible_can_id")
     @patch(f"{SCRIPT_LOCATION}.CanIdHandler.validate_can_id")
-    def test_decode_can_id__validation_error(self, mock_validate_can_id, mock_is_compatible_can_id, can_id):
+    def test_decode_can_id__value_error(self, mock_validate_can_id, mock_is_compatible_can_id, can_id):
         mock_is_compatible_can_id.return_value = False
         with pytest.raises(ValueError):
             NormalFixedCanAddressingInformation.decode_can_id(can_id=can_id)
@@ -359,7 +357,7 @@ class TestNormalFixedCanAddressingInformation:
     @pytest.mark.parametrize("unsupported_args", [
         {"address_extension": Mock()},
     ])
-    def test_validate_addressing_params__inconsistent_arg(self, unsupported_args):
+    def test_validate_addressing_params__unused_args(self, unsupported_args):
         with pytest.raises(UnusedArgumentError):
             NormalFixedCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
                                                                            can_id=Mock(),
@@ -370,7 +368,7 @@ class TestNormalFixedCanAddressingInformation:
         (AddressingType.PHYSICAL, None, 0x05, None),
         (AddressingType.FUNCTIONAL, None, None, None),
     ])
-    def test_validate_addressing_params__missing_info(self, addressing_type, can_id, target_address, source_address):
+    def test_validate_addressing_params__inconsistent__missing_info(self, addressing_type, can_id, target_address, source_address):
         self.mock_validate_addressing_type.return_value = addressing_type
         with pytest.raises(InconsistentArgumentsError):
             NormalFixedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
@@ -385,7 +383,7 @@ class TestNormalFixedCanAddressingInformation:
         ("something", "something else", 0x01, 0x01, 0xF0, 0xF0, 0x556677),
     ])
     @patch(f"{SCRIPT_LOCATION}.NormalFixedCanAddressingInformation.decode_can_id")
-    def test_validate_addressing_params__inconsistent_can_id_ta_sa(self, mock_decode_can_id,
+    def test_validate_addressing_params__inconsistent(self, mock_decode_can_id,
                                                                    addressing_type, decoded_addressing_type,
                                                                    ta, decoded_ta, sa, decoded_sa, can_id):
         self.mock_validate_addressing_type.return_value = addressing_type
