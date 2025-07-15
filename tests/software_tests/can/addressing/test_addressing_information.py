@@ -3,11 +3,11 @@ from mock import MagicMock, Mock, patch
 
 from uds.can.addressing.addressing_information import (
     AbstractCanAddressingInformation,
+    AddressingType,
     CanAddressingFormat,
     CanAddressingInformation,
+    CanIdHandler,
     InconsistentArgumentsError,
-    AddressingType,
-CanIdHandler
 )
 
 SCRIPT_LOCATION = "uds.can.addressing.addressing_information"
