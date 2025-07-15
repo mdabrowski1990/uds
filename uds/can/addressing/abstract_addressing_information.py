@@ -6,9 +6,8 @@ from abc import ABC, abstractmethod
 from typing import Optional, TypedDict
 
 from uds.addressing import AddressingType
-
-from uds.can.addressing.addressing_format import CanAddressingFormat
 from uds.addressing.abstract_addressing_information import AbstractAddressingInformation
+from uds.can.addressing.addressing_format import CanAddressingFormat
 
 
 class CANAddressingParams(TypedDict):
@@ -62,7 +61,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     @property
     @abstractmethod
     def addressing_format(self) -> CanAddressingFormat:
-        """CAN Addressing format used."""
+        """CAN Addressing Format used."""
 
     @property
     @abstractmethod
@@ -105,9 +104,9 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
+        :raise UnusedArgumentError: At least one provided parameter is not supported by Addressing format used.
         :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
             or with the Addressing format used.
-        :raise UnusedArgumentError: Provided parameter is not supported by Addressing format used.
 
         :return: Normalized dictionary with the provided information.
         """

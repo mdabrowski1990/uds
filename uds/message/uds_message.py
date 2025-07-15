@@ -10,9 +10,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Sequence, Union
 
-from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
 from uds.addressing import AddressingType
-from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes, TransmissionDirection
+from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
+from uds.utilities import RawBytesAlias, ReassignmentError, TransmissionDirection, validate_raw_bytes
 
 
 class AbstractUdsMessageContainer(ABC):

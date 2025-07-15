@@ -6,14 +6,16 @@ from datetime import datetime
 from typing import Any, Optional, Union
 
 from can import Message as PythonCanMessage
-from uds.can import (
-    CanDlcHandler,
-    CanIdHandler,
+from uds.addressing import (
+    AbstractCanAddressingInformation,
+    AddressingType,
+    CanAddressingFormat,
+    CanAddressingInformation,
 )
-from uds.addressing import AddressingType,     AbstractCanAddressingInformation,    CanAddressingFormat,    CanAddressingInformation
+from uds.can import CanDlcHandler, CanIdHandler
+from uds.packet.abstract_packet import AbstractPacketRecord
 from uds.utilities import InconsistentArgumentsError, TransmissionDirection
 
-from uds.packet.abstract_packet import AbstractPacketRecord
 from .abstract_can_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 

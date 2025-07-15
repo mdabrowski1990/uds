@@ -3,7 +3,6 @@ from datetime import datetime
 import pytest
 from mock import MagicMock, Mock, patch
 
-from uds.packet import CanPacketRecord
 from uds.can.transport_interface.common import (
     AbstractCanAddressingInformation,
     AbstractCanTransportInterface,
@@ -12,6 +11,7 @@ from uds.can.transport_interface.common import (
     DefaultFlowControlParametersGenerator,
     UdsMessageRecord,
 )
+from uds.packet import CanPacketRecord
 
 SCRIPT_LOCATION = "uds.transport_interface.addressing.common"
 

@@ -5,6 +5,12 @@ __all__ = ["AbstractCanPacketContainer"]
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from uds.addressing import (
+    AbstractCanAddressingInformation,
+    AddressingType,
+    CanAddressingFormat,
+    CanAddressingInformation,
+)
 from uds.can import (
     CanConsecutiveFrameHandler,
     CanDlcHandler,
@@ -13,9 +19,8 @@ from uds.can import (
     CanFlowStatus,
     CanSingleFrameHandler,
 )
-from uds.addressing import AddressingType, AbstractCanAddressingInformation, CanAddressingFormat, CanAddressingInformation
-
 from uds.packet.abstract_packet import AbstractPacketContainer
+
 from .can_packet_type import CanPacketType
 
 

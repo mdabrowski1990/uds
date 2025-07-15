@@ -12,7 +12,6 @@ __all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 from bisect import bisect_left
 from typing import Dict, Optional, Set, Tuple
 
-
 DEFAULT_FILLER_BYTE: int = 0xCC
 """Default value of Filler Byte.
 Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`.

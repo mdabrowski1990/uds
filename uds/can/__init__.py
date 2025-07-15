@@ -14,4 +14,4 @@ It provides tools for:
    - Consecutive Frame
    - Flow Status
 """
-from .frame import CanIdHandler, CanDlcHandler, DEFAULT_FILLER_BYTE
+from .frame import DEFAULT_FILLER_BYTE, CanDlcHandler, CanIdHandler

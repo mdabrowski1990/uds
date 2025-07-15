@@ -18,6 +18,9 @@ from warnings import warn
 
 from aenum import unique
 
+from uds.can.addressing import CanAddressingFormat
+from uds.can.addressing.addressing_information import CanAddressingInformation
+from uds.can.frame import DEFAULT_FILLER_BYTE, CanDlcHandler
 from uds.utilities import (
     InconsistentArgumentsError,
     NibbleEnum,
@@ -28,10 +31,6 @@ from uds.utilities import (
     validate_raw_byte,
     validate_raw_bytes,
 )
-
-from uds.can.addressing import CanAddressingFormat
-from uds.can.addressing.addressing_information import CanAddressingInformation
-from uds.can.frame import DEFAULT_FILLER_BYTE, CanDlcHandler
 
 
 class UnrecognizedSTminWarning(Warning):

@@ -1,15 +1,15 @@
 import pytest
 from mock import Mock, patch
 
-from uds.can.addressing.extended_addressing_information import (
+from uds.can.addressing.extended_addressing import (
+    AddressingType,
     CanAddressingFormat,
     ExtendedCanAddressingInformation,
     InconsistentArgumentsError,
     UnusedArgumentError,
-    AddressingType
 )
 
-SCRIPT_LOCATION = "uds.can.addressing.extended_addressing_information"
+SCRIPT_LOCATION = "uds.can.addressing.extended_addressing"
 
 
 class TestExtendedCanAddressingInformation:

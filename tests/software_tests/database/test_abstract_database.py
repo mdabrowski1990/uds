@@ -1,8 +1,8 @@
 import pytest
 from mock import Mock, patch
 
-from uds.database.abstract_database import AbstractDatabase, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 from uds.addressing import AddressingType
+from uds.database.abstract_database import AbstractDatabase, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 
 SCRIPT_LOCATION = "uds.database.abstract_database"
 

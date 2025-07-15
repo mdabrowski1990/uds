@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 
 from uds.addressing import AddressingType
-from uds.utilities import TransmissionDirection, ReassignmentError
+from uds.utilities import ReassignmentError, TransmissionDirection
 
 from .abstract_packet_type import AbstractPacketType
 

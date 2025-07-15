@@ -1,17 +1,17 @@
 import pytest
 from mock import Mock, call, patch
 
-from uds.can.addressing.normal_addressing_information import (
+from uds.can.addressing.normal_addressing import (
+    AddressingType,
     CanAddressingFormat,
+    CanIdHandler,
     InconsistentArgumentsError,
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
     UnusedArgumentError,
-    CanIdHandler,
-    AddressingType
 )
 
-SCRIPT_LOCATION = "uds.can.addressing.normal_addressing_information"
+SCRIPT_LOCATION = "uds.can.addressing.normal_addressing"
 
 
 class TestNormalCanAddressingInformation:
@@ -47,7 +47,7 @@ class TestNormalCanAddressingInformation:
 
     @pytest.mark.parametrize("can_id, addressing_type", [
         (Mock(), Mock()),
-        ("can_id", "addressing_type"),
+        (0x12345, AddressingType.PHYSICAL),
     ])
     def test_is_compatible_can_id(self, can_id, addressing_type):
         assert (NormalCanAddressingInformation.is_compatible_can_id(can_id, addressing_type)
@@ -190,6 +190,11 @@ class TestNormalFixedCanAddressingInformation:
     def test_addressing_format(self):
         assert NormalFixedCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
                == CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+
+    # ai_data_bytes_number
+
+    def test_ai_data_bytes_number(self):
+        assert NormalFixedCanAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 0
 
     # is_compatible_can_id
 
@@ -384,8 +389,8 @@ class TestNormalFixedCanAddressingInformation:
     ])
     @patch(f"{SCRIPT_LOCATION}.NormalFixedCanAddressingInformation.decode_can_id")
     def test_validate_addressing_params__inconsistent(self, mock_decode_can_id,
-                                                                   addressing_type, decoded_addressing_type,
-                                                                   ta, decoded_ta, sa, decoded_sa, can_id):
+                                                      addressing_type, decoded_addressing_type,
+                                                      ta, decoded_ta, sa, decoded_sa, can_id):
         self.mock_validate_addressing_type.return_value = addressing_type
         mock_decode_can_id.return_value = {
             "addressing_type": decoded_addressing_type,
@@ -443,13 +448,13 @@ class TestNormalFixedCanAddressingInformation:
                                                                               can_id=can_id,
                                                                               target_address=target_address,
                                                                               source_address=source_address) == {
-            "addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-            "addressing_type": self.mock_validate_addressing_type.return_value,
-            "can_id": can_id,
-            "target_address": decoded_target_address,
-            "source_address": decoded_source_address,
-            "address_extension": None,
-        }
+                   "addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                   "addressing_type": self.mock_validate_addressing_type.return_value,
+                   "can_id": can_id,
+                   "target_address": decoded_target_address,
+                   "source_address": decoded_source_address,
+                   "address_extension": None,
+               }
         self.mock_validate_addressing_type.assert_called_once_with(addressing_type)
         self.mock_validate_raw_byte.assert_not_called()
         mock_decode_can_id.assert_called_once_with(can_id)

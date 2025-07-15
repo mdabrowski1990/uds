@@ -11,12 +11,12 @@ from typing import Dict, Optional, Type, TypedDict
 from uds.addressing import AddressingType
 from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_byte, validate_raw_bytes
 
+from ..frame import CanIdHandler
 from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 from .addressing_format import CanAddressingFormat
-from .extended_addressing_information import ExtendedCanAddressingInformation
-from .mixed_addressing_information import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
-from .normal_addressing_information import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
-from ..frame import CanIdHandler
+from .extended_addressing import ExtendedCanAddressingInformation
+from .mixed_addressing import Mixed11BitCanAddressingInformation, Mixed29BitCanAddressingInformation
+from .normal_addressing import NormalCanAddressingInformation, NormalFixedCanAddressingInformation
 
 
 class CanAddressingInformation:

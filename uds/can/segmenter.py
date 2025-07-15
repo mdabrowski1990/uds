@@ -4,6 +4,13 @@ __all__ = ["CanSegmenter"]
 
 from typing import Optional, Tuple, Type, Union
 
+from uds.addressing import (
+    AbstractCanAddressingInformation,
+    AddressingType,
+    CanAddressingFormat,
+    CanAddressingInformation,
+    PacketAIParamsAlias,
+)
 from uds.can import (
     DEFAULT_FILLER_BYTE,
     CanConsecutiveFrameHandler,
@@ -21,10 +28,8 @@ from uds.packet import (
     CanPacketType,
     PacketsContainersSequence,
 )
-from uds.addressing import AddressingType,     AbstractCanAddressingInformation,    CanAddressingFormat,    CanAddressingInformation,    PacketAIParamsAlias
-from uds.utilities import RawBytesAlias, validate_raw_byte
-
 from uds.segmentation.abstract_segmenter import AbstractSegmenter, SegmentationError
+from uds.utilities import RawBytesAlias, validate_raw_byte
 
 
 class CanSegmenter(AbstractSegmenter):

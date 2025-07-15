@@ -1,7 +1,11 @@
 import pytest
-from mock import Mock, patch, MagicMock
+from mock import MagicMock, Mock, patch
 
-from uds.addressing.abstract_addressing_information import AbstractAddressingInformation, AddressingType, ReassignmentError
+from uds.addressing.abstract_addressing_information import (
+    AbstractAddressingInformation,
+    AddressingType,
+    ReassignmentError,
+)
 
 SCRIPT_LOCATION = "uds.addressing.abstract_addressing_information"
 

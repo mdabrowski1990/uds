@@ -1,12 +1,12 @@
 """Definition of UDS Addressing Information for storing Client/Server Addresses."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Mapping
 from types import MappingProxyType
-
-from .addressing_type import AddressingType
+from typing import Any, Dict, Mapping
 
 from uds.utilities import ReassignmentError
+
+from .addressing_type import AddressingType
 
 
 class AbstractAddressingInformation(ABC):

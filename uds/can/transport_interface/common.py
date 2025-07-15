@@ -6,11 +6,8 @@ from abc import abstractmethod
 from typing import Any, Optional, Tuple
 from warnings import warn
 
-from uds.can import (
-    AbstractFlowControlParametersGenerator,
-    DefaultFlowControlParametersGenerator,
-)
 from uds.addressing import AbstractCanAddressingInformation
+from uds.can import AbstractFlowControlParametersGenerator, DefaultFlowControlParametersGenerator
 from uds.message import UdsMessageRecord
 from uds.packet import CanPacketType
 from uds.segmentation import CanSegmenter

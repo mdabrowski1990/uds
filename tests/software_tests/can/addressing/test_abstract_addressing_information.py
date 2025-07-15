@@ -1,8 +1,8 @@
 import pytest
 from mock import Mock, patch
 
-from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation
 from uds.addressing import AbstractAddressingInformation
+from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation
 
 SCRIPT_LOCATION = "uds.addressing.abstract_addressing_information"
 

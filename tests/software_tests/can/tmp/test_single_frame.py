@@ -2,7 +2,12 @@ import pytest
 from mock import patch
 
 from uds.can import CanAddressingFormat
-from uds.can.packet.single_frame import DEFAULT_FILLER_BYTE, CanDlcHandler, CanSingleFrameHandler, InconsistentArgumentsError
+from uds.can.packet.single_frame import (
+    DEFAULT_FILLER_BYTE,
+    CanDlcHandler,
+    CanSingleFrameHandler,
+    InconsistentArgumentsError,
+)
 
 SCRIPT_LOCATION = "uds.addressing.single_frame"
 

@@ -6,13 +6,13 @@ from mock import Mock, patch
 from uds.can import CanFlowStatus
 from uds.packet.can import (
     AbstractCanAddressingInformation,
+    AddressingType,
     CanAddressingFormat,
     CanPacketRecord,
     CanPacketType,
     InconsistentArgumentsError,
     PythonCanMessage,
-TransmissionDirection,
-AddressingType
+    TransmissionDirection,
 )
 
 SCRIPT_LOCATION = "uds.packet.addressing.can_packet_record"
