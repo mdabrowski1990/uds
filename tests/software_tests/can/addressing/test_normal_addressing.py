@@ -35,13 +35,12 @@ class TestNormalCanAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert NormalCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
-               == CanAddressingFormat.NORMAL_ADDRESSING
+        assert NormalCanAddressingInformation.ADDRESSING_FORMAT == CanAddressingFormat.NORMAL_ADDRESSING
 
     # ai_data_bytes_number
 
     def test_ai_data_bytes_number(self):
-        assert NormalCanAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 0
+        assert NormalCanAddressingInformation.AI_DATA_BYTES_NUMBER == 0
 
     # is_compatible_can_id
 
@@ -65,6 +64,16 @@ class TestNormalCanAddressingInformation:
         }
 
     # validate_addressing_params
+
+    @pytest.mark.parametrize("addressing_format", [
+        Mock(),
+        CanAddressingFormat.EXTENDED_ADDRESSING,
+    ])
+    def test_validate_addressing_params__value_error(self, addressing_format):
+        with pytest.raises(ValueError):
+            NormalCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
+                                                                      can_id=Mock(),
+                                                                      addressing_format=addressing_format)
 
     @pytest.mark.parametrize("unsupported_args", [
         {"target_address": 0x2C},
@@ -188,13 +197,12 @@ class TestNormalFixedCanAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert NormalFixedCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
-               == CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+        assert NormalFixedCanAddressingInformation.ADDRESSING_FORMAT == CanAddressingFormat.NORMAL_FIXED_ADDRESSING
 
     # ai_data_bytes_number
 
     def test_ai_data_bytes_number(self):
-        assert NormalFixedCanAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 0
+        assert NormalFixedCanAddressingInformation.AI_DATA_BYTES_NUMBER == 0
 
     # is_compatible_can_id
 
@@ -358,6 +366,16 @@ class TestNormalFixedCanAddressingInformation:
         mock_validate_priority.assert_called_once_with(priority)
 
     # validate_addressing_params
+
+    @pytest.mark.parametrize("addressing_format", [
+        Mock(),
+        CanAddressingFormat.EXTENDED_ADDRESSING,
+    ])
+    def test_validate_addressing_params__value_error(self, addressing_format):
+        with pytest.raises(ValueError):
+            NormalFixedCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
+                                                                           can_id=Mock(),
+                                                                           addressing_format=addressing_format)
 
     @pytest.mark.parametrize("unsupported_args", [
         {"address_extension": Mock()},

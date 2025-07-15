@@ -33,13 +33,12 @@ class TestExtendedCanAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert ExtendedCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
-               == CanAddressingFormat.EXTENDED_ADDRESSING
+        assert ExtendedCanAddressingInformation.ADDRESSING_FORMAT == CanAddressingFormat.EXTENDED_ADDRESSING
 
     # ai_data_bytes_number
 
     def test_ai_data_bytes_number(self):
-        assert ExtendedCanAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 1
+        assert ExtendedCanAddressingInformation.AI_DATA_BYTES_NUMBER == 1
 
     # is_compatible_can_id
 
@@ -63,6 +62,16 @@ class TestExtendedCanAddressingInformation:
         }
 
     # validate_addressing_params
+
+    @pytest.mark.parametrize("addressing_format", [
+        Mock(),
+        CanAddressingFormat.NORMAL_ADDRESSING,
+    ])
+    def test_validate_addressing_params__value_error(self, addressing_format):
+        with pytest.raises(ValueError):
+            ExtendedCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
+                                                                        can_id=Mock(),
+                                                                        addressing_format=addressing_format)
 
     @pytest.mark.parametrize("unsupported_args", [
         {"source_address": 0x5F},

@@ -1069,7 +1069,7 @@ class TestPyCanTransportInterface:
             frame=mock_get_message.return_value,
             direction=TransmissionDirection.RECEIVED,
             addressing_type=self.mock_can_transport_interface.segmenter.is_input_packet.return_value,
-            addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
+            addressing_format=self.mock_can_transport_interface.segmenter.ADDRESSING_FORMAT,
             transmission_time=self.mock_datetime.fromtimestamp.return_value)
 
     # async_receive_packet
@@ -1123,7 +1123,7 @@ class TestPyCanTransportInterface:
             frame=mock_get_message.return_value,
             direction=TransmissionDirection.RECEIVED,
             addressing_type=self.mock_can_transport_interface.segmenter.is_input_packet.return_value,
-            addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
+            addressing_format=self.mock_can_transport_interface.segmenter.ADDRESSING_FORMAT,
             transmission_time=self.mock_datetime.fromtimestamp.return_value)
 
     # send_message

@@ -40,6 +40,12 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         source_address: Optional[int]
         priority: Optional[int]
 
+    ADDRESSING_FORMAT: CanAddressingFormat
+    """CAN Addressing Format used."""
+
+    AI_DATA_BYTES_NUMBER: int
+    """Number of CAN Frame data bytes that are used to carry UDS Addressing Information."""
+
     def __init__(self,
                  rx_physical_params: InputAIParams,
                  tx_physical_params: InputAIParams,
@@ -57,16 +63,6 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
                          tx_physical_params=tx_physical_params,
                          rx_functional_params=rx_functional_params,
                          tx_functional_params=tx_functional_params)
-
-    @property
-    @abstractmethod
-    def addressing_format(self) -> CanAddressingFormat:
-        """CAN Addressing Format used."""
-
-    @property
-    @abstractmethod
-    def ai_data_bytes_number(self) -> int:
-        """Number of CAN Frame data bytes that are used to carry UDS Addressing Information."""
 
     @staticmethod
     @abstractmethod
@@ -90,6 +86,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
     @classmethod
     @abstractmethod
     def validate_addressing_params(cls,
+                                   addressing_format: CanAddressingFormat,
                                    addressing_type: AddressingType,
                                    can_id: Optional[int] = None,
                                    target_address: Optional[int] = None,
@@ -98,6 +95,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         """
         Validate Addressing Information parameters of a CAN packet.
 
+        :param addressing_format: CAN Addressing Format used.
         :param addressing_type: Addressing type to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.

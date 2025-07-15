@@ -516,7 +516,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
-                               addressing_format=packet.addressing_format,
+                               addressing_format=packet.ADDRESSING_FORMAT,
                                transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
     async def async_send_packet(self,
@@ -567,7 +567,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
-                               addressing_format=packet.addressing_format,
+                               addressing_format=packet.ADDRESSING_FORMAT,
                                transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
     def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> CanPacketRecord:
@@ -608,7 +608,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return CanPacketRecord(frame=received_frame,  # type: ignore
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
-                               addressing_format=self.segmenter.addressing_format,
+                               addressing_format=self.segmenter.ADDRESSING_FORMAT,
                                transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
 
     async def async_receive_packet(self,
@@ -649,7 +649,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
-                               addressing_format=self.segmenter.addressing_format,
+                               addressing_format=self.segmenter.ADDRESSING_FORMAT,
                                transmission_time=datetime.fromtimestamp(received_frame.timestamp))
 
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:

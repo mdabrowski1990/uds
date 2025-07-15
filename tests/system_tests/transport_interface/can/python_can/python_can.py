@@ -250,7 +250,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -263,7 +263,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
-        assert packet_record.addressing_format == packet.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == packet.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.packet_type == packet.packet_type == packet_type
         assert packet_record.can_id == packet.can_id == can_id
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
@@ -356,7 +356,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -369,7 +369,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
-        assert packet_record.addressing_format == packet.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == packet.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.packet_type == packet.packet_type == packet_type
         assert packet_record.can_id == packet.can_id == can_id
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
@@ -471,7 +471,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -491,7 +491,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
         assert packet_record.raw_frame_data == tuple(can_frame.data)
-        assert packet_record.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.addressing_type == addressing_type
         assert packet_record.can_id == can_frame.arbitration_id == can_id
         assert packet_record.target_address == target_address
@@ -585,7 +585,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -606,7 +606,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
         assert packet_record.raw_frame_data == tuple(can_frame.data)
-        assert packet_record.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.addressing_type == addressing_type
         assert packet_record.can_id == can_frame.arbitration_id == can_id
         assert packet_record.target_address == target_address
@@ -697,7 +697,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -803,7 +803,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -1660,7 +1660,7 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
             can_bus_manager=self.can_interface_2,
             addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -1674,8 +1674,8 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
         assert sent_packet_record.direction == TransmissionDirection.TRANSMITTED
         assert received_packet_record.direction == TransmissionDirection.RECEIVED
         assert received_packet_record.raw_frame_data == sent_packet_record.raw_frame_data == packet.raw_frame_data
-        assert (received_packet_record.addressing_format == sent_packet_record.addressing_format
-                == packet.addressing_format == addressing_information.addressing_format)
+        assert (received_packet_record.ADDRESSING_FORMAT == sent_packet_record.ADDRESSING_FORMAT
+                == packet.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT)
         assert received_packet_record.packet_type == sent_packet_record.packet_type == packet.packet_type == packet_type
         assert received_packet_record.can_id == sent_packet_record.can_id == packet.can_id == can_id
         assert (received_packet_record.addressing_type == sent_packet_record.addressing_type
@@ -1767,7 +1767,7 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
             can_bus_manager=self.can_interface_2,
             addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -1782,8 +1782,8 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
         assert sent_packet_record.direction == TransmissionDirection.TRANSMITTED
         assert received_packet_record.direction == TransmissionDirection.RECEIVED
         assert received_packet_record.raw_frame_data == sent_packet_record.raw_frame_data == packet.raw_frame_data
-        assert (received_packet_record.addressing_format == sent_packet_record.addressing_format
-                == packet.addressing_format == addressing_information.addressing_format)
+        assert (received_packet_record.addressing_format == sent_packet_record.ADDRESSING_FORMAT
+                == packet.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT)
         assert received_packet_record.packet_type == sent_packet_record.packet_type == packet.packet_type == packet_type
         assert received_packet_record.can_id == sent_packet_record.can_id == packet.can_id == can_id
         assert (received_packet_record.addressing_type == sent_packet_record.addressing_type
@@ -2002,7 +2002,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -2015,7 +2015,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
-        assert packet_record.addressing_format == packet.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == packet.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.packet_type == packet.packet_type == packet_type
         assert packet_record.can_id == packet.can_id == can_id
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
@@ -2097,7 +2097,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -2110,7 +2110,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
-        assert packet_record.addressing_format == packet.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == packet.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.packet_type == packet.packet_type == packet_type
         assert packet_record.can_id == packet.can_id == can_id
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
@@ -2192,7 +2192,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -2211,7 +2211,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
         assert packet_record.raw_frame_data == tuple(can_frame.data)
-        assert packet_record.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.addressing_type == addressing_type
         assert packet_record.can_id == can_frame.arbitration_id == can_id
         assert packet_record.target_address == target_address
@@ -2296,7 +2296,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -2315,7 +2315,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
         assert packet_record.raw_frame_data == tuple(can_frame.data)
-        assert packet_record.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.addressing_type == addressing_type
         assert packet_record.can_id == can_frame.arbitration_id == can_id
         assert packet_record.target_address == target_address
@@ -2397,7 +2397,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,
@@ -2415,7 +2415,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
-        assert packet_record.addressing_format == packet.addressing_format == addressing_information.addressing_format
+        assert packet_record.ADDRESSING_FORMAT == packet.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert packet_record.packet_type == packet.packet_type == packet_type
         assert packet_record.can_id == packet.can_id == can_id
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
@@ -2500,7 +2500,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(can_bus_manager=self.can_interface_1,
                                                           addressing_information=addressing_information)
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_information.addressing_format,
+                           addressing_format=addressing_information.ADDRESSING_FORMAT,
                            addressing_type=addressing_type,
                            can_id=can_id,
                            target_address=target_address,

@@ -14,15 +14,11 @@ from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, valid
 class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Mixed 11-bit Addressing format."""
 
-    @property
-    def addressing_format(self) -> CanAddressingFormat:
-        """CAN Addressing format used."""
-        return CanAddressingFormat.MIXED_11BIT_ADDRESSING
+    ADDRESSING_FORMAT = CanAddressingFormat.MIXED_11BIT_ADDRESSING
+    """CAN Addressing format used."""
 
-    @property
-    def ai_data_bytes_number(self) -> int:
-        """Number of CAN frame data bytes that are used to carry Addressing Information."""
-        return 1
+    AI_DATA_BYTES_NUMBER = 1
+    """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
@@ -49,6 +45,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
     @classmethod
     def validate_addressing_params(cls,
                                    addressing_type: AddressingType,
+                                   addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
                                    target_address: Optional[int] = None,
                                    source_address: Optional[int] = None,
@@ -57,16 +54,20 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         Validate Addressing Information parameters in Mixed 11-bit Addressing format.
 
         :param addressing_type: Addressing type to validate.
+        :param addressing_format: CAN Addressing Format to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
+        :raise ValueError: Provided Addressing format cannot be handled by this class.
         :raise UnusedArgumentError: At least one provided parameter is not supported by this Addressing format.
         :raise InconsistentArgumentsError: Provided CAN ID value is incompatible with Mixed 11-bit Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
+        if addressing_format != cls.ADDRESSING_FORMAT:
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
         if (target_address, source_address) != (None, None):
             raise UnusedArgumentError("Values of Target Address and Source Address are not supported "
                                       "by Mixed 11-bit Addressing format and must be equal None.")
@@ -75,7 +76,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Mixed 11-bit Addressing format.")
-        return CANAddressingParams(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+        return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,
                                    target_address=target_address,
@@ -106,15 +107,11 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
 class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Mixed 29-bit Addressing format."""
 
-    @property
-    def addressing_format(self) -> CanAddressingFormat:
-        """CAN Addressing format used."""
-        return CanAddressingFormat.MIXED_29BIT_ADDRESSING
+    ADDRESSING_FORMAT = CanAddressingFormat.MIXED_29BIT_ADDRESSING
+    """CAN Addressing format used."""
 
-    @property
-    def ai_data_bytes_number(self) -> int:
-        """Number of CAN frame data bytes that are used to carry Addressing Information."""
-        return 1
+    AI_DATA_BYTES_NUMBER = 1
+    """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
@@ -199,25 +196,30 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
 
     @classmethod
     def validate_addressing_params(cls,
-                           addressing_type: AddressingType,
-                           can_id: Optional[int] = None,
-                           target_address: Optional[int] = None,
-                           source_address: Optional[int] = None,
-                           address_extension: Optional[int] = None) -> CANAddressingParams:
+                                   addressing_type: AddressingType,
+                                   addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
+                                   can_id: Optional[int] = None,
+                                   target_address: Optional[int] = None,
+                                   source_address: Optional[int] = None,
+                                   address_extension: Optional[int] = None) -> CANAddressingParams:
         """
         Validate Addressing Information parameters of a CAN packet that uses Mixed 29-bit Addressing format.
 
         :param addressing_type: Addressing type to validate.
+        :param addressing_format: CAN Addressing Format to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
+        :raise ValueError: Provided Addressing format cannot be handled by this class.
         :raise InconsistentArgumentsError: Provided Target Address, Source Address or CAN ID values are incompatible
             with each other or Mixed 29-bit Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
+        if addressing_format != cls.ADDRESSING_FORMAT:
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
         addressing_type = AddressingType.validate_member(addressing_type)
         validate_raw_byte(address_extension)
         if can_id is None:
@@ -229,7 +231,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
             encoded_can_id = cls.encode_can_id(addressing_type=addressing_type,
                                                target_address=target_address,
                                                source_address=source_address)
-            return CANAddressingParams(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+            return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                        addressing_type=addressing_type,
                                        can_id=encoded_can_id,
                                        target_address=target_address,
@@ -242,7 +244,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Target Address.")
         if source_address not in {decoded_info["source_address"], None}:
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Source Address.")
-        return CANAddressingParams(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+        return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,
                                    target_address=decoded_info["target_address"],

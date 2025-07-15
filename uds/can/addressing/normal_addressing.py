@@ -15,15 +15,11 @@ from .abstract_addressing_information import AbstractCanAddressingInformation, C
 class NormalCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Normal Addressing format."""
 
-    @property
-    def addressing_format(self) -> CanAddressingFormat:
-        """CAN Addressing Format used."""
-        return CanAddressingFormat.NORMAL_ADDRESSING
+    ADDRESSING_FORMAT = CanAddressingFormat.NORMAL_ADDRESSING
+    """CAN Addressing Format used."""
 
-    @property
-    def ai_data_bytes_number(self) -> int:
-        """Number of CAN frame data bytes that are used to carry Addressing Information."""
-        return 0
+    AI_DATA_BYTES_NUMBER = 0
+    """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
@@ -50,6 +46,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
     @classmethod
     def validate_addressing_params(cls,
                                    addressing_type: AddressingType,
+                                   addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
                                    target_address: Optional[int] = None,
                                    source_address: Optional[int] = None,
@@ -58,16 +55,20 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
         Validate Addressing Information parameters in Normal Addressing format.
 
         :param addressing_type: Addressing type to validate.
+        :param addressing_format: CAN Addressing Format to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
+        :raise ValueError: Provided Addressing format cannot be handled by this class.
         :raise UnusedArgumentError: At least one provided parameter is not supported by this Addressing format.
         :raise InconsistentArgumentsError: Provided CAN ID value is incompatible with Normal Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
+        if addressing_format != cls.ADDRESSING_FORMAT:
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
         if (target_address, source_address, address_extension) != (None, None, None):
             raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are not supported "
                                       "by Normal Addressing format and must be equal None.")
@@ -75,7 +76,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Normal Addressing format.")
-        return CANAddressingParams(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+        return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,
                                    target_address=target_address,
@@ -100,15 +101,11 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
 class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Normal Fixed Addressing format."""
 
-    @property
-    def addressing_format(self) -> CanAddressingFormat:
-        """CAN Addressing format used."""
-        return CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+    ADDRESSING_FORMAT = CanAddressingFormat.NORMAL_FIXED_ADDRESSING
+    """CAN Addressing format used."""
 
-    @property
-    def ai_data_bytes_number(self) -> int:
-        """Number of CAN frame data bytes that are used to carry Addressing Information."""
-        return 0
+    AI_DATA_BYTES_NUMBER = 0
+    """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
@@ -198,6 +195,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
     @classmethod
     def validate_addressing_params(cls,
                                    addressing_type: AddressingType,
+                                   addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
                                    target_address: Optional[int] = None,
                                    source_address: Optional[int] = None,
@@ -206,17 +204,21 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         Validate Addressing Information parameters of a CAN packet that uses Normal Fixed Addressing format.
 
         :param addressing_type: Addressing type to validate.
+        :param addressing_format: CAN Addressing Format to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
+        :raise ValueError: Provided Addressing format cannot be handled by this class.
         :raise UnusedArgumentError: At least one provided parameter is not supported by this Addressing format.
         :raise InconsistentArgumentsError: Provided Target Address, Source Address or CAN ID values are incompatible
             with each other or Normal Fixed Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
+        if addressing_format != cls.ADDRESSING_FORMAT:
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
         if address_extension is not None:
             raise UnusedArgumentError("Values ofAddress Extension is not supported by "
                                       "Normal Fixed Addressing format and must be equal None.")
@@ -230,7 +232,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
             encoded_can_id = cls.encode_can_id(addressing_type=addressing_type,
                                                target_address=target_address,
                                                source_address=source_address)
-            return CANAddressingParams(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+            return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                        addressing_type=addressing_type,
                                        can_id=encoded_can_id,
                                        target_address=target_address,
@@ -243,7 +245,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Target Address.")
         if source_address not in {decoded_info["source_address"], None}:
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Source Address.")
-        return CANAddressingParams(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+        return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,
                                    target_address=decoded_info["target_address"],

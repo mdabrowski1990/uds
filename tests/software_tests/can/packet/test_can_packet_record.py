@@ -125,7 +125,7 @@ class TestCanPacketRecord:
     @pytest.mark.parametrize("value", [None, "something", 1])
     def test_addressing_format(self, value):
         self.mock_can_packet_record._CanPacketRecord__addressing_format = value
-        assert CanPacketRecord.addressing_format.fget(self.mock_can_packet_record) == value
+        assert CanPacketRecord.ADDRESSING_FORMAT.fget(self.mock_can_packet_record) == value
 
     # addressing_type
 

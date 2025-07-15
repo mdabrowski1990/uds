@@ -31,7 +31,7 @@ class TestCanSegmenter:
 
     def setup_method(self):
         self.mock_can_segmenter = Mock(spec=CanSegmenter)
-        self.mock_can_segmenter.addressing_information.ai_data_bytes_number = 0
+        self.mock_can_segmenter.addressing_information.AI_DATA_BYTES_NUMBER = 0
         # patching
         self._patcher_can_ai_class = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_can_ai_class = self._patcher_can_ai_class.start()
@@ -111,7 +111,7 @@ class TestCanSegmenter:
 
     def test_addressing_format__get(self):
         assert CanSegmenter.addressing_format.fget(self.mock_can_segmenter) \
-               == self.mock_can_segmenter.addressing_information.addressing_format
+               == self.mock_can_segmenter.addressing_information.ADDRESSING_FORMAT
 
     # rx_packets_physical_ai
 
@@ -813,7 +813,7 @@ class TestCanSegmenterIntegration:
     def test_get_flow_control_packet(self, addressing_information, flow_Status, block_size, st_min):
         can_segmenter = CanSegmenter(addressing_information=addressing_information)
         flow_control = can_segmenter.get_flow_control_packet(flow_status=flow_Status, block_size=block_size, st_min=st_min)
-        assert flow_control.addressing_format == addressing_information.addressing_format
+        assert flow_control.ADDRESSING_FORMAT == addressing_information.ADDRESSING_FORMAT
         assert flow_control.addressing_type == AddressingType.PHYSICAL
         assert flow_control.packet_type == CanPacketType.FLOW_CONTROL
         assert flow_control.flow_status == flow_Status

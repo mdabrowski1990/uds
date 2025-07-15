@@ -35,13 +35,12 @@ class TestMixed11BitCanAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert Mixed11BitCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
-               == CanAddressingFormat.MIXED_11BIT_ADDRESSING
+        assert Mixed11BitCanAddressingInformation.ADDRESSING_FORMAT == CanAddressingFormat.MIXED_11BIT_ADDRESSING
 
     # ai_data_bytes_number
 
     def test_ai_data_bytes_number(self):
-        assert Mixed11BitCanAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 1
+        assert Mixed11BitCanAddressingInformation.AI_DATA_BYTES_NUMBER == 1
 
     # is_compatible_can_id
 
@@ -65,6 +64,16 @@ class TestMixed11BitCanAddressingInformation:
         }
 
     # validate_addressing_params
+
+    @pytest.mark.parametrize("addressing_format", [
+        Mock(),
+        CanAddressingFormat.NORMAL_ADDRESSING,
+    ])
+    def test_validate_addressing_params__value_error(self, addressing_format):
+        with pytest.raises(ValueError):
+            Mixed11BitCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
+                                                                        can_id=Mock(),
+                                                                        addressing_format=addressing_format)
 
     @pytest.mark.parametrize("unsupported_args", [
         {"target_address": 0x2C},
@@ -199,13 +208,12 @@ class TestMixed29BitCanAddressingInformation:
     # addressing_format
 
     def test_addressing_format(self):
-        assert Mixed29BitCanAddressingInformation.addressing_format.fget(self.mock_addressing_information) \
-               == CanAddressingFormat.MIXED_29BIT_ADDRESSING
+        assert Mixed29BitCanAddressingInformation.ADDRESSING_FORMAT == CanAddressingFormat.MIXED_29BIT_ADDRESSING
 
     # ai_data_bytes_number
 
     def test_ai_data_bytes_number(self):
-        assert Mixed29BitCanAddressingInformation.ai_data_bytes_number.fget(self.mock_addressing_information) == 1
+        assert Mixed29BitCanAddressingInformation.AI_DATA_BYTES_NUMBER == 1
 
     # is_compatible_can_id
 
@@ -369,6 +377,16 @@ class TestMixed29BitCanAddressingInformation:
         mock_validate_priority.assert_called_once_with(priority)
 
     # validate_addressing_params
+
+    @pytest.mark.parametrize("addressing_format", [
+        Mock(),
+        CanAddressingFormat.NORMAL_ADDRESSING,
+    ])
+    def test_validate_addressing_params__value_error(self, addressing_format):
+        with pytest.raises(ValueError):
+            Mixed29BitCanAddressingInformation.validate_addressing_params(addressing_type=Mock(),
+                                                                          can_id=Mock(),
+                                                                          addressing_format=addressing_format)
 
     @pytest.mark.parametrize("addressing_type, can_id, target_address, source_address, address_extension", [
         (Mock(), None, None, None, Mock()),

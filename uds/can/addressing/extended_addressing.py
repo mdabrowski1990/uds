@@ -14,15 +14,11 @@ from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, valid
 class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
     """Addressing Information of CAN Entity (either server or client) that uses Extended Addressing format."""
 
-    @property
-    def addressing_format(self) -> CanAddressingFormat:
-        """CAN Addressing Format used."""
-        return CanAddressingFormat.EXTENDED_ADDRESSING
+    ADDRESSING_FORMAT = CanAddressingFormat.EXTENDED_ADDRESSING
+    """CAN Addressing Format used."""
 
-    @property
-    def ai_data_bytes_number(self) -> int:
-        """Number of CAN frame data bytes that are used to carry Addressing Information."""
-        return 1
+    AI_DATA_BYTES_NUMBER = 1
+    """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
@@ -49,6 +45,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
     @classmethod
     def validate_addressing_params(cls,
                                    addressing_type: AddressingType,
+                                   addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
                                    target_address: Optional[int] = None,
                                    source_address: Optional[int] = None,
@@ -57,16 +54,20 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         Validate Addressing Information parameters of a CAN packet that uses Extended Addressing format.
 
         :param addressing_type: Addressing type to validate.
+        :param addressing_format: CAN Addressing Format to validate.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
         :param address_extension: Address Extension value to validate.
 
+        :raise ValueError: Provided Addressing format cannot be handled by this class.
         :raise UnusedArgumentError: Provided parameter is not supported by this Addressing format.
         :raise InconsistentArgumentsError: Provided CAN ID value is incompatible with Extended Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
+        if addressing_format != cls.ADDRESSING_FORMAT:
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
         if (source_address, address_extension) != (None, None):
             raise UnusedArgumentError("Values of Source Address and Address Extension are not supported by "
                                       "Extended Addressing format and must be equal None.")
@@ -75,7 +76,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Extended Addressing format.")
-        return CANAddressingParams(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
+        return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,
                                    target_address=target_address,

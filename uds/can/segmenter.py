@@ -68,7 +68,7 @@ class CanSegmenter(AbstractSegmenter):
     @property
     def addressing_format(self) -> CanAddressingFormat:
         """CAN Addressing format used."""
-        return self.addressing_information.addressing_format
+        return self.addressing_information.ADDRESSING_FORMAT
 
     @property
     def rx_packets_physical_ai(self) -> PacketAIParamsAlias:
@@ -250,7 +250,7 @@ class CanSegmenter(AbstractSegmenter):
             decoded_frame_ai = CanAddressingInformation.decode_packet_ai(
                 addressing_format=self.addressing_format,
                 can_id=can_id,
-                ai_data_bytes=data[:self.addressing_information.ai_data_bytes_number])
+                ai_data_bytes=data[:self.addressing_information.AI_DATA_BYTES_NUMBER])
         except ValueError:
             return None
         frame_ai = {

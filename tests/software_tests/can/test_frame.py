@@ -1,26 +1,13 @@
 import pytest
-from mock import Mock, call, patch
+from mock import Mock, patch
 
-from uds.can.frame import AddressingType, CanAddressingFormat, CanDlcHandler, CanIdHandler
+from uds.can.frame import CanDlcHandler, CanIdHandler
 
 SCRIPT_LOCATION = "uds.can.frame"
 
 
 class TestCanIdHandler:
     """Unit tests for `CanIdHandler` class."""
-
-    def setup_method(self):
-        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
-        self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
-        self._patcher_validate_addressing_format = patch(f"{SCRIPT_LOCATION}.CanAddressingFormat.validate_member")
-        self.mock_validate_addressing_format = self._patcher_validate_addressing_format.start()
-        self._patcher_validate_addressing_type = patch(f"{SCRIPT_LOCATION}.AddressingType.validate_member")
-        self.mock_validate_addressing_type = self._patcher_validate_addressing_type.start()
-
-    def teardown_method(self):
-        self._patcher_validate_raw_byte.stop()
-        self._patcher_validate_addressing_format.stop()
-        self._patcher_validate_addressing_type.stop()
 
     # # decode_can_id
     #
