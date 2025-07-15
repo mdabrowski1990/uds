@@ -1,7 +1,7 @@
 """Implementation for :ref:`Single Frame <knowledge-base-addressing-single-frame>` CAN packets."""
 
 __all__ = ["SINGLE_FRAME_N_PCI", "MAX_DLC_VALUE_SHORT_SF_DL", "SHORT_SF_DL_BYTES_USED", "LONG_SF_DL_BYTES_USED",
-           "is_single_frame", "get_sf_dl_bytes_number", "get_min_dlc", "get_max_payload_size"]
+           "is_single_frame", "get_sf_dl_bytes_number", "get_min_single_frame_dlc", "get_single_frame_max_payload_size"]
 
 from typing import Optional
 
@@ -59,7 +59,7 @@ def get_sf_dl_bytes_number(dlc: int) -> int:
     CanDlcHandler.validate_dlc(dlc)
     return SHORT_SF_DL_BYTES_USED if dlc <= MAX_DLC_VALUE_SHORT_SF_DL else LONG_SF_DL_BYTES_USED
 
-def get_min_dlc(addressing_format: CanAddressingFormat, payload_length: int) -> int:
+def get_single_frame_min_dlc(addressing_format: CanAddressingFormat, payload_length: int) -> int:
     """
     Get the minimum value of a CAN frame DLC to carry a Single Frame packet.
 
@@ -76,8 +76,8 @@ def get_min_dlc(addressing_format: CanAddressingFormat, payload_length: int) -> 
     data_bytes_long_sf_dl = ai_data_bytes_number + LONG_SF_DL_BYTES_USED + payload_length
     return CanDlcHandler.get_min_dlc(data_bytes_long_sf_dl)
 
-def get_max_payload_size(addressing_format: CanAddressingFormat,
-                         dlc: Optional[int] = None) -> int:
+def get_single_frame_max_payload_size(addressing_format: CanAddressingFormat,
+                                      dlc: Optional[int] = None) -> int:
     """
     Get the maximum size of a payload that addressing fit into Single Frame data bytes.
 

@@ -2,16 +2,16 @@ import pytest
 from mock import patch, Mock, call
 
 from uds.can.packet.single_frame import (
-SINGLE_FRAME_N_PCI,
-SHORT_SF_DL_BYTES_USED,
-MAX_DLC_VALUE_SHORT_SF_DL,
-LONG_SF_DL_BYTES_USED,
+    SINGLE_FRAME_N_PCI,
+    SHORT_SF_DL_BYTES_USED,
+    MAX_DLC_VALUE_SHORT_SF_DL,
+    LONG_SF_DL_BYTES_USED,
     is_single_frame,
-CanAddressingFormat,
-get_sf_dl_bytes_number,
-get_min_dlc,
-get_max_payload_size,
-InconsistentArgumentsError
+    CanAddressingFormat,
+    get_sf_dl_bytes_number,
+    get_single_frame_min_dlc,
+    get_single_frame_max_payload_size,
+    InconsistentArgumentsError
 )
 
 SCRIPT_LOCATION = "uds.can.packet.single_frame"
@@ -70,17 +70,17 @@ class TestFunctions:
         assert get_sf_dl_bytes_number(dlc) == expected_sf_dl_bytes_number
         self.mock_can_dlc_handler.validate_dlc.assert_called_once_with(dlc)
 
-    # get_min_dlc
+    # get_single_frame_min_dlc
 
     @pytest.mark.parametrize("addressing_format, payload_length, ai_data_bytes, decoded_dlc", [
         (Mock(), MAX_DLC_VALUE_SHORT_SF_DL - 2, 1, MAX_DLC_VALUE_SHORT_SF_DL),
         (CanAddressingFormat.NORMAL_ADDRESSING, 1, 0, MAX_DLC_VALUE_SHORT_SF_DL - 1),
     ])
-    def test_get_min_dlc__short_dlc(self, addressing_format, payload_length, ai_data_bytes, decoded_dlc):
+    def test_get_single_frame_min_dlc__short_dlc(self, addressing_format, payload_length, ai_data_bytes, decoded_dlc):
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
         self.mock_can_dlc_handler.get_min_dlc.return_value = decoded_dlc
-        assert get_min_dlc(addressing_format=addressing_format,
-                           payload_length=payload_length) == self.mock_can_dlc_handler.get_min_dlc.return_value
+        assert get_single_frame_min_dlc(addressing_format=addressing_format,
+                                        payload_length=payload_length) == self.mock_can_dlc_handler.get_min_dlc.return_value
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         data_bytes_number = payload_length + SHORT_SF_DL_BYTES_USED + ai_data_bytes
         self.mock_can_dlc_handler.get_min_dlc.assert_called_once_with(data_bytes_number)
@@ -89,18 +89,18 @@ class TestFunctions:
         (Mock(), MAX_DLC_VALUE_SHORT_SF_DL, 1, MAX_DLC_VALUE_SHORT_SF_DL + 1),
         (CanAddressingFormat.NORMAL_ADDRESSING, 1, 0, MAX_DLC_VALUE_SHORT_SF_DL + 2),
     ])
-    def test_get_min_dlc__long_dlc(self, addressing_format, payload_length, ai_data_bytes, decoded_dlc):
+    def test_get_single_frame_min_dlc__long_dlc(self, addressing_format, payload_length, ai_data_bytes, decoded_dlc):
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes
         self.mock_can_dlc_handler.get_min_dlc.return_value = decoded_dlc
-        assert get_min_dlc(addressing_format=addressing_format,
-                           payload_length=payload_length) == self.mock_can_dlc_handler.get_min_dlc.return_value
+        assert get_single_frame_min_dlc(addressing_format=addressing_format,
+                                        payload_length=payload_length) == self.mock_can_dlc_handler.get_min_dlc.return_value
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         data_bytes_number_1 = payload_length + SHORT_SF_DL_BYTES_USED + ai_data_bytes
         data_bytes_number_2 = payload_length + LONG_SF_DL_BYTES_USED + ai_data_bytes
         self.mock_can_dlc_handler.get_min_dlc.assert_has_calls([call(data_bytes_number_1), call(data_bytes_number_2)],
                                                any_order=False)
 
-    # get_max_payload_size
+    # get_single_frame_max_payload_size
 
     @pytest.mark.parametrize("addressing_format, dlc, frame_data_bytes_number, ai_data_bytes_number, sf_dl_bytes_number", [
         (Mock(), Mock(), 8, 0, 1),
@@ -108,13 +108,13 @@ class TestFunctions:
         (CanAddressingFormat.NORMAL_ADDRESSING, 0x6, 6, 0, 1),
     ])
     @patch(f"{SCRIPT_LOCATION}.get_sf_dl_bytes_number")
-    def test_get_max_payload_size__with_dlc(self, mock_get_sf_dl_bytes_number,
+    def test_get_single_frame_max_payload_size__with_dlc(self, mock_get_sf_dl_bytes_number,
                                             addressing_format, dlc,
                                             frame_data_bytes_number, ai_data_bytes_number, sf_dl_bytes_number):
         self.mock_can_dlc_handler.decode_dlc.return_value = frame_data_bytes_number
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
         mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
-        assert (get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
+        assert (get_single_frame_max_payload_size(addressing_format=addressing_format, dlc=dlc)
                 == frame_data_bytes_number - ai_data_bytes_number - sf_dl_bytes_number)
         self.mock_can_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
@@ -126,11 +126,11 @@ class TestFunctions:
         (CanAddressingFormat.NORMAL_ADDRESSING, 6, 0),
     ])
     @patch(f"{SCRIPT_LOCATION}.get_sf_dl_bytes_number")
-    def test_get_max_payload_size__without_dlc(self, mock_get_sf_dl_bytes_number,
+    def test_get_single_frame_max_payload_size__without_dlc(self, mock_get_sf_dl_bytes_number,
                                                addressing_format, frame_data_bytes_number, ai_data_bytes_number):
         self.mock_can_dlc_handler.MAX_DATA_BYTES_NUMBER = frame_data_bytes_number
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
-        assert (get_max_payload_size(addressing_format=addressing_format)
+        assert (get_single_frame_max_payload_size(addressing_format=addressing_format)
                 == frame_data_bytes_number - ai_data_bytes_number - LONG_SF_DL_BYTES_USED)
         self.mock_can_dlc_handler.decode_dlc.assert_not_called()
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
@@ -141,14 +141,14 @@ class TestFunctions:
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, 0xF, 1, 0, 1),
     ])
     @patch(f"{SCRIPT_LOCATION}.get_sf_dl_bytes_number")
-    def test_get_max_payload_size__too_short(self, mock_get_sf_dl_bytes_number,
+    def test_get_single_frame_max_payload_size__too_short(self, mock_get_sf_dl_bytes_number,
                                             addressing_format, dlc,
                                             frame_data_bytes_number, ai_data_bytes_number, sf_dl_bytes_number):
         self.mock_can_dlc_handler.decode_dlc.return_value = frame_data_bytes_number
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
         mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
         with pytest.raises(InconsistentArgumentsError):
-            get_max_payload_size(addressing_format=addressing_format, dlc=dlc)
+            get_single_frame_max_payload_size(addressing_format=addressing_format, dlc=dlc)
         self.mock_can_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         mock_get_sf_dl_bytes_number.assert_called_once_with(dlc)
