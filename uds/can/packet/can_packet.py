@@ -390,12 +390,12 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
-        raw_frame_data = CanSingleFrameHandler.create_valid_frame_data(addressing_format=self.addressing_format,
-                                                                       target_address=self.target_address,
-                                                                       address_extension=self.address_extension,
-                                                                       dlc=dlc,
-                                                                       payload=payload,
-                                                                       filler_byte=filler_byte)
+        raw_frame_data = CanSingleFrameHandler.encode_single_frame_data(addressing_format=self.addressing_format,
+                                                                        target_address=self.target_address,
+                                                                        address_extension=self.address_extension,
+                                                                        dlc=dlc,
+                                                                        payload=payload,
+                                                                        filler_byte=filler_byte)
         self.__raw_frame_data = bytes(raw_frame_data)
         self.__dlc = dlc or CanDlcHandler.encode_dlc(len(raw_frame_data))
         self.__packet_type = CanPacketType.SINGLE_FRAME
