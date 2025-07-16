@@ -37,7 +37,7 @@ on CAN communication:
 
 N_As
 ''''
-N_As is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-uds-can-packet>` by a sender.
+N_As is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-can-packet>` by a sender.
 It is measured from the beginning of the :ref:`CAN Frame <knowledge-base-can-frame>` (that carries such CAN Packet)
 transmission till the reception of a confirmation that this CAN Frame was received by a receiver.
 
@@ -48,7 +48,7 @@ Error handling:
   If N_As timeout is exceeded, then the transmission of
   the :ref:`diagnostic message <knowledge-base-diagnostic-message>` shall be aborted.
 
-Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
   - :ref:`Single Frame <knowledge-base-can-single-frame>`
   - :ref:`First Frame <knowledge-base-can-first-frame>`
   - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
@@ -58,7 +58,7 @@ Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
 
 N_Ar
 ''''
-N_Ar is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-uds-can-packet>` by a receiver.
+N_Ar is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-can-packet>` by a receiver.
 It is measured from the beginning of the :ref:`CAN Frame <knowledge-base-can-frame>` (that carries such CAN Packet)
 transmission till the reception of a confirmation that this CAN Frame was received by a sender.
 
@@ -69,7 +69,7 @@ Error handling:
   If N_Ar timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
-Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
   - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
@@ -90,7 +90,7 @@ Error handling:
   If N_Bs timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
-Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
   - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
@@ -113,7 +113,7 @@ Performance requirement:
     [N_Br] + [N_Ar] < 0.9 * [N_Bs timeout]
     [N_Br max] = 900ms - [N_Ar]
 
-Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
   - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
@@ -136,7 +136,7 @@ Performance requirement:
     [N_Cs] + [N_As] < 0.9 * [N_Cr timeout]
     [N_Cs max] = 900ms - [N_As]
 
-Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
   - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
@@ -157,7 +157,7 @@ Error handling:
   If N_Cr timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
-Affected :ref:`CAN Packets <knowledge-base-uds-can-packet>`:
+Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
   - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 

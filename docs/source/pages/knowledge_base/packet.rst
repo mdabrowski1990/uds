@@ -46,7 +46,7 @@ Network Protocol Control Information (N_PCI) identifies the type of `Packet (N_P
 N_PCI values and their interpretation are bus specific.
 
 
-.. _knowledge-base-uds-can-packet:
+.. _knowledge-base-can-packet:
 
 CAN Packet
 ----------
