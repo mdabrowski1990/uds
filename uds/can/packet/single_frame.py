@@ -1,9 +1,10 @@
-"""Implementation for :ref:`Single Frame <knowledge-base-addressing-single-frame>` CAN packets."""
+"""Implementation of handlers for :ref:`Single Frame <knowledge-base-addressing-single-frame>` CAN packet."""
 
 __all__ = ["SINGLE_FRAME_N_PCI", "MAX_DLC_VALUE_SHORT_SF_DL", "SHORT_SF_DL_BYTES_USED", "LONG_SF_DL_BYTES_USED",
-           "is_single_frame", "validate_frame_data", "extract_single_frame_payload", "encode_single_frame_data", "generate_single_frame_data",
-           "extract_sf_dl", "get_sf_dl_bytes_number", "get_single_frame_min_dlc", "get_single_frame_max_payload_size",
-           "extract_sf_dl_data_bytes", "encode_sf_dl", "generate_sf_dl_bytes", "validate_sf_dl"]
+           "is_single_frame", "validate_single_frame_data", "extract_single_frame_payload", "encode_single_frame_data",
+           "generate_single_frame_data", "extract_sf_dl", "get_sf_dl_bytes_number", "get_single_frame_min_dlc",
+           "get_single_frame_max_payload_size", "extract_sf_dl_data_bytes", "encode_sf_dl", "generate_sf_dl_bytes",
+           "validate_sf_dl"]
 
 from typing import Optional
 from warnings import warn
@@ -51,14 +52,14 @@ def is_single_frame(addressing_format: CanAddressingFormat, raw_frame_data: RawB
     ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     return (raw_frame_data[ai_bytes_number] >> 4) == SINGLE_FRAME_N_PCI
 
-def validate_frame_data(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> None:
+def validate_single_frame_data(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> None:
     """
     Validate whether data field of a CAN Packet carries a properly encoded Single Frame.
 
     :param addressing_format: CAN Addressing Format used.
     :param raw_frame_data: Raw data bytes of a CAN frame to validate.
 
-    :raise ValueError: Provided frame data of a CAN frames does not carry a Single Frame CAN packet.
+    :raise ValueError: The value of N_PCI in provided data is not Single Frame N_PCI.
     :raise InconsistentArgumentsError: Provided frame data of a CAN frames does not carry a properly encoded
         Single Frame CAN packet.
     """
@@ -72,38 +73,19 @@ def validate_frame_data(addressing_format: CanAddressingFormat, raw_frame_data: 
     else:
         sf_dl = sf_dl_data_bytes[1]
         if sf_dl_data_bytes[0] & 0xF != 0:
-            raise InconsistentArgumentsError("Value of Single Frame Data Length must use 0x00 at the first byte "
-                                             "when long SF_DL format (for DLC > 8)) is used.")
+            raise InconsistentArgumentsError("Value of Single Frame Data Length must use 0x00 at the first byte when "
+                                             "long SF_DL format (for DLC > {MAX_DLC_VALUE_SHORT_SF_DL})) is used.")
     min_dlc = get_single_frame_min_dlc(addressing_format=addressing_format, payload_length=sf_dl)
     if min_dlc > dlc:
         raise InconsistentArgumentsError("Value of Single Frame Data Length is greater than number of payload bytes.")
     if min_dlc < dlc:
         if dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
             raise InconsistentArgumentsError("Data padding was used for CAN frame with "
-                                             f"DLC less than {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+                                             f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}.")
         if dlc > CanDlcHandler.MIN_BASE_UDS_DLC:
             warn(message=f"DLC greater than {CanDlcHandler.MIN_BASE_UDS_DLC} is used for CAN Packets "
-                         f"without data padding.",
+                         f"without data padding which unnecessarily increases the bus load.",
                  category=ValueWarning)
-
-def extract_single_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
-    """
-    Extract payload from a Single Frame data bytes.
-
-    .. warning:: The method does not validate the content of the provided frame data bytes.
-        There is no guarantee of the proper output when frame data in an invalid format (incompatible with
-        ISO 15765) are provided.
-
-    :param addressing_format: CAN Addressing Format used.
-    :param raw_frame_data: Raw data bytes of a considered CAN frame.
-
-    :return: Payload bytes carried by the provided Single Frame data.
-    """
-    sf_dl = extract_sf_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-    ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-    dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
-    sf_dl_bytes_number = get_sf_dl_bytes_number(dlc)
-    return bytearray(raw_frame_data[ai_data_bytes_number + sf_dl_bytes_number:][:sf_dl])
 
 def encode_single_frame_data(addressing_format: CanAddressingFormat,
                              payload: RawBytesAlias,
@@ -112,7 +94,7 @@ def encode_single_frame_data(addressing_format: CanAddressingFormat,
                              target_address: Optional[int] = None,
                              address_extension: Optional[int] = None) -> bytearray:
     """
-    Create CAN frame data field that carries a valid Single Frame packet.
+    Create data field for CAN frame that carries a valid Single Frame packet.
 
     .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
         Use :func:`~uds.can.packet.single_frame.generate_single_frame_data` to generate data bytes with any (also
@@ -168,7 +150,7 @@ def generate_single_frame_data(addressing_format: CanAddressingFormat,
                                target_address: Optional[int] = None,
                                address_extension: Optional[int] = None) -> bytearray:
     """
-    Generate CAN frame data field that carries any combination of Single Frame packet data fields.
+    Generate CAN frame data field that carries any combination of Single Frame packet data parameters.
 
     .. note:: Crosscheck of provided values is not performed so you might use this function to create data fields
         that are not compatible with Diagnostic on CAN standard (ISO 15765).
@@ -205,20 +187,37 @@ def generate_single_frame_data(addressing_format: CanAddressingFormat,
     data_padding = ((frame_data_bytes_number - len(sf_bytes)) * bytearray([filler_byte]))
     return sf_bytes + data_padding
 
+def extract_single_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
+    """
+    Extract payload from Single Frame data bytes.
+
+    .. warning:: The method does not validate the content of the provided frame data bytes.
+        There is no guarantee of the proper output when frame data in an invalid format (incompatible with
+        ISO 15765) are provided.
+
+    :param addressing_format: CAN Addressing Format used.
+    :param raw_frame_data: Raw data bytes of a  CAN frame.
+
+    :return: Payload bytes carried by the provided Single Frame data.
+    """
+    sf_dl = extract_sf_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+    ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
+    dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
+    sf_dl_bytes_number = get_sf_dl_bytes_number(dlc)
+    return bytearray(raw_frame_data[ai_data_bytes_number + sf_dl_bytes_number:][:sf_dl])
+
 def extract_sf_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> int:
     """
-    Extract a value of Single Frame Data Length from Single Frame data bytes.
+    Extract the value of Single Frame Data Length from Single Frame data bytes.
 
     .. warning:: The method does not validate the content of the provided frame data bytes.
         There is no guarantee of the proper output when frame data in invalid format (incompatible with
         ISO 15765) is provided.
 
     :param addressing_format: CAN Addressing Format used.
-    :param raw_frame_data: Raw data bytes of a considered CAN frame.
+    :param raw_frame_data: Raw data bytes of a CAN frame.
 
     :raise NotImplementedError: There is missing implementation for the provided Single Frame Data Length format.
-        Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-        with detailed description if you face this error.
 
     :return: Extracted value of Single Frame Data Length.
     """
@@ -230,38 +229,10 @@ def extract_sf_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawByt
         return sf_dl_data_bytes[1]
     raise NotImplementedError("Unknown format of Single Frame Data Length was found.")
 
-def get_sf_dl_bytes_number(dlc: int) -> int:
-    """
-    Get number of data bytes used for carrying CAN Packet Type and Single Frame Data Length parameters.
-
-    :param dlc: DLC value of a considered CAN frame.
-
-    :return: The number of bytes used for carrying CAN Packet Type and Single Frame Data Length parameters.
-    """
-    CanDlcHandler.validate_dlc(dlc)
-    return SHORT_SF_DL_BYTES_USED if dlc <= MAX_DLC_VALUE_SHORT_SF_DL else LONG_SF_DL_BYTES_USED
-
-def get_single_frame_min_dlc(addressing_format: CanAddressingFormat, payload_length: int) -> int:
-    """
-    Get the minimum value of a CAN frame DLC to carry a Single Frame packet.
-
-    :param addressing_format: CAN addressing format that considered CAN packet uses.
-    :param payload_length: Number of payload bytes that considered CAN packet carries.
-
-    :return: The lowest value of DLC that enables to fit in provided Single Frame packet data.
-    """
-    ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-    data_bytes_short_sf_dl = ai_data_bytes_number + SHORT_SF_DL_BYTES_USED + payload_length
-    dlc_with_short_sf_dl = CanDlcHandler.get_min_dlc(data_bytes_short_sf_dl)
-    if dlc_with_short_sf_dl <= MAX_DLC_VALUE_SHORT_SF_DL:
-        return dlc_with_short_sf_dl
-    data_bytes_long_sf_dl = ai_data_bytes_number + LONG_SF_DL_BYTES_USED + payload_length
-    return CanDlcHandler.get_min_dlc(data_bytes_long_sf_dl)
-
 def get_single_frame_max_payload_size(addressing_format: CanAddressingFormat,
                                       dlc: Optional[int] = None) -> int:
     """
-    Get the maximum size of a payload that addressing fit into Single Frame data bytes.
+    Get the maximum size of a payload that would fit into Single Frame.
 
     :param addressing_format: CAN addressing format used.
     :param dlc: DLC value to use.
@@ -269,7 +240,7 @@ def get_single_frame_max_payload_size(addressing_format: CanAddressingFormat,
 
     :raise InconsistentArgumentsError: Single Frame packet cannot use provided attributes.
 
-    :return: The maximum number of payload bytes that could fit into a considered Single Frame.
+    :return: The maximum number of payload bytes that could fit into a Single Frame with provided DLC.
     """
     if dlc is not None:
         frame_data_bytes_number = CanDlcHandler.decode_dlc(dlc)
@@ -281,20 +252,36 @@ def get_single_frame_max_payload_size(addressing_format: CanAddressingFormat,
         CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     output = frame_data_bytes_number - ai_data_bytes_number - sf_dl_bytes_number
     if output <= 0:
-        raise InconsistentArgumentsError(f"Provided values cannot be used to transmit a valid Single Frame packet. "
-                                         f"Consider using greater DLC value or changing the CAN Addressing Format. "
-                                         f"Actual values: dlc={dlc}, addressing_format={addressing_format}")
+        raise InconsistentArgumentsError("Provided values cannot be used to transmit a valid Single Frame packet. "
+                                         "Consider using greater DLC value or changing the CAN Addressing Format.")
     return output
+
+def get_single_frame_min_dlc(addressing_format: CanAddressingFormat, payload_length: int) -> int:
+    """
+    Get the minimum value of a CAN frame DLC to carry a Single Frame packet.
+
+    :param addressing_format: CAN addressing format used.
+    :param payload_length: Number of payload bytes to carry.
+
+    :return: The lowest value of DLC for a Single Frame that would carry provided payload size.
+    """
+    ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
+    data_bytes_short_sf_dl = ai_data_bytes_number + SHORT_SF_DL_BYTES_USED + payload_length
+    dlc_with_short_sf_dl = CanDlcHandler.get_min_dlc(data_bytes_short_sf_dl)
+    if dlc_with_short_sf_dl <= MAX_DLC_VALUE_SHORT_SF_DL:
+        return dlc_with_short_sf_dl
+    data_bytes_long_sf_dl = ai_data_bytes_number + LONG_SF_DL_BYTES_USED + payload_length
+    return CanDlcHandler.get_min_dlc(data_bytes_long_sf_dl)
 
 def extract_sf_dl_data_bytes(addressing_format: CanAddressingFormat,
                              raw_frame_data: RawBytesAlias) -> bytearray:
     """
-    Extract data bytes that carries CAN Packet Type and Single Frame Data Length parameters.
+    Extract data bytes that carry CAN Packet Type and Single Frame Data Length parameters.
 
     .. warning:: This method does not check whether provided `raw_frame_data` actually contains Single Frame.
 
     :param addressing_format: CAN Addressing Format used.
-    :param raw_frame_data: Raw data bytes of a considered CAN frame.
+    :param raw_frame_data: Raw data bytes of a CAN frame.
 
     :return: Extracted data bytes with CAN Packet Type and Single Frame Data Length parameters.
     """
@@ -302,21 +289,32 @@ def extract_sf_dl_data_bytes(addressing_format: CanAddressingFormat,
     ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     return bytearray(raw_frame_data[ai_bytes_number:])[:get_sf_dl_bytes_number(dlc)]
 
-def encode_sf_dl(sf_dl: int,
+def get_sf_dl_bytes_number(dlc: int) -> int:
+    """
+    Get number of data bytes used for carrying CAN Packet Type and Single Frame Data Length parameters.
+
+    :param dlc: DLC value of a CAN frame.
+
+    :return: The number of bytes used for CAN Packet Type and Single Frame Data Length parameters.
+    """
+    CanDlcHandler.validate_dlc(dlc)
+    return SHORT_SF_DL_BYTES_USED if dlc <= MAX_DLC_VALUE_SHORT_SF_DL else LONG_SF_DL_BYTES_USED
+
+def encode_sf_dl(addressing_format: CanAddressingFormat,
                  dlc: int,
-                 addressing_format: CanAddressingFormat) -> bytearray:
+                 sf_dl: int) -> bytearray:
     """
     Create valid Single Frame containing Single Frame Data Length and N_PCI values.
 
     .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
 
-    :param sf_dl: Number of payload bytes carried by a considered Single Frame.
+    :param addressing_format: CAN Addressing Format used.
     :param dlc: DLC value of a CAN Frame to carry this information.
-    :param addressing_format: Value of CAN Addressing Format to use for Single Frame Data Length value validation.
+    :param sf_dl: Number of payload bytes carried by a  Single Frame.
 
     :return: Single Frame data bytes containing CAN Packet Type and Single Frame Data Length parameters.
     """
-    validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)
+    validate_sf_dl(dlc=dlc, addressing_format=addressing_format, sf_dl=sf_dl)
     if dlc <= MAX_DLC_VALUE_SHORT_SF_DL:
         return generate_sf_dl_bytes(sf_dl_short=sf_dl)
     return generate_sf_dl_bytes(sf_dl_long=sf_dl)
@@ -340,15 +338,15 @@ def generate_sf_dl_bytes(sf_dl_short: int = 0, sf_dl_long: Optional[int] = None)
     validate_raw_byte(sf_dl_long)
     return bytearray([sf_dl_byte_0, sf_dl_long])
 
-def validate_sf_dl(sf_dl: int,
+def validate_sf_dl(addressing_format: CanAddressingFormat,
                    dlc: int,
-                   addressing_format: CanAddressingFormat) -> None:
+                   sf_dl: int) -> None:
     """
     Validate a value of Single Frame Data Length.
 
-    :param sf_dl: Single Frame Data Length value to validate.
-    :param dlc: DLC value used.
     :param addressing_format: CAN Addressing Format used.
+    :param dlc: DLC value used.
+    :param sf_dl: Single Frame Data Length value to validate.
 
     :raise TypeError: Provided value of Single Frame Data Length is not int type.
     :raise ValueError: Provided value of Single Frame Data Length is too small.
