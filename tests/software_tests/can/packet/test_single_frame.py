@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock
-
 import pytest
 from mock import Mock, call, patch
 
@@ -23,8 +21,8 @@ from uds.can.packet.single_frame import (
     get_single_frame_max_payload_size,
     get_single_frame_min_dlc,
     is_single_frame,
-    validate_single_frame_data,
     validate_sf_dl,
+    validate_single_frame_data,
 )
 
 SCRIPT_LOCATION = "uds.can.packet.single_frame"
