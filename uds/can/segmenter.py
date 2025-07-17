@@ -177,8 +177,8 @@ class CanSegmenter(AbstractSegmenter):
         if message_payload_size > CanFirstFrameHandler.MAX_LONG_FF_DL_VALUE:
             raise SegmentationError("Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
                                     "to transmit it over CAN bus.")
-        if message_payload_size <= CanSingleFrameHandler.get_single_frame_max_payload_size(addressing_format=self.addressing_format,
-                                                                                           dlc=self.dlc):
+        if message_payload_size <= CanSingleFrameHandler.get_max_sf_dl(addressing_format=self.addressing_format,
+                                                                       dlc=self.dlc):
             single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
                                      payload=message.payload,
                                      filler_byte=self.filler_byte,
@@ -194,8 +194,8 @@ class CanSegmenter(AbstractSegmenter):
                                 dlc=self.dlc,
                                 data_length=message_payload_size,
                                 **self.tx_packets_physical_ai)
-        cf_payload_size = CanConsecutiveFrameHandler.get_single_frame_max_payload_size(addressing_format=self.addressing_format,
-                                                                                       dlc=self.dlc)
+        cf_payload_size = CanConsecutiveFrameHandler.get_max_sf_dl(addressing_format=self.addressing_format,
+                                                                   dlc=self.dlc)
         total_cfs_number = (message_payload_size - ff_payload_size + cf_payload_size - 1) // cf_payload_size
         consecutive_frames = []
         for cf_index in range(total_cfs_number):
@@ -222,8 +222,8 @@ class CanSegmenter(AbstractSegmenter):
 
         :return: CAN packets that are an outcome of UDS message segmentation.
         """
-        max_payload_size = CanSingleFrameHandler.get_single_frame_max_payload_size(addressing_format=self.addressing_format,
-                                                                                   dlc=self.dlc)
+        max_payload_size = CanSingleFrameHandler.get_max_sf_dl(addressing_format=self.addressing_format,
+                                                               dlc=self.dlc)
         message_payload_size = len(message.payload)
         if message_payload_size > max_payload_size:
             raise SegmentationError("Provided diagnostic message cannot be segmented using functional addressing "

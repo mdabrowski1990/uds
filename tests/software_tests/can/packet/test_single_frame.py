@@ -17,8 +17,8 @@ from uds.can.packet.single_frame import (
     extract_single_frame_payload,
     generate_sf_dl_bytes,
     generate_single_frame_data,
+    get_max_sf_dl,
     get_sf_dl_bytes_number,
-    get_single_frame_max_payload_size,
     get_single_frame_min_dlc,
     is_single_frame,
     validate_sf_dl,
@@ -28,8 +28,8 @@ from uds.can.packet.single_frame import (
 SCRIPT_LOCATION = "uds.can.packet.single_frame"
 
 
-class TestFunctions:
-    """Unit tests for module functions."""
+class TestSingleFrame:
+    """Unit tests for functions in CAN Single Frame module."""
 
     def setup_method(self):
         self._patcher_validate_nibble = patch(f"{SCRIPT_LOCATION}.validate_nibble")
@@ -416,7 +416,7 @@ class TestFunctions:
         mock_extract_sf_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                               raw_frame_data=raw_frame_data)
 
-    # get_single_frame_max_payload_size
+    # get_max_sf_dl
 
     @pytest.mark.parametrize(
         "addressing_format, dlc, frame_data_bytes_number, ai_data_bytes_number, sf_dl_bytes_number", [
@@ -425,14 +425,14 @@ class TestFunctions:
             (CanAddressingFormat.NORMAL_ADDRESSING, 0x6, 6, 0, 1),
         ])
     @patch(f"{SCRIPT_LOCATION}.get_sf_dl_bytes_number")
-    def test_get_single_frame_max_payload_size__with_dlc(self, mock_get_sf_dl_bytes_number,
+    def test_get_max_sf_dl__with_dlc(self, mock_get_sf_dl_bytes_number,
                                                          addressing_format, dlc,
                                                          frame_data_bytes_number, ai_data_bytes_number,
                                                          sf_dl_bytes_number):
         self.mock_can_dlc_handler.decode_dlc.return_value = frame_data_bytes_number
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
         mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
-        assert (get_single_frame_max_payload_size(addressing_format=addressing_format, dlc=dlc)
+        assert (get_max_sf_dl(addressing_format=addressing_format, dlc=dlc)
                 == frame_data_bytes_number - ai_data_bytes_number - sf_dl_bytes_number)
         self.mock_can_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
@@ -444,12 +444,12 @@ class TestFunctions:
         (CanAddressingFormat.NORMAL_ADDRESSING, 6, 0),
     ])
     @patch(f"{SCRIPT_LOCATION}.get_sf_dl_bytes_number")
-    def test_get_single_frame_max_payload_size__without_dlc(self, mock_get_sf_dl_bytes_number,
+    def test_get_max_sf_dl__without_dlc(self, mock_get_sf_dl_bytes_number,
                                                             addressing_format, frame_data_bytes_number,
                                                             ai_data_bytes_number):
         self.mock_can_dlc_handler.MAX_DATA_BYTES_NUMBER = frame_data_bytes_number
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
-        assert (get_single_frame_max_payload_size(addressing_format=addressing_format)
+        assert (get_max_sf_dl(addressing_format=addressing_format)
                 == frame_data_bytes_number - ai_data_bytes_number - LONG_SF_DL_BYTES_USED)
         self.mock_can_dlc_handler.decode_dlc.assert_not_called()
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
@@ -461,7 +461,7 @@ class TestFunctions:
             (CanAddressingFormat.MIXED_29BIT_ADDRESSING, 0xF, 1, 0, 1),
         ])
     @patch(f"{SCRIPT_LOCATION}.get_sf_dl_bytes_number")
-    def test_get_single_frame_max_payload_size__too_short(self, mock_get_sf_dl_bytes_number,
+    def test_get_max_sf_dl__too_short(self, mock_get_sf_dl_bytes_number,
                                                           addressing_format, dlc,
                                                           frame_data_bytes_number, ai_data_bytes_number,
                                                           sf_dl_bytes_number):
@@ -469,7 +469,7 @@ class TestFunctions:
         self.mock_get_ai_data_bytes_number.return_value = ai_data_bytes_number
         mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
         with pytest.raises(InconsistentArgumentsError):
-            get_single_frame_max_payload_size(addressing_format=addressing_format, dlc=dlc)
+            get_max_sf_dl(addressing_format=addressing_format, dlc=dlc)
         self.mock_can_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         self.mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         mock_get_sf_dl_bytes_number.assert_called_once_with(dlc)
@@ -605,30 +605,30 @@ class TestFunctions:
         [63, 62, 15, CanAddressingFormat.MIXED_29BIT_ADDRESSING],
         [8, 7, 8, CanAddressingFormat.NORMAL_ADDRESSING],
     ])
-    @patch(f"{SCRIPT_LOCATION}.get_single_frame_max_payload_size")
-    def test_validate_sf_dl__inconsistent(self, mock_get_single_frame_max_payload_size,
+    @patch(f"{SCRIPT_LOCATION}.get_max_sf_dl")
+    def test_validate_sf_dl__inconsistent(self, mock_get_max_sf_dl,
                                           sf_dl, max_sf, dlc, addressing_format):
-        mock_get_single_frame_max_payload_size.return_value = max_sf
+        mock_get_max_sf_dl.return_value = max_sf
         with pytest.raises(InconsistentArgumentsError):
             validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)
-        mock_get_single_frame_max_payload_size.assert_called_once_with(addressing_format=addressing_format, dlc=dlc)
+        mock_get_max_sf_dl.assert_called_once_with(addressing_format=addressing_format, dlc=dlc)
 
     @pytest.mark.parametrize("sf_dl, max_sf, dlc, addressing_format", [
         [54, 54, Mock(), Mock()],
         [63, 63, 15, CanAddressingFormat.MIXED_29BIT_ADDRESSING],
         [7, 7, 8, CanAddressingFormat.NORMAL_ADDRESSING],
     ])
-    @patch(f"{SCRIPT_LOCATION}.get_single_frame_max_payload_size")
-    def test_validate_sf_dl__valid(self, mock_get_single_frame_max_payload_size,
+    @patch(f"{SCRIPT_LOCATION}.get_max_sf_dl")
+    def test_validate_sf_dl__valid(self, mock_get_max_sf_dl,
                                    sf_dl, max_sf, dlc, addressing_format):
-        mock_get_single_frame_max_payload_size.return_value = max_sf
+        mock_get_max_sf_dl.return_value = max_sf
         assert validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format) is None
-        mock_get_single_frame_max_payload_size.assert_called_once_with(addressing_format=addressing_format, dlc=dlc)
+        mock_get_max_sf_dl.assert_called_once_with(addressing_format=addressing_format, dlc=dlc)
 
 
 @pytest.mark.integration
-class TestCanSingleFrameHandlerIntegration:
-    """Integration tests for `CanSingleFrameHandler` class."""
+class TestSingleFrameIntegration:
+    """Integration tests for CAN Single Frame module."""
 
     # validate_single_frame_data
 
