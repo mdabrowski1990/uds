@@ -28,7 +28,7 @@ from uds.can.packet.single_frame import (
 SCRIPT_LOCATION = "uds.can.packet.single_frame"
 
 
-class TestSingleFrame:
+class TestCanSingleFrame:
     """Unit tests for functions in CAN Single Frame module."""
 
     def setup_method(self):
@@ -627,7 +627,7 @@ class TestSingleFrame:
 
 
 @pytest.mark.integration
-class TestSingleFrameIntegration:
+class TestCanSingleFrameIntegration:
     """Integration tests for CAN Single Frame module."""
 
     # validate_single_frame_data
@@ -650,7 +650,7 @@ class TestSingleFrameIntegration:
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0x02, 0x07, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)),
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0xB0, 0x09] + list(range(100, 114))),
     ])
-    def test_validate_single_frame_data__value_erro(self, addressing_format, raw_frame_data):
+    def test_validate_single_frame_data__value_error(self, addressing_format, raw_frame_data):
         with pytest.raises(ValueError):
             validate_single_frame_data(addressing_format=addressing_format,
                                                              raw_frame_data=raw_frame_data)

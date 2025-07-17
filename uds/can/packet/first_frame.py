@@ -2,8 +2,9 @@
 
 __all__ = ["FIRST_FRAME_N_PCI", "MAX_SHORT_FF_DL_VALUE", "MAX_LONG_FF_DL_VALUE", "SHORT_FF_DL_BYTES_USED",
            "SHORT_FF_DL_BYTES_USED", "LONG_FF_DL_BYTES_USED",
-           "is_first_frame", "validate_first_frame_data", "decode_first_frame_payload", "extract_ff_dl",
-           "get_payload_size", "extract_ff_dl_data_bytes", "encode_ff_dl", "generate_ff_dl_bytes", "validate_ff_dl"]
+           "is_first_frame", "validate_first_frame_data", "encode_first_frame_data", "generate_first_frame_data",
+           "decode_first_frame_payload", "extract_ff_dl", "get_payload_size", "extract_ff_dl_data_bytes",
+           "encode_ff_dl", "generate_ff_dl_bytes", "validate_ff_dl"]
 
 from typing import Optional
 
@@ -66,6 +67,91 @@ def validate_first_frame_data(addressing_format: CanAddressingFormat, raw_frame_
                    dlc=dlc,
                    ff_dl=ff_dl,
                    ff_dl_bytes_number=len(ff_dl_data_bytes))
+
+
+def encode_first_frame_data(addressing_format: CanAddressingFormat,
+                            payload: RawBytesAlias,
+                            dlc: int,
+                            ff_dl: int,
+                            target_address: Optional[int] = None,
+                            address_extension: Optional[int] = None) -> bytearray:
+    """
+    Create a data field of a CAN frame that carries a valid First Frame packet.
+
+    .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+        Use :func:`~uds.can.packet.first_frame.generate_first_frame_data` to generate data bytes with any (also
+        incompatible with ISO 15765) parameters values.
+
+    :param addressing_format: CAN addressing format used.
+    :param payload: Payload to carry.
+    :param dlc: DLC value of a CAN frame.
+    :param ff_dl: Total payload bytes number of a diagnostic message.
+    :param target_address: Target Address value carried by this CAN Packet.
+        The value must only be provided if `addressing_format` requires CAN frame data field to contain
+        Target Address parameter.
+    :param address_extension: Address Extension value carried by this CAN packet.
+        The value must only be provided if `addressing_format` requires CAN frame data field to contain
+        Address Extension parameter.
+
+    :raise InconsistentArgumentsError: Provided `payload` contains incorrect number of bytes to fit them into
+        a First Frame data field using provided parameters.
+
+    :return: Raw bytes of CAN frame data for the provided First Frame packet information.
+    """
+    validate_raw_bytes(payload, allow_empty=False)
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+    ff_dl_data_bytes = encode_ff_dl(addressing_format=addressing_format, dlc=dlc, ff_dl=ff_dl)
+    ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
+    frame_length = CanDlcHandler.decode_dlc(dlc)
+    if len(ff_data_bytes) != frame_length:
+        raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes for "
+                                         "a First Frame with provided DLC.")
+    return ff_data_bytes
+
+
+def generate_first_frame_data(addressing_format: CanAddressingFormat,
+                              payload: RawBytesAlias,
+                              dlc: int,
+                              ff_dl: int,
+                              long_ff_dl_format: bool = False,
+                              target_address: Optional[int] = None,
+                              address_extension: Optional[int] = None) -> bytearray:
+    """
+    Generate CAN frame data field that carries any combination of First Frame packet data parameters.
+
+    .. note:: Crosscheck of provided values is not performed so you might use this function to create data fields
+        that are not compatible with Diagnostic on CAN standard (ISO 15765).
+
+    :param addressing_format: CAN addressing format used.
+    :param payload: Payload to carry.
+    :param dlc: DLC value of a CAN frame.
+    :param ff_dl: Total payload bytes number of a diagnostic message.
+    :param long_ff_dl_format: Information whether long or short format of First Frame Data Length is used.
+    :param target_address: Target Address value carried by this CAN Packet.
+        The value must only be provided if `addressing_format` requires CAN frame data field to contain
+        Target Address parameter.
+    :param address_extension: Address Extension value carried by this CAN packet.
+        The value must only be provided if `addressing_format` requires CAN frame data field to contain
+        Address Extension parameter.
+
+    :raise InconsistentArgumentsError: Provided `payload` contains incorrect number of bytes to fit them into
+        a First Frame data field using provided parameters.
+
+    :return: Raw bytes of CAN frame data for the provided First Frame packet information.
+    """
+    validate_raw_bytes(payload, allow_empty=True)
+    ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
+                                                                  target_address=target_address,
+                                                                  address_extension=address_extension)
+    ff_dl_data_bytes = generate_ff_dl_bytes(ff_dl=ff_dl, long_ff_dl_format=long_ff_dl_format)
+    ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
+    frame_length = CanDlcHandler.decode_dlc(dlc)
+    if len(ff_data_bytes) != frame_length:
+        raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes for "
+                                         "a First Frame with provided DLC.")
+    return ff_data_bytes
 
 
 def decode_first_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
@@ -179,12 +265,16 @@ def generate_ff_dl_bytes(ff_dl: int, long_ff_dl_format: bool) -> bytearray:
     :param long_ff_dl_format: Information whether to use long or short format of First Frame Data Length.
 
     :raise ValueError: Provided First Frame Data Length value is out of the parameter values range.
-    :raise InconsistentArgumentsError: Provided First Frame Data Length value cannot fit into the short format.
 
     :return: First Frame data bytes containing CAN Packet Type and First Frame Data Length parameters.
     """
+    if long_ff_dl_format and ff_dl > MAX_LONG_FF_DL_VALUE:
+        raise ValueError(f"Value of First Frame Data Length must be not be greater than {MAX_LONG_FF_DL_VALUE} "
+                         "to fit into long FF_DL format.")
+    if not long_ff_dl_format and ff_dl > MAX_SHORT_FF_DL_VALUE:
+        raise ValueError(f"Value of First Frame Data Length must be not be greater than {MAX_SHORT_FF_DL_VALUE} "
+                         "to fit into short FF_DL format.")
     ff_dl_bytes_number = LONG_FF_DL_BYTES_USED if long_ff_dl_format else SHORT_FF_DL_BYTES_USED
-    validate_ff_dl(ff_dl=ff_dl, ff_dl_bytes_number=ff_dl_bytes_number)
     ff_dl_bytes = bytearray(int_to_bytes(int_value=ff_dl, size=ff_dl_bytes_number))
     ff_dl_bytes[0] ^= (FIRST_FRAME_N_PCI << 4)
     return ff_dl_bytes
@@ -236,95 +326,3 @@ def validate_ff_dl(ff_dl: int,
     elif ff_dl_bytes_number is not None:
         raise ValueError("Incorrect value of ff_dl_bytes was provided. It should be equal to either "
                          f"{SHORT_FF_DL_BYTES_USED} or {LONG_FF_DL_BYTES_USED}.")
-
-
-# class CanFirstFrameHandler:
-#     """Helper class that provides utilities for First Frame CAN Packets."""
-#
-#
-#
-#     @classmethod
-#     def create_valid_frame_data(cls, *,
-#                                 addressing_format: CanAddressingFormat,
-#                                 payload: RawBytesAlias,
-#                                 dlc: int,
-#                                 ff_dl: int,
-#                                 target_address: Optional[int] = None,
-#                                 address_extension: Optional[int] = None) -> bytearray:
-#         """
-#         Create a data field of a CAN frame that carries a valid First Frame packet.
-#
-#         .. note:: This method addressing only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
-#             Use :meth:`~uds.addressing.first_frame.CanFirstFrameHandler.create_any_frame_data` to create data bytes
-#             for a First Frame with any (also incompatible with ISO 15765) parameters values.
-#
-#         :param addressing_format: CAN addressing format used by a considered First Frame.
-#         :param payload: Payload of a diagnostic message that is carried by a considered CAN packet.
-#         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
-#         :param ff_dl: Value of First Frame Data Length parameter that is carried by a considered CAN packet.
-#         :param target_address: Target Address value carried by this CAN Packet.
-#             The value must only be provided if `addressing_format` uses Target Address parameter.
-#         :param address_extension: Address Extension value carried by this CAN packet.
-#             The value must only be provided if `addressing_format` uses Address Extension parameter.
-#
-#         :raise InconsistentArgumentsError: Provided `payload` contains incorrect number of bytes to fit them into
-#             a First Frame data field using provided parameters.
-#
-#         :return: Raw bytes of CAN frame data for the provided First Frame packet information.
-#         """
-#         validate_raw_bytes(payload)
-#         ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
-#                                                                       target_address=target_address,
-#                                                                       address_extension=address_extension)
-#         ff_dl_data_bytes = cls.__encode_valid_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
-#         ff_data_bytes = bytearray(ai_data_bytes) + bytearray(ff_dl_data_bytes) + bytearray(payload)
-#         frame_length = CanDlcHandler.decode_dlc(dlc)
-#         if len(ff_data_bytes) != frame_length:
-#             raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes to fit "
-#                                              "them into a valid CAN Frame.")
-#         return ff_data_bytes
-#
-#     @classmethod
-#     def create_any_frame_data(cls, *,
-#                               addressing_format: CanAddressingFormat,
-#                               payload: RawBytesAlias,
-#                               dlc: int,
-#                               ff_dl: int,
-#                               long_ff_dl_format: bool = False,
-#                               target_address: Optional[int] = None,
-#                               address_extension: Optional[int] = None) -> bytearray:
-#         """
-#         Create a data field of a CAN frame that carries a First Frame packet.
-#
-#         .. note:: You addressing use this method to create First Frame data bytes with any (also inconsistent with ISO 15765)
-#             parameters values.
-#             It is recommended to use :meth:`~uds.addressing.first_frame.CanFirstFrameHandler.create_valid_frame_data` to
-#             create data bytes for a First Frame with valid (compatible with ISO 15765) parameters values.
-#
-#         :param addressing_format: CAN addressing format used by a considered First Frame.
-#         :param payload: Payload of a diagnostic message that is carried by a considered CAN packet.
-#         :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
-#         :param ff_dl: Value of First Frame Data Length parameter that is carried by a considered CAN packet.
-#         :param long_ff_dl_format: Information whether to use long or short format of First Frame Data Length.
-#         :param target_address: Target Address value carried by this CAN Packet.
-#             The value must only be provided if `addressing_format` uses Target Address parameter.
-#         :param address_extension: Address Extension value carried by this CAN packet.
-#             The value must only be provided if `addressing_format` uses Address Extension parameter.
-#
-#         :raise InconsistentArgumentsError: Provided `payload` contains incorrect number of bytes to fit them into
-#             a First Frame data field using provided parameters.
-#
-#         :return: Raw bytes of CAN frame data for the provided First Frame packet information.
-#         """
-#         validate_raw_bytes(payload)
-#         ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
-#                                                                       target_address=target_address,
-#                                                                       address_extension=address_extension)
-#         ff_dl_data_bytes = cls.__encode_any_ff_dl(ff_dl=ff_dl, long_ff_dl_format=long_ff_dl_format)
-#         ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
-#         frame_length = CanDlcHandler.decode_dlc(dlc)
-#         if len(ff_data_bytes) != frame_length:
-#             raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes to fit "
-#                                              "them into a valid CAN Frame.")
-#         return ff_data_bytes
-# 
