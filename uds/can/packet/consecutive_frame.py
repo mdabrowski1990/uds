@@ -1,17 +1,10 @@
-"""
-Implementation specific for Consecutive Frame CAN packets.
+"""Implementation of handlers for :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` CAN packet."""
 
-This module contains implementation specific for :ref:`Consecutive Frame <knowledge-base-addressing-consecutive-frame>`
-packets - that includes :ref:`Sequence Number (SN) <knowledge-base-addressing-sequence-number>` parameter.
-"""
-
-__all__ = ["CanConsecutiveFrameHandler"]
+__all__ = ["CONSECUTIVE_FRAME_N_PCI", "SN_BYTES_USED",
+           "is_consecutive_frame", "get_consecutive_frame_min_dlc"]
 
 from typing import Optional
 
-from uds.can.addressing import CanAddressingFormat
-from uds.can.addressing.addressing_information import CanAddressingInformation
-from uds.can.frame import DEFAULT_FILLER_BYTE, CanDlcHandler
 from uds.utilities import (
     InconsistentArgumentsError,
     RawBytesAlias,
@@ -20,14 +13,79 @@ from uds.utilities import (
     validate_raw_bytes,
 )
 
+from ..addressing import CanAddressingFormat, CanAddressingInformation
+from ..frame import DEFAULT_FILLER_BYTE, CanDlcHandler
+
+CONSECUTIVE_FRAME_N_PCI: int = 0x2
+""":ref:`N_PCI <knowledge-base-n-pci>` value of :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`."""
+
+SN_BYTES_USED: int = 1
+"""Number of CAN Frame data bytes used to carry CAN Packet Type and Sequence Number (SN) in a Consecutive Frame."""
+
+
+def is_consecutive_frame(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
+    """
+    Check if provided data bytes encodes a Consecutive Frame packet.
+
+    .. warning:: The method does not validate the content (e.g. SF_DL parameter) of the provided frame data bytes.
+        It only checks :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter for
+        Consecutive Frame N_PCI value.
+
+    :param addressing_format: CAN Addressing Format used.
+    :param raw_frame_data: Raw data bytes of a CAN frame to check.
+
+    :return: True if provided data bytes carries Consecutive Frame, False otherwise.
+    """
+    ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
+    return raw_frame_data[ai_bytes_number] >> 4 == CONSECUTIVE_FRAME_N_PCI
+
+# def validate_frame_data(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> None:
+#     """
+#     Validate whether data field of a CAN Packet carries a properly encoded Consecutive Frame.
+#
+#     :param addressing_format: CAN Addressing Format used.
+#     :param raw_frame_data: Raw data bytes of a CAN frame to validate.
+#
+#     :raise ValueError: Provided frame data of a CAN frames does not carry a Consecutive Frame CAN packet.
+#     :raise InconsistentArgumentsError: Provided frame data of a CAN frames does not carry a properly encoded
+#         Consecutive Frame CAN packet.
+#     """
+#     validate_raw_bytes(raw_frame_data)
+#     if not is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
+#         raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
+#                          f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
+#     min_dlc = get_min_dlc(addressing_format=addressing_format)
+#     dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
+#     if min_dlc > dlc:
+#         raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
+
+def get_consecutive_frame_min_dlc(addressing_format: CanAddressingFormat, payload_length: int = 1) -> int:
+    """
+    Get the minimum value of a CAN frame DLC to carry a Consecutive Frame packet.
+
+    :param addressing_format: CAN addressing format used.
+    :param payload_length: Number of payload bytes to carry.
+
+    :raise TypeError: Provided value of Payload Length is not int type.
+    :raise ValueError: Provided value of Payload Length is out of range.
+
+    :return: The lowest value of DLC for a Consecutive Frame that would carry provided payload size.
+    """
+    if not isinstance(payload_length, int):
+        raise TypeError("Provided `payload_length` value is not int type.")
+    ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
+    max_payload_length = CanDlcHandler.MAX_DATA_BYTES_NUMBER - SN_BYTES_USED - ai_data_bytes_number
+    if not 1 <= payload_length <= max_payload_length:
+        raise ValueError("Provided `payload_length` value is out of range. "
+                         f"Expected: 1 <= payload_length <= {max_payload_length}.")
+    return CanDlcHandler.get_min_dlc(ai_data_bytes_number + SN_BYTES_USED + payload_length)
+
 
 class CanConsecutiveFrameHandler:
     """Helper class that provides utilities for Consecutive Frame CAN Packets."""
 
-    CONSECUTIVE_FRAME_N_PCI: int = 0x2
-    """Consecutive Frame N_PCI value."""
-    SN_BYTES_USED: int = 1
-    """Number of CAN Frame data bytes used to carry CAN Packet Type and Sequence Number in Consecutive Frame."""
+
+
 
     @classmethod
     def create_valid_frame_data(cls, *,
@@ -132,22 +190,7 @@ class CanConsecutiveFrameHandler:
         data_padding = ((frame_data_bytes_number - len(cf_bytes)) * bytearray([filler_byte]))
         return cf_bytes + data_padding
 
-    @classmethod
-    def is_consecutive_frame(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
-        """
-        Check if provided data bytes encodes a Consecutive Frame packet.
 
-        .. warning:: The method does not validate the content of the provided frame data bytes.
-            Only, :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter is checked whether contain
-            Consecutive Frame N_PCI value.
-
-        :param addressing_format: CAN Addressing Format used.
-        :param raw_frame_data: Raw data bytes of a CAN frame to check.
-
-        :return: True if provided data bytes carries Consecutive Frame, False otherwise.
-        """
-        ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-        return raw_frame_data[ai_bytes_number] >> 4 == cls.CONSECUTIVE_FRAME_N_PCI
 
     @classmethod
     def decode_payload(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
@@ -199,32 +242,7 @@ class CanConsecutiveFrameHandler:
         ai_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
         return raw_frame_data[ai_bytes_number] & 0xF
 
-    @classmethod
-    def get_min_dlc(cls, addressing_format: CanAddressingFormat, payload_length: int = 1) -> int:
-        """
-        Get the minimum value of a CAN frame DLC to carry a Consecutive Frame packet.
 
-        :param addressing_format: CAN addressing format that considered CAN packet uses.
-        :param payload_length: Number of payload bytes that considered CAN packet carries.
-
-        :raise TypeError: Provided value of Payload Length is not int type.
-        :raise ValueError: Provided value of Payload Length is out of range (1 <= value <= MAX Payload Length).
-        :raise InconsistentArgumentsError: Provided Addressing Format and Payload Length values cannot be used together.
-
-        :return: The lowest value of DLC that enables to fit in provided Consecutive Frame packet data.
-        """
-        if not isinstance(payload_length, int):
-            raise TypeError(f"Provided `payload_length` value is not int type. Actual type: {type(payload_length)}")
-        max_payload_length = CanDlcHandler.MAX_DATA_BYTES_NUMBER - cls.SN_BYTES_USED
-        if not 1 <= payload_length <= max_payload_length:
-            raise ValueError(f"Provided `payload_length` value is out of range. "
-                             f"Expected: 1 <= payload_length <= {max_payload_length}. Actual value: {payload_length}")
-        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
-        if payload_length + ai_data_bytes_number > max_payload_length:
-            raise InconsistentArgumentsError(f"Provided `payload_length` and `addressing_format` values cannot be used "
-                                             f"together. As they require {payload_length + ai_data_bytes_number} "
-                                             f"to accommodate while there are maximally {max_payload_length} to use.")
-        return CanDlcHandler.get_min_dlc(ai_data_bytes_number + cls.SN_BYTES_USED + payload_length)
 
     @classmethod
     def get_max_payload_size(cls,
@@ -257,26 +275,7 @@ class CanConsecutiveFrameHandler:
                                              f"Format. Actual values: dlc={dlc}, addressing_format={addressing_format}")
         return output
 
-    @classmethod
-    def validate_frame_data(cls, addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> None:
-        """
-        Validate whether data field of a CAN Packet carries a properly encoded Consecutive Frame.
 
-        :param addressing_format: CAN Addressing Format used.
-        :param raw_frame_data: Raw data bytes of a CAN frame to validate.
-
-        :raise ValueError: Provided frame data of a CAN frames does not carry a Consecutive Frame CAN packet.
-        :raise InconsistentArgumentsError: Provided frame data of a CAN frames does not carry a properly encoded
-            Consecutive Frame CAN packet.
-        """
-        validate_raw_bytes(raw_frame_data)
-        if not cls.is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
-            raise ValueError("Provided `raw_frame_data` value does not carry a Consecutive Frame packet. "
-                             f"Actual values: addressing_format={addressing_format}, raw_frame_data={raw_frame_data!r}")
-        min_dlc = cls.get_min_dlc(addressing_format=addressing_format)
-        dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
-        if min_dlc > dlc:
-            raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
 
     @classmethod
     def __encode_sn(cls, sequence_number: int) -> bytearray:
