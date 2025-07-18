@@ -185,7 +185,7 @@ class CanSegmenter(AbstractSegmenter):
                                      dlc=None if self.use_data_optimization else self.dlc,
                                      **self.tx_packets_physical_ai)
             return (single_frame,)
-        ff_payload_size = CanFirstFrameHandler.get_payload_size(
+        ff_payload_size = CanFirstFrameHandler.get_first_frame_payload_size(
             addressing_format=self.addressing_format,
             dlc=self.dlc,
             long_ff_dl_format=message_payload_size > CanFirstFrameHandler.MAX_SHORT_FF_DL_VALUE)

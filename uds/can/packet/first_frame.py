@@ -3,7 +3,7 @@
 __all__ = ["FIRST_FRAME_N_PCI", "MAX_SHORT_FF_DL_VALUE", "MAX_LONG_FF_DL_VALUE", "SHORT_FF_DL_BYTES_USED",
            "SHORT_FF_DL_BYTES_USED", "LONG_FF_DL_BYTES_USED",
            "is_first_frame", "validate_first_frame_data", "encode_first_frame_data", "generate_first_frame_data",
-           "decode_first_frame_payload", "extract_ff_dl", "get_payload_size", "extract_ff_dl_data_bytes",
+           "decode_first_frame_payload", "extract_ff_dl", "get_first_frame_payload_size", "extract_ff_dl_data_bytes",
            "encode_ff_dl", "generate_ff_dl_bytes", "validate_ff_dl"]
 
 from typing import Optional
@@ -159,8 +159,8 @@ def decode_first_frame_payload(addressing_format: CanAddressingFormat, raw_frame
     Extract payload from First Frame data bytes.
 
     .. warning:: The method does not validate the content of the provided frame data bytes.
-        There is no guarantee of the proper output when frame data in an invalid format (incompatible with
-        ISO 15765) are provided.
+        There is no guarantee of the proper output when frame data in invalid format (incompatible with ISO 15765)
+        is provided.
 
     :param addressing_format: CAN Addressing Format used.
     :param raw_frame_data: Raw data bytes of a considered CAN frame.
@@ -178,8 +178,8 @@ def extract_ff_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawByt
     Extract the value of First Frame Data Length from First Frame data bytes.
 
     .. warning:: The method does not validate the content of the provided frame data bytes.
-        There is no guarantee of the proper output when frame data in invalid format (incompatible with
-        ISO 15765) is provided.
+        There is no guarantee of the proper output when frame data in invalid format (incompatible with ISO 15765)
+        is provided.
 
     :param addressing_format: CAN Addressing Format used.
     :param raw_frame_data: Raw data bytes of a considered CAN frame.
@@ -196,9 +196,9 @@ def extract_ff_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawByt
     raise NotImplementedError("Unknown format of First Frame Data Length was found.")
 
 
-def get_payload_size(addressing_format: CanAddressingFormat,
-                     dlc: int,
-                     long_ff_dl_format: bool) -> int:
+def get_first_frame_payload_size(addressing_format: CanAddressingFormat,
+                                 dlc: int,
+                                 long_ff_dl_format: bool) -> int:
     """
     Get the number of payload bytes that could be carried by First Frame.
 

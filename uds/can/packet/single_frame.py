@@ -195,8 +195,8 @@ def extract_single_frame_payload(addressing_format: CanAddressingFormat, raw_fra
     Extract payload from Single Frame data bytes.
 
     .. warning:: The method does not validate the content of the provided frame data bytes.
-        There is no guarantee of the proper output when frame data in an invalid format (incompatible with
-        ISO 15765) are provided.
+        There is no guarantee of the proper output when frame data in invalid format (incompatible with ISO 15765)
+        is provided.
 
     :param addressing_format: CAN Addressing Format used.
     :param raw_frame_data: Raw data bytes of a  CAN frame.
@@ -215,8 +215,8 @@ def extract_sf_dl(addressing_format: CanAddressingFormat, raw_frame_data: RawByt
     Extract the value of Single Frame Data Length from Single Frame data bytes.
 
     .. warning:: The method does not validate the content of the provided frame data bytes.
-        There is no guarantee of the proper output when frame data in invalid format (incompatible with
-        ISO 15765) is provided.
+        There is no guarantee of the proper output when frame data in invalid format (incompatible with ISO 15765)
+        is provided.
 
     :param addressing_format: CAN Addressing Format used.
     :param raw_frame_data: Raw data bytes of a CAN frame.
@@ -321,7 +321,7 @@ def encode_sf_dl(addressing_format: CanAddressingFormat,
 
     :param addressing_format: CAN Addressing Format used.
     :param dlc: DLC value of a CAN Frame to carry this information.
-    :param sf_dl: Number of payload bytes carried by a  Single Frame.
+    :param sf_dl: Number of payload bytes carried by a Single Frame.
 
     :return: Single Frame data bytes containing CAN Packet Type and Single Frame Data Length parameters.
     """

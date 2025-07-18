@@ -17,7 +17,7 @@ from uds.can.packet.first_frame import (
     extract_ff_dl_data_bytes,
     generate_ff_dl_bytes,
     generate_first_frame_data,
-    get_payload_size,
+    get_first_frame_payload_size,
     is_first_frame,
     validate_ff_dl,
     validate_first_frame_data,
@@ -306,17 +306,17 @@ class TestCanFirstFrame:
         else:
             mock_generate_ff_dl_bytes.assert_called_once_with(ff_dl=ff_dl, long_ff_dl_format=False)
 
-    # get_payload_size
+    # get_first_frame_payload_size
 
     @pytest.mark.parametrize("addressing_format, dlc, long_ff_dl_format", [
         (Mock(), CanDlcHandler.MIN_BASE_UDS_DLC - 1, False),
         (Mock(), 0, True),
     ])
-    def test_get_payload_size__value_error(self, addressing_format, dlc, long_ff_dl_format):
+    def test_get_first_frame_payload_size__value_error(self, addressing_format, dlc, long_ff_dl_format):
         with pytest.raises(ValueError):
-            get_payload_size(addressing_format=addressing_format,
-                             dlc=dlc,
-                             long_ff_dl_format=long_ff_dl_format)
+            get_first_frame_payload_size(addressing_format=addressing_format,
+                                         dlc=dlc,
+                                         long_ff_dl_format=long_ff_dl_format)
 
     @pytest.mark.parametrize("addressing_format, dlc, long_ff_dl_format, data_bytes_number, ai_data_bytes_number", [
         (Mock(), CanDlcHandler.MIN_BASE_UDS_DLC, False, 8, 0),
@@ -324,7 +324,7 @@ class TestCanFirstFrame:
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, CanDlcHandler.MIN_BASE_UDS_DLC, True, 8, 1),
         (CanAddressingFormat.EXTENDED_ADDRESSING, CanDlcHandler.MAX_DLC_VALUE, True, 64, 0),
     ])
-    def test_get_payload_size__valid(self, addressing_format, dlc, long_ff_dl_format,
+    def test_get_first_frame_payload_size__valid(self, addressing_format, dlc, long_ff_dl_format,
                                      data_bytes_number, ai_data_bytes_number):
         self.mock_dlc_handler.decode_dlc.return_value = data_bytes_number
         self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_data_bytes_number
@@ -332,9 +332,9 @@ class TestCanFirstFrame:
             expected_output = data_bytes_number - ai_data_bytes_number - LONG_FF_DL_BYTES_USED
         else:
             expected_output = data_bytes_number - ai_data_bytes_number - SHORT_FF_DL_BYTES_USED
-        assert get_payload_size(addressing_format=addressing_format,
-                                dlc=dlc,
-                                long_ff_dl_format=long_ff_dl_format) == expected_output
+        assert get_first_frame_payload_size(addressing_format=addressing_format,
+                                            dlc=dlc,
+                                            long_ff_dl_format=long_ff_dl_format) == expected_output
         self.mock_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         self.mock_can_addressing_information.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
 
