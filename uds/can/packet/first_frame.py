@@ -1,4 +1,4 @@
-"""Implementation of handlers for :ref:`First Frame <knowledge-base-addressing-first-frame>` CAN packet."""
+"""Implementation of handlers for :ref:`First Frame <knowledge-base-can-first-frame>` CAN packet."""
 
 __all__ = ["FIRST_FRAME_N_PCI", "MAX_SHORT_FF_DL_VALUE", "MAX_LONG_FF_DL_VALUE", "SHORT_FF_DL_BYTES_USED",
            "SHORT_FF_DL_BYTES_USED", "LONG_FF_DL_BYTES_USED",
@@ -15,13 +15,13 @@ from ..addressing import CanAddressingFormat, CanAddressingInformation
 from .single_frame import get_max_sf_dl
 
 FIRST_FRAME_N_PCI: int = 0x1
-""":ref:`N_PCI <knowledge-base-n-pci>` value of :ref:`First Frame <knowledge-base-addressing-first-frame>`."""
+""":ref:`N_PCI <knowledge-base-n-pci>` value of :ref:`First Frame <knowledge-base-can-first-frame>`."""
 
 MAX_SHORT_FF_DL_VALUE: int = 0xFFF
-"""Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-addressing-first-frame-data-length>` 
+"""Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` 
 for which short can be used."""
 MAX_LONG_FF_DL_VALUE: int = 0xFFFFFFFF
-"""Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-addressing-first-frame-data-length>`."""
+"""Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
 SHORT_FF_DL_BYTES_USED: int = 2
 """Number of CAN Frame data bytes used to carry CAN Packet Type and First Frame Data Length (FF_DL).
 This value is valid only for the short format with FF_DL <= 4095."""
@@ -32,10 +32,10 @@ This value is valid only for the long format with FF_DL > 4095."""
 
 def is_first_frame(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
     """
-    Check if provided data bytes contains a First Frame packet.
+    Check if provided data bytes contain a First Frame packet.
 
     .. warning:: The method does not validate the content (e.g. FF_DL parameter) of the provided frame data bytes.
-        It only checks :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter for
+        It only checks :ref:`CAN Packet Type (N_PCI) <knowledge-base-can-n-pci>` parameter for
         First Frame N_PCI value.
 
     :param addressing_format: CAN Addressing Format used.

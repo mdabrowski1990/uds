@@ -13,7 +13,7 @@ class AbstractAddressingInformation(ABC):
     """Storage for addressing related parameters for any UDS entity."""
 
     ADDRESSING_TYPE_NAME: str = "addressing_type"
-    """Name of :ref:`Addressing Type <knowledge-base-addressing-addressing>` parameter in Addressing Information."""
+    """Name of :ref:`Addressing Type <knowledge-base-can-addressing>` parameter in Addressing Information."""
 
     def __init__(self,
                  rx_physical_params: Mapping[str, Any],

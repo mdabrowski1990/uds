@@ -23,23 +23,23 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     """
 
     N_AS_TIMEOUT: TimeMillisecondsAlias = 1000
-    """Timeout value of :ref:`N_As <knowledge-base-addressing-n-as>` time parameter according to ISO 15765-2."""
+    """Timeout value of :ref:`N_As <knowledge-base-can-n-as>` time parameter according to ISO 15765-2."""
     N_AR_TIMEOUT: TimeMillisecondsAlias = 1000
-    """Timeout value of :ref:`N_Ar <knowledge-base-addressing-n-ar>` time parameter according to ISO 15765-2."""
+    """Timeout value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter according to ISO 15765-2."""
     N_BS_TIMEOUT: TimeMillisecondsAlias = 1000
-    """Timeout value of :ref:`N_Bs <knowledge-base-addressing-n-bs>` time parameter according to ISO 15765-2."""
+    """Timeout value of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter according to ISO 15765-2."""
     N_CR_TIMEOUT: TimeMillisecondsAlias = 1000
-    """Timeout value of :ref:`N_Cr <knowledge-base-addressing-n-cr>` time parameter according to ISO 15765-2."""
+    """Timeout value of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter according to ISO 15765-2."""
 
     DEFAULT_N_BR: TimeMillisecondsAlias = 0
-    """Default value of :ref:`N_Br <knowledge-base-addressing-n-br>` time parameter."""
+    """Default value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter."""
     DEFAULT_N_CS: Optional[TimeMillisecondsAlias] = None
-    """Default value of :ref:`N_Cs <knowledge-base-addressing-n-cs>` time parameter."""
+    """Default value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
     DEFAULT_FLOW_CONTROL_PARAMETERS = DefaultFlowControlParametersGenerator()
-    """Default value of :ref:`Flow Control <knowledge-base-addressing-flow-control>` parameters
-    (:ref:`Flow Status <knowledge-base-addressing-flow-status>`,
-    :ref:`Block Size <knowledge-base-addressing-block-size>`,
-    :ref:`Separation Time minimum <knowledge-base-addressing-st-min>`)."""
+    """Default value of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters
+    (:ref:`Flow Status <knowledge-base-can-flow-status>`,
+    :ref:`Block Size <knowledge-base-can-block-size>`,
+    :ref:`Separation Time minimum <knowledge-base-can-st-min>`)."""
 
     def __init__(self,
                  can_bus_manager: Any,
@@ -52,17 +52,17 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         :param addressing_information: Addressing Information of CAN Transport Interface.
         :param kwargs: Optional arguments that are specific for CAN bus.
 
-            - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-addressing-n-as>` time parameter.
-            - :parameter n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-addressing-n-ar>` time parameter.
-            - :parameter n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-addressing-n-bs>` time parameter.
-            - :parameter n_br: Value of :ref:`N_Br <knowledge-base-addressing-n-br>` time parameter to use in communication.
-            - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-addressing-n-cs>` time parameter to use in communication.
-            - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-addressing-n-cr>` time parameter.
+            - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
+            - :parameter n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
+            - :parameter n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
+            - :parameter n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
+            - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
+            - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
             - :parameter use_data_optimization: Information whether to use
-                :ref:`CAN Frame Data Optimization <knowledge-base-addressing-data-optimization>`.
+                :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
             - :parameter filler_byte: Filler byte value to use for
-                :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`.
+                :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
 
         :raise TypeError: Provided Addressing Information value has unexpected type.
@@ -87,7 +87,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     def _update_n_bs_measured(self, message: UdsMessageRecord) -> None:
         """
-        Update measured values of :ref:`N_Bs <knowledge-base-addressing-n-bs>` according to timestamps of CAN packet records.
+        Update measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` according to timestamps of CAN packet records.
 
         :param message: Record of UDS message transmitted over CAN.
         """
@@ -103,7 +103,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     def _update_n_cr_measured(self, message: UdsMessageRecord) -> None:
         """
-        Update measured values of :ref:`N_Cr <knowledge-base-addressing-n-cr>` according to timestamps of CAN packet records.
+        Update measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` according to timestamps of CAN packet records.
 
         :param message: Record of UDS message transmitted over CAN.
         """
@@ -126,13 +126,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def n_as_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_As <knowledge-base-addressing-n-as>` time parameter."""
+        """Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter."""
         return self.__n_as_timeout
 
     @n_as_timeout.setter
     def n_as_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
-        Set timeout value for :ref:`N_As <knowledge-base-addressing-n-as>` time parameter.
+        Set timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -152,7 +152,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @abstractmethod
     def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the last measured value of :ref:`N_As <knowledge-base-addressing-n-as>` time parameter.
+        Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of Single Frame or First Fame CAN Packet using
             either :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.send_packet`
@@ -163,13 +163,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def n_ar_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_Ar <knowledge-base-addressing-n-ar>` time parameter."""
+        """Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter."""
         return self.__n_ar_timeout
 
     @n_ar_timeout.setter
     def n_ar_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
-        Set timeout value for :ref:`N_Ar <knowledge-base-addressing-n-ar>` time parameter.
+        Set timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -189,7 +189,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     @abstractmethod
     def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the last measured value of :ref:`N_Ar <knowledge-base-addressing-n-ar>` time parameter.
+        Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of Flow Control CAN Packet using either
             :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.send_packet` or
@@ -200,13 +200,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
     @property
     def n_bs_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_Bs <knowledge-base-addressing-n-bs>` time parameter."""
+        """Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter."""
         return self.__n_bs_timeout
 
     @n_bs_timeout.setter
     def n_bs_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
-        Set timeout value for :ref:`N_Bs <knowledge-base-addressing-n-bs>` time parameter.
+        Set timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -290,10 +290,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Set the value of :ref:`N_Cs <knowledge-base-addressing-n-cs>` time parameter to use.
 
         :param value: The value to set.
-            - None - use timing compatible with :ref:`STmin <knowledge-base-addressing-st-min>` value received in a preceding
-                :ref:`Flow Control CAN packet <knowledge-base-addressing-flow-control>`
+            - None - use timing compatible with :ref:`STmin <knowledge-base-can-st-min>` value received in a preceding
+                :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`
             - int/float type - timing value to be used regardless of a received
-                :ref:`STmin <knowledge-base-addressing-st-min>` value
+                :ref:`STmin <knowledge-base-can-st-min>` value
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided value is out of range (0 <= value < MAX N_Cs).

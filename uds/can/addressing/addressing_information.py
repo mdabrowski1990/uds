@@ -220,7 +220,7 @@ class CanAddressingInformation:
         :param can_id: Value of CAN Identifier.
         :param ai_data_bytes: Data bytes containing Addressing Information.
             This parameter shall contain either 0 or 1 byte that is located at the beginning of a CAN frame data field.
-            Number of these bytes depends on :ref:`CAN Addressing Format <knowledge-base-addressing-addressing>` used.
+            Number of these bytes depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>` used.
 
         :return: Dictionary with Addressing Information decoded out of the provided CAN ID and data bytes.
         """
@@ -242,7 +242,7 @@ class CanAddressingInformation:
         :param addressing_format: CAN Addressing Format used.
         :param ai_data_bytes: Data bytes containing Addressing Information.
             This parameter shall contain either 0 or 1 byte that is located at the beginning of a CAN frame data field.
-            Number of these bytes depends on :ref:`CAN Addressing Format <knowledge-base-addressing-addressing>` used.
+            Number of these bytes depends on :ref:`CAN Addressing Format <knowledge-base-can-addressing>` used.
 
         :raise NotImplementedError: There is missing implementation for the provided Addressing Format.
             Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_

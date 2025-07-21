@@ -103,10 +103,10 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         Target Address (TA) value of this CAN Packet.
 
-        Target Address value is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
-         - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
-         - :ref:`Extended Addressing <knowledge-base-addressing-extended-addressing>`
-         - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+        Target Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
+         - :ref:`Extended Addressing <knowledge-base-can-extended-addressing>`
+         - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -117,9 +117,9 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         Source Address (SA) value of this CAN Packet.
 
-        Source Address value is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
-         - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
-         - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+        Source Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
+         - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -130,10 +130,10 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         Address Extension (AE) value of this CAN Packet.
 
-        Address Extension is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
-         - :ref:`Mixed Addressing <knowledge-base-addressing-mixed-addressing>` - either:
-           - :ref:`Mixed 11-bit Addressing <knowledge-base-addressing-mixed-11-bit-addressing>`
-           - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+        Address Extension is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Mixed Addressing <knowledge-base-can-mixed-addressing>` - either:
+           - :ref:`Mixed 11-bit Addressing <knowledge-base-can-mixed-11-bit-addressing>`
+           - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """

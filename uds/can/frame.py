@@ -1,7 +1,7 @@
 """
 Implementation for CAN frame fields that are influenced by UDS.
 
-Handlers for :ref:`CAN Frame <knowledge-base-addressing-frame>` fields:
+Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
  - CAN Identifier
  - DLC
  - Data
@@ -14,7 +14,7 @@ from typing import Dict, Optional, Set, Tuple
 
 DEFAULT_FILLER_BYTE: int = 0xCC
 """Default value of Filler Byte.
-Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`.
+Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
 .. note:: The value is specified by ISO 15765-2:2016 (chapter 10.4.2.1)."""
 
 
@@ -165,7 +165,7 @@ class CanDlcHandler:
 
     MIN_BASE_UDS_DLC: int = 8
     """Minimum CAN DLC value that addressing be used for UDS communication.
-    Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-addressing-data-optimization>`
+    Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
     is used."""
 
     @classmethod
@@ -241,7 +241,7 @@ class CanDlcHandler:
 
             - True - provided value must be the exact number of data bytes to be carried by a CAN frame.
             - False - provided value must be a number of data bytes that could be carried by a CAN frame
-              (:ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>` is allowed).
+              (:ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>` is allowed).
 
         :raise TypeError: Provided values is not int type.
         :raise ValueError: Provided value is not number of data bytes that matches the criteria.

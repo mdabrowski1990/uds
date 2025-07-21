@@ -1,4 +1,4 @@
-"""Implementation of handlers for :ref:`Single Frame <knowledge-base-addressing-single-frame>` CAN packet."""
+"""Implementation of handlers for :ref:`Single Frame <knowledge-base-can-single-frame>` CAN packet."""
 
 __all__ = ["SINGLE_FRAME_N_PCI", "MAX_DLC_VALUE_SHORT_SF_DL", "SHORT_SF_DL_BYTES_USED", "LONG_SF_DL_BYTES_USED",
            "is_single_frame", "validate_single_frame_data", "extract_single_frame_payload", "encode_single_frame_data",
@@ -26,7 +26,7 @@ SINGLE_FRAME_N_PCI: int = 0
 
 MAX_DLC_VALUE_SHORT_SF_DL: int = 8
 """Maximum value of DLC for which short
-:ref:`Single Frame Data Length <knowledge-base-addressing-single-frame-data-length>` format shall be used."""
+:ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` format shall be used."""
 SHORT_SF_DL_BYTES_USED: int = 1
 """Number of CAN Frame data bytes used to carry CAN Packet Type and Single Frame Data Length (SF_DL).
 This value is valid only for the short format (used when DLC <= 8)."""
@@ -37,10 +37,10 @@ This value is valid only for the long format (used when DLC > 8)."""
 
 def is_single_frame(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
     """
-    Check if provided data bytes contains a Single Frame packet.
+    Check if provided data bytes contain a Single Frame packet.
 
     .. warning:: The method does not validate the content (e.g. SF_DL parameter) of the provided frame data bytes.
-        It only checks :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter for
+        It only checks :ref:`CAN Packet Type (N_PCI) <knowledge-base-can-n-pci>` parameter for
         Single Frame N_PCI value.
 
     :param addressing_format: CAN Addressing Format used.
@@ -95,7 +95,7 @@ def encode_single_frame_data(addressing_format: CanAddressingFormat,
                              target_address: Optional[int] = None,
                              address_extension: Optional[int] = None) -> bytearray:
     """
-    Create data field for CAN frame that carries a valid Single Frame packet.
+    Create data field of a CAN frame that carries a valid Single Frame packet.
 
     .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
         Use :func:`~uds.can.packet.single_frame.generate_single_frame_data` to generate data bytes with any (also
@@ -199,7 +199,7 @@ def extract_single_frame_payload(addressing_format: CanAddressingFormat, raw_fra
         is provided.
 
     :param addressing_format: CAN Addressing Format used.
-    :param raw_frame_data: Raw data bytes of a  CAN frame.
+    :param raw_frame_data: Raw data bytes of a CAN frame.
 
     :return: Payload bytes carried by the provided Single Frame data.
     """

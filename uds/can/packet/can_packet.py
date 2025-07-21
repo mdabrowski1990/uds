@@ -380,7 +380,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`Single Frame <knowledge-base-addressing-single-frame>`.
+        a :ref:`Single Frame <knowledge-base-can-single-frame>`.
 
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
@@ -409,7 +409,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`First Frame <knowledge-base-addressing-first-frame>`.
+        a :ref:`First Frame <knowledge-base-can-first-frame>`.
 
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
@@ -435,7 +435,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`Consecutive Frame <knowledge-base-addressing-first-frame>`.
+        a :ref:`Consecutive Frame <knowledge-base-can-first-frame>`.
 
         :param payload: Payload of a diagnostic message that is carried by this CAN packet.
         :param sequence_number: Sequence number value of this Consecutive Frame.
@@ -468,7 +468,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`Flow Control <knowledge-base-addressing-flow-control>`.
+        a :ref:`Flow Control <knowledge-base-can-flow-control>`.
 
         :param flow_status: Flow status information carried by this Flow Control frame.
         :param block_size: Block size information carried by this Flow Control frame.
@@ -527,8 +527,8 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         """
         Target Address (TA) value of this CAN Packet.
 
-        Target Address value is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
-         - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
+        Target Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
          - :ref:`Extended Addressing <knowledge-base-addressing-extended-addressing>`
          - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
 

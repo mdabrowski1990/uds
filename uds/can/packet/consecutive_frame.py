@@ -29,10 +29,10 @@ SN_BYTES_USED: int = 1
 
 def is_consecutive_frame(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bool:
     """
-    Check if provided data bytes encodes a Consecutive Frame packet.
+    Check if provided data bytes contain a Consecutive Frame packet.
 
-    .. warning:: The method does not validate the content (e.g. SF_DL parameter) of the provided frame data bytes.
-        It only checks :ref:`CAN Packet Type (N_PCI) <knowledge-base-addressing-n-pci>` parameter for
+    .. warning:: The method does not validate the content of the provided frame data bytes.
+        It only checks :ref:`CAN Packet Type (N_PCI) <knowledge-base-can-n-pci>` parameter for
         Consecutive Frame N_PCI value.
 
     :param addressing_format: CAN Addressing Format used.
@@ -170,8 +170,8 @@ def decode_consecutive_frame_payload(addressing_format: CanAddressingFormat, raw
     Extract diagnostic message payload from Consecutive Frame data bytes.
 
     .. warning:: The output might contain filler bytes (they are not part of diagnostic message payload)
-        that were added during :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`.
-        The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-addressing-consecutive-frame>`
+        that were added during :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
+        The presence of filler bytes in :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
         cannot be determined basing solely on the information contained in a Consecutive Frame data bytes.
 
     .. warning:: The method does not validate the content of the provided frame data bytes.

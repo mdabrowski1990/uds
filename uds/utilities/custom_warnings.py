@@ -25,7 +25,7 @@ class UnexpectedPacketReceptionWarning(RuntimeWarning):
     An unexpected packet was received.
 
     .. seealso::
-        :ref:`Unexpected CAN Packet handling <knowledge-base-addressing-unexpected-packet-arrival>`
+        :ref:`Unexpected CAN Packet handling <knowledge-base-can-unexpected-packet-arrival>`
     """
 
 
@@ -34,5 +34,5 @@ class NewMessageReceptionWarning(RuntimeWarning):
     A new UDS message transmission was started while in process of receiving UDS message.
 
     .. seealso::
-        :ref:`Unexpected CAN Packet handling <knowledge-base-addressing-unexpected-packet-arrival>`
+        :ref:`Unexpected CAN Packet handling <knowledge-base-can-unexpected-packet-arrival>`
     """
