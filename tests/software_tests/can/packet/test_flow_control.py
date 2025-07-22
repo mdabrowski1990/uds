@@ -3,6 +3,7 @@ from mock import MagicMock, Mock, call, patch
 
 from uds.can.packet.flow_control import (
     BS_BYTE_POSITION,
+    DEFAULT_FILLER_BYTE,
     FLOW_CONTROL_N_PCI,
     FS_BYTES_USED,
     ST_MIN_BYTE_POSITION,
@@ -22,7 +23,7 @@ from uds.can.packet.flow_control import (
     generate_flow_status,
     get_flow_control_min_dlc,
     is_flow_control,
-    validate_flow_control_data, DEFAULT_FILLER_BYTE
+    validate_flow_control_data,
 )
 from uds.utilities import NibbleEnum, ValidatedEnum
 

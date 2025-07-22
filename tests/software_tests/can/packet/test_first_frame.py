@@ -10,11 +10,11 @@ from uds.can.packet.first_frame import (
     CanAddressingFormat,
     CanDlcHandler,
     InconsistentArgumentsError,
-    extract_first_frame_payload,
-    encode_ff_dl,
     create_first_frame_data,
+    encode_ff_dl,
     extract_ff_dl,
     extract_ff_dl_data_bytes,
+    extract_first_frame_payload,
     generate_ff_dl_bytes,
     generate_first_frame_data,
     get_first_frame_payload_size,
@@ -103,7 +103,7 @@ class TestCanFirstFrame:
 
     # create_first_frame_data
 
-    @pytest.mark.parametrize("addressing_format, payload, dlc, ff_dl, target_address, address_extension, "
+    @pytest.mark.parametrize("addressing_format, payload, dlc, data_length, target_address, address_extension, "
                              "ai_data_bytes, ff_dl_data_bytes", [
         (Mock(), [0x12, 0x34, 0x56, 0x78], 8, 13, Mock(), Mock(), bytearray([0x23]), bytearray([0x12, 0x34])),
         (CanAddressingFormat.NORMAL_ADDRESSING, range(58), 0xF, 0x98765434, 0x76, 0x65, bytearray(),
@@ -111,7 +111,8 @@ class TestCanFirstFrame:
     ])
     @patch(f"{SCRIPT_LOCATION}.encode_ff_dl")
     def test_create_first_frame_data__valid(self, mock_encode_ff_dl,
-                                            addressing_format, payload, dlc, ff_dl, target_address, address_extension,
+                                            addressing_format, payload, dlc, data_length, target_address,
+                                            address_extension,
                                             ai_data_bytes, ff_dl_data_bytes):
         expected_output = bytearray(ai_data_bytes) + bytearray(ff_dl_data_bytes) + bytearray(payload)
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
@@ -120,7 +121,7 @@ class TestCanFirstFrame:
         assert create_first_frame_data(addressing_format=addressing_format,
                                        payload=payload,
                                        dlc=dlc,
-                                       ff_dl=ff_dl,
+                                       data_length=data_length,
                                        target_address=target_address,
                                        address_extension=address_extension) == expected_output
         self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
@@ -128,28 +129,28 @@ class TestCanFirstFrame:
             addressing_format=addressing_format,
             target_address=target_address,
             address_extension=address_extension)
-        mock_encode_ff_dl.assert_called_once_with(addressing_format=addressing_format, dlc=dlc, ff_dl=ff_dl)
+        mock_encode_ff_dl.assert_called_once_with(addressing_format=addressing_format, dlc=dlc, ff_dl=data_length)
         self.mock_dlc_handler.decode_dlc.assert_called_once_with(dlc)
 
-    @pytest.mark.parametrize("addressing_format, payload, dlc, ff_dl, target_address, address_extension, "
-                             "ai_data_bytes, ff_dl_data_bytes, data_length", [
+    @pytest.mark.parametrize("addressing_format, payload, dlc, data_length, target_address, address_extension, "
+                             "ai_data_bytes, ff_dl_data_bytes, frame_data_length", [
         (Mock(), [0x12, 0x34, 0x56, 0x78], 8, 13, Mock(), Mock(), bytearray([0x23]), bytearray([0x12, 0x34]), 8),
         (CanAddressingFormat.NORMAL_ADDRESSING, range(58), 0xF, 0x98765434, 0x76, 0x65, bytearray(),
          bytearray([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98]), 63),
     ])
     @patch(f"{SCRIPT_LOCATION}.encode_ff_dl")
     def test_create_first_frame_data__inconsistent(self, mock_encode_ff_dl,
-                                                   addressing_format, payload, dlc, ff_dl, target_address,
+                                                   addressing_format, payload, dlc, data_length, target_address,
                                                    address_extension,
-                                                   ai_data_bytes, ff_dl_data_bytes, data_length):
+                                                   ai_data_bytes, ff_dl_data_bytes, frame_data_length):
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         mock_encode_ff_dl.return_value = ff_dl_data_bytes
-        self.mock_dlc_handler.decode_dlc.return_value = data_length
+        self.mock_dlc_handler.decode_dlc.return_value = frame_data_length
         with pytest.raises(InconsistentArgumentsError):
             create_first_frame_data(addressing_format=addressing_format,
                                     payload=payload,
                                     dlc=dlc,
-                                    ff_dl=ff_dl,
+                                    data_length=data_length,
                                     target_address=target_address,
                                     address_extension=address_extension)
         self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
@@ -157,7 +158,7 @@ class TestCanFirstFrame:
             addressing_format=addressing_format,
             target_address=target_address,
             address_extension=address_extension)
-        mock_encode_ff_dl.assert_called_once_with(addressing_format=addressing_format, dlc=dlc, ff_dl=ff_dl)
+        mock_encode_ff_dl.assert_called_once_with(addressing_format=addressing_format, dlc=dlc, ff_dl=data_length)
         self.mock_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         
     # generate_first_frame_data
@@ -467,26 +468,26 @@ class TestCanFirstFrameIntegration:
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
           "dlc": 8,
-          "ff_dl": 0xFED,
+          "data_length": 0xFED,
           "payload": [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC]}, bytearray([0x1F, 0xED, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC])),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "dlc": 9,
-          "ff_dl": 0xFFFFFFFF,
+          "data_length": 0xFFFFFFFF,
           "payload": b"\xF0\xE1\xD2\xC3\xB4\xA5",
           "target_address": 0xC0}, bytearray([0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5])),
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "dlc": 0xF,
-          "ff_dl": 62,
+          "data_length": 62,
           "payload": tuple(range(120, 181)),
           "target_address": 0xC0}, bytearray([0xC0, 0x10, 0x3E] + list(range(120, 181)))),
         ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
           "dlc": 0xA,
-          "ff_dl": 0x1000,
+          "data_length": 0x1000,
           "payload": list(range(9)),
           "address_extension": 0x0B}, bytearray([0x0B, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00] + list(range(9)))),
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "dlc": 8,
-          "ff_dl": 0xFFF,
+          "data_length": 0xFFF,
           "payload": bytearray([0x9A, 0x8B, 0x7C, 0x6D, 0x5E]),
           "target_address": 0x9E,
           "address_extension": 0x61}, bytearray([0x61, 0x1F, 0xFF, 0x9A, 0x8B, 0x7C, 0x6D, 0x5E])),
@@ -497,26 +498,26 @@ class TestCanFirstFrameIntegration:
     @pytest.mark.parametrize("kwargs", [
         {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
          "dlc": 7,
-         "ff_dl": 0xFED,
+         "data_length": 0xFED,
          "payload": [0x12, 0x34, 0x56, 0x78, 0x9A]},
         {"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
          "dlc": 9,
-         "ff_dl": 0x12345678,
+         "data_length": 0x12345678,
          "payload": [0xF0, 0xE1, 0xD2, 0xC3, 0xB4],
          "target_address": 0xC0},
         {"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
          "dlc": 0xF,
-         "ff_dl": 61,
+         "data_length": 61,
          "payload": tuple(range(120, 181)),
          "target_address": 0xC0},
         {"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
          "dlc": 0xA,
-         "ff_dl": 0x100000000,
+         "data_length": 0x100000000,
          "payload": list(range(9)),
          "address_extension": 0x0B},
         {"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
          "dlc": 8,
-         "ff_dl": 0x6,
+         "data_length": 0x6,
          "payload": [0x9A, 0x8B, 0x7C, 0x6D, 0x5E],
          "target_address": 0x9E,
          "address_extension": 0x61}

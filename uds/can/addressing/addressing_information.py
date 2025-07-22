@@ -178,6 +178,7 @@ class CanAddressingInformation:
         """
         CanAddressingFormat.validate_member(addressing_format)
         return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].validate_addressing_params(
+            addressing_format=addressing_format,
             addressing_type=addressing_type,
             can_id=can_id,
             target_address=target_address,

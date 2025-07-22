@@ -1,9 +1,8 @@
 import pytest
 from mock import patch
 
-from uds.packet import AbstractPacketType
 from uds.can.packet.can_packet_type import CanPacketType
-
+from uds.packet import AbstractPacketType
 
 SCRIPT_LOCATION = "uds.can.packet.can_packet_type"
 

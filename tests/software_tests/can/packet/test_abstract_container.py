@@ -3,8 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from mock import Mock, patch
 
-from uds.can.packet.abstract_container import AbstractCanPacketContainer, CanPacketType, AddressingType
-
+from uds.can.packet.abstract_container import AbstractCanPacketContainer, AddressingType, CanPacketType
 
 SCRIPT_LOCATION = "uds.can.packet.abstract_container"
 

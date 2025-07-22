@@ -2,7 +2,6 @@ import pytest
 from mock import MagicMock, Mock, patch
 
 from uds.can.addressing.addressing_information import (
-    AbstractCanAddressingInformation,
     AddressingType,
     CanAddressingFormat,
     CanAddressingInformation,
@@ -184,6 +183,7 @@ class TestCanAddressingInformation:
                == mock_returned_class.validate_addressing_params.return_value
         mock_getitem.assert_called_once_with(params["addressing_format"])
         passed_params = {
+            "addressing_format": params["addressing_format"],
             "addressing_type": params["addressing_type"],
             "can_id": params.get("can_id", None),
             "target_address": params.get("target_address", None),

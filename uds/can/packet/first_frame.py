@@ -73,7 +73,7 @@ def validate_first_frame_data(addressing_format: CanAddressingFormat, raw_frame_
 def create_first_frame_data(addressing_format: CanAddressingFormat,
                             payload: RawBytesAlias,
                             dlc: int,
-                            ff_dl: int,
+                            data_length: int,
                             target_address: Optional[int] = None,
                             address_extension: Optional[int] = None) -> bytearray:
     """
@@ -86,7 +86,7 @@ def create_first_frame_data(addressing_format: CanAddressingFormat,
     :param addressing_format: CAN addressing format used.
     :param payload: Payload to carry.
     :param dlc: DLC value of a CAN frame.
-    :param ff_dl: Total payload bytes number of a diagnostic message.
+    :param data_length: Total payload bytes number of a diagnostic message.
     :param target_address: Target Address value carried by this CAN Packet.
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Target Address parameter.
@@ -103,7 +103,7 @@ def create_first_frame_data(addressing_format: CanAddressingFormat,
     ai_data_bytes = CanAddressingInformation.encode_ai_data_bytes(addressing_format=addressing_format,
                                                                   target_address=target_address,
                                                                   address_extension=address_extension)
-    ff_dl_data_bytes = encode_ff_dl(addressing_format=addressing_format, dlc=dlc, ff_dl=ff_dl)
+    ff_dl_data_bytes = encode_ff_dl(addressing_format=addressing_format, dlc=dlc, ff_dl=data_length)
     ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
     frame_length = CanDlcHandler.decode_dlc(dlc)
     if len(ff_data_bytes) != frame_length:

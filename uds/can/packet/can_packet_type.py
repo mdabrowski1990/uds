@@ -5,10 +5,11 @@ __all__ = ["CanPacketType"]
 from aenum import unique
 
 from uds.packet.abstract_packet_type import AbstractPacketType
-from .single_frame import SINGLE_FRAME_N_PCI
-from .first_frame import FIRST_FRAME_N_PCI
+
 from .consecutive_frame import CONSECUTIVE_FRAME_N_PCI
+from .first_frame import FIRST_FRAME_N_PCI
 from .flow_control import FLOW_CONTROL_N_PCI
+from .single_frame import SINGLE_FRAME_N_PCI
 
 
 @unique

@@ -9,12 +9,12 @@ from uds.addressing import AddressingType
 from uds.packet.abstract_packet import AbstractPacketContainer
 
 from ..addressing import CanAddressingFormat, CanAddressingInformation
-from .can_packet_type import CanPacketType
 from ..frame import CanDlcHandler
-from .single_frame import extract_single_frame_payload, extract_sf_dl
-from .first_frame import extract_first_frame_payload, extract_ff_dl
+from .can_packet_type import CanPacketType
 from .consecutive_frame import extract_consecutive_frame_payload, extract_sequence_number
+from .first_frame import extract_ff_dl, extract_first_frame_payload
 from .flow_control import CanFlowStatus, extract_block_size, extract_flow_status, extract_st_min
+from .single_frame import extract_sf_dl, extract_single_frame_payload
 
 
 class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
@@ -111,7 +111,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         if self.packet_type in {CanPacketType.CONSECUTIVE_FRAME,
                                 CanPacketType.FLOW_CONTROL}:
             return None
-        raise NotImplementedError("No handler for given CAN Packet Packet Type.")
+        raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
     def sequence_number(self) -> Optional[int]:
@@ -132,7 +132,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                 CanPacketType.FIRST_FRAME,
                                 CanPacketType.FLOW_CONTROL}:
             return None
-        raise NotImplementedError("No handler for given CAN Packet Packet Type.")
+        raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
     def flow_status(self) -> Optional[CanFlowStatus]:
@@ -153,7 +153,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                 CanPacketType.FIRST_FRAME,
                                 CanPacketType.CONSECUTIVE_FRAME}:
             return None
-        raise NotImplementedError("No handler for given CAN Packet Packet Type.")
+        raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
     def block_size(self) -> Optional[int]:
@@ -174,7 +174,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                 CanPacketType.FIRST_FRAME,
                                 CanPacketType.CONSECUTIVE_FRAME}:
             return None
-        raise NotImplementedError("No handler for given CAN Packet Packet Type.")
+        raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
     def st_min(self) -> Optional[int]:
@@ -195,7 +195,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                 CanPacketType.FIRST_FRAME,
                                 CanPacketType.CONSECUTIVE_FRAME}:
             return None
-        raise NotImplementedError("No handler for given CAN Packet Packet Type.")
+        raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     @property
     @abstractmethod
@@ -233,7 +233,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                                            raw_frame_data=self.raw_frame_data))
         if self.packet_type == CanPacketType.FLOW_CONTROL:
             return None
-        raise NotImplementedError("No handler for given CAN Packet Packet Type.")
+        raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
     def get_addressing_information(self) -> CanAddressingInformation.DecodedAIParamsAlias:
         """

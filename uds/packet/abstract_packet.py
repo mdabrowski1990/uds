@@ -32,11 +32,6 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingType:
-        """Addressing for which this packet is relevant."""
-
-    @property
-    @abstractmethod
     def packet_type(self) -> AbstractPacketType:
         """Type (N_PCI value) of this packet."""
 
@@ -44,6 +39,11 @@ class AbstractPacketContainer(ABC):
     @abstractmethod
     def data_length(self) -> Optional[int]:
         """Payload bytes number of a diagnostic message."""
+
+    @property
+    @abstractmethod
+    def addressing_type(self) -> AddressingType:
+        """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
