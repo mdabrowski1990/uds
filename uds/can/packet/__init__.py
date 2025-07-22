@@ -2,6 +2,7 @@
 
 from .abstract_container import AbstractCanPacketContainer
 from .can_packet import CanPacket
+from .can_packet_record import CanPacketRecord
 from .can_packet_type import CanPacketType
 from .consecutive_frame import (
     CONSECUTIVE_FRAME_N_PCI,

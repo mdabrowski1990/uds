@@ -73,6 +73,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         self.frame = frame
         self.direction = direction
         self.transmission_time = transmission_time
+        self._validate_attributes()
 
     def __str__(self) -> str:
         """Present object in string format."""
@@ -159,10 +160,11 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         Validate a frame argument.
 
         :param value: Value to validate.
-
-        :raise TypeError: Provided frame object has unsupported type.
-        :raise ValueError: At least one attribute of the frame object is missing or its value is unexpected.
         """
+
+    @abstractmethod
+    def _validate_attributes(self) -> None:
+        """Validate whether attributes that were set are a valid for a Packet record."""
 
 
 PacketsContainersSequence = Sequence[AbstractPacketContainer]
