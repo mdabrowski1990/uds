@@ -16,7 +16,7 @@ from uds.can import CanDlcHandler, CanIdHandler
 from uds.packet.abstract_packet import AbstractPacketRecord
 from uds.utilities import InconsistentArgumentsError, TransmissionDirection
 
-from .abstract_can_container import AbstractCanPacketContainer
+from .abstract_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
 CanFrameAlias = Union[PythonCanMessage]

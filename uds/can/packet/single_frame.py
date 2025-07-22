@@ -1,9 +1,10 @@
 """Implementation of handlers for :ref:`Single Frame <knowledge-base-can-single-frame>` CAN packet."""
 
 __all__ = ["SINGLE_FRAME_N_PCI", "MAX_DLC_VALUE_SHORT_SF_DL", "SHORT_SF_DL_BYTES_USED", "LONG_SF_DL_BYTES_USED",
-           "is_single_frame", "validate_single_frame_data", "extract_single_frame_payload", "encode_single_frame_data",
-           "generate_single_frame_data", "extract_sf_dl", "get_sf_dl_bytes_number", "get_single_frame_min_dlc",
-           "get_max_sf_dl", "extract_sf_dl_data_bytes", "encode_sf_dl", "generate_sf_dl_bytes",
+           "is_single_frame", "validate_single_frame_data",
+           "create_single_frame_data", "generate_single_frame_data", "extract_single_frame_payload", "extract_sf_dl",
+           "get_max_sf_dl", "get_single_frame_min_dlc",
+           "extract_sf_dl_data_bytes", "get_sf_dl_bytes_number", "encode_sf_dl", "generate_sf_dl_bytes",
            "validate_sf_dl"]
 
 from typing import Optional
@@ -88,7 +89,7 @@ def validate_single_frame_data(addressing_format: CanAddressingFormat, raw_frame
                  category=ValueWarning)
 
 
-def encode_single_frame_data(addressing_format: CanAddressingFormat,
+def create_single_frame_data(addressing_format: CanAddressingFormat,
                              payload: RawBytesAlias,
                              dlc: Optional[int] = None,
                              filler_byte: int = DEFAULT_FILLER_BYTE,

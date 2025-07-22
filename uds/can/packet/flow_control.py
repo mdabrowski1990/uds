@@ -12,7 +12,7 @@ __all__ = ["FLOW_CONTROL_N_PCI", "FS_BYTES_USED", "BS_BYTE_POSITION", "ST_MIN_BY
            "AbstractFlowControlParametersGenerator", "DefaultFlowControlParametersGenerator",
            "FlowControlParametersAlias",
            "is_flow_control", "validate_flow_control_data",
-           "encode_flow_control_data", "generate_flow_control_data",
+           "create_flow_control_data", "generate_flow_control_data",
            "extract_flow_status", "extract_block_size", "extract_st_min",
            "get_flow_control_min_dlc",
            "encode_flow_status", "generate_flow_status"]
@@ -218,14 +218,14 @@ def validate_flow_control_data(addressing_format: CanAddressingFormat, raw_frame
                                          f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}.")
 
 
-def encode_flow_control_data(addressing_format: CanAddressingFormat,
-                            flow_status: CanFlowStatus,
-                            block_size: Optional[int] = None,
-                            st_min: Optional[int] = None,
-                            dlc: Optional[int] = None,
-                            filler_byte: int = DEFAULT_FILLER_BYTE,
-                            target_address: Optional[int] = None,
-                            address_extension: Optional[int] = None) -> bytearray:
+def create_flow_control_data(addressing_format: CanAddressingFormat,
+                             flow_status: CanFlowStatus,
+                             block_size: Optional[int] = None,
+                             st_min: Optional[int] = None,
+                             dlc: Optional[int] = None,
+                             filler_byte: int = DEFAULT_FILLER_BYTE,
+                             target_address: Optional[int] = None,
+                             address_extension: Optional[int] = None) -> bytearray:
     """
     Create a data field of a CAN frame that carries a valid Flow Control packet.
 

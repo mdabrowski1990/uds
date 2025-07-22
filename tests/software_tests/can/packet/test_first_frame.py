@@ -10,9 +10,9 @@ from uds.can.packet.first_frame import (
     CanAddressingFormat,
     CanDlcHandler,
     InconsistentArgumentsError,
-    decode_first_frame_payload,
+    extract_first_frame_payload,
     encode_ff_dl,
-    encode_first_frame_data,
+    create_first_frame_data,
     extract_ff_dl,
     extract_ff_dl_data_bytes,
     generate_ff_dl_bytes,
@@ -101,7 +101,7 @@ class TestCanFirstFrame:
             ff_dl=mock_extract_ff_dl.return_value,
             ff_dl_bytes_number=mock_extract_ff_dl_data_bytes.return_value.__len__.return_value)
 
-    # encode_first_frame_data
+    # create_first_frame_data
 
     @pytest.mark.parametrize("addressing_format, payload, dlc, ff_dl, target_address, address_extension, "
                              "ai_data_bytes, ff_dl_data_bytes", [
@@ -110,14 +110,14 @@ class TestCanFirstFrame:
          bytearray([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98])),
     ])
     @patch(f"{SCRIPT_LOCATION}.encode_ff_dl")
-    def test_encode_first_frame_data__valid(self, mock_encode_ff_dl,
+    def test_create_first_frame_data__valid(self, mock_encode_ff_dl,
                                             addressing_format, payload, dlc, ff_dl, target_address, address_extension,
                                             ai_data_bytes, ff_dl_data_bytes):
         expected_output = bytearray(ai_data_bytes) + bytearray(ff_dl_data_bytes) + bytearray(payload)
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         mock_encode_ff_dl.return_value = ff_dl_data_bytes
         self.mock_dlc_handler.decode_dlc.return_value = len(expected_output)
-        assert encode_first_frame_data(addressing_format=addressing_format,
+        assert create_first_frame_data(addressing_format=addressing_format,
                                        payload=payload,
                                        dlc=dlc,
                                        ff_dl=ff_dl,
@@ -138,7 +138,7 @@ class TestCanFirstFrame:
          bytearray([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98]), 63),
     ])
     @patch(f"{SCRIPT_LOCATION}.encode_ff_dl")
-    def test_encode_first_frame_data__inconsistent(self, mock_encode_ff_dl,
+    def test_create_first_frame_data__inconsistent(self, mock_encode_ff_dl,
                                                    addressing_format, payload, dlc, ff_dl, target_address,
                                                    address_extension,
                                                    ai_data_bytes, ff_dl_data_bytes, data_length):
@@ -146,12 +146,12 @@ class TestCanFirstFrame:
         mock_encode_ff_dl.return_value = ff_dl_data_bytes
         self.mock_dlc_handler.decode_dlc.return_value = data_length
         with pytest.raises(InconsistentArgumentsError):
-            encode_first_frame_data(addressing_format=addressing_format,
-                                           payload=payload,
-                                           dlc=dlc,
-                                           ff_dl=ff_dl,
-                                           target_address=target_address,
-                                           address_extension=address_extension)
+            create_first_frame_data(addressing_format=addressing_format,
+                                    payload=payload,
+                                    dlc=dlc,
+                                    ff_dl=ff_dl,
+                                    target_address=target_address,
+                                    address_extension=address_extension)
         self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
         self.mock_can_addressing_information.encode_ai_data_bytes.assert_called_once_with(
             addressing_format=addressing_format,
@@ -222,7 +222,7 @@ class TestCanFirstFrame:
         mock_generate_ff_dl_bytes.assert_called_once_with(ff_dl=ff_dl, long_ff_dl_format=long_ff_dl_format)
         self.mock_dlc_handler.decode_dlc.assert_called_once_with(dlc)
 
-    # decode_first_frame_payload
+    # extract_first_frame_payload
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, ai_bytes_number, ff_dl_data_bytes_number", [
         (Mock(), range(64), 1, SHORT_FF_DL_BYTES_USED),
@@ -230,13 +230,13 @@ class TestCanFirstFrame:
          LONG_FF_DL_BYTES_USED),
     ])
     @patch(f"{SCRIPT_LOCATION}.extract_ff_dl_data_bytes")
-    def test_decode_first_frame_payload(self, mock_extract_ff_dl_data_bytes,
+    def test_extract_first_frame_payload(self, mock_extract_ff_dl_data_bytes,
                                         addressing_format, raw_frame_data,
                                         ai_bytes_number, ff_dl_data_bytes_number):
         self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_bytes_number
         mock_extract_ff_dl_data_bytes.return_value.__len__.return_value = ff_dl_data_bytes_number
-        assert (decode_first_frame_payload(addressing_format=addressing_format,
-                                           raw_frame_data=raw_frame_data)
+        assert (extract_first_frame_payload(addressing_format=addressing_format,
+                                            raw_frame_data=raw_frame_data)
                 == bytearray(raw_frame_data)[ai_bytes_number + ff_dl_data_bytes_number:])
         self.mock_can_addressing_information.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
         mock_extract_ff_dl_data_bytes.assert_called_once_with(addressing_format=addressing_format,
@@ -251,7 +251,7 @@ class TestCanFirstFrame:
         (Mock(), Mock(), [0x10, 0x00, 0x00, 0x00, 0x23, 0xBD], 0x000023BD),
     ])
     @patch(f"{SCRIPT_LOCATION}.extract_ff_dl_data_bytes")
-    def test_decode_ff_dl__valid(self, mock_extract_ff_dl_data_bytes,
+    def test_extract_ff_dl__valid(self, mock_extract_ff_dl_data_bytes,
                                  addressing_format, raw_frame_data, ff_dl_data_bytes, expected_output):
         mock_extract_ff_dl_data_bytes.return_value = ff_dl_data_bytes
         assert extract_ff_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data) == expected_output
@@ -427,9 +427,9 @@ class TestCanFirstFrame:
     def test_validate_ff_dl__valid(self, ff_dl, dlc, addressing_format, ff_dl_bytes_number):
         self.mock_get_max_sf_dl.return_value = 0
         assert validate_ff_dl(ff_dl=ff_dl,
-                       dlc=dlc,
-                       addressing_format=addressing_format,
-                       ff_dl_bytes_number=ff_dl_bytes_number) is None
+                              dlc=dlc,
+                              addressing_format=addressing_format,
+                              ff_dl_bytes_number=ff_dl_bytes_number) is None
         self.mock_get_max_sf_dl.assert_called_once_with(dlc=dlc, addressing_format=addressing_format)
 
 
@@ -462,7 +462,7 @@ class TestCanFirstFrameIntegration:
             validate_first_frame_data(addressing_format=addressing_format,
                                       raw_frame_data=raw_frame_data)
 
-    # encode_first_frame_data
+    # create_first_frame_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -491,8 +491,8 @@ class TestCanFirstFrameIntegration:
           "target_address": 0x9E,
           "address_extension": 0x61}, bytearray([0x61, 0x1F, 0xFF, 0x9A, 0x8B, 0x7C, 0x6D, 0x5E])),
     ])
-    def test_encode_first_frame_data(self, kwargs, expected_raw_frame_data):
-        assert encode_first_frame_data(**kwargs) == expected_raw_frame_data
+    def test_create_first_frame_data(self, kwargs, expected_raw_frame_data):
+        assert create_first_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
         {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -521,9 +521,9 @@ class TestCanFirstFrameIntegration:
          "target_address": 0x9E,
          "address_extension": 0x61}
     ])
-    def test_encode_first_frame_data__value_error(self, kwargs):
+    def test_create_first_frame_data__value_error(self, kwargs):
         with pytest.raises(ValueError):
-            encode_first_frame_data(**kwargs)
+            create_first_frame_data(**kwargs)
 
     # generate_first_frame_data
 
@@ -598,7 +598,7 @@ class TestCanFirstFrameIntegration:
         with pytest.raises(ValueError):
             generate_first_frame_data(**kwargs)
 
-    # decode_first_frame_payload
+    # extract_first_frame_payload
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, payload_i", [
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x10, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE), 2),
@@ -607,6 +607,6 @@ class TestCanFirstFrameIntegration:
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, [0xC4, 0x10, 0x00, 0xF0, 0xD1, 0xE2, 0xC3, 0xD4], 7),
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x83, 0x1F, 0xFF] + list(range(100, 121)), 3),
     ])
-    def test_decode_first_frame_payload(self, addressing_format, raw_frame_data, payload_i):
-        assert decode_first_frame_payload(addressing_format=addressing_format,
-                                          raw_frame_data=raw_frame_data) == bytearray(raw_frame_data)[payload_i:]
+    def test_extract_first_frame_payload(self, addressing_format, raw_frame_data, payload_i):
+        assert extract_first_frame_payload(addressing_format=addressing_format,
+                                           raw_frame_data=raw_frame_data) == bytearray(raw_frame_data)[payload_i:]

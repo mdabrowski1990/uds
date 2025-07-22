@@ -10,8 +10,8 @@ from uds.can.packet.consecutive_frame import (
     CanAddressingFormat,
     CanDlcHandler,
     InconsistentArgumentsError,
-    decode_consecutive_frame_payload,
-    encode_consecutive_frame_data,
+    extract_consecutive_frame_payload,
+    create_consecutive_frame_data,
     encode_sequence_number,
     extract_sequence_number,
     generate_consecutive_frame_data,
@@ -46,7 +46,7 @@ class TestCanConsecutiveFrame:
         self._patcher_validate_raw_byte.stop()
         self._patcher_validate_raw_bytes.stop()
         self._patcher_can_dlc_handler.stop()
-        self.mock_can_addressing_information.stop()
+        self._patcher_can_addressing_information.stop()
 
     # is_consecutive_frame
 
@@ -123,7 +123,7 @@ class TestCanConsecutiveFrame:
         mock_get_consecutive_frame_min_dlc.assert_called_once_with(addressing_format)
         self.mock_can_dlc_handler.encode_dlc.assert_called_once_with(len(raw_frame_data))
 
-    # encode_consecutive_frame_data
+    # create_consecutive_frame_data
 
     @pytest.mark.parametrize("addressing_format, payload, sequence_number, ai_data_bytes, sn_bytes", [
         (Mock(), [0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78], 0, bytearray(), bytearray([0x20])),
@@ -132,7 +132,7 @@ class TestCanConsecutiveFrame:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_consecutive_frame_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.encode_sequence_number")
-    def test_encode_consecutive_frame_data__valid_mandatory_args(self, mock_encode_sequence_number,
+    def test_create_consecutive_frame_data__valid_mandatory_args(self, mock_encode_sequence_number,
                                                                  mock_get_consecutive_frame_min_dlc,
                                                                  addressing_format, payload, sequence_number,
                                                                  ai_data_bytes, sn_bytes):
@@ -140,7 +140,7 @@ class TestCanConsecutiveFrame:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = len(expected_output)
         mock_encode_sequence_number.return_value = sn_bytes
-        assert encode_consecutive_frame_data(addressing_format=addressing_format,
+        assert create_consecutive_frame_data(addressing_format=addressing_format,
                                              payload=payload,
                                              sequence_number=sequence_number) == expected_output
         mock_get_consecutive_frame_min_dlc.assert_called_once_with(addressing_format=addressing_format,
@@ -162,7 +162,7 @@ class TestCanConsecutiveFrame:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_consecutive_frame_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.encode_sequence_number")
-    def test_encode_consecutive_frame_data__valid_all_args(self, mock_encode_sequence_number,
+    def test_create_consecutive_frame_data__valid_all_args(self, mock_encode_sequence_number,
                                                            mock_get_consecutive_frame_min_dlc,
                                                            addressing_format, payload, sequence_number, dlc,
                                                            filler_byte, target_address, address_extension,
@@ -173,7 +173,7 @@ class TestCanConsecutiveFrame:
         expected_output = ai_data_bytes + sn_bytes + bytearray(payload)
         while len(expected_output) < data_bytes_number:
             expected_output.append(filler_byte)
-        assert encode_consecutive_frame_data(addressing_format=addressing_format,
+        assert create_consecutive_frame_data(addressing_format=addressing_format,
                                              payload=payload,
                                              sequence_number=sequence_number,
                                              dlc=dlc,
@@ -195,7 +195,7 @@ class TestCanConsecutiveFrame:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_consecutive_frame_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.encode_sequence_number")
-    def test_encode_consecutive_frame_data__inconsistent(self, mock_encode_sequence_number,
+    def test_create_consecutive_frame_data__inconsistent(self, mock_encode_sequence_number,
                                                            mock_get_consecutive_frame_min_dlc,
                                                            addressing_format, payload, sequence_number, dlc,
                                                            filler_byte, target_address, address_extension,
@@ -204,13 +204,13 @@ class TestCanConsecutiveFrame:
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         mock_encode_sequence_number.return_value = sn_bytes
         with pytest.raises(InconsistentArgumentsError):
-            encode_consecutive_frame_data(addressing_format=addressing_format,
-                                             payload=payload,
-                                             sequence_number=sequence_number,
-                                             dlc=dlc,
-                                             filler_byte=filler_byte,
-                                             target_address=target_address,
-                                             address_extension=address_extension)
+            create_consecutive_frame_data(addressing_format=addressing_format,
+                                          payload=payload,
+                                          sequence_number=sequence_number,
+                                          dlc=dlc,
+                                          filler_byte=filler_byte,
+                                          target_address=target_address,
+                                          address_extension=address_extension)
         mock_get_consecutive_frame_min_dlc.assert_not_called()
         self.mock_can_addressing_information.encode_ai_data_bytes.assert_called_once_with(
             addressing_format=addressing_format,
@@ -312,16 +312,16 @@ class TestCanConsecutiveFrame:
             address_extension=address_extension)
         self.mock_can_dlc_handler.decode_dlc.assert_called_once_with(dlc)
 
-    # decode_consecutive_frame_payload
+    # extract_consecutive_frame_payload
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, ai_bytes_number", [
         (Mock(), [0x2F] + list(range(63)), 0),
         (Mock(), bytearray([0xFF, 0x20, 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4]), 1),
     ])
-    def test_decode_consecutive_frame_payload(self, addressing_format, raw_frame_data,
+    def test_extract_consecutive_frame_payload(self, addressing_format, raw_frame_data,
                                               ai_bytes_number):
         self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_bytes_number
-        assert (decode_consecutive_frame_payload(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
+        assert (extract_consecutive_frame_payload(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
                 == bytearray(raw_frame_data)[ai_bytes_number+SN_BYTES_USED:])
         self.mock_can_addressing_information.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
 
@@ -418,7 +418,7 @@ class TestCanConsecutiveFrame:
         (Mock(), list(range(0x2A, 0x6A)), 1, 0xB),
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x2F, 0xED, 0xCB, 0xA9, 0x87, 0x65, 0x43, 0x21), 0, 0xF),
     ])
-    def test_decode_sequence_number(self, addressing_format, raw_frame_data,
+    def test_extract_sequence_number(self, addressing_format, raw_frame_data,
                                     ai_bytes_number, expected_sn):
         self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_bytes_number
         assert extract_sequence_number(addressing_format=addressing_format,
@@ -465,7 +465,7 @@ class TestCanConsecutiveFrameIntegration:
             validate_consecutive_frame_data(addressing_format=addressing_format,
                                             raw_frame_data=raw_frame_data)
 
-    # encode_consecutive_frame_data
+    # create_consecutive_frame_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -493,8 +493,8 @@ class TestCanConsecutiveFrameIntegration:
           "sequence_number": 0x1,
           "filler_byte": 0xD9}, bytearray([0xDC, 0x21, *range(50, 96)])),
     ])
-    def test_create_valid_frame_data(self, kwargs, expected_raw_frame_data):
-        assert encode_consecutive_frame_data(**kwargs) == expected_raw_frame_data
+    def test_create_consecutive_frame_data(self, kwargs, expected_raw_frame_data):
+        assert create_consecutive_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
         {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -521,9 +521,9 @@ class TestCanConsecutiveFrameIntegration:
          "sequence_number": -1,
          "filler_byte": 0xD9}
     ])
-    def test_create_valid_frame_data__value_error(self, kwargs):
+    def test_create_consecutive_frame_data__value_error(self, kwargs):
         with pytest.raises(ValueError):
-            encode_consecutive_frame_data(**kwargs)
+            create_consecutive_frame_data(**kwargs)
 
     # generate_consecutive_frame_data
 
@@ -548,7 +548,7 @@ class TestCanConsecutiveFrameIntegration:
           "dlc": 2,
           "sequence_number": 0x1}, bytearray([0xE8, 0x21])),
     ])
-    def test_create_any_frame_data(self, kwargs, expected_raw_frame_data):
+    def test_generate_consecutive_frame_data(self, kwargs, expected_raw_frame_data):
         assert generate_consecutive_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
@@ -571,11 +571,11 @@ class TestCanConsecutiveFrameIntegration:
          "dlc": 8,
          "sequence_number": 0xE},
     ])
-    def test_create_any_frame_data__value_error(self, kwargs):
+    def test_generate_consecutive_frame_data__value_error(self, kwargs):
         with pytest.raises(ValueError):
             generate_consecutive_frame_data(**kwargs)
 
-    # decode_consecutive_frame_payload
+    # extract_consecutive_frame_payload
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, payload", [
         (CanAddressingFormat.NORMAL_ADDRESSING, b"\x2F\x12\x34\x56\x78\x9A\xBC\xDE",
@@ -585,6 +585,6 @@ class TestCanConsecutiveFrameIntegration:
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, [0x3F] + [0x2F] * 5, bytearray([0x2F] * 4)),
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x20, 0x20, 0x20], bytearray([0x20])),
     ])
-    def test_decode_consecutive_frame_payload(self, addressing_format, raw_frame_data, payload):
-        assert decode_consecutive_frame_payload(addressing_format=addressing_format,
-                                                raw_frame_data=raw_frame_data) == payload
+    def test_extract_consecutive_frame_payload(self, addressing_format, raw_frame_data, payload):
+        assert extract_consecutive_frame_payload(addressing_format=addressing_format,
+                                                 raw_frame_data=raw_frame_data) == payload

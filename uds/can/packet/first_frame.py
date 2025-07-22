@@ -2,9 +2,10 @@
 
 __all__ = ["FIRST_FRAME_N_PCI", "MAX_SHORT_FF_DL_VALUE", "MAX_LONG_FF_DL_VALUE", "SHORT_FF_DL_BYTES_USED",
            "SHORT_FF_DL_BYTES_USED", "LONG_FF_DL_BYTES_USED",
-           "is_first_frame", "validate_first_frame_data", "encode_first_frame_data", "generate_first_frame_data",
-           "decode_first_frame_payload", "extract_ff_dl", "get_first_frame_payload_size", "extract_ff_dl_data_bytes",
-           "encode_ff_dl", "generate_ff_dl_bytes", "validate_ff_dl"]
+           "is_first_frame", "validate_first_frame_data",
+           "create_first_frame_data", "generate_first_frame_data",
+           "extract_first_frame_payload", "extract_ff_dl", "get_first_frame_payload_size",
+           "extract_ff_dl_data_bytes", "encode_ff_dl", "generate_ff_dl_bytes", "validate_ff_dl"]
 
 from typing import Optional
 
@@ -69,7 +70,7 @@ def validate_first_frame_data(addressing_format: CanAddressingFormat, raw_frame_
                    ff_dl_bytes_number=len(ff_dl_data_bytes))
 
 
-def encode_first_frame_data(addressing_format: CanAddressingFormat,
+def create_first_frame_data(addressing_format: CanAddressingFormat,
                             payload: RawBytesAlias,
                             dlc: int,
                             ff_dl: int,
@@ -154,7 +155,7 @@ def generate_first_frame_data(addressing_format: CanAddressingFormat,
     return ff_data_bytes
 
 
-def decode_first_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
+def extract_first_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
     """
     Extract payload from First Frame data bytes.
 
@@ -243,7 +244,7 @@ def encode_ff_dl(addressing_format: CanAddressingFormat,
     """
     Create valid First Frame data bytes that contain First Frame Data Length and N_PCI values.
 
-.. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
+    .. note:: This method can only be used to create a valid (compatible with ISO 15765 - Diagnostic on CAN) output.
 
     :param ff_dl: Value to put into a slot of First Frame Data Length.
     :param dlc: Value of DLC to use for First Frame Data Length value validation.

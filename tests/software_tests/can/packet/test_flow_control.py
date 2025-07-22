@@ -13,7 +13,7 @@ from uds.can.packet.flow_control import (
     CanSTminTranslator,
     DefaultFlowControlParametersGenerator,
     InconsistentArgumentsError,
-    encode_flow_control_data,
+    create_flow_control_data,
     encode_flow_status,
     extract_block_size,
     extract_flow_status,
@@ -22,7 +22,7 @@ from uds.can.packet.flow_control import (
     generate_flow_status,
     get_flow_control_min_dlc,
     is_flow_control,
-    validate_flow_control_data,DEFAULT_FILLER_BYTE
+    validate_flow_control_data, DEFAULT_FILLER_BYTE
 )
 from uds.utilities import NibbleEnum, ValidatedEnum
 
@@ -270,7 +270,7 @@ class TestCanFlowControl:
         mock_get_flow_control_min_dlc.assert_not_called()
         self.mock_can_dlc_handler.encode_dlc.assert_not_called()
 
-    # encode_flow_control_data
+    # create_flow_control_data
 
     @pytest.mark.parametrize("addressing_format, flow_status, ai_data_bytes, fs_data_bytes", [
         (Mock(), Mock(), bytearray(), bytearray([0x31])),
@@ -278,14 +278,14 @@ class TestCanFlowControl:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_flow_control_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.encode_flow_status")
-    def test_encode_flow_control_data__mandatory_args(self, mock_encode_flow_status, mock_get_flow_control_min_dlc,
+    def test_create_flow_control_data__mandatory_args(self, mock_encode_flow_status, mock_get_flow_control_min_dlc,
                                                       addressing_format, flow_status,
                                                       ai_data_bytes, fs_data_bytes):
         expected_output = ai_data_bytes + fs_data_bytes + bytearray([DEFAULT_FILLER_BYTE, DEFAULT_FILLER_BYTE])
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = len(expected_output)
         mock_encode_flow_status.return_value = fs_data_bytes
-        assert encode_flow_control_data(addressing_format=addressing_format,
+        assert create_flow_control_data(addressing_format=addressing_format,
                                         flow_status=flow_status) == expected_output
         self.mock_validate_raw_byte.assert_called_once_with(DEFAULT_FILLER_BYTE)
         self.mock_can_addressing_information.encode_ai_data_bytes.assert_called_once_with(
@@ -306,7 +306,7 @@ class TestCanFlowControl:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_flow_control_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.encode_flow_status")
-    def test_encode_flow_control_data__all_args(self, mock_encode_flow_status, mock_get_flow_control_min_dlc,
+    def test_create_flow_control_data__all_args(self, mock_encode_flow_status, mock_get_flow_control_min_dlc,
                                                 addressing_format, flow_status, block_size, st_min, dlc,
                                                 filler_byte, target_address, address_extension,
                                                 ai_data_bytes, fs_data_bytes, data_bytes_number):
@@ -316,7 +316,7 @@ class TestCanFlowControl:
         expected_output = ai_data_bytes + fs_data_bytes + bytearray([block_size, st_min])
         while len(expected_output) < data_bytes_number:
             expected_output.append(filler_byte)
-        assert encode_flow_control_data(addressing_format=addressing_format,
+        assert create_flow_control_data(addressing_format=addressing_format,
                                         flow_status=flow_status,
                                         block_size=block_size,
                                         st_min=st_min,
@@ -344,7 +344,7 @@ class TestCanFlowControl:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_flow_control_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.encode_flow_status")
-    def test_encode_flow_control_data__inconsistent(self, mock_encode_flow_status, mock_get_flow_control_min_dlc,
+    def test_create_flow_control_data__inconsistent(self, mock_encode_flow_status, mock_get_flow_control_min_dlc,
                                                 addressing_format, flow_status, block_size, st_min, dlc,
                                                 filler_byte, target_address, address_extension,
                                                 ai_data_bytes, fs_data_bytes, data_bytes_number):
@@ -352,7 +352,7 @@ class TestCanFlowControl:
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         mock_encode_flow_status.return_value = fs_data_bytes
         with pytest.raises(InconsistentArgumentsError):
-            encode_flow_control_data(addressing_format=addressing_format,
+            create_flow_control_data(addressing_format=addressing_format,
                                      flow_status=flow_status,
                                      block_size=block_size,
                                      st_min=st_min,
@@ -540,7 +540,7 @@ class TestCanFlowControl:
 class TestCanFlowControlIntegration:
     """Integration tests for functions in CAN Flow Control module."""
 
-    # encode_flow_control_data
+    # create_flow_control_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -572,8 +572,8 @@ class TestCanFlowControlIntegration:
           "target_address": 0x9A,
           "address_extension": 0xFF}, bytearray([0xFF, 0x31, 0xED, 0xCB])),
     ])
-    def test_encode_flow_control_data(self, kwargs, expected_raw_frame_data):
-        assert encode_flow_control_data(**kwargs) == expected_raw_frame_data
+    def test_create_flow_control_data(self, kwargs, expected_raw_frame_data):
+        assert create_flow_control_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
         {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -598,9 +598,9 @@ class TestCanFlowControlIntegration:
          "target_address": 0x9A,
          "address_extension": 0xFF}
     ])
-    def test_encode_flow_control_data__value_error(self, kwargs):
+    def test_create_flow_control_data__value_error(self, kwargs):
         with pytest.raises(ValueError):
-            encode_flow_control_data(**kwargs)
+            create_flow_control_data(**kwargs)
 
     # generate_flow_control_data
 

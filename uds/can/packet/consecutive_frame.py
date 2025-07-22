@@ -2,8 +2,7 @@
 
 __all__ = ["CONSECUTIVE_FRAME_N_PCI", "SN_BYTES_USED",
            "is_consecutive_frame", "validate_consecutive_frame_data",
-           "encode_consecutive_frame_data", "generate_consecutive_frame_data",
-           "decode_consecutive_frame_payload",
+           "create_consecutive_frame_data", "generate_consecutive_frame_data", "extract_consecutive_frame_payload",
            "get_consecutive_frame_min_dlc", "get_consecutive_frame_max_payload_size",
            "extract_sequence_number", "encode_sequence_number"]
 
@@ -63,7 +62,7 @@ def validate_consecutive_frame_data(addressing_format: CanAddressingFormat, raw_
         raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
 
 
-def encode_consecutive_frame_data(addressing_format: CanAddressingFormat,
+def create_consecutive_frame_data(addressing_format: CanAddressingFormat,
                                   payload: RawBytesAlias,
                                   sequence_number: int,
                                   dlc: Optional[int] = None,
@@ -165,7 +164,7 @@ def generate_consecutive_frame_data(addressing_format: CanAddressingFormat,
     return cf_bytes + data_padding
 
 
-def decode_consecutive_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
+def extract_consecutive_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
     """
     Extract diagnostic message payload from Consecutive Frame data bytes.
 

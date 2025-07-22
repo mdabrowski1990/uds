@@ -11,7 +11,7 @@ from uds.can.packet.single_frame import (
     CanDlcHandler,
     InconsistentArgumentsError,
     encode_sf_dl,
-    encode_single_frame_data,
+    create_single_frame_data,
     extract_sf_dl,
     extract_sf_dl_data_bytes,
     extract_single_frame_payload,
@@ -171,7 +171,7 @@ class TestCanSingleFrame:
         mock_is_single_frame.assert_called_once_with(addressing_format=addressing_format,
                                                      raw_frame_data=raw_frame_data)
 
-    # encode_single_frame_data
+    # create_single_frame_data
 
     @pytest.mark.parametrize("addressing_format, payload, ai_data_bytes, data_bytes_number, sf_dl_bytes", [
         (Mock(), [0x12, 0x34, 0x56], bytearray(), 8, bytearray([0x03])),
@@ -179,7 +179,7 @@ class TestCanSingleFrame:
     ])
     @patch(f"{SCRIPT_LOCATION}.encode_sf_dl")
     @patch(f"{SCRIPT_LOCATION}.get_single_frame_min_dlc")
-    def test_encode_single_frame_data__mandatory_args(self, mock_get_single_frame_min_dlc, mock_encode_sf_dl,
+    def test_create_single_frame_data__mandatory_args(self, mock_get_single_frame_min_dlc, mock_encode_sf_dl,
                                                       addressing_format, payload,
                                                       ai_data_bytes, data_bytes_number, sf_dl_bytes):
         mock_encode_sf_dl.return_value = sf_dl_bytes
@@ -188,7 +188,7 @@ class TestCanSingleFrame:
         expected_output = ai_data_bytes + sf_dl_bytes + bytearray(payload)
         while len(expected_output) < data_bytes_number:
             expected_output.append(DEFAULT_FILLER_BYTE)
-        assert encode_single_frame_data(addressing_format=addressing_format,
+        assert create_single_frame_data(addressing_format=addressing_format,
                                         payload=payload) == expected_output
         mock_get_single_frame_min_dlc.assert_called_once_with(addressing_format=addressing_format,
                                                               payload_length=len(payload))
@@ -213,7 +213,7 @@ class TestCanSingleFrame:
     ])
     @patch(f"{SCRIPT_LOCATION}.encode_sf_dl")
     @patch(f"{SCRIPT_LOCATION}.get_single_frame_min_dlc")
-    def test_encode_single_frame_data__all_args(self, mock_get_single_frame_min_dlc, mock_encode_sf_dl,
+    def test_create_single_frame_data__all_args(self, mock_get_single_frame_min_dlc, mock_encode_sf_dl,
                                                 addressing_format, payload, dlc, filler_byte,
                                                 target_address, address_extension,
                                                 ai_data_bytes, data_bytes_number, sf_dl_bytes):
@@ -223,7 +223,7 @@ class TestCanSingleFrame:
         expected_output = ai_data_bytes + sf_dl_bytes + bytearray(payload)
         while len(expected_output) < data_bytes_number:
             expected_output.append(filler_byte)
-        assert encode_single_frame_data(addressing_format=addressing_format,
+        assert create_single_frame_data(addressing_format=addressing_format,
                                         payload=payload,
                                         dlc=dlc,
                                         filler_byte=filler_byte,
@@ -249,7 +249,7 @@ class TestCanSingleFrame:
     ])
     @patch(f"{SCRIPT_LOCATION}.encode_sf_dl")
     @patch(f"{SCRIPT_LOCATION}.get_single_frame_min_dlc")
-    def test_encode_single_frame_data__inconsistent(self, mock_get_single_frame_min_dlc, mock_encode_sf_dl,
+    def test_create_single_frame_data__inconsistent(self, mock_get_single_frame_min_dlc, mock_encode_sf_dl,
                                                 addressing_format, payload, dlc, filler_byte,
                                                 target_address, address_extension,
                                                 ai_data_bytes, data_bytes_number, sf_dl_bytes):
@@ -257,7 +257,7 @@ class TestCanSingleFrame:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         with pytest.raises(InconsistentArgumentsError):
-            encode_single_frame_data(addressing_format=addressing_format,
+            create_single_frame_data(addressing_format=addressing_format,
                                      payload=payload,
                                      dlc=dlc,
                                      filler_byte=filler_byte,
@@ -404,7 +404,7 @@ class TestCanSingleFrame:
         (CanAddressingFormat.NORMAL_ADDRESSING, list(range(64)), [0x0F, 0x23], 35),
     ])
     @patch(f"{SCRIPT_LOCATION}.extract_sf_dl_data_bytes")
-    def test_get_sf_dl__valid(self, mock_extract_sf_dl_data_bytes,
+    def test_extract_sf_dl__valid(self, mock_extract_sf_dl_data_bytes,
                               addressing_format, raw_frame_data, sf_dl_data_bytes, sf_dl):
         mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
         assert extract_sf_dl(addressing_format=addressing_format, raw_frame_data=raw_frame_data) == sf_dl
@@ -416,7 +416,7 @@ class TestCanSingleFrame:
         (CanAddressingFormat.EXTENDED_ADDRESSING, b"\x12\x34\x56\x78", [0x00, 0x00, 0x23]),
     ])
     @patch(f"{SCRIPT_LOCATION}.extract_sf_dl_data_bytes")
-    def test_get_sf_dl__not_implemented(self, mock_extract_sf_dl_data_bytes,
+    def test_extract_sf_dl__not_implemented(self, mock_extract_sf_dl_data_bytes,
                                         addressing_format, raw_frame_data, sf_dl_data_bytes):
         mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
         with pytest.raises(NotImplementedError):
@@ -663,7 +663,7 @@ class TestCanSingleFrameIntegration:
             validate_single_frame_data(addressing_format=addressing_format,
                                                              raw_frame_data=raw_frame_data)
 
-    # encode_single_frame_data
+    # create_single_frame_data
 
     @pytest.mark.parametrize("kwargs, expected_raw_frame_data", [
         ({"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -688,7 +688,7 @@ class TestCanSingleFrameIntegration:
           "address_extension": 0x12}, bytearray([0x12, 0x00, 0x07, 0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00, 0x01, 0x99, 0x99])),
     ])
     def test_create_valid_frame_data(self, kwargs, expected_raw_frame_data):
-        assert encode_single_frame_data(**kwargs) == expected_raw_frame_data
+        assert create_single_frame_data(**kwargs) == expected_raw_frame_data
 
     @pytest.mark.parametrize("kwargs", [
         {"addressing_format": CanAddressingFormat.NORMAL_ADDRESSING,
@@ -710,7 +710,7 @@ class TestCanSingleFrameIntegration:
     ])
     def test_create_valid_frame_data__value_error(self, kwargs):
         with pytest.raises(ValueError):
-            encode_single_frame_data(**kwargs)
+            create_single_frame_data(**kwargs)
 
     # generate_single_frame_data
 
@@ -785,5 +785,4 @@ class TestCanSingleFrameIntegration:
     ])
     def test_extract_sf_dl(self, addressing_format, raw_frame_data, expected_sf_dl):
         assert extract_sf_dl(addressing_format=addressing_format,
-                                                  raw_frame_data=raw_frame_data) == expected_sf_dl
-
+                             raw_frame_data=raw_frame_data) == expected_sf_dl

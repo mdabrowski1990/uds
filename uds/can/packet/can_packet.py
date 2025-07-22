@@ -28,7 +28,7 @@ from uds.can import (
 from uds.packet.abstract_packet import AbstractPacket
 from uds.utilities import AmbiguityError, RawBytesAlias, UnusedArgumentWarning
 
-from .abstract_can_container import AbstractCanPacketContainer
+from .abstract_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
 
@@ -390,7 +390,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         :param filler_byte: Filler Byte value to use for CAN Frame Data Padding.
         """
-        raw_frame_data = CanSingleFrameHandler.encode_single_frame_data(addressing_format=self.addressing_format,
+        raw_frame_data = CanSingleFrameHandler.create_single_frame_data(addressing_format=self.addressing_format,
                                                                         target_address=self.target_address,
                                                                         address_extension=self.address_extension,
                                                                         dlc=dlc,
