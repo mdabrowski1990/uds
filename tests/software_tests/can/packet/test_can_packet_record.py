@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 from mock import Mock, patch
 
+from uds.can import CanFlowStatus, CanPacketType
 from uds.can.packet.can_packet_record import (
     AddressingType,
     CanAddressingFormat,
@@ -12,7 +13,6 @@ from uds.can.packet.can_packet_record import (
     TransmissionDirection,
     datetime,
 )
-from uds.can import CanFlowStatus, CanPacketType
 
 SCRIPT_LOCATION = "uds.can.packet.can_packet_record"
 

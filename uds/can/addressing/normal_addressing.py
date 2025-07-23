@@ -7,7 +7,7 @@ from typing import Optional
 from uds.addressing import AddressingType
 from uds.can.addressing.addressing_format import CanAddressingFormat
 from uds.can.frame import CanIdHandler
-from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
+from uds.utilities import InconsistentArgumentsError, RawBytesAlias, UnusedArgumentError, validate_raw_byte
 
 from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 
@@ -21,27 +21,19 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
     AI_DATA_BYTES_NUMBER = 0
     """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
-    @staticmethod
-    def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType]=None) -> bool:
+    def _validate_addressing_information(self) -> None:
         """
-        Check whether provided CAN ID is consistent with Normal Addressing format.
+        Validate Addressing Information parameters.
 
-        :param can_id: Value of CAN ID to check.
-        :param addressing_type: Addressing type for which consistency to be performed.
-            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
-
-        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """
-        return CanIdHandler.is_can_id(can_id)
-
-    @staticmethod
-    def decode_can_id(can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
-        """Decode Addressing Information parameters from CAN Identifier."""
-        return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=None,
-                                                              target_address=None,
-                                                              source_address=None,
-                                                              priority=None)
+        rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
+        tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
+        if (self.rx_physical_params["can_id"] in tx_can_ids
+                or self.tx_physical_params["can_id"] in rx_can_ids
+                or self.rx_functional_params["can_id"] in tx_can_ids
+                or self.tx_functional_params["can_id"] in rx_can_ids):
+            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
     def validate_addressing_params(cls,
@@ -83,19 +75,59 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
                                    source_address=source_address,
                                    address_extension=address_extension)
 
-    def _validate_addressing_information(self) -> None:
+    @staticmethod
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType]=None) -> bool:
         """
-        Validate Addressing Information parameters.
+        Check whether provided CAN ID is consistent with Normal Addressing format.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        :param can_id: Value of CAN ID to check.
+        :param addressing_type: Addressing type for which consistency to be performed.
+            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
+
+        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
         """
-        rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
-        tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
-        if (self.rx_physical_params["can_id"] in tx_can_ids
-                or self.tx_physical_params["can_id"] in rx_can_ids
-                or self.rx_functional_params["can_id"] in tx_can_ids
-                or self.tx_functional_params["can_id"] in rx_can_ids):
-            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
+        return CanIdHandler.is_can_id(can_id)
+
+    @staticmethod
+    def decode_can_id_ai_params(can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
+        """
+        Decode Addressing Information parameters from CAN Identifier.
+
+        :param can_id: Value of a CAN Identifier.
+
+        :return: Decoded Addressing Information parameters.
+        """
+        return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=None,
+                                                              target_address=None,
+                                                              source_address=None,
+                                                              priority=None)
+
+    @staticmethod
+    def decode_data_bytes_ai_params(
+            ai_data_bytes: RawBytesAlias) -> AbstractCanAddressingInformation.DataBytesAIParamsAlias:
+        """
+        Decode Addressing Information parameters from CAN data bytes.
+
+        :param ai_data_bytes: Data bytes containing Addressing Information.
+
+        :return: Decoded Addressing Information parameters.
+        """
+        return AbstractCanAddressingInformation.DataBytesAIParamsAlias()
+
+    @classmethod
+    def encode_ai_data_bytes(cls,
+                             target_address: Optional[int] = None,
+                             address_extension: Optional[int] = None) -> bytearray:
+        """
+        Generate data bytes that carry Addressing Information.
+
+        :param target_address: Target Address value used.
+        :param address_extension: Source Address value used.
+
+        :return: Data bytes that carry Addressing Information in a CAN frame Data field.
+        """
+        return bytearray()
 
 
 class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
@@ -107,90 +139,22 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
     AI_DATA_BYTES_NUMBER = 0
     """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
-    @staticmethod
-    def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType] = None) -> bool:
+    def _validate_addressing_information(self) -> None:
         """
-        Check whether provided CAN ID is consistent with Normal Fixed Addressing format.
+        Validate Addressing Information parameters.
 
-        :param can_id: Value of CAN ID to check.
-        :param addressing_type: Addressing type for which consistency to be performed.
-            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
-
-        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """
-        if addressing_type is not None:
-            addressing_type = AddressingType.validate_member(addressing_type)
-        masked_can_id = can_id & CanIdHandler.ADDRESSING_MASK
-        if (masked_can_id == CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE
-                and addressing_type in {None, AddressingType.PHYSICAL}):
-            return True
-        if (masked_can_id == CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE
-                and addressing_type in {None, AddressingType.FUNCTIONAL}):
-            return True
-        return False
-
-    @classmethod
-    def decode_can_id(cls, can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
-        """Decode Addressing Information parameters from CAN Identifier."""
-        CanIdHandler.validate_can_id(can_id)
-        if not cls.is_compatible_can_id(can_id):
-            raise ValueError("Provided CAN ID value is out of range.")
-        target_address = (can_id >> CanIdHandler.TARGET_ADDRESS_BIT_OFFSET) & 0xFF
-        source_address = (can_id >> CanIdHandler.SOURCE_ADDRESS_BIT_OFFSET) & 0xFF
-        can_id_masked_value = can_id & CanIdHandler.ADDRESSING_MASK
-        priority = can_id >> CanIdHandler.PRIORITY_BIT_OFFSET
-        if can_id_masked_value == CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE:
-            return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=AddressingType.PHYSICAL,
-                                                                  target_address=target_address,
-                                                                  source_address=source_address,
-                                                                  priority=priority)
-        if can_id_masked_value == CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE:
-            return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=AddressingType.FUNCTIONAL,
-                                                                  target_address=target_address,
-                                                                  source_address=source_address,
-                                                                  priority=priority)
-        raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but it was not handled.")
-
-    @classmethod
-    def encode_can_id(cls,
-                      addressing_type: AddressingType,
-                      target_address: int,
-                      source_address: int,
-                      priority: int = CanIdHandler.DEFAULT_PRIORITY_VALUE) -> int:
-        """
-        Generate CAN ID value for Normal Fixed CAN Addressing format.
-
-        :param addressing_type: Addressing type used.
-        :param target_address: Target Address value to use.
-        :param source_address: Source Address value to use.
-        :param priority: Priority parameter value to use.
-
-        :raise NotImplementedError: There is missing implementation for the provided Addressing Type.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
-
-        :return: Value of CAN ID (compatible with Normal Fixed Addressing Format) that was generated from
-            the provided values.
-        """
-        AddressingType.validate_member(addressing_type)
-        validate_raw_byte(target_address)
-        validate_raw_byte(source_address)
-        CanIdHandler.validate_priority(priority)
-        priority_value = priority << CanIdHandler.PRIORITY_BIT_OFFSET
-        target_address_value = target_address << CanIdHandler.TARGET_ADDRESS_BIT_OFFSET
-        source_address_value = source_address << CanIdHandler.SOURCE_ADDRESS_BIT_OFFSET
-        if addressing_type == AddressingType.PHYSICAL:
-            return (priority_value
-                    + CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE
-                    + target_address_value
-                    + source_address_value)
-        if addressing_type == AddressingType.FUNCTIONAL:
-            return (priority_value
-                    + CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE
-                    + target_address_value
-                    + source_address_value)
-        raise NotImplementedError("Provided Addressing Type is not handled.")
+        if (self.rx_physical_params["target_address"] != self.tx_physical_params["source_address"]
+                or self.rx_physical_params["source_address"] != self.tx_physical_params["target_address"]):
+            raise InconsistentArgumentsError("Target Address and Source Address for incoming physically addressed "
+                                             "CAN packets must equal Source Address and Target Address for outgoing "
+                                             "physically addressed CAN packets.")
+        if (self.rx_functional_params["target_address"] != self.tx_functional_params["source_address"]
+                or self.rx_functional_params["source_address"] != self.tx_functional_params["target_address"]):
+            raise InconsistentArgumentsError("Target Address and Source Address for incoming functionally addressed "
+                                             "CAN packets must equal Source Address and Target Address for outgoing "
+                                             "functionally addressed CAN packets.")
 
     @classmethod
     def validate_addressing_params(cls,
@@ -238,7 +202,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                                        target_address=target_address,
                                        source_address=source_address,
                                        address_extension=address_extension)
-        decoded_info = cls.decode_can_id(can_id)
+        decoded_info = cls.decode_can_id_ai_params(can_id)
         if addressing_type != decoded_info["addressing_type"]:
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Addressing Type.")
         if target_address not in {decoded_info["target_address"], None}:
@@ -252,19 +216,119 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                                    source_address=decoded_info["source_address"],
                                    address_extension=address_extension)
 
-    def _validate_addressing_information(self) -> None:
+    @staticmethod
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType] = None) -> bool:
         """
-        Validate Addressing Information parameters.
+        Check whether provided CAN ID is consistent with Normal Fixed Addressing format.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        :param can_id: Value of CAN ID to check.
+        :param addressing_type: Addressing type for which consistency to be performed.
+            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
+
+        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
         """
-        if (self.rx_physical_params["target_address"] != self.tx_physical_params["source_address"]
-                or self.rx_physical_params["source_address"] != self.tx_physical_params["target_address"]):
-            raise InconsistentArgumentsError("Target Address and Source Address for incoming physically addressed "
-                                             "CAN packets must equal Source Address and Target Address for outgoing "
-                                             "physically addressed CAN packets.")
-        if (self.rx_functional_params["target_address"] != self.tx_functional_params["source_address"]
-                or self.rx_functional_params["source_address"] != self.tx_functional_params["target_address"]):
-            raise InconsistentArgumentsError("Target Address and Source Address for incoming functionally addressed "
-                                             "CAN packets must equal Source Address and Target Address for outgoing "
-                                             "functionally addressed CAN packets.")
+        if addressing_type is not None:
+            addressing_type = AddressingType.validate_member(addressing_type)
+        masked_can_id = can_id & CanIdHandler.ADDRESSING_MASK
+        if (masked_can_id == CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE
+                and addressing_type in {None, AddressingType.PHYSICAL}):
+            return True
+        if (masked_can_id == CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE
+                and addressing_type in {None, AddressingType.FUNCTIONAL}):
+            return True
+        return False
+
+    @classmethod
+    def decode_can_id_ai_params(cls, can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
+        """
+        Decode Addressing Information parameters from CAN Identifier.
+
+        :param can_id: Value of a CAN Identifier.
+
+        :return: Decoded Addressing Information parameters.
+        """
+        CanIdHandler.validate_can_id(can_id)
+        if not cls.is_compatible_can_id(can_id):
+            raise ValueError("Provided CAN ID value is out of range.")
+        target_address = (can_id >> CanIdHandler.TARGET_ADDRESS_BIT_OFFSET) & 0xFF
+        source_address = (can_id >> CanIdHandler.SOURCE_ADDRESS_BIT_OFFSET) & 0xFF
+        can_id_masked_value = can_id & CanIdHandler.ADDRESSING_MASK
+        priority = can_id >> CanIdHandler.PRIORITY_BIT_OFFSET
+        if can_id_masked_value == CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE:
+            return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=AddressingType.PHYSICAL,
+                                                                  target_address=target_address,
+                                                                  source_address=source_address,
+                                                                  priority=priority)
+        if can_id_masked_value == CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE:
+            return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=AddressingType.FUNCTIONAL,
+                                                                  target_address=target_address,
+                                                                  source_address=source_address,
+                                                                  priority=priority)
+        raise NotImplementedError("CAN ID in Normal Fixed Addressing format was provided, but it was not handled.")
+
+    @staticmethod
+    def decode_data_bytes_ai_params(
+            ai_data_bytes: RawBytesAlias) -> AbstractCanAddressingInformation.DataBytesAIParamsAlias:
+        """
+        Decode Addressing Information parameters from CAN data bytes.
+
+        :param ai_data_bytes: Data bytes containing Addressing Information.
+
+        :return: Decoded Addressing Information parameters.
+        """
+        return AbstractCanAddressingInformation.DataBytesAIParamsAlias()
+
+    @classmethod
+    def encode_can_id(cls,
+                      addressing_type: AddressingType,
+                      target_address: int,
+                      source_address: int,
+                      priority: int = CanIdHandler.DEFAULT_PRIORITY_VALUE) -> int:
+        """
+        Generate CAN ID value for Normal Fixed CAN Addressing format.
+
+        :param addressing_type: Addressing type used.
+        :param target_address: Target Address value to use.
+        :param source_address: Source Address value to use.
+        :param priority: Priority parameter value to use.
+
+        :raise NotImplementedError: There is missing implementation for the provided Addressing Type.
+            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
+            with detailed description if you face this error.
+
+        :return: Value of CAN ID (compatible with Normal Fixed Addressing Format) that was generated from
+            the provided values.
+        """
+        AddressingType.validate_member(addressing_type)
+        validate_raw_byte(target_address)
+        validate_raw_byte(source_address)
+        CanIdHandler.validate_priority(priority)
+        priority_value = priority << CanIdHandler.PRIORITY_BIT_OFFSET
+        target_address_value = target_address << CanIdHandler.TARGET_ADDRESS_BIT_OFFSET
+        source_address_value = source_address << CanIdHandler.SOURCE_ADDRESS_BIT_OFFSET
+        if addressing_type == AddressingType.PHYSICAL:
+            return (priority_value
+                    + CanIdHandler.NORMAL_FIXED_PHYSICAL_ADDRESSING_MASKED_VALUE
+                    + target_address_value
+                    + source_address_value)
+        if addressing_type == AddressingType.FUNCTIONAL:
+            return (priority_value
+                    + CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE
+                    + target_address_value
+                    + source_address_value)
+        raise NotImplementedError("Provided Addressing Type is not handled.")
+
+    @classmethod
+    def encode_ai_data_bytes(cls,
+                             target_address: Optional[int] = None,
+                             address_extension: Optional[int] = None) -> bytearray:
+        """
+        Generate data bytes that carry Addressing Information.
+
+        :param target_address: Target Address value used.
+        :param address_extension: Source Address value used.
+
+        :return: Data bytes that carry Addressing Information in a CAN frame Data field.
+        """
+        return bytearray()

@@ -1,6 +1,6 @@
 """UDS addressing implementation for CAN bus."""
 
-from .abstract_addressing_information import AbstractCanAddressingInformation
+from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 from .addressing_format import CanAddressingFormat
 from .addressing_information import CanAddressingInformation
 from .extended_addressing import ExtendedCanAddressingInformation

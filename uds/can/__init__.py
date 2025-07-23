@@ -16,4 +16,13 @@ It provides tools for:
 """
 from .addressing import CanAddressingFormat, CanAddressingInformation
 from .frame import DEFAULT_FILLER_BYTE, CanDlcHandler, CanIdHandler
-from .packet import CanFlowStatus, CanPacket, CanPacketType, CanSTminTranslator, DefaultFlowControlParametersGenerator
+from .packet import (
+    AbstractFlowControlParametersGenerator,
+    CanFlowStatus,
+    CanPacket,
+    CanPacketRecord,
+    CanPacketType,
+    CanSTminTranslator,
+    DefaultFlowControlParametersGenerator,
+)
+from .segmenter import CanSegmenter

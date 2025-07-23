@@ -8,7 +8,7 @@ from typing import Optional
 from uds.addressing import AddressingType
 from uds.packet.abstract_packet import AbstractPacketContainer
 
-from ..addressing import CanAddressingFormat, CanAddressingInformation
+from ..addressing import CanAddressingFormat, CanAddressingInformation, AbstractCanAddressingInformation
 from ..frame import CanDlcHandler
 from .can_packet_type import CanPacketType
 from .consecutive_frame import extract_consecutive_frame_payload, extract_sequence_number
@@ -235,13 +235,14 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
 
-    def get_addressing_information(self) -> CanAddressingInformation.DecodedAIParamsAlias:
+    def get_addressing_information(self) -> AbstractCanAddressingInformation.DecodedAIParamsAlias:
         """
         Get Addressing Information carried by this packet.
 
         :return: Addressing Information decoded from CAN ID and CAN Frame data of this packet.
         """
         ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
-        return CanAddressingInformation.decode_packet_ai(addressing_format=self.addressing_format,
-                                                         can_id=self.can_id,
-                                                         ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])
+        return CanAddressingInformation.decode_frame_ai_params(
+            addressing_format=self.addressing_format,
+            can_id=self.can_id,
+            ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])

@@ -8,9 +8,10 @@ from typing import Optional, TypedDict
 from uds.addressing import AddressingType
 from uds.addressing.abstract_addressing_information import AbstractAddressingInformation
 from uds.can.addressing.addressing_format import CanAddressingFormat
+from uds.utilities import RawBytesAlias
 
 
-class CANAddressingParams(TypedDict):
+class CANAddressingParams(TypedDict, total=True):
     """:ref:`Addressing Information <knowledge-base-n-ai>` parameters collection for a single CAN Packet."""
 
     addressing_format: CanAddressingFormat
@@ -32,13 +33,27 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         source_address: Optional[int]
         address_extension: Optional[int]
 
-    class CanIdAIParams(TypedDict):
+    class CanIdAIParams(TypedDict, total=True):
         """ref:`Addressing Information <knowledge-base-n-ai>` parameters that are carried by CAN Identifier."""
 
         addressing_type: Optional[AddressingType]
         target_address: Optional[int]
         source_address: Optional[int]
         priority: Optional[int]
+
+    class DataBytesAIParamsAlias(TypedDict, total=False):
+        """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in data field."""
+
+        target_address: int
+        address_extension: int
+
+    class DecodedAIParamsAlias(TypedDict, total=True):
+        """Alias of :ref:`Addressing Information <knowledge-base-n-ai>` parameters encoded in CAN ID and data field."""
+
+        addressing_type: Optional[AddressingType]
+        target_address: Optional[int]
+        source_address: Optional[int]
+        address_extension: Optional[int]
 
     ADDRESSING_FORMAT: CanAddressingFormat
     """CAN Addressing Format used."""
@@ -63,25 +78,6 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
                          tx_physical_params=tx_physical_params,
                          rx_functional_params=rx_functional_params,
                          tx_functional_params=tx_functional_params)
-
-    @staticmethod
-    @abstractmethod
-    def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType]) -> bool:
-        """
-        Check whether provided CAN ID is consistent with this CAN Addressing Format.
-
-        :param can_id: Value of CAN ID to check.
-        :param addressing_type: Addressing type for which consistency to be performed.
-            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
-
-        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
-        """
-
-    @staticmethod
-    @abstractmethod
-    def decode_can_id(can_id: int) -> CanIdAIParams:
-        """Decode Addressing Information parameters from CAN Identifier."""
 
     @classmethod
     @abstractmethod
@@ -108,3 +104,97 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
 
         :return: Normalized dictionary with the provided information.
         """
+
+    @staticmethod
+    @abstractmethod
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType]) -> bool:
+        """
+        Check whether provided CAN ID is consistent with this CAN Addressing Format.
+
+        :param can_id: Value of CAN ID to check.
+        :param addressing_type: Addressing type for which consistency to be performed.
+            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
+
+        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def decode_can_id_ai_params(can_id: int) -> CanIdAIParams:
+        """
+        Decode Addressing Information parameters from CAN Identifier.
+
+        :param can_id: Value of a CAN Identifier.
+
+        :return: Decoded Addressing Information parameters.
+        """
+
+    @staticmethod
+    @abstractmethod
+    def decode_data_bytes_ai_params(ai_data_bytes: RawBytesAlias) -> DataBytesAIParamsAlias:
+        """
+        Decode Addressing Information parameters from CAN data bytes.
+
+        :param ai_data_bytes: Data bytes containing Addressing Information.
+
+        :return: Decoded Addressing Information parameters.
+        """
+
+    @classmethod
+    def decode_frame_ai_params(cls, can_id: int, ai_data_bytes: RawBytesAlias) -> DecodedAIParamsAlias:
+        """
+        Decode Addressing Information parameters from a CAN Frame.
+
+        :param can_id: Value of a CAN Identifier.
+        :param ai_data_bytes: Data bytes containing Addressing Information.
+
+        :return: Decoded Addressing Information parameters.
+        """
+        can_ai_params = cls.decode_can_id_ai_params(can_id)
+        data_ai_params = cls.decode_data_bytes_ai_params(ai_data_bytes)
+        return cls.DecodedAIParamsAlias(
+            addressing_type=can_ai_params["addressing_type"],
+            target_address=data_ai_params.get("target_address", can_ai_params["target_address"]),
+            source_address=can_ai_params["source_address"],
+            address_extension=data_ai_params.get("address_extension", None)
+        )
+
+    @classmethod
+    @abstractmethod
+    def encode_ai_data_bytes(cls,
+                             target_address: Optional[int] = None,
+                             address_extension: Optional[int] = None) -> bytearray:
+        """
+        Generate data bytes that carry Addressing Information.
+
+        :param target_address: Target Address value used.
+        :param address_extension: Source Address value used.
+
+        :return: Data bytes that carry Addressing Information in a CAN frame Data field.
+        """
+
+    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias, **_) -> Optional[AddressingType]:
+        """
+        Check if a frame with provided attributes is an input packet for this UDS Entity.
+
+        :param raw_frame_data: Raw data bytes carried by a CAN frame to check.
+        :param can_id: CAN Identifier of a CAN frame to check.
+
+        :return: Addressing Type used for transmission of this packet, None otherwise.
+        """
+        ai_data_bytes = raw_frame_data[:self.AI_DATA_BYTES_NUMBER]
+        decoded_frame_ai_params = self.decode_frame_ai_params(can_id=can_id, ai_data_bytes=ai_data_bytes)
+        if (decoded_frame_ai_params["addressing_type"] in {None, AddressingType.PHYSICAL}
+                and can_id == self.rx_physical_params["can_id"]
+                and decoded_frame_ai_params["target_address"] == self.rx_physical_params["target_address"]
+                and decoded_frame_ai_params["source_address"] == self.rx_physical_params["source_address"]
+                and decoded_frame_ai_params["address_extension"] == self.rx_physical_params["address_extension"]):
+            return AddressingType.PHYSICAL
+        if (decoded_frame_ai_params["addressing_type"] in {None, AddressingType.FUNCTIONAL}
+                and can_id == self.rx_functional_params["can_id"]
+                and decoded_frame_ai_params["target_address"] == self.rx_functional_params["target_address"]
+                and decoded_frame_ai_params["source_address"] == self.rx_functional_params["source_address"]
+                and decoded_frame_ai_params["address_extension"] == self.rx_functional_params["address_extension"]):
+            return AddressingType.FUNCTIONAL
+        return None

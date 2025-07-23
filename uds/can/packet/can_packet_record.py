@@ -9,10 +9,10 @@ from can import Message as PythonCanMessage
 from uds.addressing import AddressingType
 from uds.packet import AbstractPacketRecord
 from uds.utilities import ReassignmentError, TransmissionDirection
-from .can_packet_type import CanPacketType
 
 from ..addressing import CanAddressingFormat, CanAddressingInformation
 from .abstract_container import AbstractCanPacketContainer
+from .can_packet_type import CanPacketType
 
 CanFrameAlias = Union[PythonCanMessage]
 """Alias of supported CAN frames objects."""

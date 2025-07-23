@@ -8,7 +8,13 @@ from uds.addressing import AddressingType
 from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 from uds.can.addressing.addressing_format import CanAddressingFormat
 from uds.can.frame import CanIdHandler
-from uds.utilities import InconsistentArgumentsError, UnusedArgumentError, validate_raw_byte
+from uds.utilities import (
+    InconsistentArgumentsError,
+    RawBytesAlias,
+    UnusedArgumentError,
+    validate_raw_byte,
+    validate_raw_bytes,
+)
 
 
 class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
@@ -20,27 +26,19 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
     AI_DATA_BYTES_NUMBER = 1
     """Number of CAN frame data bytes that are used to carry Addressing Information."""
 
-    @staticmethod
-    def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType]=None) -> bool:
+    def _validate_addressing_information(self) -> None:
         """
-        Check whether provided CAN ID is consistent with Extended Addressing format.
+        Validate Addressing Information parameters.
 
-        :param can_id: Value of CAN ID to check.
-        :param addressing_type: Addressing type for which consistency to be performed.
-            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
-
-        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
+        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
         """
-        return CanIdHandler.is_can_id(can_id)
-
-    @staticmethod
-    def decode_can_id(can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
-        """Decode Addressing Information parameters from CAN Identifier."""
-        return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=None,
-                                                              target_address=None,
-                                                              source_address=None,
-                                                              priority=None)
+        rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
+        tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
+        if (self.rx_physical_params["can_id"] in tx_can_ids
+                or self.tx_physical_params["can_id"] in rx_can_ids
+                or self.rx_functional_params["can_id"] in tx_can_ids
+                or self.tx_functional_params["can_id"] in rx_can_ids):
+            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
     def validate_addressing_params(cls,
@@ -83,16 +81,52 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
                                    source_address=source_address,
                                    address_extension=address_extension)
 
-    def _validate_addressing_information(self) -> None:
+    @staticmethod
+    def is_compatible_can_id(can_id: int,
+                             addressing_type: Optional[AddressingType]=None) -> bool:
         """
-        Validate Addressing Information parameters.
+        Check whether provided CAN ID is consistent with Extended Addressing format.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        :param can_id: Value of CAN ID to check.
+        :param addressing_type: Addressing type for which consistency to be performed.
+            Leave None to skip crosscheck between CAN Identifier and Addressing Type.
+
+        :return: True if CAN ID value is compatible with this CAN Addressing Format, False otherwise.
         """
-        rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
-        tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
-        if (self.rx_physical_params["can_id"] in tx_can_ids
-                or self.tx_physical_params["can_id"] in rx_can_ids
-                or self.rx_functional_params["can_id"] in tx_can_ids
-                or self.tx_functional_params["can_id"] in rx_can_ids):
-            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
+        return CanIdHandler.is_can_id(can_id)
+
+    @staticmethod
+    def decode_can_id_ai_params(can_id: int) -> AbstractCanAddressingInformation.CanIdAIParams:
+        """Decode Addressing Information parameters from CAN Identifier."""
+        return AbstractCanAddressingInformation.CanIdAIParams(addressing_type=None,
+                                                              target_address=None,
+                                                              source_address=None,
+                                                              priority=None)
+
+    @staticmethod
+    def decode_data_bytes_ai_params(
+            ai_data_bytes: RawBytesAlias) -> AbstractCanAddressingInformation.DataBytesAIParamsAlias:
+        """
+        Decode Addressing Information parameters from CAN data bytes.
+
+        :param ai_data_bytes: Data bytes containing Addressing Information.
+
+        :return: Decoded Addressing Information parameters.
+        """
+        validate_raw_bytes(ai_data_bytes, allow_empty=False)
+        return AbstractCanAddressingInformation.DataBytesAIParamsAlias(target_address=ai_data_bytes[0])
+
+    @classmethod
+    def encode_ai_data_bytes(cls,
+                             target_address: Optional[int] = None,
+                             address_extension: Optional[int] = None) -> bytearray:
+        """
+        Generate data bytes that carry Addressing Information.
+
+        :param target_address: Target Address value used.
+        :param address_extension: Source Address value used.
+
+        :return: Data bytes that carry Addressing Information in a CAN frame Data field.
+        """
+        validate_raw_byte(target_address)
+        return bytearray([target_address])

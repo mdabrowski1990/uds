@@ -92,18 +92,48 @@ class TestCanAddressingInformation:
         mock_ai_mapping.__getitem__.return_value.is_compatible_can_id.assert_called_once_with(
             can_id=can_id, addressing_type=None)
 
-    # decode_can_id
+    # decode_can_id_ai_params
 
     @pytest.mark.parametrize("addressing_format, can_id", [
         (Mock(), Mock()),
         (AddressingType.PHYSICAL, 0x85431),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.ADDRESSING_INFORMATION_MAPPING")
-    def test_decode_can_id(self, mock_ai_mapping, addressing_format, can_id):
-        assert CanAddressingInformation.decode_can_id(addressing_format=addressing_format, can_id=can_id) \
-               == mock_ai_mapping.__getitem__.return_value.decode_can_id.return_value
+    def test_decode_can_id_ai_params(self, mock_ai_mapping, addressing_format, can_id):
+        assert (CanAddressingInformation.decode_can_id_ai_params(addressing_format=addressing_format, can_id=can_id)
+                == mock_ai_mapping.__getitem__.return_value.decode_can_id_ai_params.return_value)
         mock_ai_mapping.__getitem__.assert_called_once_with(addressing_format)
-        mock_ai_mapping.__getitem__.return_value.decode_can_id.assert_called_once_with(can_id=can_id)
+        mock_ai_mapping.__getitem__.return_value.decode_can_id_ai_params.assert_called_once_with(can_id)
+
+    # decode_data_bytes_ai_params
+
+    @pytest.mark.parametrize("addressing_format, ai_data_bytes", [
+        (Mock(), Mock()),
+        (AddressingType.PHYSICAL, [0xB9]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.ADDRESSING_INFORMATION_MAPPING")
+    def test_decode_data_bytes_ai_params(self, mock_ai_mapping, addressing_format, ai_data_bytes):
+        assert (CanAddressingInformation.decode_data_bytes_ai_params(addressing_format=addressing_format,
+                                                                     ai_data_bytes=ai_data_bytes)
+                == mock_ai_mapping.__getitem__.return_value.decode_data_bytes_ai_params.return_value)
+        mock_ai_mapping.__getitem__.assert_called_once_with(addressing_format)
+        mock_ai_mapping.__getitem__.return_value.decode_data_bytes_ai_params.assert_called_once_with(ai_data_bytes)
+
+    # decode_frame_ai_params
+
+    @pytest.mark.parametrize("addressing_format, can_id, ai_data_bytes", [
+        (Mock(), Mock(), Mock()),
+        (AddressingType.PHYSICAL, 0x123, [0xB9]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.ADDRESSING_INFORMATION_MAPPING")
+    def test_decode_frame_ai_params(self, mock_ai_mapping, addressing_format, can_id, ai_data_bytes):
+        assert (CanAddressingInformation.decode_frame_ai_params(addressing_format=addressing_format,
+                                                                can_id=can_id,
+                                                                ai_data_bytes=ai_data_bytes)
+                == mock_ai_mapping.__getitem__.return_value.decode_frame_ai_params.return_value)
+        mock_ai_mapping.__getitem__.assert_called_once_with(addressing_format)
+        mock_ai_mapping.__getitem__.return_value.decode_frame_ai_params.assert_called_once_with(
+            can_id=can_id, ai_data_bytes=ai_data_bytes)
 
     # encode_can_id
 
@@ -235,11 +265,11 @@ class TestCanAddressingInformation:
         (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, 0xED8523, [], {"target_address": 0x54}, {"source_address": 0xA1}),
     ])
     @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.decode_ai_data_bytes")
-    @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.decode_can_id")
-    def test_decode_ai(self, mock_decode_can_id, mock_decode_ai_data_bytes,
+    @patch(f"{SCRIPT_LOCATION}.CanAddressingInformation.decode_can_id_ai_params")
+    def test_decode_ai(self, mock_decode_can_id_ai_params, mock_decode_ai_data_bytes,
                        addressing_format, can_id, ai_data_bytes, from_data_bytes, from_can_id):
         mock_decode_ai_data_bytes.return_value = from_data_bytes
-        mock_decode_can_id.return_value = from_can_id
+        mock_decode_can_id_ai_params.return_value = from_can_id
         assert (CanAddressingInformation.decode_packet_ai(addressing_format=addressing_format,
                                                           can_id=can_id,
                                                           ai_data_bytes=ai_data_bytes)
@@ -250,7 +280,7 @@ class TestCanAddressingInformation:
                     address_extension=from_data_bytes.get("address_extension")))
         mock_decode_ai_data_bytes.assert_called_once_with(addressing_format=addressing_format,
                                                           ai_data_bytes=ai_data_bytes)
-        mock_decode_can_id.assert_called_once_with(addressing_format=addressing_format,
+        mock_decode_can_id_ai_params.assert_called_once_with(addressing_format=addressing_format,
                                                    can_id=can_id)
 
     # decode_ai_data_bytes

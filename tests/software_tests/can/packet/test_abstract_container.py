@@ -310,10 +310,10 @@ class TestAbstractCanPacketContainer:
         self.mock_can_packet_container.raw_frame_data = raw_frame_data
         self.mock_can_ai_class.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         assert (AbstractCanPacketContainer.get_addressing_information(self=self.mock_can_packet_container)
-                == self.mock_can_ai_class.decode_packet_ai.return_value)
+                == self.mock_can_ai_class.decode_frame_ai_params.return_value)
         self.mock_can_ai_class.get_ai_data_bytes_number.assert_called_once_with(
             self.mock_can_packet_container.addressing_format)
-        self.mock_can_ai_class.decode_packet_ai.assert_called_once_with(
+        self.mock_can_ai_class.decode_frame_ai_params.assert_called_once_with(
             addressing_format=self.mock_can_packet_container.addressing_format,
             can_id=self.mock_can_packet_container.can_id,
             ai_data_bytes=self.mock_can_packet_container.raw_frame_data[:ai_data_bytes_number])

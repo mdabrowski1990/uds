@@ -1,28 +1,34 @@
 from pytest import fixture
 
 from can import Message
-from uds.addressing import (  # CanAddressingFormat,; ExtendedCanAddressingInformation,; Mixed11BitCanAddressingInformation,; Mixed29BitCanAddressingInformation,; NormalCanAddressingInformation,; NormalFixedCanAddressingInformation,
-    AddressingType,
+from uds.addressing import AddressingType
+from uds.can import DEFAULT_FILLER_BYTE, CanAddressingFormat, CanDlcHandler, CanSegmenter
+from uds.can.addressing import (
+    AbstractCanAddressingInformation,
+    ExtendedCanAddressingInformation,
+    Mixed11BitCanAddressingInformation,
+    Mixed29BitCanAddressingInformation,
+    NormalCanAddressingInformation,
+    NormalFixedCanAddressingInformation,
 )
-# from uds.segmentation import CanSegmenter
-from uds.utilities import TransmissionDirection
+from uds.utilities import RawBytesAlias, TransmissionDirection
 
 # Common
 
 
 @fixture(params=[(0x00, 0xFF, 0xAA, 0x55), [0x00], (0xFF, ), [0x12, 0xFF, 0xE0, 0x1D, 0xC2, 0x3B, 0x00, 0xFF],
                  bytearray([0x54]), bytearray([0xFF, 0x00, 0xA4]), bytes([0x12, 0x34])])
-def example_raw_bytes(request):
+def example_raw_bytes(request) -> RawBytesAlias:
     return request.param
 
 
 @fixture(params=list(AddressingType))
-def example_addressing_type(request):
+def example_addressing_type(request) -> AddressingType:
     return request.param
 
 
 @fixture(params=list(TransmissionDirection))
-def example_transmission_direction(request):
+def example_transmission_direction(request) -> TransmissionDirection:
     return request.param
 
 
@@ -43,75 +49,64 @@ def example_transmission_direction(request):
             is_fd=True,
             bitrate_switch=True),
 ])
-def example_python_can_message(request):
+def example_python_can_message(request) -> Message:
     return request.param
 
 
-# @fixture(params=list(CanAddressingFormat))
-# def example_can_addressing_format(request):
-#     return request.param
-#
-#
-# @fixture(params=[
-#     NormalCanAddressingInformation(rx_physical={"can_id": 0x643},
-#                                    tx_physical={"can_id": 0x644},
-#                                    rx_functional={"can_id": 0x643},
-#                                    tx_functional={"can_id": 0x7DF}),
-#     NormalFixedCanAddressingInformation(
-#         rx_physical={"target_address": 0x12, "source_address": 0xF8},
-#         tx_physical={"can_id": 0x18DAF812, "target_address": 0xF8, "source_address": 0x12},
-#         rx_functional={"can_id": 0x18DB0BFF, "target_address": 0x0B, "source_address": 0xFF},
-#         tx_functional={"target_address": 0xFF, "source_address": 0x0B}),
-#     ExtendedCanAddressingInformation(rx_physical={"can_id": 0x752, "target_address": 0x9C},
-#                                      tx_physical={"can_id": 0x752, "target_address": 0xF0},
-#                                      rx_functional={"can_id": 0x12CDEF59,
-#                                                     "target_address": 0x9A},
-#                                      tx_functional={"can_id": 0x9876543,
-#                                                     "target_address": 0x0E}),
-#     Mixed11BitCanAddressingInformation(rx_physical={"can_id": 0x6FE, "address_extension": 0x6B},
-#                                        tx_physical={"can_id": 0x720, "address_extension": 0x6B},
-#                                        rx_functional={"can_id": 0x7BC, "address_extension": 0x9C},
-#                                        tx_functional={"can_id": 0x7BD, "address_extension": 0x9C}),
-#     Mixed29BitCanAddressingInformation(rx_physical={"can_id": 0x18CEF1E2, "address_extension": 0x6B},
-#                                        tx_physical={"can_id": 0x18CEE2F1, "target_address": 0xE2,
-#                                                     "source_address": 0xF1, "address_extension": 0x6B},
-#                                        rx_functional={"target_address": 0xFF, "source_address": 0xFF,
-#                                                       "address_extension": 0x55},
-#                                        tx_functional={"can_id": 0x18CDFFFF, "address_extension": 0x55})
-# ])
-# def example_can_addressing_information(request):
-#     return request.param
-#
-#
-# @fixture(params=[
-#     CanSegmenter(addressing_information=NormalCanAddressingInformation(rx_physical={"can_id": 0x643},
-#                                                                        tx_physical={"can_id": 0x644},
-#                                                                        rx_functional={"can_id": 0x7DE},
-#                                                                        tx_functional={"can_id": 0x7DF})),
-#     CanSegmenter(addressing_information=NormalFixedCanAddressingInformation(rx_physical={"target_address": 0x12, "source_address": 0xF8},
-#                                                                             tx_physical={"can_id": 0x18DAF812, "target_address": 0xF8, "source_address": 0x12},
-#                                                                             rx_functional={"can_id": 0x18DB0BFF, "target_address": 0x0B, "source_address": 0xFF},
-#                                                                             tx_functional={"target_address": 0xFF, "source_address": 0x0B}),
-#                  dlc=0xF,
-#                  use_data_optimization=True,
-#                  filler_byte=0xE9),
-#     CanSegmenter(addressing_information=ExtendedCanAddressingInformation(rx_physical={"can_id": 0x752, "target_address": 0x9C},
-#                                                                          tx_physical={"can_id": 0x752, "target_address": 0xF0},
-#                                                                          rx_functional={"can_id": 0x12CDEF59, "target_address": 0x9A},
-#                                                                          tx_functional={"can_id": 0x9876543, "target_address": 0x0E}),
-#                  dlc=0xA,
-#                  filler_byte=0x55),
-#     CanSegmenter(addressing_information=Mixed11BitCanAddressingInformation(rx_physical={"can_id": 0x6FE, "address_extension": 0x6B},
-#                                                                            tx_physical={"can_id": 0x720, "address_extension": 0x6B},
-#                                                                            rx_functional={"can_id": 0x7BC, "address_extension": 0x9C},
-#                                                                            tx_functional={"can_id": 0x7BD, "address_extension": 0x9C}),
-#                  use_data_optimization=True),
-#     CanSegmenter(addressing_information=Mixed29BitCanAddressingInformation(rx_physical={"can_id": 0x18CEF1E2, "address_extension": 0x6B},
-#                                                                            tx_physical={"can_id": 0x18CEE2F1, "target_address": 0xE2, "source_address": 0xF1, "address_extension": 0x6B},
-#                                                                            rx_functional={"target_address": 0xFF, "source_address": 0xFF, "address_extension": 0x55},
-#                                                                            tx_functional={"can_id": 0x18CDFFFF, "address_extension": 0x55}),
-#                  dlc=0xF,
-#                  filler_byte=0xAA),
-# ])
-# def example_can_segmenter(request):
-#     return request.param
+@fixture(params=list(CanAddressingFormat))
+def example_can_addressing_format(request) -> CanAddressingFormat:
+    return request.param
+
+
+@fixture
+def example_can_addressing_information(example_can_addressing_format) -> AbstractCanAddressingInformation:
+    if example_can_addressing_format == CanAddressingFormat.NORMAL_ADDRESSING:
+        return NormalCanAddressingInformation(rx_physical_params={"can_id": 0x720},
+                                              tx_physical_params={"can_id": 0x748},
+                                              rx_functional_params={"can_id": 0x7DF},
+                                              tx_functional_params={"can_id": 0x748})
+    if example_can_addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+        return NormalFixedCanAddressingInformation(
+            rx_physical_params={"source_address": 0x04, "target_address": 0xF0, "can_id": 0xDAF004},
+            tx_physical_params={"source_address": 0xF0, "target_address": 0x04, "can_id": 0xDA04F0},
+            rx_functional_params={"source_address": 0xF0, "target_address": 0x9F},
+            tx_functional_params={"source_address": 0x9F, "target_address": 0xF0})
+    if example_can_addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
+        return ExtendedCanAddressingInformation(rx_physical_params={"can_id": 0x741, "target_address": 0x76},
+                                                tx_physical_params={"can_id": 0x742, "target_address": 0xFF},
+                                                rx_functional_params={"can_id": 0x7DE, "target_address": 0xFF},
+                                                tx_functional_params={"can_id": 0x7DF, "target_address": 0xFF})
+    if example_can_addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+        return Mixed11BitCanAddressingInformation(rx_physical_params={"can_id": 0x741, "address_extension": 0x76},
+                                                  tx_physical_params={"can_id": 0x742, "address_extension": 0x76},
+                                                  rx_functional_params={"can_id": 0x741, "address_extension": 0xFF},
+                                                  tx_functional_params={"can_id": 0x742, "address_extension": 0xFF})
+    if example_can_addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+        return Mixed29BitCanAddressingInformation(
+            rx_physical_params={"can_id": 0xCEF032, "address_extension": 0x76},
+            tx_physical_params={"can_id": 0xCE32F0, "address_extension": 0x76},
+            rx_functional_params={"can_id": 0x1CCD00FF, "address_extension": 0xFF},
+            tx_functional_params={"can_id": 0x1CCDFF00, "address_extension": 0xFF})
+    raise NotImplementedError
+
+@fixture(params=[True, False])
+def example_use_data_optimization(request) -> bool:
+    return request.param
+
+@fixture(params=[CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MAX_DLC_VALUE, CanDlcHandler.MIN_BASE_UDS_DLC+1])
+def example_base_can_dlc(request) -> bool:
+    return request.param
+
+@fixture(params=[DEFAULT_FILLER_BYTE, 0x5A, 0x00])
+def example_filler_byte(request) -> bool:
+    return request.param
+
+@fixture()
+def example_can_segmenter(example_can_addressing_information,
+                          example_use_data_optimization,
+                          example_base_can_dlc,
+                          example_filler_byte) -> CanSegmenter:
+    return CanSegmenter(addressing_information=example_can_addressing_information,
+                        use_data_optimization=example_use_data_optimization,
+                        dlc=example_base_can_dlc,
+                        filler_byte=example_filler_byte)

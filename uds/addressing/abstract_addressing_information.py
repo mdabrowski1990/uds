@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from types import MappingProxyType
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, Optional
 
 from uds.utilities import ReassignmentError
 
@@ -138,6 +138,16 @@ class AbstractAddressingInformation(ABC):
         else:
             raise ReassignmentError("You cannot change value of 'tx_functional_params' attribute once it is assigned. "
                                     "Create a new object instead.")
+
+    @abstractmethod
+    def is_input_packet(self, **frame_attributes: Any) -> Optional[AddressingType]:
+        """
+        Check if a frame with provided attributes is an input packet for this UDS Entity.
+
+        :param frame_attributes: Attributes of a frame to be checked.
+
+        :return: Addressing Type used for transmission of this packet, None otherwise.
+        """
 
     def get_other_end(self) -> "AbstractAddressingInformation":
         """
