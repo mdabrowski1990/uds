@@ -6,13 +6,12 @@ from abc import abstractmethod
 from typing import Any, Optional, Tuple
 from warnings import warn
 
-from uds.addressing import AbstractCanAddressingInformation
-from uds.can import AbstractFlowControlParametersGenerator, DefaultFlowControlParametersGenerator
 from uds.message import UdsMessageRecord
-from uds.packet import CanPacketType
-from uds.segmentation import CanSegmenter
-from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface
+from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import TimeMillisecondsAlias, ValueWarning
+from ..packet import DefaultFlowControlParametersGenerator, CanPacketType, AbstractFlowControlParametersGenerator
+from ..addressing import AbstractCanAddressingInformation
+from ..segmenter import CanSegmenter
 
 
 class AbstractCanTransportInterface(AbstractTransportInterface):
@@ -42,15 +41,15 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     :ref:`Separation Time minimum <knowledge-base-can-st-min>`)."""
 
     def __init__(self,
-                 can_bus_manager: Any,
+                 network_manager: Any,
                  addressing_information: AbstractCanAddressingInformation,
-                 **kwargs: Any) -> None:
+                 **configuration_params: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param can_bus_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
         :param addressing_information: Addressing Information of CAN Transport Interface.
-        :param kwargs: Optional arguments that are specific for CAN bus.
+        :param configuration_params: Optional arguments that are specific for CAN bus.
 
             - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
             - :parameter n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
@@ -67,21 +66,18 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
 
         :raise TypeError: Provided Addressing Information value has unexpected type.
         """
-        if not isinstance(addressing_information, AbstractCanAddressingInformation):
-            raise TypeError("Unsupported type of Addressing Information was provided.")
-        self.__addressing_information: AbstractCanAddressingInformation = addressing_information
-        super().__init__(bus_manager=can_bus_manager)
+        super().__init__(network_manager=network_manager)
         self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
-        self.n_as_timeout = kwargs.pop("n_as_timeout", self.N_AS_TIMEOUT)
-        self.n_ar_timeout = kwargs.pop("n_ar_timeout", self.N_AR_TIMEOUT)
-        self.n_bs_timeout = kwargs.pop("n_bs_timeout", self.N_BS_TIMEOUT)
-        self.n_cr_timeout = kwargs.pop("n_cr_timeout", self.N_CR_TIMEOUT)
-        self.n_br = kwargs.pop("n_br", self.DEFAULT_N_BR)
-        self.n_cs = kwargs.pop("n_cs", self.DEFAULT_N_CS)
-        self.flow_control_parameters_generator = kwargs.pop("flow_control_parameters_generator",
+        self.n_as_timeout = configuration_params.pop("n_as_timeout", self.N_AS_TIMEOUT)
+        self.n_ar_timeout = configuration_params.pop("n_ar_timeout", self.N_AR_TIMEOUT)
+        self.n_bs_timeout = configuration_params.pop("n_bs_timeout", self.N_BS_TIMEOUT)
+        self.n_cr_timeout = configuration_params.pop("n_cr_timeout", self.N_CR_TIMEOUT)
+        self.n_br = configuration_params.pop("n_br", self.DEFAULT_N_BR)
+        self.n_cs = configuration_params.pop("n_cs", self.DEFAULT_N_CS)
+        self.flow_control_parameters_generator = configuration_params.pop("flow_control_parameters_generator",
                                                             self.DEFAULT_FLOW_CONTROL_PARAMETERS)
-        self.__segmenter = CanSegmenter(addressing_information=addressing_information, **kwargs)
+        self.segmenter = CanSegmenter(addressing_information=addressing_information, **configuration_params)
 
     # Common
 
@@ -356,15 +352,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         return self.__n_cr_measured
 
     # Communication parameters
-
-    @property
-    def addressing_information(self) -> AbstractCanAddressingInformation:
-        """
-        Addressing Information of Transport Interface.
-
-        .. warning:: Once the value is set, it must not be changed as it might cause communication problems.
-        """
-        return self.__addressing_information
 
     @property
     def dlc(self) -> int:

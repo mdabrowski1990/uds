@@ -15,7 +15,7 @@ from uds.can.transport_interface.python_can import (
     TransmissionDirection,
     UdsMessage,
 )
-from uds.transmission_attributes import AddressingType
+from uds.addressing import AddressingType
 
 SCRIPT_LOCATION = "uds.transport_interface.addressing.python_can"
 
@@ -846,7 +846,7 @@ class TestPyCanTransportInterface:
     @pytest.mark.parametrize("value", ["something", Mock()])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_is_supported_bus_manager(self, mock_isinstance, value):
-        assert PyCanTransportInterface.is_supported_bus_manager(value) == mock_isinstance.return_value
+        assert PyCanTransportInterface.is_supported_network_manager(value) == mock_isinstance.return_value
         mock_isinstance.assert_called_once_with(value, BusABC)
 
     # send_packet
@@ -1692,21 +1692,9 @@ class TestPyCanTransportInterfaceIntegration:
     @pytest.mark.parametrize("init_kwargs", [
         {
             "can_bus_manager": Mock(spec=BusABC),
-            "addressing_information": CanAddressingInformation(
-                addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
-                rx_physical={"can_id": 0x641},
-                tx_physical={"can_id": 0x642},
-                rx_functional={"can_id": 0x6FE},
-                tx_functional={"can_id": 0x6FF}),
         },
         {
             "can_bus_manager": Mock(spec=BusABC),
-            "addressing_information": CanAddressingInformation(
-                addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                tx_physical={"target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
-                rx_physical={"target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
-                tx_functional={"target_address": 0xAC, "source_address": 0xFE, "address_extension": 0xFF},
-                rx_functional={"target_address": 0xFE, "source_address": 0xAC, "address_extension": 0xFF}),
             "n_as_timeout": 0.1,
             "n_ar_timeout": 987,
             "n_bs_timeout": 43,
@@ -1715,10 +1703,10 @@ class TestPyCanTransportInterfaceIntegration:
             "n_cr_timeout": 98.32,
         },
     ])
-    def test_init(self, init_kwargs):
-        py_can_ti = PyCanTransportInterface(**init_kwargs)
-        assert py_can_ti.bus_manager == init_kwargs["can_bus_manager"]
-        assert py_can_ti.addressing_information == init_kwargs["addressing_information"]
+    def test_init(self, init_kwargs, example_can_addressing_information):
+        py_can_ti = PyCanTransportInterface(**init_kwargs, addressing_information=example_can_addressing_information)
+        assert py_can_ti.network_manager == init_kwargs["can_bus_manager"]
+        assert py_can_ti.addressing_information == example_can_addressing_information
         assert py_can_ti.n_as_measured is None
         assert py_can_ti.n_ar_measured is None
         assert py_can_ti.n_bs_measured is None

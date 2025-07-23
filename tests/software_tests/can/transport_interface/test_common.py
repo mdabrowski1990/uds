@@ -11,7 +11,7 @@ from uds.can.transport_interface.common import (
     DefaultFlowControlParametersGenerator,
     UdsMessageRecord,
 )
-from uds.packet import CanPacketRecord
+from uds.can import CanPacketRecord
 
 SCRIPT_LOCATION = "uds.transport_interface.addressing.common"
 

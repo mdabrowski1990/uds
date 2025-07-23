@@ -9,16 +9,16 @@ from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
 from can import AsyncBufferedReader, BufferedReader, BusABC, Message, Notifier
-from uds.addressing import AbstractCanAddressingInformation
-from uds.can import CanDlcHandler, CanFlowStatus, CanIdHandler, CanSTminTranslator
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import CanPacket, CanPacketRecord, CanPacketType
 from uds.utilities import (
     NewMessageReceptionWarning,
     TimeMillisecondsAlias,
     TransmissionDirection,
     UnexpectedPacketReceptionWarning,
 )
+from ..addressing import AbstractCanAddressingInformation
+from ..packet import CanPacket, CanPacketRecord, CanPacketType, CanFlowStatus
+from ..frame import CanIdHandler, CanDlcHandler
 
 from .common import AbstractCanTransportInterface
 
@@ -146,7 +146,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """Configure CAN frame notifier for synchronous communication."""
         self.__teardown_async_notifier()
         if self.__notifier is None:
-            self.__notifier = Notifier(bus=self.bus_manager,
+            self.__notifier = Notifier(bus=self.network_manager,
                                        listeners=[self.__frames_buffer],
                                        timeout=self._MIN_NOTIFIER_TIMEOUT)
 
@@ -158,7 +158,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         self.__teardown_notifier()
         if self.__async_notifier is None:
-            self.__async_notifier = Notifier(bus=self.bus_manager,
+            self.__async_notifier = Notifier(bus=self.network_manager,
                                              listeners=[self.__async_frames_buffer],
                                              timeout=self._MIN_NOTIFIER_TIMEOUT,
                                              loop=loop)
@@ -460,7 +460,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             self.__async_frames_buffer.buffer.get_nowait()
 
     @staticmethod
-    def is_supported_bus_manager(bus_manager: Any) -> bool:
+    def is_supported_network_manager(bus_manager: Any) -> bool:
         """
         Check whether provided value is a bus manager that is supported by this Transport Interface.
 
@@ -494,7 +494,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                             is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         timeout_s = (self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout) / 1000.
         time_start_s = time()
-        self.bus_manager.send(can_frame)
+        self.network_manager.send(can_frame)
         observed_frame = None
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
@@ -545,7 +545,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                             is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         timeout_s = (self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout) / 1000.
         time_start_s = time()
-        self.bus_manager.send(can_frame)
+        self.network_manager.send(can_frame)
         observed_frame = None
         while observed_frame is None \
                 or observed_frame.arbitration_id != packet.can_id \
