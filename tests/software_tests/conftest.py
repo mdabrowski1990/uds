@@ -12,6 +12,7 @@ from uds.can.addressing import (
     NormalFixedCanAddressingInformation,
 )
 from uds.utilities import RawBytesAlias, TransmissionDirection
+from random import randint, choice
 
 # Common
 
@@ -81,7 +82,7 @@ def example_can_addressing_information(example_can_addressing_format) -> Abstrac
                                                   tx_physical_params={"can_id": 0x742, "address_extension": 0x76},
                                                   rx_functional_params={"can_id": 0x741, "address_extension": 0xFF},
                                                   tx_functional_params={"can_id": 0x742, "address_extension": 0xFF})
-    if example_can_addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+    if example_can_addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
         return Mixed29BitCanAddressingInformation(
             rx_physical_params={"can_id": 0xCEF032, "address_extension": 0x76},
             tx_physical_params={"can_id": 0xCE32F0, "address_extension": 0x76},
@@ -102,11 +103,8 @@ def example_filler_byte(request) -> bool:
     return request.param
 
 @fixture()
-def example_can_segmenter(example_can_addressing_information,
-                          example_use_data_optimization,
-                          example_base_can_dlc,
-                          example_filler_byte) -> CanSegmenter:
+def example_can_segmenter(example_can_addressing_information) -> CanSegmenter:
     return CanSegmenter(addressing_information=example_can_addressing_information,
-                        use_data_optimization=example_use_data_optimization,
-                        dlc=example_base_can_dlc,
-                        filler_byte=example_filler_byte)
+                        use_data_optimization=choice([True, False]),
+                        dlc=randint(CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MAX_DLC_VALUE),
+                        filler_byte=randint(0, 0xFF))

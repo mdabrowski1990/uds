@@ -140,7 +140,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
 
         :return: Data bytes that carry Addressing Information in a CAN frame Data field.
         """
-        validate_raw_byte(target_address)
+        validate_raw_byte(address_extension)
         return bytearray([address_extension])
 
 
@@ -339,5 +339,5 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
 
         :return: Data bytes that carry Addressing Information in a CAN frame Data field.
         """
-        validate_raw_byte(target_address)
+        validate_raw_byte(address_extension)
         return bytearray([address_extension])

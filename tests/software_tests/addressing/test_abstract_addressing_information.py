@@ -152,9 +152,9 @@ class TestAbstractAddressingInformation:
 class TestAbstractCanAddressingInformationIntegration:
     """Integration tests for AbstractCanAddressingInformation."""
 
-    def test_get_other_end(self, example_addressing_information):
-        other = example_addressing_information.get_other_end()
-        assert other.rx_packets_physical_ai == example_addressing_information.tx_packets_physical_ai
-        assert other.tx_packets_physical_ai == example_addressing_information.rx_packets_physical_ai
-        assert other.rx_packets_functional_ai == example_addressing_information.tx_packets_functional_ai
-        assert other.tx_packets_functional_ai == example_addressing_information.rx_packets_functional_ai
+    def test_get_other_end(self, example_can_addressing_information):
+        other = example_can_addressing_information.get_other_end()
+        assert other.rx_physical_params == example_can_addressing_information.tx_physical_params
+        assert other.tx_physical_params == example_can_addressing_information.rx_physical_params
+        assert other.rx_functional_params == example_can_addressing_information.tx_functional_params
+        assert other.tx_functional_params == example_can_addressing_information.rx_functional_params

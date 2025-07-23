@@ -51,7 +51,9 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()["source_address"]
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["source_address"]
 
     @property
     def target_address(self) -> Optional[int]:
@@ -65,7 +67,9 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()["target_address"]
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["target_address"]
 
     @property
     def address_extension(self) -> Optional[int]:
@@ -79,7 +83,9 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         None in other cases.
         """
-        return self.get_addressing_information()["address_extension"]
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["address_extension"]
 
     @property
     def packet_type(self) -> CanPacketType:
@@ -234,15 +240,3 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         if self.packet_type == CanPacketType.FLOW_CONTROL:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
-
-    def get_addressing_information(self) -> AbstractCanAddressingInformation.DecodedAIParamsAlias:
-        """
-        Get Addressing Information carried by this packet.
-
-        :return: Addressing Information decoded from CAN ID and CAN Frame data of this packet.
-        """
-        ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(self.addressing_format)
-        return CanAddressingInformation.decode_frame_ai_params(
-            addressing_format=self.addressing_format,
-            can_id=self.can_id,
-            ai_data_bytes=self.raw_frame_data[:ai_data_bytes_number])

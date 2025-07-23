@@ -208,6 +208,7 @@ class TestMixed11BitCanAddressingInformation:
     def test_encode_ai_data_bytes(self, target_address, address_extension):
         assert Mixed11BitCanAddressingInformation.encode_ai_data_bytes(
             target_address=target_address, address_extension=address_extension) == bytearray([address_extension])
+        self.mock_validate_raw_byte.assert_called_once_with(address_extension)
 
 
 class TestMixed29BitCanAddressingInformation:
@@ -592,3 +593,4 @@ class TestMixed29BitCanAddressingInformation:
     def test_encode_ai_data_bytes(self, target_address, address_extension):
         assert Mixed29BitCanAddressingInformation.encode_ai_data_bytes(
             target_address=target_address, address_extension=address_extension) == bytearray([address_extension])
+        self.mock_validate_raw_byte.assert_called_once_with(address_extension)

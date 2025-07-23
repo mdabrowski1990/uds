@@ -165,19 +165,19 @@ class CanAddressingInformation:
     def decode_frame_ai_params(cls,
                                addressing_format: CanAddressingFormat,
                                can_id: int,
-                               ai_data_bytes: RawBytesAlias) -> AbstractCanAddressingInformation.DecodedAIParamsAlias:
+                               raw_frame_data: RawBytesAlias) -> AbstractCanAddressingInformation.DecodedAIParamsAlias:
         """
         Decode Addressing Information parameters from a CAN Frame.
 
         :param addressing_format: Addressing format used.
-        :param can_id: Value of a CAN Identifier.
-        :param ai_data_bytes: Data bytes containing Addressing Information.
+        :param can_id: CAN Identifier value of a CAN frame.
+        :param raw_frame_data: Raw data bytes of a CAN frame
 
         :return: Decoded Addressing Information parameters.
         """
         CanAddressingFormat.validate_member(addressing_format)
         return cls.ADDRESSING_INFORMATION_MAPPING[addressing_format].decode_frame_ai_params(
-            can_id=can_id, ai_data_bytes=ai_data_bytes)
+            can_id=can_id, raw_frame_data=raw_frame_data)
 
     @classmethod
     def encode_can_id(cls,

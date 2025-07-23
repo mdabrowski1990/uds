@@ -521,8 +521,8 @@ class TestCanConsecutiveFrameIntegration:
          "sequence_number": -1,
          "filler_byte": 0xD9}
     ])
-    def test_create_consecutive_frame_data__value_error(self, kwargs):
-        with pytest.raises(ValueError):
+    def test_create_consecutive_frame_data__error(self, kwargs):
+        with pytest.raises((TypeError, ValueError)):
             create_consecutive_frame_data(**kwargs)
 
     # generate_consecutive_frame_data

@@ -193,6 +193,7 @@ class TestNormalCanAddressingInformation:
     def test_encode_ai_data_bytes(self, target_address, address_extension):
         assert NormalCanAddressingInformation.encode_ai_data_bytes(target_address=target_address,
                                                                    address_extension=address_extension) == bytearray()
+        self.mock_validate_raw_byte.assert_not_called()
 
 
 class TestNormalFixedCanAddressingInformation:
@@ -565,3 +566,4 @@ class TestNormalFixedCanAddressingInformation:
     def test_encode_ai_data_bytes(self, target_address, address_extension):
         assert NormalFixedCanAddressingInformation.encode_ai_data_bytes(
             target_address=target_address, address_extension=address_extension) == bytearray()
+        self.mock_validate_raw_byte.assert_not_called()

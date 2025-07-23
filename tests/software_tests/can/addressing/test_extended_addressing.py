@@ -199,3 +199,4 @@ class TestExtendedCanAddressingInformation:
     def test_encode_ai_data_bytes(self, target_address, address_extension):
         assert ExtendedCanAddressingInformation.encode_ai_data_bytes(
             target_address=target_address, address_extension=address_extension) == bytearray([target_address])
+        self.mock_validate_raw_byte.assert_called_once_with(target_address)

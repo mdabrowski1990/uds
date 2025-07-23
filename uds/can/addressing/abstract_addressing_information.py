@@ -142,17 +142,17 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         """
 
     @classmethod
-    def decode_frame_ai_params(cls, can_id: int, ai_data_bytes: RawBytesAlias) -> DecodedAIParamsAlias:
+    def decode_frame_ai_params(cls, can_id: int, raw_frame_data: RawBytesAlias) -> DecodedAIParamsAlias:
         """
         Decode Addressing Information parameters from a CAN Frame.
 
-        :param can_id: Value of a CAN Identifier.
-        :param ai_data_bytes: Data bytes containing Addressing Information.
+        :param can_id: CAN Identifier value of a CAN frame.
+        :param raw_frame_data: Raw data bytes of a CAN frame.
 
         :return: Decoded Addressing Information parameters.
         """
         can_ai_params = cls.decode_can_id_ai_params(can_id)
-        data_ai_params = cls.decode_data_bytes_ai_params(ai_data_bytes)
+        data_ai_params = cls.decode_data_bytes_ai_params(raw_frame_data[:cls.AI_DATA_BYTES_NUMBER])
         return cls.DecodedAIParamsAlias(
             addressing_type=can_ai_params["addressing_type"],
             target_address=data_ai_params.get("target_address", can_ai_params["target_address"]),
@@ -183,8 +183,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
 
         :return: Addressing Type used for transmission of this packet, None otherwise.
         """
-        ai_data_bytes = raw_frame_data[:self.AI_DATA_BYTES_NUMBER]
-        decoded_frame_ai_params = self.decode_frame_ai_params(can_id=can_id, ai_data_bytes=ai_data_bytes)
+        decoded_frame_ai_params = self.decode_frame_ai_params(can_id=can_id, raw_frame_data=raw_frame_data)
         if (decoded_frame_ai_params["addressing_type"] in {None, AddressingType.PHYSICAL}
                 and can_id == self.rx_physical_params["can_id"]
                 and decoded_frame_ai_params["target_address"] == self.rx_physical_params["target_address"]
