@@ -2,20 +2,20 @@
 
 __all__ = ["AbstractCanTransportInterface"]
 
-from abc import abstractmethod
+from abc import ABC
 from typing import Any, Optional, Tuple
 from warnings import warn
 
 from uds.message import UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, ValueWarning, TransmissionDirection
+from uds.utilities import TimeMillisecondsAlias, TransmissionDirection, ValueWarning
 
 from ..addressing import AbstractCanAddressingInformation
 from ..packet import AbstractFlowControlParametersGenerator, CanPacketType, DefaultFlowControlParametersGenerator
 from ..segmenter import CanSegmenter
 
 
-class AbstractCanTransportInterface(AbstractTransportInterface):
+class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     """
     Abstract definition of Transport Interface for managing Diagnostics on CAN.
 
@@ -46,9 +46,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
                  n_as_timeout: TimeMillisecondsAlias = N_AS_TIMEOUT,
                  n_ar_timeout: TimeMillisecondsAlias = N_AR_TIMEOUT,
                  n_bs_timeout: TimeMillisecondsAlias = N_BS_TIMEOUT,
+                 n_cr_timeout: TimeMillisecondsAlias = N_CR_TIMEOUT,
                  n_br: TimeMillisecondsAlias = DEFAULT_N_BR,
                  n_cs: Optional[TimeMillisecondsAlias] = DEFAULT_N_CS,
-                 n_cr_timeout: TimeMillisecondsAlias = N_CR_TIMEOUT,
                  flow_control_parameters_generator: AbstractFlowControlParametersGenerator
                  = DEFAULT_FLOW_CONTROL_PARAMETERS,
                  **segmenter_configuration: Any) -> None:
@@ -56,13 +56,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param network_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
-        :param addressing_information: Addressing Information of CAN Transport Interface.
+        :param addressing_information: Addressing Information of UDS entity simulated by this CAN Transport Interface.
         :param n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
         :param n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
         :param n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
+        :param n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
         :param n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
         :param n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
-        :param n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
         :param flow_control_parameters_generator: Generator with Flow Control parameters to use.
         :param segmenter_configuration: Configuration parameters for CAN Segmenter.
 
@@ -80,9 +80,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.n_as_timeout = n_as_timeout
         self.n_ar_timeout = n_ar_timeout
         self.n_bs_timeout = n_bs_timeout
+        self.n_cr_timeout = n_cr_timeout
         self.n_br = n_br
         self.n_cs = n_cs
-        self.n_cr_timeout = n_cr_timeout
         self.flow_control_parameters_generator = flow_control_parameters_generator
         self.segmenter = CanSegmenter(addressing_information=addressing_information, **segmenter_configuration)
 
@@ -215,17 +215,17 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.__n_as_timeout = value
 
     @property
-    @abstractmethod
     def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of Single Frame or First Fame CAN Packet using
-            either :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.send_packet`
-            or :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.async_send_packet` method.
+            either :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.send_packet`
+            or :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.async_send_packet` method.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
+        return self.__n_as_measured
 
     @property
     def n_ar_timeout(self) -> TimeMillisecondsAlias:
@@ -252,17 +252,17 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
         self.__n_ar_timeout = value
 
     @property
-    @abstractmethod
     def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
         """
         Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of Flow Control CAN Packet using either
-            :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.send_packet` or
-            :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.async_send_packet` method.
+            :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.receive_packet` or
+            :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.async_receive_packet` method.
 
         :return: Time in milliseconds or None if the value was never measured.
         """
+        return self.__n_ar_measured
 
     @property
     def n_bs_timeout(self) -> TimeMillisecondsAlias:

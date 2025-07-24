@@ -9,12 +9,19 @@ import pytest
 from tests.system_tests.transport_interface.can.common import AbstractCanTests
 
 from can import Bus, Message
-from uds.can import CanAddressingFormat, CanAddressingInformation, CanFlowStatus, DefaultFlowControlParametersGenerator
+from uds.addressing import AddressingType
+from uds.can import (
+    CanAddressingFormat,
+    CanAddressingInformation,
+    CanFlowStatus,
+    CanPacket,
+    CanPacketRecord,
+    CanPacketType,
+    DefaultFlowControlParametersGenerator,
+    PyCanTransportInterface,
+)
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import CanPacket, CanPacketRecord, CanPacketType
-from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.transport_interface import PyCanTransportInterface
-from uds.utilities import TimeMillisecondsAlias
+from uds.utilities import TimeMillisecondsAlias, TransmissionDirection
 
 
 class AbstractPythonCanTests(AbstractCanTests):
@@ -23,7 +30,7 @@ class AbstractPythonCanTests(AbstractCanTests):
 
     Requires hardware setup:
         - 2x CAN bus hardware interfaces that addressing be controlled using python-addressing package
-        - both CAN interfaces are connected (so they addressing communicate with other) - termination (resistor) is part of
+        - both CAN interfaces are connected (so they can communicate with other) - termination (resistor) is part of
             CAN cables connection
     """
 

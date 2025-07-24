@@ -26,3 +26,4 @@ from .packet import (
     DefaultFlowControlParametersGenerator,
 )
 from .segmenter import CanSegmenter
+from .transport_interface import PyCanTransportInterface

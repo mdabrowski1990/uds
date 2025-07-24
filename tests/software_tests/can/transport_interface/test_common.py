@@ -9,8 +9,8 @@ from uds.can.transport_interface.common import (
     AbstractCanTransportInterface,
     AbstractFlowControlParametersGenerator,
     CanPacketType,
+    TransmissionDirection,
     UdsMessageRecord,
-TransmissionDirection
 )
 
 SCRIPT_LOCATION = "uds.can.transport_interface.common"
@@ -384,6 +384,11 @@ class TestAbstractCanTransportInterface:
         self.mock_warn.assert_not_called()
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_timeout == mock_value
 
+    def test_n_as_measured__get(self):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured = Mock()
+        assert (AbstractCanTransportInterface.n_as_measured.fget(self.mock_can_transport_interface)
+                == self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured)
+
     # n_ar
 
     def test_n_ar_timeout__get(self):
@@ -434,6 +439,11 @@ class TestAbstractCanTransportInterface:
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_AR_TIMEOUT)
         self.mock_warn.assert_not_called()
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_timeout == mock_value
+
+    def test_n_ar_measured__get(self):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured = Mock()
+        assert (AbstractCanTransportInterface.n_ar_measured.fget(self.mock_can_transport_interface)
+                == self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured)
 
     # n_bs
 

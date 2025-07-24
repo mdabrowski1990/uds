@@ -1,44 +1,57 @@
 from pytest import fixture
 
-from uds.can import AbstractCanAddressingInformation, CanAddressingFormat, CanAddressingInformation
+from uds.addressing import AddressingType
+from uds.can import CanAddressingFormat, CanAddressingInformation
+from uds.can.addressing import (
+    AbstractCanAddressingInformation,
+    ExtendedCanAddressingInformation,
+    Mixed11BitCanAddressingInformation,
+    Mixed29BitCanAddressingInformation,
+    NormalCanAddressingInformation,
+    NormalFixedCanAddressingInformation,
+)
 from uds.message import UdsMessage
-from uds.transmission_attributes import AddressingType
 
 
-@fixture(params=[
-    CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
-                             tx_physical={"can_id": 0x611},
-                             rx_physical={"can_id": 0x612},
-                             tx_functional={"can_id": 0x6FF},
-                             rx_functional={"can_id": 0x6FE}),
-    CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                             tx_physical={"can_id": 0xDA1BFF, "target_address": 0x1B, "source_address": 0xFF},
-                             rx_physical={"can_id": 0xDAFF1B, "target_address": 0xFF, "source_address": 0x1B},
-                             tx_functional={"can_id": 0x1CDB00FE, "target_address": 0x00, "source_address": 0xFE},
-                             rx_functional={"can_id": 0x1CDBFE00, "target_address": 0xFE, "source_address": 0x00}),
-    CanAddressingInformation(addressing_format=CanAddressingFormat.EXTENDED_ADDRESSING,
-                             tx_physical={"can_id": 0x987, "target_address": 0x90},
-                             rx_physical={"can_id": 0x987, "target_address": 0xFE},
-                             tx_functional={"can_id": 0xDA1BFF, "target_address": 0xFF},
-                             rx_functional={"can_id": 0x1CCDFEAC, "target_address": 0xFF}),
-    CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-                             tx_physical={"can_id": 0x651, "address_extension": 0x87},
-                             rx_physical={"can_id": 0x652, "address_extension": 0x87},
-                             tx_functional={"can_id": 0x6FE, "address_extension": 0xA5},
-                             rx_functional={"can_id": 0x6FF, "address_extension": 0xA5}),
-    CanAddressingInformation(addressing_format=CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-                             tx_physical={"can_id": 0xCE1BFF, "target_address": 0x1B, "source_address": 0xFF, "address_extension": 0x87},
-                             rx_physical={"can_id": 0xCEFF1B, "target_address": 0xFF, "source_address": 0x1B, "address_extension": 0x87},
-                             tx_functional={"can_id": 0x1CCDACFE, "target_address": 0xAC, "source_address": 0xFE, "address_extension": 0x00},
-                             rx_functional={"can_id": 0x1CCDFEAC, "target_address": 0xFE, "source_address": 0xAC, "address_extension": 0x00}),
-])
-def example_addressing_information(request) -> AbstractCanAddressingInformation:
-    """Example Addressing Information of a CAN Node."""
+@fixture(params=list(CanAddressingFormat))
+def example_can_addressing_format(request) -> CanAddressingFormat:
     return request.param
 
 
 @fixture
-def example_addressing_information_2nd_node(example_addressing_information) -> AbstractCanAddressingInformation:
+def example_can_addressing_information(example_can_addressing_format) -> AbstractCanAddressingInformation:
+    if example_can_addressing_format == CanAddressingFormat.NORMAL_ADDRESSING:
+        return NormalCanAddressingInformation(rx_physical_params={"can_id": 0x720},
+                                              tx_physical_params={"can_id": 0x748},
+                                              rx_functional_params={"can_id": 0x7DF},
+                                              tx_functional_params={"can_id": 0x748})
+    if example_can_addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+        return NormalFixedCanAddressingInformation(
+            rx_physical_params={"source_address": 0x04, "target_address": 0xF0, "can_id": 0xDAF004},
+            tx_physical_params={"source_address": 0xF0, "target_address": 0x04, "can_id": 0xDA04F0},
+            rx_functional_params={"source_address": 0xF0, "target_address": 0x9F},
+            tx_functional_params={"source_address": 0x9F, "target_address": 0xF0})
+    if example_can_addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
+        return ExtendedCanAddressingInformation(rx_physical_params={"can_id": 0x741, "target_address": 0x76},
+                                                tx_physical_params={"can_id": 0x742, "target_address": 0xFF},
+                                                rx_functional_params={"can_id": 0x7DE, "target_address": 0xFF},
+                                                tx_functional_params={"can_id": 0x7DF, "target_address": 0xFF})
+    if example_can_addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+        return Mixed11BitCanAddressingInformation(rx_physical_params={"can_id": 0x741, "address_extension": 0x76},
+                                                  tx_physical_params={"can_id": 0x742, "address_extension": 0x76},
+                                                  rx_functional_params={"can_id": 0x741, "address_extension": 0xFF},
+                                                  tx_functional_params={"can_id": 0x742, "address_extension": 0xFF})
+    if example_can_addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+        return Mixed29BitCanAddressingInformation(
+            rx_physical_params={"can_id": 0xCEF032, "address_extension": 0x76},
+            tx_physical_params={"can_id": 0xCE32F0, "address_extension": 0x76},
+            rx_functional_params={"can_id": 0x1CCD00FF, "address_extension": 0xFF},
+            tx_functional_params={"can_id": 0x1CCDFF00, "address_extension": 0xFF})
+    raise NotImplementedError
+
+
+@fixture
+def example_can_addressing_information_2nd_node(example_addressing_information) -> AbstractCanAddressingInformation:
     """
     Example Addressing Information of a 2nd CAN Node.
 

@@ -8,7 +8,9 @@ from time import time
 from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
-from can import AsyncBufferedReader, BufferedReader, BusABC, Message, Notifier
+from can import AsyncBufferedReader, BufferedReader, BusABC
+from can import Message as PythonCanMessage
+from can import Notifier
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.utilities import (
     NewMessageReceptionWarning,
@@ -19,7 +21,7 @@ from uds.utilities import (
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanDlcHandler, CanIdHandler
-from ..packet import CanFlowStatus, CanPacket, CanPacketRecord, CanPacketType
+from ..packet import CanFlowStatus, CanPacket, CanPacketRecord, CanPacketType, CanSTminTranslator
 from .common import AbstractCanTransportInterface
 
 
@@ -36,18 +38,18 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     """Minimal timeout for notifiers that does not cause malfunctioning of listeners."""
 
     def __init__(self,
-                 can_bus_manager: BusABC,
+                 network_manager: BusABC,
                  addressing_information: AbstractCanAddressingInformation,
-                 **kwargs: Any) -> None:
+                 **configuration_params: Any) -> None:
         """
         Create python-addressing Transport Interface.
 
-        :param can_bus_manager: Python-addressing bus object for handling CAN.
+        :param network_manager: Python-can bus object for handling CAN network.
 
-            .. warning:: Bus must have capability of receiving transmitted frames (``receive_own_messages=True`` set).
+            .. warning:: Bus must have capability of observing transmitted frames.
 
-        :param addressing_information: Addressing Information of CAN Transport Interface.
-        :param kwargs: Optional arguments that are specific for CAN bus.
+        :param addressing_information: Addressing Information of UDS entity simulated by this CAN Transport Interface.
+        :param configuration_params: Additional configuration parameters.
 
             - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
             - :parameter n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
@@ -62,53 +64,18 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
         """
-        self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
-        self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
-        super().__init__(can_bus_manager=can_bus_manager,
+        super().__init__(network_manager=network_manager,
                          addressing_information=addressing_information,
-                         **kwargs)
+                         **configuration_params)
         self.__frames_buffer = BufferedReader()
-        self.__notifier: Optional[Notifier] = None
         self.__async_frames_buffer = AsyncBufferedReader()
+        self.__notifier: Optional[Notifier] = None
         self.__async_notifier: Optional[Notifier] = None
 
     def __del__(self) -> None:
-        """Safely close all threads open by this object."""
+        """Safely close all threads opened by this object."""
         self.__teardown_notifier(suppress_warning=True)
         self.__teardown_async_notifier(suppress_warning=True)
-
-    @property
-    def n_as_measured(self) -> Optional[TimeMillisecondsAlias]:
-        # pylint: disable=line-too-long
-        """
-        Get the last measured value of :ref:`N_As <knowledge-base-can-n-as>` time parameter.
-
-        .. note:: The last measurement comes from the last transmission of Single Frame or First Fame CAN Packet using
-            either
-            :meth:`~uds.transport_interface.addressing.python_can_transport_interface.PyCanTransportInterface.send_packet`
-            or
-            :meth:`~uds.transport_interface.addressing.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
-            method.
-
-        :return: Time in milliseconds or None if the value was never measured.
-        """
-        return self.__n_as_measured
-
-    @property
-    def n_ar_measured(self) -> Optional[TimeMillisecondsAlias]:
-        # pylint: disable=line-too-long
-        """
-        Get the last measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
-
-        .. note:: The last measurement comes from the last transmission of Flow Control CAN Packet using either
-            :meth:`~uds.transport_interface.addressing.python_can_transport_interface.PyCanTransportInterface.send_packet`
-            or
-            :meth:`~uds.transport_interface.addressing.python_can_transport_interface.PyCanTransportInterface.async_send_packet`
-            method.
-
-        :return: Time in milliseconds or None if the value was never measured.
-        """
-        return self.__n_ar_measured
 
     def __teardown_notifier(self, suppress_warning: bool = False) -> None:
         """
@@ -258,8 +225,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             return await self._async_receive_consecutive_frames(first_frame=initial_packet, loop=loop)
         raise NotImplementedError("CAN packet of unhandled type was received.")
 
-    def _receive_cf_packets_block(self, sequence_number: int, block_size: int, remaining_data_length: int) \
-            -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
+    def _receive_cf_packets_block(self,
+                                  sequence_number: int,
+                                  block_size: int,
+                                  remaining_data_length: int) -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
         """
         Receive block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
@@ -286,7 +255,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
                 received_cf.append(received_packet)
-                received_payload_size += len(received_packet.payload)  # type: ignore
+                received_payload_size += len(received_packet.payload)
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
                 remaining_timeout = self.n_cr_timeout
                 time_start_ms = time() * 1000
@@ -302,8 +271,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                               sequence_number: int,
                                               block_size: int,
                                               remaining_data_length: int,
-                                              loop: Optional[AbstractEventLoop] = None) \
-            -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
+                                              loop: Optional[AbstractEventLoop] = None
+                                              ) -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
         """
         Receive asynchronously block of :ref:`Consecutive Frames <knowledge-base-addressing-consecutive-frame>`.
 
@@ -331,7 +300,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
                 received_cf.append(received_packet)
-                received_payload_size += len(received_packet.payload)  # type: ignore
+                received_payload_size += len(received_packet.payload)
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
                 remaining_timeout = self.n_cr_timeout
                 time_start_ms = time() * 1000
@@ -356,8 +325,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
         """
         packets_records: List[CanPacketRecord] = [first_frame]
-        message_data_length: int = first_frame.data_length  # type: ignore
-        received_data_length: int = len(first_frame.payload)  # type: ignore
+        message_data_length: int = first_frame.data_length
+        received_data_length: int = len(first_frame.payload)
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
@@ -382,15 +351,15 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if flow_status == CanFlowStatus.ContinueToSend:
                 remaining_data_length = message_data_length - received_data_length
                 cf_block = self._receive_cf_packets_block(sequence_number=sequence_number,
-                                                          block_size=block_size,  # type: ignore
+                                                          block_size=block_size,
                                                           remaining_data_length=remaining_data_length)
                 if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
-                received_data_length += len(cf_block[0].payload) * len(cf_block)  # type: ignore
+                received_data_length += len(cf_block[0].payload) * len(cf_block)
                 if received_data_length >= message_data_length:
                     break
-                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
+                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF
         return UdsMessageRecord(packets_records)
 
     async def _async_receive_consecutive_frames(self,
@@ -470,7 +439,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         return isinstance(bus_manager, BusABC)
 
-    def send_packet(self, packet: CanPacket) -> CanPacketRecord:  # type: ignore
+    def send_packet(self, packet: CanPacket) -> CanPacketRecord:
         """
         Transmit CAN packet.
 
@@ -488,10 +457,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         self.__setup_notifier()
         self.clear_frames_buffers()
-        can_frame = Message(arbitration_id=packet.can_id,
-                            is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
-                            data=packet.raw_frame_data,
-                            is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
+        can_frame = PythonCanMessage(arbitration_id=packet.can_id,
+                                     is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
+                                     data=packet.raw_frame_data,
+                                     is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         timeout_s = (self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout) / 1000.
         time_start_s = time()
         self.network_manager.send(can_frame)
@@ -504,23 +473,19 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before observing a CAN packet being transmitted.")
             observed_frame = self.__frames_buffer.get_message(timeout=timeout_left)
-        time_sent_s = time()
+        time_sent_s = time()  # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
         if is_flow_control_packet:
-            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
-            # self.__n_ar_measured = (observed_frame.timestamp - time_start) * 1000.
-            self.__n_ar_measured = (time_sent_s - time_start_s) * 1000.
+            self._update_n_ar_measured((time_sent_s - time_start_s) * 1000.)
         else:
-            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
-            # self.__n_as_measured = (observed_frame.timestamp - time_start) * 1000.
-            self.__n_as_measured = (time_sent_s - time_start_s) * 1000.
+            self._update_n_as_measured((time_sent_s - time_start_s) * 1000.)
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
-                               addressing_format=packet.ADDRESSING_FORMAT,
+                               addressing_format=packet.addressing_format,
                                transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
     async def async_send_packet(self,
-                                packet: CanPacket,  # type: ignore
+                                packet: CanPacket,
                                 loop: Optional[AbstractEventLoop] = None) -> CanPacketRecord:
         """
         Transmit asynchronously CAN packet.
@@ -539,10 +504,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         self.__setup_async_notifier(loop)
         self.clear_frames_buffers()
-        can_frame = Message(arbitration_id=packet.can_id,
-                            is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
-                            data=packet.raw_frame_data,
-                            is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
+        can_frame = PythonCanMessage(arbitration_id=packet.can_id,
+                                     is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
+                                     data=packet.raw_frame_data,
+                                     is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
         timeout_s = (self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout) / 1000.
         time_start_s = time()
         self.network_manager.send(can_frame)
@@ -555,19 +520,15 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout_left <= 0:
                 raise TimeoutError("Timeout was reached before a CAN packet could be transmitted.")
             observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
-        time_sent_s = time()
+        time_sent_s = time()  # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
         if is_flow_control_packet:
-            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
-            # self.__n_ar_measured = (observed_frame.timestamp - time_start) * 1000.
-            self.__n_ar_measured = (time_sent_s - time_start_s) * 1000.
+            self._update_n_ar_measured((time_sent_s - time_start_s) * 1000.)
         else:
-            # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
-            # self.__n_as_measured = (observed_frame.timestamp - time_start) * 1000.
-            self.__n_as_measured = (time_sent_s - time_start_s) * 1000.
+            self._update_n_as_measured((time_sent_s - time_start_s) * 1000.)
         return CanPacketRecord(frame=observed_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
-                               addressing_format=packet.ADDRESSING_FORMAT,
+                               addressing_format=packet.addressing_format,
                                transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
 
     def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> CanPacketRecord:
@@ -605,11 +566,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TimeoutError("Timeout was reached before a CAN packet was received.")
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
                                                                     data=received_frame.data)
-        return CanPacketRecord(frame=received_frame,  # type: ignore
+        return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
-                               addressing_format=self.segmenter.ADDRESSING_FORMAT,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
+                               addressing_format=self.segmenter.addressing_format,
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))
 
     async def async_receive_packet(self,
                                    timeout: Optional[TimeMillisecondsAlias] = None,
@@ -649,7 +610,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
-                               addressing_format=self.segmenter.ADDRESSING_FORMAT,
+                               addressing_format=self.segmenter.addressing_format,
                                transmission_time=datetime.fromtimestamp(received_frame.timestamp))
 
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:

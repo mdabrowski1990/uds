@@ -91,18 +91,6 @@ def example_can_addressing_information(example_can_addressing_format) -> Abstrac
             tx_functional_params={"can_id": 0x1CCDFF00, "address_extension": 0xFF})
     raise NotImplementedError
 
-@fixture(params=[True, False])
-def example_use_data_optimization(request) -> bool:
-    return request.param
-
-@fixture(params=[CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MAX_DLC_VALUE, CanDlcHandler.MIN_BASE_UDS_DLC+1])
-def example_base_can_dlc(request) -> bool:
-    return request.param
-
-@fixture(params=[DEFAULT_FILLER_BYTE, 0x5A, 0x00])
-def example_filler_byte(request) -> bool:
-    return request.param
-
 @fixture()
 def example_can_segmenter(example_can_addressing_information) -> CanSegmenter:
     return CanSegmenter(addressing_information=example_can_addressing_information,
