@@ -565,7 +565,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if received_frame is None:
                 raise TimeoutError("Timeout was reached before a CAN packet was received.")
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
-                                                                    data=received_frame.data)
+                                                                    raw_frame_data=received_frame.data)
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
@@ -606,7 +606,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             received_frame = await wait_for(self.__async_frames_buffer.get_message(),
                                             timeout=None if timeout is None else timeout / 1000.)
             packet_addressing_type = self.segmenter.is_input_packet(can_id=received_frame.arbitration_id,
-                                                                    data=received_frame.data)
+                                                                    raw_frame_data=received_frame.data)
         return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,

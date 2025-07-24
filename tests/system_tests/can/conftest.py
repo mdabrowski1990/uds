@@ -48,15 +48,3 @@ def example_can_addressing_information(example_can_addressing_format) -> Abstrac
             rx_functional_params={"can_id": 0x1CCD00FF, "address_extension": 0xFF},
             tx_functional_params={"can_id": 0x1CCDFF00, "address_extension": 0xFF})
     raise NotImplementedError
-
-
-@fixture
-def example_can_addressing_information_2nd_node(example_addressing_information) -> AbstractCanAddressingInformation:
-    """
-    Example Addressing Information of a 2nd CAN Node.
-
-    .. note::
-        Values of example_addressing_information and example_addressing_information_2nd_node are compatible, so
-        these two CAN nodes addressing communicate with each other over physical and functional addressing.
-    """
-    return example_addressing_information.get_other_end()

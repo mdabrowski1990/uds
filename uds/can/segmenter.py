@@ -2,13 +2,13 @@
 
 __all__ = ["CanSegmenter"]
 
-from typing import Optional, Tuple, Type, Union
+from typing import Optional, Tuple, Type, Union, Any
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord, PacketsContainersSequence
 from uds.segmentation import AbstractSegmenter, SegmentationError
-from uds.utilities import validate_raw_byte
+from uds.utilities import validate_raw_byte, RawBytesAlias
 
 from .addressing import AbstractCanAddressingInformation, CanAddressingFormat
 from .frame import DEFAULT_FILLER_BYTE, CanDlcHandler
@@ -191,6 +191,10 @@ class CanSegmenter(AbstractSegmenter):
                                  dlc=None if self.use_data_optimization else self.dlc,
                                  **self.addressing_information.tx_functional_params)
         return (single_frame,)
+
+    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias) -> Optional[AddressingType]:
+        # TODO: docstring and tests
+        return super().is_input_packet(can_id=can_id, raw_frame_data=raw_frame_data)
 
     def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:
         """
