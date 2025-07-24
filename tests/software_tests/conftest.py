@@ -1,3 +1,5 @@
+from random import choice, randint
+
 from pytest import fixture
 
 from can import Message
@@ -12,7 +14,6 @@ from uds.can.addressing import (
     NormalFixedCanAddressingInformation,
 )
 from uds.utilities import RawBytesAlias, TransmissionDirection
-from random import randint, choice
 
 # Common
 

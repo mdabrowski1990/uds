@@ -16,10 +16,10 @@ from uds.utilities import (
     TransmissionDirection,
     UnexpectedPacketReceptionWarning,
 )
-from ..addressing import AbstractCanAddressingInformation
-from ..packet import CanPacket, CanPacketRecord, CanPacketType, CanFlowStatus
-from ..frame import CanIdHandler, CanDlcHandler
 
+from ..addressing import AbstractCanAddressingInformation
+from ..frame import CanDlcHandler, CanIdHandler
+from ..packet import CanFlowStatus, CanPacket, CanPacketRecord, CanPacketType
 from .common import AbstractCanTransportInterface
 
 

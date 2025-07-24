@@ -8,15 +8,16 @@ from warnings import warn
 
 from uds.message import UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, ValueWarning
-from ..packet import DefaultFlowControlParametersGenerator, CanPacketType, AbstractFlowControlParametersGenerator
+from uds.utilities import TimeMillisecondsAlias, ValueWarning, TransmissionDirection
+
 from ..addressing import AbstractCanAddressingInformation
+from ..packet import AbstractFlowControlParametersGenerator, CanPacketType, DefaultFlowControlParametersGenerator
 from ..segmenter import CanSegmenter
 
 
 class AbstractCanTransportInterface(AbstractTransportInterface):
     """
-    Abstract definition of Transport Interface for managing UDS on CAN bus.
+    Abstract definition of Transport Interface for managing Diagnostics on CAN.
 
     CAN Transport Interfaces are meant to handle UDS middle layers (Transport and Network) on CAN bus.
     """
@@ -29,13 +30,12 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     """Timeout value of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter according to ISO 15765-2."""
     N_CR_TIMEOUT: TimeMillisecondsAlias = 1000
     """Timeout value of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter according to ISO 15765-2."""
-
     DEFAULT_N_BR: TimeMillisecondsAlias = 0
-    """Default value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter."""
+    """Default value for :ref:`N_Br <knowledge-base-can-n-br>` time parameter."""
     DEFAULT_N_CS: Optional[TimeMillisecondsAlias] = None
-    """Default value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
+    """Default value for :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter."""
     DEFAULT_FLOW_CONTROL_PARAMETERS = DefaultFlowControlParametersGenerator()
-    """Default value of :ref:`Flow Control <knowledge-base-can-flow-control>` parameters
+    """Default values generator for :ref:`Flow Control <knowledge-base-can-flow-control>` parameters
     (:ref:`Flow Status <knowledge-base-can-flow-status>`,
     :ref:`Block Size <knowledge-base-can-block-size>`,
     :ref:`Separation Time minimum <knowledge-base-can-st-min>`)."""
@@ -43,80 +43,150 @@ class AbstractCanTransportInterface(AbstractTransportInterface):
     def __init__(self,
                  network_manager: Any,
                  addressing_information: AbstractCanAddressingInformation,
-                 **configuration_params: Any) -> None:
+                 n_as_timeout: TimeMillisecondsAlias = N_AS_TIMEOUT,
+                 n_ar_timeout: TimeMillisecondsAlias = N_AR_TIMEOUT,
+                 n_bs_timeout: TimeMillisecondsAlias = N_BS_TIMEOUT,
+                 n_br: TimeMillisecondsAlias = DEFAULT_N_BR,
+                 n_cs: Optional[TimeMillisecondsAlias] = DEFAULT_N_CS,
+                 n_cr_timeout: TimeMillisecondsAlias = N_CR_TIMEOUT,
+                 flow_control_parameters_generator: AbstractFlowControlParametersGenerator
+                 = DEFAULT_FLOW_CONTROL_PARAMETERS,
+                 **segmenter_configuration: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
-        :param can_bus_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
+        :param network_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
         :param addressing_information: Addressing Information of CAN Transport Interface.
-        :param configuration_params: Optional arguments that are specific for CAN bus.
+        :param n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
+        :param n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
+        :param n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
+        :param n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
+        :param n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
+        :param n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
+        :param flow_control_parameters_generator: Generator with Flow Control parameters to use.
+        :param segmenter_configuration: Configuration parameters for CAN Segmenter.
 
-            - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
-            - :parameter n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
-            - :parameter n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
-            - :parameter n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
-            - :parameter n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
-            - :parameter n_cr_timeout: Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
             - :parameter use_data_optimization: Information whether to use
                 :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
             - :parameter filler_byte: Filler byte value to use for
                 :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
-            - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
-
-        :raise TypeError: Provided Addressing Information value has unexpected type.
         """
         super().__init__(network_manager=network_manager)
+        self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
+        self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
-        self.n_as_timeout = configuration_params.pop("n_as_timeout", self.N_AS_TIMEOUT)
-        self.n_ar_timeout = configuration_params.pop("n_ar_timeout", self.N_AR_TIMEOUT)
-        self.n_bs_timeout = configuration_params.pop("n_bs_timeout", self.N_BS_TIMEOUT)
-        self.n_cr_timeout = configuration_params.pop("n_cr_timeout", self.N_CR_TIMEOUT)
-        self.n_br = configuration_params.pop("n_br", self.DEFAULT_N_BR)
-        self.n_cs = configuration_params.pop("n_cs", self.DEFAULT_N_CS)
-        self.flow_control_parameters_generator = configuration_params.pop("flow_control_parameters_generator",
-                                                            self.DEFAULT_FLOW_CONTROL_PARAMETERS)
-        self.segmenter = CanSegmenter(addressing_information=addressing_information, **configuration_params)
+        self.n_as_timeout = n_as_timeout
+        self.n_ar_timeout = n_ar_timeout
+        self.n_bs_timeout = n_bs_timeout
+        self.n_br = n_br
+        self.n_cs = n_cs
+        self.n_cr_timeout = n_cr_timeout
+        self.flow_control_parameters_generator = flow_control_parameters_generator
+        self.segmenter = CanSegmenter(addressing_information=addressing_information, **segmenter_configuration)
 
     # Common
 
-    def _update_n_bs_measured(self, message: UdsMessageRecord) -> None:
+    def _update_n_ar_measured(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Update measured values of :ref:`N_Ar <knowledge-base-can-n-ar>`.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Provided value is out of range.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value < 0:
+            raise ValueError("Provided time parameter cannot be a negative number.")
+        if value > self.n_ar_timeout:
+            warn("Measured value of N_Ar was greater than N_Ar timeout.",
+                 category=ValueWarning)
+        self.__n_ar_measured = value
+
+    def _update_n_as_measured(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Update measured values of :ref:`N_As <knowledge-base-can-n-as>`.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not time in milliseconds.
+        :raise ValueError: Provided value is out of range.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value < 0:
+            raise ValueError("Provided time parameter cannot be a negative number.")
+        if value > self.n_as_timeout:
+            warn("Measured value of N_As was greater than N_As timeout.",
+                 category=ValueWarning)
+        self.__n_as_measured = value
+
+    def _update_n_bs_measured(self, message_record: UdsMessageRecord) -> None:
         """
         Update measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` according to timestamps of CAN packet records.
 
-        :param message: Record of UDS message transmitted over CAN.
+        :param message_record: Record of UDS message transmitted over CAN.
+
+        :raise TypeError: Provided value is not UDS message record.
+        :raise ValueError: Provided UDS message record was not transmitted.
         """
-        if len(message.packets_records) == 1:
+        if not isinstance(message_record, UdsMessageRecord):
+            raise TypeError("Provided value is not UDS Message Record type.")
+        if message_record.direction != TransmissionDirection.TRANSMITTED:
+            raise ValueError("Provided UDS Message Record was not transmitted.")
+        if len(message_record.packets_records) == 1:
             self.__n_bs_measured = None
         else:
             n_bs_measured = []
-            for i, packet_record in enumerate(message.packets_records[1:]):
+            for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
-                    n_bs = packet_record.transmission_time - message.packets_records[i].transmission_time
+                    n_bs = packet_record.transmission_time - message_record.packets_records[i].transmission_time
                     n_bs_measured.append(round(n_bs.total_seconds() * 1000, 3))
             self.__n_bs_measured = tuple(n_bs_measured)
 
-    def _update_n_cr_measured(self, message: UdsMessageRecord) -> None:
+    def _update_n_cr_measured(self, message_record: UdsMessageRecord) -> None:
         """
         Update measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` according to timestamps of CAN packet records.
 
-        :param message: Record of UDS message transmitted over CAN.
+        :param message_record: Record of UDS message received over CAN.
+
+        :raise TypeError: Provided value is not UDS message record.
+        :raise ValueError: Provided UDS message record was not received.
         """
-        if len(message.packets_records) == 1:
+        if not isinstance(message_record, UdsMessageRecord):
+            raise TypeError("Provided value is not UDS Message Record type.")
+        if message_record.direction != TransmissionDirection.RECEIVED:
+            raise ValueError("Provided UDS Message Record was not received.")
+        if len(message_record.packets_records) == 1:
             self.__n_cr_measured = None
         else:
             n_cr_measured = []
-            for i, packet_record in enumerate(message.packets_records[1:]):
+            for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-                    n_cr = packet_record.transmission_time - message.packets_records[i].transmission_time
+                    n_cr = packet_record.transmission_time - message_record.packets_records[i].transmission_time
                     n_cr_measured.append(round(n_cr.total_seconds() * 1000, 3))
             self.__n_cr_measured = tuple(n_cr_measured)
 
     @property
     def segmenter(self) -> CanSegmenter:
-        """Value of the segmenter used by this CAN Transport Interface."""
+        """Get the segmenter used by this CAN Transport Interface."""
         return self.__segmenter
+
+    @segmenter.setter
+    def segmenter(self, value: CanSegmenter) -> None:
+        """
+        Set segmenter value for this Transport Interface.
+
+        :param value: CAN Segmenter value to set.
+
+        :raise TypeError: Provided value is not CAN Segmenter.
+        """
+        if not isinstance(value, CanSegmenter):
+            raise TypeError("Provided value is not CAN Segmenter type.")
+        self.__segmenter = value
 
     # Time parameter - CAN Network Layer
 

@@ -26,6 +26,11 @@ class TestAbstractTransportInterface:
         assert (AbstractTransportInterface.addressing_information.fget(self.mock_transport_interface)
                 == self.mock_transport_interface.segmenter.addressing_information)
 
+    @pytest.mark.parametrize("value", [Mock(), "some addressing information"])
+    def test_addressing_information__set(self, value):
+        assert (AbstractTransportInterface.addressing_information.fset(self.mock_transport_interface, value) is None)
+        assert self.mock_transport_interface.segmenter.addressing_information == value
+
     # network_manager
 
     def test_network_manager__get(self):

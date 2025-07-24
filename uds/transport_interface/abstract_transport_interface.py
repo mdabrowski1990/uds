@@ -6,11 +6,11 @@ from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 from typing import Any, Optional
 
+from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter
-from uds.utilities import TimeMillisecondsAlias, ReassignmentError
-from uds.addressing import AbstractAddressingInformation
+from uds.utilities import ReassignmentError, TimeMillisecondsAlias
 
 
 class AbstractTransportInterface(ABC):
@@ -41,8 +41,17 @@ class AbstractTransportInterface(ABC):
 
     @property
     def addressing_information(self) -> AbstractAddressingInformation:
-        """Addressing Information of UDS Entity simulated by this Transport Interface."""
+        """Get Addressing Information of UDS Entity simulated by this Transport Interface."""
         return self.segmenter.addressing_information
+
+    @addressing_information.setter
+    def addressing_information(self, value: AbstractAddressingInformation) -> None:
+        """
+        Set Addressing Information of UDS Entity simulated by this Transport Interface.
+
+        :param value: Addressing Information value to set.
+        """
+        self.segmenter.addressing_information = value
 
     @property
     def network_manager(self) -> Any:

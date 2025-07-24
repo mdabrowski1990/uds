@@ -8,7 +8,7 @@ from typing import Optional
 from uds.addressing import AddressingType
 from uds.packet.abstract_packet import AbstractPacketContainer
 
-from ..addressing import CanAddressingFormat, CanAddressingInformation, AbstractCanAddressingInformation
+from ..addressing import AbstractCanAddressingInformation, CanAddressingFormat, CanAddressingInformation
 from ..frame import CanDlcHandler
 from .can_packet_type import CanPacketType
 from .consecutive_frame import extract_consecutive_frame_payload, extract_sequence_number

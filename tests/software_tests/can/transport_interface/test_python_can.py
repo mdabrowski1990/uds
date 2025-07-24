@@ -3,6 +3,7 @@ from random import choice, randint
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
 
+from uds.addressing import AddressingType
 from uds.can import CanAddressingFormat, CanAddressingInformation
 from uds.can.transport_interface.python_can import (
     AbstractCanTransportInterface,
@@ -15,7 +16,6 @@ from uds.can.transport_interface.python_can import (
     TransmissionDirection,
     UdsMessage,
 )
-from uds.addressing import AddressingType
 
 SCRIPT_LOCATION = "uds.transport_interface.addressing.python_can"
 
