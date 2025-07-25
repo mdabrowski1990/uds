@@ -1,4 +1,4 @@
-"""Definition of AbstractDataRecord which is a base class for all Data Records."""
+"""Definition of Data Records structure and API."""
 
 __all__ = ["AbstractDataRecord", "SinglePhysicalValueAlias", "MultiplePhysicalValues", "PhysicalValueAlias",
            "SingleOccurrenceInfo", "MultipleOccurrencesInfo"]
@@ -10,15 +10,22 @@ from typing import List, Optional, Sequence, Tuple, TypedDict, Union
 from uds.utilities import InconsistentArgumentsError, ReassignmentError
 
 SinglePhysicalValueAlias = Union[int, float, str]
-"""Alias for a single occurrence physical value."""
+"""Alias for a physical value decoded from a single occurrence."""
 MultiplePhysicalValues = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
-"""Alias for a multiple occurrences physical values."""
+"""Alias for a physical values decoded from multiple occurences."""
 PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValues]
-"""Alias for all physical values used by Data Records."""
+"""Alias for all physical values."""
 
 
 class SingleOccurrenceInfo(TypedDict, total=True):
-    """Info about a single Data Record occurrence."""
+    """
+    Information about a single Data Record occurrence.
+
+    :arg name: Data Record name.
+    :arg raw_value: Raw values for this occurrence.
+    :arg physical_value: Physical value for this occurrence.
+    :arg children: Information about children for this occurrence.
+    """
 
     name: str
     raw_value: int
@@ -27,7 +34,15 @@ class SingleOccurrenceInfo(TypedDict, total=True):
 
 
 class MultipleOccurrencesInfo(TypedDict, total=True):
-    """Info about a multiple Data Record occurrences."""
+    """
+    Information about multiple Data Record occurrences.
+
+    :arg name: Data Record name.
+    :arg raw_value: List with raw values for each occurrence.
+    :arg physical_value: Physical values for multiple occurrences.
+    :arg children: List with one element for each occurrence.
+        Each element contains information about children for this occurrence.
+    """
 
     name: str
     raw_value: List[int]
@@ -40,9 +55,9 @@ class AbstractDataRecord(ABC):
     Common implementation and interface for all Data Records.
 
     Data Records are parts of diagnostic messages which could be interpreted in various ways.
-    Each subclass is meant to store different methods for translation between physical and raw values.
-    This objects would allow users to operate on meaningful data (e.g. vehicle speed in km/h,
-    temperature in Celsius degrees) instead of raw values.
+    The objects would allow users to operate on meaningful data (e.g. vehicle speed in km/h,
+    temperature in Celsius degrees) which we call physical values instead of raw (byte) values.
+    Each subclass is meant to provide utilities for translation between physical and raw values.
     """
 
     def __init__(self,
@@ -54,9 +69,9 @@ class AbstractDataRecord(ABC):
         """
         Initialize common part for all Data Records.
 
-        :param name: Name to assign to this Data Record.
-        :param length: Number of bits that are used to store a single occurrence of Data Record.
-        :param children: Data Records contained by this one with detailed information.
+        :param name: A name for this Data Record.
+        :param length: Number of bits that are used to store a single occurrence of this Data Record.
+        :param children: Contained Data Records.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
@@ -81,7 +96,7 @@ class AbstractDataRecord(ABC):
 
     @property
     def name(self) -> str:
-        """Name of this Data Record."""
+        """Get name of this Data Record."""
         return self.__name
 
     @name.setter
@@ -89,7 +104,7 @@ class AbstractDataRecord(ABC):
         """
         Set name for this Data Record.
 
-        :param value: Value to set.
+        :param value: A name to set.
 
         :raise TypeError: Provided value is not str type.
         :raise ValueError: Provided value empty.
@@ -109,15 +124,15 @@ class AbstractDataRecord(ABC):
 
     @property
     def length(self) -> int:
-        """Get number of bits that this Data Record is stored over."""
+        """Get number of bits that a single occurrence of this Data Record is stored over."""
         return self.__length
 
     @length.setter
     def length(self, value: int) -> None:
         """
-        Set number of bits this Data Record is stored over.
+        Set number of bits that a single occurrence of this Data Record is stored over.
 
-        :param value: Value to set.
+        :param value: Number of bits to set.
 
         :raise TypeError: Provided value is not int type.
         :raise ValueError: Provided value is not positive integer.
@@ -312,13 +327,13 @@ class AbstractDataRecord(ABC):
 
         :param raw_values: Raw (bit) values of this Data Record for multiple occurrences.
 
-        :raise ValueError: Function was called for a Data Record that is not reoccurring.
+        :raise RuntimeError: A called was made on a Data Record that is not reoccurring.
         :raise ValueError: No values were provided.
 
         :return: Decoded physical values for provided raw values.
         """
         if not self.is_reoccurring:
-            raise RuntimeError("This method shall not be called for Data Record that is not reoccurring.")
+            raise RuntimeError("This method must be called for reoccurring Data Record only.")
         if len(raw_values) == 0:
             raise ValueError("Raw value for at least one occurrence must be provided.")
         return tuple(self.get_physical_value(raw_value) for raw_value in raw_values)
@@ -330,7 +345,7 @@ class AbstractDataRecord(ABC):
 
         :param raw_value: Raw (bit) value of this Data Record single occurrence.
 
-        :return: Decoded physical (meaningful e.g. vehicle speed in km/h) value for this occurrence.
+        :return: Decoded physical value for this occurrence.
         """
 
     @abstractmethod
@@ -338,8 +353,7 @@ class AbstractDataRecord(ABC):
         """
         Encode physical value into raw value.
 
-        :param physical_value: Physical (meaningful e.g. vehicle speed in km/h) value of this Data Record
-            single occurrence.
+        :param physical_value: Physical value of this Data Record single occurrence.
 
-        :return: Raw Value of this Data Record occurrence.
+        :return: Raw Value for this occurrence.
         """

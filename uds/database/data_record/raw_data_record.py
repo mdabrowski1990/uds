@@ -1,4 +1,4 @@
-"""Definition of RawDataRecord."""
+"""Raw Data Records implementation."""
 
 __all__ = ["RawDataRecord"]
 
@@ -8,7 +8,11 @@ from .abstract_data_record import AbstractDataRecord, SinglePhysicalValueAlias
 
 
 class RawDataRecord(AbstractDataRecord):
-    """Raw Data Record for storing integers without any convertion to physical values."""
+    """
+    Implementation for Raw Data Records.
+
+    Raw Data Records are the most basic Data Records which does not contain translation between physical and raw values.
+    """
 
     def __init__(self,
                  name: str,
@@ -17,11 +21,11 @@ class RawDataRecord(AbstractDataRecord):
                  min_occurrences: int = 1,
                  max_occurrences: Optional[int] = 1) -> None:
         """
-        Initialize Raw Data Record.
+        Create Raw Data Record.
 
-        :param name: Name to assign to this Data Record.
-        :param length: Number of bits that are used to store a single occurrence of Data Record.
-        :param children: Data Records contained by this one with detailed information.
+        :param name: A name for this Data Record.
+        :param length: Number of bits that are used to store a single occurrence of this Data Record.
+        :param children: Contained Data Records.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
@@ -50,7 +54,7 @@ class RawDataRecord(AbstractDataRecord):
 
         :param physical_value: Physical value of this Data Record single occurrence.
 
-        :return: Raw Value of this Data Record occurrence.
+        :return: Raw Value for this occurrence.
             For Raw Data Record the raw and physical values are the same.
         """
         raw_value: int = physical_value  # type: ignore
