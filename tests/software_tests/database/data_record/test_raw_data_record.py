@@ -13,149 +13,100 @@ class TestRawDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize(
-        "name, length", [
-            ("TestRawDataRecord", 8),
-            (Mock(), Mock()),
-        ]
-    )
+    @pytest.mark.parametrize("name, length", [
+        ("TestRawDataRecord", 8),
+        (Mock(), Mock()),
+    ])
     @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
-    def test_init__valid(self, mock_abstract, name, length):
+    def test_init__mandatory_args(self, mock_abstract_data_record_class, name, length):
         assert RawDataRecord.__init__(self.mock_data_record, name, length) is None
-        mock_abstract.assert_called_once_with(name)
-        assert self.mock_data_record.length == length
+        mock_abstract_data_record_class.assert_called_once_with(name=name,
+                                                                length=length,
+                                                                children=tuple(),
+                                                                min_occurrences=1,
+                                                                max_occurrences=1)
 
-    # length
+    @pytest.mark.parametrize("name, length, children, min_occurrences, max_occurrences", [
+        ("TestRawDataRecord", 8, [Mock(), Mock()], 0, None),
+        (Mock(), Mock(), Mock(), Mock(), Mock()),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
+    def test_init__all_args(self, mock_abstract_data_record_class,
+                            name, length, children, min_occurrences, max_occurrences):
+        assert RawDataRecord.__init__(self.mock_data_record,
+                                      name=name,
+                                      length=length,
+                                      children=children,
+                                      min_occurrences=min_occurrences,
+                                      max_occurrences=max_occurrences) is None
+        mock_abstract_data_record_class.assert_called_once_with(name=name,
+                                                                length=length,
+                                                                children=children,
+                                                                min_occurrences=min_occurrences,
+                                                                max_occurrences=max_occurrences)
 
-    def test_length_getter(self):
-        self.mock_data_record._RawDataRecord__length = Mock()
-        assert RawDataRecord.length.fget(self.mock_data_record) == self.mock_data_record._RawDataRecord__length
-
-    @pytest.mark.parametrize(
-        "value", [1, 8]
-    )
-    def test_length_setter_valid(self, value):
-        RawDataRecord.length.fset(self.mock_data_record, value)
-        assert self.mock_data_record._RawDataRecord__length == value
-
-    @pytest.mark.parametrize(
-        "value", ["test", None]
-    )
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_length_setter_type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            RawDataRecord.length.fset(self.mock_data_record, value)
-        mock_isinstance.assert_called_once_with(value, int)
-
-    @pytest.mark.parametrize(
-        "value", [0, -1]
-    )
-    def test_length_setter_value_error(self, value):
-        with pytest.raises(ValueError):
-            RawDataRecord.length.fset(self.mock_data_record, value)
-
-    # max_raw_value
+    # get_physical_value
 
     @pytest.mark.parametrize(
-        "length, value", [
-            (2, 3),
-            (5, 31),
-            (8, 255),
-        ]
+        "value", [0, 0xFF, Mock()]
     )
-    def test_max_raw_value_getter(self, length, value):
-        raw_data_record = RawDataRecord("TestRawDataRecord", length)
-        assert raw_data_record.max_raw_value == value
+    def test_get_physical_value(self, value):
+        assert RawDataRecord.get_physical_value(self.mock_data_record, value) == value
+        self.mock_data_record._validate_raw_value.assert_called_once_with(value)
 
-    # is_reoccurring
-
-    def test_is_reoccurring_getter(self):
-        assert RawDataRecord.is_reoccurring.fget(self.mock_data_record) is False
-
-    # min_occurrences
-
-    def test_min_occurrences_getter(self):
-        assert RawDataRecord.min_occurrences.fget(self.mock_data_record) == 1
-
-    # max_occurrences
-
-    def test_max_occurrences_getter(self):
-        assert RawDataRecord.max_occurrences.fget(self.mock_data_record) == 1
-
-    # contains
-
-    def test_contains_getter(self):
-        assert RawDataRecord.contains.fget(self.mock_data_record) == ()
-
-    # decode
+    # get_raw_value
 
     @pytest.mark.parametrize(
-        "value", [1, 4]
+        "value", [0, 0xFF, Mock()]
     )
-    @patch(f"{SCRIPT_LOCATION}.DecodedDataRecord")
-    def test_decode(self, mock_decoded_data_record, value):
-        self.mock_data_record.max_raw_value = 8
-        assert RawDataRecord.decode(self.mock_data_record, value) == mock_decoded_data_record.return_value
-        mock_decoded_data_record.assert_called_once_with(
-            name=self.mock_data_record.name,
-            raw_value=value,
-            physical_value=value
-        )
+    def test_get_raw_value(self, value):
+        assert RawDataRecord.get_raw_value(self.mock_data_record, value) == value
+        self.mock_data_record._validate_raw_value.assert_called_once_with(value)
 
-    @pytest.mark.parametrize(
-        "value", ["test", None]
-    )
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_decode_type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            RawDataRecord.decode(self.mock_data_record, value)
-        mock_isinstance.assert_called_once_with(value, int)
 
-    @pytest.mark.parametrize(
-        "value, max_raw_value", [
-            (-1, 2),
-            (3, 2),
-            (16, 6),
-        ]
-    )
-    def test_decode_value_error(self, value, max_raw_value):
-        self.mock_data_record.max_raw_value = max_raw_value
-        with pytest.raises(ValueError):
-            RawDataRecord.decode(self.mock_data_record, value)
+@pytest.mark.integration
+class TestRawDataRecordIntegration:
+    """Integration tests for the RawDataRecord class."""
 
-    # encode
+    def setup_class(self):
+        self.dtc = RawDataRecord(name="DTC",
+                                 length=24,
+                                 min_occurrences=0,
+                                 max_occurrences=1)
 
-    @pytest.mark.parametrize(
-        "value, max_raw_value", [
-            (0, 2),
-            (3, 3),
-            (16, 16),
-        ]
-    )
-    def test_encode(self, value, max_raw_value):
-        self.mock_data_record.max_raw_value = max_raw_value
-        assert RawDataRecord.encode(self.mock_data_record, value) == value
+    @pytest.mark.parametrize("value", [0, 0xFFFFFF, 0xA1B2C3])
+    def test_get_physical_value(self, value):
+        assert self.dtc.get_physical_value(value) == value
 
-    @pytest.mark.parametrize(
-        "value", ["test", None]
-    )
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_encode_type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            RawDataRecord.encode(self.mock_data_record, value)
-        mock_isinstance.assert_called_once_with(value, int)
+    @pytest.mark.parametrize("value", [0, 0xFFFFFF, 0xA1B2C3])
+    def test_get_raw_value(self, value):
+        assert self.dtc.get_raw_value(value) == value
 
-    @pytest.mark.parametrize(
-        "value, max_raw_value", [
-            (-1, 2),
-            (3, 2),
-            (16, 6),
-        ]
-    )
-    def test_encode_value_error(self, value, max_raw_value):
-        self.mock_data_record.max_raw_value = max_raw_value
-        with pytest.raises(ValueError):
-            RawDataRecord.encode(self.mock_data_record, value)
+    @pytest.mark.parametrize("value, expected_output", [
+        (0, {
+            "name": "DTC",
+            "raw_value": 0,
+            "physical_value": 0,
+            "children": tuple()
+        }),
+        (0xFFFFFF, {
+            "name": "DTC",
+            "raw_value": 0xFFFFFF,
+            "physical_value": 0xFFFFFF,
+            "children": tuple()
+        }),
+        (0xA1B2C3, {
+            "name": "DTC",
+            "raw_value": 0xA1B2C3,
+            "physical_value": 0xA1B2C3,
+            "children": tuple()
+        }),
+    ])
+    def test_get_occurrence_info(self, value, expected_output):
+        assert self.dtc.get_occurrence_info(value) == expected_output
+
+    @pytest.mark.parametrize("value", [0, 0xFFFFFF])
+    def test_get_physical_values__error(self, value):
+        assert self.dtc.is_reoccurring is False
+        with pytest.raises(RuntimeError):
+            self.dtc.get_physical_values(value)
