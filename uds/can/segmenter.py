@@ -2,13 +2,13 @@
 
 __all__ = ["CanSegmenter"]
 
-from typing import Optional, Tuple, Type, Union, Any
+from typing import Any, Optional, Tuple, Type, Union
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord, PacketsContainersSequence
 from uds.segmentation import AbstractSegmenter, SegmentationError
-from uds.utilities import validate_raw_byte, RawBytesAlias
+from uds.utilities import RawBytesAlias, validate_raw_byte
 
 from .addressing import AbstractCanAddressingInformation, CanAddressingFormat
 from .frame import DEFAULT_FILLER_BYTE, CanDlcHandler
@@ -192,8 +192,15 @@ class CanSegmenter(AbstractSegmenter):
                                  **self.addressing_information.tx_functional_params)
         return (single_frame,)
 
-    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias) -> Optional[AddressingType]:
-        # TODO: docstring and tests
+    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias, **_) -> Optional[AddressingType]:
+        """
+        Check if a frame with provided attributes is an input packet for this CAN Segmenter.
+
+        :param raw_frame_data: Raw data bytes carried by a CAN frame to check.
+        :param can_id: CAN Identifier of a CAN frame to check.
+
+        :return: Addressing Type used for transmission of this packet, None otherwise.
+        """
         return super().is_input_packet(can_id=can_id, raw_frame_data=raw_frame_data)
 
     def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:

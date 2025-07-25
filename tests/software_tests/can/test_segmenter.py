@@ -35,6 +35,8 @@ class TestCanSegmenter:
         # patching
         self._patcher_abstract_segmenter_init = patch(f"{SCRIPT_LOCATION}.AbstractSegmenter.__init__")
         self.mock_abstract_segmenter_init = self._patcher_abstract_segmenter_init.start()
+        self._patcher_abstract_segmenter_is_input_packet = patch(f"{SCRIPT_LOCATION}.AbstractSegmenter.is_input_packet")
+        self.mock_abstract_segmenter_is_input_packet = self._patcher_abstract_segmenter_is_input_packet.start()
         self._patcher_uds_message = patch(f"{SCRIPT_LOCATION}.UdsMessage")
         self.mock_uds_message = self._patcher_uds_message.start()
         self._patcher_uds_message_record = patch(f"{SCRIPT_LOCATION}.UdsMessageRecord")
@@ -62,6 +64,7 @@ class TestCanSegmenter:
 
     def teardown_method(self):
         self._patcher_abstract_segmenter_init.stop()
+        self._patcher_abstract_segmenter_is_input_packet.stop()
         self._patcher_uds_message.stop()
         self._patcher_uds_message_record.stop()
         self._patcher_dlc_handler.stop()
@@ -334,6 +337,21 @@ class TestCanSegmenter:
                                                      dlc=self.mock_can_segmenter.dlc,
                                                      filler_byte=self.mock_can_segmenter.filler_byte,
                                                      **functional_ai)
+
+    # is_input_packet
+
+    @pytest.mark.parametrize("can_id, raw_frame_data, additional_kwargs", [
+        (Mock(), Mock(), {}),
+        (0x654, b"\x00\xFF\xF1\xB9\x8A", {"abc": "something", "xyz": "else"}),
+    ])
+    def test_is_input_packet(self, can_id, raw_frame_data, additional_kwargs):
+        assert CanSegmenter.is_input_packet(
+            self.mock_can_segmenter,
+            can_id=can_id,
+            raw_frame_data=raw_frame_data,
+            **additional_kwargs) == self.mock_abstract_segmenter_is_input_packet.return_value
+        self.mock_abstract_segmenter_is_input_packet.assert_called_once_with(can_id=can_id,
+                                                                             raw_frame_data=raw_frame_data)
 
     # is_desegmented_message
 

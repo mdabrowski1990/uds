@@ -1067,7 +1067,7 @@ class TestPyCanTransportInterface:
         self.mock_datetime.fromtimestamp.assert_called_once_with(mock_get_message.return_value.timestamp)
         self.mock_can_transport_interface.segmenter.is_input_packet.assert_called_once_with(
             can_id=mock_get_message.return_value.arbitration_id,
-            data=mock_get_message.return_value.data)
+            raw_frame_data=mock_get_message.return_value.data)
         self.mock_can_packet_record.assert_called_once_with(
             frame=mock_get_message.return_value,
             direction=TransmissionDirection.RECEIVED,
@@ -1123,7 +1123,7 @@ class TestPyCanTransportInterface:
         self.mock_datetime.fromtimestamp.assert_called_once_with(mock_get_message.return_value.timestamp)
         self.mock_can_transport_interface.segmenter.is_input_packet.assert_called_once_with(
             can_id=mock_get_message.return_value.arbitration_id,
-            data=mock_get_message.return_value.data)
+            raw_frame_data=mock_get_message.return_value.data)
         self.mock_can_packet_record.assert_called_once_with(
             frame=mock_get_message.return_value,
             direction=TransmissionDirection.RECEIVED,

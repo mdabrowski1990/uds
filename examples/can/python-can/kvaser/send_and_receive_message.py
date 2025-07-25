@@ -2,10 +2,9 @@ from threading import Timer
 from time import sleep
 
 from can import Bus
-from uds.can import CanAddressingFormat, CanAddressingInformation
+from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
 from uds.message import UdsMessage
-from uds.transmission_attributes import AddressingType
-from uds.transport_interface import PyCanTransportInterface
+from uds.addressing import AddressingType
 
 
 def main():
@@ -16,16 +15,16 @@ def main():
     # configure Addressing Information of a CAN Nodes (example values)
     ai_receive = CanAddressingInformation(
         addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
-        tx_physical={"can_id": 0x611},
-        rx_physical={"can_id": 0x612},
-        tx_functional={"can_id": 0x6FF},
-        rx_functional={"can_id": 0x6FE})
+        tx_physical_params={"can_id": 0x611},
+        rx_physical_params={"can_id": 0x612},
+        tx_functional_params={"can_id": 0x6FF},
+        rx_functional_params={"can_id": 0x6FE})
     ai_send = ai_receive.get_other_end()
 
     # create Transport Interface objects for UDS communication
-    can_ti_1 = PyCanTransportInterface(can_bus_manager=kvaser_interface_1,
+    can_ti_1 = PyCanTransportInterface(network_manager=kvaser_interface_1,
                                        addressing_information=ai_receive)
-    can_ti_2 = PyCanTransportInterface(can_bus_manager=kvaser_interface_2,
+    can_ti_2 = PyCanTransportInterface(network_manager=kvaser_interface_2,
                                        addressing_information=ai_send)
 
     # define UDS Messages to send
