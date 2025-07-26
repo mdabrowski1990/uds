@@ -34,7 +34,6 @@ class AbstractAddressingInformation(ABC):
         self.tx_functional_params = tx_functional_params
         self._validate_addressing_information()
 
-
     @abstractmethod
     def validate_addressing_params(self, **addressing_params: Any) -> Dict[str, Any]:
         """Check whether the provided parameters are complete and compatible for this Addressing format."""
@@ -62,7 +61,7 @@ class AbstractAddressingInformation(ABC):
         except AttributeError:
             params = dict(addressing_params)
             params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
-            self.__rx_physical_params = MappingProxyType(self.validate_addressing_params(**params))
+            self.__rx_physical_params: MappingProxyType = MappingProxyType(self.validate_addressing_params(**params))
         else:
             raise ReassignmentError("You cannot change value of 'rx_physical_params' attribute once it is assigned. "
                                     "Create a new object instead.")
@@ -86,11 +85,11 @@ class AbstractAddressingInformation(ABC):
         except AttributeError:
             params = dict(addressing_params)
             params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
-            self.__tx_physical_params = MappingProxyType(self.validate_addressing_params(**params))
+            self.__tx_physical_params: MappingProxyType = MappingProxyType(self.validate_addressing_params(**params))
         else:
             raise ReassignmentError("You cannot change value of 'tx_physical_params' attribute once it is assigned. "
                                     "Create a new object instead.")
-        
+
     @property
     def rx_functional_params(self) -> MappingProxyType:
         """Get addressing parameters for incoming functionally addressed communication."""
@@ -110,7 +109,7 @@ class AbstractAddressingInformation(ABC):
         except AttributeError:
             params = dict(addressing_params)
             params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
-            self.__rx_functional_params = MappingProxyType(self.validate_addressing_params(**params))
+            self.__rx_functional_params: MappingProxyType = MappingProxyType(self.validate_addressing_params(**params))
         else:
             raise ReassignmentError("You cannot change value of 'rx_functional_params' attribute once it is assigned. "
                                     "Create a new object instead.")
@@ -134,7 +133,7 @@ class AbstractAddressingInformation(ABC):
         except AttributeError:
             params = dict(addressing_params)
             params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
-            self.__tx_functional_params = MappingProxyType(self.validate_addressing_params(**params))
+            self.__tx_functional_params: MappingProxyType = MappingProxyType(self.validate_addressing_params(**params))
         else:
             raise ReassignmentError("You cannot change value of 'tx_functional_params' attribute once it is assigned. "
                                     "Create a new object instead.")

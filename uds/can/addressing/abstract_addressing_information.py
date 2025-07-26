@@ -3,7 +3,7 @@
 __all__ = ["AbstractCanAddressingInformation", "CANAddressingParams"]
 
 from abc import ABC, abstractmethod
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, Any
 
 from uds.addressing import AddressingType
 from uds.addressing.abstract_addressing_information import AbstractAddressingInformation
@@ -81,7 +81,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
 
     @classmethod
     @abstractmethod
-    def validate_addressing_params(cls,
+    def validate_addressing_params(cls,  # type: ignore
                                    addressing_format: CanAddressingFormat,
                                    addressing_type: AddressingType,
                                    can_id: Optional[int] = None,
@@ -174,7 +174,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         :return: Data bytes that carry Addressing Information in a CAN frame Data field.
         """
 
-    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias, **_) -> Optional[AddressingType]:
+    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias, **_: Any) -> Optional[AddressingType]:
         """
         Check if a frame with provided attributes is an input packet for this UDS Entity.
 

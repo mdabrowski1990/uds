@@ -34,7 +34,7 @@ class AbstractSegmenter(ABC):
 
     def __init__(self, addressing_information: AbstractAddressingInformation) -> None:
         """
-        Common configuration for all segmenters.
+        Initialize common configuration for all segmenters.
 
         :param addressing_information: Addressing Information configuration for this UDS Entity.
         """

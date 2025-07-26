@@ -164,7 +164,7 @@ class CanDlcHandler:
     """Maximum value of DLC parameter."""
 
     MIN_BASE_UDS_DLC: int = 8
-    """Minimum CAN DLC value that addressing be used for UDS communication.
+    """Minimum CAN DLC value that can be used for UDS communication.
     Lower values of DLC are only allowed when :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
     is used."""
 

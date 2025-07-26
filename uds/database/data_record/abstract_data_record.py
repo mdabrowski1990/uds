@@ -88,7 +88,7 @@ class AbstractDataRecord(ABC):
         """
         Maximum raw (bit) value for this Data Record.
 
-        :return: Maximum value that addressing be represented by `length` bits.
+        :return: Maximum value that can be represented by `length` bits.
         """
         return (1 << self.length) - 1
 

@@ -1,4 +1,4 @@
-"""Implementation of UDS Transport Interface for CAN bus using python-addressing as bus manager."""
+"""Implementation of UDS Transport Interface for CAN bus using python-can as bus manager."""
 
 __all__ = ["PyCanTransportInterface"]
 
@@ -27,9 +27,9 @@ from .common import AbstractCanTransportInterface
 
 class PyCanTransportInterface(AbstractCanTransportInterface):
     """
-    Transport Interface for managing UDS on CAN with python-addressing package as bus handler.
+    Transport Interface for managing UDS on CAN with python-can package as bus handler.
 
-    .. note:: Documentation for python-addressing package: https://python-can.readthedocs.io/
+    .. note:: Documentation for python-can package: https://python-can.readthedocs.io/
     """
 
     _MAX_LISTENER_TIMEOUT: float = 4280000.  # ms
