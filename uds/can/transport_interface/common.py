@@ -170,6 +170,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                     n_cr_measured.append(round(n_cr.total_seconds() * 1000, 3))
             self.__n_cr_measured = tuple(n_cr_measured)
 
+    def clear_measurements(self) -> None:
+        """Clear measured values of CAN communication parameters."""
+        self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
+        self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
+        self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
+        self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
+
     @property
     def segmenter(self) -> CanSegmenter:
         """Get the segmenter used by this CAN Transport Interface."""

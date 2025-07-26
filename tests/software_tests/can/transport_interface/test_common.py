@@ -310,6 +310,15 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured
                 == expected_n_cr_measurements)
 
+    # clear_measurements
+
+    def test_clear_measurements(self):
+        assert AbstractCanTransportInterface.clear_measurements(self.mock_can_transport_interface) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured is None
+
     # segmenter
 
     def test_segmenter__get(self):

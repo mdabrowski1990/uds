@@ -22,7 +22,7 @@ from uds.utilities import RawBytesAlias, TransmissionDirection
     (0x00, 0xFF, 0xAA, 0x55),
     [0x00],
     bytearray(range(0x00, 0xFF)),
-    b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\xE1\xF0"])
+    b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F"])
 def example_raw_bytes(request) -> RawBytesAlias:
     """Example values or Raw Bytes."""
     return request.param
