@@ -8,7 +8,7 @@ from .enums import ValidatedEnum
 
 
 @unique
-class TransmissionDirection(ValidatedEnum, StrEnum):  # type: ignore
+class TransmissionDirection(ValidatedEnum, StrEnum):
     """Direction of a communication."""
 
     RECEIVED: "TransmissionDirection" = "Rx"  # type: ignore

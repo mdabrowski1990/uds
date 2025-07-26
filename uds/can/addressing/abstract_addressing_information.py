@@ -3,7 +3,7 @@
 __all__ = ["AbstractCanAddressingInformation", "CANAddressingParams"]
 
 from abc import ABC, abstractmethod
-from typing import Optional, TypedDict, Any
+from typing import Any, Optional, TypedDict
 
 from uds.addressing import AddressingType
 from uds.addressing.abstract_addressing_information import AbstractAddressingInformation
@@ -81,7 +81,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
 
     @classmethod
     @abstractmethod
-    def validate_addressing_params(cls,  # type: ignore
+    def validate_addressing_params(cls,
                                    addressing_format: CanAddressingFormat,
                                    addressing_type: AddressingType,
                                    can_id: Optional[int] = None,

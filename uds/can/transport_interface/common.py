@@ -172,10 +172,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
     def clear_measurements(self) -> None:
         """Clear measured values of CAN communication parameters."""
-        self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
-        self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
-        self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
-        self.__n_cr_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
+        self.__n_ar_measured = None
+        self.__n_as_measured = None
+        self.__n_bs_measured = None
+        self.__n_cr_measured = None
 
     @property
     def segmenter(self) -> CanSegmenter:

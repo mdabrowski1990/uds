@@ -8,7 +8,7 @@ from uds.utilities import ValidatedEnum
 
 
 @unique
-class CanAddressingFormat(ValidatedEnum, StrEnum):  # type: ignore
+class CanAddressingFormat(ValidatedEnum, StrEnum):
     """
     Addressing formats used for UDS communication over CAN bus.
 

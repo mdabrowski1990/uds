@@ -271,6 +271,7 @@ def create_flow_control_data(addressing_format: CanAddressingFormat,
         fc_bytes += bytearray([filler_byte])
     if flow_status == CanFlowStatus.ContinueToSend or st_min is not None:
         validate_raw_byte(st_min)
+        st_min: int
         fc_bytes += bytearray([st_min])
     else:
         fc_bytes += bytearray([filler_byte])

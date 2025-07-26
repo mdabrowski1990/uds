@@ -6,7 +6,7 @@ from typing import Any, Optional, Tuple, Type, Union
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import AbstractPacket, AbstractPacketRecord, PacketsContainersSequence
+from uds.packet import AbstractPacket, AbstractPacketRecord, PacketsContainersSequence, PacketsRecordsSequence
 from uds.segmentation import AbstractSegmenter, SegmentationError
 from uds.utilities import RawBytesAlias, validate_raw_byte
 
@@ -160,7 +160,7 @@ class CanSegmenter(AbstractSegmenter):
             sequence_number = (cf_index + 1) % 0x10
             payload_i_start = ff_payload_size + cf_index * cf_payload_size
             payload_i_stop = payload_i_start + cf_payload_size
-            last_cf = cf_index == total_cfs_number-1
+            last_cf = cf_index == total_cfs_number - 1
             consecutive_frame = CanPacket(packet_type=CanPacketType.CONSECUTIVE_FRAME,
                                           payload=message.payload[payload_i_start: payload_i_stop],
                                           dlc=None if last_cf and self.use_data_optimization else self.dlc,
@@ -192,7 +192,10 @@ class CanSegmenter(AbstractSegmenter):
                                  **self.addressing_information.tx_functional_params)
         return (single_frame,)
 
-    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias, **_) -> Optional[AddressingType]:
+    def is_input_packet(self,
+                        can_id: int,
+                        raw_frame_data: RawBytesAlias,
+                        **_: Any) -> Optional[AddressingType]:
         """
         Check if a frame with provided attributes is an input packet for this CAN Segmenter.
 
@@ -224,8 +227,8 @@ class CanSegmenter(AbstractSegmenter):
         if packets[0].packet_type == CanPacketType.SINGLE_FRAME:
             return len(packets) == 1
         if packets[0].packet_type == CanPacketType.FIRST_FRAME:
-            total_payload_size = packets[0].data_length
-            payload_bytes_found = len(packets[0].payload)
+            total_payload_size: int = packets[0].data_length
+            payload_bytes_found = len(packets[0].payload)  # type: ignore
             for following_packet in packets[1:]:
                 if CanPacketType.is_initial_packet_type(following_packet.packet_type):
                     return False
@@ -275,6 +278,7 @@ class CanSegmenter(AbstractSegmenter):
         if not self.is_desegmented_message(packets):
             raise SegmentationError("Provided packets are not a complete packets sequence")
         if isinstance(packets[0], CanPacketRecord):
+            packets: PacketsRecordsSequence
             return UdsMessageRecord(packets)
         if isinstance(packets[0], CanPacket):
             if packets[0].packet_type == CanPacketType.SINGLE_FRAME and len(packets) == 1:

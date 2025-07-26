@@ -8,7 +8,7 @@ from uds.utilities import ValidatedEnum
 
 
 @unique
-class AddressingType(ValidatedEnum, StrEnum):  # type: ignore
+class AddressingType(ValidatedEnum, StrEnum):
     """
     Addressing types values defined by UDS protocol.
 

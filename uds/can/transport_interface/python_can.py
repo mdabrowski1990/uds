@@ -8,9 +8,7 @@ from time import time
 from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
-from can import AsyncBufferedReader, BufferedReader, BusABC
-from can import Message as PythonCanMessage
-from can import Notifier
+from can import AsyncBufferedReader, BufferedReader, BusABC, Notifier, Message as PythonCanMessage
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.utilities import (
     NewMessageReceptionWarning,
@@ -379,7 +377,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record of UDS message that was formed provided First Frame and received Consecutive Frames.
         """
         packets_records: List[CanPacketRecord] = [first_frame]
-        message_data_length: int = first_frame.data_length  # type: ignore
+        message_data_length: int = first_frame.data_length
         received_data_length: int = len(first_frame.payload)  # type: ignore
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
@@ -405,16 +403,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if flow_status == CanFlowStatus.ContinueToSend:
                 remaining_data_length = message_data_length - received_data_length
                 cf_block = await self._async_receive_cf_packets_block(sequence_number=sequence_number,
-                                                                      block_size=block_size,  # type: ignore
+                                                                      block_size=block_size,
                                                                       remaining_data_length=remaining_data_length,
                                                                       loop=loop)
                 if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
-                received_data_length += len(cf_block[0].payload) * len(cf_block)  # type: ignore
+                received_data_length += len(cf_block[0].payload) * len(cf_block)
                 if received_data_length >= message_data_length:
                     break
-                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF  # type: ignore
+                sequence_number = (cf_block[-1].sequence_number + 1) & 0xF
         return UdsMessageRecord(packets_records)
 
     def clear_frames_buffers(self) -> None:
@@ -636,7 +634,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 if record.flow_status == CanFlowStatus.ContinueToSend:
                     number_of_packets = len(packets_to_send) if record.block_size == 0 else record.block_size
                     delay_between_cf = self.n_cs if self.n_cs is not None else \
-                        CanSTminTranslator.decode(record.st_min)  # type: ignore
+                        CanSTminTranslator.decode(record.st_min)
                     packet_records.extend(self._send_cf_packets_block(
                         cf_packets_block=packets_to_send[:number_of_packets],
                         delay=delay_between_cf))
@@ -678,7 +676,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 if record.flow_status == CanFlowStatus.ContinueToSend:
                     number_of_packets = len(packets_to_send) if record.block_size == 0 else record.block_size
                     delay_between_cf = self.n_cs if self.n_cs is not None else \
-                        CanSTminTranslator.decode(record.st_min)  # type: ignore
+                        CanSTminTranslator.decode(record.st_min)
                     packet_records.extend(
                         await self._async_send_cf_packets_block(cf_packets_block=packets_to_send[:number_of_packets],
                                                                 delay=delay_between_cf,
