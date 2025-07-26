@@ -34,6 +34,7 @@ class AbstractPythonCanTests(AbstractCanTests):
     """
 
     MAKE_TIMING_CHECKS: bool = True
+    WAIT_AFTER_TEST_CASE: TimeMillisecondsAlias = 250.
 
     can_interface_1: Bus
     can_interface_2: Bus
@@ -58,12 +59,13 @@ class AbstractPythonCanTests(AbstractCanTests):
     def teardown_method(self):
         """Finish all tasks that were open during test."""
         for _timer in self._timers:
-            if not _timer.finished.is_set():
-                sleep(0.001)
             _timer.cancel()
         if self._timers:
-            self._timers = []
             sleep(self.TASK_TIMING_TOLERANCE / 1000.)
+            for _timer in self._timers:
+                del _timer
+            self._timers = []
+        sleep(self.WAIT_AFTER_TEST_CASE / 1000.)
 
     def teardown_class(self):
         """Safely close CAN bus objects."""
@@ -675,12 +677,12 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert packet_record.can_id == can_frame.arbitration_id
 
 
-class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
+class AbstractMessageTests(AbstractPythonCanTests, ABC):
     """Common implementation of system tests related to sending and receiving UDS messages."""
 
     @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
-        UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     def test_send_message__sf(self, example_can_addressing_information, message):
         """
@@ -714,8 +716,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
             assert datetime_before_send < message_record.transmission_start < datetime_after_send
 
     @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
-        UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.asyncio
     async def test_async_send_message__sf(self, example_can_addressing_information, message):
@@ -750,8 +752,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
             assert datetime_before_send < message_record.transmission_start < datetime_after_send
 
     @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
-        UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
@@ -800,8 +802,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
             assert datetime_before_receive < message_record.transmission_start < datetime_after_receive
 
     @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
-        UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
@@ -854,8 +856,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
             assert datetime_before_receive < message_record.transmission_start < datetime_after_receive
 
     @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
-        UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         (1000, 1005),  # ms
@@ -901,8 +903,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
         assert message_record.addressing_type == message.addressing_type
 
     @pytest.mark.parametrize("message", [
-        UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
-        UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         (1000, 1005),  # ms
@@ -1216,12 +1218,9 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
             network_manager=self.can_interface_2,
             addressing_information=example_can_addressing_information.get_other_end())
         packets = can_transport_interface_2nd_node.segmenter.segmentation(message)
-        self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
-                         packet=packets[0],
-                         delay=send_after)
-        for i, cf_packet in enumerate(packets[1:], start=1):
+        for i, packet in enumerate(packets):
             self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
-                             packet=cf_packet,
+                             packet=packet,
                              delay=send_after + i * delay)
         datetime_before_receive = datetime.now()
         message_record = can_transport_interface.receive_message(timeout=timeout)
@@ -1403,30 +1402,31 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):  # TODO
                     < receiving_time_ms < expected_timeout_time + self.TASK_TIMING_TOLERANCE)
 
 
-class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
+class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
     """Common implementation of system tests wih typical use case scenarios."""
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     def test_send_packet_on_one_receive_on_other_bus(self, packet_type, addressing_type, addressing_format,
                                                      packet_type_specific_kwargs,
@@ -1448,32 +1448,21 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_format: CAN Addressing Format to use.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.tx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.tx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_functional_params["address_extension"]
         can_transport_interface_1 = PyCanTransportInterface(
             network_manager=self.can_interface_1,
-            addressing_information=parametrized_can_addressing_information.get_other_end())
+            addressing_information=parametrized_can_addressing_information)
         can_transport_interface_2 = PyCanTransportInterface(
             network_manager=self.can_interface_2,
-            addressing_information=parametrized_can_addressing_information)
+            addressing_information=parametrized_can_addressing_information.get_other_end())
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.tx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.tx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
-        sent_packet_record = can_transport_interface_2.send_packet(packet)
-        received_packet_record = can_transport_interface_1.receive_packet(timeout=100)
+        sent_packet_record = can_transport_interface_1.send_packet(packet)
+        received_packet_record = can_transport_interface_2.receive_packet(timeout=100)
         assert isinstance(sent_packet_record, CanPacketRecord)
         assert isinstance(received_packet_record, CanPacketRecord)
         assert sent_packet_record.direction == TransmissionDirection.TRANSMITTED
@@ -1483,37 +1472,39 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
                 == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
         assert received_packet_record.packet_type == sent_packet_record.packet_type == packet.packet_type == packet_type
-        assert received_packet_record.can_id == sent_packet_record.can_id == packet.can_id == can_id
+        assert (received_packet_record.can_id == sent_packet_record.can_id == packet.can_id
+                == addressing_params["can_id"])
         assert (received_packet_record.addressing_type == sent_packet_record.addressing_type
                 == packet.addressing_type == addressing_type)
         assert (received_packet_record.target_address == sent_packet_record.target_address
-                == packet.target_address == target_address)
+                == packet.target_address == addressing_params["target_address"])
         assert (received_packet_record.source_address == sent_packet_record.source_address
-                == packet.source_address == source_address)
+                == packet.source_address == addressing_params["source_address"])
         assert (received_packet_record.address_extension == sent_packet_record.address_extension
-                == packet.address_extension == address_extension)
+                == packet.address_extension == addressing_params["address_extension"])
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     @pytest.mark.asyncio
     async def test_async_send_packet_on_one_receive_on_other_bus(self, packet_type, addressing_type, addressing_format,
@@ -1536,32 +1527,21 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_format: CAN Addressing Format to use.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.tx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.tx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_functional_params["address_extension"]
         can_transport_interface_1 = PyCanTransportInterface(
             network_manager=self.can_interface_1,
-            addressing_information=parametrized_can_addressing_information.get_other_end())
+            addressing_information=parametrized_can_addressing_information)
         can_transport_interface_2 = PyCanTransportInterface(
             network_manager=self.can_interface_2,
-            addressing_information=parametrized_can_addressing_information)
+            addressing_information=parametrized_can_addressing_information.get_other_end())
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.tx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.tx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
-        receive_packet_task = asyncio.create_task(can_transport_interface_1.async_receive_packet(timeout=100))
-        sent_packet_record = await can_transport_interface_2.async_send_packet(packet)
+        receive_packet_task = asyncio.create_task(can_transport_interface_2.async_receive_packet(timeout=100))
+        sent_packet_record = await can_transport_interface_1.async_send_packet(packet)
         received_packet_record = await receive_packet_task
         assert isinstance(sent_packet_record, CanPacketRecord)
         assert isinstance(received_packet_record, CanPacketRecord)
@@ -1572,15 +1552,16 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
                 == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
         assert received_packet_record.packet_type == sent_packet_record.packet_type == packet.packet_type == packet_type
-        assert received_packet_record.can_id == sent_packet_record.can_id == packet.can_id == can_id
+        assert (received_packet_record.can_id == sent_packet_record.can_id == packet.can_id
+                == addressing_params["can_id"])
         assert (received_packet_record.addressing_type == sent_packet_record.addressing_type
                 == packet.addressing_type == addressing_type)
         assert (received_packet_record.target_address == sent_packet_record.target_address
-                == packet.target_address == target_address)
+                == packet.target_address == addressing_params["target_address"])
         assert (received_packet_record.source_address == sent_packet_record.source_address
-                == packet.source_address == source_address)
+                == packet.source_address == addressing_params["source_address"])
         assert (received_packet_record.address_extension == sent_packet_record.address_extension
-                == packet.address_extension == address_extension)
+                == packet.address_extension == addressing_params["address_extension"])
 
     @pytest.mark.parametrize("message, n_cs, n_br, block_size, st_min, wait_count, repeat_wait, send_after, timeout", [
         (UdsMessage(payload=[0x22, 0x12, 0x34], addressing_type=AddressingType.PHYSICAL),
@@ -1632,17 +1613,17 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
             addressing_information=example_can_addressing_information.get_other_end(),
             n_cs=n_cs)
 
-        timer = self.send_message(can_transport_interface=can_transport_interface_2,
+        timer = self.send_message(can_transport_interface=can_transport_interface_1,
                                   message=message,
                                   delay=send_after)
-        received_message_record = can_transport_interface_1.receive_message(timeout=timeout)
+        received_message_record = can_transport_interface_2.receive_message(timeout=timeout)
         while not timer.finished.is_set():
-            sleep(0.001)
+            sleep(self.TASK_TIMING_TOLERANCE / 1000.)
         assert isinstance(self.sent_message, UdsMessageRecord)
         assert isinstance(received_message_record, UdsMessageRecord)
         assert self.sent_message.direction == TransmissionDirection.TRANSMITTED
         assert received_message_record.direction == TransmissionDirection.RECEIVED
-        assert self.sent_message.addressing_type == received_message_record.addressing_type == message.addressing_type
+        assert self.sent_message.addressing_type == message.addressing_type
         assert self.sent_message.payload == received_message_record.payload == message.payload
 
     @pytest.mark.parametrize("message, n_cs, n_br, block_size, st_min, wait_count, repeat_wait, send_after, timeout", [
@@ -1657,7 +1638,7 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
     ])
     @pytest.mark.asyncio
     async def test_async_send_message_on_one_receive_on_other_bus(self, example_can_addressing_information,
-                                                                  message, send_after, timeout,  # TODO
+                                                                  message, send_after, timeout,
                                                                   n_cs, n_br, block_size, st_min, wait_count,
                                                                   repeat_wait):
         """
@@ -1697,9 +1678,9 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
             addressing_information=example_can_addressing_information.get_other_end(),
             n_cs=n_cs)
 
-        receive_message_task = asyncio.create_task(can_transport_interface_1.async_receive_message(timeout=timeout))
+        receive_message_task = asyncio.create_task(can_transport_interface_2.async_receive_message(timeout=timeout))
         send_message_task = asyncio.create_task(
-            self.async_send_message(can_transport_interface=can_transport_interface_2,
+            self.async_send_message(can_transport_interface=can_transport_interface_1,
                                     message=message,
                                     delay=send_after))
         sent_message_record = await send_message_task
@@ -1708,34 +1689,35 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):  # TODO
         assert isinstance(received_message_record, UdsMessageRecord)
         assert sent_message_record.direction == TransmissionDirection.TRANSMITTED
         assert received_message_record.direction == TransmissionDirection.RECEIVED
-        assert sent_message_record.addressing_type == received_message_record.addressing_type == message.addressing_type
+        assert sent_message_record.addressing_type == message.addressing_type
         assert sent_message_record.payload == received_message_record.payload == message.payload
 
 
-class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
+class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
     """Common implementation of guessing errors system tests."""
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     def test_timeout_then_send_packet(self, packet_type, addressing_type, addressing_format, packet_type_specific_kwargs,
                                       parametrized_can_addressing_information):
@@ -1755,26 +1737,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_format: CAN Addressing Format to use.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.tx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.tx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_functional_params["address_extension"]
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.tx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.tx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_packet(timeout=100)
@@ -1785,33 +1756,34 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         assert (packet_record.addressing_format == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
         assert packet_record.packet_type == packet.packet_type == packet_type
-        assert packet_record.can_id == packet.can_id == can_id
+        assert packet_record.can_id == packet.can_id == addressing_params["can_id"]
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
-        assert packet_record.target_address == packet.target_address == target_address
-        assert packet_record.source_address == packet.source_address == source_address
-        assert packet_record.address_extension == packet.address_extension == address_extension
+        assert packet_record.target_address == packet.target_address == addressing_params["target_address"]
+        assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
+        assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     @pytest.mark.asyncio
     async def test_async_timeout_then_send_packet(self, packet_type, addressing_type, addressing_format,
@@ -1833,26 +1805,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_type: Addressing type to use for transmitting a CAN packet.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.tx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.tx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_functional_params["address_extension"]
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.rx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.rx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
         with pytest.raises((TimeoutError, asyncio.TimeoutError)):
             await can_transport_interface.async_receive_packet(timeout=100)
@@ -1863,33 +1824,34 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         assert (packet_record.addressing_format == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
         assert packet_record.packet_type == packet.packet_type == packet_type
-        assert packet_record.can_id == packet.can_id == can_id
+        assert packet_record.can_id == packet.can_id == addressing_params["can_id"]
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
-        assert packet_record.target_address == packet.target_address == target_address
-        assert packet_record.source_address == packet.source_address == source_address
-        assert packet_record.address_extension == packet.address_extension == address_extension
+        assert packet_record.target_address == packet.target_address == addressing_params["target_address"]
+        assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
+        assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     def test_timeout_then_receive_packet(self, packet_type, addressing_type, addressing_format,
                                          packet_type_specific_kwargs,
@@ -1911,26 +1873,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_format: CAN Addressing Format to use.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.rx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.rx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.rx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.rx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.rx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.rx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.rx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.rx_functional_params["address_extension"]
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.rx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.rx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
         can_frame = Message(arbitration_id=packet.can_id,
                             data=packet.raw_frame_data,
@@ -1943,14 +1894,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         datetime_after_receive = datetime.now()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
-        assert packet_record.raw_frame_data == bytes(can_frame.data)
-        assert (packet_record.addressing_format == addressing_format
+        assert packet_record.raw_frame_data == packet.raw_frame_data == bytes(can_frame.data)
+        assert (packet_record.addressing_format == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
-        assert packet_record.addressing_type == addressing_type
-        assert packet_record.can_id == can_frame.arbitration_id == can_id
-        assert packet_record.target_address == target_address
-        assert packet_record.source_address == source_address
-        assert packet_record.address_extension == address_extension
+        assert packet_record.packet_type == packet.packet_type == packet_type
+        assert packet_record.addressing_type == packet.addressing_type == addressing_type
+        assert packet_record.can_id == packet.can_id == can_frame.arbitration_id == addressing_params["can_id"]
+        assert packet_record.target_address == packet.target_address == addressing_params["target_address"]
+        assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
+        assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert datetime_before_send < packet_record.transmission_time < datetime_after_receive
@@ -1959,23 +1911,24 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     @pytest.mark.asyncio
     async def test_async_timeout_then_receive_packet(self, packet_type, addressing_type, addressing_format,
@@ -1998,26 +1951,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_format: CAN Addressing Format to use.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.rx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.rx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.rx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.rx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.rx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.rx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.rx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.rx_functional_params["address_extension"]
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.rx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.rx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
         can_frame = Message(arbitration_id=packet.can_id,
                             data=packet.raw_frame_data,
@@ -2030,14 +1972,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         datetime_after_receive = datetime.now()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
-        assert packet_record.raw_frame_data == bytes(can_frame.data)
-        assert (packet_record.addressing_format == addressing_format
+        assert packet_record.raw_frame_data == packet.raw_frame_data == bytes(can_frame.data)
+        assert (packet_record.addressing_format == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
-        assert packet_record.addressing_type == addressing_type
-        assert packet_record.can_id == can_frame.arbitration_id == can_id
-        assert packet_record.target_address == target_address
-        assert packet_record.source_address == source_address
-        assert packet_record.address_extension == address_extension
+        assert packet_record.packet_type == packet.packet_type == packet_type
+        assert packet_record.addressing_type == packet.addressing_type == addressing_type
+        assert packet_record.can_id == packet.can_id == can_frame.arbitration_id == addressing_params["can_id"]
+        assert packet_record.target_address == packet.target_address == addressing_params["target_address"]
+        assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
+        assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert datetime_before_send < packet_record.transmission_time < datetime_after_receive
@@ -2046,23 +1989,24 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     def test_observe_tx_packet(self, packet_type, addressing_type, addressing_format, packet_type_specific_kwargs,
                                parametrized_can_addressing_information):
@@ -2082,26 +2026,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_format: CAN Addressing Format to use.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.tx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.tx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_functional_params["address_extension"]
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.tx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.tx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
         can_frame = Message(arbitration_id=packet.can_id,
                             data=packet.raw_frame_data,
@@ -2117,11 +2050,11 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         assert (packet_record.addressing_format == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
         assert packet_record.packet_type == packet.packet_type == packet_type
-        assert packet_record.can_id == packet.can_id == can_id
+        assert packet_record.can_id == packet.can_id == addressing_params["can_id"]
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
-        assert packet_record.target_address == packet.target_address == target_address
-        assert packet_record.source_address == packet.source_address == source_address
-        assert packet_record.address_extension == packet.address_extension == address_extension
+        assert packet_record.target_address == packet.target_address == addressing_params["target_address"]
+        assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
+        assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert datetime_before_send < packet_record.transmission_time < datetime_after_send
@@ -2130,23 +2063,24 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         (CanPacketType.SINGLE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_ADDRESSING,
-         {"filler_byte": 0x1E, "payload": [0x10, 0x04]}),
+         {"payload": [0x54]}),
         (CanPacketType.FIRST_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x13}),
+         {"dlc": 8, "payload": [0x22, 0x10, 0x00, 0x10, 0x01, 0x10], "data_length": 0x8}),
         (CanPacketType.CONSECUTIVE_FRAME,
          AddressingType.PHYSICAL,
          CanAddressingFormat.EXTENDED_ADDRESSING,
-         {"payload": [0x32, 0xFF], "sequence_number": 0xF}),
+         {"payload": b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F\xFF",
+          "sequence_number": 0xF, "filler_byte": 0x5A}),
         (CanPacketType.FLOW_CONTROL,
          AddressingType.PHYSICAL,
          CanAddressingFormat.MIXED_11BIT_ADDRESSING,
-         {"dlc": 8, "flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x15, "st_min": 0xFE}),
+         {"flow_status": CanFlowStatus.ContinueToSend, "block_size": 0x00, "st_min": 0xFE}),
         (CanPacketType.SINGLE_FRAME,
          AddressingType.FUNCTIONAL,
          CanAddressingFormat.MIXED_29BIT_ADDRESSING,
-         {"filler_byte": 0xBC, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A, 0x12, 0xBC], "dlc": 0xF}),
+         {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     @pytest.mark.asyncio
     async def test_async_observe_tx_packet(self, packet_type, addressing_type, addressing_format,
@@ -2168,26 +2102,15 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         :param addressing_format: CAN Addressing Format to use.
         :param packet_type_specific_kwargs: Parameters specific for this CAN packet type.
         """
-        if addressing_type == AddressingType.PHYSICAL:
-            can_id = parametrized_can_addressing_information.tx_physical_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_physical_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_physical_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_physical_params["address_extension"]
-        else:
-            can_id = parametrized_can_addressing_information.tx_functional_params["can_id"]
-            target_address = parametrized_can_addressing_information.tx_functional_params["target_address"]
-            source_address = parametrized_can_addressing_information.tx_functional_params["source_address"]
-            address_extension = parametrized_can_addressing_information.tx_functional_params["address_extension"]
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
+        if addressing_type == AddressingType.PHYSICAL:
+            addressing_params = parametrized_can_addressing_information.tx_physical_params
+        else:
+            addressing_params = parametrized_can_addressing_information.tx_functional_params
         packet = CanPacket(packet_type=packet_type,
-                           addressing_format=addressing_format,
-                           addressing_type=addressing_type,
-                           can_id=can_id,
-                           target_address=target_address,
-                           source_address=source_address,
-                           address_extension=address_extension,
+                           **addressing_params,
                            **packet_type_specific_kwargs)
         can_frame = Message(arbitration_id=packet.can_id,
                             data=packet.raw_frame_data,
@@ -2203,11 +2126,11 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):  # TODO
         assert (packet_record.addressing_format == packet.addressing_format == addressing_format
                 == parametrized_can_addressing_information.ADDRESSING_FORMAT)
         assert packet_record.packet_type == packet.packet_type == packet_type
-        assert packet_record.can_id == packet.can_id == can_id
+        assert packet_record.can_id == packet.can_id == addressing_params["can_id"]
         assert packet_record.addressing_type == packet.addressing_type == addressing_type
-        assert packet_record.target_address == packet.target_address == target_address
-        assert packet_record.source_address == packet.source_address == source_address
-        assert packet_record.address_extension == packet.address_extension == address_extension
+        assert packet_record.target_address == packet.target_address == addressing_params["target_address"]
+        assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
+        assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert datetime_before_send < packet_record.transmission_time < datetime_after_send
