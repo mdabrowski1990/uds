@@ -1,49 +1,38 @@
 import asyncio
 
-from can import Bus, Message
-from uds.can import CanAddressingFormat, CanAddressingInformation
-from uds.transport_interface import PyCanTransportInterface
+from can import Bus
+from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
 
 
 async def main():
-    # configure CAN interfaces
-    kvaser_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)  # receiving
-    kvaser_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)  # sending
+    # configure CAN interface
+    can_interface = Bus(interface="kvaser",
+                        channel=0,
+                        bitrate=500000,
+                        fd=True,
+                        data_bitrate=4000000,
+                        receive_own_messages=True)
 
-    # configure Addressing Information of a CAN Node (example values)
-    addressing_information = CanAddressingInformation(
-        addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
-        tx_physical={"can_id": 0x611},
-        rx_physical={"can_id": 0x612},
-        tx_functional={"can_id": 0x6FF},
-        rx_functional={"can_id": 0x6FE})
+    # configure addresses for Diagnostics on CAN communication
+    addressing_information = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+                                                      rx_physical_params={"can_id": 0x611},
+                                                      tx_physical_params={"can_id": 0x612},
+                                                      rx_functional_params={"can_id": 0x6FF},
+                                                      tx_functional_params={"can_id": 0x6FE})
 
-    # create Transport Interface object for UDS communication
-    can_ti = PyCanTransportInterface(can_bus_manager=kvaser_interface_1,
+    # create Transport Interface object for Diagnostics on CAN communication
+    can_ti = PyCanTransportInterface(network_manager=can_interface,
                                      addressing_information=addressing_information)
 
-    # define frames carrying a UDS message (to be received later on)
-    frame_1 = Message(arbitration_id=0x612, data=[0x10, 0x0b, 0x62, 0x10, 0x00, 0x00, 0x01, 0x02])
-    frame_2 = Message(arbitration_id=0x612, data=[0x21, 0x03, 0x04, 0x05, 0x06, 0x07, 0xCC, 0xCC])
-
-    # define task of define UDS message transmission
-    async def _send_message():
-        await asyncio.sleep(0.01)
-        kvaser_interface_2.send(frame_1)
-        await asyncio.sleep(0.5)
-        kvaser_interface_2.send(frame_2)
-
-    send_message_task = asyncio.create_task(_send_message())
-
     # receive message
-    received_message_record = await can_ti.async_receive_message(timeout=1000)  # 1000 [ms]
-    await send_message_task
+    received_message_record = await can_ti.async_receive_message(timeout=1000)  # timeout=1000 [ms]
+
+    # show received message
     print(received_message_record)
 
-    # close connections with CAN interfaces
+    # close connections with CAN interface
     del can_ti
-    kvaser_interface_1.shutdown()
-    kvaser_interface_2.shutdown()
+    can_interface.shutdown()
 
 
 if __name__ == "__main__":

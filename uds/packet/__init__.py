@@ -18,4 +18,3 @@ from .abstract_packet import (
     PacketsTuple,
 )
 from .abstract_packet_type import AbstractPacketType
-from .can import AbstractCanPacketContainer, CanPacket, CanPacketRecord, CanPacketType

@@ -146,7 +146,7 @@ class NRC(ValidatedEnum, ExtendableEnum, ByteEnum):
     blockSequenceCounter values. Note that the repetition of a TransferData request message with a blockSequenceCounter
     equal to the one included in the previous TransferData request message shall be accepted by the server."""
     RequestCorrectlyReceived_ResponsePending: "NRC" = 0x78  # type: ignore  # noqa: F841
-    """RequestCorrectlyReceived_ResponsePending (0x78) NRC ndicates that the request message was received correctly,
+    """RequestCorrectlyReceived_ResponsePending (0x78) NRC indicates that the request message was received correctly,
     and that all parameters in the request message were valid (these checks can be delayed until after sending this NRC
     if executing the boot software), but the action to be performed is not yet completed and the server is not yet
     ready to receive another request. As soon as the requested service has been completed, the server shall send

@@ -11,14 +11,14 @@ from .custom_exceptions import InconsistentArgumentsError
 from .enums import ValidatedEnum
 
 
-class Endianness(ValidatedEnum, StrEnum):  # type: ignore
+class Endianness(ValidatedEnum, StrEnum):
     """
     Endianness values definitions.
 
     `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
     """
 
-    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore  # noqa: F841
+    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore
     """Little Endian stores the most significant byte at the largest memory address and the least significant byte
     at the smallest."""
     BIG_ENDIAN: "Endianness" = "big"  # type: ignore

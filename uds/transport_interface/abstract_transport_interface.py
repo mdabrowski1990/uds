@@ -6,10 +6,11 @@ from abc import ABC, abstractmethod
 from asyncio import AbstractEventLoop
 from typing import Any, Optional
 
+from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter
-from uds.utilities import TimeMillisecondsAlias
+from uds.utilities import ReassignmentError, TimeMillisecondsAlias
 
 
 class AbstractTransportInterface(ABC):
@@ -19,26 +20,14 @@ class AbstractTransportInterface(ABC):
     Transport Interfaces are meant to handle middle layers (Transport and Network) of UDS OSI Model.
     """
 
-    def __init__(self, bus_manager: Any) -> None:
+    def __init__(self,
+                 network_manager: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
-        :param bus_manager: An object that handles the bus (Physical and Data layers of OSI Model).
-
-        :raise ValueError: Provided value of bus manager is not supported by this Transport Interface.
+        :param network_manager: An object that handles the network (Physical and Data layers of OSI Model).
         """
-        if not self.is_supported_bus_manager(bus_manager):
-            raise ValueError("Unsupported bus manager was provided.")
-        self.__bus_manager = bus_manager
-
-    @property
-    def bus_manager(self) -> Any:
-        """
-        Value of the bus manager used by this Transport Interface.
-
-        Bus manager handles Physical and Data layers (OSI Model) of the bus.
-        """
-        return self.__bus_manager
+        self.network_manager = network_manager
 
     @property
     @abstractmethod
@@ -46,19 +35,61 @@ class AbstractTransportInterface(ABC):
         """
         Value of the segmenter used by this Transport Interface.
 
-        .. warning:: Do not change any segmenter attributes as it might cause malfunction of the entire
-            Transport Interface.
+        .. warning:: Do not change any segmenter attributes during the communication as it might introduce
+            faults to Transport Interface.
         """
+
+    @property
+    def addressing_information(self) -> AbstractAddressingInformation:
+        """Get Addressing Information of UDS Entity simulated by this Transport Interface."""
+        return self.segmenter.addressing_information
+
+    @addressing_information.setter
+    def addressing_information(self, value: AbstractAddressingInformation) -> None:
+        """
+        Set Addressing Information of UDS Entity simulated by this Transport Interface.
+
+        :param value: Addressing Information value to set.
+        """
+        self.segmenter.addressing_information = value
+
+    @property
+    def network_manager(self) -> Any:
+        """
+        Get network manager used by this Transport Interface.
+
+        Network manager handles Physical and Data layers (OSI Model) of the bus/network.
+        """
+        return self.__network_manager
+
+    @network_manager.setter
+    def network_manager(self, value: Any) -> None:
+        """
+        Set value of network manager used by this Transport Interface.
+
+        :param value: Value to set.
+
+        :raise ValueError: Provided value is not a supported Network Manager.
+        :raise ReassignmentError: An attempt to change the value after object creation.
+        """
+        if not self.is_supported_network_manager(value):
+            raise ValueError("Unsupported network manager was provided.")
+        try:
+            getattr(self, "_AbstractTransportInterface__network_manager")
+        except AttributeError:
+            self.__network_manager = value
+        else:
+            raise ReassignmentError("You cannot change value of 'network_manager' attribute once it is assigned.")
 
     @staticmethod
     @abstractmethod
-    def is_supported_bus_manager(bus_manager: Any) -> bool:
+    def is_supported_network_manager(bus_manager: Any) -> bool:
         """
-        Check whether provided value is a bus manager that is supported by this Transport Interface.
+        Check whether provided value is a bus/network manager that is supported by this Transport Interface.
 
         :param bus_manager: Value to check.
 
-        :return: True if provided bus object is compatible with this Transport Interface, False otherwise.
+        :return: True if provided object is compatible with this Transport Interface, False otherwise.
         """
 
     @abstractmethod

@@ -111,6 +111,8 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         invisible in the documentation.
     """
 
+    NegativeResponse: "ResponseSID" = 0x7F  # type: ignore  # noqa: F841
+
     @classmethod
     def is_response_sid(cls, value: int) -> bool:
         """
@@ -126,8 +128,6 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
                      category=UnrecognizedSIDWarning)
             return True
         return False
-
-    NegativeResponse: "ResponseSID" = 0x7F  # type: ignore  # noqa: F841
 
 
 # extend 'ResponseSID' with members that were defined in RequestSID

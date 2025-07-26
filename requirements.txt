@@ -1,2 +1,2 @@
-aenum==3.1.15
-python-can==4.4.2
+aenum==3.1.16
+python-can==4.5.0
