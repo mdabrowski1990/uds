@@ -7,8 +7,11 @@ meaningful information (e.g. physical value, text).
 
 from .abstract_data_record import (
     AbstractDataRecord,
-    DataRecordPhysicalValueAlias,
-    DataRecordValueAlias,
-    DecodedDataRecord,
+    MultipleOccurrencesInfo,
+    MultiplePhysicalValues,
+    PhysicalValueAlias,
+    SingleOccurrenceInfo,
+    SinglePhysicalValueAlias,
 )
+from .mapping_data_record import MappingDataRecord
 from .raw_data_record import RawDataRecord
