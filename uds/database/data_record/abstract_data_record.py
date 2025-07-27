@@ -10,21 +10,35 @@ from typing import List, Optional, Sequence, Tuple, TypedDict, Union
 from uds.utilities import InconsistentArgumentsError, ReassignmentError
 
 SinglePhysicalValueAlias = Union[int, float, str]
-"""Alias for a physical value decoded from a single occurrence."""
+"""
+Physical value from a single Data Record occurrence.
+
+Physical values represent the human-readable interpretation of raw integer values:
+ - int: Direct numeric values (e.g., 127 for temperature sensor)
+ - float: Scaled/calculated values (e.g., 25.5°C after scaling)
+ - str: Mapped labels (e.g., "Active", "Inactive", "Warning")
+"""
 MultiplePhysicalValues = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
-"""Alias for a physical values decoded from multiple occurrences."""
+"""
+Physical values from multiple Data Record occurrences.
+
+When processing multiple occurrences, physical values are either:
+ - str: Concatenated string for all occurrences (e.g. serial number, part number) using predefined encoding 
+   (e.g. ASCII, UTF-8) 
+ - tuple: Individual values per occurrence
+"""
 PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValues]
 """Alias for all physical values."""
 
 
 class SingleOccurrenceInfo(TypedDict, total=True):
     """
-    Information about a single Data Record occurrence.
+    Comprehensive information about a single Data Record occurrence.
 
     :arg name: Data Record name.
     :arg raw_value: Raw values for this occurrence.
     :arg physical_value: Physical value for this occurrence.
-    :arg children: Information about children for this occurrence.
+    :arg children: Extracted child information for this occurrence.
     """
 
     name: str
@@ -52,12 +66,17 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
 
 class AbstractDataRecord(ABC):
     """
-    Common implementation and interface for all Data Records.
+    Abstract base class for all Data Records with container functionality.
 
-    Data Records are parts of diagnostic messages which could be interpreted in various ways.
-    The objects would allow users to operate on meaningful data (e.g. vehicle speed in km/h,
-    temperature in Celsius degrees) which we call physical values instead of raw (byte) values.
-    Each subclass is meant to provide utilities for translation between physical and raw values.
+    This class implements the container pattern where every Data Record can contain hierarchical children,
+    enabling automatic bit-field extraction and complex diagnostic message structures.
+
+    The container design eliminates the need for separate container classes while
+    providing powerful features:
+     - Automatic bit extraction from parent to children
+     - Multiple occurrences support with min/max constraints
+     - Immutable properties to prevent accidental modification
+     - Comprehensive occurrence information with nested children
     """
 
     def __init__(self,
@@ -289,7 +308,7 @@ class AbstractDataRecord(ABC):
 
     def get_occurrence_info(self, *raw_values: int) -> Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]:
         """
-        Get occurrence information for this Data Record.
+        Extract comprehensive occurrence information with automatic child extraction.
 
         :param raw_values: Raw value for each occurrence of this Data Record.
 

@@ -14,13 +14,22 @@ from .raw_data_record import RawDataRecord
 
 class MappingDataRecord(RawDataRecord):
     """
-    Implementation for Mapping Data Records.
+    Data Record with mapping between raw values and human-readable labels.
 
-    Mapping Data Records provide tools for translation between raw values and labels, e.g.
-    - 0 <-> OFF
-    - 1 <-> ON
+    MappingDataRecord provides translation between raw integer values and  meaningful labels, ideal for status fields,
+    enumerations, and boolean flags. Inherits from RawDataRecord to provide fallback behavior when no mapping exists.
 
-    Inherits from RawDataRecord to provide fallback behavior when no mapping is defined.
+    Features:
+     - Bidirectional mapping: raw <-> label translation
+     - Fallback behavior: unmapped values return raw integers with warning
+     - Container support: Can have children (e.g. for complex bit-field structures)
+     - Occurrence constraints: Support for multiple occurrences (e.g. status for multiple sensors)
+
+    Common Use Cases:
+     - Status indicators (0="Inactive", 1="Active")
+     - Boolean flags (0="No", 1="Yes")
+     - Enumerated values (0="Low", 1="Medium", 2="High")
+     - Complex bit-fields with individual bit meanings
     """
 
     def __init__(self,
