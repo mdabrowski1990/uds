@@ -239,7 +239,7 @@ class TestMappingDataRecordIntegration:
         assert self.dtc_status.get_physical_value(dtc_status_value) == expected_output["DTC Status"]
         children_values = self.dtc_status.get_children_values(dtc_status_value)
         for child in self.dtc_status.children:
-            item = children_values.popitem(False)
+            item = children_values.popitem(last=False)
             assert item[0] == child.name
             assert item[1] == expected_output[child.name]
 
