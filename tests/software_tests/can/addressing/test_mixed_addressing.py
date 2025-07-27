@@ -181,10 +181,10 @@ class TestMixed11BitCanAddressingInformation:
         assert (Mixed11BitCanAddressingInformation.is_compatible_can_id(can_id, addressing_type)
                 == self.mock_can_id_handler_class.is_standard_can_id.return_value)
 
-    # decode_data_bytes_ai_params
+    # decode_can_id_ai_params
 
     @pytest.mark.parametrize("can_id", [Mock(), 0x1234])
-    def test_decode_data_bytes_ai_params(self, can_id):
+    def test_decode_can_id_ai_params(self, can_id):
         assert Mixed11BitCanAddressingInformation.decode_can_id_ai_params(can_id) == {
             "addressing_type": None,
             "target_address": None,

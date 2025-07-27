@@ -360,7 +360,7 @@ class TestCanConsecutiveFrame:
         (CanAddressingFormat.MIXED_29BIT_ADDRESSING, 63, 1),
         (CanAddressingFormat.NORMAL_ADDRESSING, 64, 0),
     ])
-    def test_get_min_consecutive_frame_dlc__valid(self, addressing_format, payload_length, ai_data_bytes_number):
+    def test_get_min_consecutive_frame_dlc__value_error(self, addressing_format, payload_length, ai_data_bytes_number):
         self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         with pytest.raises(ValueError):
             get_consecutive_frame_min_dlc(addressing_format=addressing_format, payload_length=payload_length)

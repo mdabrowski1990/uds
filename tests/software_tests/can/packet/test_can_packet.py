@@ -17,10 +17,25 @@ class TestCanPacket:
         self.mock_can_addressing_format = self._patcher_can_addressing_format.start()
         self._patcher_can_addressing_information = patch(f"{SCRIPT_LOCATION}.CanAddressingInformation")
         self.mock_can_addressing_information = self._patcher_can_addressing_information.start()
+        self._patcher_validate_can_packet_type = patch(f"{SCRIPT_LOCATION}.CanPacketType.validate_member")
+        self.mock_validate_can_packet_type = self._patcher_validate_can_packet_type.start()
+        self._patcher_create_single_frame_data = patch(f"{SCRIPT_LOCATION}.create_single_frame_data")
+        self.mock_create_single_frame_data = self._patcher_create_single_frame_data.start()
+        self._patcher_create_first_frame_data = patch(f"{SCRIPT_LOCATION}.create_first_frame_data")
+        self.mock_create_first_frame_data = self._patcher_create_first_frame_data.start()
+        self._patcher_create_consecutive_frame_data = patch(f"{SCRIPT_LOCATION}.create_consecutive_frame_data")
+        self.mock_create_consecutive_frame_data = self._patcher_create_consecutive_frame_data.start()
+        self._patcher_create_flow_control_data = patch(f"{SCRIPT_LOCATION}.create_flow_control_data")
+        self.mock_create_flow_control_data = self._patcher_create_flow_control_data.start()
 
     def teardown_method(self):
         self._patcher_can_addressing_format.stop()
         self._patcher_can_addressing_information.stop()
+        self._patcher_validate_can_packet_type.stop()
+        self._patcher_create_single_frame_data.stop()
+        self._patcher_create_first_frame_data.stop()
+        self._patcher_create_consecutive_frame_data.stop()
+        self._patcher_create_flow_control_data.stop()
 
     # __init__
 
@@ -198,6 +213,87 @@ class TestCanPacket:
             addressing_format=self.mock_can_packet.addressing_format,
             target_address=self.mock_can_addressing_information.validate_addressing_params.return_value["target_address"],
             address_extension=self.mock_can_addressing_information.validate_addressing_params.return_value["address_extension"])
+
+    # set_packet_data
+
+    @pytest.mark.parametrize("packet_params", [
+        {"dlc": Mock(), "filler_byte": Mock(), "payload": Mock()},
+        {"payload": [0xFF]},
+    ])
+    def test_set_packet_data__single_frame(self, packet_params):
+        assert CanPacket.set_packet_data(self.mock_can_packet,
+                                         packet_type=CanPacketType.SINGLE_FRAME,
+                                         **packet_params) is None
+        if "dlc" not in packet_params:
+            packet_params["dlc"] = None
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(self.mock_create_single_frame_data)
+        self.mock_create_single_frame_data.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format,
+            target_address=self.mock_can_packet.target_address,
+            address_extension=self.mock_can_packet.address_extension,
+            **packet_params)
+        self.mock_validate_can_packet_type.assert_called_once_with(CanPacketType.SINGLE_FRAME)
+
+    @pytest.mark.parametrize("packet_params", [
+        {"dlc": Mock(), "payload": Mock(), "data_length": Mock()},
+        {"payload": [0xFF]},
+    ])
+    def test_set_packet_data__first_frame(self, packet_params):
+        assert CanPacket.set_packet_data(self.mock_can_packet,
+                                         packet_type=CanPacketType.FIRST_FRAME,
+                                         **packet_params) is None
+        if "dlc" not in packet_params:
+            packet_params["dlc"] = None
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(self.mock_create_first_frame_data)
+        self.mock_create_first_frame_data.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format,
+            target_address=self.mock_can_packet.target_address,
+            address_extension=self.mock_can_packet.address_extension,
+            **packet_params)
+        self.mock_validate_can_packet_type.assert_called_once_with(CanPacketType.FIRST_FRAME)
+
+    @pytest.mark.parametrize("packet_params", [
+        {"dlc": Mock(), "payload": Mock(), "sequence_number": Mock(), "filler_byte": Mock()},
+        {"payload": [0xFF], "sequence_number": 0x0},
+    ])
+    def test_set_packet_data__consecutive_frame(self, packet_params):
+        assert CanPacket.set_packet_data(self.mock_can_packet,
+                                         packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                                         **packet_params) is None
+        if "dlc" not in packet_params:
+            packet_params["dlc"] = None
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(self.mock_create_consecutive_frame_data)
+        self.mock_create_consecutive_frame_data.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format,
+            target_address=self.mock_can_packet.target_address,
+            address_extension=self.mock_can_packet.address_extension,
+            **packet_params)
+        self.mock_validate_can_packet_type.assert_called_once_with(CanPacketType.CONSECUTIVE_FRAME)
+
+    @pytest.mark.parametrize("packet_params", [
+        {"dlc": Mock(), "flow_status": Mock(), "block_size": Mock(), "st_min": Mock(), "filler_byte": Mock()},
+        {"flow_status": 3},
+    ])
+    def test_set_packet_data__flow_control(self, packet_params):
+        assert CanPacket.set_packet_data(self.mock_can_packet,
+                                         packet_type=CanPacketType.FLOW_CONTROL,
+                                         **packet_params) is None
+        if "dlc" not in packet_params:
+            packet_params["dlc"] = None
+        assert self.mock_can_packet._CanPacket__raw_frame_data == bytes(self.mock_create_flow_control_data)
+        self.mock_create_flow_control_data.assert_called_once_with(
+            addressing_format=self.mock_can_packet.addressing_format,
+            target_address=self.mock_can_packet.target_address,
+            address_extension=self.mock_can_packet.address_extension,
+            **packet_params)
+        self.mock_validate_can_packet_type.assert_called_once_with(CanPacketType.FLOW_CONTROL)
+
+    def test_set_packet_data__not_implemented(self):
+        mock_packet_type = Mock()
+        with pytest.raises(NotImplementedError):
+            CanPacket.set_packet_data(self.mock_can_packet,
+                                      packet_type=mock_packet_type)
+        self.mock_validate_can_packet_type.assert_called_once_with(mock_packet_type)
 
 
 @pytest.mark.integration
