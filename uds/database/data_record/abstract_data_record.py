@@ -1,7 +1,7 @@
 """Definition of Data Records structure and API."""
 
-__all__ = ["AbstractDataRecord", "SinglePhysicalValueAlias", "MultiplePhysicalValues", "PhysicalValueAlias",
-           "SingleOccurrenceInfo", "MultipleOccurrencesInfo"]
+__all__ = ["AbstractDataRecord", "MultipleOccurrencesInfo", "MultiplePhysicalValues", "PhysicalValueAlias",
+           "SingleOccurrenceInfo", "SinglePhysicalValueAlias"]
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
