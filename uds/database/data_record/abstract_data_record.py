@@ -115,9 +115,7 @@ class AbstractDataRecord(ABC):
         stripped_names = value.strip()
         if stripped_names == "":
             raise ValueError("Name must not be empty.")
-        try:
-            getattr(self, "_AbstractDataRecord__name")
-        except AttributeError:
+        if not hasattr(self, "_AbstractDataRecord__name"):
             self.__name = stripped_names
         else:
             raise ReassignmentError("You cannot change Data Record name. Create a new Data Record instead.")
@@ -142,9 +140,7 @@ class AbstractDataRecord(ABC):
             raise TypeError("Length must be an integer.")
         if value <= 0:
             raise ValueError("Length must be a positive value.")
-        try:
-            getattr(self, "_AbstractDataRecord__length")
-        except AttributeError:
+        if not hasattr(self, "_AbstractDataRecord__length"):
             self.__length = value
         else:
             raise ReassignmentError("You cannot change Data Record length. Create a new Data Record instead.")
@@ -202,9 +198,7 @@ class AbstractDataRecord(ABC):
             raise TypeError("Minimal occurrence number must be an integer.")
         if value < 0:
             raise ValueError("Minimal occurrence number must be a non-negative value.")
-        try:
-            getattr(self, "_AbstractDataRecord__min_occurrences")
-        except AttributeError:
+        if not hasattr(self, "_AbstractDataRecord__min_occurrences"):
             self.__min_occurrences = value
         else:
             raise ReassignmentError("You cannot change minimal number of Data Record occurrences. "
@@ -235,9 +229,7 @@ class AbstractDataRecord(ABC):
                 raise TypeError("Maximal occurrence number must be an integer or None.")
             if value < max(self.min_occurrences, 1):
                 raise ValueError("Maximal occurrence number must be greater or equal minimal occurrences number.")
-        try:
-            getattr(self, "_AbstractDataRecord__max_occurrences")
-        except AttributeError:
+        if not hasattr(self, "_AbstractDataRecord__max_occurrences"):
             self.__max_occurrences = value
         else:
             raise ReassignmentError("You cannot change maximal number of Data Record occurrences. "

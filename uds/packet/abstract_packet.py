@@ -100,9 +100,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_AbstractPacketRecord__frame")
-        except AttributeError:
+        if not hasattr(self, "_AbstractPacketRecord__frame"):
             self._validate_frame(value)
             self.__frame = value
         else:
@@ -122,9 +120,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_AbstractPacketRecord__direction")
-        except AttributeError:
+        if not hasattr(self, "_AbstractPacketRecord__direction"):
             self.__direction = TransmissionDirection.validate_member(value)
         else:
             raise ReassignmentError("You cannot change value of 'direction' attribute once it is assigned.")
@@ -144,11 +140,9 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         :raise TypeError: Provided value has unexpected type.
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_AbstractPacketRecord__transmission_time")
-        except AttributeError:
-            if not isinstance(value, datetime):
-                raise TypeError(f"Provided value has invalid type: {type(value)}")  # pylint: disable=raise-missing-from
+        if not isinstance(value, datetime):
+            raise TypeError(f"Provided value is not datetime type")
+        if not hasattr(self, "_AbstractPacketRecord__transmission_time"):
             self.__transmission_time = value
         else:
             raise ReassignmentError("You cannot change value of 'transmission_time' attribute once it is assigned.")
