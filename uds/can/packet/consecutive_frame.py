@@ -164,7 +164,8 @@ def generate_consecutive_frame_data(addressing_format: CanAddressingFormat,
     return cf_bytes + data_padding
 
 
-def extract_consecutive_frame_payload(addressing_format: CanAddressingFormat, raw_frame_data: RawBytesAlias) -> bytearray:
+def extract_consecutive_frame_payload(addressing_format: CanAddressingFormat,
+                                      raw_frame_data: RawBytesAlias) -> bytearray:
     """
     Extract diagnostic message payload from Consecutive Frame data bytes.
 

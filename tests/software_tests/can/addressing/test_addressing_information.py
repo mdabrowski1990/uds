@@ -21,13 +21,10 @@ class TestCanAddressingInformation:
         self.mock_validate_addressing_format = self._patcher_validate_addressing_format.start()
         self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
-        self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
-        self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
 
     def teardown_method(self):
         self._patcher_validate_addressing_format.stop()
         self._patcher_validate_raw_bytes.stop()
-        self._patcher_validate_raw_byte.stop()
 
     # __new__
 

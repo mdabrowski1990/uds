@@ -2,13 +2,14 @@
 
 __all__ = ["TransmissionDirection"]
 
-from aenum import StrEnum, unique
+from aenum import StrEnum as AStrEnum
+from aenum import unique
 
 from .enums import ValidatedEnum
 
 
 @unique
-class TransmissionDirection(ValidatedEnum, StrEnum):
+class TransmissionDirection(ValidatedEnum, AStrEnum):  # type: ignore
     """Direction of a communication."""
 
     RECEIVED: "TransmissionDirection" = "Rx"  # type: ignore

@@ -81,9 +81,9 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
 
     @classmethod
     @abstractmethod
-    def validate_addressing_params(cls,
-                                   addressing_format: CanAddressingFormat,
+    def validate_addressing_params(cls,  # type: ignore  # pylint: disable=arguments-differ
                                    addressing_type: AddressingType,
+                                   addressing_format: CanAddressingFormat,
                                    can_id: Optional[int] = None,
                                    target_address: Optional[int] = None,
                                    source_address: Optional[int] = None,
@@ -91,8 +91,8 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         """
         Validate Addressing Information parameters of a CAN packet.
 
-        :param addressing_format: CAN Addressing Format used.
         :param addressing_type: Addressing type to validate.
+        :param addressing_format: CAN Addressing Format used.
         :param can_id: CAN Identifier value to validate.
         :param target_address: Target Address value to validate.
         :param source_address: Source Address value to validate.
@@ -174,7 +174,10 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         :return: Data bytes that carry Addressing Information in a CAN frame Data field.
         """
 
-    def is_input_packet(self, can_id: int, raw_frame_data: RawBytesAlias, **_: Any) -> Optional[AddressingType]:
+    def is_input_packet(self,  # type: ignore  # pylint: disable=arguments-differ
+                        can_id: int,
+                        raw_frame_data: RawBytesAlias,
+                        **_: Any) -> Optional[AddressingType]:
         """
         Check if a frame with provided attributes is an input packet for this UDS Entity.
 

@@ -23,7 +23,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
     Definition of a CAN packet record.
 
     Objects of this class act as a storage for historic information about transmitted or received
-    :ref:`CAN packet <knowledge-base-uds-addressing-packet>`.
+    :ref:`CAN packet <knowledge-base-can-packet>`.
     """
 
     def __init__(self, *,

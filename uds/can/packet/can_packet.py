@@ -214,28 +214,28 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
         """
         CanPacketType.validate_member(packet_type)
         if packet_type == CanPacketType.SINGLE_FRAME:
-            self.__raw_frame_data = create_single_frame_data(addressing_format=self.addressing_format,
-                                                             target_address=self.target_address,
-                                                             address_extension=self.address_extension,
-                                                             dlc=dlc,
-                                                             **packet_type_specific_kwargs)
+            self.__raw_frame_data = bytes(create_single_frame_data(addressing_format=self.addressing_format,
+                                                                   target_address=self.target_address,
+                                                                   address_extension=self.address_extension,
+                                                                   dlc=dlc,
+                                                                   **packet_type_specific_kwargs))
         elif packet_type == CanPacketType.FIRST_FRAME:
-            self.__raw_frame_data = create_first_frame_data(addressing_format=self.addressing_format,
-                                                            target_address=self.target_address,
-                                                            address_extension=self.address_extension,
-                                                            dlc=dlc,
-                                                            **packet_type_specific_kwargs)
-        elif packet_type == CanPacketType.CONSECUTIVE_FRAME:
-            self.__raw_frame_data = create_consecutive_frame_data(addressing_format=self.addressing_format,
+            self.__raw_frame_data = bytes(create_first_frame_data(addressing_format=self.addressing_format,
                                                                   target_address=self.target_address,
                                                                   address_extension=self.address_extension,
-                                                                  dlc=dlc,
-                                                                  **packet_type_specific_kwargs)
+                                                                  dlc=dlc,  # type: ignore
+                                                                  **packet_type_specific_kwargs))
+        elif packet_type == CanPacketType.CONSECUTIVE_FRAME:
+            self.__raw_frame_data = bytes(create_consecutive_frame_data(addressing_format=self.addressing_format,
+                                                                        target_address=self.target_address,
+                                                                        address_extension=self.address_extension,
+                                                                        dlc=dlc,
+                                                                        **packet_type_specific_kwargs))
         elif packet_type == CanPacketType.FLOW_CONTROL:
-            self.__raw_frame_data = create_flow_control_data(addressing_format=self.addressing_format,
-                                                             target_address=self.target_address,
-                                                             address_extension=self.address_extension,
-                                                             dlc=dlc,
-                                                             **packet_type_specific_kwargs)
+            self.__raw_frame_data = bytes(create_flow_control_data(addressing_format=self.addressing_format,
+                                                                   target_address=self.target_address,
+                                                                   address_extension=self.address_extension,
+                                                                   dlc=dlc,
+                                                                   **packet_type_specific_kwargs))
         else:
             raise NotImplementedError("No handling for given CAN Packet Packet Type.")

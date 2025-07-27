@@ -9,12 +9,14 @@ __all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum"]
 
 from typing import Any
 
-from aenum import Enum, IntEnum, extend_enum
+from aenum import Enum as AEnum
+from aenum import IntEnum as AIntEnum
+from aenum import extend_enum
 
 from .common_types import validate_nibble, validate_raw_byte
 
 
-class ExtendableEnum(Enum):
+class ExtendableEnum(AEnum):  # type: ignore
     """Enum that supports new members adding."""
 
     @classmethod
@@ -35,10 +37,10 @@ class ExtendableEnum(Enum):
             if member.value == value:
                 raise ValueError(f"Value '{value}' is already in use.")
         extend_enum(cls, name, value)
-        return cls[name]
+        return cls[name]    # type: ignore
 
 
-class ValidatedEnum(Enum):
+class ValidatedEnum(AEnum):  # type: ignore
     """Enum that supports members validation."""
 
     @classmethod
@@ -72,7 +74,7 @@ class ValidatedEnum(Enum):
             raise ValueError(f"Provided value is not a member of this Enum. Actual value: {value}")
 
 
-class ByteEnum(IntEnum):
+class ByteEnum(AIntEnum):  # type: ignore
     """Enum which members are one byte integers (0x00-0xFF) only."""
 
     def __new__(cls, value: int) -> "ByteEnum":
@@ -87,7 +89,7 @@ class ByteEnum(IntEnum):
         return member
 
 
-class NibbleEnum(IntEnum):
+class NibbleEnum(AIntEnum):  # type: ignore
     """Enum which members are one nibble (4 bits) integers (0x0-0xF) only."""
 
     def __new__(cls, value: int) -> "NibbleEnum":

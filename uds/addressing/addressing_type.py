@@ -2,13 +2,14 @@
 
 __all__ = ["AddressingType"]
 
-from aenum import StrEnum, unique
+from aenum import StrEnum as AStrEnum
+from aenum import unique
 
 from uds.utilities import ValidatedEnum
 
 
 @unique
-class AddressingType(ValidatedEnum, StrEnum):
+class AddressingType(ValidatedEnum, AStrEnum):  # type: ignore
     """
     Addressing types values defined by UDS protocol.
 

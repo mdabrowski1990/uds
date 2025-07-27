@@ -41,7 +41,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
-    def validate_addressing_params(cls,
+    def validate_addressing_params(cls,  # type: ignore
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
@@ -70,20 +70,20 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
             raise UnusedArgumentError("Values of Source Address and Address Extension are not supported by "
                                       "Extended Addressing format and must be equal None.")
         addressing_type = AddressingType.validate_member(addressing_type)
-        validate_raw_byte(target_address)
-        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
+        validate_raw_byte(target_address)  # type: ignore
+        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Extended Addressing format.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
-                                   can_id=can_id,
+                                   can_id=can_id,  # type: ignore
                                    target_address=target_address,
                                    source_address=source_address,
                                    address_extension=address_extension)
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType]=None) -> bool:
+                             addressing_type: Optional[AddressingType] = None) -> bool:
         """
         Check whether provided CAN ID is consistent with Extended Addressing format.
 
@@ -128,5 +128,5 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
 
         :return: Data bytes that carry Addressing Information in a CAN frame Data field.
         """
-        validate_raw_byte(target_address)
-        return bytearray([target_address])
+        validate_raw_byte(target_address)  # type: ignore
+        return bytearray([target_address])  # type: ignore

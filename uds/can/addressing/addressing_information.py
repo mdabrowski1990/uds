@@ -6,10 +6,10 @@ This module contains helper class for managing :ref:`Addressing Information <kno
 
 __all__ = ["CanAddressingInformation"]
 
-from typing import Dict, Optional, Type, TypedDict
+from typing import Dict, Optional, Type
 
 from uds.addressing import AddressingType
-from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_byte, validate_raw_bytes
+from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_bytes
 
 from ..frame import CanIdHandler
 from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
@@ -31,20 +31,25 @@ class CanAddressingInformation:
     }
     """Dictionary with CAN Addressing Formats mapped to Addressing Information handler classes."""
 
-    def __new__(cls,
+    def __new__(cls,  # type: ignore
                 addressing_format: CanAddressingFormat,
                 rx_physical_params: AbstractCanAddressingInformation.InputAIParams,
                 tx_physical_params: AbstractCanAddressingInformation.InputAIParams,
                 rx_functional_params: AbstractCanAddressingInformation.InputAIParams,
-                tx_functional_params: AbstractCanAddressingInformation.InputAIParams) -> AbstractCanAddressingInformation:
+                tx_functional_params: AbstractCanAddressingInformation.InputAIParams
+                ) -> AbstractCanAddressingInformation:
         """
         Create UDS Addressing Information for a CAN node.
 
         :param addressing_format: CAN Addressing format used by CAN node.
-        :param rx_physical_params: Addressing Information parameters used for incoming physically addressed communication.
-        :param tx_physical_params: Addressing Information parameters used for outgoing physically addressed communication.
-        :param rx_functional_params: Addressing Information parameters used for incoming functionally addressed communication.
-        :param tx_functional_params: Addressing Information parameters used for outgoing functionally addressed communication.
+        :param rx_physical_params: Addressing Information parameters used for incoming physically
+            addressed communication.
+        :param tx_physical_params: Addressing Information parameters used for outgoing physically
+            addressed communication.
+        :param rx_functional_params: Addressing Information parameters used for incoming functionally
+            addressed communication.
+        :param tx_functional_params: Addressing Information parameters used for outgoing functionally
+            addressed communication.
         """
         ai_class = cls.ADDRESSING_INFORMATION_MAPPING[addressing_format]
         return ai_class(rx_physical_params=rx_physical_params,

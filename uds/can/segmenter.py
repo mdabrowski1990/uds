@@ -6,7 +6,7 @@ from typing import Any, Optional, Tuple, Type, Union
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import AbstractPacket, AbstractPacketRecord, PacketsContainersSequence, PacketsRecordsSequence
+from uds.packet import AbstractPacket, AbstractPacketRecord, PacketsContainersSequence
 from uds.segmentation import AbstractSegmenter, SegmentationError
 from uds.utilities import RawBytesAlias, validate_raw_byte
 
@@ -44,6 +44,7 @@ class CanSegmenter(AbstractSegmenter):
             segmentation.
         """
         super().__init__(addressing_information=addressing_information)
+        self.addressing_information: AbstractCanAddressingInformation
         self.dlc = dlc
         self.use_data_optimization = use_data_optimization
         self.filler_byte = filler_byte
@@ -192,7 +193,7 @@ class CanSegmenter(AbstractSegmenter):
                                  **self.addressing_information.tx_functional_params)
         return (single_frame,)
 
-    def is_input_packet(self,
+    def is_input_packet(self,  # type: ignore  # pylint: disable=arguments-differ
                         can_id: int,
                         raw_frame_data: RawBytesAlias,
                         **_: Any) -> Optional[AddressingType]:
@@ -227,7 +228,7 @@ class CanSegmenter(AbstractSegmenter):
         if packets[0].packet_type == CanPacketType.SINGLE_FRAME:
             return len(packets) == 1
         if packets[0].packet_type == CanPacketType.FIRST_FRAME:
-            total_payload_size: int = packets[0].data_length
+            total_payload_size: int = packets[0].data_length  # type: ignore
             payload_bytes_found = len(packets[0].payload)  # type: ignore
             for following_packet in packets[1:]:
                 if CanPacketType.is_initial_packet_type(following_packet.packet_type):
@@ -278,8 +279,7 @@ class CanSegmenter(AbstractSegmenter):
         if not self.is_desegmented_message(packets):
             raise SegmentationError("Provided packets are not a complete packets sequence")
         if isinstance(packets[0], CanPacketRecord):
-            packets: PacketsRecordsSequence
-            return UdsMessageRecord(packets)
+            return UdsMessageRecord(packets)  # type: ignore
         if isinstance(packets[0], CanPacket):
             if packets[0].packet_type == CanPacketType.SINGLE_FRAME and len(packets) == 1:
                 return UdsMessage(payload=packets[0].payload,  # type: ignore

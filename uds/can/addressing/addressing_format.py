@@ -2,13 +2,14 @@
 
 __all__ = ["CanAddressingFormat"]
 
-from aenum import StrEnum, unique
+from aenum import StrEnum as AStrEnum
+from aenum import unique
 
 from uds.utilities import ValidatedEnum
 
 
 @unique
-class CanAddressingFormat(ValidatedEnum, StrEnum):
+class CanAddressingFormat(ValidatedEnum, AStrEnum):  # type: ignore
     """
     Addressing formats used for UDS communication over CAN bus.
 

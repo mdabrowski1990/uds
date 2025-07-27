@@ -265,14 +265,13 @@ def create_flow_control_data(addressing_format: CanAddressingFormat,
     fs_data_bytes = encode_flow_status(flow_status=flow_status)
     fc_bytes = ai_data_bytes + fs_data_bytes
     if flow_status == CanFlowStatus.ContinueToSend or block_size is not None:
-        validate_raw_byte(block_size)
-        fc_bytes += bytearray([block_size])
+        validate_raw_byte(block_size)  # type: ignore
+        fc_bytes += bytearray([block_size])  # type: ignore
     else:
         fc_bytes += bytearray([filler_byte])
     if flow_status == CanFlowStatus.ContinueToSend or st_min is not None:
-        validate_raw_byte(st_min)
-        st_min: int
-        fc_bytes += bytearray([st_min])
+        validate_raw_byte(st_min)  # type: ignore
+        fc_bytes += bytearray([st_min])  # type: ignore
     else:
         fc_bytes += bytearray([filler_byte])
     if len(fc_bytes) > frame_data_bytes_number:

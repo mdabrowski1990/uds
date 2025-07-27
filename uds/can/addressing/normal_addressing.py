@@ -36,7 +36,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
-    def validate_addressing_params(cls,
+    def validate_addressing_params(cls,  # type: ignore
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
@@ -62,22 +62,22 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
         if addressing_format != cls.ADDRESSING_FORMAT:
             raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
         if (target_address, source_address, address_extension) != (None, None, None):
-            raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are not supported "
-                                      "by Normal Addressing format and must be equal None.")
+            raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are "
+                                      "not supported by Normal Addressing format and must be equal None.")
         addressing_type = AddressingType.validate_member(addressing_type)
-        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
+        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Normal Addressing format.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
-                                   can_id=can_id,
+                                   can_id=can_id,  # type: ignore
                                    target_address=target_address,
                                    source_address=source_address,
                                    address_extension=address_extension)
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType]=None) -> bool:
+                             addressing_type: Optional[AddressingType] = None) -> bool:
         """
         Check whether provided CAN ID is consistent with Normal Addressing format.
 
@@ -157,7 +157,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                                              "functionally addressed CAN packets.")
 
     @classmethod
-    def validate_addressing_params(cls,
+    def validate_addressing_params(cls,  # type: ignore
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
@@ -191,11 +191,11 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
             if None in (target_address, source_address):
                 raise InconsistentArgumentsError("Values of target_address and source_address must be provided, "
                                                  "for Normal Fixed Addressing format if can_id value is None.")
-            validate_raw_byte(target_address)
-            validate_raw_byte(source_address)
+            validate_raw_byte(target_address)  # type: ignore
+            validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = cls.encode_can_id(addressing_type=addressing_type,
-                                               target_address=target_address,
-                                               source_address=source_address)
+                                               target_address=target_address,  # type: ignore
+                                               source_address=source_address)  # type: ignore
             return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                        addressing_type=addressing_type,
                                        can_id=encoded_can_id,

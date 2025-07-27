@@ -19,8 +19,8 @@ FIRST_FRAME_N_PCI: int = 0x1
 """:ref:`N_PCI <knowledge-base-n-pci>` value of :ref:`First Frame <knowledge-base-can-first-frame>`."""
 
 MAX_SHORT_FF_DL_VALUE: int = 0xFFF
-"""Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>` 
-for which short can be used."""
+"""Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`
+ for which short can be used."""
 MAX_LONG_FF_DL_VALUE: int = 0xFFFFFFFF
 """Maximum value of :ref:`First Frame Data Length (FF_DL) <knowledge-base-can-first-frame-data-length>`."""
 SHORT_FF_DL_BYTES_USED: int = 2
@@ -260,7 +260,7 @@ def generate_ff_dl_bytes(ff_dl: int, long_ff_dl_format: bool) -> bytearray:
     """
     Create First Frame data bytes with CAN Packet Type and First Frame Data Length parameters.
 
-    .. note:: This method addressing be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
+    .. note:: This method can be used to create any (also incompatible with ISO 15765 - Diagnostic on CAN) output.
 
     :param ff_dl: Value to put into a slot of First Frame Data Length.
     :param long_ff_dl_format: Information whether to use long or short format of First Frame Data Length.

@@ -47,7 +47,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
-    def validate_addressing_params(cls,
+    def validate_addressing_params(cls,  # type: ignore
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
@@ -76,20 +76,20 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
             raise UnusedArgumentError("Values of Target Address and Source Address are not supported "
                                       "by Mixed 11-bit Addressing format and must be equal None.")
         addressing_type = AddressingType.validate_member(addressing_type)
-        validate_raw_byte(address_extension)
-        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):
+        validate_raw_byte(address_extension)  # type: ignore
+        if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
             raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
                                              "Mixed 11-bit Addressing format.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
-                                   can_id=can_id,
+                                   can_id=can_id,  # type: ignore
                                    target_address=target_address,
                                    source_address=source_address,
                                    address_extension=address_extension)
 
     @staticmethod
     def is_compatible_can_id(can_id: int,
-                             addressing_type: Optional[AddressingType]=None) -> bool:
+                             addressing_type: Optional[AddressingType] = None) -> bool:
         """
         Check whether provided CAN ID is consistent with Normal Addressing Format.
 
@@ -140,8 +140,8 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
 
         :return: Data bytes that carry Addressing Information in a CAN frame Data field.
         """
-        validate_raw_byte(address_extension)
-        return bytearray([address_extension])
+        validate_raw_byte(address_extension)  # type: ignore
+        return bytearray([address_extension])  # type: ignore
 
 
 class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
@@ -177,7 +177,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
                                              "functionally addressed CAN packets.")
 
     @classmethod
-    def validate_addressing_params(cls,
+    def validate_addressing_params(cls,  # type: ignore
                                    addressing_type: AddressingType,
                                    addressing_format: CanAddressingFormat = ADDRESSING_FORMAT,
                                    can_id: Optional[int] = None,
@@ -203,16 +203,16 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
         if addressing_format != cls.ADDRESSING_FORMAT:
             raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
         addressing_type = AddressingType.validate_member(addressing_type)
-        validate_raw_byte(address_extension)
+        validate_raw_byte(address_extension)  # type: ignore
         if can_id is None:
             if None in (target_address, source_address):
                 raise InconsistentArgumentsError("Values of target_address and source_address must be provided, "
                                                  "for Mixed 29-bit Addressing Format if can_id value is None.")
-            validate_raw_byte(target_address)
-            validate_raw_byte(source_address)
+            validate_raw_byte(target_address)  # type: ignore
+            validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = cls.encode_can_id(addressing_type=addressing_type,
-                                               target_address=target_address,
-                                               source_address=source_address)
+                                               target_address=target_address,  # type: ignore
+                                               source_address=source_address)  # type: ignore
             return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                        addressing_type=addressing_type,
                                        can_id=encoded_can_id,
@@ -339,5 +339,5 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
 
         :return: Data bytes that carry Addressing Information in a CAN frame Data field.
         """
-        validate_raw_byte(address_extension)
-        return bytearray([address_extension])
+        validate_raw_byte(address_extension)  # type: ignore
+        return bytearray([address_extension])  # type: ignore
