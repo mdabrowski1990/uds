@@ -12,13 +12,15 @@ from .abstract_data_record import AbstractDataRecord, SinglePhysicalValueAlias
 from .raw_data_record import RawDataRecord
 
 
-class MappingDataRecord(RawDataRecord, AbstractDataRecord):
+class MappingDataRecord(RawDataRecord):
     """
     Implementation for Mapping Data Records.
 
     Mapping Data Records provide tools for translation between raw values and labels, e.g.
     - 0 <-> OFF
     - 1 <-> ON
+
+    Inherits from RawDataRecord to provide fallback behavior when no mapping is defined.
     """
 
     def __init__(self,

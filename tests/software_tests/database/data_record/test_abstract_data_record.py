@@ -140,7 +140,8 @@ class TestAbstractDataRecord:
 
     def test_children__get(self):
         self.mock_data_record._AbstractDataRecord__children = Mock()
-        assert AbstractDataRecord.children.fget(self.mock_data_record) == self.mock_data_record._AbstractDataRecord__children
+        assert (AbstractDataRecord.children.fget(self.mock_data_record)
+                == self.mock_data_record._AbstractDataRecord__children)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_children__set__type_error(self, mock_isinstance):
