@@ -12,7 +12,7 @@ from uds.utilities import InconsistentArgumentsError, ReassignmentError
 SinglePhysicalValueAlias = Union[int, float, str]
 """Alias for a physical value decoded from a single occurrence."""
 MultiplePhysicalValues = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
-"""Alias for a physical values decoded from multiple occurences."""
+"""Alias for a physical values decoded from multiple occurrences."""
 PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValues]
 """Alias for all physical values."""
 
