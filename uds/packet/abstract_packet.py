@@ -141,7 +141,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, datetime):
-            raise TypeError(f"Provided value is not datetime type")
+            raise TypeError("Provided value is not datetime type")
         if not hasattr(self, "_AbstractPacketRecord__transmission_time"):
             self.__transmission_time = value
         else:
