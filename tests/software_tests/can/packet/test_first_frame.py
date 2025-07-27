@@ -384,9 +384,9 @@ class TestCanFirstFrame:
             validate_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
 
     @pytest.mark.parametrize("ff_dl, ff_dl_bytes_number", [
-        (MAX_SHORT_FF_DL_VALUE-1, 0),
-        (MAX_SHORT_FF_DL_VALUE, SHORT_FF_DL_BYTES_USED -1),
-        (MAX_LONG_FF_DL_VALUE, LONG_FF_DL_BYTES_USED +1),
+        (MAX_SHORT_FF_DL_VALUE - 1, 0),
+        (MAX_SHORT_FF_DL_VALUE, SHORT_FF_DL_BYTES_USED - 1),
+        (MAX_LONG_FF_DL_VALUE, LONG_FF_DL_BYTES_USED + 1),
         (MAX_LONG_FF_DL_VALUE, Mock()),
     ])
     def test_validate_ff_dl__value_error__ff_dl_bytes_number(self, ff_dl, ff_dl_bytes_number):
@@ -418,10 +418,9 @@ class TestCanFirstFrame:
         self.mock_get_max_sf_dl.assert_called_once_with(dlc=dlc, addressing_format=addressing_format)
 
     @pytest.mark.parametrize("ff_dl, dlc, addressing_format, ff_dl_bytes_number", [
-        (5, CanDlcHandler.MIN_BASE_UDS_DLC, Mock(), SHORT_FF_DL_BYTES_USED),
+        (5, CanDlcHandler.MIN_BASE_UDS_DLC, Mock(), None),
         (MAX_SHORT_FF_DL_VALUE, CanDlcHandler.MIN_BASE_UDS_DLC + 1, Mock(), SHORT_FF_DL_BYTES_USED),
-        (MAX_SHORT_FF_DL_VALUE+1, CanDlcHandler.MIN_BASE_UDS_DLC + 2, CanAddressingFormat.EXTENDED_ADDRESSING,
-         LONG_FF_DL_BYTES_USED),
+        (MAX_SHORT_FF_DL_VALUE+1, CanDlcHandler.MIN_BASE_UDS_DLC + 2, CanAddressingFormat.EXTENDED_ADDRESSING, None),
         (MAX_LONG_FF_DL_VALUE, CanDlcHandler.MAX_DLC_VALUE, CanAddressingFormat.MIXED_29BIT_ADDRESSING,
          LONG_FF_DL_BYTES_USED),
     ])

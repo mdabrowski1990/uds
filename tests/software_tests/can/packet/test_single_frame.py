@@ -71,16 +71,17 @@ class TestCanSingleFrame:
     # validate_single_frame_data
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, sf_dl_data_bytes, dlc, min_dlc", [
+        (Mock(), b"\x95\x84\x52\xB1", [0x07], CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MIN_BASE_UDS_DLC - 1),
         (Mock(), list(range(6)), [0x05], 6, 6),
         (CanAddressingFormat.EXTENDED_ADDRESSING, tuple(range(100, 164)), [0x00, 0x32], 0xF, 0xF),
     ])
     @patch(f"{SCRIPT_LOCATION}.get_single_frame_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.extract_sf_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.is_single_frame")
-    def test_validate_single_frame_data__valid(self, mock_is_single_frame, mock_extract_sf_dl_data_bytes,
-                                               mock_get_single_frame_min_dlc,
-                                               addressing_format, raw_frame_data,
-                                               sf_dl_data_bytes, dlc, min_dlc):
+    def test_validate_single_frame_data__valid__no_warning(self, mock_is_single_frame, mock_extract_sf_dl_data_bytes,
+                                                           mock_get_single_frame_min_dlc,
+                                                           addressing_format, raw_frame_data,
+                                                           sf_dl_data_bytes, dlc, min_dlc):
         mock_is_single_frame.return_value = True
         mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
         self.mock_can_dlc_handler.encode_dlc.return_value = dlc
@@ -105,10 +106,10 @@ class TestCanSingleFrame:
     @patch(f"{SCRIPT_LOCATION}.get_single_frame_min_dlc")
     @patch(f"{SCRIPT_LOCATION}.extract_sf_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.is_single_frame")
-    def test_validate_single_frame_data__warning(self, mock_is_single_frame, mock_extract_sf_dl_data_bytes,
-                                                 mock_get_single_frame_min_dlc,
-                                                 addressing_format, raw_frame_data,
-                                                 sf_dl_data_bytes, dlc, min_dlc):
+    def test_validate_single_frame_data__valid__warning(self, mock_is_single_frame, mock_extract_sf_dl_data_bytes,
+                                                        mock_get_single_frame_min_dlc,
+                                                        addressing_format, raw_frame_data,
+                                                        sf_dl_data_bytes, dlc, min_dlc):
         mock_is_single_frame.return_value = True
         mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
         self.mock_can_dlc_handler.encode_dlc.return_value = dlc
