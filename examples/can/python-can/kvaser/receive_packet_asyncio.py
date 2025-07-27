@@ -1,3 +1,5 @@
+"""Receive asynchronously a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
+
 import asyncio
 
 from can import Bus
@@ -8,12 +10,14 @@ async def main():
     # configure CAN interface
     can_interface = Bus(interface="kvaser",
                         channel=0,
-                        bitrate=500000,
-                        fd=True,
-                        data_bitrate=4000000,
-                        receive_own_messages=True)
+                        receive_own_messages=True,  # mandatory if you use Kvaser
+                        bitrate=500_000,  # adjust to your CAN bus
+                        fd=True,  # adjust to your CAN bus
+                        data_bitrate=4_000_000)    # adjust to your CAN bus
 
     # configure addresses for Diagnostics on CAN communication
+    # CAN Addressing Formats explanation:
+    # https://uds.readthedocs.io/en/stable/pages/knowledge_base/packet.html#can-packet-addressing-formats
     addressing_information = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                                       rx_physical_params={"can_id": 0x611},
                                                       tx_physical_params={"can_id": 0x612},
