@@ -283,7 +283,7 @@ class AbstractDataRecord(ABC):
         :return: Children occurrence information.
         """
         children_values = self.get_children_values(raw_value)
-        return tuple(child.get_occurrence_info(children_values[child.name]) for child in self.children)  # type: ignore
+        return tuple([child.get_occurrence_info(children_values[child.name]) for child in self.children])
 
     def get_occurrence_info(self, *raw_values: int) -> Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]:
         """
