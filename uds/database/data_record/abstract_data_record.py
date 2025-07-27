@@ -23,8 +23,8 @@ MultiplePhysicalValues = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
 Physical values from multiple Data Record occurrences.
 
 When processing multiple occurrences, physical values are either:
- - str: Concatenated string for all occurrences (e.g. serial number, part number) using predefined encoding 
-   (e.g. ASCII, UTF-8) 
+ - str: Concatenated string for all occurrences (e.g. serial number, part number) using predefined encoding
+   (e.g. ASCII, UTF-8)
  - tuple: Individual values per occurrence
 """
 PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValues]
@@ -192,7 +192,7 @@ class AbstractDataRecord(ABC):
             children_length += child.length
             children_names.add(child.name)
         if children_length not in {self.length, 0}:
-            raise InconsistentArgumentsError("Total children length does not much the length of this Data Record.")
+            raise InconsistentArgumentsError("Total children length does not match the length of this Data Record.")
         if len(children_names) != len(value):
             raise InconsistentArgumentsError("Each child has to have unique name.")
         self.__children = tuple(value)
