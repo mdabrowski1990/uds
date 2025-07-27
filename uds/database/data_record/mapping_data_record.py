@@ -86,8 +86,9 @@ class MappingDataRecord(RawDataRecord):
         """
         if raw_value in self.values_mapping:
             return self.values_mapping[raw_value]
-        warn(message="There is no label defined in mapping for provided value.",
-             category=ValueWarning)
+        warn(message=f"No label defined for raw value {raw_value} in mapping",
+             category=ValueWarning,
+             stacklevel=2)
         return super().get_physical_value(raw_value)
 
     def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
