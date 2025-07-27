@@ -183,9 +183,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_UdsMessageRecord__packets_records")
-        except AttributeError:
+        if not hasattr(self, "_UdsMessageRecord__packets_records"):
             self.__validate_packets_records(value)
             self.__packets_records = tuple(value)
         else:

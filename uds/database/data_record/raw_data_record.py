@@ -1,123 +1,62 @@
-"""Definition of RawDataRecord."""
+"""Raw Data Records implementation."""
 
 __all__ = ["RawDataRecord"]
 
-from typing import Optional, Tuple
+from typing import Optional, Sequence
 
-from .abstract_data_record import AbstractDataRecord, DataRecordPhysicalValueAlias, DecodedDataRecord
+from .abstract_data_record import AbstractDataRecord, SinglePhysicalValueAlias
 
 
 class RawDataRecord(AbstractDataRecord):
-    """Implementation and interface for Raw Data Record."""
+    """
+    Implementation for Raw Data Records.
 
-    def __init__(self, name: str, length: int) -> None:
+    Raw Data Records are the most basic Data Records which do not contain translation between physical and raw values.
+    """
+
+    def __init__(self,
+                 name: str,
+                 length: int,
+                 children: Sequence[AbstractDataRecord] = tuple(),
+                 min_occurrences: int = 1,
+                 max_occurrences: Optional[int] = 1) -> None:
         """
-        Initialize Raw Data Record.
+        Create Raw Data Record.
 
-        :param name: Name to assign to this Data Record.
-        :param length: Number of bits that this Raw Data Record is stored over.
-
-        :raise TypeError: Provided name is not str type.
-        :raise ValueError: Provided length is not a positive integer.
+        :param name: A name for this Data Record.
+        :param length: Number of bits that are used to store a single occurrence of this Data Record.
+        :param children: Contained Data Records.
+        :param min_occurrences: Minimal number of this Data Record occurrences.
+        :param max_occurrences: Maximal number of this Data Record occurrences.
+            Leave None if there is no limit (infinite number of occurrences).
         """
-        super().__init__(name)
-        self.length = length
+        super().__init__(name=name,
+                         length=length,
+                         children=children,
+                         min_occurrences=min_occurrences,
+                         max_occurrences=max_occurrences)
 
-    @property
-    def length(self) -> int:
-        """Get number of bits that this Data Record is stored over."""
-        return self.__length
-
-    @length.setter
-    def length(self, value: int) -> None:
+    def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
         """
-        Set the length, ensuring it's an integer and within an acceptable range.
+        Decode raw value and provide physical value.
 
-        :param value: Number of bits that this Data Record is stored over.
+        :param raw_value: Raw (bit) value of this Data Record single occurrence.
 
-        :raise TypeError: Provided value is not int type.
-        :raise ValueError: Provided value is less or equal 0.
+        :return: Decoded physical value for this occurrence.
+            For Raw Data Record the raw and physical values are the same.
         """
-        if not isinstance(value, int):
-            raise TypeError("Length must be an integer.")
-        if value <= 0:
-            raise ValueError("Length must be a positive integer.")
-        self.__length = value
+        self._validate_raw_value(raw_value)
+        return raw_value
 
-    @property  # noqa
-    def is_reoccurring(self) -> bool:
+    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
         """
-        Whether this Data Record might occur multiple times.
+        Encode physical value into raw value.
 
-        Values meaning:
-        - False - exactly one occurrence in every diagnostic message
-        - True - number of occurrences might vary
+        :param physical_value: Physical value of this Data Record single occurrence.
+
+        :return: Raw Value for this occurrence.
+            For Raw Data Record the raw and physical values are the same.
         """
-        return False
-
-    @property  # noqa
-    def min_occurrences(self) -> int:
-        """
-        Minimal number of this Data Record occurrences.
-
-        .. note:: Relevant only if :attr:`~uds.database.data_record.raw_data_record.RawDataRecord.is_reoccurring`
-            equals True.
-        """
-        return 1
-
-    @property  # noqa
-    def max_occurrences(self) -> Optional[int]:
-        """
-        Maximal number of this Data Record occurrences.
-
-        .. note:: Relevant only if :attr:`~uds.database.data_record.raw_data_record.RawDataRecord.is_reoccurring`
-            equals True.
-        .. warning:: No maximal number (infinite number of occurrences) is represented by None value.
-        """
-        return 1
-
-    @property  # noqa
-    def contains(self) -> Tuple[AbstractDataRecord, ...]:
-        """Get Data Records contained by this Data Record."""
-        return ()
-
-    def decode(self, raw_value: int) -> DecodedDataRecord:
-        """
-        Decode physical value for provided raw value.
-
-        :param raw_value: Raw (bit) value of Data Record.
-
-        :return: Dictionary with physical value for this Data Record.
-
-        :raises TypeError: Provided `raw_value` is not int type.
-        :raises ValueError: Provided `raw_value` is out of range (0 <= raw_value <= max_raw_value).
-        """
-        if not isinstance(raw_value, int):
-            raise TypeError(f"Expected raw_value to be an int type, got '{type(raw_value).__name__}' instead.")
-
-        if not 0 <= raw_value <= self.max_raw_value:
-            raise ValueError(
-                "Provided value of raw_value is out of range: "
-                f"must be between 0 and {self.max_raw_value}, got {raw_value}."
-            )
-        return DecodedDataRecord(name=self.name, raw_value=raw_value, physical_value=raw_value)
-
-    def encode(self, physical_value: DataRecordPhysicalValueAlias) -> int:
-        """
-        Encode raw value for provided physical value.
-
-        :param physical_value: Physical (meaningful e.g. float, str type) value of this Data Record.
-
-        :return: Raw Value of this Data Record.
-        """
-        if not isinstance(physical_value, int):
-            raise TypeError(
-                f"Expected physical_value to be an int type, got '{type(physical_value).__name__}' instead."
-            )
-
-        if not 0 <= physical_value <= self.max_raw_value:
-            raise ValueError(
-                "Provided value of physical_value is out of range: "
-                f"must be between 0 and {self.max_raw_value}, got {physical_value}."
-            )
-        return physical_value
+        raw_value: int = physical_value  # type: ignore
+        self._validate_raw_value(raw_value)
+        return raw_value
