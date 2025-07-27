@@ -46,7 +46,7 @@ class TestAbstractTransportInterface:
         self.mock_transport_interface.is_supported_network_manager.assert_called_with(value)
 
     @pytest.mark.parametrize("value", [Mock(), "some network manager"])
-    def test_network_manager__set__value_error(self, value):
+    def test_network_manager__set__reassignment_error(self, value):
         self.mock_transport_interface._AbstractTransportInterface__network_manager = Mock()
         self.mock_transport_interface.is_supported_network_manager.return_value = True
         with pytest.raises(ReassignmentError):
