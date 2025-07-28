@@ -43,13 +43,14 @@ class AbstractPythonCanTests(AbstractCanTests):
     _timers: List[Timer]
 
     @abstractmethod
-    def setup_class(self):
+    def setup_class(self):  # TODO: remove
         """Create bus objects."""
         self.can_interface_1: Bus  # configure in concrete classes accordingly to hardware setup
         self.can_interface_2: Bus   # configure in concrete classes accordingly to hardware setup
 
     def setup_method(self):
         """Prepare CAN bus objects for tests."""
+        # TODO: define bus here (instead of flushing) and check if test cases are more stable
         self.can_interface_1.flush_tx_buffer()
         self.can_interface_2.flush_tx_buffer()
         self.sent_message: Optional[UdsMessageRecord] = None
