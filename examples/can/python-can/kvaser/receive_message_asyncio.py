@@ -31,7 +31,7 @@ async def main():
     can_ti = PyCanTransportInterface(network_manager=can_interface,
                                      addressing_information=addressing_information)
 
-    # receive message
+    # receive UDS message
     received_message_record = await can_ti.async_receive_message(timeout=1000)  # timeout=1000 [ms]
 
     # show received message

@@ -38,6 +38,8 @@ async def main():
 
     # send UDS Message
     sent_message_record = await can_ti.async_send_message(message)
+
+    # show sent message
     print(sent_message_record)
 
     # close connections with CAN interface

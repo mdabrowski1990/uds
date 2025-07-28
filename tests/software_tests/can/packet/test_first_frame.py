@@ -341,13 +341,13 @@ class TestCanFirstFrame:
 
     # generate_ff_dl_bytes
 
-    @pytest.mark.parametrize("ff_dl, long_ff_dl_format, expected_ff_dl_bytes", [
-        (MAX_SHORT_FF_DL_VALUE + 1, False, bytearray([0x10, 0x00])),
-        (MAX_LONG_FF_DL_VALUE + 1, True, bytearray([0x10, 0x00, 0x00, 0x00, 0x00, 0x00])),
-        (MAX_LONG_FF_DL_VALUE, False, bytearray([0x1F, 0x4A])),
-        (MAX_LONG_FF_DL_VALUE + MAX_SHORT_FF_DL_VALUE, True, bytearray([0x10, 0x00, 0x9B, 0xE0, 0x87, 0x21])),
+    @pytest.mark.parametrize("ff_dl, long_ff_dl_format", [
+        (MAX_SHORT_FF_DL_VALUE + 1, False),
+        (MAX_LONG_FF_DL_VALUE + 1, True),
+        (MAX_LONG_FF_DL_VALUE, False),
+        (MAX_LONG_FF_DL_VALUE + MAX_SHORT_FF_DL_VALUE, True),
     ])
-    def test_generate_ff_dl_bytes__value_error(self, ff_dl, long_ff_dl_format, expected_ff_dl_bytes):
+    def test_generate_ff_dl_bytes__value_error(self, ff_dl, long_ff_dl_format):
         with pytest.raises(ValueError):
             generate_ff_dl_bytes(long_ff_dl_format=long_ff_dl_format, ff_dl=ff_dl)
 

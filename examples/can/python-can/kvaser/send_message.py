@@ -34,7 +34,7 @@ def main():
     # define UDS Messages to send
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
 
-    # receive message
+    # send UDS message
     sent_message_record = can_ti.send_message(message=message)
 
     # show sent message

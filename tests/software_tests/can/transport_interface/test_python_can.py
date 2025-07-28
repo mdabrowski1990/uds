@@ -4,7 +4,7 @@ import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
 
 from uds.addressing import AddressingType
-from uds.can import CanAddressingFormat, CanAddressingInformation
+from uds.can import CanAddressingInformation
 from uds.can.transport_interface.python_can import (
     AbstractCanTransportInterface,
     BusABC,

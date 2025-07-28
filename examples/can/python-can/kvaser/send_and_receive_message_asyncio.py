@@ -33,18 +33,18 @@ async def main():
     # configure addresses for Diagnostics on CAN communication
     # CAN Addressing Formats explanation:
     # https://uds.readthedocs.io/en/stable/pages/knowledge_base/packet.html#can-packet-addressing-formats
-    ai_receive = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+    ai_send = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                           tx_physical_params={"can_id": 0x611},
                                           rx_physical_params={"can_id": 0x612},
                                           tx_functional_params={"can_id": 0x6FF},
                                           rx_functional_params={"can_id": 0x6FE})
-    ai_send = ai_receive.get_other_end()
+    ai_receive = ai_send.get_other_end()
 
     # create Transport Interface object for Diagnostics on CAN communication
     can_ti_1 = PyCanTransportInterface(network_manager=can_interface_1,
-                                       addressing_information=ai_receive)
-    can_ti_2 = PyCanTransportInterface(network_manager=can_interface_2,
                                        addressing_information=ai_send)
+    can_ti_2 = PyCanTransportInterface(network_manager=can_interface_2,
+                                       addressing_information=ai_receive)
 
     # define UDS Message to send
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x62, 0x10, 0x00, *range(100)])
