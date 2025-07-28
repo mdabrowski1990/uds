@@ -42,7 +42,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                  addressing_information: AbstractCanAddressingInformation,
                  **configuration_params: Any) -> None:
         """
-        Create python-addressing Transport Interface.
+        Create Transport Interface that uses python-can package to control CAN bus.
 
         :param network_manager: Python-can bus object for handling CAN network.
 

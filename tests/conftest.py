@@ -97,9 +97,8 @@ def example_can_addressing_information(example_can_addressing_format: CanAddress
 
 
 @fixture
-def parametrized_can_addressing_information(request: FixtureRequest):
+def parametrized_can_addressing_information(addressing_format: CanAddressingFormat):
     """Example value of CAN Addressing Information for CAN Addressing Format used."""
-    addressing_format = request.node.funcargs['addressing_format']
     return make_can_addressing_information(addressing_format)
 
 

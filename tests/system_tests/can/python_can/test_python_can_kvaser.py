@@ -12,11 +12,16 @@ from .python_can import (
 class KvaserConfig(AbstractPythonCanTests):
     """Configuration for Python CAN Transport Interface tests with Kvaser CAN interfaces."""
 
-    def setup_class(self):
-        """Configure CAN bus that is managed by Kvaser CAN interfaces."""
-        self.can_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
-        self.can_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
-
+    def _define_interfaces(self):
+        """Configure CAN bus objects that manage CAN interfaces."""
+        self.can_interface_1 = Bus(interface="kvaser",
+                                   channel=0,
+                                   fd=True,
+                                   receive_own_messages=True)
+        self.can_interface_2 = Bus(interface="kvaser",
+                                   channel=1,
+                                   fd=True,
+                                   receive_own_messages=True)
 
 class TestKvaserCanPacket(AbstractCanPacketTests, KvaserConfig):
     """CAN packets related system tests for Python CAN Transport Interface."""
