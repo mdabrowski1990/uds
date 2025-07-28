@@ -1,6 +1,6 @@
 from random import choice, randint
 
-from pytest import fixture, FixtureRequest
+from pytest import FixtureRequest, fixture
 
 from can import Message
 from uds.addressing import AddressingType

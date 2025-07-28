@@ -52,7 +52,7 @@ async def main():
     packet = can_ti_1.segmenter.segmentation(message)[0]
 
     # send and receive packet CAN packet
-    receive_packet_task = asyncio.create_task(can_ti_2.async_receive_packet(timeout=100))
+    receive_packet_task = asyncio.create_task(can_ti_2.async_receive_packet(timeout=100))  # timeout=100 ms
     sent_packet_record = await can_ti_1.async_send_packet(packet)
     received_packet_record = await receive_packet_task
 

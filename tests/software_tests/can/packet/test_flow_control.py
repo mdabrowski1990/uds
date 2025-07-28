@@ -521,7 +521,7 @@ class TestCanFlowControl:
     # generate_flow_status
 
     @pytest.mark.parametrize("flow_status", [0x0, 0x5, 0xF])
-    def test_generate_flow_control_bytes(self, flow_status):
+    def test_generate_flow_status(self, flow_status):
         assert generate_flow_status(flow_status=flow_status) == bytearray([0x30 + flow_status])
         self.mock_validate_nibble.assert_called_once_with(flow_status)
 

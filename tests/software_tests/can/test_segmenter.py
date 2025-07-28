@@ -77,7 +77,7 @@ class TestCanSegmenter:
 
     # __init__
 
-    @pytest.mark.parametrize("addressing_information", [Mock(), "some vlaue"])
+    @pytest.mark.parametrize("addressing_information", [Mock(), "some value"])
     def test_init__mandatory_args(self, addressing_information):
         assert CanSegmenter.__init__(self=self.mock_can_segmenter,
                                      addressing_information=addressing_information) is None

@@ -672,8 +672,8 @@ class TestPyCanTransportInterface:
 
     @pytest.mark.parametrize("data_length, ff_payload, cf_blocks, sequence_numbers, remaining_data_lengths", [
         (8, [0x12, 0x34], [[Mock(spec=CanPacketRecord, payload=[0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF])]], [1], [6]),
-        (68, [0x98], [[Mock(spec=CanPacketRecord, payload=list(range(60, 67)), sequence_number=2*i + j + (i%3 == 0))
-                       for j in range(1+i)] for i in range(4)], [1, 2, 4, 7], [67, 60, 46, 25])
+        (68, [0x98], [[Mock(spec=CanPacketRecord, payload=list(range(60, 67)), sequence_number=2 * i + j + (i % 3 == 0))
+                       for j in range(1 + i)] for i in range(4)], [1, 2, 4, 7], [67, 60, 46, 25])
     ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_receive_consecutive_frames__cf_received(self, mock_isinstance,
@@ -778,8 +778,8 @@ class TestPyCanTransportInterface:
 
     @pytest.mark.parametrize("data_length, ff_payload, cf_blocks, sequence_numbers, remaining_data_lengths", [
         (8, [0x12, 0x34], [[Mock(spec=CanPacketRecord, payload=[0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF])]], [1], [6]),
-        (68, [0x98], [[Mock(spec=CanPacketRecord, payload=list(range(60, 67)), sequence_number=2*i + j + (i%3 == 0))
-                       for j in range(1+i)] for i in range(4)], [1, 2, 4, 7], [67, 60, 46, 25])
+        (68, [0x98], [[Mock(spec=CanPacketRecord, payload=list(range(60, 67)), sequence_number=2 * i + j + (i % 3 == 0))
+                       for j in range(1 + i)] for i in range(4)], [1, 2, 4, 7], [67, 60, 46, 25])
     ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     @pytest.mark.asyncio
