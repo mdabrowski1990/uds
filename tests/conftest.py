@@ -15,7 +15,6 @@ from uds.can.addressing import (
 )
 from uds.utilities import RawBytesAlias, TransmissionDirection
 
-
 # Common
 
 
@@ -55,30 +54,29 @@ def make_can_addressing_information(addressing_format: CanAddressingFormat) -> A
                                               tx_physical_params={"can_id": 0x748},
                                               rx_functional_params={"can_id": 0x7DF},
                                               tx_functional_params={"can_id": 0x748})
-    elif addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
+    if addressing_format == CanAddressingFormat.NORMAL_FIXED_ADDRESSING:
         return NormalFixedCanAddressingInformation(
             rx_physical_params={"source_address": 0x04, "target_address": 0xF0, "can_id": 0xDAF004},
             tx_physical_params={"source_address": 0xF0, "target_address": 0x04, "can_id": 0xDA04F0},
             rx_functional_params={"source_address": 0xF0, "target_address": 0x9F},
             tx_functional_params={"source_address": 0x9F, "target_address": 0xF0})
-    elif addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
+    if addressing_format == CanAddressingFormat.EXTENDED_ADDRESSING:
         return ExtendedCanAddressingInformation(rx_physical_params={"can_id": 0x741, "target_address": 0x76},
                                                 tx_physical_params={"can_id": 0x742, "target_address": 0xFF},
                                                 rx_functional_params={"can_id": 0x7DE, "target_address": 0xFF},
                                                 tx_functional_params={"can_id": 0x742, "target_address": 0xE2})
-    elif addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
+    if addressing_format == CanAddressingFormat.MIXED_11BIT_ADDRESSING:
         return Mixed11BitCanAddressingInformation(rx_physical_params={"can_id": 0x741, "address_extension": 0x76},
                                                   tx_physical_params={"can_id": 0x742, "address_extension": 0x76},
                                                   rx_functional_params={"can_id": 0x741, "address_extension": 0xFF},
                                                   tx_functional_params={"can_id": 0x742, "address_extension": 0xFF})
-    elif addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
+    if addressing_format == CanAddressingFormat.MIXED_29BIT_ADDRESSING:
         return Mixed29BitCanAddressingInformation(
             rx_physical_params={"can_id": 0xCEF032, "address_extension": 0x76},
             tx_physical_params={"can_id": 0xCE32F0, "address_extension": 0x76},
             rx_functional_params={"can_id": 0x1CCD00FF, "address_extension": 0xFF},
             tx_functional_params={"can_id": 0x1CCDFF00, "address_extension": 0xFF})
-    else:
-        raise NotImplementedError(f"Unsupported CAN addressing format: {addressing_format}")
+    raise NotImplementedError(f"Unsupported CAN addressing format: {addressing_format}")
 
 
 @fixture(params=list(CanAddressingFormat))
