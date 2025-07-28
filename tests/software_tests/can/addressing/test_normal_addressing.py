@@ -58,8 +58,8 @@ class TestNormalCanAddressingInformation:
             {"can_id": 0x4321},
         ),
     ])
-    def test_validate_node_ai__inconsistent(self, rx_physical_params, tx_physical_params,
-                                            rx_functional_params, tx_functional_params):
+    def test_validate_addressing_information__inconsistent(self, rx_physical_params, tx_physical_params,
+                                                           rx_functional_params, tx_functional_params):
         self.mock_addressing_information.rx_physical_params = rx_physical_params
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
@@ -93,8 +93,8 @@ class TestNormalCanAddressingInformation:
             {"can_id": 0x7DF},
         ),
     ])
-    def test_validate_node_ai__valid(self, rx_physical_params, tx_physical_params,
-                                            rx_functional_params, tx_functional_params):
+    def test_validate_addressing_information__valid(self, rx_physical_params, tx_physical_params,
+                                                    rx_functional_params, tx_functional_params):
         self.mock_addressing_information.rx_physical_params = rx_physical_params
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params

@@ -82,9 +82,9 @@ class TestCanFirstFrame:
     @patch(f"{SCRIPT_LOCATION}.extract_ff_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.extract_ff_dl")
     @patch(f"{SCRIPT_LOCATION}.is_first_frame")
-    def test_validate_frame_data__valid(self, mock_is_first_frame, mock_extract_ff_dl, mock_extract_ff_dl_data_bytes,
-                                        mock_validate_ff_dl,
-                                        addressing_format, raw_frame_data):
+    def test_validate_first_frame_data__valid(self, mock_is_first_frame, mock_extract_ff_dl,
+                                              mock_extract_ff_dl_data_bytes, mock_validate_ff_dl,
+                                              addressing_format, raw_frame_data):
         mock_is_first_frame.return_value = True
         assert validate_first_frame_data(addressing_format=addressing_format, raw_frame_data=raw_frame_data) is None
         self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data, allow_empty=False)

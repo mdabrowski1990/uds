@@ -1,6 +1,6 @@
 from random import choice, randint
 
-from pytest import fixture
+from pytest import fixture, FixtureRequest
 
 from can import Message
 from uds.addressing import AddressingType
@@ -21,19 +21,19 @@ from uds.utilities import RawBytesAlias, TransmissionDirection
 @fixture(params=[
     (0x00, 0xFF, 0xAA, 0x55),
     [0x00],
-    bytearray(range(0x00, 0xFF)),
+    bytearray(range(0xFF)),
     b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F"])
-def example_raw_bytes(request) -> RawBytesAlias:
+def example_raw_bytes(request: FixtureRequest) -> RawBytesAlias:
     """Example values or Raw Bytes."""
     return request.param
 
 @fixture(params=list(AddressingType))
-def example_addressing_type(request) -> AddressingType:
+def example_addressing_type(request: FixtureRequest) -> AddressingType:
     """Example value of Addressing Type."""
     return request.param
 
 @fixture(params=list(TransmissionDirection))
-def example_transmission_direction(request) -> TransmissionDirection:
+def example_transmission_direction(request: FixtureRequest) -> TransmissionDirection:
     """Example value of Transmission Direction."""
     return request.param
 
@@ -80,13 +80,14 @@ def make_can_addressing_information(addressing_format: CanAddressingFormat) -> A
 
 
 @fixture(params=list(CanAddressingFormat))
-def example_can_addressing_format(request) -> CanAddressingFormat:
+def example_can_addressing_format(request: FixtureRequest) -> CanAddressingFormat:
     """Example value of CAN Addressing Format."""
     return request.param
 
 
 @fixture
-def example_can_addressing_information(example_can_addressing_format) -> AbstractCanAddressingInformation:
+def example_can_addressing_information(example_can_addressing_format: CanAddressingFormat
+                                       ) -> AbstractCanAddressingInformation:
     """
     Example value of CAN Addressing Information.
 
@@ -96,14 +97,14 @@ def example_can_addressing_information(example_can_addressing_format) -> Abstrac
 
 
 @fixture
-def parametrized_can_addressing_information(request):
+def parametrized_can_addressing_information(request: FixtureRequest):
     """Example value of CAN Addressing Information for CAN Addressing Format used."""
     addressing_format = request.node.funcargs['addressing_format']
     return make_can_addressing_information(addressing_format)
 
 
 @fixture
-def example_can_segmenter(example_can_addressing_information) -> CanSegmenter:
+def example_can_segmenter(example_can_addressing_information: AbstractCanAddressingInformation) -> CanSegmenter:
     """Example value of CAN Segmenter."""
     return CanSegmenter(addressing_information=example_can_addressing_information,
                         use_data_optimization=choice([True, False]),
@@ -125,5 +126,6 @@ def example_can_segmenter(example_can_addressing_information) -> CanSegmenter:
             is_fd=True,
             bitrate_switch=True),
 ])
-def example_python_can_message(request) -> Message:
+def example_python_can_message(request: FixtureRequest) -> Message:
+    """Example CAN Frame used by python-can library."""
     return request.param
