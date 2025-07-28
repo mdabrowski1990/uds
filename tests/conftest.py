@@ -102,7 +102,7 @@ def parametrized_can_addressing_information(request):
     return make_can_addressing_information(addressing_format)
 
 
-@fixture()
+@fixture
 def example_can_segmenter(example_can_addressing_information) -> CanSegmenter:
     """Example value of CAN Segmenter."""
     return CanSegmenter(addressing_information=example_can_addressing_information,

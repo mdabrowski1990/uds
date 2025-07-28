@@ -643,10 +643,10 @@ class TestCanSingleFrameIntegration:
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x07, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32)),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x00, 0x3E] + list(range(0x10, 0x4E))),
-        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x00, 0x00, 0x01] + list(range(0x10, 0x4D))),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x00, 0x3E, *range(0x10, 0x4E)]),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x00, 0x00, 0x01, *range(0x10, 0x4D)]),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0x02, 0x01, 0xFF)),
-        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x04, 0x00, 0x05] + list(range(100, 113))),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x04, 0x00, 0x05, *range(100, 113)]),
     ])
     def test_validate_single_frame_data(self, addressing_format, raw_frame_data):
         assert validate_single_frame_data(addressing_format=addressing_format,
@@ -654,10 +654,10 @@ class TestCanSingleFrameIntegration:
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x05, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54)),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x00, 0x3F] + list(range(0x10, 0x4E))),
-        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x00, 0x01, 0x01] + list(range(0x10, 0x4D))),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x00, 0x3F, *range(0x10, 0x4E)]),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x00, 0x01, 0x01, *range(0x10, 0x4D)]),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0x02, 0x07, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)),
-        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0xB0, 0x09] + list(range(100, 114))),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0xB0, 0x09, *range(100, 114)]),
     ])
     def test_validate_single_frame_data__value_error(self, addressing_format, raw_frame_data):
         with pytest.raises(ValueError):
@@ -676,7 +676,7 @@ class TestCanSingleFrameIntegration:
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "payload": list(range(54)),
           "filler_byte": 0x66,
-          "target_address": 0xF2}, bytearray([0xF2, 0x00, 0x36] + list(range(54)) + ([0x66] * 7))),
+          "target_address": 0xF2}, bytearray([0xF2, 0x00, 0x36, *range(54)] + ([0x66] * 7))),
         ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
           "payload": [0x9A, 0xB8, 0xC4, 0x67, 0x10, 0x00],
           "dlc": 8,
@@ -779,10 +779,10 @@ class TestCanSingleFrameIntegration:
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, expected_sf_dl", [
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x01, 0x3E), 1),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x00, 0x32] + list(range(20, 82)), 0x32),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x00, 0x32, *range(20, 82)], 0x32),
         (CanAddressingFormat.EXTENDED_ADDRESSING, [0x05, 0x04, 0x03, 0x02, 0x01, 0x00, 0xFF, 0xFE], 4),
-        (CanAddressingFormat.MIXED_11BIT_ADDRESSING, [0x0A, 0x00, 0x3D] + list(range(100, 161)), 0x3D),
-        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0xDA, 0x00, 0x10] + list(range(21)), 0x10)
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING, [0x0A, 0x00, 0x3D, *range(100, 161)], 0x3D),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0xDA, 0x00, 0x10, *range(21)], 0x10)
     ])
     def test_extract_sf_dl(self, addressing_format, raw_frame_data, expected_sf_dl):
         assert extract_sf_dl(addressing_format=addressing_format,

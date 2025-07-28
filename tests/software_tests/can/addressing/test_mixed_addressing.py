@@ -31,6 +31,7 @@ class TestMixed11BitCanAddressingInformation:
 
     def teardown_method(self):
         self._patcher_validate_raw_byte.stop()
+        self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_addressing_type.stop()
         self._patcher_can_id_handler_class.stop()
 
