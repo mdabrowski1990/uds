@@ -34,10 +34,10 @@ def main():
     packet = can_ti.segmenter.segmentation(message)[0]
 
     # send CAN Packet
-    packet_record = can_ti.send_packet(packet)
+    sent_packet_record = can_ti.send_packet(packet)
 
     # show sent packet
-    print(packet_record)
+    print(sent_packet_record)
 
     # close connections with CAN interface
     del can_ti

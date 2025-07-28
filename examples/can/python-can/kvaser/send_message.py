@@ -32,10 +32,10 @@ def main():
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
 
     # receive message
-    received_message_record = can_ti.send_message(message=message)
+    sent_message_record = can_ti.send_message(message=message)
 
     # show sent message
-    print(received_message_record)
+    print(sent_message_record)
 
     # close connections with CAN interface
     del can_ti
