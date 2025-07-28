@@ -4,7 +4,7 @@ from pytest import fixture
 
 from can import Message
 from uds.addressing import AddressingType
-from uds.can import CanAddressingFormat, CanAddressingInformation, CanDlcHandler, CanSegmenter
+from uds.can import CanAddressingFormat, CanDlcHandler, CanSegmenter
 from uds.can.addressing import (
     AbstractCanAddressingInformation,
     ExtendedCanAddressingInformation,
@@ -13,10 +13,11 @@ from uds.can.addressing import (
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
-from uds.message import UdsMessage
 from uds.utilities import RawBytesAlias, TransmissionDirection
 
+
 # Common
+
 
 @fixture(params=[
     (0x00, 0xFF, 0xAA, 0x55),
@@ -39,6 +40,7 @@ def example_transmission_direction(request) -> TransmissionDirection:
 
 
 # CAN Specific
+
 
 def make_can_addressing_information(addressing_format: CanAddressingFormat) -> AbstractCanAddressingInformation:
     """
