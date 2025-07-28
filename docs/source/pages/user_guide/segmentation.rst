@@ -62,7 +62,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
   As a user, you are able to :ref:`segment diagnostic messages <knowledge-base-message-segmentation>`
   (objects of :class:`~uds.message.uds_message.UdsMessage` class) into CAN packets
-  (objects for :class:`~uds.packet.can_packet.CanPacket` class).
+  (objects for :class:`~uds.can.packet.can_packet.CanPacket` class).
 
   **Example code:**
 
@@ -87,8 +87,8 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 - CAN packets desegmentation:
 
   As a user, you are able to :ref:`desegment CAN packets <knowledge-base-packets-desegmentation>`
-  (either objects of :class:`~uds.packet.can_packet.CanPacket` or
-  :class:`~uds.packet.can_packet_record.CanPacketRecord` class)
+  (either objects of :class:`~uds.can.packet.can_packet.CanPacket` or
+  :class:`~uds.can.packet.can_packet_record.CanPacketRecord` class)
   into diagnostic messages (either objects of :class:`~uds.message.uds_message.UdsMessage` or
   :class:`~uds.message.uds_message.UdsMessageRecord` class).
 
