@@ -51,8 +51,8 @@ class TestCanConsecutiveFrame:
     # is_consecutive_frame
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, ai_data_bytes_number, expected_output", [
-        (Mock(), [CONSECUTIVE_FRAME_N_PCI << 4] + list(range(100, 163)), 0, True),
-        (Mock(), [(CONSECUTIVE_FRAME_N_PCI << 4) + 0xF] + list(range(7)), 0, True),
+        (Mock(), [CONSECUTIVE_FRAME_N_PCI << 4, *range(100, 163)], 0, True),
+        (Mock(), [(CONSECUTIVE_FRAME_N_PCI << 4) + 0xF, *range(7)], 0, True),
         (Mock(), [(CONSECUTIVE_FRAME_N_PCI << 4) + 0xF, 0xFF, 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A], 1, False),
         (CanAddressingFormat.EXTENDED_ADDRESSING, [0xFF, (CONSECUTIVE_FRAME_N_PCI << 4) + 0x5, 0xFF], 1, True),
     ])
@@ -315,7 +315,7 @@ class TestCanConsecutiveFrame:
     # extract_consecutive_frame_payload
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, ai_bytes_number", [
-        (Mock(), [0x2F] + list(range(63)), 0),
+        (Mock(), [0x2F, *range(63)], 0),
         (Mock(), bytearray([0xFF, 0x20, 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4]), 1),
     ])
     def test_extract_consecutive_frame_payload(self, addressing_format, raw_frame_data,
@@ -473,7 +473,7 @@ class TestCanConsecutiveFrameIntegration:
           "sequence_number": 0}, bytearray([0x20, 0x9A])),
         ({"addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "payload": bytes(range(48)),
-          "sequence_number": 0xF}, bytearray([0x2F] + list(range(48)) + (15 * [DEFAULT_FILLER_BYTE]))),
+          "sequence_number": 0xF}, bytearray([0x2F, *range(48)] + (15 * [DEFAULT_FILLER_BYTE]))),
         ({"addressing_format": CanAddressingFormat.EXTENDED_ADDRESSING,
           "target_address": 0xF1,
           "dlc": 8,

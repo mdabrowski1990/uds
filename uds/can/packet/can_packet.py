@@ -22,7 +22,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
     Definition of a CAN Packet.
 
     Objects of this class act as a storage for all relevant attributes of a
-    :ref:`CAN packet <knowledge-base-uds-addressing-packet>`.
+    :ref:`CAN packet <knowledge-base-can-packet>`.
     Later on, such object might be transmitted.
     Once a packet is transmitted, its historic data would be stored in
     :class:`~uds.can.packet.can_packet_record.CanPacketRecord`.
@@ -183,7 +183,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         This function enables to change an entire :ref:`Network Data Field <knowledge-base-n-data>` and
         :ref:`Network Protocol Control Information <knowledge-base-n-pci>` for
-        a :ref:`CAN packet <knowledge-base-uds-addressing-packet>`.
+        a :ref:`CAN packet <knowledge-base-can-packet>`.
 
         :param packet_type: Type of this CAN packet.
         :param dlc: DLC value of a CAN frame that carries this CAN Packet.

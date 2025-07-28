@@ -128,8 +128,8 @@ transmission by a sender. It is measured from the end of the last CAN Packet tra
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` transmission.
 
 Performance requirement:
-  A sending entity is obliged to transmit :ref:`Consecutive Frame <knowledge-base-can-flow-control>` packet before value
-  of N_Cs achieves maximal value threshold.
+  A sending entity is obliged to transmit :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
+  before value of N_Cs achieves maximal value threshold.
 
   .. code-block::
 

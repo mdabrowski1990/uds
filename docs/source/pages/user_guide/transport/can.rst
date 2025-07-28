@@ -128,15 +128,15 @@ Synchronous communication
 
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_message`
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_message`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.send_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.receive_packet`
 
     or
 
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_message`
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_message`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_send_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
 
 .. seealso:: :ref:`Examples for python-can Transport Interface <examples-python-can>`
 
@@ -183,7 +183,7 @@ Send Packet
 '''''''''''
 Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
 is created, use
-:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet`
+:meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.send_packet`
 method to send CAN packets.
 
 **Example code:**
@@ -206,7 +206,7 @@ Receive Packet
 ''''''''''''''
 Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
 is created, use
-:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
+:meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.receive_packet`
 method to receive CAN packets.
 
 **Example code:**
@@ -226,15 +226,15 @@ Asynchronous communication
 
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_message`
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_message`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.send_packet`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.receive_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.send_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.receive_packet`
 
     or
 
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_message`
     - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_message`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
-    - :meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_send_packet`
+    - :meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
 
 .. seealso:: :ref:`Examples for python-can Transport Interface <examples-python-can>`
 
@@ -281,7 +281,7 @@ Send Packet
 '''''''''''
 Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
 is created, use
-:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_send_packet`
+:meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_send_packet`
 method to send CAN packets.
 
 **Example code:**
@@ -304,7 +304,7 @@ Receive Packet
 ''''''''''''''
 Once an object of :class:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface` class
 is created, use
-:meth:`~uds.transport_interface.can_transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
+:meth:`~uds.can.transport_interface.python_can.PyCanTransportInterface.async_receive_packet`
 method to receive CAN packets.
 
 **Example code:**
