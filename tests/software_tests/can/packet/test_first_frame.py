@@ -49,8 +49,8 @@ class TestCanFirstFrame:
     # is_single_frame
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, ai_data_bytes_number, expected_output", [
-        (Mock(), [FIRST_FRAME_N_PCI << 4, 0] + list(range(100, 162)), 0, True),
-        (Mock(), [(FIRST_FRAME_N_PCI << 4) + 0xF, 0xFF] + list(range(6)), 0, True),
+        (Mock(), [FIRST_FRAME_N_PCI << 4, 0, *range(100, 162)], 0, True),
+        (Mock(), [(FIRST_FRAME_N_PCI << 4) + 0xF, 0xFF, *range(6)], 0, True),
         (Mock(), [(FIRST_FRAME_N_PCI << 4) + 0xF, 0xFF, 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A], 1, False),
         (CanAddressingFormat.EXTENDED_ADDRESSING, [0xFF, (FIRST_FRAME_N_PCI << 4) + 0x5, 0xFF], 1, True),
     ])
@@ -441,10 +441,10 @@ class TestCanFirstFrameIntegration:
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x10, 0x08, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54)),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0x00, 0x00, 0x10, 0x00] + list(range(58))),
-        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x1F, 0xFF] + list(range(100, 121))),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0x00, 0x00, 0x10, 0x00, *range(58)]),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x1F, 0xFF, *range(100, 121)]),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0x0F, 0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)),
-        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x0F, 0x10, 0x3E] + list(range(50, 111))),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x0F, 0x10, 0x3E, *range(50, 111)]),
     ])
     def test_validate_first_frame_data(self, addressing_format, raw_frame_data):
         assert validate_first_frame_data(addressing_format=addressing_format,

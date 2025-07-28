@@ -338,7 +338,7 @@ class TestCanPacketIntegration:
           "dlc": 0xF,
           "payload": bytes(range(50, 108)),
           "data_length": 0xFEDCBA98},
-         {"raw_frame_data": bytes([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98] + list(range(50, 108))),
+         {"raw_frame_data": bytes([0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98, *range(50, 108)]),
           "addressing_type": AddressingType.FUNCTIONAL,
           "addressing_format": CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
           "packet_type": CanPacketType.FIRST_FRAME,

@@ -121,7 +121,7 @@ def example_can_segmenter(example_can_addressing_information) -> CanSegmenter:
             is_extended_id=True,
             channel="Channel 2",
             dlc=0xF,
-            data=[0xD0, 0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98] + list(range(50, 107)),
+            data=[0xD0, 0x10, 0x00, 0xFE, 0xDC, 0xBA, 0x98, *range(50, 107)],
             is_fd=True,
             bitrate_switch=True),
 ])
