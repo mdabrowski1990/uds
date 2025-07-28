@@ -7,13 +7,16 @@ from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTranspor
 
 
 async def main():
-    # configure CAN interface
-    can_interface = Bus(interface="kvaser",
-                        channel=0,
-                        receive_own_messages=True,  # mandatory if you use Kvaser
-                        bitrate=500_000,  # adjust to your CAN bus
-                        fd=True,  # adjust to your CAN bus
-                        data_bitrate=4_000_000)    # adjust to your CAN bus
+    # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
+    can_interface = Bus(
+        # provide configuration for your CAN interface
+        interface="kvaser",  # replace with your CAN interface name
+        channel=0,
+        receive_own_messages=True,  # mandatory setting if you use Kvaser
+        # configure your CAN bus
+        bitrate=500_000,
+        fd=True,
+        data_bitrate=4_000_000)
 
     # configure addresses for Diagnostics on CAN communication
     # CAN Addressing Formats explanation:
