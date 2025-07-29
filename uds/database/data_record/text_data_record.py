@@ -2,10 +2,11 @@
 
 __all__ = ["TextDataRecord", "TextEncoding"]
 
-from typing import Sequence, Optional, Dict, Any, TypedDict, Callable
+from typing import Any, Callable, Dict, Optional, Sequence, TypedDict
 
 from uds.utilities import ValidatedEnum, validate_nibble
-from .abstract_data_record import AbstractDataRecord, SinglePhysicalValueAlias, MultiplePhysicalValues
+
+from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValues, SinglePhysicalValueAlias
 
 
 class TextEncoding(ValidatedEnum):

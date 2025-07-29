@@ -1,10 +1,7 @@
 import pytest
-from mock import Mock, call, patch, MagicMock
+from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record.text_data_record import (
-    TextDataRecord,
-    TextEncoding,
-)
+from uds.database.data_record.text_data_record import TextDataRecord, TextEncoding
 
 SCRIPT_LOCATION = "uds.database.data_record.text_data_record"
 
