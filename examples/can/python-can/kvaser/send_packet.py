@@ -1,43 +1,50 @@
+"""Send a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
+
 from can import Bus
-from uds.can import CanAddressingFormat, CanAddressingInformation
+from uds.addressing import AddressingType
+from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
 from uds.message import UdsMessage
-from uds.transmission_attributes import AddressingType
-from uds.transport_interface import PyCanTransportInterface
 
 
 def main():
-    # configure CAN interfaces
-    kvaser_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)
-    # second interface is only used to acknowledge CAN frames sent by `kvaser_interface_1`,
-    # you might comment it out if you have another device to do that
-    kvaser_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)
+    # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
+    can_interface = Bus(
+        # provide configuration for your CAN interface
+        interface="kvaser",  # replace with your CAN interface name
+        channel=0,
+        receive_own_messages=True,  # mandatory setting if you use Kvaser
+        # configure your CAN bus
+        bitrate=500_000,
+        fd=True,
+        data_bitrate=4_000_000)
 
-    # configure Addressing Information of a CAN Node (example values set)
-    addressing_information = CanAddressingInformation(
-        addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
-        tx_physical={"can_id": 0x611},
-        rx_physical={"can_id": 0x612},
-        tx_functional={"can_id": 0x6FF},
-        rx_functional={"can_id": 0x6FE})
+    # configure addresses for Diagnostics on CAN communication
+    # CAN Addressing Formats explanation:
+    # https://uds.readthedocs.io/en/stable/pages/knowledge_base/packet.html#can-packet-addressing-formats
+    addressing_information = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+                                                      rx_physical_params={"can_id": 0x611},
+                                                      tx_physical_params={"can_id": 0x612},
+                                                      rx_functional_params={"can_id": 0x6FF},
+                                                      tx_functional_params={"can_id": 0x6FE})
 
-    # create Transport Interface object for UDS communication
-    can_ti = PyCanTransportInterface(can_bus_manager=kvaser_interface_1,
+    # create Transport Interface object for Diagnostics on CAN communication
+    can_ti = PyCanTransportInterface(network_manager=can_interface,
                                      addressing_information=addressing_information)
 
-    # define UDS Messages to send
+    # define UDS Message
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
-
-    # create CAN packets that carries those UDS Messages
+    # pick one CAN packet from UDS Message segmentation
     packet = can_ti.segmenter.segmentation(message)[0]
 
     # send CAN Packet
-    packet_record = can_ti.send_packet(packet)
-    print(packet_record)
+    sent_packet_record = can_ti.send_packet(packet)
 
-    # close connections with CAN interfaces
+    # show sent packet
+    print(sent_packet_record)
+
+    # close connections with CAN interface
     del can_ti
-    kvaser_interface_1.shutdown()
-    kvaser_interface_2.shutdown()
+    can_interface.shutdown()
 
 
 if __name__ == "__main__":

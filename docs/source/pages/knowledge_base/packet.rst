@@ -46,7 +46,7 @@ Network Protocol Control Information (N_PCI) identifies the type of `Packet (N_P
 N_PCI values and their interpretation are bus specific.
 
 
-.. _knowledge-base-uds-can-packet:
+.. _knowledge-base-can-packet:
 
 CAN Packet
 ----------
@@ -529,11 +529,11 @@ The format of all CAN packets is presented in the table below.
 |                   |          |          |         |         |         |         |         |     |
 | *DLC > 8*         |          |          |         |         |         |         |         |     |
 +-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-| First Frame       | 0x1      | FF_DL              |         |         |         |         |     |
+| First Frame       | 0x1      |        FF_DL       |         |         |         |         |     |
 |                   |          |                    |         |         |         |         |     |
 | *FF_DL ≤ 4095*    |          |                    |         |         |         |         |     |
 +-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-| First Frame       | 0x1      | 0x0      | 0x00    | FF_DL                                 |     |
+| First Frame       | 0x1      | 0x0      | 0x00    |                 FF_DL                 |     |
 |                   |          |          |         |                                       |     |
 | *FF_DL > 4095*    |          |          |         |                                       |     |
 +-------------------+----------+----------+---------+---------+---------+---------+---------+-----+

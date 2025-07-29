@@ -10,9 +10,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Sequence, Union
 
+from uds.addressing import AddressingType
 from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
-from uds.transmission_attributes import AddressingType, TransmissionDirection
-from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes
+from uds.utilities import RawBytesAlias, ReassignmentError, TransmissionDirection, validate_raw_bytes
 
 
 class AbstractUdsMessageContainer(ABC):
@@ -75,7 +75,7 @@ class UdsMessage(AbstractUdsMessageContainer):
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
-            raise TypeError("UDS Message can only be compared with another UDS Message")
+            raise TypeError("UDS Message addressing only be compared with another UDS Message")
         return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
@@ -129,7 +129,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
-            raise TypeError("UDS Message Record can only be compared with another UDS Message Record")
+            raise TypeError("UDS Message Record addressing only be compared with another UDS Message Record")
         return self.addressing_type == other.addressing_type \
             and self.payload == other.payload \
             and self.direction == other.direction
@@ -215,7 +215,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         Time stamp when transmission of this message was initiated.
 
         It is determined by a moment of time when the first packet (that carried this message) was published
-        to a bus (either received or transmitted).
+        to a bus/network (either received or transmitted).
 
         :return: Time stamp when transmission of this message was initiated.
         """
@@ -227,7 +227,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         Time stamp when transmission of this message was completed.
 
         It is determined by a moment of time when the last packet (that carried this message) was published
-        to a bus (either received or transmitted).
+        to a bus/network (either received or transmitted).
 
         :return: Time stamp when transmission of this message was completed.
         """

@@ -4,14 +4,14 @@ __all__ = ["Endianness", "bytes_to_int", "int_to_bytes"]
 
 from typing import Optional
 
-from aenum import StrEnum
+from aenum import StrEnum as AStrEnum
 
 from .common_types import RawBytesAlias, validate_raw_bytes
 from .custom_exceptions import InconsistentArgumentsError
 from .enums import ValidatedEnum
 
 
-class Endianness(ValidatedEnum, StrEnum):  # type: ignore
+class Endianness(ValidatedEnum, AStrEnum):  # type: ignore
     """
     Endianness values definitions.
 
@@ -68,6 +68,6 @@ def int_to_bytes(int_value: int,
     bytes_number = max(1, (int_value.bit_length() + 7) // 8)
     size = size or bytes_number
     if size < bytes_number:
-        raise InconsistentArgumentsError(f"Provided value of `size` is too small to contain all bytes of int_value."
+        raise InconsistentArgumentsError("Provided value of `size` is too small to contain all bytes of int_value."
                                          f"Actual values: int_value={int_value}, size={size}")
     return int_value.to_bytes(length=size, byteorder=endianness.value)

@@ -6,10 +6,10 @@ from uds.message.uds_message import (
     AbstractUdsMessageContainer,
     AddressingType,
     ReassignmentError,
+    TransmissionDirection,
     UdsMessage,
     UdsMessageRecord,
 )
-from uds.transmission_attributes import TransmissionDirection
 
 SCRIPT_LOCATION = "uds.message.uds_message"
 

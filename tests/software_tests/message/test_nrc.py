@@ -1,6 +1,7 @@
 import pytest
 
-from uds.message.nrc import NRC, ByteEnum, ExtendableEnum, ValidatedEnum
+from uds.message.nrc import NRC
+from uds.utilities import ByteEnum, ExtendableEnum, ValidatedEnum
 
 
 class TestNRC:

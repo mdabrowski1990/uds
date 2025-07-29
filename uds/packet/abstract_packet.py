@@ -7,9 +7,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 
-from uds.transmission_attributes.addressing import AddressingType
-from uds.transmission_attributes.transmission_direction import TransmissionDirection
-from uds.utilities import ReassignmentError
+from uds.addressing import AddressingType
+from uds.utilities import ReassignmentError, TransmissionDirection
 
 from .abstract_packet_type import AbstractPacketType
 
@@ -33,11 +32,6 @@ class AbstractPacketContainer(ABC):
 
     @property
     @abstractmethod
-    def addressing_type(self) -> AddressingType:
-        """Addressing for which this packet is relevant."""
-
-    @property
-    @abstractmethod
     def packet_type(self) -> AbstractPacketType:
         """Type (N_PCI value) of this packet."""
 
@@ -45,6 +39,11 @@ class AbstractPacketContainer(ABC):
     @abstractmethod
     def data_length(self) -> Optional[int]:
         """Payload bytes number of a diagnostic message."""
+
+    @property
+    @abstractmethod
+    def addressing_type(self) -> AddressingType:
+        """Addressing for which this packet is relevant."""
 
     @property
     @abstractmethod
@@ -69,11 +68,12 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :param frame: Frame that carried this packet.
         :param direction: Information whether this packet was transmitted or received.
-        :param transmission_time: Time stamp when this packet was fully transmitted on a bus.
+        :param transmission_time: Time stamp when this packet was fully transmitted on a bus/network.
         """
         self.frame = frame
         self.direction = direction
         self.transmission_time = transmission_time
+        self._validate_attributes()
 
     def __str__(self) -> str:
         """Present object in string format."""
@@ -127,13 +127,13 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
     @property
     def transmission_time(self) -> datetime:
-        """Time when this packet was fully transmitted on a bus."""
+        """Time when this packet was fully transmitted on a bus/network."""
         return self.__transmission_time
 
     @transmission_time.setter
     def transmission_time(self, value: datetime) -> None:
         """
-        Set value when this packet was transmitted on a bus.
+        Set value when this packet was transmitted on a bus/network.
 
         :param value: Value of transmission time to set.
 
@@ -154,10 +154,11 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         Validate a frame argument.
 
         :param value: Value to validate.
-
-        :raise TypeError: Provided frame object has unsupported type.
-        :raise ValueError: At least one attribute of the frame object is missing or its value is unexpected.
         """
+
+    @abstractmethod
+    def _validate_attributes(self) -> None:
+        """Validate whether attributes that were set are a valid for a Packet record."""
 
 
 PacketsContainersSequence = Sequence[AbstractPacketContainer]

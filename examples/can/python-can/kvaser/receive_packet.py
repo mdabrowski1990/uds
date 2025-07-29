@@ -1,47 +1,43 @@
-from threading import Timer
+"""Receive a packet defined by Diagnostic on CAN protocol (ISO 15765)."""
 
-from can import Bus, Message
-from uds.can import CanAddressingFormat, CanAddressingInformation
-from uds.transport_interface import PyCanTransportInterface
+from can import Bus
+from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
 
 
 def main():
-    # configure CAN interfaces
-    kvaser_interface_1 = Bus(interface="kvaser", channel=0, fd=True, receive_own_messages=True)  # receiving
-    kvaser_interface_2 = Bus(interface="kvaser", channel=1, fd=True, receive_own_messages=True)  # sending
+    # configure CAN interface - https://python-can.readthedocs.io/en/stable/interfaces.html
+    can_interface = Bus(
+        # provide configuration for your CAN interface
+        interface="kvaser",  # replace with your CAN interface name
+        channel=0,
+        receive_own_messages=True,  # mandatory setting if you use Kvaser
+        # configure your CAN bus
+        bitrate=500_000,
+        fd=True,
+        data_bitrate=4_000_000)
 
-    # configure Addressing Information of a CAN Node (example values)
-    addressing_information = CanAddressingInformation(
-        addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
-        tx_physical={"can_id": 0x611},
-        rx_physical={"can_id": 0x612},
-        tx_functional={"can_id": 0x6FF},
-        rx_functional={"can_id": 0x6FE})
+    # configure addresses for Diagnostics on CAN communication
+    # CAN Addressing Formats explanation:
+    # https://uds.readthedocs.io/en/stable/pages/knowledge_base/packet.html#can-packet-addressing-formats
+    addressing_information = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+                                                      rx_physical_params={"can_id": 0x611},
+                                                      tx_physical_params={"can_id": 0x612},
+                                                      rx_functional_params={"can_id": 0x6FF},
+                                                      tx_functional_params={"can_id": 0x6FE})
 
-    # create Transport Interface object for UDS communication
-    can_ti = PyCanTransportInterface(can_bus_manager=kvaser_interface_1,
+    # create Transport Interface object for Diagnostics on CAN communication
+    can_ti = PyCanTransportInterface(network_manager=can_interface,
                                      addressing_information=addressing_information)
 
-    # some frames to be received later on
-    frame_1 = Message(arbitration_id=0x6FE, data=[0x02, 0x10, 0x03])
-    frame_2 = Message(arbitration_id=0x611, data=[0x02, 0x10, 0x03])  # shall be ignored, as it is not observed CAN ID
-    frame_3 = Message(arbitration_id=0x612, data=[0x02, 0x3E, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA])
+    # receive CAN packet
+    received_packet_record = can_ti.receive_packet(timeout=1000)  # timeout=1000 [ms]
 
-    # receive CAN packet 1
-    Timer(interval=0.1, function=kvaser_interface_1.send, args=(frame_1,)).start()  # schedule transmission of frame 1
-    record_1 = can_ti.receive_packet(timeout=1000)  # receive CAN packet 1 carried by frame 1
-    print(record_1)  # show attributes of CAN packet record 1
+    # show received packet
+    print(received_packet_record)
 
-    # receive CAN packet 2
-    Timer(interval=0.1, function=kvaser_interface_1.send, args=(frame_2,)).start()  # schedule transmission of frame 2
-    Timer(interval=0.2, function=kvaser_interface_1.send, args=(frame_3,)).start()  # schedule transmission of frame 3
-    record_2 = can_ti.receive_packet(timeout=1000)  # receive CAN packet 2 carried by frame 3
-    print(record_2)  # show attributes of CAN packet record 2
-
-    # close connections with CAN interfaces
+    # close connections with CAN interface
     del can_ti
-    kvaser_interface_1.shutdown()
-    kvaser_interface_2.shutdown()
+    can_interface.shutdown()
 
 
 if __name__ == "__main__":
