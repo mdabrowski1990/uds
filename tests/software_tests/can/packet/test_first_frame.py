@@ -82,9 +82,9 @@ class TestCanFirstFrame:
     @patch(f"{SCRIPT_LOCATION}.extract_ff_dl_data_bytes")
     @patch(f"{SCRIPT_LOCATION}.extract_ff_dl")
     @patch(f"{SCRIPT_LOCATION}.is_first_frame")
-    def test_validate_frame_data__valid(self, mock_is_first_frame, mock_extract_ff_dl, mock_extract_ff_dl_data_bytes,
-                                        mock_validate_ff_dl,
-                                        addressing_format, raw_frame_data):
+    def test_validate_first_frame_data__valid(self, mock_is_first_frame, mock_extract_ff_dl,
+                                              mock_extract_ff_dl_data_bytes, mock_validate_ff_dl,
+                                              addressing_format, raw_frame_data):
         mock_is_first_frame.return_value = True
         assert validate_first_frame_data(addressing_format=addressing_format, raw_frame_data=raw_frame_data) is None
         self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data, allow_empty=False)
@@ -341,13 +341,13 @@ class TestCanFirstFrame:
 
     # generate_ff_dl_bytes
 
-    @pytest.mark.parametrize("ff_dl, long_ff_dl_format, expected_ff_dl_bytes", [
-        (MAX_SHORT_FF_DL_VALUE + 1, False, bytearray([0x10, 0x00])),
-        (MAX_LONG_FF_DL_VALUE + 1, True, bytearray([0x10, 0x00, 0x00, 0x00, 0x00, 0x00])),
-        (MAX_LONG_FF_DL_VALUE, False, bytearray([0x1F, 0x4A])),
-        (MAX_LONG_FF_DL_VALUE + MAX_SHORT_FF_DL_VALUE, True, bytearray([0x10, 0x00, 0x9B, 0xE0, 0x87, 0x21])),
+    @pytest.mark.parametrize("ff_dl, long_ff_dl_format", [
+        (MAX_SHORT_FF_DL_VALUE + 1, False),
+        (MAX_LONG_FF_DL_VALUE + 1, True),
+        (MAX_LONG_FF_DL_VALUE, False),
+        (MAX_LONG_FF_DL_VALUE + MAX_SHORT_FF_DL_VALUE, True),
     ])
-    def test_generate_ff_dl_bytes__value_error(self, ff_dl, long_ff_dl_format, expected_ff_dl_bytes):
+    def test_generate_ff_dl_bytes__value_error(self, ff_dl, long_ff_dl_format):
         with pytest.raises(ValueError):
             generate_ff_dl_bytes(long_ff_dl_format=long_ff_dl_format, ff_dl=ff_dl)
 
@@ -452,10 +452,10 @@ class TestCanFirstFrameIntegration:
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data", [
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x10, 0x07, 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54)),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0x00, 0x00, 0x0F, 0xFF] + list(range(58))),
-        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x10, 0x15] + list(range(100, 121))),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0x00, 0x00, 0x0F, 0xFF, *range(58)]),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x10, 0x15, *range(100, 121)]),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, (0x0F, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)),
-        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x0F, 0x10, 0x3D] + list(range(50, 111))),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x0F, 0x10, 0x3D, *range(50, 111)]),
     ])
     def test_validate_first_frame_data__value_error(self, addressing_format, raw_frame_data):
         with pytest.raises(ValueError):
@@ -478,12 +478,12 @@ class TestCanFirstFrameIntegration:
           "dlc": 0xF,
           "data_length": 62,
           "payload": tuple(range(120, 181)),
-          "target_address": 0xC0}, bytearray([0xC0, 0x10, 0x3E] + list(range(120, 181)))),
+          "target_address": 0xC0}, bytearray([0xC0, 0x10, 0x3E, *range(120, 181)])),
         ({"addressing_format": CanAddressingFormat.MIXED_11BIT_ADDRESSING,
           "dlc": 0xA,
           "data_length": 0x1000,
           "payload": list(range(9)),
-          "address_extension": 0x0B}, bytearray([0x0B, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00] + list(range(9)))),
+          "address_extension": 0x0B}, bytearray([0x0B, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, *range(9)])),
         ({"addressing_format": CanAddressingFormat.MIXED_29BIT_ADDRESSING,
           "dlc": 8,
           "data_length": 0xFFF,
@@ -602,10 +602,10 @@ class TestCanFirstFrameIntegration:
 
     @pytest.mark.parametrize("addressing_format, raw_frame_data, payload_i", [
         (CanAddressingFormat.NORMAL_ADDRESSING, (0x10, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE), 2),
-        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0xF0, 0xD1, 0xE2, 0xC3] + list(range(58)), 6),
-        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x10, 0xF0] + list(range(50, 96)), 3),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING, [0x10, 0x00, 0xF0, 0xD1, 0xE2, 0xC3, *range(58)], 6),
+        (CanAddressingFormat.EXTENDED_ADDRESSING, [0x10, 0x10, 0xF0, *range(50, 96)], 3),
         (CanAddressingFormat.MIXED_11BIT_ADDRESSING, [0xC4, 0x10, 0x00, 0xF0, 0xD1, 0xE2, 0xC3, 0xD4], 7),
-        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x83, 0x1F, 0xFF] + list(range(100, 121)), 3),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING, [0x83, 0x1F, 0xFF, *range(100, 121)], 3),
     ])
     def test_extract_first_frame_payload(self, addressing_format, raw_frame_data, payload_i):
         assert extract_first_frame_payload(addressing_format=addressing_format,

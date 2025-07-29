@@ -37,8 +37,10 @@ async def main():
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
 
     # send UDS Message
-    message_record = await can_ti.async_send_message(message)
-    print(message_record)
+    sent_message_record = await can_ti.async_send_message(message)
+
+    # show sent message
+    print(sent_message_record)
 
     # close connections with CAN interface
     del can_ti

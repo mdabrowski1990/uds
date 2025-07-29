@@ -73,7 +73,7 @@ class TestCanSegmenter:
 
     # __init__
 
-    @pytest.mark.parametrize("addressing_information", [Mock(), "some vlaue"])
+    @pytest.mark.parametrize("addressing_information", [Mock(), "some value"])
     def test_init__mandatory_args(self, addressing_information):
         assert CanSegmenter.__init__(self=self.mock_can_segmenter,
                                      addressing_information=addressing_information) is None
@@ -240,7 +240,7 @@ class TestCanSegmenter:
         if (message_payload_size - ff_size) % cf_size:
             cf_number += 1
         assert (CanSegmenter._CanSegmenter__physical_segmentation(self=self.mock_can_segmenter, message=mock_message)
-                == tuple([self.mock_can_packet.return_value] * (cf_number + 1)) )
+                == tuple([self.mock_can_packet.return_value] * (cf_number + 1)))
         self.mock_get_max_sf_dl.assert_called_once_with(addressing_format=self.mock_can_segmenter.addressing_format,
                                                         dlc=self.mock_can_segmenter.dlc)
         mock_len.assert_called_once_with(mock_message.payload)
@@ -717,7 +717,7 @@ class TestCanSegmenterIntegration:
     @pytest.mark.parametrize("uds_message", [
         UdsMessage(payload=bytearray([0x54]), addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=(0x3E, 0x00), addressing_type=AddressingType.FUNCTIONAL),
-        UdsMessage(payload=[0x62] + list(range(0xFF)), addressing_type=AddressingType.PHYSICAL),
+        UdsMessage(payload=[0x62, *range(0xFF)], addressing_type=AddressingType.PHYSICAL),
     ])
     def test_segmentation_desegmentation(self, example_can_segmenter, uds_message):
         segmented_packets = example_can_segmenter.segmentation(uds_message)

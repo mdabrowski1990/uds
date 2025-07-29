@@ -497,17 +497,6 @@ class TestCanFlowControl:
         assert (extract_st_min(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
                 == raw_frame_data[ai_data_bytes_number + ST_MIN_BYTE_POSITION])
 
-    # extract_block_size
-
-    @pytest.mark.parametrize("addressing_format, raw_frame_data, ai_data_bytes_number", [
-        (Mock(), [0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0], 0),
-        (CanAddressingFormat.EXTENDED_ADDRESSING, bytearray([0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0][::-1]), 1),
-    ])
-    def test_extract_block_size(self, addressing_format, raw_frame_data, ai_data_bytes_number):
-        self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_data_bytes_number
-        assert (extract_block_size(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
-                == raw_frame_data[ai_data_bytes_number + BS_BYTE_POSITION])
-
     # get_flow_control_min_dlc
 
     @pytest.mark.parametrize("addressing_format, ai_data_bytes_number", [
@@ -532,7 +521,7 @@ class TestCanFlowControl:
     # generate_flow_status
 
     @pytest.mark.parametrize("flow_status", [0x0, 0x5, 0xF])
-    def test_generate_flow_control_bytes(self, flow_status):
+    def test_generate_flow_status(self, flow_status):
         assert generate_flow_status(flow_status=flow_status) == bytearray([0x30 + flow_status])
         self.mock_validate_nibble.assert_called_once_with(flow_status)
 

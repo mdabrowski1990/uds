@@ -33,18 +33,18 @@ async def main():
     # configure addresses for Diagnostics on CAN communication
     # CAN Addressing Formats explanation:
     # https://uds.readthedocs.io/en/stable/pages/knowledge_base/packet.html#can-packet-addressing-formats
-    ai_receive = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
+    ai_send = CanAddressingInformation(addressing_format=CanAddressingFormat.NORMAL_ADDRESSING,
                                           tx_physical_params={"can_id": 0x611},
                                           rx_physical_params={"can_id": 0x612},
                                           tx_functional_params={"can_id": 0x6FF},
                                           rx_functional_params={"can_id": 0x6FE})
-    ai_send = ai_receive.get_other_end()
+    ai_receive = ai_send.get_other_end()
 
     # create Transport Interface object for Diagnostics on CAN communication
     can_ti_1 = PyCanTransportInterface(network_manager=can_interface_1,
-                                       addressing_information=ai_receive)
-    can_ti_2 = PyCanTransportInterface(network_manager=can_interface_2,
                                        addressing_information=ai_send)
+    can_ti_2 = PyCanTransportInterface(network_manager=can_interface_2,
+                                       addressing_information=ai_receive)
 
     # define UDS Message
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
@@ -52,7 +52,7 @@ async def main():
     packet = can_ti_1.segmenter.segmentation(message)[0]
 
     # send and receive packet CAN packet
-    receive_packet_task = asyncio.create_task(can_ti_2.async_receive_packet(timeout=100))
+    receive_packet_task = asyncio.create_task(can_ti_2.async_receive_packet(timeout=100))  # timeout=100 ms
     sent_packet_record = await can_ti_1.async_send_packet(packet)
     received_packet_record = await receive_packet_task
 

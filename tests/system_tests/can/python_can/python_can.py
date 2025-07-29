@@ -6,7 +6,6 @@ from time import sleep
 from typing import List, Optional
 
 import pytest
-from tests.system_tests.can.common import AbstractCanTests
 
 from can import Bus, Message
 from uds.addressing import AddressingType
@@ -23,17 +22,18 @@ from uds.message import UdsMessage, UdsMessageRecord
 from uds.utilities import TimeMillisecondsAlias, TransmissionDirection
 
 
-class AbstractPythonCanTests(AbstractCanTests):
+class AbstractPythonCanTests(ABC):
     """
-    Definition of system tests (with hardware) for Diagnostic over CAN (DoCAN) with python-addressing.
+    Definition of system tests (with hardware) for Diagnostic over CAN (DoCAN) with python-can.
 
     Requires hardware setup:
-        - 2x CAN bus hardware interfaces that addressing be controlled using python-addressing package
+        - 2x CAN bus hardware interfaces that addressing be controlled using python-can package
         - both CAN interfaces are connected (so they can communicate with other) - termination (resistor) is part of
             CAN cables connection
     """
 
     MAKE_TIMING_CHECKS: bool = True
+    TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 30
     WAIT_AFTER_TEST_CASE: TimeMillisecondsAlias = 250.
 
     can_interface_1: Bus
@@ -43,22 +43,20 @@ class AbstractPythonCanTests(AbstractCanTests):
     _timers: List[Timer]
 
     @abstractmethod
-    def setup_class(self):  # TODO: remove
-        """Create bus objects."""
-        self.can_interface_1: Bus  # configure in concrete classes accordingly to hardware setup
-        self.can_interface_2: Bus   # configure in concrete classes accordingly to hardware setup
+    def _define_interfaces(self):
+        """Define python-can interfaces"""
 
     def setup_method(self):
         """Prepare CAN bus objects for tests."""
-        # TODO: define bus here (instead of flushing) and check if test cases are more stable
-        self.can_interface_1.flush_tx_buffer()
-        self.can_interface_2.flush_tx_buffer()
+        self._define_interfaces()
         self.sent_message: Optional[UdsMessageRecord] = None
         self.sent_packet: Optional[CanPacketRecord] = None
         self._timers: List[Timer] = []
 
     def teardown_method(self):
         """Finish all tasks that were open during test."""
+        self.can_interface_1.flush_tx_buffer()
+        self.can_interface_2.flush_tx_buffer()
         for _timer in self._timers:
             _timer.cancel()
         if self._timers:
@@ -66,10 +64,6 @@ class AbstractPythonCanTests(AbstractCanTests):
             for _timer in self._timers:
                 del _timer
             self._timers = []
-        sleep(self.WAIT_AFTER_TEST_CASE / 1000.)
-
-    def teardown_class(self):
-        """Safely close CAN bus objects."""
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
 

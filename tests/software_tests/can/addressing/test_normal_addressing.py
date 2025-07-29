@@ -58,8 +58,8 @@ class TestNormalCanAddressingInformation:
             {"can_id": 0x4321},
         ),
     ])
-    def test_validate_node_ai__inconsistent(self, rx_physical_params, tx_physical_params,
-                                            rx_functional_params, tx_functional_params):
+    def test_validate_addressing_information__inconsistent(self, rx_physical_params, tx_physical_params,
+                                                           rx_functional_params, tx_functional_params):
         self.mock_addressing_information.rx_physical_params = rx_physical_params
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
@@ -93,8 +93,8 @@ class TestNormalCanAddressingInformation:
             {"can_id": 0x7DF},
         ),
     ])
-    def test_validate_node_ai__valid(self, rx_physical_params, tx_physical_params,
-                                            rx_functional_params, tx_functional_params):
+    def test_validate_addressing_information__valid(self, rx_physical_params, tx_physical_params,
+                                                    rx_functional_params, tx_functional_params):
         self.mock_addressing_information.rx_physical_params = rx_physical_params
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
@@ -360,10 +360,10 @@ class TestNormalFixedCanAddressingInformation:
                                                    source_address=source_address)
 
     @pytest.mark.parametrize("addressing_type, target_address, source_address, can_id", [
-        [Mock(), Mock(), Mock(), Mock()],
-        [AddressingType.PHYSICAL, None, None, 0x67234],
-        [AddressingType.FUNCTIONAL, 0x00, None, 0x67234],
-        [AddressingType.FUNCTIONAL, None, 0xFF, 0x67234],
+        (Mock(), Mock(), Mock(), Mock()),
+        (AddressingType.PHYSICAL, None, None, 0x67234),
+        (AddressingType.FUNCTIONAL, 0x00, None, 0x67234),
+        (AddressingType.FUNCTIONAL, None, 0xFF, 0x67234),
     ])
     @patch(f"{SCRIPT_LOCATION}.NormalFixedCanAddressingInformation.decode_can_id_ai_params")
     def test_validate_addressing_params__valid_with_can_id(self, mock_decode_can_id_ai_params,
