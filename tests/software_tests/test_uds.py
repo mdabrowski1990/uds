@@ -1,9 +1,10 @@
 import pytest
-from mock import patch, Mock
 
 import uds
 
+
 class TestUDS:
+    """Unit tests for uds.__init__.py"""
 
     # __version__
 
