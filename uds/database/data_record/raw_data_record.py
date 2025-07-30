@@ -12,6 +12,10 @@ class RawDataRecord(AbstractDataRecord):
     Implementation for Raw Data Records.
 
     Raw Data Records are the most basic Data Records which do not contain translation between physical and raw values.
+
+    Common Use Cases:
+     - Fillers without any meaning (e.g. reserved values)
+     - Entries with unknown meaning
     """
 
     def __init__(self,

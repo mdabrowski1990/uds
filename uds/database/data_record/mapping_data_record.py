@@ -20,10 +20,10 @@ class MappingDataRecord(RawDataRecord):
     enumerations, and boolean flags. Inherits from RawDataRecord to provide fallback behavior when no mapping exists.
 
     Features:
-     - Bidirectional mapping: raw <-> label translation
+     - Bidirectional mapping: raw value <-> label translation
      - Fallback behavior: unmapped values return raw integers with warning
-     - Container support: Can have children (e.g. for complex bit-field structures)
-     - Occurrence constraints: Support for multiple occurrences (e.g. status for multiple sensors)
+     - Container support: can have children (e.g. for complex bit-field structures)
+     - Occurrence constraints: support for multiple occurrences (e.g. status for multiple sensors)
 
     Common Use Cases:
      - Status indicators (0="Inactive", 1="Active")

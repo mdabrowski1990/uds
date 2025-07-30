@@ -54,6 +54,10 @@ class TextDataRecord(AbstractDataRecord):
     representations using one of the predefined encodings (all supported encodings are defined in
     :class:`~uds.database.data_record.text_data_record.TextEncoding`).
 
+    Features:
+     - Bidirectional mapping: raw value <-> text
+     - Occurrence constraints: multiple occurrences are treated as longer text
+
     Common Use Cases:
      - Vehicle identification numbers (VIN) using ASCII encoding
      - Numeric displays and counters using BCD encoding
