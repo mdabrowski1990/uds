@@ -19,10 +19,13 @@ class TextEncoding(ValidatedEnum):
 
     ASCII: "TextEncoding" = "ascii"  # type: ignore
     """Standard ASCII character encoding.
+    
     .. seealso:: https://en.wikipedia.org/wiki/ASCII"""
     BCD: "TextEncoding" = "bcd"  # type: ignore
     """Binary Coded Decimal encoding.
-    .. seealso:: https://en.wikipedia.org/wiki/BCD_(character_encoding)"""
+    
+    .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding) 
+        <https://en.wikipedia.org/wiki/BCD_(character_encoding)>`_"""
 
 
 class TextDataRecord(AbstractDataRecord):

@@ -228,7 +228,7 @@ class AbstractDataRecord(ABC):
         """
         Maximal number of occurrences for this Data Record.
 
-        .. info:: No maximal number (infinite number of occurrences) is represented by None value.
+        .. note:: No maximal number (infinite number of occurrences) is represented by None value.
         """
         return self.__max_occurrences
 
