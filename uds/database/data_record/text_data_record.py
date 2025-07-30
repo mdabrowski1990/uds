@@ -37,9 +37,9 @@ class TextDataRecord(AbstractDataRecord):
     :class:`~uds.database.data_record.text_data_record.TextEncoding`).
 
     Common Use Cases:
-    - Vehicle identification numbers (VIN) using ASCII encoding
-    - Numeric displays and counters using BCD encoding
-    - Part numbers and serial numbers in diagnostic data
+     - Vehicle identification numbers (VIN) using ASCII encoding
+     - Numeric displays and counters using BCD encoding
+     - Part numbers and serial numbers in diagnostic data
     """
 
     def __init__(self,
