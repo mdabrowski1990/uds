@@ -1,9 +1,59 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record.text_data_record import TextDataRecord, TextEncoding
+from uds.database.data_record.text_data_record import TextDataRecord, TextEncoding, decode_ascii
 
 SCRIPT_LOCATION = "uds.database.data_record.text_data_record"
+
+
+class TestEncodingAndDecodingFunctions:
+    """Unit tests for encoding and decoding functions used by TextDataRecord."""
+
+    # decode_ascii
+
+    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_ascii__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            decode_ascii(value)
+        mock_isinstance.assert_called_once_with(value, str)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_ascii__value_error__non_ascii(self, mock_isinstance):
+        mock_isinstance.return_value = True
+        mock_len = Mock(return_value=1)
+        mock_value = MagicMock(spec=str, __len__=mock_len)
+        mock_value.isascii.return_value = False
+        with pytest.raises(ValueError):
+            decode_ascii(mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_value.isascii.assert_called_once_with()
+
+    @pytest.mark.parametrize("length_value", [0, 2])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_ascii__value_error__wrong_length(self, mock_isinstance, length_value):
+        mock_isinstance.return_value = True
+        mock_len = Mock(return_value=length_value)
+        mock_value = MagicMock(spec=str, __len__=mock_len)
+        mock_value.isascii.return_value = True
+        with pytest.raises(ValueError):
+            decode_ascii(mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_len.assert_called_once_with()
+
+    @patch(f"{SCRIPT_LOCATION}.ord")
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_ascii__valid(self, mock_isinstance, mock_ord):
+        mock_isinstance.return_value = True
+        mock_len = Mock(return_value=1)
+        mock_value = MagicMock(spec=str, __len__=mock_len)
+        mock_value.isascii.return_value = True
+        assert decode_ascii(mock_value) == mock_ord.return_value
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_value.isascii.assert_called_once_with()
+        mock_ord.assert_called_once_with(mock_value)
+        mock_len.assert_called_once_with()
 
 
 class TestTextDataRecord:
@@ -45,37 +95,6 @@ class TestTextDataRecord:
                                                                     length=mock_length)
         mock_encodings.__getitem__.assert_called_once_with(encoding)
         mock_encoding.__getitem__.assert_called_once_with("length")
-
-    # __decode_ascii
-
-    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_decode_ascii__type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            TextDataRecord._TextDataRecord__decode_ascii(value)
-        mock_isinstance.assert_called_once_with(value, str)
-
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_decode_ascii__value_error(self, mock_isinstance):
-        mock_isinstance.return_value = True
-        mock_value = Mock(spec=str)
-        mock_value.isascii.return_value = False
-        with pytest.raises(ValueError):
-            TextDataRecord._TextDataRecord__decode_ascii(mock_value)
-        mock_isinstance.assert_called_once_with(mock_value, str)
-        mock_value.isascii.assert_called_once_with()
-
-    @patch(f"{SCRIPT_LOCATION}.ord")
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_decode_ascii__valid(self, mock_isinstance, mock_ord):
-        mock_isinstance.return_value = True
-        mock_value = Mock(spec=str)
-        mock_value.isascii.return_value = True
-        assert TextDataRecord._TextDataRecord__decode_ascii(mock_value) == mock_ord.return_value
-        mock_isinstance.assert_called_once_with(mock_value, str)
-        mock_value.isascii.assert_called_once_with()
-        mock_ord.assert_called_once_with(mock_value)
 
     # encoding
 

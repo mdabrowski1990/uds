@@ -19,13 +19,31 @@ class TextEncoding(ValidatedEnum):
 
     ASCII: "TextEncoding" = "ascii"  # type: ignore
     """Standard ASCII character encoding.
-    
+
     .. seealso:: https://en.wikipedia.org/wiki/ASCII"""
     BCD: "TextEncoding" = "bcd"  # type: ignore
     """Binary Coded Decimal encoding.
-    
-    .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding) 
+
+    .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding)
         <https://en.wikipedia.org/wiki/BCD_(character_encoding)>`_"""
+
+
+def decode_ascii(character: str) -> int:
+    """
+    Decode ASCII character into byte value.
+
+    :param character: ASCII character.
+
+    :raise TypeError: Provided value is not str type.
+    :raise ValueError: Provided value is not an ascii character.
+
+    :return: Raw value representation of this character in ASCII format.
+    """
+    if not isinstance(character, str):
+        raise TypeError("Provided value is not str type.")
+    if not character.isascii() or len(character) != 1:
+        raise ValueError("Provided value is non-ASCII character.")
+    return ord(character)
 
 
 class TextDataRecord(AbstractDataRecord):
@@ -41,6 +59,26 @@ class TextDataRecord(AbstractDataRecord):
      - Numeric displays and counters using BCD encoding
      - Part numbers and serial numbers in diagnostic data
     """
+
+    class _EncodingInfo(TypedDict):
+        """Structure of Encoding Information."""
+
+        length: int
+        encode: Callable[[int], str]
+        decode: Callable[[str], int]
+
+    __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
+        TextEncoding.ASCII: {
+            "length": 8,
+            "encode": chr,
+            "decode": decode_ascii,
+        },
+        TextEncoding.BCD: {
+            "length": 4,
+            "encode": str,
+            "decode": int,
+        }
+    }
 
     def __init__(self,
                  name: str,
@@ -62,21 +100,6 @@ class TextDataRecord(AbstractDataRecord):
                          children=tuple(),
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)
-
-    @staticmethod
-    def __decode_ascii(character: str) -> int:
-        """
-        Decode ASCII character into byte value.
-
-        :param character: ASCII character.
-
-        :return: Raw value representation of this character in ASCII format.
-        """
-        if not isinstance(character, str):
-            raise TypeError("Provided value is not str type.")
-        if not character.isascii():
-            raise ValueError("Provided value is non-ASCII character.")
-        return ord(character)
 
     @property
     def encoding(self) -> TextEncoding:
@@ -134,23 +157,3 @@ class TextDataRecord(AbstractDataRecord):
         :return: Raw value decoded from provided character.
         """
         return self.__ENCODINGS[self.encoding]["decode"](physical_value)  # type: ignore
-
-    class _EncodingInfo(TypedDict):
-        """Structure of Encoding Information."""
-
-        length: int
-        encode: Callable[[int], str]
-        decode: Callable[[str], int]
-
-    __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
-        TextEncoding.ASCII: {
-            "length": 8,
-            "encode": chr,
-            "decode": __decode_ascii,
-        },
-        TextEncoding.BCD: {
-            "length": 4,
-            "encode": str,
-            "decode": int,
-        }
-    }
