@@ -17,6 +17,22 @@ The package is created with an idea to support any communication bus:
  - `K-Line <https://en.wikipedia.org/wiki/K-Line>`_
 """
 
+__all__ = [
+    "addressing",
+    "can",
+    "database",
+    "message",
+    "packet",
+    "segmentation",
+    "transport_interface",
+    "__version__",
+    "__author__",
+    "__maintainer__",
+    "__credits__",
+    "__email__",
+    "__license__",
+]
+
 __version__ = "1.1.0"
 __author__ = "Maciej Dąbrowski"
 __maintainer__ = "Maciej Dąbrowski"
@@ -28,10 +44,20 @@ __email__ = "uds-package-development@googlegroups.com"
 __license__ = "MIT"
 
 
-import uds.addressing
-import uds.can
-import uds.database
-import uds.message
-import uds.packet
-import uds.segmentation
-import uds.transport_interface
+import importlib
+import sys
+from typing import Sequence
+
+
+def __getattr__(name: str) -> object:  # noqa: vulture
+    """Lazy imports."""
+    if name in __all__:
+        module = importlib.import_module(f"{__name__}.{name}")
+        sys.modules[f"{__name__}.{name}"] = module
+        return module
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+def __dir__() -> Sequence[str]:  # noqa: vulture
+    """All UDS objects."""
+    return sorted(__all__)

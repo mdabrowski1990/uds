@@ -295,7 +295,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                  category=ValueWarning)
         self.__n_bs_timeout = value
 
-    @property  # noqa
+    @property
     def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
         Get the last measured values of :ref:`N_Bs <knowledge-base-addressing-n-bs>` time parameter.
@@ -415,7 +415,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                  category=ValueWarning)
         self.__n_cr_timeout = value
 
-    @property  # noqa
+    @property
     def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
         Get the last measured values of :ref:`N_Cr <knowledge-base-addressing-n-cr>` time parameter.

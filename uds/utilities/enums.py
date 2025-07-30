@@ -85,7 +85,7 @@ class ByteEnum(AIntEnum):  # type: ignore
         """
         validate_raw_byte(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa
+        member._value_ = value  # noqa: vulture
         return member
 
 
@@ -100,5 +100,5 @@ class NibbleEnum(AIntEnum):  # type: ignore
         """
         validate_nibble(value)
         member = int.__new__(cls, value)
-        member._value_ = value  # noqa
+        member._value_ = value  # noqa: vulture
         return member
