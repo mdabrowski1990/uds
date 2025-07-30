@@ -3,7 +3,6 @@ from mock import Mock, patch
 
 from uds.database.data_record.raw_data_record import RawDataRecord
 
-
 SCRIPT_LOCATION = "uds.database.data_record.raw_data_record"
 
 
