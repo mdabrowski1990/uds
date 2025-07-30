@@ -16,7 +16,7 @@ class RawDataRecord(AbstractDataRecord):
     Common Use Cases:
      - Fillers without any meaning (e.g. reserved values)
      - Entries with unknown meaning
-     - Big data containers with multiple children
+     - Big data containers (e.g. DID structures) with multiple children
     """
 
     def __init__(self,
