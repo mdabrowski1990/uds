@@ -2,22 +2,42 @@
 
 __all__ = ["TextDataRecord", "TextEncoding"]
 
-from typing import Any, Callable, Dict, Optional, Sequence, TypedDict
+from typing import Callable, Dict, Optional, TypedDict
 
-from uds.utilities import ValidatedEnum, validate_nibble
+from uds.utilities import ValidatedEnum
 
 from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValues, SinglePhysicalValueAlias
 
 
 class TextEncoding(ValidatedEnum):
-    """Encoding supported by Text Data Records."""
+    """
+    Text encoding types supported by TextDataRecord.
+
+    This enum defines the available character encoding schemes for converting between raw integer values and
+    their text character representations.
+    """
 
     ASCII: "TextEncoding" = "ascii"  # type: ignore
+    """Standard ASCII character encoding.
+    .. seealso:: https://en.wikipedia.org/wiki/ASCII"""
     BCD: "TextEncoding" = "bcd"  # type: ignore
+    """Binary Coded Decimal encoding.
+    .. seealso:: https://en.wikipedia.org/wiki/BCD_(character_encoding)"""
 
 
 class TextDataRecord(AbstractDataRecord):
-    """Data Record that encodes text values."""
+    """
+    Data Record for encoding and decoding text characters with configurable encoding schemes.
+
+    TextDataRecord provides bidirectional conversion between raw integer values and their text character
+    representations using one of the predefined encodings (all supported encodings are defined in
+    :class:`~uds.database.data_record.text_data_record.TextEncoding`).
+
+    Common Use Cases:
+    - Vehicle identification numbers (VIN) using ASCII encoding
+    - Numeric displays and counters using BCD encoding
+    - Part numbers and serial numbers in diagnostic data
+    """
 
     def __init__(self,
                  name: str,
@@ -39,6 +59,21 @@ class TextDataRecord(AbstractDataRecord):
                          children=tuple(),
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)
+
+    @staticmethod
+    def __decode_ascii(character: str) -> int:
+        """
+        Decode ASCII character into byte value.
+
+        :param character: ASCII character.
+
+        :return: Raw value representation of this character in ASCII format.
+        """
+        if not isinstance(character, str):
+            raise TypeError("Provided value is not str type.")
+        if not character.isascii():
+            raise ValueError("Provided value is non-ASCII character.")
+        return ord(character)
 
     @property
     def encoding(self) -> TextEncoding:
@@ -74,7 +109,7 @@ class TextDataRecord(AbstractDataRecord):
             raise RuntimeError("This method must be called for reoccurring Data Record only.")
         if len(raw_values) == 0:
             raise ValueError("Raw value for at least one occurrence must be provided.")
-        return "".join((self.get_physical_value(raw_value) for raw_value in raw_values))
+        return "".join((self.get_physical_value(raw_value) for raw_value in raw_values))  # type: ignore
 
     def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
         """
@@ -95,8 +130,7 @@ class TextDataRecord(AbstractDataRecord):
 
         :return: Raw value decoded from provided character.
         """
-        return self.__ENCODINGS[self.encoding]["decode"](physical_value)
-
+        return self.__ENCODINGS[self.encoding]["decode"](physical_value)  # type: ignore
 
     class _EncodingInfo(TypedDict):
         """Structure of Encoding Information."""
@@ -109,7 +143,7 @@ class TextDataRecord(AbstractDataRecord):
         TextEncoding.ASCII: {
             "length": 8,
             "encode": chr,
-            "decode": ord,
+            "decode": __decode_ascii,
         },
         TextEncoding.BCD: {
             "length": 4,

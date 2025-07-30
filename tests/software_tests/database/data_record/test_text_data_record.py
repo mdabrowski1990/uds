@@ -46,6 +46,37 @@ class TestTextDataRecord:
         mock_encodings.__getitem__.assert_called_once_with(encoding)
         mock_encoding.__getitem__.assert_called_once_with("length")
 
+    # __decode_ascii
+
+    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_ascii__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            TextDataRecord._TextDataRecord__decode_ascii(value)
+        mock_isinstance.assert_called_once_with(value, str)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_ascii__value_error(self, mock_isinstance):
+        mock_isinstance.return_value = True
+        mock_value = Mock(spec=str)
+        mock_value.isascii.return_value = False
+        with pytest.raises(ValueError):
+            TextDataRecord._TextDataRecord__decode_ascii(mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_value.isascii.assert_called_once_with()
+
+    @patch(f"{SCRIPT_LOCATION}.ord")
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_ascii__valid(self, mock_isinstance, mock_ord):
+        mock_isinstance.return_value = True
+        mock_value = Mock(spec=str)
+        mock_value.isascii.return_value = True
+        assert TextDataRecord._TextDataRecord__decode_ascii(mock_value) == mock_ord.return_value
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_value.isascii.assert_called_once_with()
+        mock_ord.assert_called_once_with(mock_value)
+
     # encoding
 
     def test_encoding__get(self):
@@ -113,16 +144,16 @@ class TestTextDataRecord:
 
     # get_raw_value
 
-    @pytest.mark.parametrize("raw_value", [Mock(), 0])
-    def test_get_raw_value(self, raw_value):
-        mock_encode = Mock()
-        mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_encode))
+    @pytest.mark.parametrize("physical_value", [Mock(), "Some character"])
+    def test_get_raw_value(self, physical_value):
+        mock_decode = Mock()
+        mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_decode))
         mock_encodings = MagicMock(__getitem__=MagicMock(return_value=mock_encoding))
         self.mock_data_record._TextDataRecord__ENCODINGS = mock_encodings
-        assert TextDataRecord.get_physical_value(self.mock_data_record, raw_value=raw_value) == mock_encode.return_value
-        self.mock_data_record._validate_raw_value.assert_called_once_with(raw_value)
+        assert (TextDataRecord.get_raw_value(self.mock_data_record, physical_value=physical_value)
+                == mock_decode.return_value)
         mock_encodings.__getitem__.assert_called_once_with(self.mock_data_record.encoding)
-        mock_encoding.__getitem__.assert_called_once_with("encode")
+        mock_encoding.__getitem__.assert_called_once_with("decode")
 
 
 @pytest.mark.integration
