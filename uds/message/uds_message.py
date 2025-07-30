@@ -209,7 +209,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """Information whether this message was received or sent."""
         return self.packets_records[0].direction
 
-    @property  # noqa
+    @property
     def transmission_start(self) -> datetime:
         """
         Time stamp when transmission of this message was initiated.
@@ -221,7 +221,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         """
         return self.packets_records[0].transmission_time
 
-    @property  # noqa
+    @property
     def transmission_end(self) -> datetime:
         """
         Time stamp when transmission of this message was completed.
