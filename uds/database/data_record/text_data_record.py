@@ -22,7 +22,7 @@ class TextEncoding(ValidatedEnum):
 
     .. seealso:: https://en.wikipedia.org/wiki/ASCII"""
     BCD: "TextEncoding" = "bcd"  # type: ignore
-    """Binary Coded Decimal encoding.
+    """Binary Coded Decimal encoding (only digits 0-9).
 
     .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding)
         <https://en.wikipedia.org/wiki/BCD_(character_encoding)>`_"""
