@@ -15,3 +15,4 @@ from .abstract_data_record import (
 )
 from .mapping_data_record import MappingDataRecord
 from .raw_data_record import RawDataRecord
+from .text_data_record import TextDataRecord, TextEncoding
