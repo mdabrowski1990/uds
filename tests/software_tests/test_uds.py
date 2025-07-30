@@ -1,7 +1,11 @@
+from unittest.mock import MagicMock
+
 import pytest
+from mock import patch
 
 import uds
 
+SCRIPT_LOCATION = "uds"
 
 class TestUDS:
     """Unit tests for uds.__init__.py"""
@@ -40,9 +44,23 @@ class TestUDS:
 
     # __getattr__
 
-    def test_getattr(self):
-        for name in uds.__all__:
-            assert getattr(uds, name)
+    @pytest.mark.parametrize("name", ["something_that_is_not_defined", "__version__"])
+    @patch(f"{SCRIPT_LOCATION}.sys")
+    @patch(f"{SCRIPT_LOCATION}.importlib")
+    def test_getattr__attribute_error(self, mock_importlib, mock_sys, name):
+        with pytest.raises(AttributeError):
+            uds.__getattr__(name)
+        mock_importlib.assert_not_called()
+        mock_sys.assert_not_called()
+
+    @pytest.mark.parametrize("name", filter(lambda name: name[:2] != "__" and name[-2:] != "__", uds.__all__))
+    @patch(f"{SCRIPT_LOCATION}.sys")
+    @patch(f"{SCRIPT_LOCATION}.importlib")
+    def test_getattr__attribute_error(self, mock_importlib, mock_sys, name):
+        assert uds.__getattr__(name) == mock_importlib.import_module.return_value
+        mock_importlib.import_module.assert_called_once_with(f"uds.{name}")
+        mock_sys.modules.__setitem__.assert_called_once_with(f"uds.{name}",
+                                                             mock_importlib.import_module.return_value)
 
     # __dir__
 
