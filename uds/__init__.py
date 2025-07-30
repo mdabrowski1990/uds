@@ -51,7 +51,7 @@ from typing import Sequence
 
 def __getattr__(name: str) -> object:  # noqa: vulture
     """Lazy imports."""
-    if name in __all__:
+    if name == name.strip("_") and name in __all__:
         module = importlib.import_module(f"{__name__}.{name}")
         sys.modules[f"{__name__}.{name}"] = module
         return module
