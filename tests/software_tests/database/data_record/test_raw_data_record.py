@@ -74,13 +74,27 @@ class TestRawDataRecordIntegration:
                                  min_occurrences=0,
                                  max_occurrences=1)
 
+    # get_physical_values
+
+    @pytest.mark.parametrize("value", [0, 0xFFFFFF])
+    def test_get_physical_values__error(self, value):
+        assert self.dtc.is_reoccurring is False
+        with pytest.raises(RuntimeError):
+            self.dtc.get_physical_values(value)
+
+    # get_physical_value
+
     @pytest.mark.parametrize("value", [0, 0xFFFFFF, 0xA1B2C3])
     def test_get_physical_value(self, value):
         assert self.dtc.get_physical_value(value) == value
 
+    # get_raw_value
+
     @pytest.mark.parametrize("value", [0, 0xFFFFFF, 0xA1B2C3])
     def test_get_raw_value(self, value):
         assert self.dtc.get_raw_value(value) == value
+
+    # get_occurrence_info
 
     @pytest.mark.parametrize("value, expected_output", [
         (0, {
@@ -104,9 +118,3 @@ class TestRawDataRecordIntegration:
     ])
     def test_get_occurrence_info(self, value, expected_output):
         assert self.dtc.get_occurrence_info(value) == expected_output
-
-    @pytest.mark.parametrize("value", [0, 0xFFFFFF])
-    def test_get_physical_values__error(self, value):
-        assert self.dtc.is_reoccurring is False
-        with pytest.raises(RuntimeError):
-            self.dtc.get_physical_values(value)

@@ -20,10 +20,10 @@ class MappingDataRecord(RawDataRecord):
     enumerations, and boolean flags. Inherits from RawDataRecord to provide fallback behavior when no mapping exists.
 
     Features:
-     - Bidirectional mapping: raw <-> label translation
+     - Bidirectional mapping: raw value <-> label translation
      - Fallback behavior: unmapped values return raw integers with warning
-     - Container support: Can have children (e.g. for complex bit-field structures)
-     - Occurrence constraints: Support for multiple occurrences (e.g. status for multiple sensors)
+     - Container support: can have children (e.g. for complex bit-field structures)
+     - Occurrence constraints: support for multiple occurrences (e.g. status for multiple sensors)
 
     Common Use Cases:
      - Status indicators (0="Inactive", 1="Active")
@@ -87,11 +87,11 @@ class MappingDataRecord(RawDataRecord):
 
     def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
         """
-        Decode raw value and provide physical value.
+        Get physical value representing provided raw value.
 
         :param raw_value: Raw (bit) value of this Data Record single occurrence.
 
-        :return: Decoded physical (a label) value for this occurrence.
+        :return: A label value for this occurrence.
         """
         if raw_value in self.values_mapping:
             return self.values_mapping[raw_value]
@@ -102,7 +102,7 @@ class MappingDataRecord(RawDataRecord):
 
     def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
         """
-        Encode physical value into raw value.
+        Get raw value that represents provided physical value.
 
         :param physical_value: Physical value (a label) of this Data Record single occurrence.
 

@@ -228,7 +228,7 @@ class AbstractDataRecord(ABC):
         """
         Maximal number of occurrences for this Data Record.
 
-        .. info:: No maximal number (infinite number of occurrences) is represented by None value.
+        .. note:: No maximal number (infinite number of occurrences) is represented by None value.
         """
         return self.__max_occurrences
 
@@ -336,14 +336,14 @@ class AbstractDataRecord(ABC):
 
     def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValues:
         """
-        Decode raw values and provide physical values.
+        Get physical values representing provided raw values.
 
         :param raw_values: Raw (bit) values of this Data Record for multiple occurrences.
 
         :raise RuntimeError: A called was made on a Data Record that is not reoccurring.
         :raise ValueError: No values were provided.
 
-        :return: Decoded physical values for provided raw values.
+        :return: Physical values for provided occurrences.
         """
         if not self.is_reoccurring:
             raise RuntimeError("This method must be called for reoccurring Data Record only.")
@@ -354,17 +354,17 @@ class AbstractDataRecord(ABC):
     @abstractmethod
     def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
         """
-        Decode raw value and provide physical value.
+        Get physical value representing provided raw value.
 
         :param raw_value: Raw (bit) value of this Data Record single occurrence.
 
-        :return: Decoded physical value for this occurrence.
+        :return: Physical value for this occurrence.
         """
 
     @abstractmethod
     def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
         """
-        Encode physical value into raw value.
+        Get raw value that represents provided physical value.
 
         :param physical_value: Physical value of this Data Record single occurrence.
 
