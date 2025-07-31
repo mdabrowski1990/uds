@@ -5,11 +5,12 @@ from uds.database.data_record.conditional_data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
+    Callable,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     InconsistentArgumentsError,
     Mapping,
-    Sequence, Callable
+    Sequence,
 )
 
 SCRIPT_LOCATION = "uds.database.data_record.conditional_data_record"
@@ -307,37 +308,37 @@ class TestConditionalFormulaDataRecord:
                 == self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula)
 
     @pytest.mark.parametrize("value", [Mock(), "Something"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_formula__set__type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
+    @patch(f"{SCRIPT_LOCATION}.callable")
+    def test_formula__set__type_error(self, mock_callable, value):
+        mock_callable.return_value = False
         with pytest.raises(TypeError):
             ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
-        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_callable.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value, arg_number", [
         (Mock(), 0),
         (Mock(spec=Callable), 2),
     ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_formula__set__value_error__arguments_number(self, mock_isinstance, value, arg_number):
-        mock_isinstance.return_value = True
+    @patch(f"{SCRIPT_LOCATION}.callable")
+    def test_formula__set__value_error__arguments_number(self, mock_callable, value, arg_number):
+        mock_callable.return_value = True
         self.mock_signature.return_value = Mock(parameters=[Mock() for _ in range(arg_number)])
         with pytest.raises(ValueError):
             ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
-        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_callable.assert_called_once_with(value)
         self.mock_signature.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value, arg_number", [
         (Mock(), 0),
         (Mock(spec=Callable), 2),
     ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_formula__set__value_error__arguments_number(self, mock_isinstance, value, arg_number):
-        mock_isinstance.return_value = True
+    @patch(f"{SCRIPT_LOCATION}.callable")
+    def test_formula__set__value_error__arguments_number(self, mock_callable, value, arg_number):
+        mock_callable.return_value = True
         self.mock_signature.return_value = Mock(parameters={Mock(): Mock() for _ in range(arg_number)})
         with pytest.raises(ValueError):
             ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
-        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_callable.assert_called_once_with(value)
         self.mock_signature.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value, arg_type", [
@@ -345,14 +346,14 @@ class TestConditionalFormulaDataRecord:
         (Mock(spec=Callable), float),
     ])
     @patch(f"{SCRIPT_LOCATION}.issubclass")
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_formula__set__value_error__arguments_annotation(self, mock_isinstance, mock_issubclass, value, arg_type):
-        mock_isinstance.return_value = True
+    @patch(f"{SCRIPT_LOCATION}.callable")
+    def test_formula__set__value_error__arguments_annotation(self, mock_callable, mock_issubclass, value, arg_type):
+        mock_callable.return_value = True
         mock_issubclass.return_value = False
         self.mock_signature.return_value = Mock(parameters={Mock(): Mock(annotation=arg_type)})
         with pytest.raises(ValueError):
             ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
-        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_callable.assert_called_once_with(value)
         mock_issubclass.assert_called_once_with(arg_type, int)
         self.mock_signature.assert_called_once_with(value)
 
@@ -361,27 +362,27 @@ class TestConditionalFormulaDataRecord:
         (Mock(spec=Callable), bool),
     ])
     @patch(f"{SCRIPT_LOCATION}.issubclass")
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_formula__set__valid_type(self, mock_isinstance, mock_issubclass, value, arg_type):
-        mock_isinstance.return_value = True
+    @patch(f"{SCRIPT_LOCATION}.callable")
+    def test_formula__set__valid_type(self, mock_callable, mock_issubclass, value, arg_type):
+        mock_callable.return_value = True
         mock_issubclass.return_value = True
         self.mock_signature.return_value = Mock(parameters={Mock(): Mock(annotation=arg_type)})
         assert ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value) is None
         assert self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula == value
-        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_callable.assert_called_once_with(value)
         mock_issubclass.assert_called_once_with(arg_type, int)
         self.mock_signature.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value", [Mock(), Mock(spec=Callable)])
     @patch(f"{SCRIPT_LOCATION}.issubclass")
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_formula__set__valid_empty(self, mock_isinstance, mock_issubclass, value):
-        mock_isinstance.return_value = True
+    @patch(f"{SCRIPT_LOCATION}.callable")
+    def test_formula__set__valid_empty(self, mock_callable, mock_issubclass, value):
+        mock_callable.return_value = True
         mock_issubclass.return_value = True
         mock_empty = Mock()
         self.mock_signature.return_value = Mock(parameters={Mock(): Mock(annotation=mock_empty)}, empty=mock_empty)
         assert ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value) is None
         assert self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula == value
-        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_callable.assert_called_once_with(value)
         mock_issubclass.assert_not_called()
         self.mock_signature.assert_called_once_with(value)

@@ -1,10 +1,13 @@
+"""Conditional Data Records implementation."""
+
 __all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION",
            "AbstractConditionalDataRecord", "ConditionalMappingDataRecord", "ConditionalFormulaDataRecord"]
 
 from abc import ABC, abstractmethod
+from inspect import signature
+from operator import getitem
 from types import MappingProxyType
 from typing import Callable, Mapping, Optional, Sequence
-from inspect import signature
 
 from uds.utilities import InconsistentArgumentsError
 
@@ -12,7 +15,7 @@ from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
 
 AliasMessageContinuation = Sequence[AbstractDataRecord]
-"""Alias of Diagnostic Message Continuation used by 
+"""Alias of Diagnostic Message Continuation used by
 :class:`~uds.database.data_record.conditional_data_record.AbstractConditionalDataRecord`"""
 DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: AliasMessageContinuation = [
     RawDataRecord(name="Generic Diagnostic Message Continuation",
@@ -96,7 +99,7 @@ class AbstractConditionalDataRecord(ABC):
             raise TypeError("Provided value is not a sequence")
         if not all(isinstance(element, AbstractDataRecord) for element in value):
             raise ValueError("At least one element is not an instance of AbstractDataRecord class.")
-        total_length = sum([element.length for element in value])
+        total_length = sum((element.length for element in value))
         if total_length % 8 != 0:
             raise InconsistentArgumentsError("The total length of the Data Records does not add up to full bytes.")
 
@@ -111,10 +114,10 @@ class AbstractConditionalDataRecord(ABC):
         :return: Following Data Records for the revealed value of the proceeding Data Record.
         """
         try:
-            return self.__getitem__(raw_value)
+            return getitem(self, raw_value)
         except (KeyError, ValueError):
             if self.default_message_continuation is None:
-                raise ValueError("No handler for the provided raw value.")
+                raise ValueError("No handler for the provided raw value.")  # pylint: disable=raise-missing-from
             return self.default_message_continuation
 
 
@@ -237,7 +240,7 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         :raise TypeError: Provided value is not callable.
         :raise ValueError: Provided formula's signature or annotation does not match the required format.
         """
-        if not isinstance(formula, Callable):
+        if not callable(formula):
             raise TypeError("Provided value is not callable.")
         formula_signature = signature(formula)
         if len(formula_signature.parameters) != 1:
