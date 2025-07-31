@@ -85,7 +85,7 @@ class AbstractConditionalDataRecord(ABC):
             self.__default_message_continuation = tuple(value)
 
     @staticmethod
-    def validate_message_continuation(value: AliasMessageContinuation) -> None:
+    def validate_message_continuation(value: AliasMessageContinuation) -> None:  # TODO: handle AbstractConditionalDataRecord in continuation message
         """
         Validate whether the provided value is structure of diagnostic message continuation.
 
@@ -97,7 +97,7 @@ class AbstractConditionalDataRecord(ABC):
         """
         if not isinstance(value, Sequence):
             raise TypeError("Provided value is not a sequence")
-        if not all(isinstance(element, AbstractDataRecord) for element in value):
+        if not all(isinstance(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value):
             raise ValueError("At least one element is not an instance of AbstractDataRecord class.")
         total_length = sum((element.length for element in value))
         if total_length % 8 != 0:
