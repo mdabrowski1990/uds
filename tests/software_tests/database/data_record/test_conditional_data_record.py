@@ -12,7 +12,6 @@ from uds.database.data_record.conditional_data_record import (
     Callable,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
-    InconsistentArgumentsError,
     Mapping,
     Sequence,
 )
@@ -72,19 +71,7 @@ class TestAbstractConditionalDataRecord:
         with pytest.raises(ValueError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
         mock_isinstance.assert_has_calls([call(value, Sequence),
-                                          call(value[0], AbstractDataRecord)], any_order=False)
-
-    @pytest.mark.parametrize("value", [
-        7 * [Mock(length=1)],
-        [Mock(length=15)],
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_validate_message_continuation__inconsistent(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
-        with pytest.raises(InconsistentArgumentsError):
-            AbstractConditionalDataRecord.validate_message_continuation(value)
-        mock_isinstance.assert_has_calls([call(value, Sequence)] +
-                                         [call(element, AbstractDataRecord) for element in value],
+                                          call(value[0], (AbstractDataRecord, AbstractConditionalDataRecord))],
                                          any_order=False)
 
     @pytest.mark.parametrize("value", [
@@ -96,9 +83,10 @@ class TestAbstractConditionalDataRecord:
     def test_validate_message_continuation__valid(self, mock_isinstance, value):
         mock_isinstance.return_value = True
         assert AbstractConditionalDataRecord.validate_message_continuation(value) is None
-        mock_isinstance.assert_has_calls([call(value, Sequence)] +
-                                         [call(element, AbstractDataRecord) for element in value],
-                                         any_order=False)
+        mock_isinstance.assert_has_calls(
+            [call(value, Sequence)] +
+            [call(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value],
+            any_order=False)
 
     # get_message_continuation
 
@@ -401,7 +389,12 @@ class TestConditionalMappingDataRecordIntegration:
             0x1000: [RawDataRecord(name="Entries",
                                    length=16,
                                    min_occurrences=1,
-                                   max_occurrences=10)],
+                                   max_occurrences=10),
+                     ConditionalFormulaDataRecord(formula=lambda raw_value: [
+                         TextDataRecord(name="BCD digits",
+                                        encoding=TextEncoding.BCD,
+                                        min_occurrences=raw_value,
+                                        max_occurrences=raw_value)])],
             0x1234: [RawDataRecord(name="Entry#1",
                                    length=64)],
             0xF186: [TextDataRecord(name="ASCII text",

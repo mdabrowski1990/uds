@@ -9,8 +9,6 @@ from operator import getitem
 from types import MappingProxyType
 from typing import Callable, Mapping, Optional, Sequence, Union
 
-from uds.utilities import InconsistentArgumentsError
-
 from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
 
@@ -85,23 +83,20 @@ class AbstractConditionalDataRecord(ABC):
             self.__default_message_continuation = tuple(value)
 
     @staticmethod
-    def validate_message_continuation(value: AliasMessageContinuation) -> None:  # TODO: handle AbstractConditionalDataRecord in continuation message
+    def validate_message_continuation(value: AliasMessageContinuation) -> None:
         """
         Validate whether the provided value is structure of diagnostic message continuation.
 
         :param value: Value to check
 
         :raise TypeError: Provided value is not a sequence.
-        :raise ValueError: At least one element of the provided sequence is not an instance of AbstractDataRecord class.
-        :raise InconsistentArgumentsError: The total length of the Data Records does not add up to full bytes.
+        :raise ValueError: At least one element of the provided sequence is not an instance of AbstractDataRecord
+            or AbstractConditionalDataRecord class.
         """
         if not isinstance(value, Sequence):
             raise TypeError("Provided value is not a sequence")
         if not all(isinstance(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value):
             raise ValueError("At least one element is not an instance of AbstractDataRecord class.")
-        total_length = sum((element.length for element in value))
-        if total_length % 8 != 0:
-            raise InconsistentArgumentsError("The total length of the Data Records does not add up to full bytes.")
 
     def get_message_continuation(self, raw_value: int) -> AliasMessageContinuation:
         """
