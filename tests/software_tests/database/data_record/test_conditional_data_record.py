@@ -3,19 +3,19 @@ from operator import getitem
 import pytest
 from mock import MagicMock, Mock, call, patch
 
+from uds.database.data_record import RawDataRecord, TextDataRecord, TextEncoding
 from uds.database.data_record.conditional_data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
+    AliasMessageContinuation,
     Callable,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     InconsistentArgumentsError,
     Mapping,
     Sequence,
-AliasMessageContinuation
 )
-from uds.database.data_record import TextDataRecord, TextEncoding, RawDataRecord
 
 SCRIPT_LOCATION = "uds.database.data_record.conditional_data_record"
 
