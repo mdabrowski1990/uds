@@ -4,6 +4,7 @@ __all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION",
 from abc import ABC, abstractmethod
 from types import MappingProxyType
 from typing import Callable, Mapping, Optional, Sequence
+from inspect import signature
 
 from uds.utilities import InconsistentArgumentsError
 
@@ -111,7 +112,7 @@ class AbstractConditionalDataRecord(ABC):
         """
         try:
             return self.__getitem__(raw_value)
-        except KeyError:
+        except (KeyError, ValueError):
             if self.default_message_continuation is None:
                 raise ValueError("No handler for the provided raw value.")
             return self.default_message_continuation
@@ -127,20 +128,20 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
     """
 
     def __init__(self,
-                 raw_values_mapping: Mapping[int, Sequence[AbstractDataRecord]],
+                 mapping: Mapping[int, AliasMessageContinuation],
                  default_message_continuation: Optional[AliasMessageContinuation] = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
-        :param raw_values_mapping: Mapping from raw values of the proceeding Data Record to structures of
-            the diagnostic message continuation.
+        :param mapping: Mapping from raw values of the proceeding Data Record to structures of the diagnostic message
+            continuation.
         :param default_message_continuation: Value of default message continuation.
             Leave None if you do not wish to use default message continuation.
         """
-        self.raw_values_mapping = raw_values_mapping
+        self.mapping = mapping
         super().__init__(default_message_continuation=default_message_continuation)
 
-    def __getitem__(self, raw_value: int) -> Sequence[AbstractDataRecord]:
+    def __getitem__(self, raw_value: int) -> AliasMessageContinuation:
         """
         Get diagnostic message continuation for given raw value based on mapping only.
 
@@ -155,32 +156,32 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             raise TypeError("Provided value is not int type.")
         if raw_value < 0:
             raise ValueError("Provided value is not a raw value as it is lower than 0.")
-        return self.raw_values_mapping[raw_value]
+        return self.mapping[raw_value]
 
     @property
-    def raw_values_mapping(self) -> Mapping[int, Sequence[AbstractDataRecord]]:
+    def mapping(self) -> Mapping[int, AliasMessageContinuation]:
         """Get the mapping with diagnostic message continuation selection."""
-        return self.__raw_values_mapping
+        return self.__mapping
 
-    @raw_values_mapping.setter
-    def raw_values_mapping(self, raw_values_mapping: Mapping[int, Sequence[AbstractDataRecord]]) -> None:
+    @mapping.setter
+    def mapping(self, mapping: Mapping[int, AliasMessageContinuation]) -> None:
         """
         Set the mapping for diagnostic message continuation selection.
 
-        :param raw_values_mapping: Mapping from raw values of the proceeding Data Record to structures of
-            the diagnostic message continuation.
+        :param mapping: Mapping from raw values of the proceeding Data Record to structures with the diagnostic message
+            continuation.
 
-        :raise TypeError: Provided value is not a mapping type.
+        :raise TypeError: Provided value is not a Mapping type.
         :raise ValueError: Keys in the provided mapping are not raw values only.
         """
-        if not isinstance(raw_values_mapping, Mapping):
+        if not isinstance(mapping, Mapping):
             raise TypeError("Provided value is not a mapping type.")
-        keys = set(raw_values_mapping.keys())
+        keys = set(mapping.keys())
         if not all(isinstance(key, int) and key >= 0 for key in keys):
             raise ValueError("At least one key in the provided mapping is not a raw value.")
-        for value in raw_values_mapping.values():
+        for value in mapping.values():
             self.validate_message_continuation(value)
-        self.__raw_values_mapping = MappingProxyType(raw_values_mapping)
+        self.__mapping = MappingProxyType(mapping)
 
 
 class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
@@ -192,17 +193,56 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
     """
 
     def __init__(self,
-                 formula: Callable[[int], Sequence[AbstractDataRecord]],
+                 formula: Callable[[int], AliasMessageContinuation],
                  default_message_continuation: Optional[AliasMessageContinuation] = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
-        :param formula: Formula used for assessing structure of diagnostic message continuation.
+        :param formula: Formula to use for assessing the structure of a diagnostic message continuation.
         :param default_message_continuation: Value of default message continuation.
             Leave None if you do not wish to use default message continuation.
         """
         self.formula = formula
         super().__init__(default_message_continuation=default_message_continuation)
 
-    def __getitem__(self, raw_value: int) -> Sequence[AbstractDataRecord]:
+    def __getitem__(self, raw_value: int) -> AliasMessageContinuation:
+        """
+        Get diagnostic message continuation for given raw value based on formula only.
+
+        :param raw_value: Raw value of the proceeding Data Record.
+
+        :raise TypeError: Provided value is not int type.
+        :raise ValueError: Provided value is less than 0.
+
+        :return: Diagnostic message continuation assessed based on formula only.
+        """
+        if not isinstance(raw_value, int):
+            raise TypeError("Provided value is not int type.")
+        if raw_value < 0:
+            raise ValueError("Provided value is not a raw value as it is lower than 0.")
         return self.formula(raw_value)
+
+    @property
+    def formula(self) -> Callable[[int], AliasMessageContinuation]:
+        """Get the formula for assessing the structure of diagnostic message continuation."""
+        return self.__formula
+
+    @formula.setter
+    def formula(self, formula: Callable[[int], AliasMessageContinuation]) -> None:
+        """
+        Set the formula for assessing the structure of diagnostic message continuation.
+
+        :param formula: Formula to use for assessing the structure of a diagnostic message continuation.
+
+        :raise TypeError: Provided value is not callable.
+        :raise ValueError: Provided formula's signature or annotation does not match the required format.
+        """
+        if not isinstance(formula, Callable):
+            raise TypeError("Provided value is not callable.")
+        formula_signature = signature(formula)
+        if len(formula_signature.parameters) != 1:
+            raise ValueError("Provided formula does not take exactly one parameter.")
+        param_annotation = list(formula_signature.parameters.items())[0][-1].annotation
+        if param_annotation != formula_signature.empty and not issubclass(param_annotation, int):
+            raise ValueError("Formula's annotation suggests the formula does not take raw value as an argument.")
+        self.__formula = formula

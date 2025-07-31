@@ -9,7 +9,7 @@ from uds.database.data_record.conditional_data_record import (
     ConditionalMappingDataRecord,
     InconsistentArgumentsError,
     Mapping,
-    Sequence,
+    Sequence, Callable
 )
 
 SCRIPT_LOCATION = "uds.database.data_record.conditional_data_record"
@@ -104,9 +104,12 @@ class TestAbstractConditionalDataRecord:
             raw_value=raw_value) == self.mock_conditional_data_record.__getitem__.return_value
         self.mock_conditional_data_record.__getitem__.assert_called_once_with(raw_value)
 
-    @pytest.mark.parametrize("raw_value", [Mock(), 0])
-    def test_get_message_continuation__default(self, raw_value):
-        self.mock_conditional_data_record.__getitem__.side_effect = KeyError
+    @pytest.mark.parametrize("raw_value, exception_raised", [
+        (Mock(), ValueError),
+        (0, KeyError),
+    ])
+    def test_get_message_continuation__default(self, raw_value, exception_raised):
+        self.mock_conditional_data_record.__getitem__.side_effect = exception_raised
         assert AbstractConditionalDataRecord.get_message_continuation(
             self.mock_conditional_data_record,
             raw_value=raw_value) == self.mock_conditional_data_record.default_message_continuation
@@ -140,15 +143,15 @@ class TestConditionalMappingDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("raw_values_mapping, default_message_continuation", [
+    @pytest.mark.parametrize("mapping, default_message_continuation", [
         (Mock(), Mock()),
         ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION),
     ])
-    def test_init(self, raw_values_mapping, default_message_continuation):
+    def test_init(self, mapping, default_message_continuation):
         assert ConditionalMappingDataRecord.__init__(self.mock_conditional_data_record,
                                                      default_message_continuation=default_message_continuation,
-                                                     raw_values_mapping=raw_values_mapping) is None
-        assert self.mock_conditional_data_record.raw_values_mapping == raw_values_mapping
+                                                     mapping=mapping) is None
+        assert self.mock_conditional_data_record.mapping == mapping
         self.mock_abstract_conditional_data_record_init.assert_called_once_with(
             default_message_continuation=default_message_continuation)
 
@@ -164,7 +167,7 @@ class TestConditionalMappingDataRecord:
 
     @pytest.mark.parametrize("value", [-1, -52])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_getitem__type_error(self, mock_isinstance, value):
+    def test_getitem__value_error(self, mock_isinstance, value):
         mock_isinstance.return_value = True
         with pytest.raises(ValueError):
             ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
@@ -175,7 +178,7 @@ class TestConditionalMappingDataRecord:
     def test_getitem__key_error(self, mock_isinstance, value):
         mock_isinstance.return_value = True
         mock_getitem = Mock(side_effect=KeyError)
-        self.mock_conditional_data_record.raw_values_mapping = MagicMock(__getitem__=mock_getitem)
+        self.mock_conditional_data_record.mapping = MagicMock(__getitem__=mock_getitem)
         with pytest.raises(KeyError):
             ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
         mock_isinstance.assert_called_once_with(value, int)
@@ -186,51 +189,51 @@ class TestConditionalMappingDataRecord:
     def test_getitem__valid(self, mock_isinstance, value):
         mock_isinstance.return_value = True
         mock_getitem = Mock()
-        self.mock_conditional_data_record.raw_values_mapping = MagicMock(__getitem__=mock_getitem)
+        self.mock_conditional_data_record.mapping = MagicMock(__getitem__=mock_getitem)
         assert (ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
                 == mock_getitem.return_value)
         mock_isinstance.assert_called_once_with(value, int)
         mock_getitem.assert_called_once_with(value)
 
-    # raw_values_mapping
+    # mapping
 
-    def test_raw_values_mapping__get(self):
-        self.mock_conditional_data_record._ConditionalMappingDataRecord__raw_values_mapping = Mock()
-        assert (ConditionalMappingDataRecord.raw_values_mapping.fget(self.mock_conditional_data_record)
-                == self.mock_conditional_data_record._ConditionalMappingDataRecord__raw_values_mapping)
+    def test_mapping__get(self):
+        self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping = Mock()
+        assert (ConditionalMappingDataRecord.mapping.fget(self.mock_conditional_data_record)
+                == self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping)
 
     @pytest.mark.parametrize("value", [Mock(), "Some value"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_raw_values_mapping__set__type_error(self, mock_isinstance, value):
+    def test_mapping__set__type_error(self, mock_isinstance, value):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
-            ConditionalMappingDataRecord.raw_values_mapping.fset(self.mock_conditional_data_record, value)
+            ConditionalMappingDataRecord.mapping.fset(self.mock_conditional_data_record, value)
         mock_isinstance.assert_called_once_with(value, Mapping)
 
     @pytest.mark.parametrize("value", [{-1: Mock()}, {-50: Mock(), 0: Mock(), 32: Mock()}])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_raw_values_mapping__set__value_error__value(self, mock_isinstance, value):
+    def test_mapping__set__value_error__value(self, mock_isinstance, value):
         mock_isinstance.return_value = True
         with pytest.raises(ValueError):
-            ConditionalMappingDataRecord.raw_values_mapping.fset(self.mock_conditional_data_record, value)
+            ConditionalMappingDataRecord.mapping.fset(self.mock_conditional_data_record, value)
         mock_isinstance.assert_called()
         self.mock_conditional_data_record.validate_message_continuation.assert_not_called()
 
     @pytest.mark.parametrize("value", [{1: Mock()}, {0: Mock(), 32: Mock(), 2: Mock(), 3: []}])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_raw_values_mapping__set__value_error__type(self, mock_isinstance, value):
+    def test_mapping__set__value_error__type(self, mock_isinstance, value):
         mock_isinstance.side_effect = [True, False]
         with pytest.raises(ValueError):
-            ConditionalMappingDataRecord.raw_values_mapping.fset(self.mock_conditional_data_record, value)
+            ConditionalMappingDataRecord.mapping.fset(self.mock_conditional_data_record, value)
         mock_isinstance.assert_called()
         self.mock_conditional_data_record.validate_message_continuation.assert_not_called()
 
     @pytest.mark.parametrize("value", [{1: Mock()}, {0: Mock(), 32: Mock(), 2: Mock(), 3: []}])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_raw_values_mapping__set__valid(self, mock_isinstance, value):
+    def test_mapping__set__valid(self, mock_isinstance, value):
         mock_isinstance.return_value = True
-        assert ConditionalMappingDataRecord.raw_values_mapping.fset(self.mock_conditional_data_record, value) is None
-        assert (self.mock_conditional_data_record._ConditionalMappingDataRecord__raw_values_mapping
+        assert ConditionalMappingDataRecord.mapping.fset(self.mock_conditional_data_record, value) is None
+        assert (self.mock_conditional_data_record._ConditionalMappingDataRecord__mapping
                 == self.mock_mapping_proxy_type.return_value)
         mock_isinstance.assert_has_calls([call(value, Mapping)] + [call(key, int) for key in value.keys()],
                                          any_order=True)
@@ -242,3 +245,143 @@ class TestConditionalMappingDataRecord:
 class TestConditionalFormulaDataRecord:
     """Unit tests for `ConditionalFormulaDataRecord` class"""
 
+    def setup_method(self):
+        self.mock_conditional_data_record = MagicMock(spec=ConditionalFormulaDataRecord)
+        # patching
+        self._patcher_abstract_conditional_data_record_init \
+            = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.__init__")
+        self.mock_abstract_conditional_data_record_init = self._patcher_abstract_conditional_data_record_init.start()
+        self._patcher_signature = patch(f"{SCRIPT_LOCATION}.signature")
+        self.mock_signature = self._patcher_signature.start()
+
+    def teardown_method(self):
+        self._patcher_abstract_conditional_data_record_init.stop()
+        self._patcher_signature.stop()
+
+    # __init__
+
+    @pytest.mark.parametrize("formula, default_message_continuation", [
+        (Mock(), Mock()),
+        ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION),
+    ])
+    def test_init(self, formula, default_message_continuation):
+        assert ConditionalFormulaDataRecord.__init__(self.mock_conditional_data_record,
+                                                     default_message_continuation=default_message_continuation,
+                                                     formula=formula) is None
+        assert self.mock_conditional_data_record.formula == formula
+        self.mock_abstract_conditional_data_record_init.assert_called_once_with(
+            default_message_continuation=default_message_continuation)
+
+    # __getitem__
+
+    @pytest.mark.parametrize("value", [Mock(), "something"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_getitem__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            ConditionalFormulaDataRecord.__getitem__(self.mock_conditional_data_record, value)
+        mock_isinstance.assert_called_once_with(value, int)
+
+    @pytest.mark.parametrize("value", [-1, -52])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_getitem__value_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        with pytest.raises(ValueError):
+            ConditionalFormulaDataRecord.__getitem__(self.mock_conditional_data_record, value)
+        mock_isinstance.assert_called_once_with(value, int)
+
+    @pytest.mark.parametrize("value", [0, 25])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_getitem__valid(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        assert (ConditionalFormulaDataRecord.__getitem__(self.mock_conditional_data_record, value)
+                == self.mock_conditional_data_record.formula.return_value)
+        mock_isinstance.assert_called_once_with(value, int)
+        self.mock_conditional_data_record.formula.assert_called_once_with(value)
+
+    # formula
+
+    def test_formula__get(self):
+        self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula = Mock()
+        assert (ConditionalFormulaDataRecord.formula.fget(self.mock_conditional_data_record)
+                == self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula)
+
+    @pytest.mark.parametrize("value", [Mock(), "Something"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_formula__set__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
+        mock_isinstance.assert_called_once_with(value, Callable)
+
+    @pytest.mark.parametrize("value, arg_number", [
+        (Mock(), 0),
+        (Mock(spec=Callable), 2),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_formula__set__value_error__arguments_number(self, mock_isinstance, value, arg_number):
+        mock_isinstance.return_value = True
+        self.mock_signature.return_value = Mock(parameters=[Mock() for _ in range(arg_number)])
+        with pytest.raises(ValueError):
+            ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
+        mock_isinstance.assert_called_once_with(value, Callable)
+        self.mock_signature.assert_called_once_with(value)
+
+    @pytest.mark.parametrize("value, arg_number", [
+        (Mock(), 0),
+        (Mock(spec=Callable), 2),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_formula__set__value_error__arguments_number(self, mock_isinstance, value, arg_number):
+        mock_isinstance.return_value = True
+        self.mock_signature.return_value = Mock(parameters={Mock(): Mock() for _ in range(arg_number)})
+        with pytest.raises(ValueError):
+            ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
+        mock_isinstance.assert_called_once_with(value, Callable)
+        self.mock_signature.assert_called_once_with(value)
+
+    @pytest.mark.parametrize("value, arg_type", [
+        (Mock(), Mock()),
+        (Mock(spec=Callable), float),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.issubclass")
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_formula__set__value_error__arguments_annotation(self, mock_isinstance, mock_issubclass, value, arg_type):
+        mock_isinstance.return_value = True
+        mock_issubclass.return_value = False
+        self.mock_signature.return_value = Mock(parameters={Mock(): Mock(annotation=arg_type)})
+        with pytest.raises(ValueError):
+            ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value)
+        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_issubclass.assert_called_once_with(arg_type, int)
+        self.mock_signature.assert_called_once_with(value)
+
+    @pytest.mark.parametrize("value, arg_type", [
+        (Mock(), Mock(spec=int)),
+        (Mock(spec=Callable), bool),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.issubclass")
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_formula__set__valid_type(self, mock_isinstance, mock_issubclass, value, arg_type):
+        mock_isinstance.return_value = True
+        mock_issubclass.return_value = True
+        self.mock_signature.return_value = Mock(parameters={Mock(): Mock(annotation=arg_type)})
+        assert ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value) is None
+        assert self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula == value
+        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_issubclass.assert_called_once_with(arg_type, int)
+        self.mock_signature.assert_called_once_with(value)
+
+    @pytest.mark.parametrize("value", [Mock(), Mock(spec=Callable)])
+    @patch(f"{SCRIPT_LOCATION}.issubclass")
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_formula__set__valid_empty(self, mock_isinstance, mock_issubclass, value):
+        mock_isinstance.return_value = True
+        mock_issubclass.return_value = True
+        mock_empty = Mock()
+        self.mock_signature.return_value = Mock(parameters={Mock(): Mock(annotation=mock_empty)}, empty=mock_empty)
+        assert ConditionalFormulaDataRecord.formula.fset(self.mock_conditional_data_record, value) is None
+        assert self.mock_conditional_data_record._ConditionalFormulaDataRecord__formula == value
+        mock_isinstance.assert_called_once_with(value, Callable)
+        mock_issubclass.assert_not_called()
+        self.mock_signature.assert_called_once_with(value)
