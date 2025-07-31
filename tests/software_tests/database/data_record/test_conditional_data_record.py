@@ -1,3 +1,5 @@
+from operator import getitem
+
 import pytest
 from mock import MagicMock, Mock, call, patch
 
@@ -11,7 +13,9 @@ from uds.database.data_record.conditional_data_record import (
     InconsistentArgumentsError,
     Mapping,
     Sequence,
+AliasMessageContinuation
 )
+from uds.database.data_record import TextDataRecord, TextEncoding, RawDataRecord
 
 SCRIPT_LOCATION = "uds.database.data_record.conditional_data_record"
 
@@ -386,3 +390,101 @@ class TestConditionalFormulaDataRecord:
         mock_callable.assert_called_once_with(value)
         mock_issubclass.assert_not_called()
         self.mock_signature.assert_called_once_with(value)
+
+
+@pytest.mark.integration
+class TestConditionalMappingDataRecordIntegration:
+    """Integration tests for `ConditionalMappingDataRecord` class."""
+
+    def setup_class(self):
+        self.did_mapping = {
+            0x1000: [RawDataRecord(name="Entries",
+                                   length=16,
+                                   min_occurrences=1,
+                                   max_occurrences=10)],
+            0x1234: [RawDataRecord(name="Entry#1",
+                                   length=64)],
+            0xF186: [TextDataRecord(name="ASCII text",
+                                    encoding=TextEncoding.ASCII,
+                                    min_occurrences=1,
+                                    max_occurrences=None)],
+        }
+        self.undefined_dids = [0x0000, 0xFFFF]
+        self.did_conditional_data_record = ConditionalMappingDataRecord(
+            mapping=self.did_mapping,
+            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION)
+
+    # getitem
+
+    def test_getitem(self):
+        for did, did_structure in self.did_mapping.items():
+            assert self.did_conditional_data_record[did] == did_structure
+
+    def test_getitem__key_error(self):
+        for did in self.undefined_dids:
+            with pytest.raises(KeyError):
+                self.did_conditional_data_record[did]
+
+    # get_message_continuation
+
+    def test_get_message_continuation(self):
+        for did, did_structure in self.did_mapping.items():
+            assert self.did_conditional_data_record.get_message_continuation(did) == did_structure
+
+    def test_get_message_continuation__default(self):
+        for did in self.undefined_dids:
+            assert (self.did_conditional_data_record.get_message_continuation(did)
+                    == DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION)
+
+@pytest.mark.integration
+class TestConditionalFormulaDataRecordIntegration:
+    """Integration tests for `ConditionalFormulaDataRecord` class."""
+
+    def setup_class(self):
+        def continuation_length_formula(raw_value: int) -> AliasMessageContinuation:
+            if raw_value <= 0 or raw_value > 20:
+                raise ValueError
+            return [RawDataRecord(name="Entries",
+                                  length=32,
+                                  min_occurrences=raw_value,
+                                  max_occurrences=raw_value)]
+
+        self.continuation_length_formula_1 = continuation_length_formula
+        self.continuation_length_formula_2 = lambda raw_value: [TextDataRecord(name="BCD digits",
+                                                                               encoding=TextEncoding.BCD,
+                                                                               min_occurrences=raw_value,
+                                                                               max_occurrences=raw_value)]
+        self.formula_data_record_1 = ConditionalFormulaDataRecord(
+            formula=self.continuation_length_formula_1,
+            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION)
+        self.formula_data_record_2 = ConditionalFormulaDataRecord(
+            formula=self.continuation_length_formula_2)
+
+    # getitem
+
+    @pytest.mark.parametrize("length", [1, 20])
+    def test_getitem_1(self, length):
+        continuation = self.formula_data_record_1[length]
+        assert len(continuation) == 1
+        assert isinstance(continuation[0], RawDataRecord)
+        assert continuation[0].min_occurrences == length
+        assert continuation[0].max_occurrences == length
+
+    @pytest.mark.parametrize("length", [0, 21])
+    def test_getitem_1__value_error(self, length):
+        with pytest.raises(ValueError):
+            self.formula_data_record_1[length]
+
+    @pytest.mark.parametrize("length", [1, 20])
+    def test_getitem_2(self, length):
+        continuation = self.formula_data_record_2[length]
+        assert len(continuation) == 1
+        assert isinstance(continuation[0], TextDataRecord)
+        assert continuation[0].min_occurrences == length
+        assert continuation[0].max_occurrences == length
+
+    # get_message_continuation
+
+    @pytest.mark.parametrize("length", [0, 21])
+    def test_get_message_continuation_1(self, length):
+        assert self.formula_data_record_1.get_message_continuation(length) == DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION

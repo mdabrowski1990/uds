@@ -7,22 +7,22 @@ from abc import ABC, abstractmethod
 from inspect import signature
 from operator import getitem
 from types import MappingProxyType
-from typing import Callable, Mapping, Optional, Sequence
+from typing import Callable, Mapping, Optional, Sequence, Union
 
 from uds.utilities import InconsistentArgumentsError
 
 from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
 
-AliasMessageContinuation = Sequence[AbstractDataRecord]
+AliasMessageContinuation = Sequence[Union[AbstractDataRecord, "AbstractConditionalDataRecord"]]
 """Alias of Diagnostic Message Continuation used by
 :class:`~uds.database.data_record.conditional_data_record.AbstractConditionalDataRecord`"""
-DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: AliasMessageContinuation = [
+DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: AliasMessageContinuation = (
     RawDataRecord(name="Generic Diagnostic Message Continuation",
                   length=8,
                   min_occurrences=0,
-                  max_occurrences=None)
-]
+                  max_occurrences=None),
+)
 """Generic Diagnostic Message Continuation that can be used when specific information are not available."""
 
 
