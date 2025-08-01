@@ -1,6 +1,6 @@
 """Conditional Data Records implementation."""
 
-__all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION",
+__all__ = ["DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION", "AliasMessageStructure",
            "AbstractConditionalDataRecord", "ConditionalMappingDataRecord", "ConditionalFormulaDataRecord"]
 
 from abc import ABC, abstractmethod
@@ -12,10 +12,9 @@ from typing import Callable, Mapping, Optional, Sequence, Union
 from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
 
-AliasMessageContinuation = Sequence[Union[AbstractDataRecord, "AbstractConditionalDataRecord"]]
-"""Alias of Diagnostic Message Continuation used by
-:class:`~uds.database.data_record.conditional_data_record.AbstractConditionalDataRecord`"""
-DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: AliasMessageContinuation = (
+AliasMessageStructure = Sequence[Union[AbstractDataRecord, "AbstractConditionalDataRecord"]]
+"""Alias of Diagnostic Message Structure used by databases to interpret Diagnostic Messages parameters."""
+DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: AliasMessageStructure = (
     RawDataRecord(name="Generic Diagnostic Message Continuation",
                   length=8,
                   min_occurrences=0,
@@ -34,7 +33,7 @@ class AbstractConditionalDataRecord(ABC):
      - Contains logic of diagnostic message continuation building.
     """
 
-    def __init__(self, default_message_continuation: Optional[AliasMessageContinuation]) -> None:
+    def __init__(self, default_message_continuation: Optional[AliasMessageStructure]) -> None:
         """
         Initialize the common part for all Conditional Data Records.
 
@@ -44,7 +43,7 @@ class AbstractConditionalDataRecord(ABC):
         self.default_message_continuation = default_message_continuation
 
     @abstractmethod
-    def __getitem__(self, raw_value: int) -> AliasMessageContinuation:
+    def __getitem__(self, raw_value: int) -> AliasMessageStructure:
         """
         Get Data Record with diagnostic message continuation.
 
@@ -56,7 +55,7 @@ class AbstractConditionalDataRecord(ABC):
         """
 
     @property
-    def default_message_continuation(self) -> Optional[AliasMessageContinuation]:
+    def default_message_continuation(self) -> Optional[AliasMessageStructure]:
         """
         Get default diagnostic message continuation.
 
@@ -68,7 +67,7 @@ class AbstractConditionalDataRecord(ABC):
         return self.__default_message_continuation
 
     @default_message_continuation.setter
-    def default_message_continuation(self, value: Optional[AliasMessageContinuation]) -> None:
+    def default_message_continuation(self, value: Optional[AliasMessageStructure]) -> None:
         """
         Set default diagnostic message continuation.
 
@@ -83,7 +82,7 @@ class AbstractConditionalDataRecord(ABC):
             self.__default_message_continuation = tuple(value)
 
     @staticmethod
-    def validate_message_continuation(value: AliasMessageContinuation) -> None:
+    def validate_message_continuation(value: AliasMessageStructure) -> None:
         """
         Validate whether the provided value is structure of diagnostic message continuation.
 
@@ -98,7 +97,7 @@ class AbstractConditionalDataRecord(ABC):
         if not all(isinstance(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value):
             raise ValueError("At least one element is not an instance of AbstractDataRecord class.")
 
-    def get_message_continuation(self, raw_value: int) -> AliasMessageContinuation:
+    def get_message_continuation(self, raw_value: int) -> AliasMessageStructure:
         """
         Get Data Record with diagnostic message continuation.
 
@@ -110,9 +109,9 @@ class AbstractConditionalDataRecord(ABC):
         """
         try:
             return getitem(self, raw_value)
-        except (KeyError, ValueError):
+        except (KeyError, ValueError) as error:
             if self.default_message_continuation is None:
-                raise ValueError("No handler for the provided raw value.")  # pylint: disable=raise-missing-from
+                raise ValueError("No handler for the provided raw value.") from error
             return self.default_message_continuation
 
 
@@ -126,8 +125,8 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
     """
 
     def __init__(self,
-                 mapping: Mapping[int, AliasMessageContinuation],
-                 default_message_continuation: Optional[AliasMessageContinuation] = None) -> None:
+                 mapping: Mapping[int, AliasMessageStructure],
+                 default_message_continuation: Optional[AliasMessageStructure] = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -139,7 +138,7 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         self.mapping = mapping
         super().__init__(default_message_continuation=default_message_continuation)
 
-    def __getitem__(self, raw_value: int) -> AliasMessageContinuation:
+    def __getitem__(self, raw_value: int) -> AliasMessageStructure:
         """
         Get diagnostic message continuation for given raw value based on mapping only.
 
@@ -157,12 +156,12 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         return self.mapping[raw_value]
 
     @property
-    def mapping(self) -> Mapping[int, AliasMessageContinuation]:
+    def mapping(self) -> Mapping[int, AliasMessageStructure]:
         """Get the mapping with diagnostic message continuation selection."""
         return self.__mapping
 
     @mapping.setter
-    def mapping(self, mapping: Mapping[int, AliasMessageContinuation]) -> None:
+    def mapping(self, mapping: Mapping[int, AliasMessageStructure]) -> None:
         """
         Set the mapping for diagnostic message continuation selection.
 
@@ -191,8 +190,8 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
     """
 
     def __init__(self,
-                 formula: Callable[[int], AliasMessageContinuation],
-                 default_message_continuation: Optional[AliasMessageContinuation] = None) -> None:
+                 formula: Callable[[int], AliasMessageStructure],
+                 default_message_continuation: Optional[AliasMessageStructure] = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -203,7 +202,7 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         self.formula = formula
         super().__init__(default_message_continuation=default_message_continuation)
 
-    def __getitem__(self, raw_value: int) -> AliasMessageContinuation:
+    def __getitem__(self, raw_value: int) -> AliasMessageStructure:
         """
         Get diagnostic message continuation for given raw value based on formula only.
 
@@ -221,12 +220,12 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         return self.formula(raw_value)
 
     @property
-    def formula(self) -> Callable[[int], AliasMessageContinuation]:
+    def formula(self) -> Callable[[int], AliasMessageStructure]:
         """Get the formula for assessing the structure of diagnostic message continuation."""
         return self.__formula
 
     @formula.setter
-    def formula(self, formula: Callable[[int], AliasMessageContinuation]) -> None:
+    def formula(self, formula: Callable[[int], AliasMessageStructure]) -> None:
         """
         Set the formula for assessing the structure of diagnostic message continuation.
 
