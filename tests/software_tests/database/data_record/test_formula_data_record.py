@@ -309,8 +309,53 @@ class TestCustomFormulaDataRecord:
         self.mock_formula_data_record.encoding_formula.assert_called_once_with(physical_value)
 
 
+@pytest.mark.integration
 class TestLinearFormulaDataRecordIntegration:
     """Integration tests for `LinearFormulaDataRecord` class."""
+
+    def setup_class(self) -> None:
+        self.fahrenheit_to_celsius_data_record = LinearFormulaDataRecord(name="Celsius Temperature",
+                                                                         length=16,
+                                                                         factor=5 / 9,
+                                                                         offset=-160 / 9)
+
+    # get_raw_value
+
+    @pytest.mark.parametrize("physical_value, raw_value", [
+        (0, 32),
+        (-17.8, 0),
+        (36390.6, 0xFFFF),
+    ])
+    def test_get_raw_value(self, physical_value, raw_value):
+        assert self.fahrenheit_to_celsius_data_record.get_raw_value(physical_value) == raw_value
+
+    @pytest.mark.parametrize("physical_value", [-18.1,36390.9,])
+    def test_get_raw_value__value_error(self, physical_value):
+        with pytest.raises(ValueError):
+            self.fahrenheit_to_celsius_data_record.get_raw_value(physical_value)
+
+    # get_physical_value
+
+    @pytest.mark.parametrize("physical_value, raw_value", [
+        (0, 32),
+        (-17.7777, 0),
+        (36390.5555, 0xFFFF),
+    ])
+    def test_get_raw_value_2(self, physical_value, raw_value):
+        assert (round(self.fahrenheit_to_celsius_data_record.get_physical_value(raw_value), 3)
+                == round(physical_value, 3))
+
+    # two conversions
+
+    @pytest.mark.parametrize("raw_value", [0, 23546, 65535])
+    def test_two_conversions(self, raw_value):
+        physical_value = self.fahrenheit_to_celsius_data_record.get_physical_value(raw_value)
+        assert self.fahrenheit_to_celsius_data_record.get_raw_value(physical_value) == raw_value
+
+
+@pytest.mark.integration
+class TestCustomFormulaDataRecordIntegration:
+    """Integration tests for `CustomFormulaDataRecord` class."""
 
     def setup_class(self) -> None:
         def encoding_formula(physical_value: float) -> int:
@@ -319,16 +364,13 @@ class TestLinearFormulaDataRecordIntegration:
             else:
                 raw_value = 128 + ((physical_value + 1.28) * 100)
             return int(round(raw_value,0))
+
         def decoding_formula(raw_value: int) -> float:
             physical_value = (raw_value & 0x7F) / 100.
             if raw_value >= 128:
                 physical_value -= 1.28
             return physical_value
 
-        self.fahrenheit_to_celsius_data_record = LinearFormulaDataRecord(name="Celsius Temperature",
-                                                                         length=16,
-                                                                         factor=5 / 9,
-                                                                         offset=-160 / 9)
         self.sensor_entries = CustomFormulaDataRecord(name="Acceleration",
                                                       length=8,
                                                       encoding_formula=encoding_formula,
@@ -336,14 +378,29 @@ class TestLinearFormulaDataRecordIntegration:
                                                       min_occurrences=4,
                                                       max_occurrences=4)
 
+    # get_raw_value
+
+    @pytest.mark.parametrize("physical_value, raw_value", [
+        (0, 0),
+        (-1.281, 0x80),
+        (1.2699, 0x7F)
+    ])
+    def test_get_raw_value(self, physical_value, raw_value):
+        assert self.sensor_entries.get_raw_value(physical_value) == raw_value
+
+    # get_physical_value
+
+    @pytest.mark.parametrize("physical_value, raw_value", [
+        (0, 0),
+        (-1.28, 0x80),
+        (1.27, 0x7F)
+    ])
+    def test_get_physical_value(self, physical_value, raw_value):
+        assert self.sensor_entries.get_physical_value(raw_value) == physical_value
+
     # two conversions
 
     @pytest.mark.parametrize("raw_value", [0, 52, 255])
     def test_two_conversions_1(self, raw_value):
         physical_value = self.sensor_entries.get_physical_value(raw_value)
         assert self.sensor_entries.get_raw_value(physical_value) == raw_value
-
-    @pytest.mark.parametrize("raw_value", [0, 23546, 65535])
-    def test_two_conversions_2(self, raw_value):
-        physical_value = self.fahrenheit_to_celsius_data_record.get_physical_value(raw_value)
-        assert self.fahrenheit_to_celsius_data_record.get_raw_value(physical_value) == raw_value
