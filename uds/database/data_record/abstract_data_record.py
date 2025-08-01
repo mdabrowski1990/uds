@@ -39,12 +39,14 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     :arg raw_value: Raw values for this occurrence.
     :arg physical_value: Physical value for this occurrence.
     :arg children: Extracted child information for this occurrence.
+    :arg unit: Unit in which physical value is represented.
     """
 
     name: str
     raw_value: int
     physical_value: SinglePhysicalValueAlias
     children: Tuple["SingleOccurrenceInfo", ...]
+    unit: Optional[str]
 
 
 class MultipleOccurrencesInfo(TypedDict, total=True):
@@ -56,12 +58,14 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
     :arg physical_value: Physical values for multiple occurrences.
     :arg children: List with one element for each occurrence.
         Each element contains information about children for this occurrence.
+    :arg unit: Unit in which a single physical value is represented.
     """
 
     name: str
     raw_value: List[int]
     physical_value: MultiplePhysicalValues
     children: List[Tuple["SingleOccurrenceInfo", ...]]
+    unit: Optional[str]
 
 
 class AbstractDataRecord(ABC):
@@ -84,7 +88,8 @@ class AbstractDataRecord(ABC):
                  length: int,
                  children: Sequence["AbstractDataRecord"],
                  min_occurrences: int,
-                 max_occurrences: Optional[int]) -> None:
+                 max_occurrences: Optional[int],
+                 unit: Optional[str] = None) -> None:
         """
         Initialize common part for all Data Records.
 
@@ -94,12 +99,14 @@ class AbstractDataRecord(ABC):
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
+        :param unit: Unit in which a physical value is represented.
         """
         self.name = name
         self.length = length
         self.children = children
         self.min_occurrences = min_occurrences
         self.max_occurrences = max_occurrences
+        self.unit = unit
 
     def _validate_raw_value(self, raw_value: int) -> None:
         """
@@ -255,6 +262,28 @@ class AbstractDataRecord(ABC):
                                     "Create a new Data Record instead.")
 
     @property
+    def unit(self) -> Optional[str]:
+        """Unit in which Physical Value is presented. None if unused."""
+        return self.__unit
+
+    @unit.setter
+    def unit(self, value: Optional[str]) -> None:
+        """
+        Set unit in which Physical Value is presented.
+
+        :param value: Unit value to set.
+            Set None if no units are used.
+
+        :raise TypeError: Unit must be provided as str or set to None.
+        """
+        if value is None:
+            self.__unit = None
+        elif isinstance(value, str):
+            self.__unit = value
+        else:
+            raise TypeError("Unit value must be a str type or equal None.")
+
+    @property
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
@@ -325,13 +354,15 @@ class AbstractDataRecord(ABC):
             return MultipleOccurrencesInfo(name=self.name,
                                            raw_value=list(raw_values),
                                            physical_value=self.get_physical_values(*raw_values),
-                                           children=children_values)
+                                           children=children_values,
+                                           unit=self.unit)
         if len(raw_values) == 1:
             raw_value = raw_values[0]
             return SingleOccurrenceInfo(name=self.name,
                                         raw_value=raw_value,
                                         physical_value=self.get_physical_value(raw_value),
-                                        children=self.get_children_occurrence_info(raw_value))
+                                        children=self.get_children_occurrence_info(raw_value),
+                                        unit=self.unit)
         raise ValueError("Cannot handle multiple occurrences values for non reoccurring Data Record.")
 
     def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValues:

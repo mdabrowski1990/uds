@@ -37,6 +37,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
                  length: int,
                  factor: Union[float, int],
                  offset: Union[float, int],
+                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
                  max_occurrences: Optional[int] = 1) -> None:
         """
@@ -46,6 +47,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         :param length: Number of bits that are used to store a single occurrence of this Data Record.
         :param factor: Multiplication factor for the linear transformation.
         :param offset: Additive offset for the linear transformation.
+        :param unit: Unit in which a physical value is represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
@@ -55,6 +57,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         super().__init__(name=name,
                          length=length,
                          children=tuple(),
+                         unit=unit,
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)
 
@@ -174,6 +177,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
                  length: int,
                  encoding_formula: AliasPhysicalValueEncodingFormula,
                  decoding_formula: AliasPhysicalValueDecodingFormula,
+                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
                  max_occurrences: Optional[int] = 1) -> None:
         """
@@ -183,6 +187,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         :param length: Number of bits that are used to store a single occurrence of this Data Record.
         :param encoding_formula: Conversion function that transforms physical values into raw values.
         :param decoding_formula: Conversion function that transforms raw values into physical values.
+        :param unit: Unit in which a physical value is represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
@@ -190,6 +195,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         super().__init__(name=name,
                          length=length,
                          children=tuple(),
+                         unit=unit,
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)
         self.encoding_formula = encoding_formula

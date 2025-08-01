@@ -23,25 +23,28 @@ class TestRawDataRecord:
         mock_abstract_data_record_class.assert_called_once_with(name=name,
                                                                 length=length,
                                                                 children=tuple(),
+                                                                unit=None,
                                                                 min_occurrences=1,
                                                                 max_occurrences=1)
 
-    @pytest.mark.parametrize("name, length, children, min_occurrences, max_occurrences", [
-        ("TestRawDataRecord", 8, [Mock(), Mock()], 0, None),
-        (Mock(), Mock(), Mock(), Mock(), Mock()),
+    @pytest.mark.parametrize("name, length, children, unit, min_occurrences, max_occurrences", [
+        ("TestRawDataRecord", 8, [Mock(), Mock()], "km/h", 0, None),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
     ])
     @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
     def test_init__all_args(self, mock_abstract_data_record_class,
-                            name, length, children, min_occurrences, max_occurrences):
+                            name, length, children, unit, min_occurrences, max_occurrences):
         assert RawDataRecord.__init__(self.mock_data_record,
                                       name=name,
                                       length=length,
                                       children=children,
+                                      unit=unit,
                                       min_occurrences=min_occurrences,
                                       max_occurrences=max_occurrences) is None
         mock_abstract_data_record_class.assert_called_once_with(name=name,
                                                                 length=length,
                                                                 children=children,
+                                                                unit=unit,
                                                                 min_occurrences=min_occurrences,
                                                                 max_occurrences=max_occurrences)
 
