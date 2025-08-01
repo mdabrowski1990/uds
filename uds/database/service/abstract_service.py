@@ -8,9 +8,9 @@ from typing import List, Sequence, Union
 from uds.message import RequestSID, ResponseSID
 from uds.utilities import RawBytesAlias
 
-from ..data_record import MultipleOccurrencesInfo, SingleOccurrenceInfo
+from ..data_record import PhysicalValueAlias
 
-DecodedMessageAlias = List[Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]]
+DecodedMessageAlias = List[PhysicalValueAlias]
 """Alias for decoded information about a Diagnostic Message."""
 
 DataRecordOccurrencesValuesAlias = Union[int, Sequence[int]]

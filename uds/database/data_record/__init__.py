@@ -13,6 +13,13 @@ from .abstract_data_record import (
     SingleOccurrenceInfo,
     SinglePhysicalValueAlias,
 )
+from .conditional_data_record import (
+    DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
+    AbstractConditionalDataRecord,
+    AliasMessageStructure,
+    ConditionalFormulaDataRecord,
+    ConditionalMappingDataRecord,
+)
 from .mapping_data_record import MappingDataRecord
 from .raw_data_record import RawDataRecord
 from .text_data_record import TextDataRecord, TextEncoding
