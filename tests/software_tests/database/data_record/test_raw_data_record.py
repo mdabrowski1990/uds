@@ -104,19 +104,22 @@ class TestRawDataRecordIntegration:
             "name": "DTC",
             "raw_value": 0,
             "physical_value": 0,
-            "children": tuple()
+            "children": tuple(),
+            "unit": None,
         }),
         (0xFFFFFF, {
             "name": "DTC",
             "raw_value": 0xFFFFFF,
             "physical_value": 0xFFFFFF,
-            "children": tuple()
+            "children": tuple(),
+            "unit": None,
         }),
         (0xA1B2C3, {
             "name": "DTC",
             "raw_value": 0xA1B2C3,
             "physical_value": 0xA1B2C3,
-            "children": tuple()
+            "children": tuple(),
+            "unit": None,
         }),
     ])
     def test_get_occurrence_info(self, value, expected_output):

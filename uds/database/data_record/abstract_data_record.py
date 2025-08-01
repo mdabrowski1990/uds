@@ -263,7 +263,7 @@ class AbstractDataRecord(ABC):
 
     @property
     def unit(self) -> Optional[str]:
-        """Unit in which Physical Value is presented. None if unused."""
+        """Get unit in which Physical Value is presented. None if unused."""
         return self.__unit
 
     @unit.setter

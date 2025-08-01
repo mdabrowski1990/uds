@@ -100,13 +100,13 @@ class LinearFormulaDataRecord(AbstractDataRecord):
             raise TypeError("Offset value must be int or float type.")
         self.__offset = value
 
-    @property
+    @property  # noqa: vulture
     def min_physical_value(self) -> Union[float, int]:
         """Get the minimum physical value."""
         raw_value = self.min_raw_value if self.factor > 0 else self.max_raw_value
         return (raw_value * self.factor) + self.offset
 
-    @property
+    @property  # noqa: vulture
     def max_physical_value(self) -> Union[float, int]:
         """Get the maximum physical value."""
         raw_value = self.max_raw_value if self.factor > 0 else self.min_raw_value
@@ -256,4 +256,4 @@ class CustomFormulaDataRecord(AbstractDataRecord):
 
         :return: Raw Value for this occurrence that was assessed using encoding formula.
         """
-        return self.encoding_formula(physical_value)
+        return self.encoding_formula(physical_value)  # type: ignore
