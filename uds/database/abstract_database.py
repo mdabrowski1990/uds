@@ -1,17 +1,18 @@
 """Definition of UDS messages database for data encoding and decoding."""
 
-__all__ = ["AbstractDatabase"]
+__all__ = ["Database"]
 
-from abc import ABC, abstractmethod
-from typing import Dict, Union
+from typing import Dict, Union, Sequence
 
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 
 from .service import AbstractService, DataRecordOccurrencesValuesAlias, DecodedMessageAlias
 
 
-class AbstractDatabase(ABC):
+class Database:
     """Common interface and implementation for UDS message databases."""
+
+    def __init__(self, services: Sequence[]) -> None:
 
     @property
     @abstractmethod

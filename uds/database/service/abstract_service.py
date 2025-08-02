@@ -3,12 +3,12 @@
 __all__ = ["AbstractService", "DataRecordOccurrencesValuesAlias", "DecodedMessageAlias"]
 
 from abc import ABC, abstractmethod
-from typing import List, Sequence, Union
+from typing import List, Sequence, Union, Container, Set
 
-from uds.message import RequestSID, ResponseSID
+from uds.message import RequestSID, ResponseSID, NRC
 from uds.utilities import RawBytesAlias
 
-from ..data_record import PhysicalValueAlias
+from ..data_record import PhysicalValueAlias, AliasMessageStructure
 
 DecodedMessageAlias = List[PhysicalValueAlias]
 """Alias for decoded information about a Diagnostic Message."""
@@ -17,20 +17,88 @@ DataRecordOccurrencesValuesAlias = Union[int, Sequence[int]]
 """Alias for raw values of Data Records occurrences."""
 
 
-class AbstractService(ABC):
+class Service:
     """Common interface for all diagnostic services."""
 
-    @property  # noqa: F841
-    @abstractmethod
+    def __init__(self,
+                 request_sid: RequestSID,
+                 response_sid: ResponseSID,
+                 request_structure: AliasMessageStructure,
+                 response_structure: AliasMessageStructure,
+                 supported_nrc: Container[NRC] = set(NRC)) -> None:
+        self.request_sid = request_sid
+        self.response_sid = response_sid
+        self.request_structure = request_structure
+        self.response_structure = response_structure
+        self.supported_nrc = supported_nrc
+
+    @property
     def request_sid(self) -> RequestSID:
         """Service Identifier in request messages."""
+        return self.__request_sid
 
-    @property  # noqa: F841
-    @abstractmethod
+    @request_sid.setter
+    def request_sid(self, request_sid: RequestSID) -> None:
+        self.__request_sid = RequestSID.validate_member(request_sid)
+
+    @property
     def response_sid(self) -> ResponseSID:
         """Service Identifier in (positive) response messages."""
+        return self.__response_sid
 
-    @abstractmethod
+    @response_sid.setter
+    def response_sid(self, response_sid: ResponseSID) -> None:
+        self.__response_sid = ResponseSID.validate_member(response_sid)
+
+    @property
+    def request_structure(self) -> AliasMessageStructure:
+        return self.__request_structure
+
+    @request_structure.setter
+    def request_structure(self, request_structure: AliasMessageStructure) -> None:
+        self.validate_message_continuation(request_structure)
+        self.__request_structure = request_structure
+
+    @property
+    def response_structure(self) -> AliasMessageStructure:
+        return self.__response_structure
+
+    @response_structure.setter
+    def response_structure(self, response_structure: AliasMessageStructure) -> None:
+        self.validate_message_continuation(response_structure)
+        self.__response_structure = response_structure
+
+    @property
+    def supported_nrc(self) -> Set[NRC]:
+        return self.__supported_nrc
+
+    @supported_nrc.setter
+    def supported_nrc(self, value: Container[NRC]) -> None:
+        for nrc in value:
+            NRC.validate_member(nrc)
+        self.__supported_nrc = set(value)
+
+
+
+
+
+    @staticmethod
+    def validate_message_continuation(value: AliasMessageStructure) -> None:
+        """
+        Validate whether the provided value is structure of diagnostic message continuation.
+
+        :param value: Value to check
+
+        :raise TypeError: Provided value is not a sequence.
+        :raise ValueError: At least one element of the provided sequence is not an instance of AbstractDataRecord
+            or AbstractConditionalDataRecord class.
+        """
+        if not isinstance(value, Sequence):
+            raise TypeError("Provided value is not a sequence")
+        if not all(isinstance(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value):
+            raise ValueError("At least one element is not an instance of AbstractDataRecord class.")
+
+
     def decode(self, payload: RawBytesAlias) -> DecodedMessageAlias:
         """
         Decode physical values carried in payload of a diagnostic message.
@@ -61,7 +129,6 @@ class AbstractService(ABC):
             return self.encode_response(**data_records_raw_values)
         raise ValueError("Provided SID value is neither request or response SID value for this service.")
 
-    @abstractmethod
     def encode_request(self, **data_records_raw_values: DataRecordOccurrencesValuesAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service's request message.
@@ -72,7 +139,6 @@ class AbstractService(ABC):
         :return: Payload of a request diagnostic message.
         """
 
-    @abstractmethod
     def encode_response(self, **data_records_raw_values: DataRecordOccurrencesValuesAlias) -> bytearray:
         """
         Encode diagnostic message payload for this service's response message.
