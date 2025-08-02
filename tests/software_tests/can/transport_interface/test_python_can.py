@@ -3,10 +3,9 @@ from random import choice, randint
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
 
-
 from can import Bus
 from uds.addressing import AddressingType
-from uds.can import CanAddressingInformation, DefaultFlowControlParametersGenerator, DEFAULT_FILLER_BYTE
+from uds.can import DEFAULT_FILLER_BYTE, CanAddressingInformation, DefaultFlowControlParametersGenerator
 from uds.can.transport_interface.python_can import (
     AbstractCanTransportInterface,
     BusABC,
