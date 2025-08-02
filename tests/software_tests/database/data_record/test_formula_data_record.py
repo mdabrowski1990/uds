@@ -3,7 +3,9 @@ from mock import MagicMock, Mock, call, patch
 
 from uds.database.data_record.formula_data_record import CustomFormulaDataRecord, LinearFormulaDataRecord
 
+
 SCRIPT_LOCATION = "uds.database.data_record.formula_data_record"
+
 
 class TestLinearFormulaDataRecord:
     """Unit tests for `LinearFormulaDataRecord` class."""
