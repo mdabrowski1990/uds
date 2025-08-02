@@ -3,8 +3,9 @@ from random import choice, randint
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
 
+from can import Bus
 from uds.addressing import AddressingType
-from uds.can import CanAddressingInformation
+from uds.can import DEFAULT_FILLER_BYTE, CanAddressingInformation, DefaultFlowControlParametersGenerator
 from uds.can.transport_interface.python_can import (
     AbstractCanTransportInterface,
     BusABC,
@@ -1744,18 +1745,26 @@ class TestPyCanTransportInterface:
 class TestPyCanTransportInterfaceIntegration:
     """Integration tests for `PyCanTransportInterface` class."""
 
+    # __init__
+
     @pytest.mark.parametrize("init_kwargs", [
         {
-            "network_manager": Mock(spec=BusABC),
+            "network_manager": Bus("test1", interface="virtual"),
         },
         {
-            "network_manager": Mock(spec=BusABC),
+            "network_manager": Bus("test2", interface="virtual"),
             "n_as_timeout": 0.1,
             "n_ar_timeout": 987,
             "n_bs_timeout": 43,
             "n_cr_timeout": 98.32,
             "n_br": 5.3,
             "n_cs": 0.92,
+            "use_data_optimization": True,
+            "filler_byte": 0x00,
+            "flow_control_parameters_generator": DefaultFlowControlParametersGenerator(block_size=10,
+                                                                                       st_min=50,
+                                                                                       wait_count=1,
+                                                                                       repeat_wait=True)
         },
     ])
     def test_init(self, init_kwargs, example_can_addressing_information):
@@ -1772,6 +1781,8 @@ class TestPyCanTransportInterfaceIntegration:
         assert py_can_ti.n_br == init_kwargs.get("n_br", AbstractCanTransportInterface.DEFAULT_N_BR)
         assert py_can_ti.n_cs == init_kwargs.get("n_cs", AbstractCanTransportInterface.DEFAULT_N_CS)
         assert py_can_ti.n_cr_timeout == init_kwargs.get("n_cr_timeout", AbstractCanTransportInterface.N_CR_TIMEOUT)
-        fc_param_iter = iter(py_can_ti.flow_control_parameters_generator)
-        for _ in range(5):
-            assert next(fc_param_iter) == (CanFlowStatus.ContinueToSend, 0, 0)
+        assert py_can_ti.use_data_optimization == init_kwargs.get("use_data_optimization", False)
+        assert py_can_ti.filler_byte == init_kwargs.get("filler_byte", DEFAULT_FILLER_BYTE)
+        assert (py_can_ti.flow_control_parameters_generator
+                == init_kwargs.get("flow_control_parameters_generator",
+                                   AbstractCanTransportInterface.DEFAULT_FLOW_CONTROL_PARAMETERS))

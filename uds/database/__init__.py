@@ -9,6 +9,8 @@ from .data_record import (
     AbstractDataRecord,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
+    CustomFormulaDataRecord,
+    LinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
     TextDataRecord,

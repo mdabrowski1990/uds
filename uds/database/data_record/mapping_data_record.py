@@ -37,6 +37,7 @@ class MappingDataRecord(RawDataRecord):
                  length: int,
                  values_mapping: Dict[int, str],
                  children: Sequence[AbstractDataRecord] = tuple(),
+                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
                  max_occurrences: Optional[int] = 1) -> None:
         """
@@ -47,6 +48,7 @@ class MappingDataRecord(RawDataRecord):
         :param values_mapping: Mapping of raw values to labels with their meaning.
             Dict keys are raw_values. Dict values are corresponding labels.
         :param children: Contained Data Records.
+        :param unit: Unit in which values without mapping are represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
@@ -54,6 +56,7 @@ class MappingDataRecord(RawDataRecord):
         super().__init__(name=name,
                          length=length,
                          children=children,
+                         unit=unit,
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)
         self.values_mapping = values_mapping

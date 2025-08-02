@@ -23,6 +23,7 @@ class RawDataRecord(AbstractDataRecord):
                  name: str,
                  length: int,
                  children: Sequence[AbstractDataRecord] = tuple(),
+                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
                  max_occurrences: Optional[int] = 1) -> None:
         """
@@ -31,12 +32,14 @@ class RawDataRecord(AbstractDataRecord):
         :param name: A name for this Data Record.
         :param length: Number of bits that are used to store a single occurrence of this Data Record.
         :param children: Contained Data Records.
+        :param unit: Unit in which a physical value is represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
         """
         super().__init__(name=name,
                          length=length,
+                         unit=unit,
                          children=children,
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)

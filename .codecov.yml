@@ -19,11 +19,11 @@ coverage:
         flags:
           - unit-tests-branch
       integration-tests:
-        target: 75%
+        target: 75%  # TODO: increase to 80 before releasing
         flags:
           - integration-tests
       integration-tests-branch:
-        target: 60%
+        target: 70%
         flags:
           - integration-tests-branch
       performance-tests:

@@ -29,27 +29,30 @@ class TestMappingDataRecord:
         mock_abstract_data_record_class.assert_called_once_with(name=name,
                                                                 length=length,
                                                                 children=tuple(),
+                                                                unit=None,
                                                                 min_occurrences=1,
                                                                 max_occurrences=1)
         assert self.mock_data_record.values_mapping == values_mapping
 
-    @pytest.mark.parametrize("name, length, values_mapping, children, min_occurrences, max_occurrences", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], 0, None),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+    @pytest.mark.parametrize("name, length, values_mapping, children, unit, min_occurrences, max_occurrences", [
+        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], "m/s", 0, None),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
     ])
     @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
     def test_init__all_args(self, mock_abstract_data_record_class,
-                            name, length, values_mapping, children, min_occurrences, max_occurrences):
+                            name, length, values_mapping, children, unit, min_occurrences, max_occurrences):
         assert MappingDataRecord.__init__(self.mock_data_record,
                                           name=name,
                                           length=length,
                                           values_mapping=values_mapping,
                                           children=children,
+                                          unit=unit,
                                           min_occurrences=min_occurrences,
                                           max_occurrences=max_occurrences) is None
         mock_abstract_data_record_class.assert_called_once_with(name=name,
                                                                 length=length,
                                                                 children=children,
+                                                                unit=unit,
                                                                 min_occurrences=min_occurrences,
                                                                 max_occurrences=max_occurrences)
         assert self.mock_data_record.values_mapping == values_mapping
@@ -271,6 +274,7 @@ class TestMappingDataRecordIntegration:
         ([0x00], {
             "name": "DTC Status",
             "physical_value": ("Inactive",),
+            "unit": None,
             "children": [
                 (
                         {
@@ -278,55 +282,64 @@ class TestMappingDataRecordIntegration:
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed Since Last Clear",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Confirmed DTC",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Pending DTC",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                 )
-            ]
+            ],
         }),
         ([0x00, 0x2F, 0xAF, 0xFF], {
             "name": "DTC Status",
             "physical_value": ("Inactive", "Active with Lamp OFF", "Active with Lamp ON", 0xFF),
+            "unit": None,
             "children": [
                 (
                         {
@@ -334,48 +347,56 @@ class TestMappingDataRecordIntegration:
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed Since Last Clear",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Confirmed DTC",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Pending DTC",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                 ),
                 (
@@ -384,48 +405,56 @@ class TestMappingDataRecordIntegration:
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed Since Last Clear",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Confirmed DTC",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Pending DTC",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                 ),
                 (
@@ -434,48 +463,56 @@ class TestMappingDataRecordIntegration:
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed Since Last Clear",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Confirmed DTC",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Pending DTC",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                 ),
                 (
@@ -484,48 +521,56 @@ class TestMappingDataRecordIntegration:
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed Since Last Clear",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Confirmed DTC",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Pending DTC",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                         {
                             "name": "Test Failed",
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
+                            "unit": None,
                         },
                 )
             ]
