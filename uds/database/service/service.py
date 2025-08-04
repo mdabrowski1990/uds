@@ -173,14 +173,23 @@ class Service:
     @staticmethod
     def _decode_payload(payload: RawBytesAlias,
                         message_continuation: AliasMessageStructure) -> DecodedMessageAlias:
-        ...
+        decoded_message_continuation = []
+        remaining_payload = bytearray(payload)
+        for data_record in message_continuation:
+            if isinstance(data_record, AbstractConditionalDataRecord):
+                ...
         # TODO
+
 
 
     @staticmethod
-    def _encode_message_continuation(structure, data_records_values) -> bytearray:
-        # TODO
-        for data_record in structure:
+    def _encode_message_continuation(data_records_values,
+                                     message_continuation: AliasMessageStructure) -> bytearray:
+        payload = bytearray()
+        for data_record in message_continuation:
+            if isinstance(data_record, AbstractConditionalDataRecord):
+                if data_record == structure[-1]:
+                    ...
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.is_reoccurring:
                     raw_values = data_records_values.pop(data_record.name)
@@ -284,8 +293,8 @@ class Service:
         :return: Payload of a request message.
         """
         return (bytearray([self.request_sid])
-                + self._encode_message_continuation(structure=self.response_structure,
-                                                    data_records_values=data_records_values))
+                + self._encode_message_continuation(data_records_values=data_records_values,
+                                                    message_continuation=self.response_structure))
 
     def encode_positive_response(self, data_records_values: DataRecordsValuesAlias) -> bytearray:
         """
@@ -299,8 +308,8 @@ class Service:
         :return: Payload of a positive response message.
         """
         return (bytearray([self.response_sid])
-                + self._encode_message_continuation(structure=self.response_structure,
-                                                    data_records_values=data_records_values))
+                + self._encode_message_continuation(data_records_values=data_records_values,
+                                                    message_continuation=self.response_structure))
 
     def encode_negative_response(self, nrc: NRC) -> bytearray:
         """

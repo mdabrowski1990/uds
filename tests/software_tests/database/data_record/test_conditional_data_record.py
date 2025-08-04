@@ -75,13 +75,11 @@ class TestAbstractConditionalDataRecord:
                                          any_order=False)
 
     @pytest.mark.parametrize("value", [
-        8 * [Mock(length=1)],
+        7 * [Mock(length=1, spec=)],
         [Mock(length=16)],
         []
     ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_validate_message_continuation__valid(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
         assert AbstractConditionalDataRecord.validate_message_continuation(value) is None
         mock_isinstance.assert_has_calls(
             [call(value, Sequence)] +

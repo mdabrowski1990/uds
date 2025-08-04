@@ -9,11 +9,18 @@ from operator import getitem
 from types import MappingProxyType
 from typing import Callable, Mapping, Optional, Sequence, Union
 
+from uds.utilities import InconsistentArgumentsError
 from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
 
 AliasMessageStructure = Sequence[Union[AbstractDataRecord, "AbstractConditionalDataRecord"]]
-"""Alias of Diagnostic Message Structure used by databases to interpret Diagnostic Messages parameters."""
+"""Alias of Diagnostic Message Structure used by databases to interpret Diagnostic Messages parameters.
+
+The sequence shall contain `AbstractDataRecord` instances with up to one `AbstractConditionalDataRecord` instance
+at the end.
+No more than 1 reoccurring Data Record is allowed.
+Total length shall always be divisible by 8.
+"""
 DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: AliasMessageStructure = (
     RawDataRecord(name="Generic Diagnostic Message Continuation",
                   length=8,
@@ -82,7 +89,7 @@ class AbstractConditionalDataRecord(ABC):
             self.__default_message_continuation = tuple(value)
 
     @staticmethod
-    def validate_message_continuation(value: AliasMessageStructure) -> None:
+    def validate_message_continuation(value: AliasMessageStructure) -> None:  # TODO: review and test
         """
         Validate whether the provided value is structure of diagnostic message continuation.
 
@@ -91,12 +98,30 @@ class AbstractConditionalDataRecord(ABC):
         :raise TypeError: Provided value is not a sequence.
         :raise ValueError: At least one element of the provided sequence is not an instance of AbstractDataRecord
             or AbstractConditionalDataRecord class.
+        :raise InconsistentArgumentsError:
         """
         if not isinstance(value, Sequence):
             raise TypeError("Provided value is not a sequence")
-        if not all(isinstance(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value):
-            raise ValueError("At least one element is not an instance of AbstractDataRecord class.")
-        # TODO: check names
+        names = set()
+        total_length = 0
+        reoccurring = False
+        for i, data_record in enumerate(value):
+            if isinstance(data_record, AbstractDataRecord):
+                if data_record.name in names:
+                    raise InconsistentArgumentsError("Data Records within one message have to have unique names. "
+                                                     f"Multiple `{data_record.name}` found.")
+                if data_record.is_reoccurring:
+                    if reoccurring:
+                        raise InconsistentArgumentsError("Two reoccurring data records found.")
+                    reoccurring = True
+                total_length += data_record.length * data_record.min_occurrences
+            elif isinstance(data_record, AbstractConditionalDataRecord):
+                if i != len(value) - 1:
+                    raise ValueError("Conditional Data Record can only be added at the end of the structure.")
+            else:
+                raise ValueError("Provided sequence contains an element which is not a Data Record.")
+        if total_length % 8 != 0:
+            raise InconsistentArgumentsError("Total length of diagnostic message continuation must be divisible by 8.")
 
     def get_message_continuation(self, raw_value: int) -> AliasMessageStructure:
         """

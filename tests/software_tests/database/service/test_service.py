@@ -176,6 +176,14 @@ class TestService:
                                         children=tuple()))
         self.mock_nrc_validate_member.assert_called_once_with(nrc)
 
+    # _decode_payload
+
+    # TODO
+
+    # _encode_message_continuation
+
+    # TODO
+
     # validate_message_structure
 
     @pytest.mark.parametrize("value", [Mock(), []])
@@ -301,7 +309,7 @@ class TestService:
         assert (Service.encode_request(self.mock_service, data_records_values=data_records_values)
                 == bytearray([request_sid]) + payload_continuation)
         self.mock_service._encode_message_continuation.assert_called_once_with(
-            structure=self.mock_service.response_structure,
+            message_continuation=self.mock_service.response_structure,
             data_records_values=data_records_values)
 
     # encode_positive_response
@@ -317,7 +325,7 @@ class TestService:
         assert (Service.encode_positive_response(self.mock_service, data_records_values=data_records_values)
                 == bytearray([response_sid]) + payload_continuation)
         self.mock_service._encode_message_continuation.assert_called_once_with(
-            structure=self.mock_service.response_structure,
+            message_continuation=self.mock_service.response_structure,
             data_records_values=data_records_values)
 
     # encode_negative_response
