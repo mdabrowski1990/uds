@@ -96,6 +96,7 @@ class AbstractConditionalDataRecord(ABC):
             raise TypeError("Provided value is not a sequence")
         if not all(isinstance(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value):
             raise ValueError("At least one element is not an instance of AbstractDataRecord class.")
+        # TODO: check names
 
     def get_message_continuation(self, raw_value: int) -> AliasMessageStructure:
         """

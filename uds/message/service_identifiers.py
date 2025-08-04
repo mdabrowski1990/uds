@@ -5,13 +5,17 @@ Service Identifier (SID) data parameter implementation.
     and SAE J1979 standards.
 """
 
-__all__ = ["RequestSID", "ResponseSID", "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS", "UnrecognizedSIDWarning"]
+__all__ = ["RESPONSE_REQUEST_SID_DIFF","ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
+           "RequestSID", "ResponseSID", "UnrecognizedSIDWarning"]
 
 from warnings import warn
 
 from aenum import unique
 
 from uds.utilities import ByteEnum, ExtendableEnum, RawBytesSetAlias, ValidatedEnum
+
+RESPONSE_REQUEST_SID_DIFF: int = 0x40
+"""Difference between request and response SID values (SID = RSID + 0x40)."""
 
 # reserved SID values
 _REQUEST_SIDS_DEFINED_BY_SAEJ1979 = set(range(0x01, 0x10))
@@ -132,4 +136,4 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
 
 # extend 'ResponseSID' with members that were defined in RequestSID
 for request_sid_member in RequestSID:
-    ResponseSID.add_member(request_sid_member.name, request_sid_member.value + 0x40)
+    ResponseSID.add_member(request_sid_member.name, request_sid_member.value + RESPONSE_REQUEST_SID_DIFF)

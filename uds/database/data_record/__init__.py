@@ -7,6 +7,7 @@ meaningful information (e.g. physical value, text).
 
 from .abstract_data_record import (
     AbstractDataRecord,
+    DataRecordInfoAlias,
     MultipleOccurrencesInfo,
     MultiplePhysicalValues,
     PhysicalValueAlias,

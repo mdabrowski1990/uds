@@ -1,7 +1,7 @@
 """Definition of Data Records structure and API."""
 
 __all__ = ["AbstractDataRecord", "MultipleOccurrencesInfo", "MultiplePhysicalValues", "PhysicalValueAlias",
-           "SingleOccurrenceInfo", "SinglePhysicalValueAlias"]
+           "SingleOccurrenceInfo", "SinglePhysicalValueAlias", "DataRecordInfoAlias"]
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -36,12 +36,14 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     Comprehensive information about a single Data Record occurrence.
 
     :arg name: Data Record name.
+    :arg length: Number of bits used to store this Data Record.
     :arg raw_value: Raw values for this occurrence.
     :arg physical_value: Physical value for this occurrence.
     :arg children: Extracted child information for this occurrence.
     """
 
     name: str
+    length: int
     raw_value: int
     physical_value: SinglePhysicalValueAlias
     children: Tuple["SingleOccurrenceInfo", ...]
@@ -49,9 +51,10 @@ class SingleOccurrenceInfo(TypedDict, total=True):
 
 class MultipleOccurrencesInfo(TypedDict, total=True):
     """
-    Information about multiple Data Record occurrences.
+    Comprehensive information about multiple Data Record occurrences.
 
     :arg name: Data Record name.
+    :arg length: Number of bits used to store a single occurrence of this Data Record.
     :arg raw_value: List with raw values for each occurrence.
     :arg physical_value: Physical values for multiple occurrences.
     :arg children: List with one element for each occurrence.
@@ -59,9 +62,14 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
     """
 
     name: str
+    length: int
     raw_value: List[int]
     physical_value: MultiplePhysicalValues
     children: List[Tuple["SingleOccurrenceInfo", ...]]
+
+
+DataRecordInfoAlias = Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]
+"""Comprehensive information a single Data Record occurrence(s)."""
 
 
 class AbstractDataRecord(ABC):
@@ -306,7 +314,7 @@ class AbstractDataRecord(ABC):
             = [child.get_occurrence_info(children_values[child.name]) for child in self.children]  # type: ignore
         return tuple(children_occurrence_info)
 
-    def get_occurrence_info(self, *raw_values: int) -> Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]:
+    def get_occurrence_info(self, *raw_values: int) -> DataRecordInfoAlias:
         """
         Extract comprehensive occurrence information with automatic child extraction.
 
@@ -323,12 +331,14 @@ class AbstractDataRecord(ABC):
             for raw_value in raw_values:
                 children_values.append(self.get_children_occurrence_info(raw_value))
             return MultipleOccurrencesInfo(name=self.name,
+                                           length=self.length,
                                            raw_value=list(raw_values),
                                            physical_value=self.get_physical_values(*raw_values),
                                            children=children_values)
         if len(raw_values) == 1:
             raw_value = raw_values[0]
             return SingleOccurrenceInfo(name=self.name,
+                                        length=self.length,
                                         raw_value=raw_value,
                                         physical_value=self.get_physical_value(raw_value),
                                         children=self.get_children_occurrence_info(raw_value))
