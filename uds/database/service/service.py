@@ -179,15 +179,8 @@ class Service:
                                     children=tuple())
 
     @staticmethod
-    def _extract_data_record_values(data_record: AbstractDataRecord,
-                                    data_records_values: DataRecordsValuesAlias) -> Sequence[int]:
-        """
-
-        :param data_record:
-        :param data_records_values:
-        :return:
-        """
-
+    def _extract_data_record_occurrences(data_record: AbstractDataRecord,
+                                         value: DataRecordValueAlias) -> Sequence[int]:  # TODO
         if data_record.is_reoccurring:
             if not isinstance(data_record_value, Sequence):
                 raise ValueError("A sequence of values has to be provided for a reoccurring Data Record. "
@@ -259,26 +252,28 @@ class Service:
         data_records_values = dict(deepcopy(data_records_values))
         total_raw_value = 0
         total_length = 0
+        payload_continuation = bytearray()
         for data_record in message_structure:
+            raw_value: int
             if isinstance(data_record, AbstractDataRecord):
-                data_record_value = data_records_values.pop(data_record.name, None)
-                raw_values = cls._extract_data_record_values()
+                data_record_value = data_records_values.pop(data_record.name)
+                occurrences = cls._extract_data_record_occurrences(data_record=data_record,
+                                                                   value=data_record_value)
+                for raw_value in occurrences:
+                    total_raw_value = (total_raw_value << data_record.length) + raw_value
+                    total_length += data_record.length
             elif isinstance(data_record, AbstractConditionalDataRecord):
-                if total_length % 8 != 0:
-                    raise RuntimeError("Incorrect message structure was provided.")
                 message_continuation = data_record.get_message_continuation(raw_value=raw_value)
                 payload_continuation = cls._encode_message(data_records_values=data_records_values,
-                                                               message_structure=message_continuation)
-                return bytearray(int_to_bytes(int_value=total_raw_value,
-                                              size=total_length // 8,
-                                              endianness=Endianness.BIG_ENDIAN)) + payload_continuation
+                                                           message_structure=message_continuation)
+                break  # conditional data record must be the last one anyway
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if total_length % 8 != 0:
             raise RuntimeError("Incorrect message structure was provided.")
         return bytearray(int_to_bytes(int_value=total_raw_value,
                                       size=total_length // 8,
-                                      endianness=Endianness.BIG_ENDIAN))
+                                      endianness=Endianness.BIG_ENDIAN)) + payload_continuation
 
     @staticmethod
     def validate_message_structure(value: AliasMessageStructure) -> None:
