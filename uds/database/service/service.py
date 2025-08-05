@@ -4,9 +4,10 @@ __all__ = ["Service", "DataRecordValuesAlias", "DecodedMessageAlias"]
 
 from typing import Collection, List, Mapping, Optional, OrderedDict, Sequence, Set, Tuple, Union
 from warnings import warn
+from copy import deepcopy
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_bytes
+from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_bytes, int_to_bytes, Endianness
 
 from ..data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
@@ -16,14 +17,21 @@ from ..data_record import (
     DataRecordInfoAlias,
     PhysicalValueAlias,
     SingleOccurrenceInfo,
+    ChildrenValuesAlias
 )
 
-DataRecordSingleOccurrenceRawValueAlias = int
-DataRecordSingleOccurrenceChildrenValuesAlias = Mapping[str, Union[DataRecordSingleOccurrenceRawValueAlias, "DataRecordSingleOccurrenceChildrenRawValuesAlias"]]
-DataRecordSingleOccurrenceAlias = Union[DataRecordSingleOccurrenceRawValueAlias, DataRecordSingleOccurrenceChildrenValuesAlias]
-DataRecordMultipleOccurrencesAlias = Sequence[DataRecordSingleOccurrenceAlias]
-DataRecordValueAlias = Union[DataRecordSingleOccurrenceAlias, DataRecordMultipleOccurrencesAlias]
+DataRecordValueAlias = Optional[int, ChildrenValuesAlias, Sequence[Union[int, ChildrenValuesAlias]]]
+"""Alias for Data Record value that can be used in the Data Records Mapping.
+For a single occurrence Data Records (is_reoccurring=False) it is either a raw value (int type), None (no occurrence)
+or a mapping with children values.
+For multiple occurrences Data Records (is_reoccurring=True) it is a sequence. Each sequence element represents a single
+occurrence and is either a raw value or a mapping with children values.
+"""
 DataRecordsValuesAlias = Mapping[str, DataRecordValueAlias]
+"""Alias for Data Records values mapping.
+Mapping keys are Data Records names. 
+Mapping values are corresponding Data Records values.
+"""
 
 DecodedMessageAlias = Tuple[DataRecordInfoAlias, ...]
 """Alias for decoded information about a Diagnostic Message."""
@@ -171,6 +179,52 @@ class Service:
                                     children=tuple())
 
     @staticmethod
+    def _extract_data_record_values(data_record: AbstractDataRecord,
+                                    data_records_values: DataRecordsValuesAlias) -> Sequence[int]:
+        """
+
+        :param data_record:
+        :param data_records_values:
+        :return:
+        """
+
+        if data_record.is_reoccurring:
+            if not isinstance(data_record_value, Sequence):
+                raise ValueError("A sequence of values has to be provided for a reoccurring Data Record. "
+                                 f"Data Record name = {data_record.name}.")
+            if not data_record.min_occurrences <= len(data_record_value) <= data_record.max_occurrences:
+                raise ValueError("A sequence of values has to contain proper number of Data Record occurrences."
+                                 f"Data Record name = {data_record.name}. "
+                                 f"Data Record min occurrences number = {data_record.min_occurrences}. "
+                                 f"Data Record max occurrences number = {data_record.max_occurrences}. "
+                                 f"Provided sequence = {data_record_value}.")
+            raw_values = []
+            for occurrence_value in data_record_value:
+                if isinstance(occurrence_value, int):
+                    raw_values.append(occurrence_value)
+                elif isinstance(occurrence_value, Mapping):
+                    raw_values.append(data_record.get_raw_value_from_children(occurrence_value))
+                else:
+                    raise ValueError("Incorrect value was provided one of Multiple Occurrences Data Record. "
+                                     f"Data Record name = {data_record.name}. "
+                                     f"Provided values = {data_record_value}. "
+                                     f"Faulty occurrence value = {occurrence_value}.")
+            for raw_value in raw_values:
+                total_raw_value = (total_raw_value << data_record.length) + raw_value
+                total_length += data_record.length
+        else:
+            if isinstance(data_record_value, int):
+                raw_value = data_record_value
+            elif isinstance(data_record_value, Mapping):
+                raw_value = [data_record.get_raw_value_from_children(data_record_value)]
+            else:
+                raise ValueError(f"Incorrect value was provided for Single Occurrence Data Record. "
+                                 f"Data Record name = {data_record.name}. "
+                                 f"Provided value = {data_record_value}.")
+            total_raw_value = (total_raw_value << data_record.length) + raw_value
+            total_length += data_record.length
+
+    @staticmethod
     def _decode_payload(payload: RawBytesAlias,
                         message_continuation: AliasMessageStructure) -> DecodedMessageAlias:
         decoded_message_continuation = []
@@ -182,18 +236,49 @@ class Service:
 
 
 
-    @staticmethod
-    def _encode_message_continuation(data_records_values,
-                                     message_continuation: AliasMessageStructure) -> bytearray:
-        payload = bytearray()
-        for data_record in message_continuation:
-            if isinstance(data_record, AbstractConditionalDataRecord):
-                if data_record == structure[-1]:
-                    ...
+    @classmethod
+    def _encode_message(cls,
+                        data_records_values: DataRecordsValuesAlias,
+                        message_structure: AliasMessageStructure) -> bytearray:
+        """
+        Encode payload of a diagnostic message.
+
+        :param data_records_values: Mapping with Data Records values that are part of the message.
+            Mapping keys are Data Records names.
+            Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
+            a raw value or a mapping with children names and its corresponding values.
+        :param message_structure: Data Records that form the remaining structure of the diagnostic message.
+
+        :raise RuntimeError: An error occurred which was caused by incorrect message structure.
+        :raise ValueError: Provided Data Records values are incorrect.
+        :raise NotImplementedError: There is missing implementation for at least one Data Record in the provided
+            message structure.
+
+        :return: Payload of a diagnostic message created from provided data records values.
+        """
+        data_records_values = dict(deepcopy(data_records_values))
+        total_raw_value = 0
+        total_length = 0
+        for data_record in message_structure:
             if isinstance(data_record, AbstractDataRecord):
-                if data_record.is_reoccurring:
-                    raw_values = data_records_values.pop(data_record.name)
-        # TODO
+                data_record_value = data_records_values.pop(data_record.name, None)
+                raw_values = cls._extract_data_record_values()
+            elif isinstance(data_record, AbstractConditionalDataRecord):
+                if total_length % 8 != 0:
+                    raise RuntimeError("Incorrect message structure was provided.")
+                message_continuation = data_record.get_message_continuation(raw_value=raw_value)
+                payload_continuation = cls._encode_message(data_records_values=data_records_values,
+                                                               message_structure=message_continuation)
+                return bytearray(int_to_bytes(int_value=total_raw_value,
+                                              size=total_length // 8,
+                                              endianness=Endianness.BIG_ENDIAN)) + payload_continuation
+            else:
+                raise NotImplementedError("Unexpected Data Record type found in the structure.")
+        if total_length % 8 != 0:
+            raise RuntimeError("Incorrect message structure was provided.")
+        return bytearray(int_to_bytes(int_value=total_raw_value,
+                                      size=total_length // 8,
+                                      endianness=Endianness.BIG_ENDIAN))
 
     @staticmethod
     def validate_message_structure(value: AliasMessageStructure) -> None:
@@ -288,13 +373,13 @@ class Service:
         :param data_records_values: Mapping with Data Records values that are part of the message.
             Mapping keys are Data Records names.
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
-            a raw value or a mapping with children names and corresponding values.
+            a raw value or a mapping with children names and its corresponding values.
 
         :return: Payload of a request message.
         """
         return (bytearray([self.request_sid])
-                + self._encode_message_continuation(data_records_values=data_records_values,
-                                                    message_continuation=self.response_structure))
+                + self._encode_message(data_records_values=data_records_values,
+                                       message_structure=self.response_structure))
 
     def encode_positive_response(self, data_records_values: DataRecordsValuesAlias) -> bytearray:
         """
@@ -303,13 +388,13 @@ class Service:
         :param data_records_values: Mapping with Data Records values that are part of the message.
             Mapping keys are Data Records names.
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
-            a raw value or a mapping with children names and corresponding values.
+            a raw value or a mapping with children names and its corresponding values.
 
         :return: Payload of a positive response message.
         """
         return (bytearray([self.response_sid])
-                + self._encode_message_continuation(data_records_values=data_records_values,
-                                                    message_continuation=self.response_structure))
+                + self._encode_message(data_records_values=data_records_values,
+                                       message_structure=self.response_structure))
 
     def encode_negative_response(self, nrc: NRC) -> bytearray:
         """
@@ -335,7 +420,7 @@ class Service:
         :param data_records_values: Mapping with Data Records values that are part of the message.
             Mapping keys are Data Records names.
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
-            a raw value or a mapping with children names and corresponding values.
+            a raw value or a mapping with children names and its corresponding values.
 
         :raise ValueError: Provided SID value cannot be handled by this service.
 

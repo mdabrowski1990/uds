@@ -1,9 +1,10 @@
 import pytest
-from mock import Mock, call, patch
+from mock import MagicMock, Mock, call, patch
 
 from uds.database.data_record.abstract_data_record import (
     AbstractDataRecord,
     InconsistentArgumentsError,
+    Mapping,
     OrderedDict,
     ReassignmentError,
     Sequence,
@@ -290,6 +291,19 @@ class TestAbstractDataRecord:
         else:
             assert AbstractDataRecord.is_reoccurring.fget(self.mock_data_record) is (max_occurrences>1)
 
+    # fixed_total_length
+
+    @pytest.mark.parametrize("min_occurrences, max_occurrences, expect_value", [
+        (1, None, False),
+        (3, 3, True),
+        (1, 1, True),
+        (0, 1, False),
+    ])
+    def test_fixed_total_length(self, min_occurrences, max_occurrences, expect_value):
+        self.mock_data_record.min_occurrences = min_occurrences
+        self.mock_data_record.max_occurrences = max_occurrences
+        assert AbstractDataRecord.fixed_total_length.fget(self.mock_data_record) is expect_value
+
     # min_raw_value
 
     def test_min_raw_value(self):
@@ -398,3 +412,118 @@ class TestAbstractDataRecord:
         assert isinstance(output, tuple)
         assert output == tuple([self.mock_data_record.get_physical_value.return_value] * len(raw_values))
         self.mock_data_record.get_physical_value.assert_has_calls([call(raw_value) for raw_value in raw_values])
+
+    # get_raw_value_from_children
+
+    def test_get_raw_value_from_children__runtime_error(self):
+        self.mock_data_record.children = tuple()
+        with pytest.raises(RuntimeError):
+            AbstractDataRecord.get_raw_value_from_children(self.mock_data_record, MagicMock())
+
+    @pytest.mark.parametrize("children_values", [Mock(), MagicMock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_raw_value_from_children__type_error(self, mock_isinstance, children_values):
+        self.mock_data_record.children = [Mock(), Mock()]
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractDataRecord.get_raw_value_from_children(self.mock_data_record, children_values)
+        mock_isinstance.assert_called_once_with(children_values, Mapping)
+
+    @pytest.mark.parametrize("children_names, children_values", [
+        (["DID#1", "DID#2", "DTC#3"], {"DID#1": 1, "DID#2": 2}),
+        (["A B C", "xyz 798"], {"A B C": 1, "xyz 798": 2, "X": 0}),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_raw_value_from_children__value_error__children_names(self, mock_isinstance,
+                                                                      children_names, children_values):
+        self.mock_data_record.children = [Mock() for _ in children_names]
+        for i, name in enumerate(children_names):
+            self.mock_data_record.children[i].name = name
+        mock_isinstance.return_value = True
+        with pytest.raises(ValueError):
+            AbstractDataRecord.get_raw_value_from_children(self.mock_data_record, children_values)
+        mock_isinstance.assert_called_once_with(children_values, Mapping)
+
+    @pytest.mark.parametrize("children, children_values", [
+        (
+            (Mock(spec=AbstractDataRecord, length=2, name="Parameter A"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter B"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter C"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter D"),),
+            {"Parameter A": 0b11, "Parameter B": Mock(), "Parameter C": 0b01, "Parameter D": 0b00},
+        ),
+        (
+            (Mock(spec=AbstractDataRecord, length=8, name="XYZ"),
+             Mock(spec=AbstractDataRecord, length=4, name="ABC"),
+             Mock(spec=AbstractDataRecord, length=16, name="Some name")),
+            {"XYZ": 0xA5, "ABC": 0xD, "Some name": 54.2},
+        )
+    ])
+    def test_get_raw_value_from_children__value_error__children_value_type(self, children, children_values):
+        for child in children:
+            child.name = child._extract_mock_name()
+        self.mock_data_record.children = children
+        self.mock_data_record.length = sum([child.length for child in children])
+        with pytest.raises(ValueError):
+            AbstractDataRecord.get_raw_value_from_children(self.mock_data_record, children_values)
+
+    @pytest.mark.parametrize("children, children_values, raw_value", [
+        (
+            (Mock(spec=AbstractDataRecord, length=2, name="Parameter A"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter B"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter C"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter D"),),
+            {"Parameter A": 0b11, "Parameter B": 0b10, "Parameter C": 0b01, "Parameter D": 0b00},
+            0b11100100
+        ),
+        (
+            (Mock(spec=AbstractDataRecord, length=8, name="XYZ"),
+             Mock(spec=AbstractDataRecord, length=4, name="ABC"),
+             Mock(spec=AbstractDataRecord, length=16, name="Some name")),
+            {"XYZ": 0xA5, "ABC": 0xD, "Some name": 0xCAFE},
+            0xA5DCAFE
+        )
+    ])
+    def test_get_raw_value_from_children__valid__raw_values(self, children, children_values, raw_value):
+        for child in children:
+            child.name = child._extract_mock_name()
+        self.mock_data_record.children = children
+        self.mock_data_record.length = sum([child.length for child in children])
+        assert AbstractDataRecord.get_raw_value_from_children(self.mock_data_record,
+                                                              children_values) == raw_value
+
+    @pytest.mark.parametrize("children, children_values, children_raw_values_mapping, raw_value", [
+        (
+            (Mock(spec=AbstractDataRecord, length=2, name="Parameter A"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter B"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter C"),
+             Mock(spec=AbstractDataRecord, length=2, name="Parameter D"),),
+            {"Parameter A": {"a1": 1, "a2": 2},
+             "Parameter B": {"xyz": {"a": 0, "b":2}, "abc": 0},
+             "Parameter C": {"Parameter C.1": 0, "Parameter C.2": 2, "Parameter C.3": 0xF},
+             "Parameter D": {"DTC 1": 0xFEBCDE, "DTC 2": 0x800020}},
+            {"Parameter A": 0b11, "Parameter B": 0b10, "Parameter C": 0b01, "Parameter D": 0b00},
+            0b11100100
+        ),
+        (
+            (Mock(spec=AbstractDataRecord, length=8, name="XYZ"),
+             Mock(spec=AbstractDataRecord, length=4, name="ABC"),
+             Mock(spec=AbstractDataRecord, length=16, name="Some name")),
+            {"XYZ": {"XYZ#1": 0, "XYZ#2": 1, "XYZ#3": 2, "XYZ#4": 3, "XYZ#5": 0xF},
+             "ABC": {"ABC - 1": 0, "ABC - 2": 9},
+             "Some name": {"1": 1, "2": 2, "0": 5}},
+            {"XYZ": 0xA5, "ABC": 0xD, "Some name": 0xCAFE},
+            0xA5DCAFE
+        )
+    ])
+    def test_get_raw_value_from_children__valid__children_values(self, children, children_values,
+                                                                 children_raw_values_mapping, raw_value):
+        for child in children:
+            child.name = child._extract_mock_name()
+            child.get_raw_value_from_children.return_value = children_raw_values_mapping[child.name]
+        self.mock_data_record.children = children
+        self.mock_data_record.length = sum([child.length for child in children])
+        assert AbstractDataRecord.get_raw_value_from_children(self.mock_data_record,
+                                                              children_values) == raw_value
+        for child in children:
+            child.get_raw_value_from_children.assert_called_once_with(children_values[child.name])

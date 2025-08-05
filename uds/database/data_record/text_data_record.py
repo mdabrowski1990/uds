@@ -6,7 +6,7 @@ from typing import Callable, Dict, Optional, TypedDict
 
 from uds.utilities import ValidatedEnum
 
-from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValues, SinglePhysicalValueAlias
+from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValuesAlias, SinglePhysicalValueAlias
 
 
 class TextEncoding(ValidatedEnum):
@@ -124,7 +124,7 @@ class TextDataRecord(AbstractDataRecord):
             return 9
         raise NotImplementedError(f"Missing implementation for {self.encoding}.")
 
-    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValues:
+    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValuesAlias:
         """
         Get physical values representing provided raw values.
 

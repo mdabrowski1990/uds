@@ -10,6 +10,7 @@ from types import MappingProxyType
 from typing import Callable, Mapping, Optional, Sequence, Union
 
 from uds.utilities import InconsistentArgumentsError
+
 from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
 
@@ -89,39 +90,45 @@ class AbstractConditionalDataRecord(ABC):
             self.__default_message_continuation = tuple(value)
 
     @staticmethod
-    def validate_message_continuation(value: AliasMessageStructure) -> None:  # TODO: review and test
+    def validate_message_continuation(value: AliasMessageStructure) -> None:
         """
         Validate whether the provided value is structure of diagnostic message continuation.
 
         :param value: Value to check
 
         :raise TypeError: Provided value is not a sequence.
-        :raise ValueError: At least one element of the provided sequence is not an instance of AbstractDataRecord
-            or AbstractConditionalDataRecord class.
-        :raise InconsistentArgumentsError:
+        :raise ValueError: Provided sequence does not contain Data Records, or they are incorrectly ordered.
+        :raise InconsistentArgumentsError: Contained Data Records cannot be used together.
         """
         if not isinstance(value, Sequence):
             raise TypeError("Provided value is not a sequence")
         names = set()
-        total_length = 0
-        reoccurring = False
+        min_total_length = 0
+        max_total_length = 0
         for i, data_record in enumerate(value):
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.name in names:
                     raise InconsistentArgumentsError("Data Records within one message have to have unique names. "
                                                      f"Multiple `{data_record.name}` found.")
-                if data_record.is_reoccurring:
-                    if reoccurring:
-                        raise InconsistentArgumentsError("Two reoccurring data records found.")
-                    reoccurring = True
-                total_length += data_record.length * data_record.min_occurrences
+                else:
+                    names.add(data_record.name)
+                if not data_record.fixed_total_length:
+                    if i != len(value) - 1:
+                        raise ValueError("Data record with varying length can only be placed at the end of "
+                                         "the message structure.")
+                min_total_length += data_record.length * data_record.min_occurrences
+                if data_record.max_occurrences is not None:
+                    max_total_length += data_record.length * data_record.max_occurrences
             elif isinstance(data_record, AbstractConditionalDataRecord):
                 if i != len(value) - 1:
-                    raise ValueError("Conditional Data Record can only be added at the end of the structure.")
+                    raise ValueError("Conditional Data Record can only be placed at the end of the message structure.")
+                if i == 0:
+                    raise ValueError("Conditional Data Record cannot be the only part of the message structure.")
             else:
                 raise ValueError("Provided sequence contains an element which is not a Data Record.")
-        if total_length % 8 != 0:
-            raise InconsistentArgumentsError("Total length of diagnostic message continuation must be divisible by 8.")
+        if min_total_length % 8 != 0 or max_total_length % 8:
+            raise InconsistentArgumentsError("Total length of diagnostic message continuation must always be divisible "
+                                             "by 8.")
 
     def get_message_continuation(self, raw_value: int) -> AliasMessageStructure:
         """

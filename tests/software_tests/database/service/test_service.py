@@ -8,6 +8,8 @@ from uds.database.service.service import (
     ResponseSID,
     Service,
     SingleOccurrenceInfo,
+    AbstractDataRecord,
+    AbstractConditionalDataRecord
 )
 
 SCRIPT_LOCATION = "uds.database.service.service"
@@ -180,9 +182,28 @@ class TestService:
 
     # TODO
 
-    # _encode_message_continuation
+    # _encode_message
 
-    # TODO
+    @pytest.mark.parametrize("data_records_values, message_structure, payload", [
+        (
+            {"A1": 0xF0, "B2": 0x1E},
+            [Mock(spec=AbstractDataRecord, name="A1", length=8, is_reoccurring=False),
+             Mock(spec=AbstractDataRecord, name="B2", length=8, is_reoccurring=False)],
+            bytearray(b"\xF0\x1E")
+        ),
+        (
+            {"DTC": 0xBEEF07, "Status Bit": [0, 1, 0, 1, 0, 1, 0, 1]},
+            [Mock(spec=AbstractDataRecord, name="DTC", length=24, is_reoccurring=False),
+             Mock(spec=AbstractDataRecord, name="Status Bit", length=1,
+                  is_reoccurring=True, min_occurrences=8, max_occurrences=8)],
+            bytearray(b"\xBE\xEF\x07\x55")
+        ),
+    ])
+    def test_encode_message__valid__without_condition(self, data_records_values, message_structure, payload):
+        for data_record in message_structure:
+            data_record.name = data_record._extract_mock_name()
+        assert Service._encode_message(data_records_values=data_records_values,
+                                       message_structure=message_structure) == payload
 
     # validate_message_structure
 
@@ -305,11 +326,11 @@ class TestService:
     def test_encode_request(self, data_records_values,
                             request_sid, payload_continuation):
         self.mock_service.request_sid = request_sid
-        self.mock_service._encode_message_continuation.return_value = payload_continuation
+        self.mock_service._encode_message.return_value = payload_continuation
         assert (Service.encode_request(self.mock_service, data_records_values=data_records_values)
                 == bytearray([request_sid]) + payload_continuation)
-        self.mock_service._encode_message_continuation.assert_called_once_with(
-            message_continuation=self.mock_service.response_structure,
+        self.mock_service._encode_message.assert_called_once_with(
+            message_structure=self.mock_service.response_structure,
             data_records_values=data_records_values)
 
     # encode_positive_response
@@ -321,11 +342,11 @@ class TestService:
     def test_encode_positive_response(self, data_records_values,
                                       response_sid, payload_continuation):
         self.mock_service.response_sid = response_sid
-        self.mock_service._encode_message_continuation.return_value = payload_continuation
+        self.mock_service._encode_message.return_value = payload_continuation
         assert (Service.encode_positive_response(self.mock_service, data_records_values=data_records_values)
                 == bytearray([response_sid]) + payload_continuation)
-        self.mock_service._encode_message_continuation.assert_called_once_with(
-            message_continuation=self.mock_service.response_structure,
+        self.mock_service._encode_message.assert_called_once_with(
+            message_structure=self.mock_service.response_structure,
             data_records_values=data_records_values)
 
     # encode_negative_response
