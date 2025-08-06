@@ -24,16 +24,36 @@ class TestAbstractDataRecord:
         ("Some Name", 534, [Mock(), Mock()], 0, None),
         (Mock(), Mock(), Mock(), Mock(), Mock()),
     ])
-    def test_init(self, name, length, children, min_occurrences, max_occurrences):
-        AbstractDataRecord.__init__(self.mock_data_record,
-                                    name=name,
-                                    length=length,
-                                    children=children,
-                                    min_occurrences=min_occurrences,
-                                    max_occurrences=max_occurrences)
+    def test_init__mandatory_args(self, name, length, children, min_occurrences, max_occurrences):
+        assert AbstractDataRecord.__init__(self.mock_data_record,
+                                           name=name,
+                                           length=length,
+                                           children=children,
+                                           min_occurrences=min_occurrences,
+                                           max_occurrences=max_occurrences) is None
         assert self.mock_data_record.name == name
         assert self.mock_data_record.length == length
         assert self.mock_data_record.children == children
+        assert self.mock_data_record.unit == None
+        assert self.mock_data_record.min_occurrences == min_occurrences
+        assert self.mock_data_record.max_occurrences == max_occurrences
+
+    @pytest.mark.parametrize("name, length, children, unit, min_occurrences, max_occurrences", [
+        ("Some Name", 534, [Mock(), Mock()], "km/h", 0, None),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+    ])
+    def test_init__all_args(self, name, length, children, unit, min_occurrences, max_occurrences):
+        assert AbstractDataRecord.__init__(self.mock_data_record,
+                                           name=name,
+                                           length=length,
+                                           children=children,
+                                           unit=unit,
+                                           min_occurrences=min_occurrences,
+                                           max_occurrences=max_occurrences) is None
+        assert self.mock_data_record.name == name
+        assert self.mock_data_record.length == length
+        assert self.mock_data_record.children == children
+        assert self.mock_data_record.unit == unit
         assert self.mock_data_record.min_occurrences == min_occurrences
         assert self.mock_data_record.max_occurrences == max_occurrences
 
@@ -280,6 +300,35 @@ class TestAbstractDataRecord:
         self.mock_data_record.min_occurrences = min_occurrences
         assert AbstractDataRecord.max_occurrences.fset(self.mock_data_record, value) is None
         self.mock_data_record._AbstractDataRecord__max_occurrences = value
+
+    # unit
+
+    def test_unit__get(self):
+        self.mock_data_record._AbstractDataRecord__unit = Mock()
+        assert AbstractDataRecord.unit.fget(
+            self.mock_data_record) == self.mock_data_record._AbstractDataRecord__unit
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_unit__set__type_error(self, mock_isinstance):
+        mock_isinstance.return_value = False
+        mock_value = Mock()
+        with pytest.raises(TypeError):
+            AbstractDataRecord.unit.fset(self.mock_data_record, mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, str)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_unit__set__valid__none(self, mock_isinstance):
+        assert AbstractDataRecord.unit.fset(self.mock_data_record, None) is None
+        assert self.mock_data_record._AbstractDataRecord__unit is None
+        mock_isinstance.assert_not_called()
+
+    @pytest.mark.parametrize("value", [Mock(), "h"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_unit__set__valid__str(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        assert AbstractDataRecord.unit.fset(self.mock_data_record, value) is None
+        assert self.mock_data_record._AbstractDataRecord__unit == value
+        mock_isinstance.assert_called_once_with(value, str)
 
     # is_reoccurring
 
