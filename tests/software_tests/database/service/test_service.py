@@ -1,6 +1,7 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
+from uds.database.data_record import RawDataRecord, MappingDataRecord, DataRec
 from uds.database.service.service import (
     NRC,
     RESPONSE_REQUEST_SID_DIFF,
@@ -9,7 +10,8 @@ from uds.database.service.service import (
     Service,
     SingleOccurrenceInfo,
     AbstractDataRecord,
-    AbstractConditionalDataRecord
+    AbstractConditionalDataRecord,
+Sequence
 )
 
 SCRIPT_LOCATION = "uds.database.service.service"
@@ -21,8 +23,9 @@ class TestService:
         self.mock_service = Mock(spec=Service,
                                  NEGATIVE_RESPONSE_LENGTH=3)
         # patching
-        self._patcher_conditional_data_record = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord")
-        self.mock_conditional_data_record = self._patcher_conditional_data_record.start()
+        self._patcher_validate_message_continuation \
+            = patch(f"{SCRIPT_LOCATION}.AbstractConditionalDataRecord.validate_message_continuation")
+        self.mock_validate_message_continuation = self._patcher_validate_message_continuation.start()
         self._patcher_request_sid_validate_member = patch(f"{SCRIPT_LOCATION}.RequestSID.validate_member")
         self.mock_request_sid_validate_member = self._patcher_request_sid_validate_member.start()
         self._patcher_response_sid_validate_member = patch(f"{SCRIPT_LOCATION}.ResponseSID.validate_member")
@@ -31,16 +34,27 @@ class TestService:
         self.mock_nrc_validate_member = self._patcher_nrc_validate_member.start()
         self._patcher_validate_raw_bytes = patch(f"{SCRIPT_LOCATION}.validate_raw_bytes")
         self.mock_validate_raw_bytes = self._patcher_validate_raw_bytes.start()
+        self._patcher_int_to_bytes = patch(f"{SCRIPT_LOCATION}.int_to_bytes")
+        self.mock_int_to_bytes = self._patcher_int_to_bytes.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
 
     def teardown_method(self):
-        self._patcher_conditional_data_record.stop()
+        self._patcher_validate_message_continuation.stop()
         self._patcher_request_sid_validate_member.stop()
         self._patcher_response_sid_validate_member.stop()
         self._patcher_nrc_validate_member.stop()
         self._patcher_validate_raw_bytes.stop()
+        self._patcher_int_to_bytes.stop()
         self._patcher_warn.stop()
+
+    @staticmethod
+    def get_data_record_occurrences(**kwargs):
+        if kwargs["value"] is None:
+            return []
+        if isinstance(kwargs["value"], Sequence):
+            return [MagicMock() for _ in kwargs["value"]]
+        return [MagicMock()]
 
     # __init__
 
@@ -178,39 +192,216 @@ class TestService:
                                         children=tuple()))
         self.mock_nrc_validate_member.assert_called_once_with(nrc)
 
+    # _get_data_record_occurrences
+
+    @pytest.mark.parametrize("data_record, value", [
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0xFF),
+         [0x10]),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0x7),
+         None),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
+              min_raw_value=0, max_raw_value=0xFF),
+         0x0),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
+              min_raw_value=0, max_raw_value=0xFF),
+         None),
+    ])
+    def test_get_data_record_occurrences__type_error(self, data_record, value):
+        with pytest.raises(TypeError):
+            Service._get_data_record_occurrences(data_record=data_record, value=value)
+
+    @pytest.mark.parametrize("data_record, value", [
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0xFF),
+         0x100),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0x7),
+         0x8),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
+              min_raw_value=0, max_raw_value=0xFF),
+         [-1, 0]),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
+              min_raw_value=0, max_raw_value=0xF),
+         [0x10, 0, 2]),
+    ])
+    def test_get_data_record_occurrences__value_error(self, data_record, value):
+        with pytest.raises(ValueError):
+            Service._get_data_record_occurrences(data_record=data_record, value=value)
+
+    @pytest.mark.parametrize("data_record, value", [
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
+              min_raw_value=0, max_raw_value=0xFF),
+         []),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0x7),
+         None),
+    ])
+    def test_get_data_record_occurrences__valid__no_occurrences(self, data_record, value):
+        assert Service._get_data_record_occurrences(data_record=data_record, value=value) == []
+
+    @pytest.mark.parametrize("data_record, value", [
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0xFF),
+         0x0),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0x7),
+         0x7),
+    ])
+    def test_get_data_record_occurrences__valid__single_raw_value(self, data_record, value):
+        assert Service._get_data_record_occurrences(data_record=data_record, value=value) == [value]
+
+    @pytest.mark.parametrize("data_record, value", [
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0xFF),
+         {"a": 1, "b": 2}),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
+              min_raw_value=0, max_raw_value=0x7),
+         {"param X": 0x00, "param Y": 0xFF, "123": 654}),
+    ])
+    def test_get_data_record_occurrences__valid__single_mapping(self, data_record, value):
+        assert (Service._get_data_record_occurrences(data_record=data_record, value=value)
+                == [data_record.get_raw_value_from_children.return_value])
+        data_record.get_raw_value_from_children.assert_called_once_with(value)
+
+    @pytest.mark.parametrize("data_record, value", [
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=4, max_occurrences=4,
+              min_raw_value=0, max_raw_value=0xFF),
+         [0xFF, {"param X": 0x00, "param Y": 0xFF, "123": 654}, 0x00, {"param X": 0x1, "param Y": 0x2, "123": 4}]),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=None,
+              min_raw_value=0, max_raw_value=0x7),
+         [0x0, 0x1, 0x7, {"a": 1, "b": 2}, {"a": 1, "b": 2}, {"a": 0, "b": 0}]),
+    ])
+    def test_get_data_record_occurrences__valid__multiple_occurrences(self, data_record, value):
+        expected_value = []
+        expected_calls = []
+        for _value in value:
+            if isinstance(_value, int):
+                expected_value.append(_value)
+            else:
+                expected_value.append(data_record.get_raw_value_from_children.return_value)
+                expected_calls.append(call(_value))
+        assert Service._get_data_record_occurrences(data_record=data_record, value=value) == expected_value
+        data_record.get_raw_value_from_children.assert_has_calls(expected_calls, any_order=False)
+
     # _decode_payload
 
     # TODO
 
     # _encode_message
 
-    @pytest.mark.parametrize("data_records_values, message_structure, payload", [
-        (
-            {"A1": 0xF0, "B2": 0x1E},
-            [Mock(spec=AbstractDataRecord, name="A1", length=8, is_reoccurring=False),
-             Mock(spec=AbstractDataRecord, name="B2", length=8, is_reoccurring=False)],
-            bytearray(b"\xF0\x1E")
-        ),
-        (
-            {"DTC": 0xBEEF07, "Status Bit": [0, 1, 0, 1, 0, 1, 0, 1]},
-            [Mock(spec=AbstractDataRecord, name="DTC", length=24, is_reoccurring=False),
-             Mock(spec=AbstractDataRecord, name="Status Bit", length=1,
-                  is_reoccurring=True, min_occurrences=8, max_occurrences=8)],
-            bytearray(b"\xBE\xEF\x07\x55")
-        ),
+    @pytest.mark.parametrize("message_structure, data_records_values", [
+        ([Mock(name="xyz", length=8)], {"xyz": 1}),
+        ([Mock(spec=AbstractDataRecord, name="Param 1", length=8),
+          Mock(name="Param 2", length=1)], {"Param 1": 0, "Param 2": 0}),
     ])
-    def test_encode_message__valid__without_condition(self, data_records_values, message_structure, payload):
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__not_implemented(self, mock_get_data_record_occurrences,
+                                             message_structure, data_records_values):
+        mock_get_data_record_occurrences.return_value = [0]
+        for data_record in message_structure:
+            data_record.name = data_record._extract_mock_name()
+        with pytest.raises(NotImplementedError):
+            Service._encode_message(data_records_values=data_records_values,
+                                    message_structure=message_structure)
+
+    @pytest.mark.parametrize("message_structure, data_records_values", [
+        ([Mock(spec=AbstractDataRecord, name="Param 1", length=7)],
+         {"Param 1": 0}),
+        ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=7),
+          Mock(spec=AbstractDataRecord, name="Data Record - 2", length=3)],
+         {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
+                              0,
+                              {"Data Record - 1.1": 9, "Data Record - 1.2": {"A": 1, "B": 2}}],
+          "Data Record - 2": [{"Data Record - 2.1": 0, "Data Record - 2.2": 2}, 0]}),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__runtime_error(self, mock_get_data_record_occurrences,
+                                                 message_structure, data_records_values):
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
+        for data_record in message_structure:
+            data_record.name = data_record._extract_mock_name()
+        with pytest.raises(RuntimeError):
+            Service._encode_message(data_records_values=data_records_values,
+                                    message_structure=message_structure)
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
+                                                           for dr in message_structure], any_order=False)
+        self.mock_int_to_bytes.assert_not_called()
+
+    @pytest.mark.parametrize("message_structure, data_records_values, payload", [
+        ([Mock(spec=AbstractDataRecord, name="Param 1", length=8)],
+         {"Param 1": 0},
+         b"\x92\x8B\x7A\xDC"),
+        ([Mock(spec=AbstractDataRecord, name="XYZ", length=24)],
+         {"XYZ": {"Child 1": 1, "Child 2": 2, "Child 3": 0}},
+         b"\xCA\xFE"),
+        ([Mock(spec=AbstractDataRecord, name="A #1", length=1),
+          Mock(spec=AbstractDataRecord, name="A #2", length=2)],
+         {"A #1": [0, 1, 0, 1], "A #2": [0x3, 0x0]},
+         b"\xBE\xEF"),
+        ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=7),
+          Mock(spec=AbstractDataRecord, name="Data Record - 2", length=3)],
+         {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
+                              0,
+                              {"Data Record - 1.1": 9, "Data Record - 1.2": {"A": 1, "B": 2}}],
+          "Data Record - 2": [{"Data Record - 2.1": 0, "Data Record - 2.2": 2}]},
+         [0xCa, 0xFF, 0xE, 0x56]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__valid__no_condition(self, mock_get_data_record_occurrences,
+                                                 message_structure, data_records_values,
+                                                 payload):
+        self.mock_int_to_bytes.return_value = payload
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
         for data_record in message_structure:
             data_record.name = data_record._extract_mock_name()
         assert Service._encode_message(data_records_values=data_records_values,
-                                       message_structure=message_structure) == payload
+                                       message_structure=message_structure) == bytearray(payload)
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
+                                                           for dr in message_structure], any_order=False)
+        self.mock_int_to_bytes.assert_called_once()
+
+    @pytest.mark.parametrize("message_structure, data_records_values, message_continuation, payload", [
+        ([Mock(spec=AbstractDataRecord, name="A #1", length=2),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {"A #1": [0, 1, 0, 1], "A #2": [0x3, 0x0]},
+         [Mock(spec=AbstractDataRecord, name="A #2", length=4)],
+         b"\xBE\xEF"),
+        ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=8),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
+                              0,
+                              {"Data Record - 1.1": 9, "Data Record - 1.2": {"A": 1, "B": 2}}],
+          "Data Record - 2": [{"Data Record - 2.1": 0, "Data Record - 2.2": 2}]},
+         [Mock(spec=AbstractDataRecord, name="Data Record - 2", length=24)],
+         [0xCa, 0xFF, 0xE, 0x56]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__valid__with_condition(self, mock_get_data_record_occurrences,
+                                                   message_structure, data_records_values,
+                                                   message_continuation, payload):
+        self.mock_int_to_bytes.return_value = payload
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
+        for data_record in message_structure + message_continuation:
+            data_record.name = data_record._extract_mock_name()
+        mock_get_message_continuation = Mock(return_value=message_continuation)
+        message_structure[-1].get_message_continuation = mock_get_message_continuation
+        assert Service._encode_message(data_records_values=data_records_values,
+                                       message_structure=message_structure) == bytearray(payload + payload)
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
+                                                           for dr in message_structure + message_continuation
+                                                           if isinstance(dr, AbstractDataRecord)],
+                                                          any_order=False)
+        self.mock_int_to_bytes.assert_called()
+        mock_get_message_continuation.assert_called_once()
 
     # validate_message_structure
 
     @pytest.mark.parametrize("value", [Mock(), []])
     def test_validate_message_structure(self, value):
         assert Service.validate_message_structure(value) is None
-        self.mock_conditional_data_record.validate_message_continuation.assert_called_once_with(value)
+        self.mock_validate_message_continuation.assert_called_once_with(value)
 
     # decode_request
 
@@ -407,3 +598,35 @@ class TestService:
             Service.encode(self.mock_service,
                            sid=sid,
                            data_records_values=data_records_values)
+
+
+@pytest.mark.integration
+class TestServiceIntegration:
+    """Integration tests for `Service` class."""
+
+    def setup_class(self):
+        self.diagnostic_session_control = Service(
+            request_sid=RequestSID.DiagnosticSessionControl,
+            request_structure=[
+                RawDataRecord(name="subFunction",
+                              children=[MappingDataRecord(name="SPRMIB",
+                                                          length=1,
+                                                          values_mapping={0: "no", 1: "yes"}),
+                                        MappingDataRecord(name="diagnosticSessionType",
+                                                          length=7,
+                                                          values_mapping={1: "Default",
+                                                                          2: "Programming",
+                                                                          3: "Extended"})])],
+            response_structure=[
+                RawDataRecord(name="subFunction",
+                              children=[MappingDataRecord(name="SPRMIB",
+                                                          length=1,
+                                                          values_mapping={0: "no", 1: "yes"}),
+                                        MappingDataRecord(name="diagnosticSessionType",
+                                                          length=7,
+                                                          values_mapping={1: "Default",
+                                                                          2: "Programming",
+                                                                          3: "Extended"})]),
+                FormulaData
+            ]
+        )

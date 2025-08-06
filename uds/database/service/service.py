@@ -20,7 +20,7 @@ from ..data_record import (
     ChildrenValuesAlias
 )
 
-DataRecordValueAlias = Optional[int, ChildrenValuesAlias, Sequence[Union[int, ChildrenValuesAlias]]]
+DataRecordValueAlias = Optional[Union[int, ChildrenValuesAlias, Sequence[Union[int, ChildrenValuesAlias]]]]
 """Alias for Data Record value that can be used in the Data Records Mapping.
 For a single occurrence Data Records (is_reoccurring=False) it is either a raw value (int type), None (no occurrence)
 or a mapping with children values.
@@ -179,43 +179,63 @@ class Service:
                                     children=tuple())
 
     @staticmethod
-    def _extract_data_record_occurrences(data_record: AbstractDataRecord,
-                                         value: DataRecordValueAlias) -> Sequence[int]:  # TODO
+    def _get_data_record_occurrences(data_record: AbstractDataRecord,
+                                     value: DataRecordValueAlias) -> List[int]:
+        """
+        Get raw values of all occurrences provided as value.
+
+        :param data_record: Data Record object.
+        :param value: Data Record values. Either for a single occurrence or multiple occurrences.
+            Each occurrence might be a raw value or mapping with children values.
+
+        :raise TypeError: Provided value has incorrect type that cannot be handled for the provided Data Record.
+        :raise ValueError: Provided value is incorrect.
+
+        :return: Raw values for following Data Record occurrences.
+        """
+        raw_values: List[int] = []
         if data_record.is_reoccurring:
-            if not isinstance(data_record_value, Sequence):
-                raise ValueError("A sequence of values has to be provided for a reoccurring Data Record. "
+            if not isinstance(value, Sequence):
+                raise TypeError("A sequence of values has to be provided for a reoccurring Data Record. "
                                  f"Data Record name = {data_record.name}.")
-            if not data_record.min_occurrences <= len(data_record_value) <= data_record.max_occurrences:
+            if len(value) < data_record.min_occurrences or len(value) > (data_record.max_raw_value or float("inf")):
                 raise ValueError("A sequence of values has to contain proper number of Data Record occurrences."
                                  f"Data Record name = {data_record.name}. "
                                  f"Data Record min occurrences number = {data_record.min_occurrences}. "
                                  f"Data Record max occurrences number = {data_record.max_occurrences}. "
-                                 f"Provided sequence = {data_record_value}.")
-            raw_values = []
-            for occurrence_value in data_record_value:
+                                 f"Provided sequence = {value}.")
+            for occurrence_value in value:
                 if isinstance(occurrence_value, int):
+                    if not data_record.min_raw_value <= occurrence_value <= data_record.max_raw_value:
+                        raise ValueError("Provided occurrence value is out of range. "
+                                         f"Data Record name = {data_record.name}. "
+                                         f"Data Record min raw value = {data_record.min_raw_value}. "
+                                         f"Data Record max raw value = {data_record.max_occurrences}. "
+                                         f"Provided sequence = {value}. Occurrence value = {occurrence_value}.")
                     raw_values.append(occurrence_value)
                 elif isinstance(occurrence_value, Mapping):
                     raw_values.append(data_record.get_raw_value_from_children(occurrence_value))
                 else:
-                    raise ValueError("Incorrect value was provided one of Multiple Occurrences Data Record. "
-                                     f"Data Record name = {data_record.name}. "
-                                     f"Provided values = {data_record_value}. "
-                                     f"Faulty occurrence value = {occurrence_value}.")
-            for raw_value in raw_values:
-                total_raw_value = (total_raw_value << data_record.length) + raw_value
-                total_length += data_record.length
+                    raise ValueError("Incorrect value was provided for at least one occurrence of a Multi Occurrences "
+                                     f"Data Record. Data Record name = {data_record.name}. "
+                                     f"Provided values = {value}. Incorrect occurrence = {occurrence_value}.")
         else:
-            if isinstance(data_record_value, int):
-                raw_value = data_record_value
-            elif isinstance(data_record_value, Mapping):
-                raw_value = [data_record.get_raw_value_from_children(data_record_value)]
+            if value is None and data_record.min_occurrences == 0:
+                pass
+            elif isinstance(value, int):
+                if not data_record.min_raw_value <= value <= data_record.max_raw_value:
+                    raise ValueError("Provided occurrence value is out of range. "
+                                     f"Data Record name = {data_record.name}. "
+                                     f"Data Record min raw value = {data_record.min_raw_value}. "
+                                     f"Data Record max raw value = {data_record.max_occurrences}. "
+                                     f"Provided sequence = {value}. Occurrence value = {value}.")
+                raw_values.append(value)
+            elif isinstance(value, Mapping):
+                raw_values.append(data_record.get_raw_value_from_children(value))
             else:
-                raise ValueError(f"Incorrect value was provided for Single Occurrence Data Record. "
-                                 f"Data Record name = {data_record.name}. "
-                                 f"Provided value = {data_record_value}.")
-            total_raw_value = (total_raw_value << data_record.length) + raw_value
-            total_length += data_record.length
+                raise TypeError(f"Incorrect value was provided for a Single Occurrence Data Record. "
+                                 f"Data Record name = {data_record.name}. Provided value = {value}.")
+        return raw_values
 
     @staticmethod
     def _decode_payload(payload: RawBytesAlias,
@@ -226,8 +246,6 @@ class Service:
             if isinstance(data_record, AbstractConditionalDataRecord):
                 ...
         # TODO
-
-
 
     @classmethod
     def _encode_message(cls,
@@ -243,30 +261,31 @@ class Service:
         :param message_structure: Data Records that form the remaining structure of the diagnostic message.
 
         :raise RuntimeError: An error occurred which was caused by incorrect message structure.
-        :raise ValueError: Provided Data Records values are incorrect.
         :raise NotImplementedError: There is missing implementation for at least one Data Record in the provided
             message structure.
 
         :return: Payload of a diagnostic message created from provided data records values.
         """
         data_records_values = dict(deepcopy(data_records_values))
+        payload_continuation = bytearray()
         total_raw_value = 0
         total_length = 0
-        payload_continuation = bytearray()
+        occurrences = []
         for data_record in message_structure:
-            raw_value: int
             if isinstance(data_record, AbstractDataRecord):
                 data_record_value = data_records_values.pop(data_record.name)
-                occurrences = cls._extract_data_record_occurrences(data_record=data_record,
-                                                                   value=data_record_value)
+                occurrences = cls._get_data_record_occurrences(data_record=data_record,
+                                                               value=data_record_value)
                 for raw_value in occurrences:
                     total_raw_value = (total_raw_value << data_record.length) + raw_value
                     total_length += data_record.length
             elif isinstance(data_record, AbstractConditionalDataRecord):
+                if not occurrences:
+                    # stop processing if the proceeding Data Record was empty (that means message is over)
+                    break
                 message_continuation = data_record.get_message_continuation(raw_value=raw_value)
                 payload_continuation = cls._encode_message(data_records_values=data_records_values,
                                                            message_structure=message_continuation)
-                break  # conditional data record must be the last one anyway
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if total_length % 8 != 0:

@@ -41,7 +41,7 @@ pep257:
 mccabe:
   run: true
   options:
-    max-complexity: 15
+    max-complexity: 12
 
 
 # additional tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#optional-extras
