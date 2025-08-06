@@ -168,12 +168,21 @@ class TestService:
 
     # _get_rsid_info
 
-    def test_get_rsid_info(self):
+    def test_get_rsid_info__positive(self):
         assert (Service._get_rsid_info(self.mock_service)
                 == SingleOccurrenceInfo(name="RSID",
                                         length=8,
                                         raw_value=self.mock_service.response_sid.value,
                                         physical_value=self.mock_service.response_sid.name,
+                                        children=tuple(),
+                                        unit=None))
+
+    def test_get_rsid_info__negative(self):
+        assert (Service._get_rsid_info(self.mock_service, positive=False)
+                == SingleOccurrenceInfo(name="RSID",
+                                        length=8,
+                                        raw_value=ResponseSID.NegativeResponse.value,
+                                        physical_value=ResponseSID.NegativeResponse.name,
                                         children=tuple(),
                                         unit=None))
 
@@ -849,3 +858,90 @@ class TestServiceIntegration:
     ])
     def test_decode_1(self, payload, decoded_message):
         assert self.diagnostic_session_control.decode(payload=payload) == decoded_message
+
+    @pytest.mark.parametrize("payload, decoded_message", [
+        (
+            bytearray([0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03]),
+            (
+                SingleOccurrenceInfo(name="SID",
+                                     length=8,
+                                     raw_value=0x23,
+                                     physical_value="ReadMemoryByAddress",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="addressAndLengthFormatIdentifier",
+                                     length=8,
+                                     raw_value=0x24,
+                                     physical_value=0x24,
+                                     children=(
+                                         SingleOccurrenceInfo(name="memorySizeLength",
+                                                              length=4,
+                                                              raw_value=0x2,
+                                                              physical_value=0x2,
+                                                              children=tuple(),
+                                                              unit=None),
+                                         SingleOccurrenceInfo(name="memoryAddressLength",
+                                                              length=4,
+                                                              raw_value=0x4,
+                                                              physical_value=0x4,
+                                                              children=tuple(),
+                                                              unit=None),
+                                     ),
+                                     unit=None),
+                SingleOccurrenceInfo(name="memoryAddress",
+                                     length=32,
+                                     raw_value=0x20481392,
+                                     physical_value=0x20481392,
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="memorySize",
+                                     length=16,
+                                     raw_value=0x0103,
+                                     physical_value=0x0103,
+                                     children=tuple(),
+                                     unit=None),
+            )
+        ),
+        (
+            bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F"),
+            (
+                SingleOccurrenceInfo(name="RSID",
+                                     length=8,
+                                     raw_value=0x63,
+                                     physical_value="ReadMemoryByAddress",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="data",
+                                     length=8,
+                                     raw_value=[0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
+                                     physical_value=(0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F),
+                                     children=[tuple()] * 16,
+                                     unit=None),
+            )
+        ),
+        (
+            bytearray([0x7F, 0x23, 0x7F]),
+            (
+                SingleOccurrenceInfo(name="RSID",
+                                     length=8,
+                                     raw_value=0x7F,
+                                     physical_value="NegativeResponse",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="SID",
+                                     length=8,
+                                     raw_value=0x23,
+                                     physical_value="ReadMemoryByAddress",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="NRC",
+                                     length=8,
+                                     raw_value=0x7F,
+                                     physical_value="ServiceNotSupportedInActiveSession",
+                                     children=tuple(),
+                                     unit=None),
+            )
+        ),
+    ])
+    def test_decode_2(self, payload, decoded_message):
+        assert self.read_memory_by_address.decode(payload=payload) == decoded_message

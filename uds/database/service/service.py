@@ -7,7 +7,7 @@ from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Un
 from warnings import warn
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.utilities import Endianness, RawBytesAlias, int_to_bytes, validate_raw_bytes
+from uds.utilities import Endianness, RawBytesAlias, int_to_bytes, validate_raw_bytes, bytes_to_int
 
 from ..data_record import (
     AbstractConditionalDataRecord,
@@ -245,15 +245,48 @@ class Service:
                                  f"Data Record name = {data_record.name}. Provided value = {value}.")
         return raw_values
 
-    @staticmethod
-    def _decode_payload(payload: RawBytesAlias,
+    @classmethod
+    def _decode_payload(cls,
+                        payload: RawBytesAlias,
                         message_continuation: AliasMessageStructure) -> DecodedMessageAlias:
         decoded_message_continuation = []
-        remaining_payload = bytearray(payload)
+        remaining_length = 8 * len(payload)
+        payload_int = bytes_to_int(bytes_list=payload, endianness=Endianness.BIG_ENDIAN)
+        raw_values = []
         for data_record in message_continuation:
-            if isinstance(data_record, AbstractConditionalDataRecord):
-                ...
-        # TODO
+            if isinstance(data_record, AbstractDataRecord):
+                max_occurrences_number = remaining_length // data_record.length
+                occurrences_number = min(max_occurrences_number, data_record.max_occurrences or float("inf"))
+                if occurrences_number < data_record.min_occurrences:
+                    raise ValueError("Too short payload was provided.")
+                raw_values = []
+                for occurrence_index in range(occurrences_number):
+                    remaining_length -= data_record.length
+                    mask = (1 << data_record.length) - 1
+                    occurrence_value = (payload_int >> remaining_length) & mask
+                    raw_values.append(occurrence_value)
+                if data_record.min_occurrences == 0 and not raw_values:
+                    # an information that this is the end of the message
+                    break
+                else:
+                    decoded_message_continuation.append(data_record.get_occurrence_info(*raw_values))
+            elif isinstance(data_record, AbstractConditionalDataRecord):
+                if remaining_length % 8 != 0:
+                    raise RuntimeError("Incorrect Data Records structure.")
+                bytes_number = remaining_length // 8
+                remaining_payload = payload_int & ((1 << remaining_length) - 1)
+                conditional_message_continuation = data_record.get_message_continuation(raw_value=raw_values[-1])
+                remaining_payload = int_to_bytes(int_value=remaining_payload,
+                                                 endianness=Endianness.BIG_ENDIAN,
+                                                 size=bytes_number)
+                return tuple(decoded_message_continuation) + cls._decode_payload(
+                    payload=remaining_payload, message_continuation=conditional_message_continuation)
+            else:
+                raise NotImplementedError
+        if remaining_length != 0:
+            raise RuntimeError
+        return tuple(decoded_message_continuation)
+
 
     @classmethod
     def _encode_message(cls,
@@ -342,7 +375,7 @@ class Service:
         if payload[0] != self.response_sid:
             raise ValueError("Provided payload does not start from RSID value for this service.")
         decoded_message_continuation = self._decode_payload(payload=payload[1:],
-                                                            message_continuation=self.request_structure)
+                                                            message_continuation=self.response_structure)
         return self._get_rsid_info(), *decoded_message_continuation
 
     def decode_negative_response(self, payload: RawBytesAlias) -> DecodedMessageAlias:
