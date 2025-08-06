@@ -1,17 +1,23 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record import RawDataRecord, MappingDataRecord, DataRec
+from uds.database.data_record import (
+    ConditionalFormulaDataRecord,
+    LinearFormulaDataRecord,
+    MappingDataRecord,
+    MultipleOccurrencesInfo,
+    RawDataRecord,
+)
 from uds.database.service.service import (
     NRC,
     RESPONSE_REQUEST_SID_DIFF,
+    AbstractConditionalDataRecord,
+    AbstractDataRecord,
     RequestSID,
     ResponseSID,
+    Sequence,
     Service,
     SingleOccurrenceInfo,
-    AbstractDataRecord,
-    AbstractConditionalDataRecord,
-Sequence
 )
 
 SCRIPT_LOCATION = "uds.database.service.service"
@@ -168,7 +174,8 @@ class TestService:
                                         length=8,
                                         raw_value=self.mock_service.response_sid.value,
                                         physical_value=self.mock_service.response_sid.name,
-                                        children=tuple()))
+                                        children=tuple(),
+                                        unit=None))
 
     # _get_sid_info
 
@@ -178,7 +185,8 @@ class TestService:
                                         length=8,
                                         raw_value=self.mock_service.request_sid.value,
                                         physical_value=self.mock_service.request_sid.name,
-                                        children=tuple()))
+                                        children=tuple(),
+                                        unit=None))
 
     # _get_nrc_info
 
@@ -189,7 +197,8 @@ class TestService:
                                         length=8,
                                         raw_value=self.mock_nrc_validate_member.return_value.value,
                                         physical_value=self.mock_nrc_validate_member.return_value.name,
-                                        children=tuple()))
+                                        children=tuple(),
+                                        unit=None))
         self.mock_nrc_validate_member.assert_called_once_with(nrc)
 
     # _get_data_record_occurrences
@@ -471,6 +480,7 @@ class TestService:
                     self.mock_service._get_nrc_info.return_value))
         self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
         self.mock_warn.assert_not_called()
+        self.mock_service._get_rsid_info.assert_called_once_with(positive=False)
 
     @pytest.mark.parametrize("payload", [b"\x7F\x12\x34", [0x7F, 0x65, 0x8A]])
     def test_decode_negative_response__valid__warning(self, payload):
@@ -482,6 +492,7 @@ class TestService:
                     self.mock_service._get_nrc_info.return_value))
         self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
         self.mock_warn.assert_called_once()
+        self.mock_service._get_rsid_info.assert_called_once_with(positive=False)
 
     # decode
 
@@ -521,7 +532,7 @@ class TestService:
         assert (Service.encode_request(self.mock_service, data_records_values=data_records_values)
                 == bytearray([request_sid]) + payload_continuation)
         self.mock_service._encode_message.assert_called_once_with(
-            message_structure=self.mock_service.response_structure,
+            message_structure=self.mock_service.request_structure,
             data_records_values=data_records_values)
 
     # encode_positive_response
@@ -609,24 +620,232 @@ class TestServiceIntegration:
             request_sid=RequestSID.DiagnosticSessionControl,
             request_structure=[
                 RawDataRecord(name="subFunction",
-                              children=[MappingDataRecord(name="SPRMIB",
-                                                          length=1,
-                                                          values_mapping={0: "no", 1: "yes"}),
-                                        MappingDataRecord(name="diagnosticSessionType",
-                                                          length=7,
-                                                          values_mapping={1: "Default",
-                                                                          2: "Programming",
-                                                                          3: "Extended"})])],
+                              length=8,
+                              children=[
+                                  MappingDataRecord(name="SPRMIB",
+                                                    length=1,
+                                                    values_mapping={0: "no", 1: "yes"}),
+                                  MappingDataRecord(name="diagnosticSessionType",
+                                                    length=7,
+                                                    values_mapping={1: "Default",
+                                                                    2: "Programming",
+                                                                    3: "Extended"})
+                              ])
+            ],
             response_structure=[
                 RawDataRecord(name="subFunction",
-                              children=[MappingDataRecord(name="SPRMIB",
-                                                          length=1,
-                                                          values_mapping={0: "no", 1: "yes"}),
-                                        MappingDataRecord(name="diagnosticSessionType",
-                                                          length=7,
-                                                          values_mapping={1: "Default",
-                                                                          2: "Programming",
-                                                                          3: "Extended"})]),
-                FormulaData
+                              length=8,
+                              children=[
+                                  MappingDataRecord(name="SPRMIB",
+                                                    length=1,
+                                                    values_mapping={0: "no", 1: "yes"}),
+                                  MappingDataRecord(name="diagnosticSessionType",
+                                                    length=7,
+                                                    values_mapping={1: "Default",
+                                                                    2: "Programming",
+                                                                    3: "Extended"})
+                              ]),
+                RawDataRecord(name="sessionParameterRecord",
+                              length=32,
+                              children=[
+                                  LinearFormulaDataRecord(name="P2Server_max",
+                                                          length=16,
+                                                          factor=1,
+                                                          offset=0,
+                                                          unit="ms"),
+                                  LinearFormulaDataRecord(name="P2*Server_max",
+                                                          length=16,
+                                                          factor=10,
+                                                          offset=0,
+                                                          unit="ms")
+                              ])
             ]
         )
+        self.read_memory_by_address = Service(
+            request_sid=RequestSID.ReadMemoryByAddress,
+            request_structure=[
+                RawDataRecord(name="addressAndLengthFormatIdentifier",
+                              length=8,
+                              children=[
+                                  RawDataRecord(name="memorySizeLength",
+                                                length=4),
+                                  RawDataRecord(name="memoryAddressLength",
+                                                length=4)
+                              ]),
+                ConditionalFormulaDataRecord(
+                    formula=lambda addressAndLengthFormatIdentifier: [
+                        RawDataRecord(name="memoryAddress", length=8*(addressAndLengthFormatIdentifier & 0xF)),
+                        RawDataRecord(name="memorySize", length=8*(addressAndLengthFormatIdentifier >> 4))
+                    ]
+                )
+            ],
+            response_structure=[
+                RawDataRecord(name="data",
+                              length=8,
+                              min_occurrences=1,
+                              max_occurrences=None)
+            ]
+        )
+
+    # encode
+
+    @pytest.mark.parametrize("sid, data_records_values, payload", [
+        (
+            0x10,
+            {"subFunction": 0x40},
+            bytearray([0x10, 0x40])
+        ),
+        (
+            0x50,
+            {
+                "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
+                "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678}
+            },
+            bytearray([0x50, 0x83, 0x12, 0x34, 0x56, 0x78])
+        ),
+        (
+            0x7F,
+            {"nrc": 0x84},
+            bytearray([0x7F, 0x10, 0x84])
+        ),
+    ])
+    def test_encode_1(self, sid, data_records_values, payload):
+        assert self.diagnostic_session_control.encode(sid=sid, data_records_values=data_records_values) == payload
+
+    @pytest.mark.parametrize("sid, data_records_values, payload", [
+        (
+            RequestSID.ReadMemoryByAddress,
+            {
+                "addressAndLengthFormatIdentifier": 0x24,
+                "memoryAddress": 0x20481392,
+                "memorySize": 0x0103
+            },
+            bytearray([0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03])
+        ),
+        (
+            ResponseSID.ReadMemoryByAddress,
+            {
+                "addressAndLengthFormatIdentifier": 0x24,
+                "data": [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
+            },
+            bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F")
+        ),
+        (
+            ResponseSID.NegativeResponse,
+            {
+                "nrc": NRC.ServiceNotSupportedInActiveSession
+            },
+            bytearray([0x7F, 0x23, 0x7F])
+        )
+    ])
+    def test_encode_2(self, sid, data_records_values, payload):
+        assert self.read_memory_by_address.encode(sid=sid, data_records_values=data_records_values) == payload
+
+    # decode
+
+    @pytest.mark.parametrize("payload, decoded_message", [
+        (
+            bytearray([0x10, 0x40]),
+            (
+                SingleOccurrenceInfo(name="SID",
+                                     length=8,
+                                     raw_value=0x10,
+                                     physical_value="DiagnosticSessionControl",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="subFunction",
+                                     length=8,
+                                     raw_value=0x40,
+                                     physical_value=0x40,
+                                     children=(
+                                         SingleOccurrenceInfo(name="SPRMIB",
+                                                              length=1,
+                                                              raw_value=0,
+                                                              physical_value="no",
+                                                              children=tuple(),
+                                                              unit=None),
+                                         SingleOccurrenceInfo(name="diagnosticSessionType",
+                                                              length=7,
+                                                              raw_value=0x40,
+                                                              physical_value=0x40,
+                                                              children=tuple(),
+                                                              unit=None),
+                                     ),
+                                     unit=None),
+            )
+        ),
+        (
+            bytearray([0x50, 0x83, 0x12, 0x34, 0x56, 0x78]),
+            (
+                SingleOccurrenceInfo(name="RSID",
+                                     length=8,
+                                     raw_value=0x50,
+                                     physical_value="DiagnosticSessionControl",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="subFunction",
+                                     length=8,
+                                     raw_value=0x83,
+                                     physical_value=0x83,
+                                     children=(
+                                             SingleOccurrenceInfo(name="SPRMIB",
+                                                                  length=1,
+                                                                  raw_value=1,
+                                                                  physical_value="yes",
+                                                                  children=tuple(),
+                                                                  unit=None),
+                                             SingleOccurrenceInfo(name="diagnosticSessionType",
+                                                                  length=7,
+                                                                  raw_value=0x03,
+                                                                  physical_value="Extended",
+                                                                  children=tuple(),
+                                                                  unit=None),
+                                     ),
+                                     unit=None),
+                SingleOccurrenceInfo(name="sessionParameterRecord",
+                                     length=32,
+                                     raw_value=0x12345678,
+                                     physical_value=0x12345678,
+                                     children=(
+                                             SingleOccurrenceInfo(name="P2Server_max",
+                                                                  length=16,
+                                                                  raw_value=0x1234,
+                                                                  physical_value=0x1234,
+                                                                  children=tuple(),
+                                                                  unit="ms"),
+                                             SingleOccurrenceInfo(name="P2*Server_max",
+                                                                  length=16,
+                                                                  raw_value=0x5678,
+                                                                  physical_value=0x5678 * 10,
+                                                                  children=tuple(),
+                                                                  unit="ms"),
+                                     ),
+                                     unit=None)
+            )
+        ),
+        (
+            bytearray([0x7F, 0x10, 0x84]),
+            (
+                SingleOccurrenceInfo(name="RSID",
+                                     length=8,
+                                     raw_value=0x7F,
+                                     physical_value="NegativeResponse",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="SID",
+                                     length=8,
+                                     raw_value=0x10,
+                                     physical_value="DiagnosticSessionControl",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="NRC",
+                                     length=8,
+                                     raw_value=0x84,
+                                     physical_value="EngineIsNotRunning",
+                                     children=tuple(),
+                                     unit=None),
+            )
+        ),
+    ])
+    def test_decode_1(self, payload, decoded_message):
+        assert self.diagnostic_session_control.decode(payload=payload) == decoded_message

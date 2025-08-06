@@ -1,23 +1,21 @@
 """Definition of UDS Service data encoding and decoding."""
 
-__all__ = ["Service", "DataRecordValuesAlias", "DecodedMessageAlias"]
+__all__ = ["Service", "DataRecordsValuesAlias", "DecodedMessageAlias"]
 
-from typing import Collection, List, Mapping, Optional, OrderedDict, Sequence, Set, Tuple, Union
-from warnings import warn
 from copy import deepcopy
+from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from warnings import warn
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_bytes, int_to_bytes, Endianness
+from uds.utilities import Endianness, RawBytesAlias, int_to_bytes, validate_raw_bytes
 
 from ..data_record import (
-    DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
     AliasMessageStructure,
+    ChildrenValuesAlias,
     DataRecordInfoAlias,
-    PhysicalValueAlias,
     SingleOccurrenceInfo,
-    ChildrenValuesAlias
 )
 
 DataRecordValueAlias = Optional[Union[int, ChildrenValuesAlias, Sequence[Union[int, ChildrenValuesAlias]]]]
@@ -146,13 +144,21 @@ class Service:
         """Get name of this service."""
         return self.request_sid.name
 
-    def _get_rsid_info(self) -> SingleOccurrenceInfo:
-        """Get detailed information about Response Service Identifier."""
+    def _get_rsid_info(self, positive: bool = True) -> SingleOccurrenceInfo:
+        """
+        Get detailed information about Response Service Identifier.
+
+        :param positive: RSID is for positive or negative response message.
+
+        :return: Detailed information about RSID value.
+        """
+        rsid = self.response_sid if positive else ResponseSID.NegativeResponse
         return SingleOccurrenceInfo(name="RSID",
                                     length=8,
-                                    raw_value=self.response_sid.value,
-                                    physical_value=self.response_sid.name,
-                                    children=tuple())
+                                    raw_value=rsid.value,
+                                    physical_value=rsid.name,
+                                    children=tuple(),
+                                    unit=None)
 
     def _get_sid_info(self) -> SingleOccurrenceInfo:
         """Get detailed information about Service Identifier."""
@@ -160,7 +166,8 @@ class Service:
                                     length=8,
                                     raw_value=self.request_sid.value,
                                     physical_value=self.request_sid.name,
-                                    children=tuple())
+                                    children=tuple(),
+                                    unit=None)
 
     @staticmethod
     def _get_nrc_info(nrc: NRC) -> SingleOccurrenceInfo:
@@ -176,7 +183,8 @@ class Service:
                                     length=8,
                                     raw_value=nrc.value,
                                     physical_value=nrc.name,
-                                    children=tuple())
+                                    children=tuple(),
+                                    unit=None)
 
     @staticmethod
     def _get_data_record_occurrences(data_record: AbstractDataRecord,
@@ -360,7 +368,7 @@ class Service:
         if nrc not in self.supported_nrc:
             warn(message=f"Received NRC code `0x{nrc:02X}` that is not supported by {self.name} service.",
                  category=UserWarning)
-        return self._get_rsid_info(), self._get_sid_info(), self._get_nrc_info(NRC(nrc))
+        return self._get_rsid_info(positive=False), self._get_sid_info(), self._get_nrc_info(NRC(nrc))
 
     def decode(self, payload: RawBytesAlias) -> DecodedMessageAlias:
         """
@@ -393,7 +401,7 @@ class Service:
         """
         return (bytearray([self.request_sid])
                 + self._encode_message(data_records_values=data_records_values,
-                                       message_structure=self.response_structure))
+                                       message_structure=self.request_structure))
 
     def encode_positive_response(self, data_records_values: DataRecordsValuesAlias) -> bytearray:
         """
