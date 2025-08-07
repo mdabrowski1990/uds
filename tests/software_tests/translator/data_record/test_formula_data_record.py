@@ -1,9 +1,9 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record.formula_data_record import CustomFormulaDataRecord, LinearFormulaDataRecord
+from uds.translator.data_record.formula_data_record import CustomFormulaDataRecord, LinearFormulaDataRecord
 
-SCRIPT_LOCATION = "uds.database.data_record.formula_data_record"
+SCRIPT_LOCATION = "uds.translator.data_record.formula_data_record"
 
 
 class TestLinearFormulaDataRecord:

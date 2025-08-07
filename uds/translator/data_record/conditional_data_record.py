@@ -113,7 +113,7 @@ class AbstractConditionalDataRecord(ABC):
                 else:
                     names.add(data_record.name)
                 if not data_record.fixed_total_length:
-                    if i != len(value) - 1:
+                    if data_record.max_occurrences != 1 and i != len(value) - 1:
                         raise ValueError("Data record with varying length can only be placed at the end of "
                                          "the message structure.")
                 min_total_length += data_record.length * data_record.min_occurrences

@@ -168,7 +168,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         Encoding and decoding formulas compatibility is not performed - it is user's responsibility to make sure
         the formulas are working correctly.
 
-    .. seealso:: :class:`~uds.database.data_record.formula_data_record.LinearFormulaDataRecord` for simple linear
+    .. seealso:: :class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` for simple linear
         transformations.
     """
 

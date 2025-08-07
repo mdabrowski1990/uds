@@ -3,8 +3,8 @@ from operator import getitem
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record import RawDataRecord, TextDataRecord, TextEncoding
-from uds.database.data_record.conditional_data_record import (
+from uds.translator.data_record import RawDataRecord, TextDataRecord, TextEncoding
+from uds.translator.data_record.conditional_data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
@@ -17,7 +17,7 @@ from uds.database.data_record.conditional_data_record import (
 )
 from uds.utilities import InconsistentArgumentsError
 
-SCRIPT_LOCATION = "uds.database.data_record.conditional_data_record"
+SCRIPT_LOCATION = "uds.translator.data_record.conditional_data_record"
 
 
 class TestAbstractConditionalDataRecord:

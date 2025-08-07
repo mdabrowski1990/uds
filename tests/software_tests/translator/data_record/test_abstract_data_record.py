@@ -1,7 +1,7 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record.abstract_data_record import (
+from uds.translator.data_record.abstract_data_record import (
     AbstractDataRecord,
     InconsistentArgumentsError,
     Mapping,
@@ -10,7 +10,7 @@ from uds.database.data_record.abstract_data_record import (
     Sequence,
 )
 
-SCRIPT_LOCATION = "uds.database.data_record.abstract_data_record"
+SCRIPT_LOCATION = "uds.translator.data_record.abstract_data_record"
 
 
 class TestAbstractDataRecord:

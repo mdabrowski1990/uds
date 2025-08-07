@@ -7,7 +7,7 @@ from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Un
 from warnings import warn
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.utilities import Endianness, RawBytesAlias, int_to_bytes, validate_raw_bytes, bytes_to_int
+from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
 from ..data_record import (
     AbstractConditionalDataRecord,
@@ -206,7 +206,7 @@ class Service:
             if not isinstance(value, Sequence):
                 raise TypeError("A sequence of values has to be provided for a reoccurring Data Record. "
                                  f"Data Record name = {data_record.name}.")
-            if len(value) < data_record.min_occurrences or len(value) > (data_record.max_raw_value or float("inf")):
+            if len(value) < data_record.min_occurrences or len(value) > (data_record.max_occurrences or float("inf")):
                 raise ValueError("A sequence of values has to contain proper number of Data Record occurrences."
                                  f"Data Record name = {data_record.name}. "
                                  f"Data Record min occurrences number = {data_record.min_occurrences}. "
@@ -218,7 +218,7 @@ class Service:
                         raise ValueError("Provided occurrence value is out of range. "
                                          f"Data Record name = {data_record.name}. "
                                          f"Data Record min raw value = {data_record.min_raw_value}. "
-                                         f"Data Record max raw value = {data_record.max_occurrences}. "
+                                         f"Data Record max raw value = {data_record.max_raw_value}. "
                                          f"Provided sequence = {value}. Occurrence value = {occurrence_value}.")
                     raw_values.append(occurrence_value)
                 elif isinstance(occurrence_value, Mapping):
@@ -248,12 +248,25 @@ class Service:
     @classmethod
     def _decode_payload(cls,
                         payload: RawBytesAlias,
-                        message_continuation: AliasMessageStructure) -> DecodedMessageAlias:
+                        message_structure: AliasMessageStructure) -> DecodedMessageAlias:
+        """
+        Decode information for given message structure and payload.
+
+        :param payload: Payload to decode.
+        :param message_structure: Defined structure of a diagnostic message.
+
+        :raise ValueError: Provided message payload was too short.
+        :raise RuntimeError: An error occurred which was caused by incorrect message structure.
+        :raise NotImplementedError: There is missing implementation for at least one Data Record in the provided
+            message structure.
+
+        :return: Decoded information from the provided payload.
+        """
         decoded_message_continuation = []
         remaining_length = 8 * len(payload)
-        payload_int = bytes_to_int(bytes_list=payload, endianness=Endianness.BIG_ENDIAN)
+        payload_int = bytes_to_int(bytes_list=payload, endianness=Endianness.BIG_ENDIAN) if payload else 0
         raw_values = []
-        for data_record in message_continuation:
+        for data_record in message_structure:
             if isinstance(data_record, AbstractDataRecord):
                 max_occurrences_number = remaining_length // data_record.length
                 occurrences_number = min(max_occurrences_number, data_record.max_occurrences or float("inf"))
@@ -274,19 +287,17 @@ class Service:
                 if remaining_length % 8 != 0:
                     raise RuntimeError("Incorrect Data Records structure.")
                 bytes_number = remaining_length // 8
-                remaining_payload = payload_int & ((1 << remaining_length) - 1)
                 conditional_message_continuation = data_record.get_message_continuation(raw_value=raw_values[-1])
-                remaining_payload = int_to_bytes(int_value=remaining_payload,
+                remaining_payload = int_to_bytes(int_value=payload_int & ((1 << remaining_length) - 1),
                                                  endianness=Endianness.BIG_ENDIAN,
                                                  size=bytes_number)
                 return tuple(decoded_message_continuation) + cls._decode_payload(
-                    payload=remaining_payload, message_continuation=conditional_message_continuation)
+                    payload=remaining_payload, message_structure=conditional_message_continuation)
             else:
-                raise NotImplementedError
+                raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if remaining_length != 0:
-            raise RuntimeError
+            raise RuntimeError("Incorrect message structure was defined.")
         return tuple(decoded_message_continuation)
-
 
     @classmethod
     def _encode_message(cls,
@@ -358,7 +369,7 @@ class Service:
         if payload[0] != self.request_sid:
             raise ValueError("Provided payload does not start from SID value for this service.")
         decoded_message_continuation = self._decode_payload(payload=payload[1:],
-                                                            message_continuation=self.request_structure)
+                                                            message_structure=self.request_structure)
         return self._get_sid_info(), *decoded_message_continuation
 
     def decode_positive_response(self, payload: RawBytesAlias) -> DecodedMessageAlias:
@@ -375,7 +386,7 @@ class Service:
         if payload[0] != self.response_sid:
             raise ValueError("Provided payload does not start from RSID value for this service.")
         decoded_message_continuation = self._decode_payload(payload=payload[1:],
-                                                            message_continuation=self.response_structure)
+                                                            message_structure=self.response_structure)
         return self._get_rsid_info(), *decoded_message_continuation
 
     def decode_negative_response(self, payload: RawBytesAlias) -> DecodedMessageAlias:
@@ -465,26 +476,30 @@ class Service:
         return bytearray([ResponseSID.NegativeResponse, self.request_sid, nrc])
 
     def encode(self,
-               sid: Union[int, RequestSID, ResponseSID],
-               data_records_values: DataRecordsValuesAlias) -> bytearray:
+               data_records_values: DataRecordsValuesAlias,
+               sid: Optional[RequestSID] = None,
+               rsid: Optional[ResponseSID] = None) -> bytearray:
         """
         Encode diagnostic message payload for this service.
 
-        :param sid: Value of Service Identifier.
-            It should be either equal to either to `request_sid`, `response_sid` or NegativeResponseSID (0x7F).
+        :param sid: Request SID value.
+            Used by request message and negative response message.
+        :param rsid: Response SID value.
+            Used by response messages only.
         :param data_records_values: Mapping with Data Records values that are part of the message.
             Mapping keys are Data Records names.
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
             a raw value or a mapping with children names and its corresponding values.
 
-        :raise ValueError: Provided SID value cannot be handled by this service.
+        :raise ValueError: Missing or provided SID/RSID value cannot be handled by this service.
 
         :return: Payload of a diagnostic message created from provided data records values.
         """
-        if sid == self.request_sid:
-            return self.encode_request(data_records_values=data_records_values)
-        if sid == self.response_sid:
+        if rsid == ResponseSID.NegativeResponse and sid in {None, self.request_sid}:
+            return self.encode_negative_response(nrc=data_records_values["NRC"])  # type: ignore
+        if rsid == self.response_sid and sid is None:
             return self.encode_positive_response(data_records_values=data_records_values)
-        if sid == ResponseSID.NegativeResponse:
-            return self.encode_negative_response(**data_records_values)
-        raise ValueError("Provided SID value is neither request or response SID value for this service.")
+        if sid == self.request_sid and rsid is None:
+            return self.encode_request(data_records_values=data_records_values)
+        raise ValueError("Either SID or RSID value is missing or incorrect. Provided values: "
+                         f"SID = {sid}. RSID = {rsid}.")

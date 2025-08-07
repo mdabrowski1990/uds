@@ -1,9 +1,9 @@
 import pytest
 from mock import Mock, patch
 
-from uds.database.data_record.mapping_data_record import MappingDataRecord, MappingProxyType
+from uds.translator.data_record.mapping_data_record import MappingDataRecord, MappingProxyType
 
-SCRIPT_LOCATION = "uds.database.data_record.mapping_data_record"
+SCRIPT_LOCATION = "uds.translator.data_record.mapping_data_record"
 
 
 class TestMappingDataRecord:
@@ -279,6 +279,7 @@ class TestMappingDataRecordIntegration:
                 (
                         {
                             "name": "Warning Indicator Requested/MIL on",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -286,6 +287,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -293,6 +295,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed Since Last Clear",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -300,6 +303,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -307,6 +311,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Confirmed DTC",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -314,6 +319,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Pending DTC",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -321,6 +327,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -328,6 +335,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -344,6 +352,7 @@ class TestMappingDataRecordIntegration:
                 (
                         {
                             "name": "Warning Indicator Requested/MIL on",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -351,6 +360,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -358,6 +368,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed Since Last Clear",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -365,6 +376,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -372,6 +384,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Confirmed DTC",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -379,6 +392,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Pending DTC",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -386,6 +400,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -393,6 +408,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -402,6 +418,7 @@ class TestMappingDataRecordIntegration:
                 (
                         {
                             "name": "Warning Indicator Requested/MIL on",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -409,6 +426,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -416,6 +434,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed Since Last Clear",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -423,6 +442,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -430,6 +450,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Confirmed DTC",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -437,6 +458,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Pending DTC",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -444,6 +466,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -451,6 +474,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -460,6 +484,7 @@ class TestMappingDataRecordIntegration:
                 (
                         {
                             "name": "Warning Indicator Requested/MIL on",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -467,6 +492,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -474,6 +500,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed Since Last Clear",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -481,6 +508,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
+                            "length": 1,
                             "raw_value": 0,
                             "physical_value": "No",
                             "children": tuple(),
@@ -488,6 +516,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Confirmed DTC",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -495,6 +524,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Pending DTC",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -502,6 +532,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -509,6 +540,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -518,6 +550,7 @@ class TestMappingDataRecordIntegration:
                 (
                         {
                             "name": "Warning Indicator Requested/MIL on",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -525,6 +558,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -532,6 +566,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed Since Last Clear",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -539,6 +574,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Not Completed Since Last Clear",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -546,6 +582,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Confirmed DTC",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -553,6 +590,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Pending DTC",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -560,6 +598,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed This Operation Cycle",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -567,6 +606,7 @@ class TestMappingDataRecordIntegration:
                         },
                         {
                             "name": "Test Failed",
+                            "length": 1,
                             "raw_value": 1,
                             "physical_value": "Yes",
                             "children": tuple(),
@@ -583,3 +623,4 @@ class TestMappingDataRecordIntegration:
         assert output["physical_value"] == expected_output["physical_value"]
         assert output["raw_value"] == dtc_status_values
         assert output["children"] == expected_output["children"]
+        assert output["unit"] == expected_output["unit"]

@@ -52,7 +52,7 @@ class TextDataRecord(AbstractDataRecord):
 
     TextDataRecord provides bidirectional conversion between raw integer values and their text character
     representations using one of the predefined encodings (all supported encodings are defined in
-    :class:`~uds.database.data_record.text_data_record.TextEncoding`).
+    :class:`~uds.translator.data_record.text_data_record.TextEncoding`).
 
     Features:
      - Bidirectional mapping: raw value <-> text

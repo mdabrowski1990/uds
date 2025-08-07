@@ -5,7 +5,7 @@ Service Identifier (SID) data parameter implementation.
     and SAE J1979 standards.
 """
 
-__all__ = ["RESPONSE_REQUEST_SID_DIFF","ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
+__all__ = ["RESPONSE_REQUEST_SID_DIFF", "ALL_REQUEST_SIDS", "ALL_RESPONSE_SIDS",
            "RequestSID", "ResponseSID", "UnrecognizedSIDWarning"]
 
 from warnings import warn

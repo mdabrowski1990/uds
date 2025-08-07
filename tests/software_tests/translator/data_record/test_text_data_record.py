@@ -1,9 +1,9 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record.text_data_record import TextDataRecord, TextEncoding, decode_ascii
+from uds.translator.data_record.text_data_record import TextDataRecord, TextEncoding, decode_ascii
 
-SCRIPT_LOCATION = "uds.database.data_record.text_data_record"
+SCRIPT_LOCATION = "uds.translator.data_record.text_data_record"
 
 
 class TestEncodingAndDecodingFunctions:

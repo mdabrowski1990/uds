@@ -1,14 +1,18 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record import (
+from uds.translator import TextDataRecord
+from uds.translator.data_record import (
+    DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     ConditionalFormulaDataRecord,
+    ConditionalMappingDataRecord,
     LinearFormulaDataRecord,
     MappingDataRecord,
     MultipleOccurrencesInfo,
     RawDataRecord,
+    TextEncoding,
 )
-from uds.database.service.service import (
+from uds.translator.service.service import (
     NRC,
     RESPONSE_REQUEST_SID_DIFF,
     AbstractConditionalDataRecord,
@@ -20,7 +24,7 @@ from uds.database.service.service import (
     SingleOccurrenceInfo,
 )
 
-SCRIPT_LOCATION = "uds.database.service.service"
+SCRIPT_LOCATION = "uds.translator.service.service"
 
 class TestService:
     """Unit tests for `Service` class."""
@@ -132,7 +136,7 @@ class TestService:
         assert Service.request_structure.fget(self.mock_service) == self.mock_service._Service__request_structure
 
     @pytest.mark.parametrize("value", [(Mock(), Mock()), []])
-    def test_request_sid__set(self, value):
+    def test_request_structure__set(self, value):
         assert Service.request_structure.fset(self.mock_service, value) is None
         assert self.mock_service._Service__request_structure == tuple(value)
         self.mock_service.validate_message_structure.assert_called_once_with(value)
@@ -144,7 +148,7 @@ class TestService:
         assert Service.response_structure.fget(self.mock_service) == self.mock_service._Service__response_structure
 
     @pytest.mark.parametrize("value", [(Mock(), Mock()), []])
-    def test_request_sid__set(self, value):
+    def test_response_structure__set(self, value):
         assert Service.response_structure.fset(self.mock_service, value) is None
         assert self.mock_service._Service__response_structure == tuple(value)
         self.mock_service.validate_message_structure.assert_called_once_with(value)
@@ -240,6 +244,15 @@ class TestService:
         (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
               min_raw_value=0, max_raw_value=0xFF),
          [-1, 0]),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=4, max_occurrences=8,
+              min_raw_value=0, max_raw_value=0xF),
+         [0, 0, 0]),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=2,
+              min_raw_value=0, max_raw_value=0xF),
+         [0, 0, 0]),
+        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
+              min_raw_value=0, max_raw_value=0xFF),
+         [54.23, "Something"]),
         (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
               min_raw_value=0, max_raw_value=0xF),
          [0x10, 0, 2]),
@@ -305,7 +318,99 @@ class TestService:
 
     # _decode_payload
 
-    # TODO
+    @pytest.mark.parametrize("payload, message_structure", [
+        ([0xFF], [Mock(length=8, min_occurrences=0, max_occurrences=1)]),
+         (list(range(100)), [Mock(spec=AbstractDataRecord, length=48, min_occurrences=1, max_occurrences=1),
+                             Mock(length=8, min_occurrences=10, max_occurrences=None)]),
+    ])
+    def test_decode_payload__not_implemented(self, payload, message_structure):
+        with pytest.raises(NotImplementedError):
+            Service._decode_payload(payload=payload, message_structure=message_structure)
+
+    @pytest.mark.parametrize("payload, message_structure", [
+        ([0xFF], [Mock(spec=AbstractDataRecord, length=8, min_occurrences=2, max_occurrences=2)]),
+         (list(range(4)), [Mock(spec=AbstractDataRecord, length=40, min_occurrences=1, max_occurrences=1),
+                           Mock(spec=AbstractDataRecord, length=16, min_occurrences=10, max_occurrences=None)]),
+    ])
+    def test_decode_payload__value_error(self, payload, message_structure):
+        with pytest.raises(ValueError):
+            Service._decode_payload(payload=payload, message_structure=message_structure)
+
+    @pytest.mark.parametrize("payload, message_structure", [
+        ([0xFF], [Mock(spec=AbstractDataRecord, length=7, min_occurrences=0, max_occurrences=1)]),
+         (list(range(100)), [Mock(spec=AbstractDataRecord, length=40, min_occurrences=1, max_occurrences=1),
+                             Mock(spec=AbstractDataRecord, length=16, min_occurrences=10, max_occurrences=None)]),
+    ])
+    def test_decode_payload__runtime_error(self, payload, message_structure):
+        with pytest.raises(RuntimeError):
+            Service._decode_payload(payload=payload, message_structure=message_structure)
+
+    @pytest.mark.parametrize("payload, message_structure, message_continuation", [
+        ((0xCA, 0xFE),
+         [Mock(spec=AbstractDataRecord, length=7, min_occurrences=0, max_occurrences=1),
+          Mock(spec=AbstractConditionalDataRecord)],
+         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=9, max_occurrences=9)]),
+        (list(range(100)),
+         [Mock(spec=AbstractDataRecord, length=9, min_occurrences=10, max_occurrences=10),
+          Mock(spec=AbstractConditionalDataRecord)],
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None)]),
+    ])
+    def test_decode_payload__condition_runtime_error(self, payload, message_structure, message_continuation):
+        self.mock_int_to_bytes.return_value = b"\x00"
+        mock_get_message_continuation = Mock(return_value=message_continuation)
+        message_structure[-1].get_message_continuation = mock_get_message_continuation
+        with pytest.raises(RuntimeError):
+            Service._decode_payload(payload=payload, message_structure=message_structure)
+
+    @pytest.mark.parametrize("payload, message_structure", [
+        ([0xFF], [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1)]),
+        (b"\x12\x34\x56\x78\x9A", [Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8),
+                                   Mock(spec=AbstractDataRecord, length=8, min_occurrences=2, max_occurrences=2),
+                                   Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1)]),
+         (list(range(100)), [Mock(spec=AbstractDataRecord, length=48, min_occurrences=1, max_occurrences=1),
+                             Mock(spec=AbstractDataRecord, length=8, min_occurrences=10, max_occurrences=None)]),
+    ])
+    def test_decode_payload__valid__no_condition(self, payload, message_structure):
+        assert (Service._decode_payload(payload=payload,
+                                        message_structure=message_structure)
+                == tuple(data_record.get_occurrence_info.return_value for data_record in message_structure))
+
+    @pytest.mark.parametrize("payload, message_structure, message_continuation", [
+        ((0xCA, 0xFE),
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1),
+          Mock(spec=AbstractConditionalDataRecord)],
+         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8)]),
+        (list(range(100)),
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=10, max_occurrences=10),
+          Mock(spec=AbstractConditionalDataRecord)],
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None)]),
+    ])
+    def test_decode_payload__valid__condition(self, payload, message_structure, message_continuation):
+        self.mock_int_to_bytes.return_value = b"\x00"
+        mock_get_message_continuation = Mock(return_value=message_continuation)
+        message_structure[-1].get_message_continuation = mock_get_message_continuation
+        assert (Service._decode_payload(payload=payload,
+                                        message_structure=message_structure)
+                == tuple(dr.get_occurrence_info.return_value
+                         for dr in message_structure + message_continuation if isinstance(dr, AbstractDataRecord)))
+        self.mock_int_to_bytes.assert_called_once()
+
+    @pytest.mark.parametrize("payload, message_structure, message_continuation", [
+        ((0xCA, 0xFE),
+         [Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1),
+          Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1),
+          Mock(spec=AbstractConditionalDataRecord)],
+         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8)]),
+        ([],
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1),
+          Mock(spec=AbstractConditionalDataRecord)],
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None)]),
+    ])
+    def test_decode_payload__valid__with_uncalled_condition(self, payload, message_structure, message_continuation):
+        mock_get_message_continuation = Mock(return_value=message_continuation)
+        message_structure[-1].get_message_continuation = mock_get_message_continuation
+        assert isinstance(Service._decode_payload(payload=payload, message_structure=message_structure), tuple)
+        # self.mock_int_to_bytes.assert_not_called()
 
     # _encode_message
 
@@ -396,7 +501,7 @@ class TestService:
          [0xCa, 0xFF, 0xE, 0x56]),
     ])
     @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
-    def test_encode_message__valid__with_condition(self, mock_get_data_record_occurrences,
+    def test_encode_message__valid__condition(self, mock_get_data_record_occurrences,
                                                    message_structure, data_records_values,
                                                    message_continuation, payload):
         self.mock_int_to_bytes.return_value = payload
@@ -413,6 +518,28 @@ class TestService:
                                                           any_order=False)
         self.mock_int_to_bytes.assert_called()
         mock_get_message_continuation.assert_called_once()
+
+    @pytest.mark.parametrize("message_structure, data_records_values, payload", [
+        ([Mock(spec=AbstractDataRecord, name="Param 1", length=8),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {"Param 1": []},
+         b""),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__valid__with_uncalled_condition(self, mock_get_data_record_occurrences,
+                                                            message_structure, data_records_values,
+                                                            payload):
+        self.mock_int_to_bytes.return_value = payload
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
+        for data_record in message_structure:
+            data_record.name = data_record._extract_mock_name()
+        assert Service._encode_message(data_records_values=data_records_values,
+                                       message_structure=message_structure) == bytearray(payload + payload)
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
+                                                           for dr in message_structure
+                                                           if isinstance(dr, AbstractDataRecord)],
+                                                          any_order=False)
+        self.mock_int_to_bytes.assert_called()
 
     # validate_message_structure
 
@@ -438,7 +565,7 @@ class TestService:
         self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
         self.mock_service._decode_payload.assert_called_once_with(
             payload=payload[1:],
-            message_continuation=self.mock_service.request_structure)
+            message_structure=self.mock_service.request_structure)
 
     # decode_positive_response
 
@@ -457,7 +584,7 @@ class TestService:
         self.mock_validate_raw_bytes.assert_called_once_with(payload, allow_empty=False)
         self.mock_service._decode_payload.assert_called_once_with(
             payload=payload[1:],
-            message_continuation=self.mock_service.request_structure)
+            message_structure=self.mock_service.response_structure)
 
     # decode_negative_response
 
@@ -586,38 +713,38 @@ class TestService:
 
     # encode
 
-    @pytest.mark.parametrize("data_records_values", [MagicMock(), {"a": 1, "b": [{"zyx a": 94}, 0xFF]}])
+    @pytest.mark.parametrize("data_records_values", [Mock(), {"a": 1, "b": [{"zyx a": 94}, 0xFF]}])
     def test_encode__request(self, data_records_values):
-        assert Service.encode(self.mock_service,
+        assert (Service.encode(self.mock_service,
                               sid=self.mock_service.request_sid,
-                              data_records_values=data_records_values) == self.mock_service.encode_request.return_value
+                              data_records_values=data_records_values)
+                == self.mock_service.encode_request.return_value)
         self.mock_service.encode_request.assert_called_once_with(data_records_values=data_records_values)
 
-    @pytest.mark.parametrize("data_records_values", [MagicMock(), {"a": 1, "b": [{"zyx a": 94}, 0xFF]}])
+    @pytest.mark.parametrize("data_records_values", [{}, {"a": 1, "b": [{"zyx a": 94}, 0xFF]}])
     def test_encode__positive_response(self, data_records_values):
         assert (Service.encode(self.mock_service,
-                              sid=self.mock_service.response_sid,
-                              data_records_values=data_records_values)
+                               rsid=self.mock_service.response_sid,
+                               data_records_values=data_records_values)
                 == self.mock_service.encode_positive_response.return_value)
         self.mock_service.encode_positive_response.assert_called_once_with(data_records_values=data_records_values)
 
-    @pytest.mark.parametrize("data_records_values", [MagicMock(), {"a": 1, "b": [{"zyx a": 94}, 0xFF]}])
+    @pytest.mark.parametrize("data_records_values", [{"NRC": 1}, {"NRC": Mock()}])
     def test_encode__negative_response(self, data_records_values):
         assert (Service.encode(self.mock_service,
-                              sid=ResponseSID.NegativeResponse,
-                              data_records_values=data_records_values)
+                               rsid=ResponseSID.NegativeResponse,
+                               sid=self.mock_service.request_sid,
+                               data_records_values=data_records_values)
                 == self.mock_service.encode_negative_response.return_value)
-        self.mock_service.encode_negative_response.assert_called_once_with(**data_records_values)
+        self.mock_service.encode_negative_response.assert_called_once_with(nrc=data_records_values["NRC"])
 
-    @pytest.mark.parametrize("sid, data_records_values", [
-        (Mock(), MagicMock()),
-        (RequestSID.RequestDownload, {"a": 1, "b": [{"zyx a": 94}, 0xFF]}),
+    @pytest.mark.parametrize("sid, rsid, data_records_values", [
+        (None, None, {}),
+        (Mock(), Mock(), Mock()),
     ])
-    def test_encode__value_error(self, sid, data_records_values):
+    def test_encode__value_error(self, sid, rsid, data_records_values):
         with pytest.raises(ValueError):
-            Service.encode(self.mock_service,
-                           sid=sid,
-                           data_records_values=data_records_values)
+            Service.encode(self.mock_service, sid=sid, rsid=rsid, data_records_values=data_records_values)
 
 
 @pytest.mark.integration
@@ -625,6 +752,38 @@ class TestServiceIntegration:
     """Integration tests for `Service` class."""
 
     def setup_class(self):
+        did_mapping = {
+            0xF186: [MappingDataRecord(name="diagnosticSessionType",
+                                       length=8,
+                                       values_mapping={1: "Default",
+                                                       2: "Programming",
+                                                       3: "Extended"})],
+            0xF187: [TextDataRecord(name="Spare Part Number",
+                                    encoding=TextEncoding.ASCII,
+                                    min_occurrences=1,
+                                    max_occurrences=None)],
+            0xF188: [TextDataRecord(name="ECU Software Number",
+                                    encoding=TextEncoding.BCD,
+                                    min_occurrences=2,
+                                    max_occurrences=None)],
+            0xF191: [TextDataRecord(name="ECU Hardware Number",
+                                    encoding=TextEncoding.BCD,
+                                    min_occurrences=2,
+                                    max_occurrences=None)],
+        }
+        did_2 = MappingDataRecord(name="DID #2",
+                                  length=16,
+                                  values_mapping={
+                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+                                  },
+                                  min_occurrences=0,
+                                  max_occurrences=1)
+        conditional_mapping = ConditionalMappingDataRecord(
+            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
+            mapping=did_mapping)
         self.diagnostic_session_control = Service(
             request_sid=RequestSID.DiagnosticSessionControl,
             request_structure=[
@@ -695,16 +854,48 @@ class TestServiceIntegration:
                               max_occurrences=None)
             ]
         )
+        self.read_data_by_identifier = Service(
+            request_sid=RequestSID.ReadDataByIdentifier,
+            request_structure=[
+                MappingDataRecord(name="DID",
+                                  length=16,
+                                  values_mapping={
+                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+                                  },
+                                  min_occurrences=1,
+                                  max_occurrences=None)
+            ],
+            response_structure=[  # Simplified
+                MappingDataRecord(name="DID #1",
+                                  length=16,
+                                  values_mapping={
+                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+                                  }),
+                ConditionalMappingDataRecord(default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
+                                             mapping={
+                                                 did: did_structure + [did_2, conditional_mapping] if did == 0xF186 else did_structure
+                                                 for did, did_structure in did_mapping.items()
+                                             })
+            ],
+        )
 
     # encode
 
-    @pytest.mark.parametrize("sid, data_records_values, payload", [
+    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
         (
             0x10,
+            None,
             {"subFunction": 0x40},
             bytearray([0x10, 0x40])
         ),
         (
+            None,
             0x50,
             {
                 "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
@@ -713,17 +904,21 @@ class TestServiceIntegration:
             bytearray([0x50, 0x83, 0x12, 0x34, 0x56, 0x78])
         ),
         (
+            0x10,
             0x7F,
-            {"nrc": 0x84},
+            {"NRC": 0x84},
             bytearray([0x7F, 0x10, 0x84])
         ),
     ])
-    def test_encode_1(self, sid, data_records_values, payload):
-        assert self.diagnostic_session_control.encode(sid=sid, data_records_values=data_records_values) == payload
+    def test_encode_1(self, sid, rsid, data_records_values, payload):
+        assert self.diagnostic_session_control.encode(sid=sid,
+                                                      rsid=rsid,
+                                                      data_records_values=data_records_values) == payload
 
-    @pytest.mark.parametrize("sid, data_records_values, payload", [
+    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
         (
             RequestSID.ReadMemoryByAddress,
+            None,
             {
                 "addressAndLengthFormatIdentifier": 0x24,
                 "memoryAddress": 0x20481392,
@@ -732,6 +927,7 @@ class TestServiceIntegration:
             bytearray([0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03])
         ),
         (
+            None,
             ResponseSID.ReadMemoryByAddress,
             {
                 "addressAndLengthFormatIdentifier": 0x24,
@@ -740,15 +936,52 @@ class TestServiceIntegration:
             bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F")
         ),
         (
+            RequestSID.ReadMemoryByAddress,
             ResponseSID.NegativeResponse,
             {
-                "nrc": NRC.ServiceNotSupportedInActiveSession
+                "NRC": NRC.ServiceNotSupportedInActiveSession
             },
             bytearray([0x7F, 0x23, 0x7F])
         )
     ])
-    def test_encode_2(self, sid, data_records_values, payload):
-        assert self.read_memory_by_address.encode(sid=sid, data_records_values=data_records_values) == payload
+    def test_encode_2(self, sid, rsid, data_records_values, payload):
+        assert self.read_memory_by_address.encode(sid=sid,
+                                                  rsid=rsid,
+                                                  data_records_values=data_records_values) == payload
+
+    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
+        (
+            RequestSID.ReadDataByIdentifier,
+            None,
+            {
+                "DID": [0x1234, 0xF186, 0xF191]
+            },
+            bytearray([0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91])
+        ),
+        (
+            None,
+            ResponseSID.ReadDataByIdentifier,
+            {
+                "DID #1": 0xF186,
+                "diagnosticSessionType": 0x01,
+                "DID #2": 0xF188,
+                "ECU Software Number": [9, 0, 8, 1, 7, 2]
+            },
+            bytearray(b"\x62\xF1\x86\x01\xF1\x88\x90\x81\x72")
+        ),
+        (
+            RequestSID.ReadDataByIdentifier,
+            ResponseSID.NegativeResponse,
+            {
+                "NRC": NRC.GeneralReject
+            },
+            bytearray([0x7F, 0x22, 0x10])
+        )
+    ])
+    def test_encode_3(self, sid, rsid, data_records_values, payload):
+        assert self.read_data_by_identifier.encode(sid=sid,
+                                                   rsid=rsid,
+                                                   data_records_values=data_records_values) == payload
 
     # decode
 
@@ -945,3 +1178,85 @@ class TestServiceIntegration:
     ])
     def test_decode_2(self, payload, decoded_message):
         assert self.read_memory_by_address.decode(payload=payload) == decoded_message
+
+    @pytest.mark.parametrize("payload, decoded_message", [
+        (
+            bytearray([0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91]),
+            (
+                SingleOccurrenceInfo(name="SID",
+                                     length=8,
+                                     raw_value=0x22,
+                                     physical_value="ReadDataByIdentifier",
+                                     children=tuple(),
+                                     unit=None),
+                MultipleOccurrencesInfo(name="DID",
+                                        length=16,
+                                        raw_value=[0x1234, 0xF186, 0xF191],
+                                        physical_value=(0x1234,
+                                                        "ActiveDiagnosticSessionDataIdentifier",
+                                                        "vehicleManufacturerECUHardwareNumberDataIdentifier"),
+                                        children=[(), (), ()],
+                                        unit=None),
+            )
+        ),
+        (
+            bytearray(b"\x62\xF1\x86\x01\xF1\x88\x90\x81\x72"),
+            (
+                SingleOccurrenceInfo(name="RSID",
+                                     length=8,
+                                     raw_value=0x62,
+                                     physical_value="ReadDataByIdentifier",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="DID #1",
+                                     length=16,
+                                     raw_value=0xF186,
+                                     physical_value="ActiveDiagnosticSessionDataIdentifier",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="diagnosticSessionType",
+                                     length=8,
+                                     raw_value=0x01,
+                                     physical_value="Default",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="DID #2",
+                                     length=16,
+                                     raw_value=0xF188,
+                                     physical_value="vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                                     children=tuple(),
+                                     unit=None),
+                MultipleOccurrencesInfo(name="ECU Software Number",
+                                        length=4,
+                                        raw_value=[9, 0, 8, 1, 7, 2],
+                                        physical_value="908172",
+                                        children=[tuple()] * 6,
+                                        unit=None),
+            )
+        ),
+        (
+            bytearray([0x7F, 0x22, 0x10]),
+            (
+                SingleOccurrenceInfo(name="RSID",
+                                     length=8,
+                                     raw_value=0x7F,
+                                     physical_value="NegativeResponse",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="SID",
+                                     length=8,
+                                     raw_value=0x22,
+                                     physical_value="ReadDataByIdentifier",
+                                     children=tuple(),
+                                     unit=None),
+                SingleOccurrenceInfo(name="NRC",
+                                     length=8,
+                                     raw_value=0x10,
+                                     physical_value="GeneralReject",
+                                     children=tuple(),
+                                     unit=None),
+            )
+        ),
+    ])
+    def test_decode_3(self, payload, decoded_message):
+        assert self.read_data_by_identifier.decode(payload=payload) == decoded_message
