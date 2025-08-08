@@ -312,8 +312,8 @@ class AbstractDataRecord(ABC):
         Whether this Data Record has fixed total length and number of occurrences.
 
         Values meaning:
-         - False - the number of occurrences is always the same
-         - True - the number of occurrences might vary
+         - True - the number of occurrences is always the same (fixed)
+         - False - the number of occurrences might vary
         """
         return self.min_occurrences == self.max_occurrences
 

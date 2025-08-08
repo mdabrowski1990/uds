@@ -3,7 +3,7 @@
 __all__ = ["Translator"]
 
 from types import MappingProxyType
-from typing import Collection, Dict, Mapping, Optional, Union
+from typing import Collection, Dict, Mapping, Optional, Union, FrozenSet
 
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 
@@ -29,7 +29,7 @@ class Translator:
         self.services = services
 
     @property
-    def services(self) -> Collection[Service]:
+    def services(self) -> FrozenSet[Service]:
         """Get diagnostic services translators."""
         return self.__services
 
@@ -71,9 +71,9 @@ class Translator:
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
             a raw value or a mapping with children names and its corresponding values.
         :param sid: Request SID value.
-            Used by request message and negative response message.
+            Used by request message (first byte) and negative response message (second byte).
         :param rsid: Response SID value.
-            Used by response messages only.
+            Used by response messages only (first byte).
 
         :return: Payload of a diagnostic message.
         """
