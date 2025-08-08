@@ -77,7 +77,7 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
 
 
 DataRecordInfoAlias = Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]
-"""Comprehensive information a single Data Record occurrence(s)."""
+"""Comprehensive information Data Record occurrence(s)."""
 
 
 class AbstractDataRecord(ABC):

@@ -16,18 +16,14 @@ from .raw_data_record import RawDataRecord
 
 AliasMessageStructure = Sequence[Union[AbstractDataRecord, "AbstractConditionalDataRecord"]]
 """Alias of Diagnostic Message Structure used by databases to interpret Diagnostic Messages parameters.
-
-The sequence shall contain `AbstractDataRecord` instances with up to one `AbstractConditionalDataRecord` instance
-at the end.
-No more than 1 reoccurring Data Record is allowed.
-Total length shall always be divisible by 8.
-"""
+The sequence shall contain `AbstractDataRecord` instances with up to one `AbstractConditionalDataRecord` instance.
+Reoccurring Data Record and Conditional Data Record are allowed only at the end of the message structure.
+Total length shall always be divisible by 8."""
 DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION: AliasMessageStructure = (
     RawDataRecord(name="Generic Diagnostic Message Continuation",
                   length=8,
                   min_occurrences=0,
-                  max_occurrences=None),
-)
+                  max_occurrences=None),)
 """Generic Diagnostic Message Continuation that can be used when specific information are not available."""
 
 
