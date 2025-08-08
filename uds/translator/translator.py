@@ -3,7 +3,7 @@
 __all__ = ["Translator"]
 
 from types import MappingProxyType
-from typing import Collection, Dict, Mapping, Optional, Union, FrozenSet
+from typing import Collection, Dict, FrozenSet, Mapping, Optional, Union
 
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 
