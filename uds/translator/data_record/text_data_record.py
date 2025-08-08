@@ -72,16 +72,8 @@ class TextDataRecord(AbstractDataRecord):
         decode: Callable[[str], int]
 
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
-        TextEncoding.ASCII: {
-            "length": 8,
-            "encode": chr,
-            "decode": decode_ascii,
-        },
-        TextEncoding.BCD: {
-            "length": 4,
-            "encode": str,
-            "decode": int,
-        }
+        TextEncoding.ASCII: _EncodingInfo(length=8, encode=chr, decode=decode_ascii),
+        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=int),
     }
 
     def __init__(self,

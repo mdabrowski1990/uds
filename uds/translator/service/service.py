@@ -1,6 +1,7 @@
 """Definition of UDS Service data encoding and decoding."""
 
-__all__ = ["Service", "DataRecordsValuesAlias", "DecodedMessageAlias"]
+__all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
+           "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]
 
 from copy import deepcopy
 from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Union
