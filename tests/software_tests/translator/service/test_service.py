@@ -1,17 +1,6 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.translator import TextDataRecord
-from uds.translator.data_record import (
-    DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
-    ConditionalFormulaDataRecord,
-    ConditionalMappingDataRecord,
-    LinearFormulaDataRecord,
-    MappingDataRecord,
-    MultipleOccurrencesInfo,
-    RawDataRecord,
-    TextEncoding,
-)
 from uds.translator.service.service import (
     NRC,
     RESPONSE_REQUEST_SID_DIFF,
@@ -214,97 +203,174 @@ class TestService:
                                         unit=None))
         self.mock_nrc_validate_member.assert_called_once_with(nrc)
 
-    # _get_data_record_occurrences
+    # _get_single_data_record_occurrence
 
     @pytest.mark.parametrize("data_record, value", [
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0xFF),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=0,
+              max_occurrences=1,
+              min_raw_value=0,
+              max_raw_value=0xFF),
          [0x10]),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0x7),
-         None),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
-              min_raw_value=0, max_raw_value=0xFF),
-         0x0),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
-              min_raw_value=0, max_raw_value=0xFF),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=1,
+              max_occurrences=1,
+              min_raw_value=0,
+              max_raw_value=0x7),
          None),
     ])
-    def test_get_data_record_occurrences__type_error(self, data_record, value):
+    def test_get_single_data_record_occurrence__type_error(self, data_record, value):
         with pytest.raises(TypeError):
-            Service._get_data_record_occurrences(data_record=data_record, value=value)
+            Service._get_single_data_record_occurrence(data_record=data_record, value=value)
 
     @pytest.mark.parametrize("data_record, value", [
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0xFF),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=0,
+              max_occurrences=1,
+              min_raw_value=0,
+              max_raw_value=0xFF),
          0x100),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0x7),
-         0x8),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
-              min_raw_value=0, max_raw_value=0xFF),
-         [-1, 0]),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=4, max_occurrences=8,
-              min_raw_value=0, max_raw_value=0xF),
-         [0, 0, 0]),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=2,
-              min_raw_value=0, max_raw_value=0xF),
-         [0, 0, 0]),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
-              min_raw_value=0, max_raw_value=0xFF),
-         [54.23, "Something"]),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
-              min_raw_value=0, max_raw_value=0xF),
-         [0x10, 0, 2]),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=1,
+              max_occurrences=1,
+              min_raw_value=0,
+              max_raw_value=0x7),
+         -1),
     ])
-    def test_get_data_record_occurrences__value_error(self, data_record, value):
+    def test_get_single_data_record_occurrence__value_error(self, data_record, value):
         with pytest.raises(ValueError):
-            Service._get_data_record_occurrences(data_record=data_record, value=value)
+            Service._get_single_data_record_occurrence(data_record=data_record, value=value)
+
+    def test_get_single_data_record_occurrence__valid__no_occurrence(self):
+        mock_data_record = Mock(spec=AbstractDataRecord,
+                                is_reoccurring=False,
+                                min_occurrences=0,
+                                max_occurrences=1)
+        assert Service._get_single_data_record_occurrence(data_record=mock_data_record, value=None) == []
 
     @pytest.mark.parametrize("data_record, value", [
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=8,
-              min_raw_value=0, max_raw_value=0xFF),
-         []),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0x7),
-         None),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=1,
+              max_occurrences=1,
+              min_raw_value=0,
+              max_raw_value=0xFF),
+         0xFF),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=0,
+              max_occurrences=1,
+              min_raw_value=0,
+              max_raw_value=0x7),
+         0),
     ])
-    def test_get_data_record_occurrences__valid__no_occurrences(self, data_record, value):
-        assert Service._get_data_record_occurrences(data_record=data_record, value=value) == []
+    def test_get_single_data_record_occurrence__valid__single_raw_value(self, data_record, value):
+        assert Service._get_single_data_record_occurrence(data_record=data_record, value=value) == [value]
 
     @pytest.mark.parametrize("data_record, value", [
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0xFF),
-         0x0),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0x7),
-         0x7),
-    ])
-    def test_get_data_record_occurrences__valid__single_raw_value(self, data_record, value):
-        assert Service._get_data_record_occurrences(data_record=data_record, value=value) == [value]
-
-    @pytest.mark.parametrize("data_record, value", [
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=1, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0xFF),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=1,
+              max_occurrences=1),
          {"a": 1, "b": 2}),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=False, min_occurrences=0, max_occurrences=1,
-              min_raw_value=0, max_raw_value=0x7),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=False,
+              min_occurrences=0,
+              max_occurrences=1),
          {"param X": 0x00, "param Y": 0xFF, "123": 654}),
     ])
-    def test_get_data_record_occurrences__valid__single_mapping(self, data_record, value):
-        assert (Service._get_data_record_occurrences(data_record=data_record, value=value)
+    def test_get_single_data_record_occurrence__valid__single_mapping(self, data_record, value):
+        assert (Service._get_single_data_record_occurrence(data_record=data_record, value=value)
                 == [data_record.get_raw_value_from_children.return_value])
         data_record.get_raw_value_from_children.assert_called_once_with(value)
 
+    # _get_reoccurring_data_record_occurrences
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_reoccurring_data_record_occurrences__type_error(self, mock_isinstance):
+        mock_isinstance.return_value = False
+        mock_data_record = Mock()
+        mock_value = Mock()
+        with pytest.raises(TypeError):
+            Service._get_reoccurring_data_record_occurrences(data_record=mock_data_record, value=mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, Sequence)
+
     @pytest.mark.parametrize("data_record, value", [
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=4, max_occurrences=4,
-              min_raw_value=0, max_raw_value=0xFF),
-         [0xFF, {"param X": 0x00, "param Y": 0xFF, "123": 654}, 0x00, {"param X": 0x1, "param Y": 0x2, "123": 4}]),
-        (Mock(spec=AbstractDataRecord, is_reoccurring=True, min_occurrences=0, max_occurrences=None,
-              min_raw_value=0, max_raw_value=0x7),
-         [0x0, 0x1, 0x7, {"a": 1, "b": 2}, {"a": 1, "b": 2}, {"a": 0, "b": 0}]),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=True,
+              min_occurrences=0,
+              max_occurrences=8),
+         list(range(9))),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=True,
+              min_occurrences=4,
+              max_occurrences=8,
+              min_raw_value=0,
+              max_raw_value=0xF),
+         [0, 0, 0]),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=True,
+              min_occurrences=0,
+              max_occurrences=2,
+              min_raw_value=0,
+              max_raw_value=0xF),
+         [0xF, -1, 0x5]),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=True,
+              min_occurrences=0,
+              max_occurrences=8,
+              min_raw_value=0,
+              max_raw_value=0xFF),
+         [54.23, "Something"]),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=True,
+              min_occurrences=0,
+              max_occurrences=8,
+              min_raw_value=0,
+              max_raw_value=0xF),
+         [0x10, 0, 2]),
     ])
-    def test_get_data_record_occurrences__valid__multiple_occurrences(self, data_record, value):
+    def test_get_reoccurring_data_record_occurrences__value_error(self, data_record, value):
+        with pytest.raises(ValueError):
+            Service._get_reoccurring_data_record_occurrences(data_record=data_record, value=value)
+
+
+    def test_get_reoccurring_data_record_occurrences__valid__no_occurrences(self):
+        mock_data_record = Mock(spec=AbstractDataRecord,
+                                is_reoccurring=True,
+                                min_occurrences=0,
+                                max_occurrences=None)
+        assert Service._get_reoccurring_data_record_occurrences(data_record=mock_data_record, value=[]) == []
+
+    @pytest.mark.parametrize("data_record, value", [
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=True,
+              min_occurrences=4,
+              max_occurrences=4,
+              min_raw_value=0,
+              max_raw_value=0xFF),
+         [0xFF,
+          {"param X": 0x00, "param Y": 0xFF, "123": 654},
+          0x00,
+          {"param X": 0x1, "param Y": 0x2, "123": 4}]),
+        (Mock(spec=AbstractDataRecord,
+              is_reoccurring=True,
+              min_occurrences=0,
+              max_occurrences=None,
+              min_raw_value=0,
+              max_raw_value=0x7),
+         [0x0,
+          0x1,
+          0x7,
+          {"a": 1, "b": 2},
+          {"a": 1, "b": 2},
+          {"a": 0, "b": 0}]),
+    ])
+    def test_get_reoccurring_data_record_occurrences__valid__multiple_occurrences(self, data_record, value):
         expected_value = []
         expected_calls = []
         for _value in value:
@@ -313,8 +379,34 @@ class TestService:
             else:
                 expected_value.append(data_record.get_raw_value_from_children.return_value)
                 expected_calls.append(call(_value))
-        assert Service._get_data_record_occurrences(data_record=data_record, value=value) == expected_value
+        assert Service._get_reoccurring_data_record_occurrences(data_record=data_record, value=value) == expected_value
         data_record.get_raw_value_from_children.assert_has_calls(expected_calls, any_order=False)
+
+    # _get_data_record_occurrences
+
+    @patch(f"{SCRIPT_LOCATION}.Service._get_reoccurring_data_record_occurrences")
+    @patch(f"{SCRIPT_LOCATION}.Service._get_single_data_record_occurrence")
+    def test_get_data_record_occurrences__single(self, mock_get_single_data_record_occurrence,
+                                                 mock_get_reoccurring_data_record_occurrences):
+        mock_data_record = Mock(spec=AbstractDataRecord, is_reoccurring=False)
+        mock_value = MagicMock()
+        assert (Service._get_data_record_occurrences(data_record=mock_data_record, value=mock_value)
+                == mock_get_single_data_record_occurrence.return_value)
+        mock_get_single_data_record_occurrence.assert_called_once_with(data_record=mock_data_record,
+                                                                       value=mock_value)
+        mock_get_reoccurring_data_record_occurrences.assert_not_called()
+
+    @patch(f"{SCRIPT_LOCATION}.Service._get_reoccurring_data_record_occurrences")
+    @patch(f"{SCRIPT_LOCATION}.Service._get_single_data_record_occurrence")
+    def test_get_data_record_occurrences__multiple(self, mock_get_single_data_record_occurrence,
+                                                 mock_get_reoccurring_data_record_occurrences):
+        mock_data_record = Mock(spec=AbstractDataRecord, is_reoccurring=True)
+        mock_value = MagicMock()
+        assert (Service._get_data_record_occurrences(data_record=mock_data_record, value=mock_value)
+                == mock_get_reoccurring_data_record_occurrences.return_value)
+        mock_get_reoccurring_data_record_occurrences.assert_called_once_with(data_record=mock_data_record,
+                                                                             value=mock_value)
+        mock_get_single_data_record_occurrence.assert_not_called()
 
     # _decode_payload
 
@@ -745,518 +837,3 @@ class TestService:
     def test_encode__value_error(self, sid, rsid, data_records_values):
         with pytest.raises(ValueError):
             Service.encode(self.mock_service, sid=sid, rsid=rsid, data_records_values=data_records_values)
-
-
-@pytest.mark.integration
-class TestServiceIntegration:
-    """Integration tests for `Service` class."""
-
-    def setup_class(self):
-        did_mapping = {
-            0xF186: [MappingDataRecord(name="diagnosticSessionType",
-                                       length=8,
-                                       values_mapping={1: "Default",
-                                                       2: "Programming",
-                                                       3: "Extended"})],
-            0xF187: [TextDataRecord(name="Spare Part Number",
-                                    encoding=TextEncoding.ASCII,
-                                    min_occurrences=1,
-                                    max_occurrences=None)],
-            0xF188: [TextDataRecord(name="ECU Software Number",
-                                    encoding=TextEncoding.BCD,
-                                    min_occurrences=2,
-                                    max_occurrences=None)],
-            0xF191: [TextDataRecord(name="ECU Hardware Number",
-                                    encoding=TextEncoding.BCD,
-                                    min_occurrences=2,
-                                    max_occurrences=None)],
-        }
-        did_2 = MappingDataRecord(name="DID #2",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  },
-                                  min_occurrences=0,
-                                  max_occurrences=1)
-        conditional_mapping = ConditionalMappingDataRecord(
-            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
-            mapping=did_mapping)
-        self.diagnostic_session_control = Service(
-            request_sid=RequestSID.DiagnosticSessionControl,
-            request_structure=[
-                RawDataRecord(name="subFunction",
-                              length=8,
-                              children=[
-                                  MappingDataRecord(name="SPRMIB",
-                                                    length=1,
-                                                    values_mapping={0: "no", 1: "yes"}),
-                                  MappingDataRecord(name="diagnosticSessionType",
-                                                    length=7,
-                                                    values_mapping={1: "Default",
-                                                                    2: "Programming",
-                                                                    3: "Extended"})
-                              ])
-            ],
-            response_structure=[
-                RawDataRecord(name="subFunction",
-                              length=8,
-                              children=[
-                                  MappingDataRecord(name="SPRMIB",
-                                                    length=1,
-                                                    values_mapping={0: "no", 1: "yes"}),
-                                  MappingDataRecord(name="diagnosticSessionType",
-                                                    length=7,
-                                                    values_mapping={1: "Default",
-                                                                    2: "Programming",
-                                                                    3: "Extended"})
-                              ]),
-                RawDataRecord(name="sessionParameterRecord",
-                              length=32,
-                              children=[
-                                  LinearFormulaDataRecord(name="P2Server_max",
-                                                          length=16,
-                                                          factor=1,
-                                                          offset=0,
-                                                          unit="ms"),
-                                  LinearFormulaDataRecord(name="P2*Server_max",
-                                                          length=16,
-                                                          factor=10,
-                                                          offset=0,
-                                                          unit="ms")
-                              ])
-            ]
-        )
-        self.read_memory_by_address = Service(
-            request_sid=RequestSID.ReadMemoryByAddress,
-            request_structure=[
-                RawDataRecord(name="addressAndLengthFormatIdentifier",
-                              length=8,
-                              children=[
-                                  RawDataRecord(name="memorySizeLength",
-                                                length=4),
-                                  RawDataRecord(name="memoryAddressLength",
-                                                length=4)
-                              ]),
-                ConditionalFormulaDataRecord(
-                    formula=lambda addressAndLengthFormatIdentifier: [
-                        RawDataRecord(name="memoryAddress", length=8*(addressAndLengthFormatIdentifier & 0xF)),
-                        RawDataRecord(name="memorySize", length=8*(addressAndLengthFormatIdentifier >> 4))
-                    ]
-                )
-            ],
-            response_structure=[
-                RawDataRecord(name="data",
-                              length=8,
-                              min_occurrences=1,
-                              max_occurrences=None)
-            ]
-        )
-        self.read_data_by_identifier = Service(
-            request_sid=RequestSID.ReadDataByIdentifier,
-            request_structure=[
-                MappingDataRecord(name="DID",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  },
-                                  min_occurrences=1,
-                                  max_occurrences=None)
-            ],
-            response_structure=[  # Simplified
-                MappingDataRecord(name="DID #1",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  }),
-                ConditionalMappingDataRecord(default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
-                                             mapping={
-                                                 did: did_structure + [did_2, conditional_mapping] if did == 0xF186 else did_structure
-                                                 for did, did_structure in did_mapping.items()
-                                             })
-            ],
-        )
-
-    # encode
-
-    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
-        (
-            0x10,
-            None,
-            {"subFunction": 0x40},
-            bytearray([0x10, 0x40])
-        ),
-        (
-            None,
-            0x50,
-            {
-                "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
-                "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678}
-            },
-            bytearray([0x50, 0x83, 0x12, 0x34, 0x56, 0x78])
-        ),
-        (
-            0x10,
-            0x7F,
-            {"NRC": 0x84},
-            bytearray([0x7F, 0x10, 0x84])
-        ),
-    ])
-    def test_encode_1(self, sid, rsid, data_records_values, payload):
-        assert self.diagnostic_session_control.encode(sid=sid,
-                                                      rsid=rsid,
-                                                      data_records_values=data_records_values) == payload
-
-    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
-        (
-            RequestSID.ReadMemoryByAddress,
-            None,
-            {
-                "addressAndLengthFormatIdentifier": 0x24,
-                "memoryAddress": 0x20481392,
-                "memorySize": 0x0103
-            },
-            bytearray([0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03])
-        ),
-        (
-            None,
-            ResponseSID.ReadMemoryByAddress,
-            {
-                "addressAndLengthFormatIdentifier": 0x24,
-                "data": [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
-            },
-            bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F")
-        ),
-        (
-            RequestSID.ReadMemoryByAddress,
-            ResponseSID.NegativeResponse,
-            {
-                "NRC": NRC.ServiceNotSupportedInActiveSession
-            },
-            bytearray([0x7F, 0x23, 0x7F])
-        )
-    ])
-    def test_encode_2(self, sid, rsid, data_records_values, payload):
-        assert self.read_memory_by_address.encode(sid=sid,
-                                                  rsid=rsid,
-                                                  data_records_values=data_records_values) == payload
-
-    @pytest.mark.parametrize("sid, rsid, data_records_values, payload", [
-        (
-            RequestSID.ReadDataByIdentifier,
-            None,
-            {
-                "DID": [0x1234, 0xF186, 0xF191]
-            },
-            bytearray([0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91])
-        ),
-        (
-            None,
-            ResponseSID.ReadDataByIdentifier,
-            {
-                "DID #1": 0xF186,
-                "diagnosticSessionType": 0x01,
-                "DID #2": 0xF188,
-                "ECU Software Number": [9, 0, 8, 1, 7, 2]
-            },
-            bytearray(b"\x62\xF1\x86\x01\xF1\x88\x90\x81\x72")
-        ),
-        (
-            RequestSID.ReadDataByIdentifier,
-            ResponseSID.NegativeResponse,
-            {
-                "NRC": NRC.GeneralReject
-            },
-            bytearray([0x7F, 0x22, 0x10])
-        )
-    ])
-    def test_encode_3(self, sid, rsid, data_records_values, payload):
-        assert self.read_data_by_identifier.encode(sid=sid,
-                                                   rsid=rsid,
-                                                   data_records_values=data_records_values) == payload
-
-    # decode
-
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            bytearray([0x10, 0x40]),
-            (
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x10,
-                                     physical_value="DiagnosticSessionControl",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="subFunction",
-                                     length=8,
-                                     raw_value=0x40,
-                                     physical_value=0x40,
-                                     children=(
-                                         SingleOccurrenceInfo(name="SPRMIB",
-                                                              length=1,
-                                                              raw_value=0,
-                                                              physical_value="no",
-                                                              children=tuple(),
-                                                              unit=None),
-                                         SingleOccurrenceInfo(name="diagnosticSessionType",
-                                                              length=7,
-                                                              raw_value=0x40,
-                                                              physical_value=0x40,
-                                                              children=tuple(),
-                                                              unit=None),
-                                     ),
-                                     unit=None),
-            )
-        ),
-        (
-            bytearray([0x50, 0x83, 0x12, 0x34, 0x56, 0x78]),
-            (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x50,
-                                     physical_value="DiagnosticSessionControl",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="subFunction",
-                                     length=8,
-                                     raw_value=0x83,
-                                     physical_value=0x83,
-                                     children=(
-                                             SingleOccurrenceInfo(name="SPRMIB",
-                                                                  length=1,
-                                                                  raw_value=1,
-                                                                  physical_value="yes",
-                                                                  children=tuple(),
-                                                                  unit=None),
-                                             SingleOccurrenceInfo(name="diagnosticSessionType",
-                                                                  length=7,
-                                                                  raw_value=0x03,
-                                                                  physical_value="Extended",
-                                                                  children=tuple(),
-                                                                  unit=None),
-                                     ),
-                                     unit=None),
-                SingleOccurrenceInfo(name="sessionParameterRecord",
-                                     length=32,
-                                     raw_value=0x12345678,
-                                     physical_value=0x12345678,
-                                     children=(
-                                             SingleOccurrenceInfo(name="P2Server_max",
-                                                                  length=16,
-                                                                  raw_value=0x1234,
-                                                                  physical_value=0x1234,
-                                                                  children=tuple(),
-                                                                  unit="ms"),
-                                             SingleOccurrenceInfo(name="P2*Server_max",
-                                                                  length=16,
-                                                                  raw_value=0x5678,
-                                                                  physical_value=0x5678 * 10,
-                                                                  children=tuple(),
-                                                                  unit="ms"),
-                                     ),
-                                     unit=None)
-            )
-        ),
-        (
-            bytearray([0x7F, 0x10, 0x84]),
-            (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="NegativeResponse",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x10,
-                                     physical_value="DiagnosticSessionControl",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="NRC",
-                                     length=8,
-                                     raw_value=0x84,
-                                     physical_value="EngineIsNotRunning",
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-    ])
-    def test_decode_1(self, payload, decoded_message):
-        assert self.diagnostic_session_control.decode(payload=payload) == decoded_message
-
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            bytearray([0x23, 0x24, 0x20, 0x48, 0x13, 0x92, 0x01, 0x03]),
-            (
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x23,
-                                     physical_value="ReadMemoryByAddress",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="addressAndLengthFormatIdentifier",
-                                     length=8,
-                                     raw_value=0x24,
-                                     physical_value=0x24,
-                                     children=(
-                                         SingleOccurrenceInfo(name="memorySizeLength",
-                                                              length=4,
-                                                              raw_value=0x2,
-                                                              physical_value=0x2,
-                                                              children=tuple(),
-                                                              unit=None),
-                                         SingleOccurrenceInfo(name="memoryAddressLength",
-                                                              length=4,
-                                                              raw_value=0x4,
-                                                              physical_value=0x4,
-                                                              children=tuple(),
-                                                              unit=None),
-                                     ),
-                                     unit=None),
-                SingleOccurrenceInfo(name="memoryAddress",
-                                     length=32,
-                                     raw_value=0x20481392,
-                                     physical_value=0x20481392,
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="memorySize",
-                                     length=16,
-                                     raw_value=0x0103,
-                                     physical_value=0x0103,
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-        (
-            bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F"),
-            (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x63,
-                                     physical_value="ReadMemoryByAddress",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="data",
-                                     length=8,
-                                     raw_value=[0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
-                                     physical_value=(0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F),
-                                     children=[tuple()] * 16,
-                                     unit=None),
-            )
-        ),
-        (
-            bytearray([0x7F, 0x23, 0x7F]),
-            (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="NegativeResponse",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x23,
-                                     physical_value="ReadMemoryByAddress",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="NRC",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="ServiceNotSupportedInActiveSession",
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-    ])
-    def test_decode_2(self, payload, decoded_message):
-        assert self.read_memory_by_address.decode(payload=payload) == decoded_message
-
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            bytearray([0x22, 0x12, 0x34, 0xF1, 0x86, 0xF1, 0x91]),
-            (
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x22,
-                                     physical_value="ReadDataByIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                MultipleOccurrencesInfo(name="DID",
-                                        length=16,
-                                        raw_value=[0x1234, 0xF186, 0xF191],
-                                        physical_value=(0x1234,
-                                                        "ActiveDiagnosticSessionDataIdentifier",
-                                                        "vehicleManufacturerECUHardwareNumberDataIdentifier"),
-                                        children=[(), (), ()],
-                                        unit=None),
-            )
-        ),
-        (
-            bytearray(b"\x62\xF1\x86\x01\xF1\x88\x90\x81\x72"),
-            (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x62,
-                                     physical_value="ReadDataByIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="DID #1",
-                                     length=16,
-                                     raw_value=0xF186,
-                                     physical_value="ActiveDiagnosticSessionDataIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="diagnosticSessionType",
-                                     length=8,
-                                     raw_value=0x01,
-                                     physical_value="Default",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="DID #2",
-                                     length=16,
-                                     raw_value=0xF188,
-                                     physical_value="vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                MultipleOccurrencesInfo(name="ECU Software Number",
-                                        length=4,
-                                        raw_value=[9, 0, 8, 1, 7, 2],
-                                        physical_value="908172",
-                                        children=[tuple()] * 6,
-                                        unit=None),
-            )
-        ),
-        (
-            bytearray([0x7F, 0x22, 0x10]),
-            (
-                SingleOccurrenceInfo(name="RSID",
-                                     length=8,
-                                     raw_value=0x7F,
-                                     physical_value="NegativeResponse",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="SID",
-                                     length=8,
-                                     raw_value=0x22,
-                                     physical_value="ReadDataByIdentifier",
-                                     children=tuple(),
-                                     unit=None),
-                SingleOccurrenceInfo(name="NRC",
-                                     length=8,
-                                     raw_value=0x10,
-                                     physical_value="GeneralReject",
-                                     children=tuple(),
-                                     unit=None),
-            )
-        ),
-    ])
-    def test_decode_3(self, payload, decoded_message):
-        assert self.read_data_by_identifier.decode(payload=payload) == decoded_message

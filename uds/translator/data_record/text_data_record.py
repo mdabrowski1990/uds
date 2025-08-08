@@ -68,7 +68,7 @@ class TextDataRecord(AbstractDataRecord):
         """Structure of Encoding Information."""
 
         length: int
-        encode: Callable[[int], str]
+        encode: Callable[[int], str]  # noqa: vulture
         decode: Callable[[str], int]
 
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {

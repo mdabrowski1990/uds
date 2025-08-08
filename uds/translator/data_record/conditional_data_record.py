@@ -110,8 +110,7 @@ class AbstractConditionalDataRecord(ABC):
                 if data_record.name in names:
                     raise InconsistentArgumentsError("Data Records within one message have to have unique names. "
                                                      f"Multiple `{data_record.name}` found.")
-                else:
-                    names.add(data_record.name)
+                names.add(data_record.name)
                 if not data_record.fixed_total_length:
                     if data_record.max_occurrences != 1 and i != len(value) - 1:
                         raise ValueError("Data record with varying length can only be placed at the end of "

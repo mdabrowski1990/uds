@@ -18,16 +18,19 @@ from ..data_record import (
     SingleOccurrenceInfo,
 )
 
-DataRecordValueAlias = Optional[Union[int, ChildrenValuesAlias, Sequence[Union[int, ChildrenValuesAlias]]]]
-"""Alias for Data Record value that can be used in the Data Records Mapping.
-For a single occurrence Data Records (is_reoccurring=False) it is either a raw value (int type), None (no occurrence)
-or a mapping with children values.
-For multiple occurrences Data Records (is_reoccurring=True) it is a sequence. Each sequence element represents a single
-occurrence and is either a raw value or a mapping with children values.
-"""
+SingleDataRecordValueAlias = Optional[Union[int, ChildrenValuesAlias]]
+"""Alias for a single occurrence Data Record. Either:
+ - int type - a single raw value
+ - mapping type - children values
+ - None - no occurrence"""
+MultipleDataRecordValueAlias = Sequence[Union[int, ChildrenValuesAlias]]
+"""Alias for a multiple occurrences Data Record. It is a sequence where each element represents a single occurrence.
+Each element is either raw value (int type) or children values (mapping type)."""
+DataRecordValueAlias = Union[SingleDataRecordValueAlias, MultipleDataRecordValueAlias]
+"""Alias for a Data Record value that can be used in the Data Records Mapping."""
 DataRecordsValuesAlias = Mapping[str, DataRecordValueAlias]
 """Alias for Data Records values mapping.
-Mapping keys are Data Records names. 
+Mapping keys are Data Records names.
 Mapping values are corresponding Data Records values.
 """
 
@@ -83,8 +86,8 @@ class Service:
 
         :raise ValueError: Request SID and Response SID values are incorrectly defined for given value.
         """
-        self.__request_sid = RequestSID.validate_member(request_sid)
-        self.__response_sid = ResponseSID.validate_member(request_sid + RESPONSE_REQUEST_SID_DIFF)
+        self.__request_sid: RequestSID = RequestSID.validate_member(request_sid)
+        self.__response_sid: ResponseSID = ResponseSID.validate_member(request_sid + RESPONSE_REQUEST_SID_DIFF)
         if self.__request_sid.name != self.__response_sid.name:
             raise ValueError("Request and Response SID values are not defined for the same Service.")
 
@@ -142,7 +145,7 @@ class Service:
     @property
     def name(self) -> str:
         """Get name of this service."""
-        return self.request_sid.name
+        return self.request_sid.name  # type: ignore
 
     def _get_rsid_info(self, positive: bool = True) -> SingleOccurrenceInfo:
         """
@@ -187,7 +190,82 @@ class Service:
                                     unit=None)
 
     @staticmethod
-    def _get_data_record_occurrences(data_record: AbstractDataRecord,
+    def _get_single_data_record_occurrence(data_record: AbstractDataRecord,
+                                           value: SingleDataRecordValueAlias) -> List[int]:
+        """
+        Get occurrence value for a single occurrence Data Record.
+
+        :param data_record: Data Record object.
+        :param value: Data Record value. Either:
+
+            - None - no value (valid for Data Records with min_occurrences=0)
+            - int type - raw value
+            - mapping type - children values
+
+        :raise TypeError: Provided value has incorrect type that cannot be handled for the provided Data Record.
+        :raise ValueError: Provided value is incorrect.
+
+        :return: List with either 1 or 0 raw values for this Data Record.
+        """
+        if value is None and data_record.min_occurrences == 0:
+            return []
+        if isinstance(value, int):
+            if not data_record.min_raw_value <= value <= data_record.max_raw_value:
+                raise ValueError("Provided occurrence value is out of range. "
+                                 f"Data Record name = {data_record.name}. "
+                                 f"Data Record min raw value = {data_record.min_raw_value}. "
+                                 f"Data Record max raw value = {data_record.max_occurrences}. "
+                                 f"Provided sequence = {value}. Occurrence value = {value}.")
+            return [value]
+        if isinstance(value, Mapping):
+            return [data_record.get_raw_value_from_children(value)]
+        raise TypeError(f"Incorrect value was provided for a Single Occurrence Data Record. "
+                        f"Data Record name = {data_record.name}. Provided value = {value}.")
+
+    @staticmethod
+    def _get_reoccurring_data_record_occurrences(data_record: AbstractDataRecord,
+                                                 value: MultipleDataRecordValueAlias) -> List[int]:
+        """
+        Get occurrences values for multiple occurrences Data Record.
+
+        :param data_record: Data Record object.
+        :param value: Sequence with Data Record values (either int or mapping type).
+
+        :raise TypeError: Provided value has incorrect type that cannot be handled for the provided Data Record.
+        :raise ValueError: Provided value is incorrect.
+
+        :return: List with raw values for this Data Record.
+        """
+        if not isinstance(value, Sequence):
+            raise TypeError("A sequence of values has to be provided for a reoccurring Data Record. "
+                            f"Data Record name = {data_record.name}.")
+        if len(value) < data_record.min_occurrences or len(value) > (data_record.max_occurrences or float("inf")):
+            raise ValueError("A sequence of values has to contain proper number of Data Record occurrences."
+                             f"Data Record name = {data_record.name}. "
+                             f"Data Record min occurrences number = {data_record.min_occurrences}. "
+                             f"Data Record max occurrences number = {data_record.max_occurrences}. "
+                             f"Provided sequence = {value}.")
+        raw_values: List[int] = []
+        for occurrence_value in value:
+            if isinstance(occurrence_value, int):
+                if not data_record.min_raw_value <= occurrence_value <= data_record.max_raw_value:
+                    raise ValueError("Provided occurrence value is out of range. "
+                                     f"Data Record name = {data_record.name}. "
+                                     f"Data Record min raw value = {data_record.min_raw_value}. "
+                                     f"Data Record max raw value = {data_record.max_raw_value}. "
+                                     f"Provided sequence = {value}. Occurrence value = {occurrence_value}.")
+                raw_values.append(occurrence_value)
+            elif isinstance(occurrence_value, Mapping):
+                raw_values.append(data_record.get_raw_value_from_children(occurrence_value))
+            else:
+                raise ValueError("Incorrect value was provided for at least one occurrence of a Multi Occurrences "
+                                 f"Data Record. Data Record name = {data_record.name}. "
+                                 f"Provided values = {value}. Incorrect occurrence = {occurrence_value}.")
+        return raw_values
+
+    @classmethod
+    def _get_data_record_occurrences(cls,
+                                     data_record: AbstractDataRecord,
                                      value: DataRecordValueAlias) -> List[int]:
         """
         Get raw values of all occurrences provided as value.
@@ -196,54 +274,11 @@ class Service:
         :param value: Data Record values. Either for a single occurrence or multiple occurrences.
             Each occurrence might be a raw value or mapping with children values.
 
-        :raise TypeError: Provided value has incorrect type that cannot be handled for the provided Data Record.
-        :raise ValueError: Provided value is incorrect.
-
         :return: Raw values for following Data Record occurrences.
         """
-        raw_values: List[int] = []
         if data_record.is_reoccurring:
-            if not isinstance(value, Sequence):
-                raise TypeError("A sequence of values has to be provided for a reoccurring Data Record. "
-                                 f"Data Record name = {data_record.name}.")
-            if len(value) < data_record.min_occurrences or len(value) > (data_record.max_occurrences or float("inf")):
-                raise ValueError("A sequence of values has to contain proper number of Data Record occurrences."
-                                 f"Data Record name = {data_record.name}. "
-                                 f"Data Record min occurrences number = {data_record.min_occurrences}. "
-                                 f"Data Record max occurrences number = {data_record.max_occurrences}. "
-                                 f"Provided sequence = {value}.")
-            for occurrence_value in value:
-                if isinstance(occurrence_value, int):
-                    if not data_record.min_raw_value <= occurrence_value <= data_record.max_raw_value:
-                        raise ValueError("Provided occurrence value is out of range. "
-                                         f"Data Record name = {data_record.name}. "
-                                         f"Data Record min raw value = {data_record.min_raw_value}. "
-                                         f"Data Record max raw value = {data_record.max_raw_value}. "
-                                         f"Provided sequence = {value}. Occurrence value = {occurrence_value}.")
-                    raw_values.append(occurrence_value)
-                elif isinstance(occurrence_value, Mapping):
-                    raw_values.append(data_record.get_raw_value_from_children(occurrence_value))
-                else:
-                    raise ValueError("Incorrect value was provided for at least one occurrence of a Multi Occurrences "
-                                     f"Data Record. Data Record name = {data_record.name}. "
-                                     f"Provided values = {value}. Incorrect occurrence = {occurrence_value}.")
-        else:
-            if value is None and data_record.min_occurrences == 0:
-                pass
-            elif isinstance(value, int):
-                if not data_record.min_raw_value <= value <= data_record.max_raw_value:
-                    raise ValueError("Provided occurrence value is out of range. "
-                                     f"Data Record name = {data_record.name}. "
-                                     f"Data Record min raw value = {data_record.min_raw_value}. "
-                                     f"Data Record max raw value = {data_record.max_occurrences}. "
-                                     f"Provided sequence = {value}. Occurrence value = {value}.")
-                raw_values.append(value)
-            elif isinstance(value, Mapping):
-                raw_values.append(data_record.get_raw_value_from_children(value))
-            else:
-                raise TypeError(f"Incorrect value was provided for a Single Occurrence Data Record. "
-                                 f"Data Record name = {data_record.name}. Provided value = {value}.")
-        return raw_values
+            return cls._get_reoccurring_data_record_occurrences(data_record=data_record, value=value)  # type: ignore
+        return cls._get_single_data_record_occurrence(data_record=data_record, value=value)  # type: ignore
 
     @classmethod
     def _decode_payload(cls,
@@ -265,15 +300,15 @@ class Service:
         decoded_message_continuation = []
         remaining_length = 8 * len(payload)
         payload_int = bytes_to_int(bytes_list=payload, endianness=Endianness.BIG_ENDIAN) if payload else 0
-        raw_values = []
+        raw_values: List[int] = []
         for data_record in message_structure:
             if isinstance(data_record, AbstractDataRecord):
                 max_occurrences_number = remaining_length // data_record.length
-                occurrences_number = min(max_occurrences_number, data_record.max_occurrences or float("inf"))
+                occurrences_number = int(min(max_occurrences_number, data_record.max_occurrences or float("inf")))
                 if occurrences_number < data_record.min_occurrences:
                     raise ValueError("Too short payload was provided.")
                 raw_values = []
-                for occurrence_index in range(occurrences_number):
+                for _ in range(occurrences_number):
                     remaining_length -= data_record.length
                     mask = (1 << data_record.length) - 1
                     occurrence_value = (payload_int >> remaining_length) & mask
@@ -281,8 +316,7 @@ class Service:
                 if data_record.min_occurrences == 0 and not raw_values:
                     # an information that this is the end of the message
                     break
-                else:
-                    decoded_message_continuation.append(data_record.get_occurrence_info(*raw_values))
+                decoded_message_continuation.append(data_record.get_occurrence_info(*raw_values))
             elif isinstance(data_record, AbstractConditionalDataRecord):
                 if remaining_length % 8 != 0:
                     raise RuntimeError("Incorrect Data Records structure.")
@@ -482,14 +516,14 @@ class Service:
         """
         Encode diagnostic message payload for this service.
 
-        :param sid: Request SID value.
-            Used by request message and negative response message.
-        :param rsid: Response SID value.
-            Used by response messages only.
         :param data_records_values: Mapping with Data Records values that are part of the message.
             Mapping keys are Data Records names.
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
             a raw value or a mapping with children names and its corresponding values.
+        :param sid: Request SID value.
+            Used by request message and negative response message.
+        :param rsid: Response SID value.
+            Used by response messages only.
 
         :raise ValueError: Missing or provided SID/RSID value cannot be handled by this service.
 

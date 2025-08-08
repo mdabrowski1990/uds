@@ -2,39 +2,67 @@
 
 __all__ = ["Translator"]
 
-from typing import Dict, Union, Sequence, Mapping
 from types import MappingProxyType
+from typing import Collection, Dict, Mapping, Optional, Union
 
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 
-from .service import Service, DataRecordsValuesAlias, DecodedMessageAlias
+from .service import DataRecordsValuesAlias, DecodedMessageAlias, Service
 
 
 class Translator:
-    """Common interface and implementation for UDS message databases."""
+    """
+    Translator for UDS messages.
 
-    def __init__(self, services: Sequence[Service]) -> None:
+    Features:
+     - configuration with Services Translators that are ECU/OEM specific
+     - building diagnostic messages (requests, positive and negative responses)
+     - extracting meaningful information from diagnostic messages payload
+    """
+
+    def __init__(self, services: Collection[Service]) -> None:
+        """
+        Configure Translator.
+
+        :param services: Services translators to use.
+        """
         self.services = services
 
     @property
-    def services(self) -> Sequence[Service]:
+    def services(self) -> Collection[Service]:
+        """Get diagnostic services translators."""
         return self.__services
 
     @services.setter
-    def services(self, value: Sequence[Service]) -> None:
-        # TODO: error handling
-        self.__services = tuple(value)
-        services_mapping = {}
-        for service in self.__services:
+    def services(self, value: Collection[Service]) -> None:
+        """
+        Set diagnostic services translators.
+
+        :param value: Diagnostic services translators to set.
+        """
+        if not isinstance(value, Collection):
+            raise TypeError("Provided value is not a collection.")
+        services_mapping: Dict[Union[RequestSID, ResponseSID], Service] = {}
+        for service in value:
+            if not isinstance(service, Service):
+                raise ValueError("At least one collection element is not instance of Service class.")
+            if service.request_sid in services_mapping or service.response_sid in services_mapping:
+                raise ValueError("Multiple services translators were provided for "
+                                 f"SID = {service.request_sid} or RSID = {service.response_sid}.")
             services_mapping[service.request_sid] = service
             services_mapping[service.response_sid] = service
+        self.__services = frozenset(value)
         self.__services_mapping = MappingProxyType(services_mapping)
 
     @property
-    def services_mapping(self) -> Mapping[int, Service]:
-        return self.__services_mapping
+    def services_mapping(self) -> Mapping[Union[int, RequestSID, ResponseSID], Service]:
+        """Get mapping from SID/RSID values to corresponding Service Translators."""
+        return self.__services_mapping  # type: ignore
 
-    def encode(self, data_records_values: DataRecordsValuesAlias) -> bytearray:
+    def encode(self,
+               data_records_values: DataRecordsValuesAlias,
+               sid: Optional[RequestSID] = None,
+               rsid: Optional[ResponseSID] = None) -> bytearray:
         """
         Encode diagnostic message payload from data records values.
 
@@ -42,21 +70,22 @@ class Translator:
             Mapping keys are Data Records names.
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
             a raw value or a mapping with children names and its corresponding values.
+        :param sid: Request SID value.
+            Used by request message and negative response message.
+        :param rsid: Response SID value.
+            Used by response messages only.
 
         :return: Payload of a diagnostic message.
         """
-        data_records_values_dict = dict(data_records_values)
-        sid = data_records_values_dict.pop("SID", None)
-        rsid = data_records_values_dict.pop("RSID", None)
-        if rsid == ResponseSID.NegativeResponse:
-            return self.services_mapping[sid].encode_negative_response(
-                nrc=data_records_values_dict["NRC"])  # type: ignore
-        if rsid is None:
-            return self.services_mapping[sid].encode_request(data_records_values=data_records_values_dict)
-        if sid is None:
-            return self.services_mapping[rsid].encode_positive_response(data_records_values=data_records_values_dict)
-        raise ValueError("Either SID or RSID value is missing or incorrect. Provided values: "
-                         f"SID = {sid}. RSID = {rsid}.")
+        if rsid == ResponseSID.NegativeResponse and sid in self.services_mapping:
+            return self.services_mapping[sid].encode_negative_response(nrc=data_records_values["NRC"])  # type: ignore
+        if rsid in self.services_mapping and sid is None:
+            return self.services_mapping[rsid].encode_positive_response(  # type: ignore
+                data_records_values=data_records_values)
+        if sid in self.services_mapping and rsid is None:
+            return self.services_mapping[sid].encode_request(data_records_values=data_records_values)  # type: ignore
+        raise ValueError("Either SID or RSID value is missing or incorrect. "
+                         f"Provided values: SID = {sid}. RSID = {rsid}.")
 
     def decode(self, message: Union[UdsMessage, UdsMessageRecord]) -> DecodedMessageAlias:
         """
@@ -70,8 +99,8 @@ class Translator:
         """
         if message.payload[0] == ResponseSID.NegativeResponse:
             sid = message.payload[1]
-            return self.services[sid].decode_negative_response(message.payload)
+            return self.services_mapping[sid].decode_negative_response(message.payload)
         sid = message.payload[0]
-        if sid not in self.services:
+        if sid not in self.services_mapping:
             raise ValueError("Database has no decoding defined for SID/RSID value of the provided message.")
-        return self.services[sid].decode(message.payload)
+        return self.services_mapping[sid].decode(message.payload)
