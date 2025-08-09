@@ -64,11 +64,16 @@ class TestTextDataRecord:
         # patching
         self._patcher_abstract_data_record_init = patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
         self.mock_abstract_data_record_init = self._patcher_abstract_data_record_init.start()
+        self._patcher_abstract_data_record_get_physical_values \
+            = patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.get_physical_values")
+        self.mock_abstract_data_record_get_physical_values \
+            = self._patcher_abstract_data_record_get_physical_values.start()
         self._patcher_text_encoding_validate_member = patch(f"{SCRIPT_LOCATION}.TextEncoding.validate_member")
         self.mock_text_encoding_validate_member = self._patcher_text_encoding_validate_member.start()
 
     def teardown_method(self):
         self._patcher_abstract_data_record_init.stop()
+        self._patcher_abstract_data_record_get_physical_values.stop()
         self._patcher_text_encoding_validate_member.stop()
 
     # __init__
@@ -126,27 +131,14 @@ class TestTextDataRecord:
 
     # get_physical_values
 
-    def test_get_physical_values__runtime_error(self):
-        self.mock_data_record.is_reoccurring = False
-        with pytest.raises(RuntimeError):
-            TextDataRecord.get_physical_values(self.mock_data_record, Mock(), Mock())
-
-    def test_get_physical_values__value_error(self):
-        self.mock_data_record.is_reoccurring = True
-        with pytest.raises(ValueError):
-            TextDataRecord.get_physical_values(self.mock_data_record)
-
-    @pytest.mark.parametrize("raw_values, character", [
+    @pytest.mark.parametrize("raw_values, characters", [
         (range(10), "0"),
         ([Mock(), Mock(), Mock()], "a"),
     ])
-    def test_get_physical_values(self, raw_values, character):
-        self.mock_data_record.is_reoccurring = True
-        self.mock_data_record.get_physical_value.return_value = character
-        assert (TextDataRecord.get_physical_values(self.mock_data_record, *raw_values)
-                == str(character) * len(raw_values))
-        self.mock_data_record.get_physical_value.assert_has_calls([call(raw_value) for raw_value in raw_values],
-                                                                  any_order=False)
+    def test_get_physical_values(self, raw_values, characters):
+        self.mock_abstract_data_record_get_physical_values.return_value = tuple(characters)
+        assert TextDataRecord.get_physical_values(self.mock_data_record, *raw_values) == characters
+        self.mock_abstract_data_record_get_physical_values.assert_called_once_with(*raw_values)
 
     # get_physical_value
 
@@ -164,6 +156,19 @@ class TestTextDataRecord:
     # get_raw_value
 
     @pytest.mark.parametrize("physical_value", [Mock(), "Some character"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_raw_value__type_error(self, mock_isinstance, physical_value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            TextDataRecord.get_raw_value(self.mock_data_record, physical_value=physical_value)
+        mock_isinstance.assert_called_once_with(physical_value, str)
+
+    @pytest.mark.parametrize("physical_value", ["", "21"])
+    def test_get_raw_value__value_error(self, physical_value):
+        with pytest.raises(ValueError):
+            TextDataRecord.get_raw_value(self.mock_data_record, physical_value=physical_value)
+
+    @pytest.mark.parametrize("physical_value", ["a", "1"])
     def test_get_raw_value(self, physical_value):
         mock_decode = Mock()
         mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_decode))
@@ -175,7 +180,6 @@ class TestTextDataRecord:
         mock_encoding.__getitem__.assert_called_once_with("decode")
 
 
-@pytest.mark.integration
 @pytest.mark.integration
 class TestTextDataRecordIntegration:
     """Integration tests for the TextDataRecord class."""

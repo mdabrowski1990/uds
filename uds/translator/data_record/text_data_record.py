@@ -116,7 +116,7 @@ class TextDataRecord(AbstractDataRecord):
             return 9
         raise NotImplementedError(f"Missing implementation for {self.encoding}.")
 
-    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValuesAlias:
+    def get_physical_values(self, *raw_values: int) -> str:
         """
         Get physical values representing provided raw values.
 
@@ -127,15 +127,10 @@ class TextDataRecord(AbstractDataRecord):
 
         :return: Text encoded for provided raw values.
         """
-        if not self.is_reoccurring:
-            raise RuntimeError("This method must be called for reoccurring Data Record only.")
-        if len(raw_values) == 0:
-            raise ValueError("Raw value for at least one occurrence must be provided.")
-        # TODO: handle wrong number of occurrences
-        # TODO: use super
-        return "".join((self.get_physical_value(raw_value) for raw_value in raw_values))  # type: ignore
+        physical_values = super().get_physical_values(*raw_values)
+        return "".join(physical_values)
 
-    def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
+    def get_physical_value(self, raw_value: int) -> str:
         """
         Get physical value representing provided raw value.
 

@@ -16,20 +16,20 @@ Translator
 
   **Example code:**
 
-    .. code-block::  python
+  .. code-block::  python
 
-      from uds.translator import Translator, Service
+    from uds.translator import Translator, Service
 
-      # let's assume we have some services already defined
-      my_services = {
-          # define your services here
-          Service(...),
-          Service(...),
-          ...
-      }
+    # let's assume we have some services already defined
+    my_services = {
+        # define your services here
+        Service(...),
+        Service(...),
+        ...
+    }
 
-      # configure translator
-      my_translator = Translator(my_services)
+    # configure translator
+    my_translator = Translator(my_services)
 
 
 - Diagnostic Messages payload building (encoding):
@@ -102,23 +102,23 @@ Each object of :class:`~uds.translator.service.service.Service` class defines a 
 
   **Example code:**
 
-    .. code-block::  python
+  .. code-block::  python
 
-      from uds.translator import Service, AbstractDataRecord
-      from uds.message import NRC
+    from uds.translator import Service, AbstractDataRecord
+    from uds.message import NRC
 
-      # let's assume that we have `sub_function_data_record` and `session_parameter_data_record` Data Records defined
-      sub_function_data_record: AbstractDataRecord
-      session_parameter_data_record: AbstractDataRecord
+    # let's assume that we have `sub_function_data_record` and `session_parameter_data_record` Data Records defined
+    sub_function_data_record: AbstractDataRecord
+    session_parameter_data_record: AbstractDataRecord
 
-      # configure example diagnostic service
-      diagnostic_session_control = Service(request_sid=RequestSID.DiagnosticSessionControl,
-                                           request_structure=[sub_function_data_record],
-                                           response_structure=[sub_function_data_record, session_parameter_data_record],
-                                           supported_nrc={NRC.SubFunctionNotSupported,
-                                                          NRC.IncorrectMessageLengthOrInvalidFormat,
-                                                          NRC.BusyRepeatRequest,
-                                                          NRC.ConditionsNotCorrect})
+    # configure example diagnostic service
+    diagnostic_session_control = Service(request_sid=RequestSID.DiagnosticSessionControl,
+                                         request_structure=[sub_function_data_record],
+                                         response_structure=[sub_function_data_record, session_parameter_data_record],
+                                         supported_nrc={NRC.SubFunctionNotSupported,
+                                                        NRC.IncorrectMessageLengthOrInvalidFormat,
+                                                        NRC.BusyRepeatRequest,
+                                                        NRC.ConditionsNotCorrect})
 
 - Diagnostic Messages payload building (encoding):
 
@@ -133,41 +133,41 @@ Each object of :class:`~uds.translator.service.service.Service` class defines a 
 
   **Example code:**
 
-    .. code-block::  python
+  .. code-block::  python
 
-      from uds.translator import Service, AbstractDataRecord
-      from uds.message import NRC
+    from uds.translator import Service, AbstractDataRecord
+    from uds.message import NRC
 
-      # let's assume that we have `diagnostic_session_control` Service defined
-      diagnostic_session_control: Service
+    # let's assume that we have `diagnostic_session_control` Service defined
+    diagnostic_session_control: Service
 
-      # build payload of example request message for Diagnostic Session Control service
-      request_payload = diagnostic_session_control.encode(sid=RequestSID.DiagnosticSessionControl,
-                                                          data_records_values={"subFunction": {
-                                                                                   "SPRMIB": 1,
-                                                                                   "diagnosticSessionType": 3}})
-      request_payload = diagnostic_session_control.encode_request(data_records_values={"subFunction": {
-                                                                                           "SPRMIB": 1,
-                                                                                           "diagnosticSessionType": 3}})
+    # build payload of example request message for Diagnostic Session Control service
+    request_payload = diagnostic_session_control.encode(sid=RequestSID.DiagnosticSessionControl,
+                                                        data_records_values={"subFunction": {
+                                                                                 "SPRMIB": 1,
+                                                                                 "diagnosticSessionType": 3}})
+    request_payload = diagnostic_session_control.encode_request(data_records_values={"subFunction": {
+                                                                                         "SPRMIB": 1,
+                                                                                         "diagnosticSessionType": 3}})
 
-      # build payload of example positive response message for Diagnostic Session Control service
-      positive_response_payload = diagnostic_session_control.encode(rsid=ResponseSID.DiagnosticSessionControl,
-                                                                    data_records_values={"subFunction": 3,
-                                                                                         "sessionParameterRecord": {
-                                                                                             "P2Server_max": 0x1234,
-                                                                                             "P2*Server_max": 0x5678}})
-      positive_response_payload = diagnostic_session_control.encode_positive_response(data_records_values={
-                                                                                          "subFunction": 3,
-                                                                                          "sessionParameterRecord": {
-                                                                                              "P2Server_max": 0x1234,
-                                                                                              "P2*Server_max": 0x5678}})
+    # build payload of example positive response message for Diagnostic Session Control service
+    positive_response_payload = diagnostic_session_control.encode(rsid=ResponseSID.DiagnosticSessionControl,
+                                                                  data_records_values={"subFunction": 3,
+                                                                                       "sessionParameterRecord": {
+                                                                                           "P2Server_max": 0x1234,
+                                                                                           "P2*Server_max": 0x5678}})
+    positive_response_payload = diagnostic_session_control.encode_positive_response(data_records_values={
+                                                                                        "subFunction": 3,
+                                                                                        "sessionParameterRecord": {
+                                                                                            "P2Server_max": 0x1234,
+                                                                                            "P2*Server_max": 0x5678}})
 
-      # build payload of example negative response message for Diagnostic Session Control service
-      negative_response_payload = diagnostic_session_control.encode(rsid=ResponseSID.NegativeResponse,
-                                                                    sid=RequestSID.DiagnosticSessionControl,
-                                                                    data_records_values={
-                                                                        "NRC": NRC.SubFunctionNotSupported})
-      negative_response_payload = diagnostic_session_control.encode_negative_response(nrc=NRC.SubFunctionNotSupported)
+    # build payload of example negative response message for Diagnostic Session Control service
+    negative_response_payload = diagnostic_session_control.encode(rsid=ResponseSID.NegativeResponse,
+                                                                  sid=RequestSID.DiagnosticSessionControl,
+                                                                  data_records_values={
+                                                                      "NRC": NRC.SubFunctionNotSupported})
+    negative_response_payload = diagnostic_session_control.encode_negative_response(nrc=NRC.SubFunctionNotSupported)
 
 - Extracting information carried by Diagnostic Messages (decoding):
 
@@ -214,6 +214,7 @@ Data Records are parts of diagnostic messages and they are used to define diagno
 :class:`~uds.translator.service.service.Service` class.
 All Data Records implementation can be found in :mod:`~uds.translator.data_record`.
 
+
 Abstract Data Record
 ````````````````````
 :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord` class defines common functionality for
@@ -241,58 +242,80 @@ That means that physical and raw values for all Raw Data Records are the same.
 
 **Example code:**
 
-  .. code-block::  python
+.. code-block::  python
 
-      from uds.translator import RawDataRecord
+  from uds.translator import RawDataRecord
 
-      # define example Raw Data Records
-      sub_function = RawDataRecord(name="subFunction",
-                                   length=8,
-                                   min_occurrences=1,
-                                   max_occurrences=1)
-      message_filler = RawDataRecord(name="Filler for message with unknown structure",
-                                     length=8,
-                                     min_occurrences=0,
-                                     max_occurrences=None)
+  # define example Raw Data Records
+  sub_function = RawDataRecord(name="subFunction",
+                               length=8,
+                               min_occurrences=1,
+                               max_occurrences=1)
+  message_filler = RawDataRecord(name="Filler for message with unknown structure",
+                                 length=8,
+                                 min_occurrences=0,
+                                 max_occurrences=None)
+
+  # get_raw_value
+  sub_function.get_raw_value(0)  # 0
+  sub_function.get_raw_value(255)  # 255
+  message_filler.get_raw_value(0)  # 0
+  message_filler.get_raw_value(255)  # 255
+
+  # get_physical_value
+  sub_function.get_physical_value(0)  # 0
+  sub_function.get_physical_value(255)  # 255
+  message_filler.get_physical_value(0)  # 0
+  message_filler.get_physical_value(255)  # 255
+
+  # get_physical_values
+  message_filler.get_physical_values(0, 255)  # (0, 255)
+  message_filler.get_physical_values(0, 1, 2, 3, 4, 5, 6, 7)  # (0, 1, 2, 3, 4, 5, 6, 7)
 
 
 Mapping Data Record
 ```````````````````
 :class:`~uds.translator.data_record.mapping_data_record.MappingDataRecord` class is used to define an entries
 in diagnostic messages that can be translated to labels due to some known mapping.
-That means that physical value is always str type.
+That means that physical value would usually be str type. If *user provides raw value for which no mapping is defined*
+though, then a warning would be reported.
+
+.. note:: Raw values for which mapping is not defined are handled the same way as per
+  :class:`~uds.translator.data_record.raw_data_record.RawDataRecord`.
+  Same goes for int type physical values.
+  This is fallback mechanism for Mapping Data Records with labels defined only for some raw values.
 
 **Example code:**
 
-  .. code-block::  python
+.. code-block::  python
 
-      from uds.translator import MappingDataRecord
+  from uds.translator import MappingDataRecord
 
-      # define example Mapping Data Records
-      sprmib = MappingDataRecord(name="Suppress Positive Response Message Indication Bit",
-                                 length=1,
-                                 values_mapping={0: "no", 1: "yes"},
-                                 min_occurrences=1,
-                                 max_occurrences=1)
-      diagnostic_session = MappingDataRecord(name="diagnosticSessionType",
-                                             length=7,
-                                             values_mapping={1: "Default",
-                                                             2: "Programming",
-                                                             3: "Extended"},
-                                             min_occurrences=1,
-                                             max_occurrences=1)
+  # define example Mapping Data Records
+  sprmib = MappingDataRecord(name="Suppress Positive Response Message Indication Bit",
+                             length=1,
+                             values_mapping={0: "no", 1: "yes"},
+                             min_occurrences=1,
+                             max_occurrences=1)
+  diagnostic_session = MappingDataRecord(name="diagnosticSessionType",
+                                         length=7,
+                                         values_mapping={1: "Default",
+                                                         2: "Programming",
+                                                         3: "Extended"},
+                                         min_occurrences=1,
+                                         max_occurrences=1)
 
-      # get_raw_value
-      sprmib.get_raw_value("no")  # 0
-      sprmib.get_raw_value("yes")  # 1
-      diagnostic_session.get_raw_value("Default")  # 1
-      diagnostic_session.get_raw_value("Extended")  # 3
+  # get_raw_value
+  sprmib.get_raw_value("no")  # 0
+  sprmib.get_raw_value("yes")  # 1
+  diagnostic_session.get_raw_value("Default")  # 1
+  diagnostic_session.get_raw_value(4)  # 4 and warning
 
-      # get_physical_value
-      sprmib.get_physical_value(0)  # "no"
-      sprmib.get_physical_value(1)  # "yes"
-      diagnostic_session.get_physical_value(1)  # "Default"
-      diagnostic_session.get_physical_value(3)  # "Extended"
+  # get_physical_value
+  sprmib.get_physical_value(0)  # "no"
+  sprmib.get_physical_value(1)  # "yes"
+  diagnostic_session.get_physical_value(1)  # "Default"
+  diagnostic_session.get_physical_value(4)  # 4 and warning
 
 
 Formula Data Record
@@ -304,38 +327,66 @@ There are two types of Formula Data Records:
 Both classes are used define an entries in diagnostic messages that can be translated to numeric values using special
 formula. It is recommended to use :class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord`
 whenever possible as :class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` has only limited
-error handling due to more flexible design (user must provide formulas used for both values encoding and decoding).
+error handling due to more flexible design (user must provide properly defined formulas that would be used for both
+values encoding and decoding).
+
+:class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` class can only handle linear
+conversions.
 
 **Example code:**
 
-  .. code-block::  python
+.. code-block::  python
 
-      from uds.translator import LinearFormulaDataRecord
+  from uds.translator import LinearFormulaDataRecord
 
-      # define example Linear Formula Data Records
-      p2_server = LinearFormulaDataRecord(name="P2Server_max",
-                                          length=16,
-                                          factor=1,
-                                          offset=0,
-                                          unit="ms")
-      p2ext_server = LinearFormulaDataRecord(name="P2*Server_max",
-                                             length=16,
-                                             factor=10,
-                                             offset=0,
-                                             unit="ms")
+  # define example Linear Formula Data Records
+  engine_temp = LinearFormulaDataRecord(name="Engine Temperature",
+                                        length=16,
+                                        factor=0.01,
+                                        offset=-100,
+                                        unit="Celsius degrees")
 
-      # get_raw_value
-      p2_server.get_raw_value(100)  # 100
-      p2_server.get_raw_value(255)  # 255
-      p2ext_server.get_raw_value(1000)  # 100
-      p2ext_server.get_raw_value(2550)  # 255
+  # get_raw_value
+  engine_temp.get_raw_value(0)  # 10000
+  engine_temp.get_raw_value(61.25)  # 16125
 
-      # get_physical_value
-      p2_server.get_physical_value(100)  # 100 [ms]
-      p2_server.get_physical_value(255)  # 255 [ms]
-      p2ext_server.get_physical_value(100)  # 1000 [ms]
-      p2ext_server.get_physical_value(255)  # 2550 [ms]
+  # get_physical_value
+  engine_temp.get_physical_value(0)  # - 100.0 [Celsius degrees]
+  engine_temp.get_physical_value(12345)    # 23.45 [Celsius degrees]
 
+:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` class can only any non-linear
+conversion, but user must provide properly implemented encoding and decoding functions.
+
+**Example code:**
+
+.. code-block::  python
+
+  from typing import Union
+  from uds.translator import CustomFormulaDataRecord
+
+  # define example Custom Formula Data Records
+  def decode_pressure(raw_value: int) -> int:
+      return raw_value*raw_value
+  def encode_pressure(physical_value: Union[int, float]) -> int:
+      return int(round(physical_value**0.5,0))
+  pressure = CustomFormulaDataRecord(name="Pressure",
+                                     length=16,
+                                     encoding_formula=encode_pressure,
+                                     decoding_formula=decode_pressure,
+                                     unit="Pascal",
+                                     min_occurrences=4,
+                                     max_occurrences=4)
+
+  # get_raw_value
+  pressure.get_raw_value(100)  # 10
+  pressure.get_raw_value(654321)  # 809 - the closest value
+
+  # get_physical_value
+  pressure.get_physical_value(809)  # 654481 [Pascals]
+  pressure.get_physical_value(4000)  # 16000000 [Pascals]
+
+  # get_physical_values
+  pressure.get_physical_values(0, 100, 250, 6789)  # (0, 10000, 62500, 46090521)
 
 Text Data Record
 ````````````````
@@ -346,31 +397,33 @@ All supported encoding formats are defined in :class:`~uds.translator.data_recor
 
 **Example code:**
 
-  .. code-block::  python
+.. code-block::  python
 
-      from uds.translator import TextDataRecord, TextEncoding
+  from uds.translator import TextDataRecord, TextEncoding
 
-      # define example Text Data Records
-      software_version = TextDataRecord(name="Software Version",
-                                        encoding=TextEncoding.BCD,
-                                        min_occurrences=4,
-                                        max_occurrences=4)
-      spare_part_number = TextDataRecord(name="Spare Part Number",
-                                         encoding=TextEncoding.ASCII,
-                                         min_occurrences=8,
-                                         max_occurrences=None)
+  # define example Text Data Records
+  software_version = TextDataRecord(name="Software Version",
+                                    encoding=TextEncoding.BCD,
+                                    min_occurrences=4,
+                                    max_occurrences=4)
+  spare_part_number = TextDataRecord(name="Spare Part Number",
+                                     encoding=TextEncoding.ASCII,
+                                     min_occurrences=8,
+                                     max_occurrences=None)
 
-      # get_raw_value
-      software_version.get_raw_value("1")  # 1
-      software_version.get_raw_value("9")  # 9
-      spare_part_number.get_raw_value("A")  # 0x41
-      spare_part_number.get_raw_value("1")  # 0x31
+  # get_raw_value
+  software_version.get_raw_value("1")  # 1
+  software_version.get_raw_value("9")  # 9
+  spare_part_number.get_raw_value("A")  # 0x41
+  spare_part_number.get_raw_value("1")  # 0x31
 
-      # get_physical_value
-      software_version.get_physical_value(1)  # "1"
-      software_version.get_physical_values(9, 0, 1, 8)  # "9018"
-      spare_part_number.get_physical_value(0x41)  # "A"
-      spare_part_number.get_physical_values(0x41, 0x42, 0x43, 0x2D, 0x31, 0x32, 0x33, 0x34)  # "ABC-1234"
+  # get_physical_value
+  software_version.get_physical_value(1)  # "1"
+  spare_part_number.get_physical_value(0x41)  # "A"
+
+  # get_physical_values
+  software_version.get_physical_values(9, 0, 1, 8)  # "9018"
+  spare_part_number.get_physical_values(0x41, 0x42, 0x43, 0x2D, 0x31, 0x32, 0x33, 0x34)  # "ABC-1234"
 
 
 Conditional Data Record

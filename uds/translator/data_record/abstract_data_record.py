@@ -397,15 +397,16 @@ class AbstractDataRecord(ABC):
         :param raw_values: Raw (bit) values of this Data Record for multiple occurrences.
 
         :raise RuntimeError: A called was made on a Data Record that is not reoccurring.
-        :raise ValueError: No values were provided.
+        :raise ValueError: Incorrect number of occurrences was provided.
 
         :return: Physical values for provided occurrences.
         """
         if not self.is_reoccurring:
             raise RuntimeError("This method must be called for reoccurring Data Record only.")
-        if len(raw_values) == 0:
-            raise ValueError("Raw value for at least one occurrence must be provided.")
-        # TODO: handle wrong number of occurrences
+        if not self.min_occurrences <= len(raw_values) <= (self.max_occurrences or float("inf")):
+            raise ValueError(f"This Data Record requires from {self.min_occurrences} to "
+                             f"{self.max_occurrences or 'Infinite'} number of occurrences. "
+                             f"Provided {len(raw_values)} occurrences.")
         return tuple(self.get_physical_value(raw_value) for raw_value in raw_values)
 
     @abstractmethod
