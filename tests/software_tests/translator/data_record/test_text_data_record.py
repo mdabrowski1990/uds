@@ -216,12 +216,12 @@ class TestTextDataRecordIntegration:
 
     # get_raw_value
 
-    @pytest.mark.parametrize("character", ["A", " "])
+    @pytest.mark.parametrize("character", ["A", "12"])
     def test_get_raw_value__bcd__value_error(self, character):
         with pytest.raises(ValueError):
             self.bcd.get_raw_value(character)
 
-    @pytest.mark.parametrize("character", ["ó", "ǖ", "♬"])
+    @pytest.mark.parametrize("character", ["ó", "ǖ", "ABC"])
     def test_get_raw_value__ascii__value_error(self, character):
         with pytest.raises(ValueError):
             self.ascii.get_raw_value(character)

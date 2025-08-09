@@ -405,6 +405,7 @@ class AbstractDataRecord(ABC):
             raise RuntimeError("This method must be called for reoccurring Data Record only.")
         if len(raw_values) == 0:
             raise ValueError("Raw value for at least one occurrence must be provided.")
+        # TODO: handle wrong number of occurrences
         return tuple(self.get_physical_value(raw_value) for raw_value in raw_values)
 
     @abstractmethod

@@ -103,7 +103,7 @@ class MappingDataRecord(RawDataRecord):
              stacklevel=2)
         return super().get_physical_value(raw_value)
 
-    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: str) -> int:
         """
         Get raw value that represents provided physical value.
 

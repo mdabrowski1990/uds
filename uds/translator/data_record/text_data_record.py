@@ -131,6 +131,8 @@ class TextDataRecord(AbstractDataRecord):
             raise RuntimeError("This method must be called for reoccurring Data Record only.")
         if len(raw_values) == 0:
             raise ValueError("Raw value for at least one occurrence must be provided.")
+        # TODO: handle wrong number of occurrences
+        # TODO: use super
         return "".join((self.get_physical_value(raw_value) for raw_value in raw_values))  # type: ignore
 
     def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
@@ -144,7 +146,7 @@ class TextDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return self.__ENCODINGS[self.encoding]["encode"](raw_value)
 
-    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: str) -> int:
         """
         Get raw value that represents provided physical value.
 
@@ -152,4 +154,8 @@ class TextDataRecord(AbstractDataRecord):
 
         :return: Raw value decoded from provided character.
         """
-        return self.__ENCODINGS[self.encoding]["decode"](physical_value)  # type: ignore
+        if not isinstance(physical_value, str):
+            raise TypeError("Provided value is not str type.")
+        if len(physical_value) != 1:
+            raise ValueError("Provided value is not a single character.")
+        return self.__ENCODINGS[self.encoding]["decode"](physical_value)
