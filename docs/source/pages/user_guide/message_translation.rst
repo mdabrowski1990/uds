@@ -136,7 +136,7 @@ Each object of :class:`~uds.translator.service.service.Service` class defines a 
   .. code-block::  python
 
     from uds.translator import Service, AbstractDataRecord
-    from uds.message import NRC
+    from uds.message import NRC, RequestSID, ResponseSID
 
     # let's assume that we have `diagnostic_session_control` Service defined
     diagnostic_session_control: Service
@@ -234,6 +234,10 @@ Abstract Data Record features:
     :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord`
     implementation on any of its children classes.
 
+.. note:: Attribute :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.length` contains
+    number of **bits** (not bytes) that are used to present **a single Data Record occurrence**
+    (not necessarily total length).
+
 
 Raw Data Record
 ```````````````
@@ -325,14 +329,13 @@ There are two types of Formula Data Records:
  - :class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord`
  - :class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord`
 
-Both classes are used define an entries in diagnostic messages that can be translated to numeric values using special
-formula. It is recommended to use :class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord`
-whenever possible as :class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` has only limited
-error handling due to more flexible design (user must provide properly defined formulas that would be used for both
-values encoding and decoding).
+Both classes are used define an entries in diagnostic messages that can be translated to numeric values
+(physical values must be either int or float type) using special formula.
 
 :class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` class can only handle linear
-conversions.
+conversions, but has better error handling and is easier to define. **Users are encouraged to use**
+:class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` **over**
+:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` **whenever possible.**
 
 **Example code:**
 
@@ -355,8 +358,12 @@ conversions.
   engine_temp.get_physical_value(0)  # - 100.0 [Celsius degrees]
   engine_temp.get_physical_value(12345)    # 23.45 [Celsius degrees]
 
-:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` class can only any non-linear
-conversion, but user must provide properly implemented encoding and decoding functions.
+:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` class is more flexible and can handle
+any (also non-linear) conversion, but it requires properly implemented encoding and decoding functions.
+
+.. warning:: There is almost no error handling and no crosschecks. If a user provides encoding and decoding formulas
+    that are inconsistent (e.g. encoding does not correctly reverse decoding), it will not be detected and
+    might lead to extremely confusing results.
 
 **Example code:**
 
@@ -365,7 +372,7 @@ conversion, but user must provide properly implemented encoding and decoding fun
   from typing import Union
   from uds.translator import CustomFormulaDataRecord
 
-  # define example Custom Formula Data Records
+  # define a Custom Formula Data Record with example encoding and decoding formulas
   def decode_pressure(raw_value: int) -> int:
       return raw_value*raw_value
   def encode_pressure(physical_value: Union[int, float]) -> int:
@@ -389,12 +396,15 @@ conversion, but user must provide properly implemented encoding and decoding fun
   # get_physical_values
   pressure.get_physical_values(0, 100, 250, 6789)  # (0, 10000, 62500, 46090521)
 
+
 Text Data Record
 ````````````````
 :class:`~uds.translator.data_record.text_data_record.TextDataRecord` class is used to define an entries
 in diagnostic messages that can be translated to text using known text encoding format.
 All supported encoding formats are defined in :class:`~uds.translator.data_record.text_data_record.TextEncoding` enum.
-
+Physical values produces by :class:`~uds.translator.data_record.text_data_record.TextDataRecord` are str type, even
+the output of :meth:`~uds.translator.data_record.text_data_record.TextDataRecord.get_physical_values` method is
+str type.
 
 **Example code:**
 
