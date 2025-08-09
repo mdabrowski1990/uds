@@ -6,7 +6,7 @@ from typing import Callable, Dict, Optional, TypedDict
 
 from uds.utilities import ValidatedEnum
 
-from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValuesAlias, SinglePhysicalValueAlias
+from .abstract_data_record import AbstractDataRecord
 
 
 class TextEncoding(ValidatedEnum):
@@ -128,7 +128,7 @@ class TextDataRecord(AbstractDataRecord):
         :return: Text encoded for provided raw values.
         """
         physical_values = super().get_physical_values(*raw_values)
-        return "".join(physical_values)
+        return "".join(physical_values)  # type: ignore
 
     def get_physical_value(self, raw_value: int) -> str:
         """
@@ -141,7 +141,7 @@ class TextDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return self.__ENCODINGS[self.encoding]["encode"](raw_value)
 
-    def get_raw_value(self, physical_value: str) -> int:
+    def get_raw_value(self, physical_value: str) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 
