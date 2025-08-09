@@ -123,13 +123,13 @@ Each object of :class:`~uds.translator.service.service.Service` class defines a 
 - Diagnostic Messages payload building (encoding):
 
   Services might be used directly (or through :class:`~uds.translator.translator.Translator`) to build payload of
-  diagnostic messages.
-  This feature is provided by multiple methods:
-   - :meth:`~uds.translator.service.service.Service.encode` - supports all messages types (request, positive
-     and negative responses)
-   - :meth:`~uds.translator.service.service.Service.encode_request` - for request messages only
-   - :meth:`~uds.translator.service.service.Service.encode_positive_response` - for positive response messages only
-   - :meth:`~uds.translator.service.service.Service.encode_negative_response` - for negative response messages only
+  diagnostic messages. This feature is provided by multiple methods:
+
+     - :meth:`~uds.translator.service.service.Service.encode` - supports all messages types (request, positive
+       and negative responses)
+     - :meth:`~uds.translator.service.service.Service.encode_request` - for request messages only
+     - :meth:`~uds.translator.service.service.Service.encode_positive_response` - for positive response messages only
+     - :meth:`~uds.translator.service.service.Service.encode_negative_response` - for negative response messages only
 
   **Example code:**
 
@@ -174,11 +174,12 @@ Each object of :class:`~uds.translator.service.service.Service` class defines a 
   Services might be used directly (or though :class:`~uds.translator.translator.Translator`) to extract
   comprehensive information carried by diagnostic messages.
   This feature is provided by multiple methods:
-   - :meth:`~uds.translator.service.service.Service.decode` - supports all messages types (request, positive
-     and negative responses)
-   - :meth:`~uds.translator.service.service.Service.decode_request` - for request messages only
-   - :meth:`~uds.translator.service.service.Service.decode_positive_response` - for positive response messages only
-   - :meth:`~uds.translator.service.service.Service.decode_negative_response` - for negative response messages only
+
+    - :meth:`~uds.translator.service.service.Service.decode` - supports all messages types (request, positive
+      and negative responses)
+    - :meth:`~uds.translator.service.service.Service.decode_request` - for request messages only
+    - :meth:`~uds.translator.service.service.Service.decode_positive_response` - for positive response messages only
+    - :meth:`~uds.translator.service.service.Service.decode_negative_response` - for negative response messages only
 
   **Example code:**
 
