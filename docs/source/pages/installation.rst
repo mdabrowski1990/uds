@@ -4,6 +4,7 @@ Installation
 .. role:: shell(code)
     :language: shell
 
+
 Released versions
 -----------------
 It is **recommended to use released versions** as they were fully tested and are considered as stable.
