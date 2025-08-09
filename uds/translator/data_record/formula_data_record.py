@@ -4,11 +4,11 @@ __all__ = ["CustomFormulaDataRecord", "LinearFormulaDataRecord"]
 
 from typing import Callable, Optional, Union
 
-from .abstract_data_record import AbstractDataRecord, SinglePhysicalValueAlias
+from .abstract_data_record import AbstractDataRecord
 
-AliasPhysicalValueEncodingFormula = Union[Callable[[int], int], Callable[[float], int]]
+AliasPhysicalValueEncodingFormula = Callable[[Union[int, float]], int]
 """Type alias for encoding formulas that convert physical values to raw values."""
-AliasPhysicalValueDecodingFormula = Union[Callable[[int], float], Callable[[int], int]]
+AliasPhysicalValueDecodingFormula = Callable[[int], Union[int, float]]
 """Type alias for decoding formulas that convert raw values to physical values."""
 
 
@@ -112,7 +112,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         raw_value = self.max_raw_value if self.factor > 0 else self.min_raw_value
         return (raw_value * self.factor) + self.offset
 
-    def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
+    def get_physical_value(self, raw_value: int) -> Union[float, int]:
         """
         Get physical value representing provided raw value.
 
@@ -125,7 +125,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return (raw_value * self.factor) + self.offset
 
-    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: Union[float, int]) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 
@@ -237,7 +237,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
             raise TypeError("Decoding formula must be callable.")
         self.__decoding_formula = value
 
-    def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
+    def get_physical_value(self, raw_value: int) -> Union[float, int]:
         """
         Get physical value representing provided raw value.
 
@@ -248,7 +248,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return self.decoding_formula(raw_value)
 
-    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: Union[float, int]) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 
@@ -256,4 +256,4 @@ class CustomFormulaDataRecord(AbstractDataRecord):
 
         :return: Raw Value for this occurrence that was assessed using encoding formula.
         """
-        return self.encoding_formula(physical_value)  # type: ignore
+        return self.encoding_formula(physical_value)

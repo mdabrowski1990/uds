@@ -4,7 +4,6 @@ If you are not an UDS expert, this part of documentation is created for you. It 
 for every user of `UDS package <https://github.com/mdabrowski1990/uds>`_ so you can better understand the code, but also
 UDS protocol itself.
 
-
 .. toctree::
     :caption: Table of Content
 

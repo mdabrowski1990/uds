@@ -1,7 +1,6 @@
 User Guide
 ==========
 
-
 .. toctree::
     :caption: Table of Content
 
@@ -10,3 +9,4 @@ User Guide
     user_guide/transport.rst
     user_guide/client_simulation.rst
     user_guide/server_simulation.rst
+    user_guide/message_translation.rst

@@ -507,7 +507,8 @@ class Service:
         """
         NRC.validate_member(nrc)
         if nrc not in self.supported_nrc:
-            warn(message=f"NRC code {nrc} is not supported by service {self.name}.")
+            warn(message=f"NRC code {nrc} is not supported by service {self.name}.",
+                 category=UserWarning)
         return bytearray([ResponseSID.NegativeResponse, self.request_sid, nrc])
 
     def encode(self,
