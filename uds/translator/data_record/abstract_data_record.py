@@ -1,11 +1,13 @@
 """Definition of Data Records structure and API."""
 
-__all__ = ["AbstractDataRecord", "MultipleOccurrencesInfo", "MultiplePhysicalValues", "PhysicalValueAlias",
-           "SingleOccurrenceInfo", "SinglePhysicalValueAlias"]
+__all__ = ["AbstractDataRecord",
+           "SingleOccurrenceInfo", "MultipleOccurrencesInfo", "DataRecordInfoAlias",
+           "SinglePhysicalValueAlias", "MultiplePhysicalValuesAlias", "PhysicalValueAlias",
+           "ChildrenValuesAlias"]
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-from typing import List, Optional, Sequence, Tuple, TypedDict, Union
+from typing import List, Mapping, Optional, Sequence, Tuple, TypedDict, Union
 
 from uds.utilities import InconsistentArgumentsError, ReassignmentError
 
@@ -18,7 +20,7 @@ Physical values represent the human-readable interpretation of raw integer value
  - float: Scaled/calculated values (e.g., 25.5°C after scaling)
  - str: Mapped labels (e.g., "Active", "Inactive", "Warning")
 """
-MultiplePhysicalValues = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
+MultiplePhysicalValuesAlias = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
 """
 Physical values from multiple Data Record occurrences.
 
@@ -27,8 +29,10 @@ When processing multiple occurrences, physical values are either:
    (e.g. ASCII, UTF-8)
  - tuple: Individual values per occurrence
 """
-PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValues]
+PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValuesAlias]
 """Alias for all physical values."""
+ChildrenValuesAlias = Mapping[str, Union[int, "ChildrenValuesAlias"]]
+"""Alias for children values mapping."""
 
 
 class SingleOccurrenceInfo(TypedDict, total=True):
@@ -36,6 +40,7 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     Comprehensive information about a single Data Record occurrence.
 
     :arg name: Data Record name.
+    :arg length: Number of bits used to store this Data Record.
     :arg raw_value: Raw values for this occurrence.
     :arg physical_value: Physical value for this occurrence.
     :arg children: Extracted child information for this occurrence.
@@ -43,6 +48,7 @@ class SingleOccurrenceInfo(TypedDict, total=True):
     """
 
     name: str
+    length: int
     raw_value: int
     physical_value: SinglePhysicalValueAlias
     children: Tuple["SingleOccurrenceInfo", ...]
@@ -51,9 +57,10 @@ class SingleOccurrenceInfo(TypedDict, total=True):
 
 class MultipleOccurrencesInfo(TypedDict, total=True):
     """
-    Information about multiple Data Record occurrences.
+    Comprehensive information about multiple Data Record occurrences.
 
     :arg name: Data Record name.
+    :arg length: Number of bits used to store a single occurrence of this Data Record.
     :arg raw_value: List with raw values for each occurrence.
     :arg physical_value: Physical values for multiple occurrences.
     :arg children: List with one element for each occurrence.
@@ -62,10 +69,15 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
     """
 
     name: str
+    length: int
     raw_value: List[int]
-    physical_value: MultiplePhysicalValues
+    physical_value: MultiplePhysicalValuesAlias
     children: List[Tuple["SingleOccurrenceInfo", ...]]
     unit: Optional[str]
+
+
+DataRecordInfoAlias = Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]
+"""Comprehensive information Data Record occurrence(s)."""
 
 
 class AbstractDataRecord(ABC):
@@ -289,10 +301,21 @@ class AbstractDataRecord(ABC):
         Whether this Data Record might occur multiple times.
 
         Values meaning:
-        - False - there might be 0 or 1 occurrence of this Data Record
-        - True - number of occurrences might vary
+         - False - there might be 0 or 1 occurrence of this Data Record
+         - True - number of occurrences might vary
         """
         return self.max_occurrences is None or self.max_occurrences > 1
+
+    @property
+    def fixed_total_length(self) -> bool:
+        """
+        Whether this Data Record has fixed total length and number of occurrences.
+
+        Values meaning:
+         - True - the number of occurrences is always the same (fixed)
+         - False - the number of occurrences might vary
+        """
+        return self.min_occurrences == self.max_occurrences
 
     @property
     def min_raw_value(self) -> int:
@@ -335,7 +358,7 @@ class AbstractDataRecord(ABC):
             = [child.get_occurrence_info(children_values[child.name]) for child in self.children]  # type: ignore
         return tuple(children_occurrence_info)
 
-    def get_occurrence_info(self, *raw_values: int) -> Union[SingleOccurrenceInfo, MultipleOccurrencesInfo]:
+    def get_occurrence_info(self, *raw_values: int) -> DataRecordInfoAlias:
         """
         Extract comprehensive occurrence information with automatic child extraction.
 
@@ -352,6 +375,7 @@ class AbstractDataRecord(ABC):
             for raw_value in raw_values:
                 children_values.append(self.get_children_occurrence_info(raw_value))
             return MultipleOccurrencesInfo(name=self.name,
+                                           length=self.length,
                                            raw_value=list(raw_values),
                                            physical_value=self.get_physical_values(*raw_values),
                                            children=children_values,
@@ -359,13 +383,14 @@ class AbstractDataRecord(ABC):
         if len(raw_values) == 1:
             raw_value = raw_values[0]
             return SingleOccurrenceInfo(name=self.name,
+                                        length=self.length,
                                         raw_value=raw_value,
                                         physical_value=self.get_physical_value(raw_value),
                                         children=self.get_children_occurrence_info(raw_value),
                                         unit=self.unit)
         raise ValueError("Cannot handle multiple occurrences values for non reoccurring Data Record.")
 
-    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValues:
+    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValuesAlias:
         """
         Get physical values representing provided raw values.
 
@@ -401,3 +426,40 @@ class AbstractDataRecord(ABC):
 
         :return: Raw Value for this occurrence.
         """
+
+    def get_raw_value_from_children(self, children_values: ChildrenValuesAlias) -> int:
+        """
+        Get raw value that represents provided children values.
+
+        :param children_values: Mapping of children values.
+            Mapping keys are children names.
+            Mapping values are corresponding children raw values or similar mapping for its children.
+
+        :raise RuntimeError: The call was made for a Data Record without any children.
+        :raise TypeError: Provided value is not a mapping.
+        :raise ValueError: Provided mapping is incorrect and cannot be handled.
+
+        :return: Raw Value for this occurrence.
+        """
+        if not self.children:
+            raise RuntimeError("This Data Record has no children.")
+        if not isinstance(children_values, Mapping):
+            raise TypeError("Provided value is not a mapping.")
+        children_names = set(child.name for child in self.children)
+        provided_names = set(children_values.keys())
+        if provided_names != children_names:
+            raise ValueError("Values for all and only children have to be provided. "
+                             f"Names of all children: {children_names}. Provided names: {provided_names}.")
+        offset = self.length
+        raw_value = 0
+        for child in self.children:
+            offset -= child.length
+            child_value = children_values[child.name]
+            if isinstance(child_value, int):
+                child_raw_value = child_value
+            elif isinstance(child_value, Mapping):
+                child_raw_value = child.get_raw_value_from_children(child_value)
+            else:
+                raise ValueError("Value for each child must be a raw value or a mapping with its children values.")
+            raw_value += child_raw_value << offset
+        return raw_value

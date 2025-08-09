@@ -23,6 +23,7 @@ pylint:
     min-public-methods: 1
     max-public-methods: 30
     max-parents: 15
+    max-branches: 12
 
   disable:
     - django-not-available
@@ -41,7 +42,7 @@ pep257:
 mccabe:
   run: true
   options:
-    max-complexity: 15
+    max-complexity: 12
 
 
 # additional tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#optional-extras

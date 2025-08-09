@@ -3,8 +3,8 @@ from operator import getitem
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.database.data_record import RawDataRecord, TextDataRecord, TextEncoding
-from uds.database.data_record.conditional_data_record import (
+from uds.translator.data_record import RawDataRecord, TextDataRecord, TextEncoding
+from uds.translator.data_record.conditional_data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
@@ -15,8 +15,9 @@ from uds.database.data_record.conditional_data_record import (
     Mapping,
     Sequence,
 )
+from uds.utilities import InconsistentArgumentsError
 
-SCRIPT_LOCATION = "uds.database.data_record.conditional_data_record"
+SCRIPT_LOCATION = "uds.translator.data_record.conditional_data_record"
 
 
 class TestAbstractConditionalDataRecord:
@@ -64,29 +65,76 @@ class TestAbstractConditionalDataRecord:
             AbstractConditionalDataRecord.validate_message_continuation(value)
         mock_isinstance.assert_called_once_with(value, Sequence)
 
-    @pytest.mark.parametrize("value", [range(10), DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_validate_message_continuation__value_error(self, mock_isinstance, value):
-        mock_isinstance.side_effect = [True, False]
+    @pytest.mark.parametrize("value", [
+        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+         Mock(spec=AbstractConditionalDataRecord, fixed_total_length=True)),
+        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+         Mock(length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
+    ])
+    def test_validate_message_continuation__value_error__data_record_type(self, value):
         with pytest.raises(ValueError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
-        mock_isinstance.assert_has_calls([call(value, Sequence),
-                                          call(value[0], (AbstractDataRecord, AbstractConditionalDataRecord))],
-                                         any_order=False)
 
     @pytest.mark.parametrize("value", [
-        8 * [Mock(length=1)],
-        [Mock(length=16)],
-        []
+        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractConditionalDataRecord),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True)),
+        (Mock(spec=AbstractConditionalDataRecord),
+         Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
+        (Mock(spec=AbstractConditionalDataRecord),),
+        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True)),
+        (Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False),
+         Mock(spec=AbstractConditionalDataRecord),)
     ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_validate_message_continuation__valid(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
+    def test_validate_message_continuation__value_error__conditional_and_vary_length_data_record_position(self, value):
+        with pytest.raises(ValueError):
+            AbstractConditionalDataRecord.validate_message_continuation(value)
+
+    @pytest.mark.parametrize("value", [
+        (Mock(spec=AbstractDataRecord, length=23, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=5, min_occurrences=4, max_occurrences=4, fixed_total_length=True)),
+        (Mock(spec=AbstractDataRecord, length=7, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=16, fixed_total_length=False)),
+        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=4, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=14, fixed_total_length=False)),
+    ])
+    def test_validate_message_continuation__inconsistent__total_length(self, value):
+        with pytest.raises(InconsistentArgumentsError):
+            AbstractConditionalDataRecord.validate_message_continuation(value)
+
+    @pytest.mark.parametrize("value", [
+        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+         Mock(spec=AbstractConditionalDataRecord, fixed_total_length=False)),
+        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
+    ])
+    def test_validate_message_continuation__inconsistent__same_names(self, value):
+        for dr in value:
+            dr.name = "Common"
+        with pytest.raises(InconsistentArgumentsError):
+            AbstractConditionalDataRecord.validate_message_continuation(value)
+
+    @pytest.mark.parametrize("value", [
+        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),),
+        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None, fixed_total_length=False),),
+        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+         Mock(spec=AbstractConditionalDataRecord, fixed_total_length=False)),
+        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
+         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
+    ])
+    def test_validate_message_continuation__valid(self, value):
         assert AbstractConditionalDataRecord.validate_message_continuation(value) is None
-        mock_isinstance.assert_has_calls(
-            [call(value, Sequence)] +
-            [call(element, (AbstractDataRecord, AbstractConditionalDataRecord)) for element in value],
-            any_order=False)
 
     # get_message_continuation
 
@@ -386,10 +434,10 @@ class TestConditionalMappingDataRecordIntegration:
 
     def setup_class(self):
         self.did_mapping = {
-            0x1000: [RawDataRecord(name="Entries",
-                                   length=16,
+            0x1000: [RawDataRecord(name="Digits Number",
+                                   length=8,
                                    min_occurrences=1,
-                                   max_occurrences=10),
+                                   max_occurrences=1),
                      ConditionalFormulaDataRecord(formula=lambda raw_value: [
                          TextDataRecord(name="BCD digits",
                                         encoding=TextEncoding.BCD,

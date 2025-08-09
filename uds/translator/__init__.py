@@ -4,7 +4,6 @@ Implementation for diagnostic messages databases.
 Tools for decoding and encoding information from/to diagnostic messages.
 """
 
-from .abstract_database import AbstractDatabase
 from .data_record import (
     AbstractDataRecord,
     ConditionalFormulaDataRecord,
@@ -16,4 +15,5 @@ from .data_record import (
     TextDataRecord,
     TextEncoding,
 )
-from .service import AbstractService
+from .service import DecodedMessageAlias, Service
+from .translator import Translator

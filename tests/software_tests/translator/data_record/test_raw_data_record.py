@@ -1,9 +1,9 @@
 import pytest
 from mock import Mock, patch
 
-from uds.database.data_record.raw_data_record import RawDataRecord
+from uds.translator.data_record.raw_data_record import RawDataRecord
 
-SCRIPT_LOCATION = "uds.database.data_record.raw_data_record"
+SCRIPT_LOCATION = "uds.translator.data_record.raw_data_record"
 
 
 class TestRawDataRecord:
@@ -102,6 +102,7 @@ class TestRawDataRecordIntegration:
     @pytest.mark.parametrize("value, expected_output", [
         (0, {
             "name": "DTC",
+            "length": 24,
             "raw_value": 0,
             "physical_value": 0,
             "children": tuple(),
@@ -109,6 +110,7 @@ class TestRawDataRecordIntegration:
         }),
         (0xFFFFFF, {
             "name": "DTC",
+            "length": 24,
             "raw_value": 0xFFFFFF,
             "physical_value": 0xFFFFFF,
             "children": tuple(),
@@ -116,6 +118,7 @@ class TestRawDataRecordIntegration:
         }),
         (0xA1B2C3, {
             "name": "DTC",
+            "length": 24,
             "raw_value": 0xA1B2C3,
             "physical_value": 0xA1B2C3,
             "children": tuple(),

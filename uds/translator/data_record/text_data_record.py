@@ -6,7 +6,7 @@ from typing import Callable, Dict, Optional, TypedDict
 
 from uds.utilities import ValidatedEnum
 
-from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValues, SinglePhysicalValueAlias
+from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValuesAlias, SinglePhysicalValueAlias
 
 
 class TextEncoding(ValidatedEnum):
@@ -52,7 +52,7 @@ class TextDataRecord(AbstractDataRecord):
 
     TextDataRecord provides bidirectional conversion between raw integer values and their text character
     representations using one of the predefined encodings (all supported encodings are defined in
-    :class:`~uds.database.data_record.text_data_record.TextEncoding`).
+    :class:`~uds.translator.data_record.text_data_record.TextEncoding`).
 
     Features:
      - Bidirectional mapping: raw value <-> text
@@ -68,20 +68,12 @@ class TextDataRecord(AbstractDataRecord):
         """Structure of Encoding Information."""
 
         length: int
-        encode: Callable[[int], str]
+        encode: Callable[[int], str]  # noqa: vulture
         decode: Callable[[str], int]
 
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
-        TextEncoding.ASCII: {
-            "length": 8,
-            "encode": chr,
-            "decode": decode_ascii,
-        },
-        TextEncoding.BCD: {
-            "length": 4,
-            "encode": str,
-            "decode": int,
-        }
+        TextEncoding.ASCII: _EncodingInfo(length=8, encode=chr, decode=decode_ascii),
+        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=int),
     }
 
     def __init__(self,
@@ -124,7 +116,7 @@ class TextDataRecord(AbstractDataRecord):
             return 9
         raise NotImplementedError(f"Missing implementation for {self.encoding}.")
 
-    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValues:
+    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValuesAlias:
         """
         Get physical values representing provided raw values.
 
