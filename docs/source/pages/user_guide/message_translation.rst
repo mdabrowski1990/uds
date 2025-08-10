@@ -105,7 +105,7 @@ Each object of :class:`~uds.translator.service.service.Service` class defines a 
   .. code-block::  python
 
     from uds.translator import Service, AbstractDataRecord
-    from uds.message import NRC
+    from uds.message import NRC, RequestSID
 
     # let's assume that we have `sub_function_data_record` and `session_parameter_data_record` Data Records defined
     sub_function_data_record: AbstractDataRecord
