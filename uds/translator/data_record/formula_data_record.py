@@ -26,10 +26,10 @@ class LinearFormulaDataRecord(AbstractDataRecord):
      - Type safety: ensures proper numeric types for factor and offset
 
     Common Use Cases:
-     - Temperature sensors (e.g., factor=0.1, offset=-40 for tenths of degrees with -40°C offset)
-     - Any sensor with linear calibration curve
+     - Any numeric values with linear transformation
      - Scaling from other units (e.g. ECU provides temperature in Fahrenheit, but you prefer them presented in Celsius)
      - Any scaling of linear values
+     - Presenting sensor values
     """
 
     def __init__(self,

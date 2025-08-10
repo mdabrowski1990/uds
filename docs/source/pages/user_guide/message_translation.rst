@@ -215,13 +215,38 @@ Data Records are parts of diagnostic messages and they are used to define diagno
 :class:`~uds.translator.service.service.Service` class.
 All Data Records implementation can be found in :mod:`~uds.translator.data_record`.
 
+We can divide Data Records in following groups:
+
+- Data Records that store data and define raw<->physical values transformation.
+  - `Raw Data Record`_
+  - `Mapping Data Record`_
+  - `Linear Formula Data Record`_
+  - `Custom Formula Data Record`_
+  - `Text Data Record`_
+- Data Records that define logic for building diagnostic message structure (in case of multiple possible diagnostic
+  message format that depends for example on sub-function used or DID provided).
+  - `Conditional Mapping Data Record`_
+  - `Conditional Formula Data Record`_
+
+On top of that, we have two abstract Data Records:
+ - `Abstract Data Record`_
+ - `Abstract Conditional Data Record`_
+
+.. note:: Raw values are int values carried in diagnostic message by certain number of bits.
+    Physical values are meaningful interpretation of raw values.
+
+    Physical values annotations:
+     - :const:`~uds.translator.data_record.abstract_data_record.SinglePhysicalValueAlias`
+     - :const:`~uds.translator.data_record.abstract_data_record.MultiplePhysicalValuesAlias`
+     - :const:`~uds.translator.data_record.abstract_data_record.PhysicalValueAlias`
+
 
 Abstract Data Record
 ````````````````````
-:class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord` class defines common functionality for
-almost all Data Records (except `Conditional Data Record`_).
+:class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord`
+contains definition and common implementation for Data Records that store data.
 
-Abstract Data Record features:
+Features:
  - common configuration (name, bit length, children, min and max number of occurrences, unit)
  - common attributes definition (e.g.
    :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring`,
@@ -244,6 +269,10 @@ Raw Data Record
 :class:`~uds.translator.data_record.raw_data_record.RawDataRecord` class is used to define an entries
 in diagnostic messages that cannot be translated (due to various reasons) to any meaningful information.
 That means that physical and raw values for all Raw Data Records are the same.
+
+Typical use cases:
+ - Data containers (e.g. DID structures) with multiple children
+ - Entries with unknown or no meaning (e.g. Reserved bits)
 
 **Example code:**
 
@@ -282,13 +311,16 @@ Mapping Data Record
 ```````````````````
 :class:`~uds.translator.data_record.mapping_data_record.MappingDataRecord` class is used to define an entries
 in diagnostic messages that can be translated to labels due to some known mapping.
-That means that physical value would usually be str type. If *user provides raw value for which no mapping is defined*
-though, then a warning would be reported.
+That means that physical value would usually be str type.
+
+Typical use cases:
+ - Status indicators (e.g. meaning for DTC status bits)
+ - Boolean flags (e.g. 0="No", 1="Yes")
+ - Enumerated values (0="Low", 1="Medium", 2="High", ...)
 
 .. note:: Raw values for which mapping is not defined are handled the same way as per
-  :class:`~uds.translator.data_record.raw_data_record.RawDataRecord`.
-  Same goes for int type physical values.
-  This is fallback mechanism for Mapping Data Records with labels defined only for some raw values.
+  :class:`~uds.translator.data_record.raw_data_record.RawDataRecord`. Same goes for int type physical values.
+  This is a fallback mechanism in case labels were not defined for possible raw values.
 
 **Example code:**
 
@@ -314,28 +346,27 @@ though, then a warning would be reported.
   sprmib.get_raw_value("no")  # 0
   sprmib.get_raw_value("yes")  # 1
   diagnostic_session.get_raw_value("Default")  # 1
-  diagnostic_session.get_raw_value(4)  # 4 and warning
+  diagnostic_session.get_raw_value(4)  # 4 (warning reported)
 
   # get_physical_value
   sprmib.get_physical_value(0)  # "no"
   sprmib.get_physical_value(1)  # "yes"
   diagnostic_session.get_physical_value(1)  # "Default"
-  diagnostic_session.get_physical_value(4)  # 4 and warning
+  diagnostic_session.get_physical_value(4)  # 4 (warning reported)
 
 
-Formula Data Record
-```````````````````
-There are two types of Formula Data Records:
- - :class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord`
- - :class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord`
+Linear Formula Data Record
+``````````````````````````
+:class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` class can handle linear conversions
+between raw and numeric values. It uses following formula:
 
-Both classes are used define an entries in diagnostic messages that can be translated to numeric values
-(physical values must be either int or float type) using special formula.
+`[physical value] = [raw value] * [factor] + [offset]`.
 
-:class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` class can only handle linear
-conversions, but has better error handling and is easier to define. **Users are encouraged to use**
-:class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` **over**
-:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` **whenever possible.**
+Physical values are either float or int type.
+
+Typical use cases:
+ - Providing any numeric values that uses linear transformation
+ - Scaling from other units (e.g. ECU provides temperature in Fahrenheit, but you prefer them presented in Celsius)
 
 **Example code:**
 
@@ -349,21 +380,45 @@ conversions, but has better error handling and is easier to define. **Users are 
                                         factor=0.01,
                                         offset=-100,
                                         unit="Celsius degrees")
+  speed_sensors = LinearFormulaDataRecord(name="Lateral Vehicle Speed",
+                                          length=10,
+                                          factor=0.5,
+                                          offset=-100,
+                                          unit="km/h",
+                                          min_occurrences=4,
+                                          max_occurrences=4)
 
   # get_raw_value
   engine_temp.get_raw_value(0)  # 10000
   engine_temp.get_raw_value(61.25)  # 16125
+  speed_sensors.get_raw_value(0)  # 200
+  speed_sensors.get_raw_value(51.25)  # 302 (the closest value)
 
   # get_physical_value
   engine_temp.get_physical_value(0)  # - 100.0 [Celsius degrees]
-  engine_temp.get_physical_value(12345)    # 23.45 [Celsius degrees]
+  engine_temp.get_physical_value(12345)  # 23.45 [Celsius degrees]
+  speed_sensors.get_physical_value(0)  # - 100.0 [km/h]
+  speed_sensors.get_physical_value(302)  # 51.0 [km/h]
 
-:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` class is more flexible and can handle
+  # get_physical_values
+  speed_sensors.get_physical_values(0, 303, 642, 1023)  # (-100.0, 51.5, 221.0, 411.5)
+
+
+Custom Formula Data Record
+``````````````````````````
+:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` class can handle any conversions
+between raw and numeric values. Physical values are either float or int type.
+:class:`~uds.translator.data_record.formula_data_record.CustomFormulaDataRecord` class is more flexible than
+:class:`~uds.translator.data_record.formula_data_record.LinearFormulaDataRecord` and can handle
 any (also non-linear) conversion, but it requires properly implemented encoding and decoding functions.
 
-.. warning:: There is almost no error handling and no crosschecks. If a user provides encoding and decoding formulas
-    that are inconsistent (e.g. encoding does not correctly reverse decoding), it will not be detected and
-    might lead to extremely confusing results.
+Typical use cases:
+ - Providing any numeric values that uses any (also non-linear) transformation
+
+.. warning:: There is almost no error handling and crosschecks whether a user provided consistent encoding and
+    decoding formulas (e.g. whether encoding formula is reverse to decoding formula).
+    Lack of advanced error handling might lead to extremely confusing results, therefore it is recommended to
+    use `Linear Formula Data Record`_ over `Custom Formula Data Record`_ whenever possible.
 
 **Example code:**
 
@@ -387,7 +442,7 @@ any (also non-linear) conversion, but it requires properly implemented encoding 
 
   # get_raw_value
   pressure.get_raw_value(100)  # 10
-  pressure.get_raw_value(654321)  # 809 - the closest value
+  pressure.get_raw_value(654321)  # 809 (the closest value)
 
   # get_physical_value
   pressure.get_physical_value(809)  # 654481 [Pascals]
@@ -405,6 +460,10 @@ All supported encoding formats are defined in :class:`~uds.translator.data_recor
 Physical values produces by :class:`~uds.translator.data_record.text_data_record.TextDataRecord` are str type, even
 the output of :meth:`~uds.translator.data_record.text_data_record.TextDataRecord.get_physical_values` method is
 str type.
+
+Typical use cases:
+ - Extracting text that uses ASCII encoding (e.g. VIN, Spare Part Number)
+ - Extracting text that uses BCD encoding (e.g. Software Version, Hardware Version)
 
 **Example code:**
 
@@ -437,5 +496,83 @@ str type.
   spare_part_number.get_physical_values(0x41, 0x42, 0x43, 0x2D, 0x31, 0x32, 0x33, 0x34)  # "ABC-1234"
 
 
-Conditional Data Record
-```````````````````````
+Abstract Conditional Data Record
+````````````````````````````````
+:class:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord` class contains definition
+and common implementation for Data Records with logic for building diagnostic message structures.
+
+Features:
+ - common configuration (default message continuation)
+ - diagnostic message continuation validation
+ - use mechanism (raw value of the proceeding Data Record has to be provided to establish the output)
+
+
+Conditional Mapping Data Record
+```````````````````````````````
+:class:`~uds.translator.data_record.conditional_data_record.ConditionalMappingDataRecord` class is used to define logic
+for diagnostic message continuation using predefined mapping.
+
+Typical use cases:
+ - DID structure selection after DID value was provided
+ - selection of diagnostic service format after sub-function value was provided
+
+**Example code:**
+
+.. code-block::  python
+
+  from uds.translator import MappingDataRecord, TextDataRecord, ConditionalMappingDataRecord, TextEncoding
+  from uds.translator.data_record import DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION
+
+  did_mapping = {
+      0xF186: [MappingDataRecord(name="diagnosticSessionType",
+                                 length=8,
+                                 values_mapping={1: "Default",
+                                                 2: "Programming",
+                                                 3: "Extended"})],
+      0xF187: [TextDataRecord(name="Spare Part Number",
+                              encoding=TextEncoding.ASCII,
+                              min_occurrences=1,
+                              max_occurrences=None)],
+      0xF188: [TextDataRecord(name="ECU Software Number",
+                              encoding=TextEncoding.BCD,
+                              min_occurrences=2,
+                              max_occurrences=2)],
+      0xF191: [TextDataRecord(name="ECU Hardware Number",
+                              encoding=TextEncoding.BCD,
+                              min_occurrences=2,
+                              max_occurrences=2)],
+  }
+  conditional_mapping = ConditionalMappingDataRecord(
+      default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
+      mapping=did_mapping)
+
+  # get_message_continuation
+  conditional_mapping.get_message_continuation(0xF186)  # DID F186 structure
+  conditional_mapping.get_message_continuation(0xF187)  # DID F187 structure
+  conditional_mapping.get_message_continuation(0x1234)  # DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION
+
+
+Conditional Formula Data Record
+```````````````````````````````
+:class:`~uds.translator.data_record.conditional_data_record.ConditionalFormulaDataRecord` class is used to define logic
+for diagnostic message continuation using formula.
+
+Typical use cases:
+ - Extracting length value for following parameters (e.g. from addressAndLengthFormatIdentifier, memorySizeLength)
+
+**Example code:**
+
+.. code-block::  python
+
+  from uds.translator import RawDataRecord, ConditionalFormulaDataRecord
+
+  conditional_formula = ConditionalFormulaDataRecord(
+      formula=lambda addressAndLengthFormatIdentifier: [
+          RawDataRecord(name="memoryAddress", length=8*(addressAndLengthFormatIdentifier & 0xF)),
+          RawDataRecord(name="memorySize", length=8*(addressAndLengthFormatIdentifier >> 4))
+      ]
+  )
+
+  # get_message_continuation
+  conditional_mapping.get_message_continuation(0x11)  # [memoryAddress with length 8, memorySize with length 8]
+  conditional_mapping.get_message_continuation(0x42)  # [memoryAddress with length 16, memorySize with length 32]
