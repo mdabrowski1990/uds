@@ -6,7 +6,7 @@ Translation implementation is located in :mod:`uds.translator` sub-package.
 Translator
 ----------
 :class:`~uds.translator.translator.Translator` is the high level interface that can be used to build
-:ref:`diagnostic messages <knowledge-base-diagnostic-message>` and decode information carries by them.
+:ref:`diagnostic messages <knowledge-base-diagnostic-message>` and decode information carried by them.
 
 - Configuration:
 
@@ -18,15 +18,11 @@ Translator
 
   .. code-block::  python
 
+    from typing import Collection
     from uds.translator import Translator, Service
 
     # let's assume we have some services already defined
-    my_services = {
-        # define your services here
-        Service(...),
-        Service(...),
-        ...
-    }
+    my_services: Collection[Service]
 
     # configure translator
     my_translator = Translator(my_services)
@@ -224,7 +220,7 @@ We can divide Data Records in following groups:
   - `Custom Formula Data Record`_
   - `Text Data Record`_
 - Data Records that define logic for building diagnostic message structure (in case of multiple possible diagnostic
-  message format that depends for example on sub-function used or DID provided).
+  message formats that depend on (for example) sub-function or DID value).
   - `Conditional Mapping Data Record`_
   - `Conditional Formula Data Record`_
 
@@ -266,7 +262,7 @@ Features:
 
 Raw Data Record
 ```````````````
-:class:`~uds.translator.data_record.raw_data_record.RawDataRecord` class is used to define an entries
+:class:`~uds.translator.data_record.raw_data_record.RawDataRecord` class is used to define entries
 in diagnostic messages that cannot be translated (due to various reasons) to any meaningful information.
 That means that physical and raw values for all Raw Data Records are the same.
 
@@ -309,7 +305,7 @@ Typical use cases:
 
 Mapping Data Record
 ```````````````````
-:class:`~uds.translator.data_record.mapping_data_record.MappingDataRecord` class is used to define an entries
+:class:`~uds.translator.data_record.mapping_data_record.MappingDataRecord` class is used to define entries
 in diagnostic messages that can be translated to labels due to some known mapping.
 That means that physical value would usually be str type.
 
@@ -318,9 +314,9 @@ Typical use cases:
  - Boolean flags (e.g. 0="No", 1="Yes")
  - Enumerated values (0="Low", 1="Medium", 2="High", ...)
 
-.. note:: Raw values for which mapping is not defined are handled the same way as per
-  :class:`~uds.translator.data_record.raw_data_record.RawDataRecord`. Same goes for int type physical values.
-  This is a fallback mechanism in case labels were not defined for possible raw values.
+.. note:: Raw values without a label defined in the mapping, are handled the same way as per
+    :class:`~uds.translator.data_record.raw_data_record.RawDataRecord`. The same goes for int type physical values.
+    This is a fallback mechanism in case labels were not defined for all possible raw values.
 
 **Example code:**
 
@@ -454,7 +450,7 @@ Typical use cases:
 
 Text Data Record
 ````````````````
-:class:`~uds.translator.data_record.text_data_record.TextDataRecord` class is used to define an entries
+:class:`~uds.translator.data_record.text_data_record.TextDataRecord` class is used to define entries
 in diagnostic messages that can be translated to text using known text encoding format.
 All supported encoding formats are defined in :class:`~uds.translator.data_record.text_data_record.TextEncoding` enum.
 Physical values produces by :class:`~uds.translator.data_record.text_data_record.TextDataRecord` are str type, even
@@ -503,8 +499,9 @@ and common implementation for Data Records with logic for building diagnostic me
 
 Features:
  - common configuration (default message continuation)
- - diagnostic message continuation validation
- - use mechanism (raw value of the proceeding Data Record has to be provided to establish the output)
+ - validation for Data Records structures with diagnostic message continuation
+ - conditional Data Records usage mechanism (raw value of the proceeding Data Record has to be provided to select
+   proper structure of diagnostic message continuation)
 
 
 Conditional Mapping Data Record
