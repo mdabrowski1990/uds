@@ -148,8 +148,8 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
     Conditional Data Records that uses mapping to select diagnostic message continuation.
 
     Common Use Cases:
-     - DID structure selection after DID value is provided
-     - selection of diagnostic message selection after sub-function value is provided
+     - DID structure selection after DID value was provided
+     - selection of diagnostic service format after sub-function value was provided
     """
 
     def __init__(self,

@@ -6,7 +6,7 @@ from typing import Callable, Dict, Optional, TypedDict
 
 from uds.utilities import ValidatedEnum
 
-from .abstract_data_record import AbstractDataRecord, MultiplePhysicalValuesAlias, SinglePhysicalValueAlias
+from .abstract_data_record import AbstractDataRecord
 
 
 class TextEncoding(ValidatedEnum):
@@ -116,7 +116,7 @@ class TextDataRecord(AbstractDataRecord):
             return 9
         raise NotImplementedError(f"Missing implementation for {self.encoding}.")
 
-    def get_physical_values(self, *raw_values: int) -> MultiplePhysicalValuesAlias:
+    def get_physical_values(self, *raw_values: int) -> str:
         """
         Get physical values representing provided raw values.
 
@@ -127,13 +127,10 @@ class TextDataRecord(AbstractDataRecord):
 
         :return: Text encoded for provided raw values.
         """
-        if not self.is_reoccurring:
-            raise RuntimeError("This method must be called for reoccurring Data Record only.")
-        if len(raw_values) == 0:
-            raise ValueError("Raw value for at least one occurrence must be provided.")
-        return "".join((self.get_physical_value(raw_value) for raw_value in raw_values))  # type: ignore
+        physical_values = super().get_physical_values(*raw_values)
+        return "".join(physical_values)  # type: ignore
 
-    def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
+    def get_physical_value(self, raw_value: int) -> str:
         """
         Get physical value representing provided raw value.
 
@@ -144,7 +141,7 @@ class TextDataRecord(AbstractDataRecord):
         self._validate_raw_value(raw_value)
         return self.__ENCODINGS[self.encoding]["encode"](raw_value)
 
-    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: str) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 
@@ -152,4 +149,8 @@ class TextDataRecord(AbstractDataRecord):
 
         :return: Raw value decoded from provided character.
         """
-        return self.__ENCODINGS[self.encoding]["decode"](physical_value)  # type: ignore
+        if not isinstance(physical_value, str):
+            raise TypeError("Provided value is not str type.")
+        if len(physical_value) != 1:
+            raise ValueError("Provided value is not a single character.")
+        return self.__ENCODINGS[self.encoding]["decode"](physical_value)

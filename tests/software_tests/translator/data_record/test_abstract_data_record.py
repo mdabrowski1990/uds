@@ -449,14 +449,26 @@ class TestAbstractDataRecord:
         with pytest.raises(RuntimeError):
             AbstractDataRecord.get_physical_values(self.mock_data_record, Mock(), Mock())
 
-    def test_get_physical_values__value_error(self):
+    @pytest.mark.parametrize("raw_values, min_occurrences, max_occurrences", [
+        (range(11), 0, 10),
+        ([Mock()], 2, None),
+    ])
+    def test_get_physical_values__value_error(self, raw_values, min_occurrences, max_occurrences):
         self.mock_data_record.is_reoccurring = True
+        self.mock_data_record.min_occurrences = min_occurrences
+        self.mock_data_record.max_occurrences = max_occurrences
         with pytest.raises(ValueError):
-            AbstractDataRecord.get_physical_values(self.mock_data_record)
+            AbstractDataRecord.get_physical_values(self.mock_data_record, *raw_values)
 
-    @pytest.mark.parametrize("raw_values", [range(10), (Mock(), Mock(), Mock())])
-    def test_get_physical_values(self, raw_values):
+    @pytest.mark.parametrize("raw_values, min_occurrences, max_occurrences", [
+        (range(10), 0, 10),
+        ([Mock(), Mock()], 2, None),
+        (range(10000), 0, None),
+    ])
+    def test_get_physical_values(self, raw_values, min_occurrences, max_occurrences):
         self.mock_data_record.is_reoccurring = True
+        self.mock_data_record.min_occurrences = min_occurrences
+        self.mock_data_record.max_occurrences = max_occurrences
         output = AbstractDataRecord.get_physical_values(self.mock_data_record, *raw_values)
         assert isinstance(output, tuple)
         assert output == tuple([self.mock_data_record.get_physical_value.return_value] * len(raw_values))

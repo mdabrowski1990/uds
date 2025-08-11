@@ -9,8 +9,8 @@ How to contribute?
 If you want to become a contributor, please visit `UDS project page <https://github.com/mdabrowski1990/uds>`_
 and read `CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ file.
 
-`Contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_ to find out what we have got to offer and to
-get more information.
+`Contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_ to get more information
+and find out what we have got to offer for you.
 
 
 Sponsoring

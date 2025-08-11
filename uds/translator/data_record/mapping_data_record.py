@@ -3,12 +3,12 @@
 __all__ = ["MappingDataRecord"]
 
 from types import MappingProxyType
-from typing import Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, Union
 from warnings import warn
 
 from uds.utilities import ValueWarning
 
-from .abstract_data_record import AbstractDataRecord, SinglePhysicalValueAlias
+from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
 
 
@@ -88,7 +88,7 @@ class MappingDataRecord(RawDataRecord):
         """Get labels mapping to raw values."""
         return self.__labels_mapping
 
-    def get_physical_value(self, raw_value: int) -> SinglePhysicalValueAlias:
+    def get_physical_value(self, raw_value: int) -> Union[str, int]:  # type: ignore
         """
         Get physical value representing provided raw value.
 
@@ -103,7 +103,7 @@ class MappingDataRecord(RawDataRecord):
              stacklevel=2)
         return super().get_physical_value(raw_value)
 
-    def get_raw_value(self, physical_value: SinglePhysicalValueAlias) -> int:
+    def get_raw_value(self, physical_value: Union[str, int]) -> int:  # type: ignore
         """
         Get raw value that represents provided physical value.
 
@@ -113,4 +113,4 @@ class MappingDataRecord(RawDataRecord):
         """
         if physical_value in self.labels_mapping:
             return self.labels_mapping[physical_value]  # type: ignore
-        return super().get_raw_value(physical_value)
+        return super().get_raw_value(physical_value)  # type: ignore
