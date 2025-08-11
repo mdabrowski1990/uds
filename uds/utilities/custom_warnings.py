@@ -24,8 +24,7 @@ class UnexpectedPacketReceptionWarning(RuntimeWarning):
     """
     An unexpected packet was received.
 
-    .. seealso::
-        :ref:`Unexpected CAN Packet handling <knowledge-base-can-unexpected-packet-arrival>`
+    .. seealso:: :ref:`Unexpected CAN Packet handling <knowledge-base-can-unexpected-packet-arrival>`
     """
 
 

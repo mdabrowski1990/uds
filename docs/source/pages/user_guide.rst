@@ -1,5 +1,6 @@
 User Guide
 ==========
+In this part of the documentation, you will find the essential components and capabilities of this package.
 
 .. toctree::
     :caption: Table of Content

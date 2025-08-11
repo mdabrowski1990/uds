@@ -8,7 +8,7 @@ UDS protocol itself.
     :caption: Table of Content
 
     knowledge_base/osi_model.rst
+    knowledge_base/service.rst
     knowledge_base/diagnostic_message.rst
     knowledge_base/packet.rst
     knowledge_base/segmentation.rst
-    knowledge_base/performance.rst
