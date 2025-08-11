@@ -2,7 +2,7 @@ Installation
 ============
 
 .. role:: shell(code)
-    :language: shell
+  :language: shell
 
 
 Released versions

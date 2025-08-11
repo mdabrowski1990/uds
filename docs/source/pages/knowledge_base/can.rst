@@ -82,13 +82,349 @@ but the key in terms of DoCAN communication are listed below:
 
 CAN Packet
 ----------
-TODO: put some intro here
+CAN Packets are :ref:`CAN Frames <knowledge-base-can-frame>`_ exchanged during DoCAN communication.
+
+
+.. _knowledge-base-can-data-field:
+
+Data Field
+``````````
+CAN Packets must have Data Length Code (DLC) equal to 8 (for CLASSICAL CAN and CAN FD) or greater (for CAN FD).
+The only exception is usage of `CAN Frame Data Optimization`_.
+
++-----+------------------------------------------------------------------------+
+| DLC |                               Description                              |
++=====+========================================================================+
+|  <8 | *Valid only for CAN frames using data optimization*                    |
+|     |                                                                        |
+|     | Values in this range are only valid for Single Frame, Flow Control and |
+|     |                                                                        |
+|     | Consecutive Frame that use CAN frame data optimization.                |
++-----+------------------------------------------------------------------------+
+|  8  | *Configured CAN frame maximum payload length of 8 bytes*               |
+|     |                                                                        |
+|     | For the use with CLASSICAL CAN and CAN FD type frames.                 |
++-----+------------------------------------------------------------------------+
+| >8  | *Configured CAN frame maximum payload length greater than 8 bytes*     |
+|     |                                                                        |
+|     | For the use with CAN FD type frames only.                              |
++-----+------------------------------------------------------------------------+
+
+where:
+
+- DLC - Data Length Code of a :ref:`CAN frame <knowledge-base-can-frame>`
+
+.. note:: Number of bytes that carry diagnostic message payload depends on a type and a format of a CAN packet as it is
+  presented in :ref:`the table with CAN packets formats <knowledge-base-can-packets-format>`.
+
+
+.. _knowledge-base-can-frame-data-padding:
+
+CAN Frame Data Padding
+''''''''''''''''''''''
+If a number of bytes specified in a Packet is shorter than a number of bytes in CAN frame's data field,
+then the sender has to pad any unused bytes in the frame. This can only be a case for
+:ref:`Single Frame <knowledge-base-can-single-frame>`, :ref:`Flow Control <knowledge-base-can-flow-control>` and
+the last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a segmented message.
+If not specified differently, the default value 0xCC shall be used for the frame padding to minimize the bit stuffing
+insertions and bit alteration on the wire.
+
+.. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8 and
+  optional for frames with DLC=8.
+
+
+.. _knowledge-base-can-data-optimization:
+
+CAN Frame Data Optimization
+'''''''''''''''''''''''''''
+CAN frame data optimization is an alternative to `CAN Frame Data Padding`_.
+If a number of bytes specified in a CAN Packet is shorter than a number of bytes in CAN frame's data field,
+then the sender might decrease DLC value of the :ref:`CAN frame <knowledge-base-can-frame>` to the minimal number
+that is required to sent a desired number of data bytes in a single CAN packet.
+
+.. note:: CAN Frame Data Optimization might always be used for CAN Packets with less than 8 bytes of data to send.
+
+.. warning:: CAN Frame Data Optimization might not always be able to replace `CAN Frame Data Padding`_ when CAN FD
+  is used. This is a consequence of DLC values from 9 to 15 meaning as these values are mapped into CAN frame data
+  bytes numbers in a non-linear way (e.g. DLC=9 represents 12 data bytes).
+
+  Example:
+
+  *When a CAN Packet with 47 bytes of data is planned for a transmission, then DLC=14 can be used instead of DLC=15,*
+  *to choose 48-byte instead of 64-byte long CAN frame. Unfortunately, the last byte of CAN Frame data has to be *
+  *padded as there is no way to send over CAN a frame with exactly 47 bytes of data.*
+
+
+.. _knowledge-base-can-n-pci:
+
+CAN Packet Types
+````````````````
+According to ISO 15765-2, CAN bus supports 4 types of Packets.
+
+List of all values of :ref:`Network Protocol Control Information <knowledge-base-n-pci>` supported by CAN bus:
+
+- 0x0 - :ref:`Single Frame <knowledge-base-can-single-frame>`
+- 0x1 - :ref:`First Frame <knowledge-base-can-first-frame>`
+- 0x2 - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+- 0x3 - :ref:`Flow Control <knowledge-base-can-flow-control>`
+- 0x4-0xF - values range reserved for future extension by ISO 15765
+
+The format of all CAN packets is presented in the table below.
+
+.. _knowledge-base-can-packets-format:
+
++-------------------+---------------------+---------+---------+---------+---------+---------+-----+
+|     CAN N_PDU     |       Byte #1       | Byte #2 | Byte #3 | Byte #4 | Byte #5 | Byte #6 | ... |
+|                   +----------+----------+         |         |         |         |         |     |
+|                   | Bits 7-4 | Bits 3-0 |         |         |         |         |         |     |
++===================+==========+==========+=========+=========+=========+=========+=========+=====+
+| Single Frame      | 0x0      | SF_DL    |         |         |         |         |         |     |
+|                   |          |          |         |         |         |         |         |     |
+| *DLC ≤ 8*         |          |          |         |         |         |         |         |     |
++-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
+| Single Frame      | 0x0      | 0x0      | SF_DL   |         |         |         |         |     |
+|                   |          |          |         |         |         |         |         |     |
+| *DLC > 8*         |          |          |         |         |         |         |         |     |
++-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
+| First Frame       | 0x1      |        FF_DL       |         |         |         |         |     |
+|                   |          |                    |         |         |         |         |     |
+| *FF_DL ≤ 4095*    |          |                    |         |         |         |         |     |
++-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
+| First Frame       | 0x1      | 0x0      | 0x00    |                 FF_DL                 |     |
+|                   |          |          |         |                                       |     |
+| *FF_DL > 4095*    |          |          |         |                                       |     |
++-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
+| Consecutive Frame | 0x2      | SN       |         |         |         |         |         |     |
++-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
+| Flow Control      | 0x3      | FS       | BS      | ST_min  | N/A     | N/A     | N/A     | N/A |
++-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
+
+where:
+
+- DLC - Data Length Code of a CAN frame, it is equal to number of data bytes carried by this CAN frame
+- SF_DL - :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
+- FF_DL - :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
+- SN - :ref:`Sequence Number <knowledge-base-can-sequence-number>`
+- FS - :ref:`Flow Status <knowledge-base-can-flow-status>`
+- BS - :ref:`Block Size <knowledge-base-can-block-size>`
+- ST_min - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
+- N/A - Not Applicable (byte does not carry any information)
+
+
+.. _knowledge-base-can-single-frame:
+
+Single Frame
+''''''''''''
+Single Frame (SF) is used by CAN entities to transmit a diagnostic message with a payload short enough to fit it
+into a single CAN packet. In other words, Single Frame carries payload of an entire diagnostic message.
+Number of payload bytes carried by SF is specified by
+:ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` value.
+
+
+.. _knowledge-base-can-single-frame-data-length:
+
+Single Frame Data Length
+........................
+Single Frame Data Length (SF_DL) is 4-bit (for CAN packets with DLC<=8) or 8-bit (for CAN packets with DLC>8) value
+carried by every Single Frame as presented in
+:ref:`the table with CAN packet formats<knowledge-base-can-packets-format>`.
+SF_DL specifies number of diagnostic message payload bytes transmitted in a Single Frame.
+
+.. note:: Maximal value of SF_DL depends on Single Frame :ref:`addressing format <knowledge-base-can-addressing>`
+  and :ref:`DLC of a CAN message <knowledge-base-can-data-field>` that carries this packet.
+
+
+.. _knowledge-base-can-first-frame:
+
+First Frame
+'''''''''''
+First Frame (FF) is used by CAN entities to indicate start of a diagnostic message transmission.
+First Frames are only used during a transmission of a segmented diagnostic messages that could not fit into a
+:ref:`Single Frame <knowledge-base-can-single-frame>`.
+Number of payload bytes carried by FF is specified by
+:ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>` value.
+
+
+.. _knowledge-base-can-first-frame-data-length:
+
+First Frame Data Length
+.......................
+First Frame Data Length (FF_DL) is 12-bit (if FF_DL ≤ 4095) or 4-byte (if FF_DL > 4095) value carried by every
+First Frame. FF_DL specifies number of diagnostic message payload bytes of a diagnostic message which transmission
+was initiated by a First Frame.
+
+.. note:: Maximal value of FF_DL is 4294967295 (0xFFFFFFFF). It means that CAN bus is capable of transmitting
+  diagnostic messages that contains up to nearly 4,3 GB of payload.
+
+
+.. _knowledge-base-can-consecutive-frame:
+
+Consecutive Frame
+'''''''''''''''''
+Consecutive Frame (CF) is used by CAN entities to continue transmission of a diagnostic message.
+:ref:`First Frame <knowledge-base-can-first-frame>` shall always precede (one or more) Consecutive Frames.
+Consecutive Frames carry following payload bytes of a diagnostic message that could not fit into
+a :ref:`First Frame <knowledge-base-can-first-frame>` that preceded them.
+To avoid ambiguity and to make sure that no Consecutive Frame is lost, the order of Consecutive Frames is determined by
+:ref:`Sequence Number <knowledge-base-can-sequence-number>` value.
+
+
+.. _knowledge-base-can-sequence-number:
+
+Sequence Number
+...............
+Sequence Number (SN) is 4-bit value used to specify the order of Consecutive Frames.
+
+The rules of proper Sequence Number value assignment are following:
+
+- SN value of the first :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` that directly follows
+  a :ref:`First Frame <knowledge-base-can-first-frame>` shall be set to 1.
+- SN shall be incremented by 1 for each following :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
+- SN value shall not be affected by :ref:`Flow Control <knowledge-base-can-flow-control>` packets.
+- when SN reaches the value of 15, it shall wraparound and be set to 0 in the next
+  :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
+
+
+.. _knowledge-base-can-flow-control:
+
+Flow Control
+''''''''''''
+Flow Control (FC) is used by receiving CAN entities to instruct sending entities to stop, start, pause or resume
+transmission of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+Flow Control packet contains following parameters:
+
+- :ref:`Flow Status <knowledge-base-can-flow-status>`
+- :ref:`Block Size <knowledge-base-can-block-size>`
+- :ref:`Separation Time Minimum <knowledge-base-can-st-min>`
+
+
+.. _knowledge-base-can-flow-status:
+
+Flow Status
+...........
+Flow Status (FS) is 4-bit value that is used to inform a sending network entity whether it can proceed with
+a Consecutive Frames transmission.
+
+Values of Flow Status:
+
+- 0x0 - ContinueToSend (CTS)
+
+  ContinueToSend value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
+  with CTS) is ready to receive a maximum of :ref:`Block Size <knowledge-base-can-block-size>` number of
+  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` packet with ContinueToSend value shall cause
+  the sender to resume ConsecutiveFrames sending.
+
+- 0x1 - wait (WAIT)
+
+  Wait value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with WAIT)
+  is not ready to receive another :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` packet with WAIT value shall cause
+  the sender to pause ConsecutiveFrames sending and wait for another
+  :ref:`Flow Control <knowledge-base-can-flow-control>` packet.
+
+  Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
+  the :ref:`Flow Control <knowledge-base-can-flow-control>` packet (that contains WAIT value of Flow Status)
+  are not relevant and shall be ignored.
+
+- 0x2 - Overflow (OVFLW)
+
+  Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
+  with OVFLW) is not able to receive a full diagnostic message as it is too big and reception of the message would
+  result in `Buffer Overflow <https://en.wikipedia.org/wiki/Buffer_overflow>`_ on receiving side.
+  In other words, the value of :ref:`FF_DL <knowledge-base-can-first-frame-data-length>` exceeds the buffer size of
+  the receiving entity.
+
+  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` packet with Overflow value shall cause
+  the sender to abort the transmission of a diagnostic message.
+
+  Overflow value shall only be sent in a :ref:`Flow Control <knowledge-base-can-flow-control>` packet that directly
+  follows a :ref:`First Frame <knowledge-base-can-first-frame>`.
+
+  Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
+  the :ref:`Flow Control <knowledge-base-can-flow-control>` packet (that contains OVFLW value of Flow Status)
+  are not relevant and shall be ignored.
+
+- 0x3-0xF - Reserved
+
+  This range of values is reserved for future extension by ISO 15765.
+
+
+.. _knowledge-base-can-block-size:
+
+Block Size
+..........
+Block Size (BS) is a one byte value specified by receiving entity that informs about number of
+:ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` to be sent in a one block of packets.
+
+Block Size values:
+
+- 0x00
+
+  The value 0 of the Block Size parameter informs a sender that no more
+  :ref:`Flow Control <knowledge-base-can-flow-control>` packets would be sent during the transmission
+  of the segmented message.
+
+  Reception of Block Size = 0 shall cause the sender to send all remaining
+  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` without any stop for further
+  :ref:`Flow Control <knowledge-base-can-flow-control>` packets from the receiving entity.
+
+- 0x01-0xFF
+
+  This range of Block Size values informs a sender the maximum number of
+  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` that can be transmitted without an intermediate
+  :ref:`Flow Control <knowledge-base-can-flow-control>` packet from the receiving entity.
+
+
+.. _knowledge-base-can-st-min:
+
+Separation Time Minimum
+.......................
+Separation Time minimum (STmin) is a one byte value specified by receiving entity that informs about minimum time gap
+between the transmission of two following :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
+
+STmin values:
+
+- 0x00-0x7F - Separation Time minimum range 0-127 ms
+
+  The value of STmin in this range represents the value in milliseconds (ms).
+
+  0x00 = 0 ms
+
+  0xFF = 127 ms
+
+- 0x80-0xF0 - Reserved
+
+  This range of values is reserved for future extension by ISO 15765.
+
+- 0xF1-0xF9 - Separation Time minimum range 100-900 μs
+
+  The value of STmin in this range represents the value in microseconds (μs) according to the formula:
+
+  .. code-block::
+
+    (STmin - 0xF0) * 100 μs
+
+  Meaning of example values:
+
+  0xF1 -> 100 μs
+
+  0xF5 -> 500 μs
+
+  0xF9 -> 900 μs
+
+- 0xFA-0xFF - Reserved
+
+  This range of values is reserved for future extension by ISO 15765.
 
 
 .. _knowledge-base-can-addressing:
 
 CAN Addressing Formats
-``````````````````````
+----------------------
 CAN Addressing Formats defines a way of storing :ref:`Network Address Information <knowledge-base-n-ai>` in
 `CAN Packet`_.
 
@@ -99,8 +435,8 @@ ISO 15765 defines following 3 addressing formats:
 - :ref:`Mixed addressing <knowledge-base-can-mixed-addressing>`
 
 .. note:: Regardless of addressing format used, to transmit
-    a :ref:`functionally addressed <knowledge-base-functional-addressing>` message over CAN, a sender is allowed to use
-    :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
+  a :ref:`functionally addressed <knowledge-base-functional-addressing>` message over CAN, a sender is allowed to use
+  :ref:`Single Frame <knowledge-base-can-single-frame>` packets only.
 
 .. seealso:: `ISO 15765-4 <https://www.iso.org/standard/78384.html>`_ contains detailed information about
   CAN addressing formats.
@@ -109,7 +445,7 @@ ISO 15765 defines following 3 addressing formats:
 .. _knowledge-base-can-normal-addressing:
 
 Normal Addressing
-'''''''''''''''''
+`````````````````
 Normal CAN Addressing Format is usually used when direct communication with servers is possible -
 a client (Diagnostic Tester) is connected to the same CAN network as targeted servers (ECUs).
 
@@ -146,7 +482,7 @@ ISO 15765-4 recommends to use following CAN Identifiers for Normal Addressing:
 - 0x7EF - physical response from ECU#8
 
 .. note:: Interpretation of CAN Identifier values is left open for a network designer unless
-    `Normal Fixed Addressing`_ sub-format is used.
+  `Normal Fixed Addressing`_ sub-format is used.
 
 .. note:: :ref:`Network Protocol Control Information <knowledge-base-n-pci>` is placed in the **first byte** of
   :ref:`CAN frame data field <knowledge-base-can-data-field>` when Normal CAN Addressing format is used.
@@ -155,7 +491,7 @@ ISO 15765-4 recommends to use following CAN Identifiers for Normal Addressing:
 .. _knowledge-base-can-normal-fixed-addressing:
 
 Normal Fixed Addressing
-.......................
+'''''''''''''''''''''''
 Normal Fixed CAN Addressing Format is a special case of `Normal Addressing`_ in which the mapping of
 :ref:`Network Address Information <knowledge-base-n-ai>` into the CAN identifier is further specified.
 
@@ -251,7 +587,7 @@ ISO 15765-4 recommends to use following parameters for Normal Fixed Addressing:
 .. _knowledge-base-can-extended-addressing:
 
 Extended Addressing
-'''''''''''''''''''
+```````````````````
 Extended CAN Addressing Format is usually used when direct communication with servers is not possible -
 a client (Diagnostic Tester) is not connected to the same CAN network as server(s), therefore one or more ECU Gateways
 are use to pass on the packets/messages.
@@ -270,13 +606,13 @@ Extended CAN Addressing Format:
   a receiving node
 
 .. note:: `Network Protocol Control Information`_ is placed in the **second byte** of
-   :ref:`CAN frame data field <knowledge-base-can-data-field>` when Extended CAN Addressing format is used.
+  :ref:`CAN frame data field <knowledge-base-can-data-field>` when Extended CAN Addressing format is used.
 
 
 .. _knowledge-base-can-mixed-addressing:
 
 Mixed Addressing
-''''''''''''''''
+````````````````
 Mixed CAN Addressing Format (just like Extended CAN Addressing Format) is used when direct communication with servers
 is not possible - a client (Diagnostic Tester) is not connected to the same CAN network as server(s),
 therefore one or more ECU Gateways are use to pass on the packets/messages.
@@ -286,14 +622,14 @@ When Mixed CAN Addressing Format is used, then the value of **the first byte of 
 **The Value of the address extension shall be the same for each for transmitted and received packets.**
 
 .. note:: `Network Protocol Control Information`_ is placed in the **second byte** of
-   :ref:`CAN frame data field <knowledge-base-can-data-field>` if mixed addressing format is used.
+  :ref:`CAN frame data field <knowledge-base-can-data-field>` if mixed addressing format is used.
 
 Following parameters specifies :ref:`Network Address Information <knowledge-base-n-ai>` for
 Extended CAN Addressing Format:
 
 - CAN ID - informs about addressing type, transmitting and receiving nodes within the network
-- Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - informs
-  about network to which server(s) is/are connected.
+- Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - extends
+  information carried by CAN Identifier
 
 Mixed CAN Addressing Format has two sub-types, depending which CAN ID format is used:
 
@@ -304,14 +640,14 @@ Mixed CAN Addressing Format has two sub-types, depending which CAN ID format is 
 .. _knowledge-base-can-mixed-11-bit-addressing:
 
 Mixed Addressing - 11-bit CAN Identifier
-........................................
+''''''''''''''''''''''''''''''''''''''''
 It is a subtype `Mixed Addressing`_ when only 11-bit (standard) CAN Identifiers are used.
 
 
 .. _knowledge-base-can-mixed-29-bit-addressing:
 
 Mixed Addressing - 29-bit CAN Identifier
-........................................
+''''''''''''''''''''''''''''''''''''''''
 It is a subtype `Mixed Addressing`_ when only 29-bit (extended) CAN Identifiers are used.
 The mapping of :ref:`Network Address Information <knowledge-base-n-ai>` into the CAN identifier is further specified.
 
@@ -387,21 +723,14 @@ where:
 - :ref:`N_Data <knowledge-base-n-data>` - Network Data Field
 
 
+.. _knowledge-base-can-segmentation:
 
-
-
-
-
-
-
-
-
-
-Segmentation on CAN - TODO
+Segmentation on CAN
 -------------------
+Segmentation rules that are specific for CAN and DoCAN are described in this chapter.
 
 
-.. _knowledge-base-unsegmented-message-transmission:
+.. _knowledge-base-can-unsegmented-message-transmission:
 
 Unsegmented message transmission
 ''''''''''''''''''''''''''''''''
@@ -421,17 +750,17 @@ this scenario.
   an entire :ref:`Diagnostic Message <knowledge-base-diagnostic-message>`.
 
 
-.. _knowledge-base-segmented-message-transmission:
+.. _knowledge-base-can-segmented-message-transmission:
 
 Segmented message transmission
 ''''''''''''''''''''''''''''''
 When a :ref:`Diagnostic Message <knowledge-base-diagnostic-message>` to be transmitted on CAN, contains payload which
 size is greater than a :ref:`Single Frame <knowledge-base-can-single-frame>` capacity, then the message payload
-must be divided and transmitted by many CAN packets. The first packet to carry such messages is
-:ref:`First Frame (CAN Packet) <knowledge-base-can-first-frame>` and its transmission is followed by
-:ref:`Consecutive Frames (CAN Packets) <knowledge-base-can-consecutive-frame>`.
-A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` by sending
-:ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` after
+must be divided and transmitted by many :ref:`CAN packets <knowledge-base-can-packet>`.
+The first packet to carry such messages is :ref:`First Frame (CAN Packet) <knowledge-base-can-first-frame>`
+and its transmission is followed by :ref:`Consecutive Frames (CAN Packets) <knowledge-base-can-consecutive-frame>`.
+A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`
+by sending :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` after
 :ref:`First Frame <knowledge-base-can-first-frame>` and each complete transmission of
 :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` block.
 
@@ -462,382 +791,10 @@ A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-b
   use cases.
 
 
+.. _knowledge-base-can-performance-and-error-handling:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.. _knowledge-base-can-data-field:
-
-CAN Data Field  - TODO
-``````````````
-:ref:`CAN frames <knowledge-base-can-frame>` that are exchanged during UDS communication must have
-Data Length Code (DLC) equal to 8 (for CLASSICAL CAN and CAN FD) or greater (for CAN FD).
-The only exception is usage of `CAN Frame Data Optimization`_.
-
-+-----+------------------------------------------------------------------------+
-| DLC |                               Description                              |
-+=====+========================================================================+
-|  <8 | *Valid only for CAN frames using data optimization*                    |
-|     |                                                                        |
-|     | Values in this range are only valid for Single Frame, Flow Control and |
-|     |                                                                        |
-|     | Consecutive Frame that use CAN frame data optimization.                |
-+-----+------------------------------------------------------------------------+
-|  8  | *Configured CAN frame maximum payload length of 8 bytes*               |
-|     |                                                                        |
-|     | For the use with CLASSICAL CAN and CAN FD type frames.                 |
-+-----+------------------------------------------------------------------------+
-| >8  | *Configured CAN frame maximum payload length greater than 8 bytes*     |
-|     |                                                                        |
-|     | For the use with CAN FD type frames only.                              |
-+-----+------------------------------------------------------------------------+
-
-where:
-
-- DLC - Data Length Code of a :ref:`CAN frame <knowledge-base-can-frame>`
-
-.. note:: Number of bytes that carry diagnostic message payload depends on a type and a format of a CAN packet as it is
-  presented in :ref:`the table with CAN packets formats <knowledge-base-can-packets-format>`.
-
-
-.. _knowledge-base-can-frame-data-padding:
-
-CAN Frame Data Padding
-''''''''''''''''''''''
-If a number of bytes specified in a Packet is shorter than a number of bytes in CAN frame's data field,
-then the sender has to pad any unused bytes in the frame. This can only be a case for
-:ref:`Single Frame <knowledge-base-can-single-frame>`, :ref:`Flow Control <knowledge-base-can-flow-control>` and
-the last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a segmented message.
-If not specified differently, the default value 0xCC shall be used for the frame padding to minimize the bit stuffing
-insertions and bit alteration on the wire.
-
-.. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8 and
-  optional for frames with DLC=8.
-
-
-.. _knowledge-base-can-data-optimization:
-
-CAN Frame Data Optimization
-'''''''''''''''''''''''''''
-CAN frame data optimization is an alternative to `CAN Frame Data Padding`_.
-If a number of bytes specified in a CAN Packet is shorter than a number of bytes in CAN frame's data field,
-then the sender might decrease DLC value of the :ref:`CAN frame <knowledge-base-can-frame>` to the minimal number
-that is required to sent a desired number of data bytes in a single CAN packet.
-
-.. note:: CAN Frame Data Optimization might always be used for CAN Packets with less than 8 bytes of data to send.
-
-.. warning:: CAN Frame Data Optimization might not always be able to replace `CAN Frame Data Padding`_ when CAN FD
-  is used. This is a consequence of DLC values from 9 to 15 meaning as these values are mapped into CAN frame data
-  bytes numbers in a non-linear way (e.g. DLC=9 represents 12 data bytes).
-
-  Example:
-
-  *When a CAN Packet with 47 bytes of data is planned for a transmission, then DLC=14 can be used instead of DLC=15,*
-  *to choose 48-byte instead of 64-byte long CAN frame. Unfortunately, the last byte of CAN Frame data has to be *
-  *padded as there is no way to send over CAN a frame with exactly 47 bytes of data.*
-
-
-.. _knowledge-base-can-n-pci:
-
-CAN Packet Types
-````````````````
-According to ISO 15765-2, CAN bus supports 4 types of Packets.
-
-List of all values of `Network Protocol Control Information`_ supported by CAN bus:
-
-- 0x0 - :ref:`Single Frame <knowledge-base-can-single-frame>`
-- 0x1 - :ref:`First Frame <knowledge-base-can-first-frame>`
-- 0x2 - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-- 0x3 - :ref:`Flow Control <knowledge-base-can-flow-control>`
-- 0x4-0xF - values range reserved for future extension by ISO 15765
-
-The format of all CAN packets is presented in the table below.
-
-.. _knowledge-base-can-packets-format:
-
-+-------------------+---------------------+---------+---------+---------+---------+---------+-----+
-|     CAN N_PDU     |       Byte #1       | Byte #2 | Byte #3 | Byte #4 | Byte #5 | Byte #6 | ... |
-|                   +----------+----------+         |         |         |         |         |     |
-|                   | Bits 7-4 | Bits 3-0 |         |         |         |         |         |     |
-+===================+==========+==========+=========+=========+=========+=========+=========+=====+
-| Single Frame      | 0x0      | SF_DL    |         |         |         |         |         |     |
-|                   |          |          |         |         |         |         |         |     |
-| *DLC ≤ 8*         |          |          |         |         |         |         |         |     |
-+-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-| Single Frame      | 0x0      | 0x0      | SF_DL   |         |         |         |         |     |
-|                   |          |          |         |         |         |         |         |     |
-| *DLC > 8*         |          |          |         |         |         |         |         |     |
-+-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-| First Frame       | 0x1      |        FF_DL       |         |         |         |         |     |
-|                   |          |                    |         |         |         |         |     |
-| *FF_DL ≤ 4095*    |          |                    |         |         |         |         |     |
-+-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-| First Frame       | 0x1      | 0x0      | 0x00    |                 FF_DL                 |     |
-|                   |          |          |         |                                       |     |
-| *FF_DL > 4095*    |          |          |         |                                       |     |
-+-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-| Consecutive Frame | 0x2      | SN       |         |         |         |         |         |     |
-+-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-| Flow Control      | 0x3      | FS       | BS      | ST_min  | N/A     | N/A     | N/A     | N/A |
-+-------------------+----------+----------+---------+---------+---------+---------+---------+-----+
-
-where:
-
-- DLC - Data Length Code of a CAN frame, it is equal to number of data bytes carried by this CAN frame
-- SF_DL - :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
-- FF_DL - :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
-- SN - :ref:`Sequence Number <knowledge-base-can-sequence-number>`
-- FS - :ref:`Flow Status <knowledge-base-can-flow-status>`
-- BS - :ref:`Block Size <knowledge-base-can-block-size>`
-- ST_min - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
-- N/A - Not Applicable (byte does not carry any information)
-
-
-.. _knowledge-base-can-single-frame:
-
-Single Frame
-''''''''''''
-Single Frame (SF) is used by CAN entities to transmit a diagnostic message with a payload short enough to fit it
-into a single CAN packet. In other words, Single Frame carries payload of an entire diagnostic message.
-Number of payload bytes carried by SF is specified by
-:ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` value.
-
-
-.. _knowledge-base-can-single-frame-data-length:
-
-Single Frame Data Length
-........................
-Single Frame Data Length (SF_DL) is 4-bit (for CAN packets with DLC<=8) or 8-bit (for CAN packets with DLC>8) value
-carried by every Single Frame as presented in
-:ref:`the table with CAN packet formats<knowledge-base-can-packets-format>`.
-SF_DL specifies number of diagnostic message payload bytes transmitted in a Single Frame.
-
-.. note:: Maximal value of SF_DL depends on Single Frame :ref:`addressing format <knowledge-base-can-addressing>`
-  and :ref:`DLC of a CAN message <knowledge-base-can-data-field>` that carries this packet.
-
-
-.. _knowledge-base-can-first-frame:
-
-First Frame
-'''''''''''
-First Frame (FF) is used by CAN entities to indicate start of a diagnostic message transmission.
-First Frames are only used during a transmission of a segmented diagnostic messages that could not fit into a
-:ref:`Single Frame <knowledge-base-can-single-frame>`.
-Number of payload bytes carried by FF is specified by
-:ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>` value.
-
-
-.. _knowledge-base-can-first-frame-data-length:
-
-First Frame Data Length
-.......................
-First Frame Data Length (FF_DL) is 12-bit (if FF_DL ≤ 4095) or 4-byte (if FF_DL > 4095) value carried by every
-First Frame. FF_DL specifies number of diagnostic message payload bytes of a diagnostic message which transmission
-was initiated by a First Frame.
-
-.. note:: Maximal value of FF_DL is 4294967295 (0xFFFFFFFF). It means that CAN bus is capable of transmitting
-  diagnostic messages that contains up to nearly 4,3 GB of payload bytes.
-
-
-.. _knowledge-base-can-consecutive-frame:
-
-Consecutive Frame
-'''''''''''''''''
-Consecutive Frame (CF) is used by CAN entities to continue transmission of a diagnostic message.
-:ref:`First Frame <knowledge-base-can-first-frame>` shall always precede (one or more) Consecutive Frames.
-Consecutive Frames carry payload bytes of a diagnostic message that was not transmitted in
-a :ref:`First Frame <knowledge-base-can-first-frame>` that preceded them.
-To avoid ambiguity and to make sure that no Consecutive Frame is lost, the order of Consecutive Frames is determined by
-:ref:`Sequence Number <knowledge-base-can-sequence-number>` value.
-
-
-.. _knowledge-base-can-sequence-number:
-
-Sequence Number
-...............
-Sequence Number (SN) is 4-bit value used to specify the order of Consecutive Frames.
-
-The rules of proper Sequence Number value assignment are following:
-
-  - SN value of the first :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` that directly follows
-    a :ref:`First Frame <knowledge-base-can-first-frame>` shall be set to 1
-  - SN shall be incremented by 1 for each following :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-  - SN value shall not be affected by :ref:`Flow Control <knowledge-base-can-flow-control>` frames
-  - when SN reaches the value of 15, it shall wraparound and be set to 0 in the next
-    :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-
-
-.. _knowledge-base-can-flow-control:
-
-Flow Control
-''''''''''''
-Flow Control (FC) is used by receiving CAN entities to instruct sending entities to stop, start, pause or resume
-transmission of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
-
-Flow Control packet contains following parameters:
-
-- :ref:`Flow Status <knowledge-base-can-flow-status>`
-- :ref:`Block Size <knowledge-base-can-block-size>`
-- :ref:`Separation Time Minimum <knowledge-base-can-st-min>`
-
-
-.. _knowledge-base-can-flow-status:
-
-Flow Status
-...........
-Flow Status (FS) is 4-bit value that is used to inform a sending network entity whether it can proceed with
-a Consecutive Frames transmission.
-
-Values of Flow Status:
-
-- 0x0 - ContinueToSend (CTS)
-
-  ContinueToSend value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
-  with CTS) is ready to receive a maximum of :ref:`Block Size <knowledge-base-can-block-size>` number of
-  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
-
-  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with ContinueToSend value shall cause
-  the sender to resume ConsecutiveFrames sending.
-
-- 0x1 - wait (WAIT)
-
-  Wait value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with WAIT)
-  is not ready to receive another :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
-
-  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with WAIT value shall cause
-  the sender to pause ConsecutiveFrames sending and wait for another
-  :ref:`Flow Control <knowledge-base-can-flow-control>` frame.
-
-  Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
-  the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains WAIT value of Flow Status)
-  are not relevant and shall be ignored.
-
-- 0x2 - Overflow (OVFLW)
-
-  Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
-  with OVFLW) is not able to receive a full diagnostic message as it is too big and reception of the message would
-  result in `Buffer Overflow <https://en.wikipedia.org/wiki/Buffer_overflow>`_ on receiving side.
-  In other words, the value of :ref:`FF_DL <knowledge-base-can-first-frame-data-length>` exceeds the buffer size of
-  the receiving entity.
-
-  Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` frame with Overflow value shall cause
-  the sender to abort the transmission of a diagnostic message.
-
-  Overflow value shall only be sent in a :ref:`Flow Control <knowledge-base-can-flow-control>` frame that directly
-  follows a :ref:`First Frame <knowledge-base-can-first-frame>`.
-
-  Values of :ref:`Block Size <knowledge-base-can-block-size>` and :ref:`STmin <knowledge-base-can-st-min>` in
-  the :ref:`Flow Control <knowledge-base-can-flow-control>` frame (that contains OVFLW value of Flow Status)
-  are not relevant and shall be ignored.
-
-- 0x3-0xF - Reserved
-
-  This range of values is reserved for future extension by ISO 15765.
-
-
-.. _knowledge-base-can-block-size:
-
-Block Size
-..........
-Block Size (BS) is a one byte value specified by receiving entity that informs about number of
-:ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` to be sent in a one block of packets.
-
-Block Size values:
-
-- 0x00
-
-  The value 0 of the Block Size parameter informs a sender that no more
-  :ref:`Flow Control <knowledge-base-can-flow-control>` frames shall be sent during the transmission
-  of the segmented message.
-
-  Reception of Block Size = 0 shall cause the sender to send all remaining
-  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` without any stop for further
-  :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
-
-- 0x01-0xFF
-
-  This range of Block Size values informs a sender the maximum number of
-  :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` that can be transmitted without an intermediate
-  :ref:`Flow Control <knowledge-base-can-flow-control>` frames from the receiving entity.
-
-
-.. _knowledge-base-can-st-min:
-
-Separation Time Minimum
-.......................
-Separation Time minimum (STmin) is a one byte value specified by receiving entity that informs about minimum time gap
-between the transmission of two following :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
-
-STmin values:
-
-- 0x00-0x7F - Separation Time minimum range 0-127 ms
-
-  The value of STmin in this range represents the value in milliseconds (ms).
-
-  0x00 = 0 ms
-
-  0xFF = 127 ms
-
-- 0x80-0xF0 - Reserved
-
-  This range of values is reserved for future extension by ISO 15765.
-
-- 0xF1-0xF9 - Separation Time minimum range 100-900 μs
-
-  The value of STmin in this range represents the value in microseconds (μs) according to the formula:
-
-  .. code-block::
-
-    (STmin - 0xF0) * 100 μs
-
-  Meaning of example values:
-
-  0xF1 -> 100 μs
-
-  0xF5 -> 500 μs
-
-  0xF9 -> 900 μs
-
-- 0xFA-0xFF - Reserved
-
-  This range of values is reserved for future extension by ISO 15765.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Performance
------------
+Performance and Error Handling
+------------------------------
 :ref:`ISO standards <knowledge-base-uds-standards>` defines following time parameters Diagnostic on CAN communication:
 
 - N_As_
@@ -855,16 +812,16 @@ Performance
     Network layer time values (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) present during UDS on CAN communication.
 
 .. note:: The example uses
-    :ref:`segmented diagnostic message transmission <knowledge-base-segmented-message-transmission>`
+    :ref:`segmented diagnostic message transmission <knowledge-base-can-segmented-message-transmission>`
     as it enables to present all CAN timing parameters.
-    For :ref:`unsegmented diagnostic message transmission <knowledge-base-unsegmented-message-transmission>` though,
+    For :ref:`unsegmented diagnostic message transmission <knowledge-base-can-unsegmented-message-transmission>` though,
     the only applicable time parameter is N_As_.
 
 
 .. _knowledge-base-can-n-as:
 
 N_As
-''''
+````
 N_As is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-can-packet>` by a sender.
 It is measured from the beginning of the :ref:`CAN Frame <knowledge-base-can-frame>` (that carries such CAN Packet)
 transmission till the reception of a confirmation that this CAN Frame was received by a receiver.
@@ -885,7 +842,7 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 .. _knowledge-base-can-n-ar:
 
 N_Ar
-''''
+````
 N_Ar is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-can-packet>` by a receiver.
 It is measured from the beginning of the :ref:`CAN Frame <knowledge-base-can-frame>` (that carries such CAN Packet)
 transmission till the reception of a confirmation that this CAN Frame was received by a sender.
@@ -904,7 +861,7 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 .. _knowledge-base-can-n-bs:
 
 N_Bs
-''''
+````
 N_Bs is a time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` reception
 by a sender. It is measured from the end of the last CAN Packet transmission (either transmitted
 :ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
@@ -925,7 +882,7 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 .. _knowledge-base-can-n-br:
 
 N_Br
-''''
+````
 N_Br is a time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` transmission
 by a receiver. It is measured from the end of the last CAN Packet transmission (either received
 :ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
@@ -948,7 +905,7 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 .. _knowledge-base-can-n-cs:
 
 N_Cs
-''''
+````
 N_Cs is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
 transmission by a sender. It is measured from the end of the last CAN Packet transmission (either received
 :ref:`Flow Control <knowledge-base-can-flow-control>` or transmitted
@@ -971,7 +928,7 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 .. _knowledge-base-can-n-cr:
 
 N_Cr
-''''
+````
 N_Cr is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
 reception by a receiver. It is measured from the end of the last CAN Packet transmission (either transmitted
 :ref:`Flow Control <knowledge-base-can-flow-control>` or received

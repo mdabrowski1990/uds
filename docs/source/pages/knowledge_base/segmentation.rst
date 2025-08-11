@@ -13,7 +13,7 @@ or more segments (those segments are called :ref:`Packets <knowledge-base-packet
 that are specific for the bus used.
 
 .. note:: Segmentation process is specific for each bus due to various topologies and
-    communication models (e.g. Master/Slave) enforced by them.
+  communication models (e.g. Master/Slave) enforced by them.
 
 
 .. _knowledge-base-packets-desegmentation:
@@ -25,4 +25,4 @@ It transforms one or more :ref:`packets <knowledge-base-packet>` into
 a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
 
 .. note:: There are many ways to segment a diagnostic message into packets, but there is always only one correct way
-    to perform desegmentation and decode a diagnostic message out of packets.
+  to perform desegmentation and decode a diagnostic message out of packets.

@@ -116,7 +116,7 @@ a diagnostic service.
 .. note:: SID's bit 6 (2nd oldest) equals 0 for all request messages.
 
 .. warning:: When we refer to SID value sometimes we mean Request Service Identifier which might lead to some confusion.
-    Unfortunately, there is no other suitable acronym for it.
+  Unfortunately, there is no other suitable acronym for it.
 
 
 .. _knowledge-base-rsid:

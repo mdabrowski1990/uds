@@ -87,14 +87,14 @@ where:
 
 .. note:: For positive response message this equation is always true:
 
-    .. code-block::
+  .. code-block::
 
-      RSID = SID + 0x40
+    RSID = SID + 0x40
 
-    where:
+  where:
 
-    - SID - :ref:`Service Identifier <knowledge-base-sid>` value in request message
-    - RSID - :ref:`Response Service Identifier <knowledge-base-rsid>` value in positive response message
+  - SID - :ref:`Service Identifier <knowledge-base-sid>` value in request message
+  - RSID - :ref:`Response Service Identifier <knowledge-base-rsid>` value in positive response message
 
 
 Negative Response Message
