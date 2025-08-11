@@ -1,3 +1,5 @@
+.. _knowledge-base-osi-model:
+
 UDS OSI Model
 =============
 Overview of `OSI model <https://en.wikipedia.org/wiki/OSI_model>`_ for UDS protocol.
