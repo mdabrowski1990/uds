@@ -1,5 +1,33 @@
 UDS over CAN
 ============
+This part of documentation explain how to use this package to communicate using
+:ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol.
+The implementation is located in :mod:`uds.can` module.
+
+.. note:: You might :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol separately from UDS.
+
+
+Addressing
+----------
+
+
+
+
+Frame
+-----
+
+
+Packet
+------
+
+
+Segmentation
+------------
+
+
+
+Transport Interface
+-------------------
 
 
 
@@ -9,9 +37,7 @@ UDS over CAN
 
 
 
-
-
-
+TODO
 
 
 
