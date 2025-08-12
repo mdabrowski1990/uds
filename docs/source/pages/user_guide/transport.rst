@@ -3,7 +3,7 @@ Transport Interfaces
 Transport interfaces are meant to handle Physical (layer 1), Data (layer 2), Network (layer 3) and Transport (layer 4)
 layers of :ref:`UDS OSI model <knowledge-base-osi-model>` which are unique for every communication bus/network.
 First two layers (Physical and Data Link) are handled by some external packages.
-The whole implementation that is common for all Transport Interfaces is located in :mod:`uds.transport_interface`
+The implementation that is common for all Transport Interfaces is located in :mod:`uds.transport_interface`
 sub-package.
 
 AbstractTransportInterface
@@ -41,7 +41,6 @@ Methods:
 - :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_receive_message`
   - receive a diagnostic message asynchronously
 
-.. warning:: A **user shall not use**
-  :class:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface` **directly**,
-  but one is able (and encouraged) to use :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter`
-  implementation on any of its children classes.
+.. warning:: **A user shall not use**
+  :class:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.

@@ -25,6 +25,7 @@ __all__ = [
     "packet",
     "segmentation",
     "transport_interface",
+    "utilities",
     "__version__",
     "__author__",
     "__maintainer__",

@@ -34,14 +34,6 @@ class AbstractAddressingInformation(ABC):
         self.tx_functional_params = tx_functional_params
         self._validate_addressing_information()
 
-    @abstractmethod
-    def validate_addressing_params(self, **addressing_params: Any) -> Dict[str, Any]:
-        """Check whether the provided parameters are complete and compatible for this Addressing format."""
-
-    @abstractmethod
-    def _validate_addressing_information(self) -> None:
-        """Check whether the provided addressing information are valid."""
-
     @property
     def rx_physical_params(self) -> Mapping[str, Any]:
         """Get addressing parameters for incoming physically addressed communication."""
@@ -141,6 +133,14 @@ class AbstractAddressingInformation(ABC):
         else:
             raise ReassignmentError("You cannot change value of 'tx_functional_params' attribute once it is assigned. "
                                     "Create a new object instead.")
+
+    @abstractmethod
+    def _validate_addressing_information(self) -> None:
+        """Check whether the provided addressing information are valid."""
+
+    @abstractmethod
+    def validate_addressing_params(self, **addressing_params: Any) -> Dict[str, Any]:
+        """Check whether the provided parameters are complete and correct."""
 
     @abstractmethod
     def is_input_packet(self, **frame_attributes: Any) -> Optional[AddressingType]:

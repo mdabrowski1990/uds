@@ -53,11 +53,9 @@ Common
 Common implementation for all all CAN Transport Interfaces is included in
 :class:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface`.
 
-.. warning:: A **user shall not use**
-    :class:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface` **directly**,
-    but one is able (and encouraged) to use
-    :class:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface`
-    implementation on any of its children classes.
+.. warning:: **A user shall not use**
+  :class:`~uds.transport_interface.can_transport_interface.common.AbstractCanTransportInterface`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
 
 
 Configuration

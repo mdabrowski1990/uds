@@ -249,11 +249,9 @@ Features:
    :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.fixed_total_length`)
  - children management
 
-.. warning:: A **user shall not use**
-    :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord` **directly**,
-    but one is able (and encouraged) to use
-    :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord`
-    implementation on any of its children classes.
+.. warning:: **A user shall not use**
+  :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
 
 .. note:: Attribute :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.length` contains
     number of **bits** (not bytes) that are used to present **a single Data Record occurrence**

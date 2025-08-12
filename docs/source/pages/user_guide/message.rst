@@ -101,8 +101,8 @@ Enum :class:`~uds.message.service_identifiers.RequestSID` contains definitions o
 Methods:
 
 - :meth:`~uds.message.service_identifiers.RequestSID.is_request_sid` - check if provided value is a Request SID value
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as member of
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
   this Enum
 - :meth:`~uds.utilities.enums.ExtendableEnum.add_member` - define a new Request SID value
 
@@ -141,8 +141,8 @@ Enum :class:`~uds.message.service_identifiers.ResponseSID` contains definitions 
 Methods:
 
 - :meth:`~uds.message.service_identifiers.ResponseSID.is_response_sid` - check if provided value is a RSID value
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as member of
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
   this Enum
 - :meth:`~uds.utilities.enums.ExtendableEnum.add_member` - define a new RSID value
 
@@ -180,8 +180,8 @@ Enum :class:`~uds.message.nrc.NRC` contains definitions of all common (defined b
 
 Methods:
 
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as member of
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
   this Enum
 - :meth:`~uds.utilities.enums.ExtendableEnum.add_member` - define a new NRC value
 

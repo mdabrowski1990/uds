@@ -41,6 +41,6 @@ Methods:
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation` - perform
   :ref:`segmentation <knowledge-base-message-segmentation>` and divide provided diagnostic message into packets
 
-.. warning:: A **user shall not use** :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter` **directly**,
-  but one is able (and encouraged) to use :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter`
-  implementation on any of its children classes.
+.. warning:: **A user shall not use**
+  :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
