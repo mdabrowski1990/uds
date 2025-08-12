@@ -16,7 +16,7 @@ class AbstractPacketType(ValidatedEnum, ExtendableEnum, NibbleEnum):
     must inherit after this class.
 
     .. note:: There are differences in values for each bus/network type (e.g. LIN does not use Flow Control
-    while CAN bus does).
+        while CAN bus does).
     """
 
     @classmethod

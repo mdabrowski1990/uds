@@ -6,6 +6,7 @@ First two layers (Physical and Data Link) are handled by some external packages.
 The implementation that is common for all Transport Interfaces is located in :mod:`uds.transport_interface`
 sub-package.
 
+
 AbstractTransportInterface
 --------------------------
 Abstract API that is common for all Transport Interfaces (and therefore buses/networks) is defined in

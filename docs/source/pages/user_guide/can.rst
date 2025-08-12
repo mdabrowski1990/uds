@@ -1,10 +1,10 @@
-UDS over CAN
-============
-This part of documentation explain how to use this package to communicate using
+UDS over CAN - TODO
+===================
+This part of documentation explains communicate using
 :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol.
 The implementation is located in :mod:`uds.can` module.
 
-.. note:: You might :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol separately from UDS.
+.. note:: You might use :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol separately from UDS.
 
 
 Addressing
@@ -99,8 +99,8 @@ receiving and transmitting CAN frames.
 
 .. note:: Right now only half-duplex communication is implemented.
 
-    The matter is further explained in
-    :ref:`handling unexpected CAN packets arrivals <knowledge-base-can-unexpected-packet-arrival>` chapter.
+  The matter is further explained in
+  :ref:`handling unexpected CAN packets arrivals <knowledge-base-can-unexpected-packet-arrival>` chapter.
 
 
 Configuration

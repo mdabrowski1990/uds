@@ -214,27 +214,31 @@ All Data Records implementation can be found in :mod:`~uds.translator.data_recor
 We can divide Data Records in following groups:
 
 - Data Records that store data and define raw<->physical values transformation.
+
   - `Raw Data Record`_
   - `Mapping Data Record`_
   - `Linear Formula Data Record`_
   - `Custom Formula Data Record`_
   - `Text Data Record`_
+
 - Data Records that define logic for building diagnostic message structure (in case of multiple possible diagnostic
   message formats that depend on (for example) sub-function or DID value).
+
   - `Conditional Mapping Data Record`_
   - `Conditional Formula Data Record`_
 
 On top of that, we have two abstract Data Records:
- - `Abstract Data Record`_
- - `Abstract Conditional Data Record`_
+
+- `Abstract Data Record`_
+- `Abstract Conditional Data Record`_
 
 .. note:: Raw values are int values carried in diagnostic message by certain number of bits.
-    Physical values are meaningful interpretation of raw values.
+  Physical values are meaningful interpretation of raw values.
 
-    Physical values annotations:
-     - :const:`~uds.translator.data_record.abstract_data_record.SinglePhysicalValueAlias`
-     - :const:`~uds.translator.data_record.abstract_data_record.MultiplePhysicalValuesAlias`
-     - :const:`~uds.translator.data_record.abstract_data_record.PhysicalValueAlias`
+  Physical values annotations:
+   - :const:`~uds.translator.data_record.abstract_data_record.SinglePhysicalValueAlias`
+   - :const:`~uds.translator.data_record.abstract_data_record.MultiplePhysicalValuesAlias`
+   - :const:`~uds.translator.data_record.abstract_data_record.PhysicalValueAlias`
 
 
 Abstract Data Record
@@ -242,12 +246,46 @@ Abstract Data Record
 :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord`
 contains definition and common implementation for Data Records that store data.
 
-Features:
- - common configuration (name, bit length, children, min and max number of occurrences, unit)
- - common attributes definition (e.g.
-   :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring`,
-   :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.fixed_total_length`)
- - children management
+Attributes:
+
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.name` - a name of a Data Record object
+  (it is recommended to use unique names for Data Records within one diagnostic service as Data Records are identified
+  by this value)
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.length` - a number of bits that
+  a single occurrence of a Data Record object is stored over
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.children` - Data Record objects that are
+  contained by every occurrence of this Data Record (e.g. DTC Status would contain 8 status bits)
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_occurrences` - a minimal occurrences
+  number of this Data Record object
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_occurrences` - a maximal occurrences
+  number of this Data Record object
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.unit` - a unit which is used to present
+  physical value
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring` - whether this Data Record
+  object might occur more than once
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.fixed_total_length` - whether this Data
+  Record object is always stored over the same number of bits
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_raw_value` - minimal raw value
+  for this Data Record object
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_raw_value` - maximal raw value
+  for this Data Record object
+
+Methods:
+
+- :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_children_values`
+  - get children raw values for given Data Record's raw value
+- :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_children_occurrence_info`
+  - get for all Data Record's children, their comprehensive occurrence information
+- :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_occurrence_info`
+  - get comprehensive occurrence information for Data Record object
+- :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_physical_values`
+  - get physical values for provided raw values of Data Record's occurrences
+- :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_physical_value`
+  - get physical value for provided Data Record's raw value
+- :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_raw_value`
+  - get raw value for provided Data Record's physical value
+- :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_raw_value_from_children`
+  - get raw value for provided Data Record's children values
 
 .. warning:: **A user shall not use**
   :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord`
@@ -495,11 +533,17 @@ Abstract Conditional Data Record
 :class:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord` class contains definition
 and common implementation for Data Records with logic for building diagnostic message structures.
 
-Features:
- - common configuration (default message continuation)
- - validation for Data Records structures with diagnostic message continuation
- - conditional Data Records usage mechanism (raw value of the proceeding Data Record has to be provided to select
-   proper structure of diagnostic message continuation)
+Attributes:
+
+- :attr:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord.default_message_continuation`
+  - default diagnostic message continuation that shall be used as fallback mechanism (when no value is defined)
+
+Methods:
+
+- :meth:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord.validate_message_continuation`
+  - validate structure of diagnostic message continuation
+- :meth:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord.get_message_continuation`
+  - get diagnostic message continuation for provided raw value of proceeding Data Record
 
 
 Conditional Mapping Data Record

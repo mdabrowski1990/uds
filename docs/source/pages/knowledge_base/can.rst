@@ -2,7 +2,7 @@
 
 Diagnostics over CAN
 ====================
-Diagnostics over CAN (DoCAN) is also called CAN Transport Protocol (CAN ISO TP or CAN-TP). It is an underlying  protocol
+Diagnostics over CAN (DoCAN) is also called CAN Transport Protocol (CAN ISO TP or CAN-TP). It is an underlying protocol
 defined by `ISO 15765 <https://en.wikipedia.org/wiki/ISO_15765>`_ that is used by UDS (but also some other protocols
 like SAE J1979 or `KWP2000 <https://en.wikipedia.org/wiki/Keyword_Protocol_2000>`_) for
 :ref:`message segmentation <knowledge-base-segmentation>` when communicating over CAN bus.
