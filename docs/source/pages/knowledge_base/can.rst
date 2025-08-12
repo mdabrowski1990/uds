@@ -2,7 +2,7 @@
 
 Diagnostics over CAN
 ====================
-Diagnostics over CAN (DoCAN) is also called CAN Transport Protocol (CAN ISO TP or CAN-TP). It is an underling protocol
+Diagnostics over CAN (DoCAN) is also called CAN Transport Protocol (CAN ISO TP or CAN-TP). It is an underlying  protocol
 defined by `ISO 15765 <https://en.wikipedia.org/wiki/ISO_15765>`_ that is used by UDS (but also some other protocols
 like SAE J1979 or `KWP2000 <https://en.wikipedia.org/wiki/Keyword_Protocol_2000>`_) for
 :ref:`message segmentation <knowledge-base-segmentation>` when communicating over CAN bus.
@@ -82,7 +82,7 @@ but the key in terms of DoCAN communication are listed below:
 
 CAN Packet
 ----------
-CAN Packets are :ref:`CAN Frames <knowledge-base-can-frame>`_ exchanged during DoCAN communication.
+CAN Packets are :ref:`CAN Frames <knowledge-base-can-frame>` exchanged during DoCAN communication.
 
 
 .. _knowledge-base-can-data-field:
@@ -126,7 +126,7 @@ If a number of bytes specified in a Packet is shorter than a number of bytes in 
 then the sender has to pad any unused bytes in the frame. This can only be a case for
 :ref:`Single Frame <knowledge-base-can-single-frame>`, :ref:`Flow Control <knowledge-base-can-flow-control>` and
 the last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a segmented message.
-If not specified differently, the default value 0xCC shall be used for the frame padding to minimize the bit stuffing
+Unless specified differently, the default value 0xCC shall be used for the frame padding to minimize the bit stuffing
 insertions and bit alteration on the wire.
 
 .. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8 and
@@ -605,7 +605,7 @@ Extended CAN Addressing Format:
 - Target Address (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - informs about
   a receiving node
 
-.. note:: `Network Protocol Control Information`_ is placed in the **second byte** of
+.. note:: :ref:`Network Protocol Control Information <knowledge-base-n-pci>` is placed in the **second byte** of
   :ref:`CAN frame data field <knowledge-base-can-data-field>` when Extended CAN Addressing format is used.
 
 
@@ -621,7 +621,7 @@ When Mixed CAN Addressing Format is used, then the value of **the first byte of 
 :ref:`Network Address Information <knowledge-base-n-ai>`.
 **The Value of the address extension shall be the same for each for transmitted and received packets.**
 
-.. note:: `Network Protocol Control Information`_ is placed in the **second byte** of
+.. note:: :ref:`Network Protocol Control Information <knowledge-base-n-pci>` is placed in the **second byte** of
   :ref:`CAN frame data field <knowledge-base-can-data-field>` if mixed addressing format is used.
 
 Following parameters specifies :ref:`Network Address Information <knowledge-base-n-ai>` for
@@ -733,7 +733,7 @@ Segmentation rules that are specific for CAN and DoCAN are described in this cha
 .. _knowledge-base-can-unsegmented-message-transmission:
 
 Unsegmented message transmission
-''''''''''''''''''''''''''''''''
+````````````````````````````````
 When mentioning unsegmented message transmission, we mean a case when an entire
 :ref:`Diagnostic Message <knowledge-base-diagnostic-message>` can be fully transmitted in a single packet.
 :ref:`Single Frame (CAN Packet) <knowledge-base-can-single-frame>` is the type of CAN Packet that shall be used in
@@ -753,7 +753,7 @@ this scenario.
 .. _knowledge-base-can-segmented-message-transmission:
 
 Segmented message transmission
-''''''''''''''''''''''''''''''
+``````````````````````````````
 When a :ref:`Diagnostic Message <knowledge-base-diagnostic-message>` to be transmitted on CAN, contains payload which
 size is greater than a :ref:`Single Frame <knowledge-base-can-single-frame>` capacity, then the message payload
 must be divided and transmitted by many :ref:`CAN packets <knowledge-base-can-packet>`.

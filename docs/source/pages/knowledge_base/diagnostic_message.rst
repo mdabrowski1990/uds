@@ -14,7 +14,7 @@ UDS communication is always initiated by a client who sends a `diagnostic reques
 connection with. The client might not be directly connected to the desired recipient(s) of the request, therefore some
 servers might be forced to act as gateways and transmit the request to another sub-network(s). Servers' decision
 (whether to redirect a message to another sub-network) depends on a target(s) of the request i.e.
-server shall transmit the request to the sub-network if this is a route (not necessarily a direct one) to at least
+server must transmit the request to the sub-network if this is a route (not necessarily a direct one) to at least
 one recipient of the message.
 
 .. figure:: ../../diagrams/KnowledgeBase-Gateway_request.png
@@ -26,7 +26,7 @@ one recipient of the message.
 
   In this example all ECUs in the vehicle are the targets of the request - functionally addressed request was sent.
 
-Each server which was the recipient of the request, might decide to send a response back to the nearest client
+Each server which was the recipient of the request, may decide to send a response back to the nearest client
 (the one which previously transmitted the request in this sub-network). Then, the client shall act as a gateway again
 and redirect the response back until it reaches the request message originator (Diagnostic Tester).
 

@@ -1,1 +1,0 @@
-To modify the tables, please visit https://www.tablesgenerator.com/text_tables
