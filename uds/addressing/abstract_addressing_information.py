@@ -1,5 +1,7 @@
 """Definition of UDS Addressing Information for storing Client/Server Addresses."""
 
+__all__ = ["AbstractAddressingInformation"]
+
 from abc import ABC, abstractmethod
 from types import MappingProxyType
 from typing import Any, Dict, Mapping, Optional

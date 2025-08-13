@@ -3,7 +3,7 @@ from random import choice, randint
 from pytest import FixtureRequest, fixture
 
 from can import Message
-from uds.addressing import AddressingType
+from uds.addressing import AddressingType, TransmissionDirection
 from uds.can import CanAddressingFormat, CanDlcHandler, CanSegmenter
 from uds.can.addressing import (
     AbstractCanAddressingInformation,
@@ -13,7 +13,7 @@ from uds.can.addressing import (
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
 )
-from uds.utilities import RawBytesAlias, TransmissionDirection
+from uds.utilities import RawBytesAlias
 
 # Common
 

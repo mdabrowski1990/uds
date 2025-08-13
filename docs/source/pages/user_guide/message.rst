@@ -46,11 +46,21 @@ Methods:
     uds_message = uds.message.UdsMessage(payload=[0x10, 0x03],
                                          addressing_type=uds.addressing.AddressingType.PHYSICAL)
 
-    # payload attribute reassignment
+    # present new message
+    print(uds_message)
+
+    # change payload value
     uds_message.payload = (0x62, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF)
 
     # addressing type attribute reassignment
     uds_message.addressing_type = uds.addressing.AddressingType.FUNCTIONAL
+
+    # present updated message
+    print(uds_message)
+
+    # compare uds messages
+    uds_message == uds.message.UdsMessage(payload=[0x62, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF],
+                                          addressing_type=uds.addressing.AddressingType.FUNCTIONAL)  # True
 
 
 UDS Message Record
@@ -124,6 +134,7 @@ Methods:
 
     # check if there is member defined for the value
     uds.message.RequestSID.is_member(0xBA)  # False
+    uds.message.RequestSID.validate_member(0xBA)  # raises ValueError
 
     # define a new Request SID value
     new_member = uds.message.RequestSID.add_member("NewRequestSIDMemberName", 0xBA)
@@ -131,6 +142,8 @@ Methods:
     # check if the value was successfully added as a new member
     uds.message.RequestSID.is_member(new_member)  # True
     uds.message.RequestSID.is_member(0xBA)  # True
+    uds.message.RequestSID.validate_member(new_member)  # new_member
+    uds.message.RequestSID.validate_member(0xBA)  # new_member
 
 
 ResponseSID
@@ -164,6 +177,7 @@ Methods:
 
     # check if there is member defined for the value
     uds.message.ResponseSID.is_member(0xFA)  # False
+    uds.message.ResponseSID.validate_member(0xFA)  # raises ValueError
 
     # example how to add a new Response SID value
     new_member = uds.message.ResponseSID.add_member("NewResponseSIDMemberName", 0xFA)
@@ -171,6 +185,8 @@ Methods:
     # check if the value was successfully added as a new member
     uds.message.ResponseSID.is_member(new_member)  # True
     uds.message.ResponseSID.is_member(0xFA)  # True
+    uds.message.ResponseSID.validate_member(new_member)  # new_member
+    uds.message.ResponseSID.validate_member(0xFA)  # new_member
 
 
 Negative Response Codes
@@ -198,11 +214,14 @@ Methods:
     import uds
 
     # check if a value (0xF0 in the example) is a NRC value
-    uds.message.NRC.is_member(0xF0)
+    uds.message.NRC.is_member(0xF0)  # False
+    uds.message.NRC.validate_member(0xF0)  # raises ValueError
 
     # example how to add a new NRC value
     new_member = uds.message.NRC.add_member("NewNRCMemberName", 0xF0)
 
     # check if the value was added as a new member
-    uds.message.NRC.is_member(new_member)
-    uds.message.NRC.is_member(0xF0)
+    uds.message.NRC.is_member(new_member)  # True
+    uds.message.NRC.is_member(0xF0)  # True
+    uds.message.NRC.validate_member(new_member)  # new_member
+    uds.message.NRC.validate_member(0xF0)  # new_member

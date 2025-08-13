@@ -11,13 +11,9 @@ from warnings import warn
 from can import AsyncBufferedReader, BufferedReader, BusABC
 from can import Message as PythonCanMessage
 from can import Notifier
+from uds.addressing import TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.utilities import (
-    NewMessageReceptionWarning,
-    TimeMillisecondsAlias,
-    TransmissionDirection,
-    UnexpectedPacketReceptionWarning,
-)
+from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanDlcHandler, CanIdHandler

@@ -6,9 +6,10 @@ from abc import ABC
 from typing import Any, Optional, Tuple
 from warnings import warn
 
+from uds.addressing import TransmissionDirection
 from uds.message import UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, TransmissionDirection, ValueWarning
+from uds.utilities import TimeMillisecondsAlias, ValueWarning
 
 from ..addressing import AbstractCanAddressingInformation
 from ..packet import AbstractFlowControlParametersGenerator, CanPacketType, DefaultFlowControlParametersGenerator
