@@ -12,19 +12,31 @@ the following features:
 - `Transport Interface`_
 
 For example, if you want to create UDS over CAN implementation for your own (e.g. in-house implemented) CAN network
-manager all you have to really do is implement concrete class of CAN Transport Interface
+manager, all you have to really do, is to implement concrete class of CAN Transport Interface
 (:class:`~uds.can.transport_interface.common.AbstractCanTransportInterface`).
 
 
 Addressing
 ----------
-Abstract implementation for Addressing is located in :mod:`uds.addressing.abstract_addressing_information`.
+Network specific addressing related implementation is restricted to defining concrete Addressing Information class.
+Addressing Information classes define containers for Addressing related parameters. Properly defined object stores
+all parameters required for both distinguishing incoming and outcoming packets (for both
+:ref:`addressing types <knowledge-base-addressing>`).
+
+
+AbstractAddressingInformation
+`````````````````````````````
+Abstract implementation for Addressing feature is located in :mod:`uds.addressing.abstract_addressing_information`.
 It contains :class:`~uds.addressing.abstract_addressing_information.AbstractAddressingInformation` class.
 :class:`~uds.addressing.abstract_addressing_information.AbstractAddressingInformation` defines common API and
 common code for all addressing information storages.
 
-If a network type that you want to use, does not have any dedicated Addressing Information classes, implement it/them.
-Example concrete implementation (for CAN bus) is located in :mod:`uds.can.addressing` module.
+For network types that are already fully supported (can check :ref:`implementation status <implementation-status>`
+here), it is enough to find and use dedicated concrete Addressing Information class(es).
+
+For network types that are not fully implemented yet, you must provide your own Addressing Information implementation.
+You can find a comprehensive example in :mod:`uds.can.addressing` sub-package, where concrete classes for multiple
+CAN addressing formats are defined.
 
 Attributes:
 
@@ -61,6 +73,26 @@ Requires implementation in concrete classes (abstract attributes and methods):
 
 Packet
 ------
+Abstract implementation for Packet feature is located in :mod:`uds.packet`.
+It contains following abstract classes:
+
+- :class:`~uds.packet.abstract_packet.AbstractPacket`,
+- :class:`~uds.packet.abstract_packet.AbstractPacketRecord`
+- :class:`~uds.packet.abstract_packet_type.AbstractPacketType`
+
+
+AbstractPacket
+``````````````
+
+
+AbstractPacketRecord
+````````````````````
+
+
+AbstractPacketType
+``````````````````
+
+
 
 
 
