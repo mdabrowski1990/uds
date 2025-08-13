@@ -66,7 +66,8 @@ Current implementation status of package features:
 +-----------------------------------------+--------------------------------------------+
 | UDS Sniffer                             | Planned                                    |
 +-----------------------------------------+--------------------------------------------+
-| Support for Messages Databases          | Planned                                    |
+| UDS Messages Translator                 | Available since version `2.0.0             |
+|                                         | <https://pypi.org/project/py-uds/2.0.0/>`_ |
 +-----------------------------------------+--------------------------------------------+
 
 
