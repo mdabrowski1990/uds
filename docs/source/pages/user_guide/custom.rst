@@ -25,7 +25,7 @@ Addressing
 ----------
 Network specific addressing related implementation is restricted to defining concrete Addressing Information class.
 Addressing Information classes define containers for Addressing related parameters. Properly defined object stores
-all parameters required for both distinguishing incoming and outcoming packets (for both
+all parameters required for both distinguishing incoming and outgoing packets (for both
 :ref:`addressing types <knowledge-base-addressing>`).
 
 
@@ -63,7 +63,8 @@ Requires implementation in concrete classes (abstract attributes and methods):
 
 Packet
 ------
-Abstract implementation for Packet feature is located in :mod:`uds.packet`. It contains following abstract classes:
+Abstract implementation for :ref:`Packet feature <knowledge-base-packet>` is located in :mod:`uds.packet`.
+It contains following abstract classes:
 
 - :class:`~uds.packet.abstract_packet.AbstractPacket`,
 - :class:`~uds.packet.abstract_packet.AbstractPacketRecord`
@@ -164,56 +165,52 @@ Requires implementation in concrete classes (abstract attributes and methods):
 .. seealso:: Packet types defined for CAN - :class:`~uds.can.packet.can_packet_type.CanPacketType`
 
 
-Segmentation - TODO
--------------------
-Common part of :ref:`segmentation process <knowledge-base-segmentation>` implementation is located in
-:mod:`uds.segmentation` sub-package with concrete segmenters defined in sub-packages for dedicated network
-types (e.g. :class:`~uds.can.segmenter.CanSegmenter` is located in :mod:`uds.can` sub-package).
+Segmentation
+------------
+Abstract :ref:`segmentation <knowledge-base-segmentation>` implementation is located in :mod:`uds.segmentation`.
+Each concrete segmenter shall be able to handle exactly one network type.
 
 
 AbstractSegmenter
 `````````````````
 :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter` defines common API and contains common code for all
-segmenter classes. Each concrete segmenter class handles segmentation process for a specific network type.
+segmenter classes.
 
 Attributes:
 
-- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_addressing_information_class` - concrete
-  dedicated Addressing Information class (subclass of
-  :class:`~uds.addressing.abstract_addressing_information.AbstractAddressingInformation`)
-  for network type supported by this segmenter
-- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_class` - concrete
-  dedicated Packet class (subclass of :class:`~uds.packet.abstract_packet.AbstractPacket`)
-  for network type supported by this segmenter
-- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_record_class` - concrete
-  dedicated Packet Record class (subclass of :class:`~uds.packet.abstract_packet.AbstractPacketRecord`)
-  for network type supported by this segmenter
-- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.addressing_information` - Addressing Information used
-  by UDS entity for which segmentation process to be managed
+- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_addressing_information_class`
+- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_class`
+- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_record_class`
+- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.addressing_information`
 
 Methods:
 
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_supported_packet_type` - checks whether provided
-  object is a packet of a type that can be handled by this segmenter
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_supported_packets_sequence_type` - checks whether
-  provided object is a sequence fill with packets of supported type
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_input_packet` - check if provided packet targets
-  this UDS entity (according to configured
-  :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.addressing_information`)
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_desegmented_message` - check if provided object is
-  a complete sequence of packets that can form exactly one diagnostic message
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation` - perform
-  :ref:`desegmentation <knowledge-base-packets-desegmentation>` and form a diagnostic message out of provided packets
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation` - perform
-  :ref:`segmentation <knowledge-base-message-segmentation>` and divide provided diagnostic message into packets
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_supported_packet_type`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_supported_packets_sequence_type`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_input_packet`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_desegmented_message`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.__init__`
+
+Requires implementation in concrete classes (abstract attributes and methods):
+
+- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_addressing_information_class`
+- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_class`
+- :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_record_class`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_desegmented_message`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
 
 .. warning:: **A user shall not use**
   :class:`~uds.segmentation.abstract_segmenter.AbstractSegmenter`
   **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
 
+.. seealso:: Segmentation implementation for CAN - :mod:`uds.can.segmenter`
 
-Transport Interface - TODO
---------------------------
+
+Transport Interface
+-------------------
 Transport interfaces are meant to handle Physical (layer 1), Data (layer 2), Network (layer 3) and Transport (layer 4)
 layers of :ref:`UDS OSI model <knowledge-base-osi-model>` which are unique for every communication bus/network.
 First two layers (Physical and Data Link) are handled by some external packages.
@@ -225,37 +222,45 @@ AbstractTransportInterface
 ``````````````````````````
 Abstract API that is common for all Transport Interfaces (and therefore buses/networks) is defined in
 :class:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface` class.
+There shall be exactly one concrete class created for each supported network manager.
 
 Attributes:
 
-- :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.segmenter` - segmenter object
-  used by this Transport Interface for handling :ref:`segmentation processes <knowledge-base-segmentation>`
+- :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.segmenter`
 - :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.addressing_information`
-  - addressing information parameters used by simulated UDS entity
 - :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.network_manager`
-  - python object used as a network manager (sends and receives frames on/from connected network)
 
 Methods:
 
 - :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.is_supported_network_manager`
-  - check if provided object can be used as a network manager by this Transport Interface
-- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.send_packet` - send a single
-  packet synchronously
-- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_send_packet` - send
-  a single packet asynchronously
-- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.receive_packet` - receive
-  a single packet synchronously
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.send_packet`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_send_packet`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.receive_packet`
 - :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_receive_packet`
-  - receive a single packet asynchronously
-- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.send_message` - send
-  a diagnostic message synchronously
-- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_send_message` - send
-  a diagnostic message asynchronously
-- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.receive_message` - receive
-  a diagnostic message synchronously
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.send_message`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_send_message`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.receive_message`
 - :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_receive_message`
-  - receive a diagnostic message asynchronously
+
+Requires implementation in concrete classes (abstract attributes and methods):
+
+- :attr:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.segmenter`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.is_supported_network_manager`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.send_packet`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_send_packet`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.receive_packet`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_receive_packet`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.send_message`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_send_message`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.receive_message`
+- :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.async_receive_message`
 
 .. warning:: **A user shall not use**
   :class:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface`
   **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
+
+.. seealso:: Abstract CAN Transport Interface (common implementation for Transport Interfaces dedicated for CAN network)
+  - :class:`uds.can.transport_interface.common.AbstractCanTransportInterface`.
+
+  CAN Transport Interface integrated with python-can package -
+  :class:`uds.can.transport_interface.python_can.PyCanTransportInterface`
