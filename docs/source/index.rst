@@ -90,6 +90,54 @@ Current implementation status of support for communication buses:
 +----------+-----------------------+
 
 
+OSI Model overview
+------------------
+An overview of features that are required to fully implement UDS protocol is presented in the table below:
+
++--------------+--------------------------------------+--------------------------------------------+
+|   OSI Layer  |            Functionalities           |               Implementation               |
++--------------+--------------------------------------+--------------------------------------------+
+| Layer 7      | - diagnostic messages support        | - :mod:`uds.message`                       |
+| Application  |                                      |                                            |
++--------------+--------------------------------------+--------------------------------------------+
+| Layer 6      | - building diagnostic messages       | - :mod:`uds.translator`                    |
+| Presentation |                                      |                                            |
+|              | - diagnostic messages interpretation |                                            |
++--------------+--------------------------------------+--------------------------------------------+
+| Layer 5      | - Client simulation                  | *To be provided with Client feature.*      |
+| Session      |                                      |                                            |
+|              | - Server simulation                  | *To be provided with Server feature.*      |
+|              |                                      |                                            |
+|              | - sniffing UDS communication         | *To be provided with Sniffer feature.*     |
++--------------+--------------------------------------+--------------------------------------------+
+| Layer 4      | - packet support                     | - :mod:`uds.packet`                        |
+| Transport    |                                      |                                            |
+|              | - bus specific segmentation          | - :mod:`uds.segmentation`                  |
+|              |                                      |                                            |
+|              | - bus specific packets transmission  | - :mod:`uds.transport_interface`           |
++--------------+                                      |                                            |
+| Layer 3      |                                      | *Network specific:*                        |
+| Network      |                                      |                                            |
+|              |                                      | - *CAN* - :mod:`uds.can`                   |
+|              |                                      |                                            |
+|              |                                      | *To be extended for other networks*        |
++--------------+--------------------------------------+--------------------------------------------+
+| Layer 2      | - frames transmission                | External python packages for bus handling: |
+| Data         |                                      |                                            |
+|              | - frames receiving                   | -  CAN:                                    |
++--------------+                                      |                                            |
+| Layer 1      |                                      |   - python-can                             |
+| Physical     |                                      |                                            |
+|              |                                      | *To be extended for other networks*        |
++--------------+--------------------------------------+--------------------------------------------+
+
+where:
+
+- OSI Layer - considered :ref:`OSI Model <knowledge-base-osi-model>` Layer
+- Functionalities - functionalities required in the implementation to handle considered UDS OSI layer
+- Implementation - UDS package implementation that provides mentioned functionalities
+
+
 License
 -------
 The project is licensed under the MIT license - https://github.com/mdabrowski1990/uds/blob/main/LICENSE
