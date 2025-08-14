@@ -150,11 +150,8 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
             raise InconsistentArgumentsError("Target Address and Source Address for incoming physically addressed "
                                              "CAN packets must equal Source Address and Target Address for outgoing "
                                              "physically addressed CAN packets.")
-        if (self.rx_functional_params["target_address"] != self.tx_functional_params["source_address"]
-                or self.rx_functional_params["source_address"] != self.tx_functional_params["target_address"]):
-            raise InconsistentArgumentsError("Target Address and Source Address for incoming functionally addressed "
-                                             "CAN packets must equal Source Address and Target Address for outgoing "
-                                             "functionally addressed CAN packets.")
+        if self.rx_functional_params["can_id"] == self.tx_functional_params["can_id"]:
+            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
     def validate_addressing_params(cls,  # type: ignore

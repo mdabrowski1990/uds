@@ -1,45 +1,314 @@
 .. _implementation-docan:
 
-UDS over CAN - TODO
-===================
-This part of documentation explains communicate using
-:ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol.
-The implementation is located in :mod:`uds.can` module.
+Diagnostics over CAN
+====================
+This part of documentation explains implementation for :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>`
+protocol.
+
+DoCAN implementation is located in :mod:`uds.can` module and divided into smaller modules, each handling one of
+the following features:
+
+- `Addressing`_
+- `Frame`_
+- `Packet`_
+- `Segmentation`_
+- `Transport Interface`_
+
 
 .. note:: You might use :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol separately from UDS.
 
 
 Addressing
 ----------
+:ref:`CAN Addressing <knowledge-base-can-addressing>` might use one of multiple formats.
+This is the reason behind dividing CAN addressing related implementation into multiple modules.
+The whole implementation can be found in :mod:`uds.can.addressing` sub-package.
 
 
+CanAddressingFormat
+```````````````````
+:class:`~uds.can.addressing.addressing_format.CanAddressingFormat` class is an Enum with all possible
+:ref:`CAN Addressing Formats <knowledge-base-can-addressing>` defined.
+
+Methods:
+
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
+  this Enum
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # check if there is member defined for the value
+    uds.can.CanAddressingFormat.is_member(uds.can.CanAddressingFormat.NORMAL_ADDRESSING)  # False
+    uds.can.CanAddressingFormat.validate_member("Extended Addressing")  # uds.can.CanAddressingFormat.EXTENDED_ADDRESSING
+    uds.can.CanAddressingFormat.is_member("Not a CAN Addressing Format")  # False
+    uds.can.CanAddressingFormat.validate_member("Not a CAN Addressing Format")  # raises ValueError
 
 
-Frame
------
+AbstractCanAddressingInformation
+````````````````````````````````
+:class:`~uds.can.addressing.abstract_addressing_information.AbstractCanAddressingInformation` class defines common API
+and contains common code for CAN related addressing information storages. It is located in
+:mod:`uds.can.addressing.abstract_addressing_information`.
+
+.. warning:: **A user shall not use**
+  :class:`~uds.can.addressing.abstract_addressing_information.AbstractCanAddressingInformation`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
 
 
-Packet
-------
+NormalCanAddressingInformation
+``````````````````````````````
+:class:`~uds.can.addressing.normal_addressing.NormalCanAddressingInformation` class is a storage for
+Addressing Information in :ref:`Normal CAN Addressing Format <knowledge-base-can-normal-addressing>`.
+
+*From the user perspective, objects creation and passing them correctly are the only interactions.*
+*This is why we only explain how to properly initialize objects of this class.*
+
+In case of :ref:`Normal CAN Addressing Format <knowledge-base-can-normal-addressing>`, each address is fully carried in
+CAN Identifier field of :ref:`CAN Frame <knowledge-base-can-frame>`. That is why only "can_id" parameters shall be
+passed upon :class:`~uds.can.addressing.normal_addressing.NormalCanAddressingInformation` object creation.
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create storage for CAN Addressing Information that use Normal Addressing Format
+    ecu_ai = uds.can.addressing.NormalCanAddressingInformation(
+        rx_physical_params={"can_id": 0x7E8},
+        tx_physical_params={"can_id": 0x7E0},
+        rx_functional_params={"can_id": 0x7E8},
+        tx_functional_params={"can_id": 0x7DF})
 
 
-Segmentation
+NormalFixedCanAddressingInformation
+```````````````````````````````````
+:class:`~uds.can.addressing.normal_addressing.NormalFixedCanAddressingInformation` class is a storage for
+Addressing Information in :ref:`Normal Fixed CAN Addressing Format <knowledge-base-can-normal-fixed-addressing>`.
+
+*From the user perspective, objects creation and passing them correctly are the only interactions.*
+*This is why we only explain how to properly initialize objects of this class.*
+
+In case of :ref:`Normal Fixed CAN Addressing Format <knowledge-base-can-normal-fixed-addressing>` each address is fully
+carried in CAN Identifier field of :ref:`CAN Frame <knowledge-base-can-frame>`, but CAN Identifier value contains
+**Source Address**, **Target Address** and **priority** parameters.
+Upon :class:`~uds.can.addressing.normal_addressing.NormalFixedCanAddressingInformation` object creation,
+each address might be defined using either "can_id" parameter, combination of "target_address" and "source_address"
+parameters or by providing all these parameters (compatibility cross-check would be performed then).
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create storage for CAN Addressing Information that use Normal Fixed Addressing Format
+    ecu_ai_1 = uds.can.addressing.NormalFixedCanAddressingInformation(
+        rx_physical_params={"can_id": 0x18DAF101},
+        tx_physical_params={"can_id": 0x18DA01F1},
+        rx_functional_params={"can_id": 0x18DBF101},
+        tx_functional_params={"can_id": 0x18DB33F1})
+    # define object with the same addresses, but provide parameters differently
+    ecu_ai_2 = uds.can.addressing.NormalFixedCanAddressingInformation(
+        rx_physical_params={"target_address": 0xF1, "source_address": 0x01},
+        tx_physical_params={"target_address": 0x01, "source_address": 0xF1},
+        rx_functional_params={"can_id": 0x18DBF101, "target_address": 0xF1, "source_address": 0x01},
+        tx_functional_params={"can_id": 0x18DB33F1, "target_address": 0x33, "source_address": 0xF1})
+    ecu_ai_1 == ecu_ai_2  # True
+    # define object with similar addresses, but using non-default priority value
+    ecu_ai_3 = uds.can.addressing.NormalFixedCanAddressingInformation(
+        rx_physical_params={"can_id": 0xDAF101},
+        tx_physical_params={"can_id": 0xDA01F1, "target_address": 0x01, "source_address": 0xF1},
+        rx_functional_params={"can_id": 0x1CDBF101},
+        tx_functional_params={"can_id": 0x1CDB33F1, "target_address": 0x33, "source_address": 0xF1})
+    ecu_ai_1 == ecu_ai_3  # False
+
+.. warning:: To set CAN Identifier value with priority parameter other than default value (6 - 0b110),
+  "can_id" parameter has to be provided.
+
+
+ExtendedCanAddressingInformation
+````````````````````````````````
+:class:`~uds.can.addressing.extended_addressing.ExtendedCanAddressingInformation` class is a storage for
+Addressing Information in :ref:`Extended CAN Addressing Format <knowledge-base-can-extended-addressing>`.
+
+*From the user perspective, objects creation and passing them correctly are the only interactions.*
+*This is why we only explain how to properly initialize objects of this class.*
+
+In case  of :ref:`Extended CAN Addressing Format <knowledge-base-can-extended-addressing>`, each address is carried by
+CAN Identifier and first data byte of :ref:`CAN Frame <knowledge-base-can-frame>` (called **Target Address**).
+Exactly two parameters "can_id" and "target_address" shall be passed to each address upon
+:class:`~uds.can.addressing.extended_addressing.ExtendedCanAddressingInformation` object creation.
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create storage for CAN Addressing Information that use Extended Addressing Format
+    ecu_ai = uds.can.addressing.ExtendedCanAddressingInformation(
+        rx_physical_params={"can_id": 0x701, "target_address": 0x01},
+        tx_physical_params={"can_id": 0x702, "target_address": 0xF1},
+        rx_functional_params={"can_id": 0x701, "target_address": 0xFF},
+        tx_functional_params={"can_id": 0x702, "target_address": 0xF1},
+
+
+Mixed11BitCanAddressingInformation
+``````````````````````````````````
+:class:`~uds.can.addressing.mixed_addressing.Mixed11BitCanAddressingInformation` class is a storage for
+Addressing Information in
+:ref:`Mixed CAN Addressing Format which use Standard CAN ID <knowledge-base-can-mixed-11-bit-addressing>`.
+
+*From the user perspective, objects creation and passing them correctly are the only interactions.*
+*This is why we only explain how to properly initialize objects of this class.*
+
+In case of :ref:`Mixed CAN Addressing Format <knowledge-base-can-mixed-addressing>`, each address is carried by
+CAN Identifier and first data byte of :ref:`CAN Frame <knowledge-base-can-frame>` (called **Address Extension**).
+Exactly two parameters "can_id" and "address_extension" shall be passed to each address upon
+:class:`~uds.can.addressing.extended_addressing.ExtendedCanAddressingInformation` object creation.
+
+.. note:: Value of "address_extension" parameter must be the same for transmitting (Tx) and receiving (Rx) addresses.
+  It applies to both addresses pairs (for physical and functional communication).
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create storage for CAN Addressing Information that use Mixed Addressing Format using standard CAN Identifiers
+    ecu_ai = uds.can.addressing.Mixed11BitCanAddressingInformation(
+        rx_physical_params={"can_id": 0x701, "address_extension": 0x01},
+        tx_physical_params={"can_id": 0x702, "address_extension": 0x01},
+        rx_functional_params={"can_id": 0x701, "address_extension": 0xFF},
+        tx_functional_params={"can_id": 0x702, "address_extension": 0xFF},
+
+
+Mixed29BitCanAddressingInformation
+``````````````````````````````````
+:class:`~uds.can.addressing.mixed_addressing.Mixed29BitCanAddressingInformation` class is a storage for
+Addressing Information in
+:ref:`Mixed CAN Addressing Format which use Extended CAN ID <knowledge-base-can-mixed-29-bit-addressing>`.
+
+*From the user perspective, objects creation and passing them correctly are the only interactions.*
+*This is why we only explain how to properly initialize objects of this class.*
+
+In case of :ref:`Mixed CAN Addressing Format <knowledge-base-can-mixed-addressing>`
+
+Each address in case of :ref:`Mixed CAN Addressing Format <knowledge-base-can-mixed-addressing>`, each address is
+carried by CAN Identifier and first data byte of :ref:`CAN Frame <knowledge-base-can-frame>`
+(called **Address Extension**).
+On top of that, CAN Identifier value contains **Source Address**, **Target Address** and **priority** parameters.
+Upon :class:`~uds.can.addressing.mixed_addressing.Mixed29BitCanAddressingInformation` object creation,
+each address must contain "address_extension", and "can_id", combination of "target_address" and "source_address"
+parameters, or all these parameters (compatibility cross-check would be performed then).
+
+.. note:: Value of "address_extension" parameter must be the same for transmitting (Tx) and receiving (Rx) addresses.
+  It applies to both addresses pairs (for physical and functional communication).
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create storage for CAN Addressing Information that use Normal Fixed Addressing Format
+    ecu_ai_1 = uds.can.addressing.Mixed29BitCanAddressingInformation(
+        rx_physical_params={"can_id": 0x18CEF101,
+                            "address_extension": 0x2D},
+        tx_physical_params={"can_id": 0x18CE01F1,
+                            "address_extension": 0x2D},
+        rx_functional_params={"can_id": 0x18CDF101,
+                              "address_extension": 0x8C},
+        tx_functional_params={"can_id": 0x18CD33F1,
+                              "address_extension": 0x8C})
+    # define object with the same addresses, but provide parameters differently
+    ecu_ai_2 = uds.can.addressing.Mixed29BitCanAddressingInformation(
+        rx_physical_params={"target_address": 0xF1, "source_address": 0x01,
+                            "address_extension": 0x2D},
+        tx_physical_params={"target_address": 0x01, "source_address": 0xF1,
+                            "address_extension": 0x2D},
+        rx_functional_params={"can_id": 0x18CDF101, "target_address": 0xF1, "source_address": 0x01,
+                              "address_extension": 0x8C},
+        tx_functional_params={"can_id": 0x18CD33F1, "target_address": 0x33, "source_address": 0xF1,
+                              "address_extension": 0x8C})
+    ecu_ai_1 == ecu_ai_2  # True
+    # define object with similar addresses, but using non-default priority value
+    ecu_ai_3 = uds.can.addressing.Mixed29BitCanAddressingInformation(
+        rx_physical_params={"can_id": 0xCEF101,
+                            "address_extension": 0x2D},
+        tx_physical_params={"can_id": 0xCE01F1, "target_address": 0x01, "source_address": 0xF1,
+                            "address_extension": 0x2D},
+        rx_functional_params={"can_id": 0x1CCDF101,
+                              "address_extension": 0x8C},
+        tx_functional_params={"can_id": 0x1CCD33F1, "target_address": 0x33, "source_address": 0xF1,
+                              "address_extension": 0x8C})
+    ecu_ai_1 == ecu_ai_3  # False
+
+.. warning:: To set CAN Identifier value with priority parameter other than default value (6 - 0b110),
+  "can_id" parameter has to be provided.
+
+
+CanAddressingInformation
+````````````````````````
+:class:`~uds.can.addressing.addressing_information.CanAddressingInformation` is factory for
+:class:`~uds.can.addressing.abstract_addressing_information.AbstractCanAddressingInformation` subclasses.
+You might use it to create Addressing Information object using `addressing_format` argument as
+:ref:`CAN Addressing Format <knowledge-base-can-addressing>` selector.
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create examples storages for CAN Addressing Information
+    ecu_ai = uds.can.addressing.CanAddressingInformation(
+        addressing_format=uds.can.CanAddressingFormat.NORMAL_ADDRESSING,
+        rx_physical_params={"can_id": 0x7E8},
+        tx_physical_params={"can_id": 0x7E0},
+        rx_functional_params={"can_id": 0x7E8},
+        tx_functional_params={"can_id": 0x7DF})
+    ecu_ai_2 = uds.can.CanAddressingInformation(
+        addressing_format=uds.can.CanAddressingFormat.EXTENDED_ADDRESSING,
+        rx_physical_params={"can_id": 0x701, "target_address": 0x01},
+        tx_physical_params={"can_id": 0x702, "target_address": 0xF1},
+        rx_functional_params={"can_id": 0x701, "target_address": 0xFF},
+        tx_functional_params={"can_id": 0x702, "target_address": 0xF1})
+    ecu_ai_3 = uds.can.CanAddressingInformation(
+        addressing_format=uds.can.CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+        rx_physical_params={"can_id": 0x18CEF101, "address_extension": 0x2D},
+        tx_physical_params={"can_id": 0x18CE01F1, "address_extension": 0x2D},
+        rx_functional_params={"can_id": 0x18CDF101, "address_extension": 0x8C},
+        tx_functional_params={"can_id": 0x18CD33F1, "address_extension": 0x8C})
+
+
+Frame - TODO
 ------------
 
 
+Packet - TODO
+-------------
 
-Transport Interface
+
+Segmentation - TODO
 -------------------
 
 
 
+Transport Interface - TODO
+--------------------------
 
 
 
 
 
-
-TODO
 
 
 

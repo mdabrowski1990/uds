@@ -36,6 +36,21 @@ class AbstractAddressingInformation(ABC):
         self.tx_functional_params = tx_functional_params
         self._validate_addressing_information()
 
+    def __eq__(self, other: Any) -> bool:
+        """
+        Compare with other object.
+
+        :param other: Object to compare.
+
+        :return: True if other object has the same type and carries the same Addressing Information, otherwise False.
+        """
+        if not isinstance(other, AbstractAddressingInformation):
+            return False
+        return (self.rx_physical_params == other.rx_physical_params
+                and self.tx_physical_params == other.tx_physical_params
+                and self.rx_functional_params == other.rx_functional_params
+                and self.tx_functional_params == other.tx_functional_params)
+
     @property
     def rx_physical_params(self) -> Mapping[str, Any]:
         """Get addressing parameters for incoming physically addressed communication."""
