@@ -289,28 +289,180 @@ You might use it to create Addressing Information object using `addressing_forma
         tx_functional_params={"can_id": 0x18CD33F1, "address_extension": 0x8C})
 
 
-Frame - TODO
+Frame
+-----
+There are a few aspects of :ref:`CAN Frames <knowledge-base-can-frame>` management that had to be implemented,
+including CAN Identifiers, DLC value and data field length.
+The whole implementation can be found in :mod:`uds.can.frame` module.
+
+CanIdHandler
+````````````
+:class:`~uds.can.frame.CanIdHandler` class was defined as collection of various helper functions for CAN ID management.
+There is no need to create an object, as each contained method us in fact "classmethod".
+
+*As a user, you would normally never use* :class:`~uds.can.frame.CanIdHandler` *class directly,*
+*therefore we are happy to just inform you about its existence.*
+
+
+CanDlcHandler
+`````````````
+:class:`~uds.can.frame.CanDlcHandler` class was defined as collection of various helper functions for DLC field and
+data bytes management for CAN bus.
+There is no need to create an object, as each contained method us in fact "classmethod".
+
+*As a user, you would normally never use* :class:`~uds.can.frame.CanDlcHandler` *class directly,*
+*therefore we are happy to just inform you about its existence.*
+
+
+Packet
+------
+Packet implementation for CAN is located in :mod:`uds.can.packet` sub-package. It is divided into following
+
+- :class:`~uds.can.packet.can_packet_type.CanPacketType`
+- :class:`~uds.can.packet.abstract_container.AbstractCanPacketContainer`
+- :class:`~uds.can.packet.can_packet.CanPacket`
+- :class:`~uds.can.packet.can_packet_record.CanPacketRecord`
+- :mod:`~uds.can.packet.single_frame`
+- :mod:`~uds.can.packet.first_frame`
+- :mod:`~uds.can.packet.flow_control`
+- :mod:`~uds.can.packet.consecutive_frame`
+
+
+CanPacketType
+`````````````
+:class:`~uds.can.packet.can_packet_type.CanPacketType` is an enum with all
+:ref:`Network Protocol Control Information (N_PCI) values for Diagnostics over CAN <knowledge-base-can-n-pci>` defined.
+
+Methods:
+
+- :meth:`~uds.can.packet.can_packet_type.CanPacketType.is_initial_packet_type`
+- :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
+
+
+AbstractCanPacketContainer
+``````````````````````````
+:class:`~uds.can.packet.abstract_container.AbstractCanPacketContainer` class defines attributes of container for
+all parameters used by :ref:`CAN Packets <knowledge-base-can-packet>`. It also contains implementation for multiple
+parameters extractions. It is a move to avoid repeating similar code in both
+:class:`~uds.can.packet.can_packet.CanPacket` and - :class:`~uds.can.packet.can_packet_record.CanPacketRecord` classes.
+
+.. warning:: **A user shall not use**
+  `~uds.can.packet.abstract_container.AbstractCanPacketContainer`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
+
+
+CanPacket
+`````````
+:class:`~uds.can.packet.can_packet.CanPacket` class defines a structure for
+:ref:`CAN Packets <knowledge-base-can-packet>` information. It is located in :mod:`~uds.can.packet.can_packet`.
+
+Attributes:
+
+- :attr:`~uds.can.packet.can_packet.CanPacket.can_id`
+- :attr:`~uds.can.packet.can_packet.CanPacket.raw_frame_data`
+- :attr:`~uds.can.packet.can_packet.CanPacket.addressing_format`
+- :attr:`~uds.can.packet.can_packet.CanPacket.addressing_type`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.dlc`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.packet_type`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.source_address`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.target_address`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.address_extension`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.payload`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.data_length`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.flow_status`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.block_size`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.st_min`
+
+Methods:
+
+- :meth:`~uds.can.packet.can_packet.CanPacket.set_addressing_information`
+- :meth:`~uds.can.packet.can_packet.CanPacket.set_packet_data`
+- :meth:`~uds.can.packet.can_packet.CanPacket.__init__`
+- :meth:`~uds.can.packet.can_packet.CanPacket.__str__`
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create examples CAN Packet objects
+    sf = uds.can.CanPacket(addressing_format=uds.can.CanAddressingFormat.NORMAL_ADDRESSING,
+                           packet_type=uds.can.CanPacketType.SINGLE_FRAME,
+                           addressing_type=uds.addressing.AddressingType.FUNCTIONAL,
+                           can_id=0x742,
+                           payload=[0x3E, 0x00])
+    ff = uds.can.CanPacket(addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                           packet_type=uds.can.CanPacketType.FIRST_FRAME,
+                           addressing_type=uds.addressing.AddressingType.PHYSICAL,
+                           target_address=0xF1,
+                           source_address=0x12,
+                           dlc=8,
+                           payload=[0x62, 0x12, 0x34, 0x56, 0x78, 0x9A],
+                           data_length=123)
+    fc = uds.can.CanPacket(addressing_format=uds.can.CanAddressingFormat.EXTENDED_ADDRESSING,
+                           packet_type=uds.can.CanPacketType.FLOW_CONTROL,
+                           addressing_type=uds.addressing.AddressingType.PHYSICAL,
+                           can_id=0x615,
+                           target_address=0xA2,
+                           flow_status=uds.can.CanFlowStatus.Overflow)
+    cf = uds.can.CanPacket(addressing_format=uds.can.CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+                           packet_type=uds.can.CanPacketType.CONSECUTIVE_FRAME,
+                           addressing_type=uds.addressing.AddressingType.PHYSICAL,
+                           target_address=0xF1,
+                           source_address=0x3B,
+                           address_extension=0x10,
+                           payload=b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F",
+                           sequence_number=1)
+    # show content of created packets
+    print(sf)
+    print(ff)
+    print(fc)
+    print(cf)
+
+.. note:: Methods :meth:`~uds.can.packet.can_packet.CanPacket.set_addressing_information` and
+  :meth:`~uds.can.packet.can_packet.CanPacket.set_packet_data` are providing tools to changing multiple connected
+  attributes at the same time, but it is recommended to always create new :class:`~uds.can.packet.can_packet.CanPacket`
+  objects instead.
+
+
+CanPacketRecord
+```````````````
+
+
+Single Frame
+````````````
+
+
+First Frame
+```````````
+
+
+Flow Control
+````````````
+
+
+Consecutive Frame
+`````````````````
+
+
+Segmentation
 ------------
 
 
-Packet - TODO
--------------
 
-
-Segmentation - TODO
+Transport Interface
 -------------------
 
 
 
-Transport Interface - TODO
---------------------------
 
 
 
-
-
-
-
+TODO
+====
 
 
 CAN Transport Interface
@@ -467,7 +619,7 @@ method to receive UDS messages over CAN.
     # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
 
     # define some UDS message to send
-    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+    message = uds.message.UdsMessage(addressing_type=uds.addressing.AddressingType.PHYSICAL,
                                      payload=[0x10, 0x03])
 
     # send UDS Message and receive UDS message record with historic information about the transmission
@@ -506,7 +658,7 @@ method to send CAN packets.
     # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
 
     # define some UDS message to send
-    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+    message = uds.message.UdsMessage(addressing_type=uds.addressing.AddressingType.PHYSICAL,
                                      payload=[0x10, 0x03])
 
     # segment the message to create a CAN packet
@@ -568,7 +720,7 @@ method to receive UDS messages over CAN.
     # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
 
     # define some UDS message to send
-    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+    message = uds.message.UdsMessage(addressing_type=uds.addressing.AddressingType.PHYSICAL,
                                      payload=[0x10, 0x03])
 
     # send UDS Message and receive UDS message record with historic information about the transmission
@@ -604,7 +756,7 @@ method to send CAN packets.
     # let's assume that we have `can_transport_interface` already configured as presented in configuration example above
 
     # define some UDS message to send
-    message = uds.message.UdsMessage(addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+    message = uds.message.UdsMessage(addressing_type=uds.addressing.AddressingType.PHYSICAL,
                                      payload=[0x10, 0x03])
 
     # segment the message to create a CAN packet
@@ -704,9 +856,9 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
 
         # define diagnostic message to segment
         uds_message_1 = uds.message.UdsMessage(payload=[0x3E, 0x00],
-                                               addressing_type=uds.transmission_attributes.AddressingType.FUNCTIONAL)
+                                               addressing_type=uds.addressing.AddressingType.FUNCTIONAL)
         uds_message_2 = uds.message.UdsMessage(payload=[0x62, 0x10, 0x00] + [0x20]*100,
-                                               addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL)
+                                               addressing_type=uds.addressing.AddressingType.PHYSICAL)
 
         # use preconfigured segmenter to segment the diagnostic messages
         can_packets_1 = can_segmenter.segmentation(uds_message_1)  # output: Single Frame
@@ -734,7 +886,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         can_packets_1 = [
             uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.SINGLE_FRAME,
                                  addressing_format=uds.can.CanAddressingFormat.EXTENDED_ADDRESSING,
-                                 addressing_type=uds.transmission_attributes.AddressingType.FUNCTIONAL,
+                                 addressing_type=uds.addressing.AddressingType.FUNCTIONAL,
                                  can_id=0x6A5,
                                  target_address=0x0C,
                                  payload=[0x3E, 0x80])
@@ -742,7 +894,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
         can_packets_2 = [
             uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.FIRST_FRAME,
                                  addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                 addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+                                 addressing_type=uds.addressing.AddressingType.PHYSICAL,
                                  target_address=0x12,
                                  source_address=0xE0,
                                  dlc=8,
@@ -750,7 +902,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
                                  payload=[0x62, 0x10, 0x00] + 3*[0x20]),
             uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.CONSECUTIVE_FRAME,
                                  addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                 addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+                                 addressing_type=uds.addressing.AddressingType.PHYSICAL,
                                  target_address=0x12,
                                  source_address=0xE0,
                                  dlc=8,
@@ -758,7 +910,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
                                  payload=7*[0x20]),
             uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.CONSECUTIVE_FRAME,
                                  addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                 addressing_type=uds.transmission_attributes.AddressingType.PHYSICAL,
+                                 addressing_type=uds.addressing.AddressingType.PHYSICAL,
                                  target_address=0x12,
                                  source_address=0xE0,
                                  sequence_number=1,

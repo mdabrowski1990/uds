@@ -66,14 +66,32 @@ Packet
 Abstract implementation for :ref:`Packet feature <knowledge-base-packet>` is located in :mod:`uds.packet`.
 It contains following abstract classes:
 
+- :class:`~uds.packet.abstract_packet_type.AbstractPacketType`
 - :class:`~uds.packet.abstract_packet.AbstractPacket`,
 - :class:`~uds.packet.abstract_packet.AbstractPacketRecord`
-- :class:`~uds.packet.abstract_packet_type.AbstractPacketType`
+
+
+AbstractPacketType
+``````````````````
+:class:`~uds.packet.abstract_packet_type.AbstractPacketType` is an enum with all possible
+:ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` values.
+It is located :mod:`uds.packet.abstract_packet_type`.
+
+Methods:
+
+- :meth:`~uds.packet.abstract_packet_type.AbstractPacketType.is_initial_packet_type`
+
+Requires implementation in concrete classes (abstract attributes and methods):
+
+- attributes for each possible :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` value
+- :meth:`~uds.packet.abstract_packet_type.AbstractPacketType.is_initial_packet_type`
+
+.. seealso:: Packet types defined for CAN - :class:`~uds.can.packet.can_packet_type.CanPacketType`
 
 
 AbstractPacket
 ``````````````
-:class:`~uds.packet.abstract_packet.AbstractPacket` defines common structure for packets. It is located
+:class:`~uds.packet.abstract_packet.AbstractPacket` defines a common structure for packets. It is located
 :mod:`uds.packet.abstract_packet`.
 
 Attributes:
@@ -145,24 +163,6 @@ Requires implementation in concrete classes (abstract attributes and methods):
 .. note:: Each network type would require additional attributes defined.
 
 .. seealso:: Packet records implementation for CAN - :class:`~uds.can.packet.can_packet.AbstractPacketRecord`
-
-
-AbstractPacketType
-``````````````````
-:class:`~uds.packet.abstract_packet_type.AbstractPacketType` is an enum with all possible
-:ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` values.
-It is located :mod:`uds.packet.abstract_packet_type`.
-
-Methods:
-
-- :meth:`~uds.packet.abstract_packet_type.AbstractPacketType.is_initial_packet_type`
-
-Requires implementation in concrete classes (abstract attributes and methods):
-
-- attributes for each possible :ref:`Network Protocol Control Information (N_PCI) <knowledge-base-n-pci>` value
-- :meth:`~uds.packet.abstract_packet_type.AbstractPacketType.is_initial_packet_type`
-
-.. seealso:: Packet types defined for CAN - :class:`~uds.can.packet.can_packet_type.CanPacketType`
 
 
 Segmentation
