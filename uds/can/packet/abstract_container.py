@@ -26,35 +26,19 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
 
     @property
+    @abstractmethod
+    def raw_frame_data(self) -> bytes:
+        """Raw data bytes of a CAN frame that carries this CAN packet."""
+
+    @property
     def dlc(self) -> int:
         """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
         return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
 
     @property
     @abstractmethod
-    def raw_frame_data(self) -> bytes:
-        """Raw data bytes of a CAN frame that carries this CAN packet."""
-
-    @property
-    @abstractmethod
     def addressing_format(self) -> CanAddressingFormat:
         """CAN addressing format used by this CAN packet."""
-
-    @property
-    def source_address(self) -> Optional[int]:
-        """
-        Source Address (SA) value of this CAN Packet.
-
-        Source Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
-
-        - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
-        - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
-
-        None in other cases.
-        """
-        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
-                                                               can_id=self.can_id,
-                                                               raw_frame_data=self.raw_frame_data)["source_address"]
 
     @property
     def target_address(self) -> Optional[int]:
@@ -72,6 +56,22 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
                                                                can_id=self.can_id,
                                                                raw_frame_data=self.raw_frame_data)["target_address"]
+
+    @property
+    def source_address(self) -> Optional[int]:
+        """
+        Source Address (SA) value of this CAN Packet.
+
+        Source Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+
+        - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
+        - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+
+        None in other cases.
+        """
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["source_address"]
 
     @property
     def address_extension(self) -> Optional[int]:

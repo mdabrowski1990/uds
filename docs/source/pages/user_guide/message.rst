@@ -21,16 +21,13 @@ These objects can be used for complex operations such as transmission or segment
 
 Attributes:
 
-- :attr:`~uds.message.uds_message.UdsMessage.payload` - payload carried by this diagnostic message
-- :attr:`~uds.message.uds_message.UdsMessage.addressing_type` - :ref:`addressing type <knowledge-base-addressing>`
-  for which message is relevant
+- :attr:`~uds.message.uds_message.UdsMessage.payload`
+- :attr:`~uds.message.uds_message.UdsMessage.addressing_type`
 
 Methods:
 
-- :meth:`~uds.message.uds_message.AbstractUdsMessageContainer.__str__` - object presentation in str format
-- :meth:`~uds.message.uds_message.UdsMessage.__eq__` - checking whether two objects contain the same diagnostic message
-  (they are considered equal, if values of their :attr:`~uds.message.uds_message.UdsMessage.payload`
-  and :attr:`~uds.message.uds_message.UdsMessage.addressing_type` attributes are equal)
+- :meth:`~uds.message.uds_message.AbstractUdsMessageContainer.__str__`
+- :meth:`~uds.message.uds_message.UdsMessage.__eq__`
 
 .. note:: All :class:`~uds.message.uds_message.UdsMessage` **attributes are validated on each value change**,
   therefore a user will face an exception if one tries to set an invalid (e.g. incompatible with the annotation)
@@ -70,28 +67,21 @@ carried by either transmitted or received :ref:`diagnostic messages <knowledge-b
 
 Attributes:
 
-- :attr:`~uds.message.uds_message.UdsMessageRecord.payload` - payload carried by this diagnostic message record
-- :attr:`~uds.message.uds_message.UdsMessageRecord.addressing_type` - :ref:`addressing type <knowledge-base-addressing>`
-  which was used to transmit this message
-- :attr:`~uds.message.uds_message.UdsMessageRecord.packets_records` - packets that were exchanged (received or/and sent)
-  to transmit this diagnostic message
-- :attr:`~uds.message.uds_message.UdsMessageRecord.direction` - whether the message was received or sent
-- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start` - date and time when the message transmission
-  was started
-- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end` - date and time when the message transmission
-  was completed
+- :attr:`~uds.message.uds_message.UdsMessageRecord.payload`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.addressing_type`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.packets_records`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.direction`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end`
 
 Methods:
 
-- :meth:`~uds.message.uds_message.UdsMessageRecord.__str__` - object presentation in str format
-- :meth:`~uds.message.uds_message.UdsMessageRecord.__eq__` - checking whether two objects contain the same diagnostic message
-  (they are considered equal, if values of their :attr:`~uds.message.uds_message.UdsMessageRecord.payload`,
-  :attr:`~uds.message.uds_message.UdsMessageRecord.addressing_type` and
-  :attr:`~uds.message.uds_message.UdsMessageRecord.direction` attributes are equal)
+- :meth:`~uds.message.uds_message.UdsMessageRecord.__str__`
+- :meth:`~uds.message.uds_message.UdsMessageRecord.__eq__`
 
-.. note:: A **user should not create objects of this class** in normal cases, but one would probably use them quite
-  often as they are returned by other layers of :mod:`uds` package that take part in communication
-  (e.g. :mod:`uds.transport_interface`).
+.. note:: A **user would not create objects of** class:`~uds.message.uds_message.UdsMessageRecord` **class**
+  in typical situations, but one would probably use them quite often as they are returned by communication layers
+  (e.g. :mod:`uds.transport_interface`) of :mod:`uds` package.
 
 .. warning:: All :class:`~uds.message.uds_message.UdsMessageRecord` **attributes are read only**
   (they are set only once upon an object creation) as they store historic data and history cannot be changed
@@ -110,11 +100,10 @@ Enum :class:`~uds.message.service_identifiers.RequestSID` contains definitions o
 
 Methods:
 
-- :meth:`~uds.message.service_identifiers.RequestSID.is_request_sid` - check if provided value is a Request SID value
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
-  this Enum
-- :meth:`~uds.utilities.enums.ExtendableEnum.add_member` - define a new Request SID value
+- :meth:`~uds.message.service_identifiers.RequestSID.is_request_sid`
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
+- :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
 .. warning:: :class:`~uds.message.service_identifiers.RequestSID` does not contain definition for every
   :attr:`~uds.message.service_identifiers.POSSIBLE_REQUEST_SIDS` value as some Request SID values are reserved for
@@ -153,11 +142,10 @@ Enum :class:`~uds.message.service_identifiers.ResponseSID` contains definitions 
 
 Methods:
 
-- :meth:`~uds.message.service_identifiers.ResponseSID.is_response_sid` - check if provided value is a RSID value
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
-  this Enum
-- :meth:`~uds.utilities.enums.ExtendableEnum.add_member` - define a new RSID value
+- :meth:`~uds.message.service_identifiers.ResponseSID.is_response_sid`
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
+- :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
 .. warning:: :class:`~uds.message.service_identifiers.ResponseSID` does not contain definition for every
   :attr:`~uds.message.service_identifiers.POSSIBLE_RESPONSE_SIDS` value as some Response SID values are reserved for
@@ -196,10 +184,9 @@ Enum :class:`~uds.message.nrc.NRC` contains definitions of all common (defined b
 
 Methods:
 
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
-  this Enum
-- :meth:`~uds.utilities.enums.ExtendableEnum.add_member` - define a new NRC value
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
+- :meth:`~uds.utilities.enums.ExtendableEnum.add_member`
 
 .. warning:: :class:`~uds.message.nrc.NRC` does not contain definition for every possible NRC value as some of them are
   reserved for further extension by UDS specification and other are ECU specific (defined by ECU's manufacturer).

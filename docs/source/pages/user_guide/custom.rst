@@ -91,7 +91,7 @@ Requires implementation in concrete classes (abstract attributes and methods):
 
 AbstractPacket
 ``````````````
-:class:`~uds.packet.abstract_packet.AbstractPacket` defines a common structure for packets. It is located
+:class:`~uds.packet.abstract_packet.AbstractPacket` class defines a common structure for packets. It is located
 :mod:`uds.packet.abstract_packet`.
 
 Attributes:
@@ -125,7 +125,7 @@ Requires implementation in concrete classes (abstract attributes and methods):
 
 AbstractPacketRecord
 ````````````````````
-:class:`~uds.packet.abstract_packet.AbstractPacketRecord` defines common structure for packet records
+:class:`~uds.packet.abstract_packet.AbstractPacketRecord` class defines a common structure for packet records
 (storage for information about packets that were either transmitted or received).
 It is located :mod:`uds.packet.abstract_packet`.
 

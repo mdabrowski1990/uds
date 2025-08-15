@@ -12,9 +12,8 @@ AddressingType
 
 Methods:
 
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
-  this Enum
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
 
 **Example code:**
 
@@ -34,9 +33,8 @@ directions.
 
 Methods:
 
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
-  this Enum
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
 
 **Example code:**
 

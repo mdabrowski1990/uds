@@ -32,8 +32,8 @@ CanAddressingFormat
 
 Methods:
 
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` - check if provided value is defined as a member of this Enum
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` - validate that provided value is defined as a member of
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
   this Enum
 
 **Example code:**
@@ -43,7 +43,7 @@ Methods:
     import uds
 
     # check if there is member defined for the value
-    uds.can.CanAddressingFormat.is_member(uds.can.CanAddressingFormat.NORMAL_ADDRESSING)  # False
+    uds.can.CanAddressingFormat.is_member(uds.can.CanAddressingFormat.NORMAL_ADDRESSING)  # True
     uds.can.CanAddressingFormat.validate_member("Extended Addressing")  # uds.can.CanAddressingFormat.EXTENDED_ADDRESSING
     uds.can.CanAddressingFormat.is_member("Not a CAN Addressing Format")  # False
     uds.can.CanAddressingFormat.validate_member("Not a CAN Addressing Format")  # raises ValueError
@@ -316,16 +316,16 @@ There is no need to create an object, as each contained method us in fact "class
 
 Packet
 ------
-Packet implementation for CAN is located in :mod:`uds.can.packet` sub-package. It is divided into following
+Packet implementation for CAN is located in :mod:`uds.can.packet` sub-package. It is divided into the following parts:
 
-- :class:`~uds.can.packet.can_packet_type.CanPacketType`
-- :class:`~uds.can.packet.abstract_container.AbstractCanPacketContainer`
-- :class:`~uds.can.packet.can_packet.CanPacket`
-- :class:`~uds.can.packet.can_packet_record.CanPacketRecord`
-- :mod:`~uds.can.packet.single_frame`
-- :mod:`~uds.can.packet.first_frame`
-- :mod:`~uds.can.packet.flow_control`
-- :mod:`~uds.can.packet.consecutive_frame`
+- `CanPacketType`_
+- `AbstractCanPacketContainer`_
+- `CanPacket`_
+- `CanPacketRecord`_
+- `Single Frame`_
+- `First Frame`_
+- `Consecutive Frame`_
+- `Flow Control`_
 
 
 CanPacketType
@@ -356,24 +356,25 @@ parameters extractions. It is a move to avoid repeating similar code in both
 CanPacket
 `````````
 :class:`~uds.can.packet.can_packet.CanPacket` class defines a structure for
-:ref:`CAN Packets <knowledge-base-can-packet>` information. It is located in :mod:`~uds.can.packet.can_packet`.
+:ref:`CAN Packets <knowledge-base-can-packet>` information. It is located in :mod:`uds.can.packet.can_packet`.
 
 Attributes:
 
 - :attr:`~uds.can.packet.can_packet.CanPacket.can_id`
 - :attr:`~uds.can.packet.can_packet.CanPacket.raw_frame_data`
-- :attr:`~uds.can.packet.can_packet.CanPacket.addressing_format`
-- :attr:`~uds.can.packet.can_packet.CanPacket.addressing_type`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.dlc`
-- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.packet_type`
-- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.source_address`
+- :attr:`~uds.can.packet.can_packet.CanPacket.addressing_format`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.target_address`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.source_address`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.address_extension`
-- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.payload`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.packet_type`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.data_length`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.flow_status`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.block_size`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.st_min`
+- :attr:`~uds.can.packet.can_packet.CanPacket.addressing_type`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.payload`
+
 
 Methods:
 
@@ -430,22 +431,165 @@ Methods:
 
 CanPacketRecord
 ```````````````
+:class:`~uds.can.packet.can_packet_record.CanPacketRecord` class define a structure for
+:ref:`CAN Packet <knowledge-base-can-packet>` records (storage for information about
+:ref:`CAN Packets <knowledge-base-can-packet>` that were either transmitted or received).
+It is located in :mod:`uds.can.packet.can_packet_record`.
+
+Attributes:
+
+- :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.can_id`
+- :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.raw_frame_data`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.dlc`
+- :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.addressing_format`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.target_address`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.source_address`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.address_extension`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.packet_type`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.data_length`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.sequence_number`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.flow_status`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.block_size`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.st_min`
+- :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.addressing_type`
+- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.payload`
+
+Methods:
+
+- :meth:`~uds.can.packet.can_packet_record.CanPacketRecord._validate_frame`
+- :meth:`~uds.can.packet.can_packet_record.CanPacketRecord._validate_attributes`
+- :meth:`~uds.can.packet.can_packet_record.CanPacketRecord.__init__`
+- :meth:`~uds.can.packet.can_packet_record.CanPacketRecord.__str__`
+
+.. note:: A **user would not create objects of** :class:`~uds.can.packet.can_packet_record.CanPacketRecord` **class**
+  in typical situations, but one would probably use them quite often as they are returned by communication layers
+  (e.g. :mod:`uds.transport_interface`) of :mod:`uds` package.
+
+.. warning:: All :class:`~uds.can.packet.can_packet_record.CanPacketRecord` **attributes are read only**
+  (they are set only once upon an object creation) as they store historic data and history cannot be changed
+  (*can't it, right?*).
 
 
 Single Frame
 ````````````
+:ref:`CAN Single Frame <knowledge-base-can-single-frame>` implementation is located in
+:mod:`uds.can.packet.single_frame`.
+This code does not have to be called directly by users, as higher layers of this package (e.g.
+:class:`~uds.can.packet.abstract_container.AbstractCanPacketContainer`, :class:`~uds.can.packet.can_packet.CanPacket`)
+are already integrated with it.
+
+Some user might find these functions useful (e.g. for testing proper error handling of
+:ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol):
+
+- :func:`~uds.can.packet.single_frame.is_single_frame`
+- :func:`~uds.can.packet.single_frame.validate_single_frame_data`
+- :func:`~uds.can.packet.single_frame.create_single_frame_data`
+- :func:`~uds.can.packet.single_frame.generate_single_frame_data`
+- :func:`~uds.can.packet.single_frame.extract_single_frame_payload`
+- :func:`~uds.can.packet.single_frame.extract_sf_dl`
+- :func:`~uds.can.packet.single_frame.get_max_sf_dl`
+- :func:`~uds.can.packet.single_frame.get_single_frame_min_dlc`
 
 
 First Frame
 ```````````
+:ref:`CAN First Frame <knowledge-base-can-first-frame>` implementation is located in
+:mod:`uds.can.packet.first_frame`.
+This code does not have to be called directly by users, as higher layers of this package (e.g.
+:class:`~uds.can.packet.abstract_container.AbstractCanPacketContainer`, :class:`~uds.can.packet.can_packet.CanPacket`)
+are already integrated with it.
 
+Some user might find these functions useful (e.g. for testing proper error handling of
+:ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol):
 
-Flow Control
-````````````
+- :func:`~uds.can.packet.first_frame.is_first_frame`
+- :func:`~uds.can.packet.first_frame.validate_first_frame_data`
+- :func:`~uds.can.packet.first_frame.create_first_frame_data`
+- :func:`~uds.can.packet.first_frame.generate_first_frame_data`
+- :func:`~uds.can.packet.first_frame.extract_first_frame_payload`
+- :func:`~uds.can.packet.first_frame.extract_ff_dl`
+- :func:`~uds.can.packet.first_frame.get_first_frame_payload_size`
 
 
 Consecutive Frame
 `````````````````
+:ref:`CAN Consecutive Frame <knowledge-base-can-consecutive-frame>` implementation is located in
+:mod:`uds.can.packet.consecutive_frame`.
+This code does not have to be called directly by users, as higher layers of this package (e.g.
+:class:`~uds.can.packet.abstract_container.AbstractCanPacketContainer`, :class:`~uds.can.packet.can_packet.CanPacket`)
+are already integrated with it.
+
+Some user might find these functions useful (e.g. for testing proper error handling of
+:ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol):
+
+- :func:`~uds.can.packet.consecutive_frame.is_consecutive_frame`
+- :func:`~uds.can.packet.consecutive_frame.validate_consecutive_frame_data`
+- :func:`~uds.can.packet.consecutive_frame.create_consecutive_frame_data`
+- :func:`~uds.can.packet.consecutive_frame.generate_consecutive_frame_data`
+- :func:`~uds.can.packet.consecutive_frame.extract_consecutive_frame_payload`
+- :func:`~uds.can.packet.consecutive_frame.get_consecutive_frame_min_dlc`
+- :func:`~uds.can.packet.consecutive_frame.get_consecutive_frame_max_payload_size`
+- :func:`~uds.can.packet.consecutive_frame.extract_sequence_number`
+
+
+Flow Control
+````````````
+:ref:`CAN Flow Control <knowledge-base-can-flow-control>` implementation is located in
+:mod:`uds.can.packet.flow_control`.
+
+The key Flow Control related implementation:
+
+- `CanFlowStatus`_
+- `CanSTminTranslator`_
+- `AbstractFlowControlParametersGenerator`_
+- `DefaultFlowControlParametersGenerator`_
+
+Some user might find these functions useful (e.g. for testing proper error handling of
+:ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol):
+
+- :func:`~uds.can.packet.flow_control.is_flow_control`
+- :func:`~uds.can.packet.flow_control.validate_flow_control_data`
+- :func:`~uds.can.packet.flow_control.create_flow_control_data`
+- :func:`~uds.can.packet.flow_control.generate_flow_control_data`
+- :func:`~uds.can.packet.flow_control.extract_flow_status`
+- :func:`~uds.can.packet.flow_control.extract_block_size`
+- :func:`~uds.can.packet.flow_control.extract_st_min`
+- :func:`~uds.can.packet.flow_control.get_flow_control_min_dlc`
+
+
+CanFlowStatus
+'''''''''''''
+:class:`~uds.can.packet.flow_control.CanFlowStatus` class is an Enum with all possible
+:ref:`CAN Flow Status <knowledge-base-can-flow-status>` values defined.
+
+Methods:
+
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # check if there is member defined for the value
+    uds.can.CanFlowStatus.is_member(uds.can.CanFlowStatus.NORMAL_ADDRESSING)  # True
+    uds.can.CanFlowStatus.validate_member(3)  # uds.can.CanFlowStatus.Overflow
+    uds.can.CanFlowStatus.is_member("Not a CAN Flow Status")  # False
+    uds.can.CanFlowStatus.validate_member(0xF)  # raises ValueError
+
+
+CanSTminTranslator
+''''''''''''''''''
+
+
+AbstractFlowControlParametersGenerator
+''''''''''''''''''''''''''''''''''''''
+
+
+DefaultFlowControlParametersGenerator
+'''''''''''''''''''''''''''''''''''''
 
 
 Segmentation

@@ -209,7 +209,7 @@ Data Records
 ------------
 Data Records are parts of diagnostic messages and they are used to define diagnostic messages structures used by
 :class:`~uds.translator.service.service.Service` class.
-All Data Records implementation can be found in :mod:`~uds.translator.data_record`.
+All Data Records implementation can be found in :mod:`uds.translator.data_record`.
 
 We can divide Data Records in following groups:
 
