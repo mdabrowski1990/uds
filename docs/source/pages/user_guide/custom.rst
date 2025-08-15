@@ -218,6 +218,8 @@ The implementation that is common for all Transport Interfaces is located in :mo
 sub-package.
 
 
+.. _implementation-abstract-transport-interface:
+
 AbstractTransportInterface
 ``````````````````````````
 Abstract API that is common for all Transport Interfaces (and therefore buses/networks) is defined in

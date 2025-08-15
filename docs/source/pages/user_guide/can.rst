@@ -297,7 +297,8 @@ The whole implementation can be found in :mod:`uds.can.frame` module.
 
 CanIdHandler
 ````````````
-:class:`~uds.can.frame.CanIdHandler` class was defined as collection of various helper functions for CAN ID management.
+:class:`~uds.can.frame.CanIdHandler` class was defined as a collection of various helper functions
+for CAN ID management.
 There is no need to create an object, as each contained method us in fact "classmethod".
 
 *As a user, you would normally never use* :class:`~uds.can.frame.CanIdHandler` *class directly,*
@@ -574,7 +575,7 @@ Methods:
     import uds
 
     # check if there is member defined for the value
-    uds.can.CanFlowStatus.is_member(uds.can.CanFlowStatus.NORMAL_ADDRESSING)  # True
+    uds.can.CanFlowStatus.is_member(uds.can.CanFlowStatus.ContinueToSend)  # True
     uds.can.CanFlowStatus.validate_member(3)  # uds.can.CanFlowStatus.Overflow
     uds.can.CanFlowStatus.is_member("Not a CAN Flow Status")  # False
     uds.can.CanFlowStatus.validate_member(0xF)  # raises ValueError
@@ -582,34 +583,291 @@ Methods:
 
 CanSTminTranslator
 ''''''''''''''''''
+:class:`~uds.can.packet.flow_control.CanSTminTranslator` class was defined as a collection of various helper functions
+for :ref:`Separation Time Minimum (STmin) <knowledge-base-can-st-min>` management.
+There is no need to create an object, as each contained method us in fact "classmethod".
+
+Methods:
+
+- :meth:`~uds.can.packet.flow_control.CanSTminTranslator.decode`
+- :meth:`~uds.can.packet.flow_control.CanSTminTranslator.encode`
+- :meth:`~uds.can.packet.flow_control.CanSTminTranslator.is_time_value`
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # check if provided time value [ms] can be encoded as STmin
+    uds.can.CanSTminTranslator.is_time_value(0.1)  # True
+    uds.can.CanSTminTranslator.is_time_value(127)  # True
+
+    # encode time value [ms] into raw STmin value
+    uds.can.CanSTminTranslator.encode(0.1)  # 241
+    uds.can.CanSTminTranslator.encode(127)  # 127
+
+    # decode raw STmin value into time value [ms]
+    uds.can.CanSTminTranslator.decode(241)  # 0.1 [ms]
+    uds.can.CanSTminTranslator.decode(127)  # 127 [ms]
 
 
 AbstractFlowControlParametersGenerator
 ''''''''''''''''''''''''''''''''''''''
+:class:`~uds.can.packet.flow_control.AbstractFlowControlParametersGenerator` defines abstract API for
+Flow Control Generators that are used by CAN `Transport Interface`_
+(attribute :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.flow_control_parameters_generator`
+of :class:`~uds.can.transport_interface.common.AbstractCanTransportInterface` has to be an object of
+:class:`~uds.can.packet.flow_control.AbstractFlowControlParametersGenerator` class)
+
+.. warning:: **A user shall not use**
+  :class:`~uds.can.packet.flow_control.AbstractFlowControlParametersGenerator`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
 
 
 DefaultFlowControlParametersGenerator
 '''''''''''''''''''''''''''''''''''''
+:class:`~uds.can.packet.flow_control.DefaultFlowControlParametersGenerator` provides typical concrete implementation
+for :class:`~uds.can.packet.flow_control.AbstractFlowControlParametersGenerator`.
+It cover all typical use cases.
+
+**Normally users would just create** :class:`~uds.can.packet.flow_control.DefaultFlowControlParametersGenerator`
+**objects and pass them to CAN Transport Interface, where all interactions are executed.**
+The examples below are provided to visualize how
+:class:`~uds.can.packet.flow_control.DefaultFlowControlParametersGenerator` objects are used.
+
+**Example code:**
+
+  .. code-block::  python
+
+    import uds
+
+    # create example flow control parameters generators
+    fc_gen_1 = uds.can.DefaultFlowControlParametersGenerator(block_size=2,
+                                                             st_min=5,
+                                                             wait_count=2,
+                                                             repeat_wait=False)
+    # create iterators for flow control parameters
+    fc_iter_1 = iter(fc_gen_1)
+    # generate following flow control parameters (Flow Status, Block Size, STmin)
+    next(fc_iter_1)  # (<CanFlowStatus.Wait: 1>, None, None)
+    next(fc_iter_1)  # (<CanFlowStatus.Wait: 1>, None, None)
+    next(fc_iter_1)  # (<CanFlowStatus.ContinueToSend: 0>, 2, 5)
+    next(fc_iter_1)  # (<CanFlowStatus.ContinueToSend: 0>, 2, 5)
+
+    # example 2
+    fc_gen_2 = uds.can.DefaultFlowControlParametersGenerator(block_size=13,
+                                                             st_min=241,
+                                                             wait_count=1,
+                                                             repeat_wait=True)
+    fc_iter_2 = iter(fc_gen_2)
+    next(fc_iter_1)  # (<CanFlowStatus.Wait: 1>, None, None)
+    next(fc_iter_1)  # (<CanFlowStatus.ContinueToSend: 0>, 13, 241)
+    next(fc_iter_1)  # (<CanFlowStatus.Wait: 1>, None, None)
+    next(fc_iter_1)  # (<CanFlowStatus.ContinueToSend: 0>, 13, 241)
 
 
 Segmentation
 ------------
+:ref:`Segmentation on CAN bus <knowledge-base-can-segmentation>` is fully implemented by `CanSegmenter`_.
+
+
+CanSegmenter
+------------
+:class:`~uds.segmentation.can_segmenter.CanSegmenter` handles segmentation process specific for CAN bus.
+
+Following functionalities are provided by :class:`~uds.segmentation.can_segmenter.CanSegmenter`:
+
+- Configuration of the segmenter:
+
+  As a user, you are able to configure :class:`~uds.segmentation.can_segmenter.CanSegmenter` parameters which determines
+  the :ref:`addressing <knowledge-base-can-addressing>` and other attributes of
+  :ref:`CAN packets <knowledge-base-can-packet>`.
+
+  **Example code:**
+
+    .. code-block::  python
+
+      import uds
+
+      # let's assume that CAN Addressing Information object is already created
+      can_node_addressing_information: uds.can.CanAddressingInformation
+
+      # configure example CAN Segmenter for this CAN Node
+      can_segmenter = uds.can.CanSegmenter(addressing_information=can_node_addressing_information,
+                                           dlc=8,
+                                           use_data_optimization=False,
+                                           filler_byte=0xFF)
+
+      # change CAN Segmenter configuration
+      can_segmenter.dlc=0xF
+      can_segmenter.use_data_optimization = True
+      can_segmenter.filler_byte = 0xAA
+
+- Diagnostic message segmentation:
+
+  As a user, you are able to :ref:`segment diagnostic messages <knowledge-base-message-segmentation>`
+  into :ref:`CAN packets <knowledge-base-can-packet>`.
+
+  **Example code:**
+
+    .. code-block::  python
+
+      import uds
+
+      # let's assume that we have `can_segmenter` already configured
+      can_segmenter: uds.can.CanSegmenter
+
+      # define diagnostic message to segment
+      uds_message_1 = uds.message.UdsMessage(payload=[0x3E, 0x00],
+                                             addressing_type=uds.addressing.AddressingType.FUNCTIONAL)
+      uds_message_2 = uds.message.UdsMessage(payload=[0x62, 0x10, 0x00] + [0x20]*100,
+                                             addressing_type=uds.addressing.AddressingType.PHYSICAL)
+
+      # use segmenter to segment defined UDS Messages
+      can_packets_1 = can_segmenter.segmentation(uds_message_1)  # output: Single Frame
+      can_packets_2 = can_segmenter.segmentation(uds_message_2)  # output: First Frame with Consecutive Frame(s)
+
+  .. note:: It is impossible to segment functionally addressed diagnostic message into
+    :ref:`First Frame <knowledge-base-can-first-frame>` and
+    :ref:`Consecutive Frame(s) <knowledge-base-can-consecutive-frame>`
+    as such operation is considered incorrect according to
+    :ref:`Diagnostics over CAN <knowledge-base-docan>`.
+
+- CAN packets desegmentation:
+
+  As a user, you are able to :ref:`desegment CAN packets <knowledge-base-packets-desegmentation>`
+  into :ref:`diagnostic messages <implementation-diagnostic-message>`.
+
+  **Example code:**
+
+    .. code-block::  python
+
+      import uds
+
+      # let's assume that we have `can_segmenter` already configured
+      can_segmenter: uds.can.CanSegmenter
+
+      # define CAN packets to desegment
+      can_packets_1 = [
+          uds.can.CanPacket(packet_type=uds.can.CanPacketType.SINGLE_FRAME,
+                            addressing_format=uds.can.CanAddressingFormat.EXTENDED_ADDRESSING,
+                            addressing_type=uds.addressing.AddressingType.FUNCTIONAL,
+                            can_id=0x6A5,
+                            target_address=0x0C,
+                            payload=[0x3E, 0x80])
+      ]
+      can_packets_2 = [
+          uds.can.CanPacket(packet_type=uds.can.CanPacketType.FIRST_FRAME,
+                            addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                            addressing_type=uds.addressing.AddressingType.PHYSICAL,
+                            target_address=0x12,
+                            source_address=0xE0,
+                            dlc=8,
+                            data_length=15,
+                            payload=[0x62, 0x10, 0x00] + 3*[0x20]),
+          uds.can.CanPacket(packet_type=uds.can.CanPacketType.CONSECUTIVE_FRAME,
+                            addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                            addressing_type=uds.addressing.AddressingType.PHYSICAL,
+                            target_address=0x12,
+                            source_address=0xE0,
+                            dlc=8,
+                            sequence_number=1,
+                            payload=7*[0x20]),
+          uds.can.CanPacket(packet_type=uds.can.CanPacketType.CONSECUTIVE_FRAME,
+                            addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+                            addressing_type=uds.addressing.AddressingType.PHYSICAL,
+                            target_address=0x12,
+                            source_address=0xE0,
+                            sequence_number=1,
+                            payload=2 * [0x20],
+                            filler_byte=0x99)
+      ]
+
+      # use CAN Segmenter to desegment defined CAN packets
+      uds_message_1 = can_segmenter.desegmentation(can_packets_1)
+      uds_message_2 = can_segmenter.desegmentation(can_packets_2)
+
+      # show content of desegmented messages
+      print(uds_message_1)  # UdsMessage(payload=[0x3E, 0x80], addressing_type=Functional)
+      print(uds_message_2)  # UdsMessage(payload=[0x62, 0x10, 0x00, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20], addressing_type=Physical)
+
+    .. warning:: Desegmentation performs only sanity check of CAN packets content, therefore some inconsistencies
+        with :Ref:`Diagnostic on CAN <knowledge-base-docan>` standard might be silently accepted as long as
+        :ref:`a diagnostic message <implementation-diagnostic-message>` can be unambiguously decoded out of provided
+        :ref:`CAN packets <knowledge-base-can-packet>`.
+
+    .. note:: Desegmentation can be performed for any CAN packets (not only those targeting this CAN Node)
+      using any valid :ref:`CAN Addressing Format <knowledge-base-can-addressing>`.
+
+
+Transport
+---------
+:ref:`Diagnostic Messages <implementation-diagnostic-message>` and :ref:`CAN Packets <knowledge-base-can-packet>`
+are sent and received by so called Transport Interfaces.
+For CAN bus, currently there are following Transport Interfaces defined:
+
+- `AbstractCanTransportInterface`_
+- `PyCanTransportInterface`_
+
+.. seealso:: :ref:`Abstract Transport Interface <implementation-abstract-transport-interface>`
+
+
+AbstractCanTransportInterface
+`````````````````````````````
+:class:`~uds.can.transport_interface.common.AbstractCanTransportInterface` class defines common part for all CAN related
+Transport Interfaces, including all `Diagnostic over CAN <knowledge-base-docan>` related parameters.
+
+Attributes:
+
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.N_AS_TIMEOUT`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.N_AR_TIMEOUT`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.N_BS_TIMEOUT`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.N_CR_TIMEOUT`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.DEFAULT_N_BR`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.DEFAULT_N_CS`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.DEFAULT_FLOW_CONTROL_PARAMETERS`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.segmenter`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_as_timeout`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_as_measured`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_ar_timeout`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_ar_measured`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_bs_timeout`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_bs_measured`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_br`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_br_max`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cs`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cs_max`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cr_timeout`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cr_measured`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.dlc`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.use_data_optimization`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.filler_byte`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.flow_control_parameters_generator`
+
+Methods:
+
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_ar_measured`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_as_measured`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_bs_measured`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface._update_n_cr_measured`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.clear_measurements`
+- :meth:`~uds.can.transport_interface.common.AbstractCanTransportInterface.__init__`
+
+.. warning:: **A user shall not use**
+  :class:`~uds.can.transport_interface.common.AbstractCanTransportInterface`
+  **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
+
+
+PyCanTransportInterface
+```````````````````````
 
 
 
-Transport Interface
--------------------
 
 
 
-
-
-
-TODO
-====
-
-
-CAN Transport Interface
+CAN Transport Interface - TODO: merge
 -----------------------
 The implementation for Transport Interfaces that can be used with CAN bus is located in
 :mod:`uds.transport_interface.can_transport_interface` module.
@@ -942,132 +1200,3 @@ method to receive CAN packets.
 
 
 
-CanSegmenter
-------------
-:class:`~uds.segmentation.can_segmenter.CanSegmenter` handles segmentation process specific for CAN bus.
-
-Following functionalities are provided by :class:`~uds.segmentation.can_segmenter.CanSegmenter`:
-
-- Configuration of the segmenter:
-
-  As a user, you are able to configure :class:`~uds.segmentation.can_segmenter.CanSegmenter` parameters which determines
-  the addressing (Addressing Format and Addressing Information of input and output CAN packets) and the content
-  (e.g. Filler Byte value and whether to use CAN Frame Data Optimization) of CAN packets.
-
-  **Example code:**
-
-    .. code-block::  python
-
-        import uds
-
-        # define Addressing Information for a CAN Node
-        can_node_addressing_information = uds.can.CanAddressingInformation(
-            addressing_format=uds.can.CanAddressingFormat.NORMAL_ADDRESSING,
-            tx_physical={"can_id": 0x611},
-            rx_physical={"can_id": 0x612},
-            tx_functional={"can_id": 0x6FF},
-            rx_functional={"can_id": 0x6FE})
-
-        # configure CAN Segmenter for this CAN Node
-        can_segmenter = uds.segmentation.CanSegmenter(addressing_information=can_node_addressing_information,
-                                                      dlc=8,
-                                                      use_data_optimization=False,
-                                                      filler_byte=0xFF)
-
-        # change CAN Segmenter configuration
-        can_segmenter.addressing_information = uds.can.CanAddressingInformation(
-            uds.can.CanAddressingFormat.NORMAL_ADDRESSING,
-            tx_physical={"can_id": 0x612},
-            rx_physical={"can_id": 0x611},
-            tx_functional={"can_id": 0x6FE},
-            rx_functional={"can_id": 0x6FF})
-        can_segmenter.dlc=0xF
-        can_segmenter.use_data_optimization = True
-        can_segmenter.filler_byte = 0xAA
-
-
-- Diagnostic message segmentation:
-
-  As a user, you are able to :ref:`segment diagnostic messages <knowledge-base-message-segmentation>`
-  (objects of :class:`~uds.message.uds_message.UdsMessage` class) into CAN packets
-  (objects for :class:`~uds.can.packet.can_packet.CanPacket` class).
-
-  **Example code:**
-
-    .. code-block::  python
-
-        # let's assume that we have `can_segmenter` already configured as presented in configuration example above
-
-        # define diagnostic message to segment
-        uds_message_1 = uds.message.UdsMessage(payload=[0x3E, 0x00],
-                                               addressing_type=uds.addressing.AddressingType.FUNCTIONAL)
-        uds_message_2 = uds.message.UdsMessage(payload=[0x62, 0x10, 0x00] + [0x20]*100,
-                                               addressing_type=uds.addressing.AddressingType.PHYSICAL)
-
-        # use preconfigured segmenter to segment the diagnostic messages
-        can_packets_1 = can_segmenter.segmentation(uds_message_1)  # output: Single Frame
-        can_packets_2 = can_segmenter.segmentation(uds_message_2)  # output: First Frame with Consecutive Frame(s)
-
-  .. note:: It is impossible to segment functionally addressed diagnostic message into First Frame and Consecutive Frame(s)
-      as such result is considered incorrect according to :ref:`UDS ISO Standards <knowledge-base-uds-standards>`.
-
-
-- CAN packets desegmentation:
-
-  As a user, you are able to :ref:`desegment CAN packets <knowledge-base-packets-desegmentation>`
-  (either objects of :class:`~uds.can.packet.can_packet.CanPacket` or
-  :class:`~uds.can.packet.can_packet_record.CanPacketRecord` class)
-  into diagnostic messages (either objects of :class:`~uds.message.uds_message.UdsMessage` or
-  :class:`~uds.message.uds_message.UdsMessageRecord` class).
-
-  **Example code:**
-
-    .. code-block::  python
-
-        # let's assume that we have `can_segmenter` already configured as presented in configuration example above
-
-        # define CAN packets to desegment
-        can_packets_1 = [
-            uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.SINGLE_FRAME,
-                                 addressing_format=uds.can.CanAddressingFormat.EXTENDED_ADDRESSING,
-                                 addressing_type=uds.addressing.AddressingType.FUNCTIONAL,
-                                 can_id=0x6A5,
-                                 target_address=0x0C,
-                                 payload=[0x3E, 0x80])
-        ]
-        can_packets_2 = [
-            uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.FIRST_FRAME,
-                                 addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                 addressing_type=uds.addressing.AddressingType.PHYSICAL,
-                                 target_address=0x12,
-                                 source_address=0xE0,
-                                 dlc=8,
-                                 data_length=15,
-                                 payload=[0x62, 0x10, 0x00] + 3*[0x20]),
-            uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.CONSECUTIVE_FRAME,
-                                 addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                 addressing_type=uds.addressing.AddressingType.PHYSICAL,
-                                 target_address=0x12,
-                                 source_address=0xE0,
-                                 dlc=8,
-                                 sequence_number=1,
-                                 payload=7*[0x20]),
-            uds.packet.CanPacket(packet_type=uds.packet.CanPacketType.CONSECUTIVE_FRAME,
-                                 addressing_format=uds.can.CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
-                                 addressing_type=uds.addressing.AddressingType.PHYSICAL,
-                                 target_address=0x12,
-                                 source_address=0xE0,
-                                 sequence_number=1,
-                                 payload=2 * [0x20],
-                                 filler_byte=0x99)
-        ]
-
-        # use preconfigured segmenter to desegment the CAN packets
-        uds_message_1 = can_segmenter.desegmentation(can_packets_1)
-        uds_message_2 = can_segmenter.desegmentation(can_packets_2)
-
-    .. warning:: Desegmentation performs only sanity check of CAN packets content, therefore some inconsistencies
-        with Diagnostic on CAN standard might be silently accepted as long as a message can be unambiguously decoded
-        out of provided CAN packets.
-
-    .. note:: Desegmentation can be performed for any CAN packets (not only those targeting this CAN Node) in any format.
