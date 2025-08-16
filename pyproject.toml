@@ -92,7 +92,7 @@ docs = [
     "tomli",
 ]
 docs-checks = [
-    "doc8 == 1.1.1",
+    "doc8 == 2.0.0",
 ]
 
 
@@ -157,6 +157,7 @@ multi_line_output = 3
 [tool.doc8]
 max-line-length = 120
 ignore = ["D004"]
-ignore-path-errors = [
-    "docs\\source\\pages\\knowledge_base\\diagnostic_message.rst;D001",  # tables
+per-file-ignores = [
+    "docs/source/pages/knowledge_base/addressing.rst: D001",
+    "docs/source/pages/user_guide/message_translation.rst: D001"
 ]
