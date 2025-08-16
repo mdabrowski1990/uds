@@ -1,3 +1,0 @@
-K-Line Transport Interfaces
-===========================
-K-Line FEATURE IS PLANNED BUT NOT IMPLEMENTED YET, THEREFORE THERE ARE NO MORE INFORMATION TO DISPLAY.

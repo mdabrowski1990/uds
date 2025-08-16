@@ -19,4 +19,3 @@ from .custom_warnings import (
     ValueWarning,
 )
 from .enums import ByteEnum, ExtendableEnum, NibbleEnum, ValidatedEnum
-from .transmission_direction import TransmissionDirection

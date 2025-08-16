@@ -6,9 +6,9 @@ from datetime import datetime
 from typing import Any, Union
 
 from can import Message as PythonCanMessage
-from uds.addressing import AddressingType
+from uds.addressing import AddressingType, TransmissionDirection
 from uds.packet import AbstractPacketRecord
-from uds.utilities import ReassignmentError, TransmissionDirection
+from uds.utilities import ReassignmentError
 
 from ..addressing import CanAddressingFormat, CanAddressingInformation
 from .abstract_container import AbstractCanPacketContainer

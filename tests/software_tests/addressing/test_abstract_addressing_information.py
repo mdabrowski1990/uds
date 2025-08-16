@@ -41,6 +41,21 @@ class TestAbstractAddressingInformation:
         assert self.mock_ai.tx_functional_params == tx_functional_params
         self.mock_ai._validate_addressing_information.assert_called_once_with()
 
+    # __eq__
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_eq__other_type(self, mock_isinstance):
+        mock_isinstance.return_value = False
+        assert AbstractAddressingInformation.__eq__(self.mock_ai, self.mock_ai) is False
+        mock_isinstance.assert_called_once_with(self.mock_ai, AbstractAddressingInformation)
+
+    def test_eq__true(self):
+        assert AbstractAddressingInformation.__eq__(self.mock_ai, self.mock_ai) is True
+
+    def test_eq__false(self):
+        mock_ai = Mock(spec=AbstractAddressingInformation)
+        assert AbstractAddressingInformation.__eq__(self.mock_ai, mock_ai) is False
+
     # rx_physical_params
 
     def test_rx_physical_params__get(self):

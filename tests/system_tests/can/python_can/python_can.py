@@ -8,7 +8,7 @@ from typing import List, Optional
 import pytest
 
 from can import Bus, Message
-from uds.addressing import AddressingType
+from uds.addressing import AddressingType, TransmissionDirection
 from uds.can import (
     CanAddressingFormat,
     CanFlowStatus,
@@ -19,7 +19,7 @@ from uds.can import (
     PyCanTransportInterface,
 )
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.utilities import TimeMillisecondsAlias, TransmissionDirection
+from uds.utilities import TimeMillisecondsAlias
 
 
 class AbstractPythonCanTests(ABC):

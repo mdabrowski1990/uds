@@ -868,3 +868,55 @@ class TestDefaultFlowControlParametersGenerator:
         assert (self.mock_flow_control_parameters_generator._DefaultFlowControlParametersGenerator__repeat_wait
                 == mock_bool.return_value)
         mock_bool.assert_called_once_with(mock_value)
+
+
+@pytest.mark.integration
+class TestDefaultFlowControlParametersGeneratorIntegration:
+    """Integration tests for DefaultFlowControlParametersGenerator"""
+
+    @pytest.mark.parametrize("init_params, following_fc_params", [
+        (
+            {},
+            [
+                (CanFlowStatus.ContinueToSend, 0, 0),
+                (CanFlowStatus.ContinueToSend, 0, 0),
+                (CanFlowStatus.ContinueToSend, 0, 0)
+            ]
+        ),
+        (
+            {
+                "block_size": 2,
+                "st_min": 125,
+                "wait_count": 2,
+                "repeat_wait": False,
+            },
+            [
+                (CanFlowStatus.Wait, None, None),
+                (CanFlowStatus.Wait, None, None),
+                (CanFlowStatus.ContinueToSend, 2, 125),
+                (CanFlowStatus.ContinueToSend, 2, 125),
+                (CanFlowStatus.ContinueToSend, 2, 125),
+            ]
+        ),
+        (
+            {
+                "block_size": 13,
+                "st_min": 241,
+                "wait_count": 1,
+                "repeat_wait": True,
+            },
+            [
+                (CanFlowStatus.Wait, None, None),
+                (CanFlowStatus.ContinueToSend, 13, 241),
+                (CanFlowStatus.Wait, None, None),
+                (CanFlowStatus.ContinueToSend, 13, 241),
+                (CanFlowStatus.Wait, None, None),
+                (CanFlowStatus.ContinueToSend, 13, 241),
+            ]
+        ),
+    ])
+    def test_generate_params(self, init_params, following_fc_params):
+        flow_control_generator = DefaultFlowControlParametersGenerator(**init_params)
+        flow_control_iterator = iter(flow_control_generator)
+        for fc_params in following_fc_params:
+            assert next(flow_control_iterator) == fc_params

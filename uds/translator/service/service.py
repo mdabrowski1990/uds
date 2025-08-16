@@ -1,4 +1,4 @@
-"""Definition of UDS Service data encoding and decoding."""
+"""Definition of diagnostic services data encoding and decoding."""
 
 __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
            "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]
@@ -41,7 +41,10 @@ DecodedMessageAlias = Tuple[DataRecordInfoAlias, ...]
 
 class Service:
     """
-    Translator for a single Diagnostic Service.
+    Translator for a diagnostic service.
+
+    Interactions via UDS protocol with servers (ECUs) are possible via
+    :ref:`diagnostic services <knowledge-base-service>` which are basically functions that you can request as a client.
 
     Features:
      - contains structures of diagnostic messages (both request and response) for a single diagnostic service

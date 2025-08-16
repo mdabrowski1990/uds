@@ -12,3 +12,4 @@ import uds.packet as packet
 import uds.segmentation as segmentation
 import uds.translator as translator
 import uds.transport_interface as transport_interface
+import uds.utilities as utilities

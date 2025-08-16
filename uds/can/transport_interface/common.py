@@ -6,9 +6,10 @@ from abc import ABC
 from typing import Any, Optional, Tuple
 from warnings import warn
 
+from uds.addressing import TransmissionDirection
 from uds.message import UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, TransmissionDirection, ValueWarning
+from uds.utilities import TimeMillisecondsAlias, ValueWarning
 
 from ..addressing import AbstractCanAddressingInformation
 from ..packet import AbstractFlowControlParametersGenerator, CanPacketType, DefaultFlowControlParametersGenerator
@@ -298,7 +299,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @property
     def n_bs_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
-        Get the last measured values of :ref:`N_Bs <knowledge-base-addressing-n-bs>` time parameter.
+        Get the last measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
 
         .. note:: The last measurement comes from the last transmission of UDS message using either
             :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.send_message` or
@@ -311,7 +312,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @property
     def n_br(self) -> TimeMillisecondsAlias:
         """
-        Get the value of :ref:`N_Br <knowledge-base-addressing-n-br>` time parameter which is currently set.
+        Get the value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter which is currently set.
 
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
@@ -321,7 +322,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @n_br.setter
     def n_br(self, value: TimeMillisecondsAlias) -> None:
         """
-        Set the value of :ref:`N_Br <knowledge-base-addressing-n-br>` time parameter to use.
+        Set the value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use.
 
         :param value: The value to set.
 
@@ -337,11 +338,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @property
     def n_br_max(self) -> TimeMillisecondsAlias:
         """
-        Get the maximum valid value of :ref:`N_Br <knowledge-base-addressing-n-br>` time parameter.
+        Get the maximum valid value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter.
 
-        .. warning:: To assess maximal value of :ref:`N_Br <knowledge-base-addressing-n-br>`, the actual value of
-            :ref:`N_Ar <knowledge-base-addressing-n-ar>` time parameter is required.
-            Either the latest measured value of :ref:`N_Ar <knowledge-base-addressing-n-ar>` would be used,
+        .. warning:: To assess maximal value of :ref:`N_Br <knowledge-base-can-n-br>`, the actual value of
+            :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter is required.
+            Either the latest measured value of :ref:`N_Ar <knowledge-base-can-n-ar>` would be used,
             or 0ms would be assumed (if there are no measurement result).
         """
         n_ar_measured = 0 if self.n_ar_measured is None else self.n_ar_measured
@@ -350,7 +351,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @property
     def n_cs(self) -> Optional[TimeMillisecondsAlias]:
         """
-        Get the value of :ref:`N_Cs <knowledge-base-addressing-n-cs>` time parameter which is currently set.
+        Get the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter which is currently set.
 
         .. note:: The actual (observed on the bus) value will be slightly longer as it also includes computation
             and CAN Interface delays.
@@ -360,7 +361,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @n_cs.setter
     def n_cs(self, value: Optional[TimeMillisecondsAlias]) -> None:
         """
-        Set the value of :ref:`N_Cs <knowledge-base-addressing-n-cs>` time parameter to use.
+        Set the value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use.
 
         :param value: The value to set.
             - None - use timing compatible with :ref:`STmin <knowledge-base-can-st-min>` value received in a preceding
@@ -381,11 +382,11 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @property
     def n_cs_max(self) -> TimeMillisecondsAlias:
         """
-        Get the maximum valid value of :ref:`N_Cs <knowledge-base-addressing-n-cs>` time parameter.
+        Get the maximum valid value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter.
 
-        .. warning:: To assess maximal value of :ref:`N_Cs <knowledge-base-addressing-n-cs>`, the actual value of
-            :ref:`N_As <knowledge-base-addressing-n-as>` time parameter is required.
-            Either the latest measured value of :ref:`N_As <knowledge-base-addressing-n-as>` would be used,
+        .. warning:: To assess maximal value of :ref:`N_Cs <knowledge-base-can-n-cs>`, the actual value of
+            :ref:`N_As <knowledge-base-can-n-as>` time parameter is required.
+            Either the latest measured value of :ref:`N_As <knowledge-base-can-n-as>` would be used,
             or 0ms would be assumed (if there are no measurement result).
         """
         n_as_measured = 0 if self.n_as_measured is None else self.n_as_measured
@@ -393,13 +394,13 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
     @property
     def n_cr_timeout(self) -> TimeMillisecondsAlias:
-        """Timeout value for :ref:`N_Cr <knowledge-base-addressing-n-cr>` time parameter."""
+        """Timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter."""
         return self.__n_cr_timeout
 
     @n_cr_timeout.setter
     def n_cr_timeout(self, value: TimeMillisecondsAlias) -> None:
         """
-        Set timeout value for :ref:`N_Cr <knowledge-base-addressing-n-cr>` time parameter.
+        Set timeout value for :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
         :param value: Value of timeout to set.
 
@@ -418,7 +419,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     @property
     def n_cr_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """
-        Get the last measured values of :ref:`N_Cr <knowledge-base-addressing-n-cr>` time parameter.
+        Get the last measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` time parameter.
 
         .. note:: The last measurement comes from the last reception of UDS message using either
             :meth:`~uds.transport_interface.addressing.AbstractCanTransportInterface.receive_message` or
@@ -436,7 +437,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Value of base CAN DLC to use for output CAN packets.
 
         .. note:: All output CAN packets will have this DLC value set unless
-            :ref:`CAN Frame Data Optimization <knowledge-base-addressing-data-optimization>` is used.
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
         """
         return self.segmenter.dlc
 
@@ -455,7 +456,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Information whether to use CAN Frame Data Optimization during CAN packets creation.
 
         .. seealso::
-            :ref:`CAN Frame Data Optimization <knowledge-base-addressing-data-optimization>`
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
         """
         return self.segmenter.use_data_optimization
 
@@ -465,7 +466,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set whether to use CAN Frame Data Optimization during CAN packets creation.
 
         .. seealso::
-            :ref:`CAN Frame Data Optimization <knowledge-base-addressing-data-optimization>`
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
 
         :param value: Value to set.
         """
@@ -477,7 +478,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Filler byte value to use for output CAN Frame Data Padding during segmentation.
 
         .. seealso::
-            :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
         """
         return self.segmenter.filler_byte
 
@@ -487,7 +488,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Set value of filler byte to use for output CAN Frame Data Padding.
 
         .. seealso::
-            :ref:`CAN Frame Data Padding <knowledge-base-addressing-frame-data-padding>`
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
 
         :param value: Value to set.
         """

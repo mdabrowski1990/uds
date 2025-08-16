@@ -226,16 +226,16 @@ class TestNormalFixedCanAddressingInformation:
     @pytest.mark.parametrize("rx_physical_params, tx_physical_params, "
                              "rx_functional_params, tx_functional_params", [
                                  (
-                                         {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
-                                         {"can_id": 0xDA3413, "target_address": 0x34, "source_address": 0x13},
-                                         {"can_id": 0xDB01FF, "target_address": 0x01, "source_address": 0xFF},
-                                         {"can_id": 0xDBFF01, "target_address": 0xFF, "source_address": 0x01},
+                                     {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
+                                     {"can_id": 0xDA3413, "target_address": 0x34, "source_address": 0x13},
+                                     {"can_id": 0xDB01FF, "target_address": 0x01, "source_address": 0xFF},
+                                     {"can_id": 0xDBFF01, "target_address": 0xFF, "source_address": 0x01},
                                  ),
                                  (
-                                         {"can_id": 0x18DAFEDC, "target_address": 0xFE, "source_address": 0xDC},
-                                         {"can_id": 0x18DADCDE, "target_address": 0xDC, "source_address": 0xFE},
-                                         {"can_id": 0x18DB543F, "target_address": 0x54, "source_address": 0x3F},
-                                         {"can_id": 0x18DB543F, "target_address": 0x54, "source_address": 0x3F},
+                                     {"can_id": 0x18DAF1AB, "target_address": 0xF1, "source_address": 0xAB},
+                                     {"can_id": 0x18DAABF1, "target_address": 0xAB, "source_address": 0xF1},
+                                     {"can_id": 0x18DBF120, "target_address": 0xF1, "source_address": 0x20},
+                                     {"can_id": 0x18DBF120, "target_address": 0xF1, "source_address": 0x20},
                                  ),
                              ])
     def test_validate_addressing_information__inconsistent(self, rx_physical_params, tx_physical_params,
@@ -250,22 +250,22 @@ class TestNormalFixedCanAddressingInformation:
     @pytest.mark.parametrize("rx_physical_params, tx_physical_params, "
                              "rx_functional_params, tx_functional_params", [
                                  (
-                                         {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
-                                         {"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
-                                         {"can_id": 0xDB01FF, "target_address": 0x01, "source_address": 0xFF},
-                                         {"can_id": 0xDBFF01, "target_address": 0xFF, "source_address": 0x01},
+                                     {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
+                                     {"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
+                                     {"can_id": 0xDB01FF, "target_address": 0x01, "source_address": 0xFF},
+                                     {"can_id": 0xDBFF01, "target_address": 0xFF, "source_address": 0x01},
                                  ),
                                  (
-                                         {"can_id": 0x18DAFEDC, "target_address": 0xFE, "source_address": 0xDC},
-                                         {"can_id": 0x18DADCDE, "target_address": 0xDC, "source_address": 0xFE},
-                                         {"can_id": 0x18DB543F, "target_address": 0x54, "source_address": 0x3F},
-                                         {"can_id": 0x18DB3F54, "target_address": 0x3F, "source_address": 0x54},
+                                     {"can_id": 0x18DAFEDC, "target_address": 0xFE, "source_address": 0xDC},
+                                     {"can_id": 0x18DADCFE, "target_address": 0xDC, "source_address": 0xFE},
+                                     {"can_id": 0x18DBF120, "target_address": 0xF1, "source_address": 0x20},
+                                     {"can_id": 0x18DB33F1, "target_address": 0x33, "source_address": 0xF1},
                                  ),
                                  (
-                                         {"can_id": 0x1CDA2F71, "target_address": 0x2F, "source_address": 0x71},
-                                         {"can_id": 0x1CDA712F, "target_address": 0x71, "source_address": 0x2F},
-                                         {"can_id": 0x8DB5580, "target_address": 0x2F, "source_address": 0x71},
-                                         {"can_id": 0x8DB8055, "target_address": 0x71, "source_address": 0x2F},
+                                     {"can_id": 0x1CDA2F71, "target_address": 0x2F, "source_address": 0x71},
+                                     {"can_id": 0x1CDA712F, "target_address": 0x71, "source_address": 0x2F},
+                                     {"can_id": 0x8DB2F71, "target_address": 0x2F, "source_address": 0x71},
+                                     {"can_id": 0x8DB712F, "target_address": 0x71, "source_address": 0x2F},
                                  ),
                              ])
     def test_validate_addressing_information__valid(self, rx_physical_params, tx_physical_params,

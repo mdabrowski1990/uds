@@ -1,5 +1,7 @@
 """Definition of UDS Addressing Information for storing Client/Server Addresses."""
 
+__all__ = ["AbstractAddressingInformation"]
+
 from abc import ABC, abstractmethod
 from types import MappingProxyType
 from typing import Any, Dict, Mapping, Optional
@@ -34,13 +36,20 @@ class AbstractAddressingInformation(ABC):
         self.tx_functional_params = tx_functional_params
         self._validate_addressing_information()
 
-    @abstractmethod
-    def validate_addressing_params(self, **addressing_params: Any) -> Dict[str, Any]:
-        """Check whether the provided parameters are complete and compatible for this Addressing format."""
+    def __eq__(self, other: Any) -> bool:
+        """
+        Compare with other object.
 
-    @abstractmethod
-    def _validate_addressing_information(self) -> None:
-        """Check whether the provided addressing information are valid."""
+        :param other: Object to compare.
+
+        :return: True if other object has the same type and carries the same Addressing Information, otherwise False.
+        """
+        if not isinstance(other, AbstractAddressingInformation):
+            return False
+        return (self.rx_physical_params == other.rx_physical_params
+                and self.tx_physical_params == other.tx_physical_params
+                and self.rx_functional_params == other.rx_functional_params
+                and self.tx_functional_params == other.tx_functional_params)
 
     @property
     def rx_physical_params(self) -> Mapping[str, Any]:
@@ -141,6 +150,14 @@ class AbstractAddressingInformation(ABC):
         else:
             raise ReassignmentError("You cannot change value of 'tx_functional_params' attribute once it is assigned. "
                                     "Create a new object instead.")
+
+    @abstractmethod
+    def _validate_addressing_information(self) -> None:
+        """Check whether the provided addressing information are valid."""
+
+    @abstractmethod
+    def validate_addressing_params(self, **addressing_params: Any) -> Dict[str, Any]:
+        """Check whether the provided parameters are complete and correct."""
 
     @abstractmethod
     def is_input_packet(self, **frame_attributes: Any) -> Optional[AddressingType]:
