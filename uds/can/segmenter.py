@@ -18,8 +18,8 @@ from .packet import (
     CanFlowStatus,
     CanPacket,
     CanPacketRecord,
-    CanPacketType,
     CanPacketsContainersSequence,
+    CanPacketType,
     get_consecutive_frame_max_payload_size,
     get_first_frame_payload_size,
     get_max_sf_dl,
@@ -240,7 +240,7 @@ class CanSegmenter(AbstractSegmenter):
                 if following_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME:
                     if following_packet.sequence_number != sequence_number:
                         return False
-                    payload_bytes_found += len(following_packet.payload)
+                    payload_bytes_found += len(following_packet.payload)  # type: ignore
                     sequence_number = (sequence_number + 1) & 0xF
             return payload_bytes_found >= total_payload_size
         raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
