@@ -29,6 +29,8 @@ all parameters required for both distinguishing incoming and outgoing packets (f
 :ref:`addressing types <knowledge-base-addressing>`).
 
 
+.. _implementation-abstract-addressing-information:
+
 AbstractAddressingInformation
 `````````````````````````````
 :class:`~uds.addressing.abstract_addressing_information.AbstractAddressingInformation` defines common API and
@@ -60,6 +62,8 @@ Requires implementation in concrete classes (abstract attributes and methods):
 
 .. seealso:: Addressing implementation for CAN - :mod:`uds.can.addressing`
 
+
+.. _implementation-packet:
 
 Packet
 ------

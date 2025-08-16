@@ -255,6 +255,8 @@ parameters, or all these parameters (compatibility cross-check would be performe
   "can_id" parameter has to be provided.
 
 
+.. _implementation-can-addressing-information:
+
 CanAddressingInformation
 ````````````````````````
 :class:`~uds.can.addressing.addressing_information.CanAddressingInformation` is factory for
@@ -314,6 +316,8 @@ There is no need to create an object, as each contained method us in fact "class
 *As a user, you would normally never use* :class:`~uds.can.frame.CanDlcHandler` *class directly,*
 *therefore we are happy to just inform you about its existence.*
 
+
+.. _implementation-can-packet:
 
 Packet
 ------
@@ -858,6 +862,8 @@ Methods:
   :class:`~uds.can.transport_interface.common.AbstractCanTransportInterface`
   **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
 
+
+.. _implementation-can-python-can-transport-interface:
 
 PyCanTransportInterface
 ```````````````````````
