@@ -15,7 +15,7 @@ It is divided into the following parts:
 
 UDS Message
 -----------
-:class:`~uds.message.uds_message.UdsMessage` class is meant to provide containers for a new
+:class:`~uds.message.uds_message.UdsMessage` class is meant to provide containers for new
 :ref:`diagnostic messages <knowledge-base-diagnostic-message>`.
 These objects can be used for complex operations such as transmission or segmentation.
 
@@ -79,11 +79,11 @@ Methods:
 - :meth:`~uds.message.uds_message.UdsMessageRecord.__str__`
 - :meth:`~uds.message.uds_message.UdsMessageRecord.__eq__`
 
-.. note:: A **user would not create objects of** class:`~uds.message.uds_message.UdsMessageRecord` **class**
+.. note:: **A user would not create objects of** class:`~uds.message.uds_message.UdsMessageRecord` **class**
   in typical situations, but one would probably use them quite often as they are returned by communication layers
   (e.g. :mod:`uds.transport_interface`) of :mod:`uds` package.
 
-.. warning:: All :class:`~uds.message.uds_message.UdsMessageRecord` **attributes are read only**
+.. warning:: All :class:`~uds.message.uds_message.UdsMessageRecord` **attributes are read-only**
   (they are set only once upon an object creation) as they store historic data and history cannot be changed
   (*can't it, right?*).
 

@@ -5,7 +5,7 @@ This part of documentation is meant to provide a technical support for every use
 UDS protocol itself.
 
 .. toctree::
-  :caption: Table of Content
+  :caption: Table of Contents
 
   knowledge_base/osi_model.rst
   knowledge_base/diagnostic_message.rst

@@ -1,9 +1,9 @@
 """Abstract definition of a container for a CAN packet."""
 
-__all__ = ["AbstractCanPacketContainer"]
+__all__ = ["AbstractCanPacketContainer", "CanPacketsContainersSequence"]
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Sequence
 
 from uds.addressing import AddressingType
 from uds.packet.abstract_packet import AbstractPacketContainer
@@ -249,3 +249,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         if self.packet_type == CanPacketType.FLOW_CONTROL:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
+
+
+CanPacketsContainersSequence = Sequence[AbstractPacketContainer]
+"""Alias for a sequence filled with CAN packet or packet record objects."""

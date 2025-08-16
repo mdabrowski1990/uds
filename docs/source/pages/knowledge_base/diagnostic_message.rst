@@ -37,7 +37,7 @@ and redirect the response back until it reaches the request message originator (
 
   Diagnostic responses routing in example vehicle networks.
 
-  In this example all ECUs in the vehicle responds to the request.
+  In this example all ECUs in the vehicle respond to the request.
 
 
 .. _knowledge-base-request-message:

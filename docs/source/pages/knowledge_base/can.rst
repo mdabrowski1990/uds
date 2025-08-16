@@ -140,7 +140,7 @@ CAN Frame Data Optimization
 CAN frame data optimization is an alternative to `CAN Frame Data Padding`_.
 If a number of bytes specified in a CAN Packet is shorter than a number of bytes in CAN frame's data field,
 then the sender might decrease DLC value of the :ref:`CAN frame <knowledge-base-can-frame>` to the minimal number
-that is required to sent a desired number of data bytes in a single CAN packet.
+that is required to send a desired number of data bytes in a single CAN packet.
 
 .. note:: CAN Frame Data Optimization might always be used for CAN Packets with less than 8 bytes of data to send.
 
@@ -425,7 +425,7 @@ STmin values:
 
 CAN Addressing Formats
 ----------------------
-CAN Addressing Formats defines a way of storing :ref:`Network Address Information <knowledge-base-n-ai>` in
+CAN Addressing Formats define a way of storing :ref:`Network Address Information <knowledge-base-n-ai>` in
 `CAN Packet`_.
 
 ISO 15765 defines following 3 addressing formats:
@@ -590,7 +590,7 @@ Extended Addressing
 ```````````````````
 Extended CAN Addressing Format is usually used when direct communication with servers is not possible -
 a client (Diagnostic Tester) is not connected to the same CAN network as server(s), therefore one or more ECU Gateways
-are use to pass on the packets/messages.
+are used to pass on the packets/messages.
 
 When Extended CAN Addressing Format is used, then the value of **the first CAN frame byte informs about a target** of
 a packet and remaining :ref:`Network Address Information <knowledge-base-n-ai>` (a transmitting entity and
@@ -615,16 +615,16 @@ Mixed Addressing
 ````````````````
 Mixed CAN Addressing Format (just like Extended CAN Addressing Format) is used when direct communication with servers
 is not possible - a client (Diagnostic Tester) is not connected to the same CAN network as server(s),
-therefore one or more ECU Gateways are use to pass on the packets/messages.
+therefore one or more ECU Gateways are used to pass on the packets/messages.
 
 When Mixed CAN Addressing Format is used, then the value of **the first byte of a CAN frame is an address extension** of
 :ref:`Network Address Information <knowledge-base-n-ai>`.
-**The Value of the address extension shall be the same for each for transmitted and received packets.**
+**The balue of the address extension shall be the same for each for transmitted and received packets.**
 
 .. note:: :ref:`Network Protocol Control Information <knowledge-base-n-pci>` is placed in the **second byte** of
   :ref:`CAN frame data field <knowledge-base-can-data-field>` if mixed addressing format is used.
 
-Following parameters specifies :ref:`Network Address Information <knowledge-base-n-ai>` for
+Following parameters specify :ref:`Network Address Information <knowledge-base-n-ai>` for
 Extended CAN Addressing Format:
 
 - CAN ID - informs about addressing type, transmitting and receiving nodes within the network

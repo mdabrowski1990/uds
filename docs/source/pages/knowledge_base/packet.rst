@@ -22,7 +22,7 @@ Network Address Information
 ---------------------------
 Network Address Information (N_AI) field carries all :ref:`addressing <knowledge-base-addressing>` related information.
 
-It identifiers:
+It identifies:
 
 - the sender
 - recipient(s) of the packet

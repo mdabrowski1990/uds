@@ -110,10 +110,10 @@ List of all Service Identifier (SID) values and their application:
 
 Request Service Identifier
 ``````````````````````````
-Request Service Identifier is a sub-type of Service Identifier (SID) that identifier request message of
-a diagnostic service.
+Request Service Identifier is a sub-type of Service Identifier (SID). It is the first byte of each request message
+and its value identifies diagnostic service for which this message is relevant.
 
-.. note:: SID's bit 6 (2nd oldest) equals 0 for all request messages.
+.. note:: SID's bit 6 (2nd most significant bit) equals 0 for all request messages.
 
 .. warning:: When we refer to SID value sometimes we mean Request Service Identifier which might lead to some confusion.
   Unfortunately, there is no other suitable acronym for it.
@@ -123,10 +123,10 @@ a diagnostic service.
 
 Response Service Identifier
 ```````````````````````````
-Response Service Identifier (RSID) is a sub-type of Service Identifier (SID) that identifier response message of
-a diagnostic service.
+Response Service Identifier (RSID) is a sub-type of Service Identifier (SID). It is the first byte of each response
+message and its value identifies diagnostic service for which this message is relevant.
 
-.. note:: RSID's bit 6 (2nd oldest) always equals 1.
+.. note:: RSID's bit 6 (2nd most significant bit) always equals 1.
 
 
 DiagnosticSessionControl
@@ -245,7 +245,7 @@ RequestTransferExit service is used by the client to terminate a data transfer b
 RequestFileTransfer
 -------------------
 RequestFileTransfer service allows the client to initiate a file data transfer either from the server to
-the client (upload) or from the server to the client (upload).
+the client (download) or from the server to the client (upload).
 
 
 WriteMemoryByAddress
@@ -275,11 +275,11 @@ ControlDTCSetting service allows the client to stop or resume the updating of DT
 
 ResponseOnEvent
 ---------------
-ResponseOnEvent service allows the client to request from the server to start ot stop transmission of responses on
+ResponseOnEvent service allows the client to request from the server to start or stop transmission of responses on
 a specified event.
 
 
 LinkControl
 -----------
-LinkControl service allows the client to control the communication between the client and the server(s) in order to
+LinkControl service allows the client to control the communication between the client and the server(s) to
 gain bus bandwidth for diagnostic purposes (e.g. programming).

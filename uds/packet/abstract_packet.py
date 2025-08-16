@@ -162,7 +162,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
 
 PacketsContainersSequence = Sequence[AbstractPacketContainer]
-"""Alias for a sequence filled with packet or packet record object."""
+"""Alias for a sequence filled with packet or packet record objects."""
 
 PacketsTuple = Tuple[AbstractPacket, ...]
 """Alias for a packet objects tuple."""

@@ -17,8 +17,8 @@ Physical Addressing
 Physical addressing is used in communication between one client and one server.
 When physically addressed messages are sent, the direct (point-to-point) communication between the client and
 the server takes place. The server shall respond to a physically addressed request unless the request contains
-an information that a response is not required (further explained in
-`response behaviour to physically addressed request`_ chapter).
+information that a response is not required (further explained in
+`response behaviour to physically addressed request`_ section).
 
 .. note:: You do not need a direct physical connection between a client and a server to have physically addressed
   communication as all messages shall be routed to a target of each message.
@@ -78,8 +78,8 @@ where:
   message
 - SID supported - flag informing whether Service Identifier in the received request message is supported by the server
 - SF supported - flag informing whether SubFunction in the received request message is supported by the server
-- DataParam supported - information whether values of data parameters (e.g. DIDs, RIDs, DTCStatusMask) in the received
-  request message are supported by the server
+- DataParam supported - information on whether values of data parameters (e.g. DIDs, RIDs, DTCStatusMask)
+  in the received request message are supported by the server
 - NRC - Negative Response Code
 - ROOR - NRC 0x31 (requestOutOfRange)
 - SNS - NRC 0x11 (serviceNotSupported)
@@ -95,7 +95,7 @@ where:
 Functional Addressing
 ---------------------
 Functional addressing is used to send messages to multiple servers (ECUs) in the network.
-When functionally addressed messages are sent, a one to many communication between a client and servers (ECUs)
+When functionally addressed messages are sent, a one-to-many communication between a client and servers (ECUs)
 takes place. A server shall only respond to certain functionally addressed requests (further explained in
 `response behaviour to functionally addressed request`_ chapter.
 

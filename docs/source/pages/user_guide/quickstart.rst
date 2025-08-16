@@ -4,8 +4,9 @@ All steps required to start working with this package:
 
 - `Installation`_
 - `Define Addressing Information`_
-- `Define Addressing Information`_
-- `Define Addressing Information`_
+- `Create Transport Interface`_
+- `Send and Receive Packets`_
+- `Send and Receive Messages`_
 
 .. seealso:: :ref:`Code Examples <examples>`
 
@@ -40,9 +41,9 @@ Example for CAN:
 
 Create Transport Interface
 --------------------------
-This steps depends on network type and network manager used.
+This step depends on network type and network manager used.
 
-Example for CAN an python-can:
+Example for CAN and ref:`python-can <https://python-can.readthedocs.io>`:
 
   .. code-block::  python
 

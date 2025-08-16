@@ -156,7 +156,7 @@ Exactly two parameters "can_id" and "target_address" shall be passed to each add
         rx_physical_params={"can_id": 0x701, "target_address": 0x01},
         tx_physical_params={"can_id": 0x702, "target_address": 0xF1},
         rx_functional_params={"can_id": 0x701, "target_address": 0xFF},
-        tx_functional_params={"can_id": 0x702, "target_address": 0xF1},
+        tx_functional_params={"can_id": 0x702, "target_address": 0xF1})
 
 
 Mixed11BitCanAddressingInformation
@@ -187,7 +187,7 @@ Exactly two parameters "can_id" and "address_extension" shall be passed to each 
         rx_physical_params={"can_id": 0x701, "address_extension": 0x01},
         tx_physical_params={"can_id": 0x702, "address_extension": 0x01},
         rx_functional_params={"can_id": 0x701, "address_extension": 0xFF},
-        tx_functional_params={"can_id": 0x702, "address_extension": 0xFF},
+        tx_functional_params={"can_id": 0x702, "address_extension": 0xFF})
 
 
 Mixed29BitCanAddressingInformation
@@ -301,7 +301,7 @@ CanIdHandler
 ````````````
 :class:`~uds.can.frame.CanIdHandler` class was defined as a collection of various helper functions
 for CAN ID management.
-There is no need to create an object, as each contained method us in fact "classmethod".
+There is no need to create an object, as each contained method is in fact class method.
 
 *As a user, you would normally never use* :class:`~uds.can.frame.CanIdHandler` *class directly,*
 *therefore we are happy to just inform you about its existence.*
@@ -311,7 +311,7 @@ CanDlcHandler
 `````````````
 :class:`~uds.can.frame.CanDlcHandler` class was defined as collection of various helper functions for DLC field and
 data bytes management for CAN bus.
-There is no need to create an object, as each contained method us in fact "classmethod".
+There is no need to create an object, as each contained method is in fact class method.
 
 *As a user, you would normally never use* :class:`~uds.can.frame.CanDlcHandler` *class directly,*
 *therefore we are happy to just inform you about its existence.*
@@ -470,7 +470,7 @@ Methods:
   in typical situations, but one would probably use them quite often as they are returned by communication layers
   (e.g. :mod:`uds.transport_interface`) of :mod:`uds` package.
 
-.. warning:: All :class:`~uds.can.packet.can_packet_record.CanPacketRecord` **attributes are read only**
+.. warning:: All :class:`~uds.can.packet.can_packet_record.CanPacketRecord` **attributes are read-only**
   (they are set only once upon an object creation) as they store historic data and history cannot be changed
   (*can't it, right?*).
 
@@ -589,7 +589,7 @@ CanSTminTranslator
 ''''''''''''''''''
 :class:`~uds.can.packet.flow_control.CanSTminTranslator` class was defined as a collection of various helper functions
 for :ref:`Separation Time Minimum (STmin) <knowledge-base-can-st-min>` management.
-There is no need to create an object, as each contained method us in fact "classmethod".
+There is no need to create an object, as each contained method is in fact class method.
 
 Methods:
 
@@ -665,10 +665,10 @@ The examples below are provided to visualize how
                                                              wait_count=1,
                                                              repeat_wait=True)
     fc_iter_2 = iter(fc_gen_2)
-    next(fc_iter_1)  # (<CanFlowStatus.Wait: 1>, None, None)
-    next(fc_iter_1)  # (<CanFlowStatus.ContinueToSend: 0>, 13, 241)
-    next(fc_iter_1)  # (<CanFlowStatus.Wait: 1>, None, None)
-    next(fc_iter_1)  # (<CanFlowStatus.ContinueToSend: 0>, 13, 241)
+    next(fc_iter_2)  # (<CanFlowStatus.Wait: 1>, None, None)
+    next(fc_iter_2)  # (<CanFlowStatus.ContinueToSend: 0>, 13, 241)
+    next(fc_iter_2)  # (<CanFlowStatus.Wait: 1>, None, None)
+    next(fc_iter_2)  # (<CanFlowStatus.ContinueToSend: 0>, 13, 241)
 
 
 Segmentation
@@ -783,7 +783,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
                             addressing_type=uds.addressing.AddressingType.PHYSICAL,
                             target_address=0x12,
                             source_address=0xE0,
-                            sequence_number=1,
+                            sequence_number=2,
                             payload=2 * [0x20],
                             filler_byte=0x99)
       ]
@@ -797,7 +797,7 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
       print(uds_message_2)  # UdsMessage(payload=[0x62, 0x10, 0x00, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20], addressing_type=Physical)
 
     .. warning:: Desegmentation performs only sanity check of CAN packets content, therefore some inconsistencies
-        with :Ref:`Diagnostic on CAN <knowledge-base-docan>` standard might be silently accepted as long as
+        with :ref:`Diagnostic on CAN <knowledge-base-docan>` standard might be silently accepted as long as
         :ref:`a diagnostic message <implementation-diagnostic-message>` can be unambiguously decoded out of provided
         :ref:`CAN packets <knowledge-base-can-packet>`.
 
