@@ -1,5 +1,5 @@
 """
-A subpackage with definition of UDS middle layers (Transport and Network).
+A sub-package with definition of UDS middle layers (Transport and Network).
 
 It provides tools and base for configurable Transport Interfaces. Transport Interfaces features:
  - transmitting and receiving packets

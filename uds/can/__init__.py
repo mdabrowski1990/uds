@@ -1,5 +1,5 @@
 """
-A subpackage with CAN bus specific implementation.
+A sub-package with CAN bus specific implementation.
 
 It provides tools for:
 

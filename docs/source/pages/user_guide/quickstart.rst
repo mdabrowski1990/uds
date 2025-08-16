@@ -21,7 +21,7 @@ Installation
 
 Define Addressing Information
 -----------------------------
-This steps depends on network type used.
+This step depends on network type used.
 
 Example for CAN:
 
@@ -43,7 +43,7 @@ Create Transport Interface
 --------------------------
 This step depends on network type and network manager used.
 
-Example for CAN and ref:`python-can <https://python-can.readthedocs.io>`:
+Example for CAN and `python-can <https://python-can.readthedocs.io>`_:
 
   .. code-block::  python
 
@@ -68,7 +68,7 @@ Example for CAN and ref:`python-can <https://python-can.readthedocs.io>`:
 
 Send and Receive Packets
 ------------------------
-This steps depends on network type used.
+This step depends on network type used.
 
 Example for CAN:
 

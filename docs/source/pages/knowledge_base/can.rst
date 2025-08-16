@@ -951,15 +951,15 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 Unexpected Packet handling
 ``````````````````````````
 According to ISO 15765-2:2016:
-    As a general rule, arrival of an unexpected N_PDU from any node shall be ignored, with the exception of SF N_PDUs
-    and physically addressed FF N_PDUs; functionally addressed FirstFrames shall be ignored.
-    When the specified action is to ignore an unexpected N_PDU, this means that the network layer shall not notify
-    the upper layers of its arrival.
+  As a general rule, arrival of an unexpected N_PDU from any node shall be ignored, with the exception of SF N_PDUs
+  and physically addressed FF N_PDUs; functionally addressed FirstFrames shall be ignored.
+  When the specified action is to ignore an unexpected N_PDU, this means that the network layer shall not notify
+  the upper layers of its arrival.
 
-    Depending on the network layer design decision to support full- or half-duplex communication, the interpretation
-    of “unexpected” differs:
-    a) with half-duplex, point-to-point communication between two nodes is only possible in one direction at a time;
-    b) with full-duplex, point-to-point communication between two nodes is possible in both directions at once.
+  Depending on the network layer design decision to support full- or half-duplex communication, the interpretation
+  of “unexpected” differs:
+  a) with half-duplex, point-to-point communication between two nodes is only possible in one direction at a time;
+  b) with full-duplex, point-to-point communication between two nodes is possible in both directions at once.
 
 
 Half-duplex

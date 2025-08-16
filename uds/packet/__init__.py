@@ -1,5 +1,5 @@
 """
-A subpackage with tools for handling packets.
+A sub-package with tools for handling packets.
 
 It provides tools for:
  - data definitions for various packet fields (:ref:`N_AI <knowledge-base-n-ai>`,
