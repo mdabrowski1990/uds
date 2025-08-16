@@ -91,7 +91,7 @@ Example for CAN:
 
 
 Send and Receive Messages
-------------------------
+-------------------------
 Example:
   .. code-block::  python
 
