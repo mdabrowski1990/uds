@@ -270,9 +270,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                               loop: Optional[AbstractEventLoop] = None
                                               ) -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
         """
-        Receive asynchronously block of :ref:`Consecutive Frames <knowledge-base-addressing-consecutive-frame>`.
+        Receive asynchronously block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
-        :param sequence_number: Current :ref:`Sequence Number <knowledge-base-addressing-sequence-number>`
+        :param sequence_number: Current :ref:`Sequence Number <knowledge-base-can-sequence-number>`
             (next Consecutive Frame shall have this value set).
         :param block_size: :ref:`Block Size <knowledge-base-can-block-size>` value sent in the last
             :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`.
@@ -312,9 +312,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive Consecutive Frames after reception of First Frame.
 
-        :param first_frame: :ref:`First Frame <knowledge-base-addressing-first-frame>` that was received.
+        :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
 
-        :raise TimeoutError: :ref:`N_Cr <knowledge-base-addressing-n-cr>` timeout was reached.
+        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
         :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
             OVERFLOW was sent.
 
@@ -364,10 +364,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive asynchronously Consecutive Frames after reception of First Frame.
 
-        :param first_frame: :ref:`First Frame <knowledge-base-addressing-first-frame>` that was received.
+        :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
         :param loop: An asyncio event loop used for observing messages.
 
-        :raise TimeoutError: :ref:`N_Cr <knowledge-base-addressing-n-cr>` timeout was reached.
+        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
         :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
             OVERFLOW was sent.
         :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.

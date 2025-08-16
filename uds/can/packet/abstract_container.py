@@ -49,7 +49,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
         - :ref:`Extended Addressing <knowledge-base-can-extended-addressing>`
-        - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+        - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -64,8 +64,8 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         Source Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
 
-        - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
-        - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+        - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
+        - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -79,9 +79,9 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         Address Extension (AE) value of this CAN Packet.
 
         Address Extension is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
-         - :ref:`Mixed Addressing <knowledge-base-addressing-mixed-addressing>` - either:
-           - :ref:`Mixed 11-bit Addressing <knowledge-base-addressing-mixed-11-bit-addressing>`
-           - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+         - :ref:`Mixed Addressing <knowledge-base-can-mixed-addressing>` - either:
+           - :ref:`Mixed 11-bit Addressing <knowledge-base-can-mixed-11-bit-addressing>`
+           - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -127,10 +127,10 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """
         Sequence Number carried by this CAN packet.
 
-        :ref:`Sequence Number <knowledge-base-addressing-sequence-number>` is only provided by packets of
+        :ref:`Sequence Number <knowledge-base-can-sequence-number>` is only provided by packets of
         following types:
 
-        - :ref:`Consecutive Frame <knowledge-base-addressing-consecutive-frame>`
+        - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
         None in other cases.
 
