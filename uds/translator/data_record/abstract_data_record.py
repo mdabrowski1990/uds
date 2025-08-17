@@ -16,18 +16,20 @@ SinglePhysicalValueAlias = Union[int, float, str]
 Physical value from a single Data Record occurrence.
 
 Physical values represent the human-readable interpretation of raw integer values:
- - int: Direct numeric values (e.g., 127 for temperature sensor)
- - float: Scaled/calculated values (e.g., 25.5°C after scaling)
- - str: Mapped labels (e.g., "Active", "Inactive", "Warning")
+
+- int: Direct numeric values (e.g., 127 for temperature sensor)
+- float: Scaled/calculated values (e.g., 25.5°C after scaling)
+- str: Mapped labels (e.g., "Active", "Inactive", "Warning")
 """
 MultiplePhysicalValuesAlias = Union[str, Tuple[SinglePhysicalValueAlias, ...]]
 """
 Physical values from multiple Data Record occurrences.
 
 When processing multiple occurrences, physical values are either:
- - str: Concatenated string for all occurrences (e.g. serial number, part number) using predefined encoding
-   (e.g. ASCII, UTF-8)
- - tuple: Individual values per occurrence
+
+- str: Concatenated string for all occurrences (e.g. serial number, part number) using predefined encoding
+  (e.g. ASCII, UTF-8)
+- tuple: Individual values per occurrence
 """
 PhysicalValueAlias = Union[SinglePhysicalValueAlias, MultiplePhysicalValuesAlias]
 """Alias for all physical values."""
@@ -89,10 +91,11 @@ class AbstractDataRecord(ABC):
 
     The container design eliminates the need for separate container classes while
     providing powerful features:
-     - Automatic bit extraction from parent to children
-     - Multiple occurrences support with min/max constraints
-     - Immutable properties to prevent accidental modification
-     - Comprehensive occurrence information with nested children
+
+    - Automatic bit extraction from parent to children
+    - Multiple occurrences support with min/max constraints
+    - Immutable properties to prevent accidental modification
+    - Comprehensive occurrence information with nested children
     """
 
     def __init__(self,
@@ -301,8 +304,9 @@ class AbstractDataRecord(ABC):
         Whether this Data Record might occur multiple times.
 
         Values meaning:
-         - False - there might be 0 or 1 occurrence of this Data Record
-         - True - number of occurrences might vary
+
+        - True - number of occurrences might vary
+        - False - there might be 0 or 1 occurrence of this Data Record
         """
         return self.max_occurrences is None or self.max_occurrences > 1
 
@@ -312,8 +316,9 @@ class AbstractDataRecord(ABC):
         Whether this Data Record has fixed total length and number of occurrences.
 
         Values meaning:
-         - True - the number of occurrences is always the same (fixed)
-         - False - the number of occurrences might vary
+
+        - True - the number of occurrences is always the same (fixed)
+        - False - the number of occurrences might vary
         """
         return self.min_occurrences == self.max_occurrences
 

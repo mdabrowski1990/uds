@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 
-from uds.addressing import AddressingType
-from uds.utilities import ReassignmentError, TransmissionDirection
+from uds.addressing import AddressingType, TransmissionDirection
+from uds.utilities import ReassignmentError
 
 from .abstract_packet_type import AbstractPacketType
 
@@ -162,7 +162,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
 
 PacketsContainersSequence = Sequence[AbstractPacketContainer]
-"""Alias for a sequence filled with packet or packet record object."""
+"""Alias for a sequence filled with packet or packet record objects."""
 
 PacketsTuple = Tuple[AbstractPacket, ...]
 """Alias for a packet objects tuple."""

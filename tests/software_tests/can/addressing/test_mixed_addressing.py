@@ -250,16 +250,16 @@ class TestMixed29BitCanAddressingInformation:
             {"can_id": 0xCDFF01, "target_address": 0xFF, "source_address": 0x01, "address_extension": 0xFF},
         ),
         (
-            {"can_id": 0x18CEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0x00},
-            {"can_id": 0x18CEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0x00},
-            {"can_id": 0x18CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xFF},
-            {"can_id": 0x18CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xFF},
+            {"can_id": 0x1CCEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0xCD},
+            {"can_id": 0x1CCEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0xCD},
+            {"can_id": 0x10CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xAB},
+            {"can_id": 0x10CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xAB},
         ),
         (
             {"can_id": 0x1CCEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0xCD},
             {"can_id": 0x1CCEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0xCD},
             {"can_id": 0x10CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xCD},
-            {"can_id": 0x10CD3F54, "target_address": 0x3F, "source_address": 0x54, "address_extension": 0x01},
+            {"can_id": 0x10CD3F54, "target_address": 0x3F, "source_address": 0x54, "address_extension": 0xCE},
         ),
         (
             {"can_id": 0xCCE00FF, "target_address": 0x00, "source_address": 0xFF, "address_extension": 0x43},
@@ -287,9 +287,15 @@ class TestMixed29BitCanAddressingInformation:
         ),
         (
             {"can_id": 0x18CEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0x00},
-            {"can_id": 0x18CEDCDE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0x00},
+            {"can_id": 0x18CEDCFE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0x00},
             {"can_id": 0x18CD543F, "target_address": 0x54, "source_address": 0x3F, "address_extension": 0xFF},
             {"can_id": 0x18CD3F54, "target_address": 0x3F, "source_address": 0x54, "address_extension": 0xFF},
+        ),
+        (
+            {"can_id": 0x18CEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0x00},
+            {"can_id": 0x18CEDCFE, "target_address": 0xDC, "source_address": 0xFE, "address_extension": 0x00},
+            {"can_id": 0x18CDF120, "target_address": 0xF1, "source_address": 0x20, "address_extension": 0xFF},
+            {"can_id": 0x18CD33F1, "target_address": 0x33, "source_address": 0xF1, "address_extension": 0xFF},
         ),
         (
             {"can_id": 0x1CCEFEDC, "target_address": 0xFE, "source_address": 0xDC, "address_extension": 0xCD},

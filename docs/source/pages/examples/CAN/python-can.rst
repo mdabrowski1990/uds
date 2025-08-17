@@ -23,17 +23,17 @@ Message handling
 - Send UDS message:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_message.py
-    :code: python
+  :code: python
 
 - Receive UDS message:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/receive_message.py
-    :code: python
+  :code: python
 
 - Send UDS message on one interface, receive on the other:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_and_receive_message.py
-    :code: python
+  :code: python
 
 
 Packet handling
@@ -42,17 +42,17 @@ Packet handling
 - Send CAN packets:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_packet.py
-    :code: python
+  :code: python
 
 - Receive CAN packets:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/receive_packet.py
-    :code: python
+  :code: python
 
 - Send CAN packets on one interface, receive on the other:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_and_receive_packet.py
-    :code: python
+  :code: python
 
 
 Asynchronous implementation
@@ -64,17 +64,17 @@ Message handling
 - Send UDS message:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_message_asyncio.py
-    :code: python
+  :code: python
 
 - Receive UDS message:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/receive_message_asyncio.py
-    :code: python
+  :code: python
 
 - Send UDS message on one interface, receive on the other:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_and_receive_message_asyncio.py
-    :code: python
+  :code: python
 
 
 Packet handling
@@ -83,17 +83,17 @@ Packet handling
 - Send CAN packets:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_packet_asyncio.py
-    :code: python
+  :code: python
 
 - Receive CAN packets:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/receive_packet_asyncio.py
-    :code: python
+  :code: python
 
 - Send CAN packets on one interface, receive on the other:
 
 .. include:: ../../../../../examples/can/python-can/kvaser/send_and_receive_packet_asyncio.py
-    :code: python
+  :code: python
 
 
 .. _python-can: https://github.com/hardbyte/python-can

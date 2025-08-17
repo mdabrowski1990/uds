@@ -1,5 +1,5 @@
 """
-A subpackage with tools for handling diagnostic message.
+A sub-package with tools for handling diagnostic message.
 
 It provides tools for:
  - creating new diagnostic message

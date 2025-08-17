@@ -1,9 +1,9 @@
 """Abstract definition of a container for a CAN packet."""
 
-__all__ = ["AbstractCanPacketContainer"]
+__all__ = ["AbstractCanPacketContainer", "CanPacketsContainersSequence"]
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Sequence
 
 from uds.addressing import AddressingType
 from uds.packet.abstract_packet import AbstractPacketContainer
@@ -26,14 +26,14 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """CAN Identifier (CAN ID) of a CAN Frame that carries this CAN packet."""
 
     @property
-    def dlc(self) -> int:
-        """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
-        return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
-
-    @property
     @abstractmethod
     def raw_frame_data(self) -> bytes:
         """Raw data bytes of a CAN frame that carries this CAN packet."""
+
+    @property
+    def dlc(self) -> int:
+        """Value of Data Length Code (DLC) of a CAN Frame that carries this CAN packet."""
+        return CanDlcHandler.encode_dlc(len(self.raw_frame_data))
 
     @property
     @abstractmethod
@@ -41,29 +41,15 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """CAN addressing format used by this CAN packet."""
 
     @property
-    def source_address(self) -> Optional[int]:
-        """
-        Source Address (SA) value of this CAN Packet.
-
-        Source Address value is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
-         - :ref:`Normal Fixed Addressing <knowledge-base-addressing-normal-fixed-addressing>`
-         - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
-
-        None in other cases.
-        """
-        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
-                                                               can_id=self.can_id,
-                                                               raw_frame_data=self.raw_frame_data)["source_address"]
-
-    @property
     def target_address(self) -> Optional[int]:
         """
         Target Address (TA) value of this CAN Packet.
 
         Target Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
-         - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
-         - :ref:`Extended Addressing <knowledge-base-can-extended-addressing>`
-         - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+
+        - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
+        - :ref:`Extended Addressing <knowledge-base-can-extended-addressing>`
+        - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -72,14 +58,30 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
                                                                raw_frame_data=self.raw_frame_data)["target_address"]
 
     @property
+    def source_address(self) -> Optional[int]:
+        """
+        Source Address (SA) value of this CAN Packet.
+
+        Source Address value is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+
+        - :ref:`Normal Fixed Addressing <knowledge-base-can-normal-fixed-addressing>`
+        - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
+
+        None in other cases.
+        """
+        return CanAddressingInformation.decode_frame_ai_params(addressing_format=self.addressing_format,
+                                                               can_id=self.can_id,
+                                                               raw_frame_data=self.raw_frame_data)["source_address"]
+
+    @property
     def address_extension(self) -> Optional[int]:
         """
         Address Extension (AE) value of this CAN Packet.
 
-        Address Extension is used with following :ref:`addressing formats <knowledge-base-addressing-addressing>`:
-         - :ref:`Mixed Addressing <knowledge-base-addressing-mixed-addressing>` - either:
-           - :ref:`Mixed 11-bit Addressing <knowledge-base-addressing-mixed-11-bit-addressing>`
-           - :ref:`Mixed 29-bit Addressing <knowledge-base-addressing-mixed-29-bit-addressing>`
+        Address Extension is used with following :ref:`addressing formats <knowledge-base-can-addressing>`:
+         - :ref:`Mixed Addressing <knowledge-base-can-mixed-addressing>` - either:
+           - :ref:`Mixed 11-bit Addressing <knowledge-base-can-mixed-11-bit-addressing>`
+           - :ref:`Mixed 29-bit Addressing <knowledge-base-can-mixed-29-bit-addressing>`
 
         None in other cases.
         """
@@ -99,10 +101,11 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         Payload bytes number of a diagnostic message that is carried by this CAN packet.
 
         Data length is only provided by packets of following types:
-         - :ref:`Single Frame <knowledge-base-can-single-frame>` -
-           :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
-         - :ref:`First Frame <knowledge-base-can-first-frame>` -
-           :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
+
+        - :ref:`Single Frame <knowledge-base-can-single-frame>` -
+          :ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>`
+        - :ref:`First Frame <knowledge-base-can-first-frame>` -
+          :ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>`
 
         None in other cases.
 
@@ -124,9 +127,10 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         """
         Sequence Number carried by this CAN packet.
 
-        :ref:`Sequence Number <knowledge-base-addressing-sequence-number>` is only provided by packets of
+        :ref:`Sequence Number <knowledge-base-can-sequence-number>` is only provided by packets of
         following types:
-         - :ref:`Consecutive Frame <knowledge-base-addressing-consecutive-frame>`
+
+        - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
         None in other cases.
 
@@ -147,7 +151,8 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         Flow Status carried by this CAN packet.
 
         :ref:`Flow Status <knowledge-base-can-flow-status>` is only provided by packets of following types:
-         - :ref:`Flow Control <knowledge-base-can-flow-control>`
+
+        - :ref:`Flow Control <knowledge-base-can-flow-control>`
 
         None in other cases.
 
@@ -168,7 +173,8 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         Block Size value carried by this CAN packet.
 
         :ref:`Block Size <knowledge-base-can-flow-status>` is only provided by packets of following types:
-         - :ref:`Flow Control <knowledge-base-can-block-size>`
+
+        - :ref:`Flow Control <knowledge-base-can-block-size>`
 
         None in other cases.
 
@@ -189,7 +195,8 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         Separation Time minimum (STmin) value carried by this CAN packet.
 
         :ref:`STmin <knowledge-base-can-st-min>` is only provided by packets of following types:
-         - :ref:`Flow Control <knowledge-base-can-block-size>`
+
+        - :ref:`Flow Control <knowledge-base-can-block-size>`
 
         None in other cases.
 
@@ -215,9 +222,10 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         Diagnostic message payload carried by this CAN packet.
 
         Payload is only provided by packets of following types:
-         - :ref:`Single Frame <knowledge-base-can-single-frame>`
-         - :ref:`First Frame <knowledge-base-can-first-frame>`
-         - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+        - :ref:`Single Frame <knowledge-base-can-single-frame>`
+        - :ref:`First Frame <knowledge-base-can-first-frame>`
+        - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
         None in other cases.
 
@@ -241,3 +249,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         if self.packet_type == CanPacketType.FLOW_CONTROL:
             return None
         raise NotImplementedError("No handling for given CAN Packet Packet Type.")
+
+
+CanPacketsContainersSequence = Sequence[AbstractPacketContainer]
+"""Alias for a sequence filled with CAN packet or packet record objects."""

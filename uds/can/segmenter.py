@@ -6,7 +6,7 @@ from typing import Any, Optional, Tuple, Type, Union
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.packet import AbstractPacket, AbstractPacketRecord, PacketsContainersSequence
+from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter, SegmentationError
 from uds.utilities import RawBytesAlias, validate_raw_byte
 
@@ -18,6 +18,7 @@ from .packet import (
     CanFlowStatus,
     CanPacket,
     CanPacketRecord,
+    CanPacketsContainersSequence,
     CanPacketType,
     get_consecutive_frame_max_payload_size,
     get_first_frame_payload_size,
@@ -207,7 +208,7 @@ class CanSegmenter(AbstractSegmenter):
         """
         return super().is_input_packet(can_id=can_id, raw_frame_data=raw_frame_data)
 
-    def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:
+    def is_desegmented_message(self, packets: CanPacketsContainersSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.
 
@@ -230,13 +231,19 @@ class CanSegmenter(AbstractSegmenter):
         if packets[0].packet_type == CanPacketType.FIRST_FRAME:
             total_payload_size: int = packets[0].data_length  # type: ignore
             payload_bytes_found = len(packets[0].payload)  # type: ignore
+            sequence_number = 1
             for following_packet in packets[1:]:
-                if CanPacketType.is_initial_packet_type(following_packet.packet_type):
-                    return False
                 if payload_bytes_found >= total_payload_size:
                     return False
-                if following_packet.payload is not None:
-                    payload_bytes_found += len(following_packet.payload)
+                if following_packet.packet_type == CanPacketType.FLOW_CONTROL:
+                    continue
+                if following_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+                    if following_packet.sequence_number != sequence_number:
+                        return False
+                    payload_bytes_found += len(following_packet.payload)  # type: ignore
+                    sequence_number = (sequence_number + 1) & 0xF
+                else:
+                    return False
             return payload_bytes_found >= total_payload_size
         raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
 
@@ -263,7 +270,7 @@ class CanSegmenter(AbstractSegmenter):
                          dlc=None if self.use_data_optimization else self.dlc,
                          **self.addressing_information.tx_physical_params)
 
-    def desegmentation(self, packets: PacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
+    def desegmentation(self, packets: CanPacketsContainersSequence) -> Union[UdsMessage, UdsMessageRecord]:
         """
         Perform desegmentation of CAN packets.
 
