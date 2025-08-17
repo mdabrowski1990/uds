@@ -242,6 +242,8 @@ class CanSegmenter(AbstractSegmenter):
                         return False
                     payload_bytes_found += len(following_packet.payload)  # type: ignore
                     sequence_number = (sequence_number + 1) & 0xF
+                else:
+                    return False
             return payload_bytes_found >= total_payload_size
         raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
 
