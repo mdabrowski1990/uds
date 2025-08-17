@@ -51,7 +51,8 @@ release = full_version_from_init
 
 extensions = ["sphinx.ext.autodoc",
               "autoapi.extension",
-              "sphinx.ext.viewcode"]
+              "sphinx.ext.viewcode",
+              "sphinx.ext.intersphinx"]
 
 autodoc_typehints = "description"
 autodoc_typehints_description_target = "all"
@@ -64,6 +65,10 @@ autoapi_generate_api_docs = True
 autoapi_options = ["members", "private-members", "special-members", "undoc-members",
                    "show-inheritance", "show-inheritance-diagram", "show-module-summary"]
 autoapi_python_class_content = "both"
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", "https://docs.python.org/3/objects.inv"),
+}
 
 viewcode_follow_imported_members = True
 
