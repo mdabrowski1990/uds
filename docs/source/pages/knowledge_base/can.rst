@@ -14,8 +14,8 @@ It is presented in :ref:`UDS OSI Model <knowledge-base-osi-model>`.
 
 CAN Frame
 ---------
-`CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frames that are used
-during DoCAN and therefore UDS communication. CAN data frames consist of many different fields,
+`CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frames that
+are used by DoCAN and therefore UDS communication. CAN data frames consist of many different fields,
 but the key in terms of DoCAN communication are listed below:
 
 - CAN Identifier (CAN ID)
@@ -129,8 +129,8 @@ the last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a se
 Unless specified differently, the default value 0xCC shall be used for the frame padding to minimize the bit stuffing
 insertions and bit alteration on the wire.
 
-.. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8 and
-  optional for frames with DLC=8.
+.. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8,
+  optional for frames with DLC=8 and forbidden for frames with DLC<8.
 
 
 .. _knowledge-base-can-data-optimization:

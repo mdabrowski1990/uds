@@ -43,13 +43,13 @@ Methods:
     uds_message = uds.message.UdsMessage(payload=[0x10, 0x03],
                                          addressing_type=uds.addressing.AddressingType.PHYSICAL)
 
-    # present new message
+    # present created message
     print(uds_message)
 
     # change payload value
     uds_message.payload = (0x62, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF)
 
-    # addressing type attribute reassignment
+    # change addressing type attribute
     uds_message.addressing_type = uds.addressing.AddressingType.FUNCTIONAL
 
     # present updated message

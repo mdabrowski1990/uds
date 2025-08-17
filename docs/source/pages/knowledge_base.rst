@@ -1,8 +1,7 @@
 UDS Knowledge Base
 ==================
 This part of documentation is meant to provide a technical support for every user of
-`UDS package <https://github.com/mdabrowski1990/uds>`_ so you can better understand the code, but also
-UDS protocol itself.
+`UDS package <https://github.com/mdabrowski1990/uds>`_ so you can better understand the UDS protocol itself.
 
 .. toctree::
   :caption: Table of Contents

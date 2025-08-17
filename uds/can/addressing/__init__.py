@@ -1,4 +1,4 @@
-"""UDS addressing implementation for CAN bus."""
+"""Addressing implementation for :ref:`Diagnostics over CAN (ISO 15765) <knowledge-base-docan>`."""
 
 from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 from .addressing_format import CanAddressingFormat

@@ -5,7 +5,7 @@ __all__ = ["TransmissionDirection"]
 from aenum import StrEnum as AStrEnum
 from aenum import unique
 
-from uds.utilities.enums import ValidatedEnum
+from uds.utilities import ValidatedEnum
 
 
 @unique

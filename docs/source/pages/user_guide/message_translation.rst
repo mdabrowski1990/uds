@@ -248,44 +248,26 @@ contains definition and common implementation for Data Records that store data.
 
 Attributes:
 
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.name` - a name of a Data Record object
-  (it is recommended to use unique names for Data Records within one diagnostic service as Data Records are identified
-  by this value)
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.length` - a number of bits that
-  a single occurrence of a Data Record object is stored over
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.children` - Data Record objects that are
-  contained by every occurrence of this Data Record (e.g. DTC Status would contain 8 status bits)
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_occurrences` - a minimal occurrences
-  number of this Data Record object
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_occurrences` - a maximal occurrences
-  number of this Data Record object
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.unit` - a unit which is used to present
-  physical value
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring` - whether this Data Record
-  object might occur more than once
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.fixed_total_length` - whether this Data
-  Record object is always stored over the same number of bits
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_raw_value` - minimal raw value
-  for this Data Record object
-- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_raw_value` - maximal raw value
-  for this Data Record object
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.name`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.length`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.children`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_occurrences`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_occurrences`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.unit`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.fixed_total_length`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_raw_value`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_raw_value`
 
 Methods:
 
 - :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_children_values`
-  - get children raw values for given Data Record's raw value
 - :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_children_occurrence_info`
-  - get for all Data Record's children, their comprehensive occurrence information
 - :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_occurrence_info`
-  - get comprehensive occurrence information for Data Record object
 - :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_physical_values`
-  - get physical values for provided raw values of Data Record's occurrences
 - :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_physical_value`
-  - get physical value for provided Data Record's raw value
 - :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_raw_value`
-  - get raw value for provided Data Record's physical value
 - :meth:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.get_raw_value_from_children`
-  - get raw value for provided Data Record's children values
 
 .. warning:: **A user shall not use**
   :class:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord`
@@ -536,14 +518,11 @@ and common implementation for Data Records with logic for building diagnostic me
 Attributes:
 
 - :attr:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord.default_message_continuation`
-  - default diagnostic message continuation that shall be used as fallback mechanism (when no value is defined)
 
 Methods:
 
 - :meth:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord.validate_message_continuation`
-  - validate structure of diagnostic message continuation
 - :meth:`~uds.translator.data_record.conditional_data_record.AbstractConditionalDataRecord.get_message_continuation`
-  - get diagnostic message continuation for provided raw value of proceeding Data Record
 
 
 Conditional Mapping Data Record

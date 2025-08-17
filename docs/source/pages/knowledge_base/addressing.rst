@@ -80,7 +80,7 @@ where:
 - SF supported - flag informing whether SubFunction in the received request message is supported by the server
 - DataParam supported - information on whether values of data parameters (e.g. DIDs, RIDs, DTCStatusMask)
   in the received request message are supported by the server
-- NRC - Negative Response Code
+- NRC - :ref:`Negative Response Code <knowledge-base-nrc>`
 - ROOR - NRC 0x31 (requestOutOfRange)
 - SNS - NRC 0x11 (serviceNotSupported)
 - SNSIAS - NRC 0x7F (serviceNotSupportedInActiveSession)
@@ -159,6 +159,6 @@ where:
 - SF supported - flag informing whether SubFunction in the received request message is supported by the server
 - DataParam supported - information whether values of data parameters (e.g. DIDs, RIDs, DTCStatusMask) in the received
   request message are supported by the server
-- NRC - Negative Response Code
+- NRC - :ref:`Negative Response Code <knowledge-base-nrc>`
 - XX - NRC code that is supported by the server and suitable to the current situation (e.g. NRC 0x21 busyRepeatRequest
   if server is currently overloaded and cannot process next request message)

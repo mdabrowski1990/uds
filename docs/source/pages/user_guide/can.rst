@@ -45,8 +45,8 @@ Methods:
     # check if there is member defined for the value
     uds.can.CanAddressingFormat.is_member(uds.can.CanAddressingFormat.NORMAL_ADDRESSING)  # True
     uds.can.CanAddressingFormat.validate_member("Extended Addressing")  # uds.can.CanAddressingFormat.EXTENDED_ADDRESSING
-    uds.can.CanAddressingFormat.is_member("Not a CAN Addressing Format")  # False
-    uds.can.CanAddressingFormat.validate_member("Not a CAN Addressing Format")  # raises ValueError
+    uds.can.CanAddressingFormat.is_member("not a CAN Addressing Format")  # False
+    uds.can.CanAddressingFormat.validate_member("not a CAN Addressing Format")  # raises ValueError
 
 
 AbstractCanAddressingInformation

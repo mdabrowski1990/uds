@@ -27,7 +27,7 @@ Methods:
     uds.addressing.AddressingType.is_member(uds.addressing.AddressingType.PHYSICAL)  # True
     uds.addressing.AddressingType.validate_member("Functional")  # uds.addressing.AddressingType.FUNCTIONAL
     uds.addressing.AddressingType.is_member(0)  # False
-    uds.addressing.AddressingType.validate_member("Not )  # False
+    uds.addressing.AddressingType.validate_member("not an addressing type")  # raises ValueError
 
 
 TransmissionDirection
@@ -49,3 +49,5 @@ Methods:
     # check if provided value is TransmissionDirection member
     uds.addressing.TransmissionDirection.is_member(uds.addressing.TransmissionDirection.RECEIVED)  # True
     uds.addressing.TransmissionDirection.validate_member("Tx")  # uds.addressing.TransmissionDirection.TRANSMITTED
+    uds.addressing.TransmissionDirection.is_member("not a direction")  # False
+    uds.addressing.TransmissionDirection.validate_member("not a direction")  # raises ValueError
