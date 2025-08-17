@@ -12,7 +12,7 @@ Translator
 
   Translators are configured upon :class:`~uds.translator.translator.Translator` class object creation.
   All you have to do is provide collection of :class:`~uds.translator.service.service.Service` class objects that
-  contain translation logic for each :ref:`diagnostic service <knowledge-base-diagnostic-service>`.
+  contain translation logic for each :ref:`diagnostic service <knowledge-base-service>`.
 
   **Example code:**
 
@@ -87,7 +87,7 @@ Translator
 Service
 -------
 Each object of :class:`~uds.translator.service.service.Service` class defines a translation logic for one specific
-:ref:`diagnostic service <knowledge-base-diagnostic-service>`.
+:ref:`diagnostic service <knowledge-base-service>`.
 
 
 - Configuration:
