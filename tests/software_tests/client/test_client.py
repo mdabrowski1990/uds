@@ -144,3 +144,9 @@ class TestClient:
     def test_get_response_no_wait(self):
         with pytest.raises(NotImplementedError):
             Client.get_response_no_wait(self.mock_client)
+
+    # clear_response_queue
+
+    def test_clear_response_queue(self):
+        with pytest.raises(NotImplementedError):
+            Client.clear_response_queue(self.mock_client)

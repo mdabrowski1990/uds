@@ -206,3 +206,7 @@ class Client:
         :return: Record with the first response message received or None if no message was received.
         """
         raise NotImplementedError
+
+    def clear_response_queue(self) -> None:
+        """Clear all response messages that are currently stored in the queue."""
+        raise NotImplementedError
