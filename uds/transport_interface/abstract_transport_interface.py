@@ -121,6 +121,7 @@ class AbstractTransportInterface(ABC):
         Receive packet.
 
         :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
 
         :raise TimeoutError: Timeout was reached.
 
@@ -135,6 +136,7 @@ class AbstractTransportInterface(ABC):
         Receive packet asynchronously.
 
         :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :raise TimeoutError: Timeout was reached.
@@ -172,6 +174,7 @@ class AbstractTransportInterface(ABC):
         Receive UDS message.
 
         :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
 
         :raise TimeoutError: Timeout was reached.
 
@@ -186,6 +189,7 @@ class AbstractTransportInterface(ABC):
         Receive asynchronously UDS message.
 
         :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :return: Record with historic information about received UDS message.

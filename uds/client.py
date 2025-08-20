@@ -2,11 +2,12 @@
 
 __all__ = ["Client"]
 
+from typing import Optional, Tuple
 
-from typing import Optional
-
-from uds.utilities import TimeMillisecondsAlias
+from uds.addressing import AddressingType
+from uds.message import UdsMessage, UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
+from uds.utilities import TimeMillisecondsAlias
 
 
 class Client:
@@ -63,7 +64,7 @@ class Client:
         """Set timeout value for P2Client parameter."""
         raise NotImplementedError
 
-    @property
+    @property  # noqa: vulture
     def p2_client_measured(self) -> Optional[TimeMillisecondsAlias]:
         """Get last measured value of P2Client parameter."""
         raise NotImplementedError
@@ -78,7 +79,7 @@ class Client:
         """Set timeout value for P6Client parameter."""
         raise NotImplementedError
 
-    @property
+    @property  # noqa: vulture
     def p6_client_measured(self) -> Optional[TimeMillisecondsAlias]:
         """Get last measured value of P6Client parameter."""
         raise NotImplementedError
@@ -93,7 +94,7 @@ class Client:
         """Set timeout value for P2*Client parameter."""
         raise NotImplementedError
 
-    @property
+    @property  # noqa: vulture
     def p2_ext_client_measured(self) -> Optional[TimeMillisecondsAlias]:
         """Get last measured value of P2*Client parameter."""
         raise NotImplementedError
@@ -108,7 +109,7 @@ class Client:
         """Set timeout value for P6*Client parameter."""
         raise NotImplementedError
 
-    @property
+    @property  # noqa: vulture
     def p6_ext_client_measured(self) -> Optional[TimeMillisecondsAlias]:
         """Get last measured value of P6*Client parameter."""
         raise NotImplementedError
@@ -141,10 +142,65 @@ class Client:
     @s3_client.setter
     def s3_client(self, value: TimeMillisecondsAlias) -> None:
         """Set value of S3Client parameter."""
+        raise NotImplementedError
 
-    def start_tester_present(self, addressing_type: , sprmib: bool = True) -> None:
+    def start_tester_present(self,
+                             addressing_type: AddressingType = AddressingType.FUNCTIONAL,
+                             sprmib: bool = True) -> None:  # noqa: vulture
         """
         Start sending Tester Precent cyclically.
 
-        :return:
+        :param addressing_type: Addressing Type to use for cyclical messages.
+        :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
         """
+        raise NotImplementedError
+
+    def stop_tester_present(self) -> None:
+        """Stop sending Tester Precent cyclically."""
+        raise NotImplementedError
+
+    def send_request_receive_responses(self,
+                                       request: UdsMessage  # noqa: vulture
+                                       ) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
+        """
+        Send diagnostic request and receive all responses (till the final one).
+
+        :param request: Request message to send.
+
+        :return: Tuple with two elements:
+
+            - record of diagnostic request message that was sent
+            - tuple with diagnostic response messages that were received in the response
+        """
+        raise NotImplementedError
+
+    def get_response(self, timeout: Optional[TimeMillisecondsAlias] = None) -> Optional[UdsMessageRecord]:
+        """
+        Wait for the first received response message.
+
+        .. note:: This method can be used for fetching responses messages that were not direct responses to
+            request messages sent via :meth:`~uds.client.Client.send_request_receive_responses`.
+
+            This includes responses to cyclically sent Tester Present.
+            Typically used for fetching following :ref:`Response on Event (RSID 0xC6) <ResponseOnEvent>` responses.
+
+        :param timeout: Maximal time to wait for a response message.
+            Leave None to wait forever.
+
+        :return: Record with the first response message received or None if no message was received.
+        """
+        raise NotImplementedError
+
+    def get_response_no_wait(self) -> Optional[UdsMessageRecord]:
+        """
+        Get the first received response message, but do not wait for its arrival.
+
+        .. note:: This method can be used for fetching responses messages that were not direct responses to
+            request messages sent via :meth:`~uds.client.Client.send_request_receive_responses`.
+
+            This includes responses to cyclically sent Tester Present.
+            Typically used for fetching following :ref:`Response on Event (RSID 0xC6) <ResponseOnEvent>` responses.
+
+        :return: Record with the first response message received or None if no message was received.
+        """
+        raise NotImplementedError
