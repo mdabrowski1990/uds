@@ -273,6 +273,8 @@ ControlDTCSetting
 ControlDTCSetting service allows the client to stop or resume the updating of DTC status bits in the server(s) memory.
 
 
+.. _knowledge-base-service-response-on-event:
+
 ResponseOnEvent
 ---------------
 ResponseOnEvent service allows the client to request from the server to start or stop transmission of responses on

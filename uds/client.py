@@ -182,7 +182,8 @@ class Client:
             request messages sent via :meth:`~uds.client.Client.send_request_receive_responses`.
 
             This includes responses to cyclically sent Tester Present.
-            Typically used for fetching following :ref:`Response on Event (RSID 0xC6) <ResponseOnEvent>` responses.
+            Typically used for fetching following
+            :ref:`Response on Event (RSID 0xC6) <knowledge-base-service-response-on-event>` responses.
 
         :param timeout: Maximal time to wait for a response message.
             Leave None to wait forever.
@@ -199,7 +200,8 @@ class Client:
             request messages sent via :meth:`~uds.client.Client.send_request_receive_responses`.
 
             This includes responses to cyclically sent Tester Present.
-            Typically used for fetching following :ref:`Response on Event (RSID 0xC6) <ResponseOnEvent>` responses.
+            Typically used for fetching following
+            :ref:`Response on Event (RSID 0xC6) <knowledge-base-service-response-on-event>` responses.
 
         :return: Record with the first response message received or None if no message was received.
         """
