@@ -20,6 +20,7 @@ The package is created with an idea to support any communication bus:
 __all__ = [
     "addressing",
     "can",
+    "client",
     "translator",
     "message",
     "packet",

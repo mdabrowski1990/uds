@@ -7,6 +7,7 @@ __license__: str
 
 import uds.addressing as addressing
 import uds.can as can
+import uds.client as client
 import uds.message as message
 import uds.packet as packet
 import uds.segmentation as segmentation
