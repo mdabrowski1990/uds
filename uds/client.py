@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 from uds.addressing import AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias
+from uds.utilities import TimeMillisecondsAlias, ReassignmentError
 
 
 class Client:
@@ -47,37 +47,86 @@ class Client:
         :param p3_client_functional: Value of P3Client_func time parameter.
         :param s3_client: Value of S3Client time parameter.
         """
-        raise NotImplementedError
+        self.transport_interface = transport_interface
+        self.p2_client_timeout = p2_client_timeout
+        self.p6_client_timeout = p6_client_timeout
+        self.p2_ext_client_timeout = p2_ext_client_timeout
+        self.p6_ext_client_timeout = p6_ext_client_timeout
+        self.p3_client_physical = p3_client_physical
+        self.p3_client_functional = p3_client_functional
+        self.s3_client = s3_client
+        self.__p2_client_measured = None
+        self.__p6_client_measured = None
+        self.__p2_ext_client_measured = None
+        self.__p6_ext_client_measured = None
 
     @property
     def transport_interface(self) -> AbstractTransportInterface:
         """Get Transport Interface used."""
-        raise NotImplementedError
+        return self.__transport_interface
+
+    @transport_interface.setter
+    def transport_interface(self, value: AbstractTransportInterface) -> None:
+        """
+        Set Transport Interface for UDS communication.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not an instance of AbstractTransportInterface class.
+        :raise ReassignmentError: An attempt to change the value after object creation.
+        """
+        if not isinstance(value, AbstractTransportInterface):
+            raise TypeError("Provided value is not an instance of AbstractTransportInterface class.")
+        if hasattr(self, "_Client__transport_interface"):
+            raise ReassignmentError("You cannot change value of 'transport_interface' attribute once it is assigned.")
+        self.__transport_interface = value
 
     @property
     def p2_client_timeout(self) -> TimeMillisecondsAlias:
         """Get timeout value for P2Client parameter."""
-        raise NotImplementedError
+        return self.__p2_client_timeout
 
     @p2_client_timeout.setter
     def p2_client_timeout(self, value: TimeMillisecondsAlias) -> None:
-        """Set timeout value for P2Client parameter."""
-        raise NotImplementedError
+        """
+        Set timeout value for P2Client parameter.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided time value must be a positive number.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided time parameter value must be greater than 0.")
+        self.__p2_client_timeout = value
 
     @property  # noqa: vulture
     def p2_client_measured(self) -> Optional[TimeMillisecondsAlias]:
         """Get last measured value of P2Client parameter."""
-        raise NotImplementedError
+        return self.__p2_client_measured
 
     @property
     def p6_client_timeout(self) -> TimeMillisecondsAlias:
         """Get timeout value for P6Client parameter."""
-        raise NotImplementedError
+        return self.__p6_client_timeout
 
     @p6_client_timeout.setter
     def p6_client_timeout(self, value: TimeMillisecondsAlias) -> None:
-        """Set timeout value for P6Client parameter."""
-        raise NotImplementedError
+        """
+        Set timeout value for P6Client parameter.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided time value must be a positive number.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided time parameter value must be greater than 0.")
+        self.__p6_client_timeout = value
 
     @property  # noqa: vulture
     def p6_client_measured(self) -> Optional[TimeMillisecondsAlias]:
