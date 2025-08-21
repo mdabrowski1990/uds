@@ -68,6 +68,6 @@ def int_to_bytes(int_value: int,
     bytes_number = max(1, (int_value.bit_length() + 7) // 8)
     size = size or bytes_number
     if size < bytes_number:
-        raise InconsistencyError("Provided value of `size` is too small to contain all bytes of int_value."
-                                         f"Actual values: int_value={int_value}, size={size}")
+        raise InconsistencyError("Provided value of `size` is too small to contain all bytes of int_value. "
+                                 f"Actual values: int_value={int_value}, size={size}")
     return int_value.to_bytes(length=size, byteorder=endianness.value)

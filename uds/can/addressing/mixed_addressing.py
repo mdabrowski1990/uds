@@ -8,13 +8,7 @@ from uds.addressing import AddressingType
 from uds.can.addressing.abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 from uds.can.addressing.addressing_format import CanAddressingFormat
 from uds.can.frame import CanIdHandler
-from uds.utilities import (
-    InconsistencyError,
-    RawBytesAlias,
-    UnusedArgumentError,
-    validate_raw_byte,
-    validate_raw_bytes,
-)
+from uds.utilities import InconsistencyError, RawBytesAlias, UnusedArgumentError, validate_raw_byte, validate_raw_bytes
 
 
 class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):

@@ -8,13 +8,7 @@ __all__ = ["CONSECUTIVE_FRAME_N_PCI", "SN_BYTES_USED",
 
 from typing import Optional
 
-from uds.utilities import (
-    InconsistencyError,
-    RawBytesAlias,
-    validate_nibble,
-    validate_raw_byte,
-    validate_raw_bytes,
-)
+from uds.utilities import InconsistencyError, RawBytesAlias, validate_nibble, validate_raw_byte, validate_raw_bytes
 
 from ..addressing import CanAddressingFormat, CanAddressingInformation
 from ..frame import DEFAULT_FILLER_BYTE, CanDlcHandler

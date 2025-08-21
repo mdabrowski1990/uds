@@ -65,16 +65,12 @@ class AbstractAddressingInformation(ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_AbstractAddressingInformation__rx_physical_params")
-        except AttributeError:
-            params = dict(addressing_params)
-            params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
-            self.__rx_physical_params: MappingProxyType[str, Any]\
-                = MappingProxyType(self.validate_addressing_params(**params))
-        else:
-            raise ReassignmentError("You cannot change value of 'rx_physical_params' attribute once it is assigned. "
-                                    "Create a new object instead.")
+        if hasattr(self, "_AbstractAddressingInformation__rx_physical_params"):
+            raise ReassignmentError("Value of 'rx_physical_params' attribute cannot be changed once assigned.")
+        params = dict(addressing_params)
+        params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
+        self.__rx_physical_params: MappingProxyType[str, Any] \
+            = MappingProxyType(self.validate_addressing_params(**params))
 
     @property
     def tx_physical_params(self) -> Mapping[str, Any]:
@@ -90,16 +86,12 @@ class AbstractAddressingInformation(ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_AbstractAddressingInformation__tx_physical_params")
-        except AttributeError:
-            params = dict(addressing_params)
-            params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
-            self.__tx_physical_params: MappingProxyType[str, Any]\
-                = MappingProxyType(self.validate_addressing_params(**params))
-        else:
-            raise ReassignmentError("You cannot change value of 'tx_physical_params' attribute once it is assigned. "
-                                    "Create a new object instead.")
+        if hasattr(self, "_AbstractAddressingInformation__tx_physical_params"):
+            raise ReassignmentError("Value of 'tx_physical_params' attribute cannot be changed once assigned.")
+        params = dict(addressing_params)
+        params[self.ADDRESSING_TYPE_NAME] = AddressingType.PHYSICAL
+        self.__tx_physical_params: MappingProxyType[str, Any] \
+            = MappingProxyType(self.validate_addressing_params(**params))
 
     @property
     def rx_functional_params(self) -> Mapping[str, Any]:
@@ -115,16 +107,12 @@ class AbstractAddressingInformation(ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_AbstractAddressingInformation__rx_functional_params")
-        except AttributeError:
-            params = dict(addressing_params)
-            params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
-            self.__rx_functional_params: MappingProxyType[str, Any]\
-                = MappingProxyType(self.validate_addressing_params(**params))
-        else:
-            raise ReassignmentError("You cannot change value of 'rx_functional_params' attribute once it is assigned. "
-                                    "Create a new object instead.")
+        if hasattr(self, "_AbstractAddressingInformation__rx_functional_params"):
+            raise ReassignmentError("Value of 'rx_functional_params' attribute cannot be changed once assigned.")
+        params = dict(addressing_params)
+        params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
+        self.__rx_functional_params: MappingProxyType[str, Any] \
+            = MappingProxyType(self.validate_addressing_params(**params))
 
     @property
     def tx_functional_params(self) -> Mapping[str, Any]:
@@ -140,16 +128,12 @@ class AbstractAddressingInformation(ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_AbstractAddressingInformation__tx_functional_params")
-        except AttributeError:
-            params = dict(addressing_params)
-            params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
-            self.__tx_functional_params: MappingProxyType[str, Any] \
-                = MappingProxyType(self.validate_addressing_params(**params))
-        else:
-            raise ReassignmentError("You cannot change value of 'tx_functional_params' attribute once it is assigned. "
-                                    "Create a new object instead.")
+        if hasattr(self, "_AbstractAddressingInformation__tx_functional_params"):
+            raise ReassignmentError("Value of 'tx_functional_params' attribute cannot be changed once assigned.")
+        params = dict(addressing_params)
+        params[self.ADDRESSING_TYPE_NAME] = AddressingType.FUNCTIONAL
+        self.__tx_functional_params: MappingProxyType[str, Any] \
+            = MappingProxyType(self.validate_addressing_params(**params))
 
     @abstractmethod
     def _validate_addressing_information(self) -> None:

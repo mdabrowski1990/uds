@@ -125,13 +125,9 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        try:
-            getattr(self, "_CanPacket__addressing_format")
-        except AttributeError:
-            self.__addressing_format = CanAddressingFormat.validate_member(value)
-        else:
-            raise ReassignmentError("You cannot change value of 'addressing_format' attribute once it is assigned. "
-                                    "Create a new object instead.")
+        if hasattr(self, "_CanPacket__addressing_format"):
+            raise ReassignmentError("Value of 'addressing_format' attribute cannot be changed once assigned.")
+        self.__addressing_format = CanAddressingFormat.validate_member(value)
 
     @property
     def addressing_type(self) -> AddressingType:

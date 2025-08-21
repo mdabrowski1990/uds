@@ -109,17 +109,17 @@ class TestCanPacketRecord:
         assert (CanPacketRecord.addressing_format.fget(self.mock_can_packet_record)
                 == self.mock_can_packet_record._CanPacketRecord__addressing_format)
 
-    @pytest.mark.parametrize("value", [Mock(), CanAddressingFormat.NORMAL_ADDRESSING])
-    def test_addressing_format__set(self, value):
-        assert CanPacketRecord.addressing_format.fset(self.mock_can_packet_record, value) is None
-        assert (self.mock_can_packet_record._CanPacketRecord__addressing_format
-                == self.mock_can_addressing_format.validate_member.return_value)
-        self.mock_can_addressing_format.validate_member.assert_called_once_with(value)
-
     def test_addressing_format__set__reassignment_error(self):
         self.mock_can_packet_record._CanPacketRecord__addressing_format = Mock()
         with pytest.raises(ReassignmentError):
             CanPacketRecord.addressing_format.fset(self.mock_can_packet_record, Mock())
+
+    @pytest.mark.parametrize("value", [Mock(), CanAddressingFormat.NORMAL_ADDRESSING])
+    def test_addressing_format__set__valid(self, value):
+        assert CanPacketRecord.addressing_format.fset(self.mock_can_packet_record, value) is None
+        assert (self.mock_can_packet_record._CanPacketRecord__addressing_format
+                == self.mock_can_addressing_format.validate_member.return_value)
+        self.mock_can_addressing_format.validate_member.assert_called_once_with(value)
 
     # addressing_type
 
@@ -128,19 +128,17 @@ class TestCanPacketRecord:
         assert (CanPacketRecord.addressing_type.fget(self.mock_can_packet_record)
                 == self.mock_can_packet_record._CanPacketRecord__addressing_type)
 
-
-    @pytest.mark.parametrize("value", [Mock(), CanAddressingFormat.NORMAL_ADDRESSING])
-    def test_addressing_type__set(self, value):
-        assert CanPacketRecord.addressing_type.fset(self.mock_can_packet_record, value) is None
-        assert (self.mock_can_packet_record._CanPacketRecord__addressing_type
-                == self.mock_addressing_type.validate_member.return_value)
-        self.mock_addressing_type.validate_member.assert_called_once_with(value)
-
-
     def test_addressing_type__set__reassignment_error(self):
         self.mock_can_packet_record._CanPacketRecord__addressing_type = Mock()
         with pytest.raises(ReassignmentError):
             CanPacketRecord.addressing_type.fset(self.mock_can_packet_record, Mock())
+
+    @pytest.mark.parametrize("value", [Mock(), CanAddressingFormat.NORMAL_ADDRESSING])
+    def test_addressing_type__set__valid(self, value):
+        assert CanPacketRecord.addressing_type.fset(self.mock_can_packet_record, value) is None
+        assert (self.mock_can_packet_record._CanPacketRecord__addressing_type
+                == self.mock_addressing_type.validate_member.return_value)
+        self.mock_addressing_type.validate_member.assert_called_once_with(value)
 
     # _validate_frame
 

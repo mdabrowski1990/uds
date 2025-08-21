@@ -100,11 +100,10 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        if not hasattr(self, "_AbstractPacketRecord__frame"):
-            self._validate_frame(value)
-            self.__frame = value
-        else:
-            raise ReassignmentError("You cannot change value of 'frame' attribute once it is assigned.")
+        if hasattr(self, "_AbstractPacketRecord__frame"):
+            raise ReassignmentError("Value of 'frame' attribute cannot be changed once assigned.")
+        self._validate_frame(value)
+        self.__frame = value
 
     @property
     def direction(self) -> TransmissionDirection:
@@ -120,10 +119,9 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        if not hasattr(self, "_AbstractPacketRecord__direction"):
-            self.__direction = TransmissionDirection.validate_member(value)
-        else:
-            raise ReassignmentError("You cannot change value of 'direction' attribute once it is assigned.")
+        if hasattr(self, "_AbstractPacketRecord__direction"):
+            raise ReassignmentError("Value of 'direction' attribute cannot be changed once assigned.")
+        self.__direction = TransmissionDirection.validate_member(value)
 
     @property
     def transmission_time(self) -> datetime:
@@ -142,10 +140,9 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         """
         if not isinstance(value, datetime):
             raise TypeError("Provided value is not datetime type")
-        if not hasattr(self, "_AbstractPacketRecord__transmission_time"):
-            self.__transmission_time = value
-        else:
-            raise ReassignmentError("You cannot change value of 'transmission_time' attribute once it is assigned.")
+        if hasattr(self, "_AbstractPacketRecord__transmission_time"):
+            raise ReassignmentError("Value of 'transmission_time' attribute cannot be changed once assigned.")
+        self.__transmission_time = value
 
     @staticmethod
     @abstractmethod
