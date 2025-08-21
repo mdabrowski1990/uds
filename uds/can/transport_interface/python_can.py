@@ -534,6 +534,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         .. warning:: Must not be called within an asynchronous function.
 
         :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
 
         :raise TypeError: Provided timeout value is not None neither int nor float type.
         :raise ValueError: Provided timeout value is less or equal 0.
@@ -575,6 +576,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         Receive asynchronously CAN packet.
 
         :param timeout: Maximal time (in milliseconds) to wait.
+            Leave None to wait forever.
         :param loop: An asyncio event loop used for observing messages.
 
         :raise TypeError: Provided timeout value is not None neither int nor float type.
@@ -701,6 +703,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
             This means that receiving might last longer if First Frame was received within provided time.
+            Leave None to wait forever.
 
         :raise TypeError: Provided timeout value is not None neither int nor float type.
         :raise ValueError: Provided timeout value is less or equal 0.
@@ -737,6 +740,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
             This means that receiving might last longer if First Frame was received within provided time.
+            Leave None to wait forever.
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :raise TypeError: Provided timeout value is not None neither int nor float type.
