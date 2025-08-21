@@ -4,6 +4,9 @@ from mock import Mock
 from uds.client import Client
 
 
+SCRIPT_LOCATION = "uds.client"
+
+
 class TestClient:
 
     def setup_method(self):
@@ -11,9 +14,51 @@ class TestClient:
 
     # __init__
 
-    def test_init(self):
-        with pytest.raises(NotImplementedError):
-            Client.__init__(self.mock_client, Mock())
+    @pytest.mark.parametrize("transport_interface", [Mock(), "Some transport interface"])
+    def test_init__mandatory_args(self, transport_interface):
+        assert Client.__init__(self.mock_client,
+                               transport_interface=transport_interface) is None
+        assert self.mock_client.transport_interface == transport_interface
+        assert self.mock_client.p2_client_timeout == Client.DEFAULT_P2_CLIENT_TIMEOUT
+        assert self.mock_client.p2_ext_client_timeout == Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT
+        assert self.mock_client.p6_client_timeout == Client.DEFAULT_P6_CLIENT_TIMEOUT
+        assert self.mock_client.p6_ext_client_timeout == Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT
+        assert self.mock_client.p3_client_physical == Client.DEFAULT_P3_CLIENT
+        assert self.mock_client.p3_client_functional == Client.DEFAULT_P3_CLIENT
+        assert self.mock_client.s3_client == Client.DEFAULT_S3_CLIENT
+        assert self.mock_client._Client__p2_client_measured is None
+        assert self.mock_client._Client__p2_ext_client_measured is None
+        assert self.mock_client._Client__p6_client_measured is None
+        assert self.mock_client._Client__p6_ext_client_measured is None
+
+    @pytest.mark.parametrize("transport_interface, p2_client_timeout, p2_ext_client_timeout, p6_client_timeout, "
+                             "p6_ext_client_timeout, p3_client_physical, p3_client_functional, s3_client", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+        ("TI", "P2Client", "P2*Client", "P6Client", "P6*Client", "P3Client_phys", "P3Client_func", "S3Client"),
+    ])
+    def test_init__all_args(self, transport_interface, p2_client_timeout, p2_ext_client_timeout, p6_client_timeout,
+                            p6_ext_client_timeout, p3_client_physical, p3_client_functional, s3_client):
+        assert Client.__init__(self.mock_client,
+                               transport_interface=transport_interface,
+                               p2_client_timeout=p2_client_timeout,
+                               p2_ext_client_timeout=p2_ext_client_timeout,
+                               p6_client_timeout=p6_client_timeout,
+                               p6_ext_client_timeout=p6_ext_client_timeout,
+                               p3_client_physical=p3_client_physical,
+                               p3_client_functional=p3_client_functional,
+                               s3_client=s3_client) is None
+        assert self.mock_client.transport_interface == transport_interface
+        assert self.mock_client.p2_client_timeout == p2_client_timeout
+        assert self.mock_client.p2_ext_client_timeout == p2_ext_client_timeout
+        assert self.mock_client.p6_client_timeout == p6_client_timeout
+        assert self.mock_client.p6_ext_client_timeout == p6_ext_client_timeout
+        assert self.mock_client.p3_client_physical == p3_client_physical
+        assert self.mock_client.p3_client_functional == p3_client_functional
+        assert self.mock_client.s3_client == s3_client
+        assert self.mock_client._Client__p2_client_measured is None
+        assert self.mock_client._Client__p2_ext_client_measured is None
+        assert self.mock_client._Client__p6_client_measured is None
+        assert self.mock_client._Client__p6_ext_client_measured is None
 
     # transport_interface
 
