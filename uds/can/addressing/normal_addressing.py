@@ -7,7 +7,7 @@ from typing import Optional
 from uds.addressing import AddressingType
 from uds.can.addressing.addressing_format import CanAddressingFormat
 from uds.can.frame import CanIdHandler
-from uds.utilities import InconsistentArgumentsError, RawBytesAlias, UnusedArgumentError, validate_raw_byte
+from uds.utilities import InconsistencyError, RawBytesAlias, UnusedArgumentError, validate_raw_byte
 
 from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
 
@@ -25,7 +25,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
         """
         Validate Addressing Information parameters.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        :raise InconsistencyError: Provided values are not consistent with each other.
         """
         rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
         tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
@@ -33,7 +33,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
                 or self.tx_physical_params["can_id"] in rx_can_ids
                 or self.rx_functional_params["can_id"] in tx_can_ids
                 or self.tx_functional_params["can_id"] in rx_can_ids):
-            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
+            raise InconsistencyError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
     def validate_addressing_params(cls,  # type: ignore
@@ -55,7 +55,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
 
         :raise ValueError: Provided Addressing format cannot be handled by this class.
         :raise UnusedArgumentError: At least one provided parameter is not supported by this Addressing format.
-        :raise InconsistentArgumentsError: Provided CAN ID value is incompatible with Normal Addressing format.
+        :raise InconsistencyError: Provided CAN ID value is incompatible with Normal Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
         """
@@ -66,7 +66,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
                                       "not supported by Normal Addressing format and must be equal None.")
         addressing_type = AddressingType.validate_member(addressing_type)
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
-            raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with "
+            raise InconsistencyError("Provided value of CAN ID is incompatible with "
                                              "Normal Addressing format.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
@@ -143,15 +143,15 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         """
         Validate Addressing Information parameters.
 
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other.
+        :raise InconsistencyError: Provided values are not consistent with each other.
         """
         if (self.rx_physical_params["target_address"] != self.tx_physical_params["source_address"]
                 or self.rx_physical_params["source_address"] != self.tx_physical_params["target_address"]):
-            raise InconsistentArgumentsError("Target Address and Source Address for incoming physically addressed "
+            raise InconsistencyError("Target Address and Source Address for incoming physically addressed "
                                              "CAN packets must equal Source Address and Target Address for outgoing "
                                              "physically addressed CAN packets.")
         if self.rx_functional_params["can_id"] == self.tx_functional_params["can_id"]:
-            raise InconsistentArgumentsError("CAN ID used for transmission cannot be used for receiving too.")
+            raise InconsistencyError("CAN ID used for transmission cannot be used for receiving too.")
 
     @classmethod
     def validate_addressing_params(cls,  # type: ignore
@@ -173,7 +173,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
 
         :raise ValueError: Provided Addressing format cannot be handled by this class.
         :raise UnusedArgumentError: At least one provided parameter is not supported by this Addressing format.
-        :raise InconsistentArgumentsError: Provided Target Address, Source Address or CAN ID values are incompatible
+        :raise InconsistencyError: Provided Target Address, Source Address or CAN ID values are incompatible
             with each other or Normal Fixed Addressing format.
 
         :return: Normalized dictionary with the provided Addressing Information.
@@ -186,7 +186,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         addressing_type = AddressingType.validate_member(addressing_type)
         if can_id is None:
             if None in (target_address, source_address):
-                raise InconsistentArgumentsError("Values of target_address and source_address must be provided, "
+                raise InconsistencyError("Values of target_address and source_address must be provided, "
                                                  "for Normal Fixed Addressing format if can_id value is None.")
             validate_raw_byte(target_address)  # type: ignore
             validate_raw_byte(source_address)  # type: ignore
@@ -201,11 +201,11 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                                        address_extension=address_extension)
         decoded_info = cls.decode_can_id_ai_params(can_id)
         if addressing_type != decoded_info["addressing_type"]:
-            raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Addressing Type.")
+            raise InconsistencyError("Provided value of CAN ID is incompatible with Addressing Type.")
         if target_address not in {decoded_info["target_address"], None}:
-            raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Target Address.")
+            raise InconsistencyError("Provided value of CAN ID is incompatible with Target Address.")
         if source_address not in {decoded_info["source_address"], None}:
-            raise InconsistentArgumentsError("Provided value of CAN ID is incompatible with Source Address.")
+            raise InconsistencyError("Provided value of CAN ID is incompatible with Source Address.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,

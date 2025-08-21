@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from typing import List, Mapping, Optional, Sequence, Tuple, TypedDict, Union
 
-from uds.utilities import InconsistentArgumentsError, ReassignmentError
+from uds.utilities import InconsistencyError, ReassignmentError
 
 SinglePhysicalValueAlias = Union[int, float, str]
 """
@@ -200,7 +200,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not a sequence.
         :raise ValueError: At least one of the provided elements in the sequence is not a Data Record or is reoccurring.
-        :raise InconsistentArgumentsError: Provided sequence of Data Records cannot be children for this Data Record.
+        :raise InconsistencyError: Provided sequence of Data Records cannot be children for this Data Record.
         """
         if not isinstance(value, Sequence):
             raise TypeError("Provided value is not a sequence.")
@@ -214,9 +214,9 @@ class AbstractDataRecord(ABC):
             children_length += child.length
             children_names.add(child.name)
         if children_length not in {self.length, 0}:
-            raise InconsistentArgumentsError("Total children length does not match the length of this Data Record.")
+            raise InconsistencyError("Total children length does not match the length of this Data Record.")
         if len(children_names) != len(value):
-            raise InconsistentArgumentsError("Each child has to have unique name.")
+            raise InconsistencyError("Each child has to have unique name.")
         self.__children = tuple(value)
 
     @property

@@ -15,7 +15,7 @@ from uds.translator.data_record.conditional_data_record import (
     Mapping,
     Sequence,
 )
-from uds.utilities import InconsistentArgumentsError
+from uds.utilities import InconsistencyError
 
 SCRIPT_LOCATION = "uds.translator.data_record.conditional_data_record"
 
@@ -106,7 +106,7 @@ class TestAbstractConditionalDataRecord:
          Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=14, fixed_total_length=False)),
     ])
     def test_validate_message_continuation__inconsistent__total_length(self, value):
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
 
     @pytest.mark.parametrize("value", [
@@ -120,7 +120,7 @@ class TestAbstractConditionalDataRecord:
     def test_validate_message_continuation__inconsistent__same_names(self, value):
         for dr in value:
             dr.name = "Common"
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             AbstractConditionalDataRecord.validate_message_continuation(value)
 
     @pytest.mark.parametrize("value", [

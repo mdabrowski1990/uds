@@ -9,7 +9,7 @@ from operator import getitem
 from types import MappingProxyType
 from typing import Callable, Mapping, Optional, Sequence, Union
 
-from uds.utilities import InconsistentArgumentsError
+from uds.utilities import InconsistencyError
 
 from .abstract_data_record import AbstractDataRecord
 from .raw_data_record import RawDataRecord
@@ -94,7 +94,7 @@ class AbstractConditionalDataRecord(ABC):
 
         :raise TypeError: Provided value is not a sequence.
         :raise ValueError: Provided sequence does not contain Data Records, or they are incorrectly ordered.
-        :raise InconsistentArgumentsError: Contained Data Records cannot be used together.
+        :raise InconsistencyError: Contained Data Records cannot be used together.
         """
         if not isinstance(value, Sequence):
             raise TypeError("Provided value is not a sequence")
@@ -104,7 +104,7 @@ class AbstractConditionalDataRecord(ABC):
         for i, data_record in enumerate(value):
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.name in names:
-                    raise InconsistentArgumentsError("Data Records within one message have to have unique names. "
+                    raise InconsistencyError("Data Records within one message have to have unique names. "
                                                      f"Multiple `{data_record.name}` found.")
                 names.add(data_record.name)
                 if not data_record.fixed_total_length:
@@ -122,7 +122,7 @@ class AbstractConditionalDataRecord(ABC):
             else:
                 raise ValueError("Provided sequence contains an element which is not a Data Record.")
         if min_total_length % 8 != 0 or max_total_length % 8:
-            raise InconsistentArgumentsError("Total length of diagnostic message continuation must always be divisible "
+            raise InconsistencyError("Total length of diagnostic message continuation must always be divisible "
                                              "by 8.")
 
     def get_message_continuation(self, raw_value: int) -> AliasMessageStructure:

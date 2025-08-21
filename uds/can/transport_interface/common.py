@@ -95,7 +95,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :param value: Value to set.
 
-        :raise TypeError: Provided value is not time in milliseconds.
+:raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided value is out of range.
         """
         if not isinstance(value, (int, float)):
@@ -113,7 +113,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :param value: Value to set.
 
-        :raise TypeError: Provided value is not time in milliseconds.
+        :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided value is out of range.
         """
         if not isinstance(value, (int, float)):

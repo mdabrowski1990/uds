@@ -7,7 +7,7 @@ from uds.can.packet.consecutive_frame import (
     SN_BYTES_USED,
     CanAddressingFormat,
     CanDlcHandler,
-    InconsistentArgumentsError,
+    InconsistencyError,
     create_consecutive_frame_data,
     encode_sequence_number,
     extract_consecutive_frame_payload,
@@ -92,7 +92,7 @@ class TestCanConsecutiveFrame:
         mock_is_consecutive_frame.return_value = True
         mock_get_consecutive_frame_min_dlc.return_value = min_dlc
         self.mock_can_dlc_handler.encode_dlc.return_value = decoded_dlc
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             validate_consecutive_frame_data(addressing_format=addressing_format,
                                             raw_frame_data=raw_frame_data)
         mock_is_consecutive_frame.assert_called_once_with(addressing_format=addressing_format,
@@ -201,7 +201,7 @@ class TestCanConsecutiveFrame:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         mock_encode_sequence_number.return_value = sn_bytes
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             create_consecutive_frame_data(addressing_format=addressing_format,
                                           payload=payload,
                                           sequence_number=sequence_number,
@@ -296,7 +296,7 @@ class TestCanConsecutiveFrame:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         mock_encode_sequence_number.return_value = sn_bytes
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             generate_consecutive_frame_data(addressing_format=addressing_format,
                                             payload=payload,
                                             sequence_number=sequence_number,
@@ -376,7 +376,7 @@ class TestCanConsecutiveFrame:
                                                                   ai_data_bytes_number, data_bytes_number):
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_data_bytes_number
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             get_consecutive_frame_max_payload_size(addressing_format=addressing_format, dlc=dlc)
         self.mock_can_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         self.mock_can_addressing_information.get_ai_data_bytes_number.assert_called_once_with(addressing_format)

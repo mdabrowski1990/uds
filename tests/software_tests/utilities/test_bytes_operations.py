@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 
 from uds.utilities import ValidatedEnum
-from uds.utilities.bytes_operations import Endianness, InconsistentArgumentsError, bytes_to_int, int_to_bytes
+from uds.utilities.bytes_operations import Endianness, InconsistencyError, bytes_to_int, int_to_bytes
 
 SCRIPT_LOCATION = "uds.utilities.bytes_operations"
 
@@ -74,7 +74,7 @@ class TestFunctions:
         (Endianness.LITTLE_ENDIAN, 0x1F32547698, 2),
     ])
     def test_int_to_bytes__size_too_small(self, int_value, endianness, size):
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             int_to_bytes(int_value=int_value, endianness=endianness, size=size)
 
     @pytest.mark.parametrize("expected_output, endianness, int_value", [

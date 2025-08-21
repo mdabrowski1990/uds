@@ -5,7 +5,7 @@ from uds.can.addressing.extended_addressing import (
     AddressingType,
     CanAddressingFormat,
     ExtendedCanAddressingInformation,
-    InconsistentArgumentsError,
+    InconsistencyError,
     UnusedArgumentError,
 )
 
@@ -65,7 +65,7 @@ class TestExtendedCanAddressingInformation:
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
         self.mock_addressing_information.tx_functional_params = tx_functional_params
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             ExtendedCanAddressingInformation._validate_addressing_information(self.mock_addressing_information)
 
     @pytest.mark.parametrize("rx_physical_params, tx_physical_params, rx_functional_params, tx_functional_params", [
@@ -134,7 +134,7 @@ class TestExtendedCanAddressingInformation:
     @patch(f"{SCRIPT_LOCATION}.ExtendedCanAddressingInformation.is_compatible_can_id")
     def test_validate_addressing_params__inconsistent(self, mock_is_compatible_can_id, addressing_type, can_id):
         mock_is_compatible_can_id.return_value = False
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             ExtendedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
                                                                         can_id=can_id)
         mock_is_compatible_can_id.assert_called_once_with(can_id=can_id,

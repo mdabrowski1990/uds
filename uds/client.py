@@ -7,7 +7,7 @@ from typing import Optional, Tuple
 from uds.addressing import AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import TimeMillisecondsAlias, ReassignmentError, InconsistentArgumentsError
+from uds.utilities import TimeMillisecondsAlias, ReassignmentError, InconsistencyError
 
 
 class Client:
@@ -147,14 +147,14 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistentArgumentsError: P6Client timeout value must be greater or equal than P2Client.
+        :raise InconsistencyError: P6Client timeout value must be greater or equal than P2Client.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         if value < self.p2_client_timeout:
-            raise InconsistentArgumentsError("P6Client timeout value must be greater or equal than P2Client timeout.")
+            raise InconsistencyError("P6Client timeout value must be greater or equal than P2Client timeout.")
         self.__p6_client_timeout = value
 
     @property  # noqa: vulture
@@ -176,7 +176,7 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistentArgumentsError: P6*Client timeout value must be greater or equal than P2Client, P2*Client
+        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P2Client, P2*Client
             and P6Client.
         """
         if not isinstance(value, (int, float)):
@@ -184,7 +184,7 @@ class Client:
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         if value < self.p2_client_timeout or value < self.p2_ext_client_timeout or value < self.p6_client_timeout:
-            raise InconsistentArgumentsError("P6*Client timeout value must be greater or equal than "
+            raise InconsistencyError("P6*Client timeout value must be greater or equal than "
                                              f"P2Client timeout ({self.p2_client_timeout} ms) and "
                                              f"P2*Client timeout ({self.p2_ext_client_timeout} ms) and "
                                              f"P6Client timeout ({self.p6_client_timeout} ms).")
@@ -209,14 +209,14 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistentArgumentsError: P6*Client timeout value must be greater or equal than P2Client and P6Client.
+        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P2Client and P6Client.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         if value < self.p2_client_timeout or value < self.p6_client_timeout:
-            raise InconsistentArgumentsError("P3Client value must be greater or equal than "
+            raise InconsistencyError("P3Client value must be greater or equal than "
                                              f"P2Client timeout ({self.p2_client_timeout} ms) and "
                                              f"P6Client timeout ({self.p6_client_timeout} ms).")
         self.__p3_client_physical = value
@@ -235,14 +235,14 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistentArgumentsError: P6*Client timeout value must be greater or equal than P2Client and P6Client.
+        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P2Client and P6Client.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         if value < self.p2_client_timeout or value < self.p6_client_timeout:
-            raise InconsistentArgumentsError("P3Client value must be greater or equal than "
+            raise InconsistencyError("P3Client value must be greater or equal than "
                                              f"P2Client timeout ({self.p2_client_timeout} ms) and "
                                              f"P6Client timeout ({self.p6_client_timeout} ms).")
         self.__p3_client_functional = value
@@ -267,8 +267,68 @@ class Client:
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         if value < self.p6_client_timeout:
-            raise InconsistentArgumentsError("S3Client value must be greater or equal than P6Client timeout.")
+            raise InconsistencyError("S3Client value must be greater or equal than P6Client timeout.")
         self.__s3_client = value
+
+    def _update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Update measured values of P2Client parameter.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value <= 0:
+            raise ValueError("P2Client parameter value must be a positive number.")
+        self.__p2_client_measured = value
+
+    def _update_p2_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Update measured values of P2*Client parameter.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value <= 0:
+            raise ValueError("P2*Client parameter value must be a positive number.")
+        self.__p2_ext_client_measured = value
+        
+    def _update_p6_client_measured(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Update measured values of P6Client parameter.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value <= 0:
+            raise ValueError("P6Client parameter value must be a positive number.")
+        self.__p6_client_measured = value
+        
+    def _update_p6_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Update measured values of P6*Client parameter.
+
+        :param value: Value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value <= 0:
+            raise ValueError("P6*Client parameter value must be a positive number.")
+        self.__p6_ext_client_measured = value
 
     def start_tester_present(self,
                              addressing_type: AddressingType = AddressingType.FUNCTIONAL,

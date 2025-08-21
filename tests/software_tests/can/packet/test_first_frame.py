@@ -9,7 +9,7 @@ from uds.can.packet.first_frame import (
     SHORT_FF_DL_BYTES_USED,
     CanAddressingFormat,
     CanDlcHandler,
-    InconsistentArgumentsError,
+    InconsistencyError,
     create_first_frame_data,
     encode_ff_dl,
     extract_ff_dl,
@@ -146,7 +146,7 @@ class TestCanFirstFrame:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         mock_encode_ff_dl.return_value = ff_dl_data_bytes
         self.mock_dlc_handler.decode_dlc.return_value = frame_data_length
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             create_first_frame_data(addressing_format=addressing_format,
                                     payload=payload,
                                     dlc=dlc,
@@ -207,7 +207,7 @@ class TestCanFirstFrame:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         mock_generate_ff_dl_bytes.return_value = ff_dl_data_bytes
         self.mock_dlc_handler.decode_dlc.return_value = data_length
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             generate_first_frame_data(addressing_format=addressing_format,
                                       payload=payload,
                                       dlc=dlc,
@@ -399,7 +399,7 @@ class TestCanFirstFrame:
     ])
     def test_validate_ff_dl__inconsistent_sf(self, ff_dl, dlc, addressing_format, sf_dl):
         self.mock_get_max_sf_dl.return_value = sf_dl
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             validate_ff_dl(ff_dl=ff_dl, dlc=dlc, addressing_format=addressing_format)
         self.mock_get_max_sf_dl.assert_called_once_with(dlc=dlc, addressing_format=addressing_format)
 
@@ -410,7 +410,7 @@ class TestCanFirstFrame:
     ])
     def test_validate_ff_dl__inconsistent_format(self, ff_dl, dlc, addressing_format, ff_dl_bytes_number):
         self.mock_get_max_sf_dl.return_value = 0
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             validate_ff_dl(ff_dl=ff_dl,
                            dlc=dlc,
                            addressing_format=addressing_format,

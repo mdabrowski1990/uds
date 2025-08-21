@@ -10,7 +10,7 @@ __all__ = ["FIRST_FRAME_N_PCI", "MAX_SHORT_FF_DL_VALUE", "MAX_LONG_FF_DL_VALUE",
 from typing import Optional
 
 from uds.can.frame import CanDlcHandler
-from uds.utilities import InconsistentArgumentsError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
+from uds.utilities import InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
 from ..addressing import CanAddressingFormat, CanAddressingInformation
 from .single_frame import get_max_sf_dl
@@ -94,7 +94,7 @@ def create_first_frame_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Provided `payload` contains incorrect number of bytes to fit them into
+    :raise InconsistencyError: Provided `payload` contains incorrect number of bytes to fit them into
         a First Frame data field using provided parameters.
 
     :return: Raw bytes of CAN frame data for the provided First Frame packet information.
@@ -107,7 +107,7 @@ def create_first_frame_data(addressing_format: CanAddressingFormat,
     ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
     frame_length = CanDlcHandler.decode_dlc(dlc)
     if len(ff_data_bytes) != frame_length:
-        raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes for "
+        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for "
                                          "a First Frame with provided DLC.")
     return ff_data_bytes
 
@@ -137,7 +137,7 @@ def generate_first_frame_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Provided `payload` contains incorrect number of bytes to fit them into
+    :raise InconsistencyError: Provided `payload` contains incorrect number of bytes to fit them into
         a First Frame data field using provided parameters.
 
     :return: Raw bytes of CAN frame data for the provided First Frame packet information.
@@ -150,7 +150,7 @@ def generate_first_frame_data(addressing_format: CanAddressingFormat,
     ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
     frame_length = CanDlcHandler.decode_dlc(dlc)
     if len(ff_data_bytes) != frame_length:
-        raise InconsistentArgumentsError("Provided value of `payload` contains incorrect number of bytes for "
+        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for "
                                          "a First Frame with provided DLC.")
     return ff_data_bytes
 
@@ -303,7 +303,7 @@ def validate_ff_dl(ff_dl: int,
 
     :raise TypeError: Provided value of First Frame Data Length is not int type.
     :raise ValueError: Provided value of First Frame Data Length is out of range (0 <= value <= MAX FF_DL).
-    :raise InconsistentArgumentsError: Single Frame shall be used instead of First Frame to transmit provided
+    :raise InconsistencyError: Single Frame shall be used instead of First Frame to transmit provided
         number of payload bytes represented by FF_DL value.
     """
     if not isinstance(ff_dl, int):
@@ -317,13 +317,13 @@ def validate_ff_dl(ff_dl: int,
                              f"Expected: dlc >= {CanDlcHandler.MIN_BASE_UDS_DLC}.")
         max_sf_dl = get_max_sf_dl(addressing_format=addressing_format, dlc=dlc)
         if ff_dl <= max_sf_dl:
-            raise InconsistentArgumentsError("Single Frame shall be used instead of First Frame to carry this.")
+            raise InconsistencyError("Single Frame shall be used instead of First Frame to carry this.")
     if ff_dl_bytes_number == LONG_FF_DL_BYTES_USED:
         if ff_dl <= MAX_SHORT_FF_DL_VALUE:
-            raise InconsistentArgumentsError("Short format of First Frame Data Length shall be used.")
+            raise InconsistencyError("Short format of First Frame Data Length shall be used.")
     elif ff_dl_bytes_number == SHORT_FF_DL_BYTES_USED:
         if ff_dl > MAX_SHORT_FF_DL_VALUE:
-            raise InconsistentArgumentsError("Long format of First Frame Data Length shall be used.")
+            raise InconsistencyError("Long format of First Frame Data Length shall be used.")
     elif ff_dl_bytes_number is not None:
         raise ValueError("Incorrect value of ff_dl_bytes was provided. It should be equal to either "
                          f"{SHORT_FF_DL_BYTES_USED} or {LONG_FF_DL_BYTES_USED}.")

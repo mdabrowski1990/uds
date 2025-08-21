@@ -5,7 +5,7 @@ from uds.can.addressing.mixed_addressing import (
     AddressingType,
     CanAddressingFormat,
     CanIdHandler,
-    InconsistentArgumentsError,
+    InconsistencyError,
     Mixed11BitCanAddressingInformation,
     Mixed29BitCanAddressingInformation,
     UnusedArgumentError,
@@ -79,7 +79,7 @@ class TestMixed11BitCanAddressingInformation:
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
         self.mock_addressing_information.tx_functional_params = tx_functional_params
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             Mixed11BitCanAddressingInformation._validate_addressing_information(self.mock_addressing_information)
 
     @pytest.mark.parametrize("rx_physical_params, tx_physical_params, rx_functional_params, tx_functional_params", [
@@ -143,7 +143,7 @@ class TestMixed11BitCanAddressingInformation:
     def test_validate_addressing_params__inconsistent(self, mock_is_compatible_can_id,
                                                       addressing_type, can_id, address_extension):
         mock_is_compatible_can_id.return_value = False
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             Mixed11BitCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
                                                                           can_id=can_id,
                                                                           address_extension=address_extension)
@@ -274,7 +274,7 @@ class TestMixed29BitCanAddressingInformation:
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
         self.mock_addressing_information.tx_functional_params = tx_functional_params
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             Mixed29BitCanAddressingInformation._validate_addressing_information(self.mock_addressing_information)
 
     @pytest.mark.parametrize("rx_physical_params, tx_physical_params, "
@@ -333,7 +333,7 @@ class TestMixed29BitCanAddressingInformation:
     def test_validate_addressing_params__inconsistent__missing_info(self, addressing_type, can_id,
                                                                     target_address, source_address, address_extension):
         self.mock_validate_addressing_type.return_value = addressing_type
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             Mixed29BitCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
                                                                   can_id=can_id,
                                                                   target_address=target_address,
@@ -355,7 +355,7 @@ class TestMixed29BitCanAddressingInformation:
             "target_address": decoded_ta,
             "source_address": decoded_sa
         }
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             Mixed29BitCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
                                                                   can_id=can_id,
                                                                   target_address=ta,

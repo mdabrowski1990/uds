@@ -3,7 +3,7 @@ from mock import MagicMock, Mock, call, patch
 
 from uds.translator.data_record.abstract_data_record import (
     AbstractDataRecord,
-    InconsistentArgumentsError,
+    InconsistencyError,
     Mapping,
     OrderedDict,
     ReassignmentError,
@@ -190,9 +190,9 @@ class TestAbstractDataRecord:
               Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2),
               Mock(spec=AbstractDataRecord, is_reoccurring=False, length=1)]),
     ])
-    def test_children__set__inconsistent_error(self, length, children):
+    def test_children__set__inconsistent(self, length, children):
         self.mock_data_record.length = length
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             AbstractDataRecord.children.fset(self.mock_data_record, children)
 
     @pytest.mark.parametrize("length, children", [
@@ -203,10 +203,10 @@ class TestAbstractDataRecord:
               Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2),
               Mock(spec=AbstractDataRecord, is_reoccurring=False, length=2)]),
     ])
-    def test_children__set__inconsistent_error__names(self, length, children):
+    def test_children__set__inconsistent__names(self, length, children):
         self.mock_data_record.length = length
         children[-1].name = children[0].name
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             AbstractDataRecord.children.fset(self.mock_data_record, children)
 
     @pytest.mark.parametrize("length, children", [

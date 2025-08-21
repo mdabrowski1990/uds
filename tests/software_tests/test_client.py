@@ -1,7 +1,9 @@
-import pytest
-from mock import Mock
+from unittest.mock import MagicMock
 
-from uds.client import Client
+import pytest
+from mock import Mock, patch
+
+from uds.client import Client, ReassignmentError, AbstractTransportInterface, InconsistencyError
 
 
 SCRIPT_LOCATION = "uds.client"
@@ -63,34 +65,96 @@ class TestClient:
     # transport_interface
 
     def test_transport_interface__get(self):
-        with pytest.raises(NotImplementedError):
-            Client.transport_interface.fget(self.mock_client)
+        self.mock_client._Client__transport_interface = Mock()
+        assert Client.transport_interface.fget(self.mock_client) == self.mock_client._Client__transport_interface
+
+    @pytest.mark.parametrize("transport_interface", [Mock(), "Some transport interface"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_transport_interface__set__type_error(self, mock_isinstance, transport_interface):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client.transport_interface.fset(self.mock_client, transport_interface)
+        mock_isinstance.assert_called_once_with(transport_interface, AbstractTransportInterface)
+
+    @pytest.mark.parametrize("transport_interface", [Mock(spec=AbstractTransportInterface),
+                                                     MagicMock(spec=AbstractTransportInterface)])
+    def test_transport_interface__set__reassignment_error(self, transport_interface):
+        self.mock_client._Client__transport_interface = Mock()
+        with pytest.raises(ReassignmentError):
+            Client.transport_interface.fset(self.mock_client, transport_interface)
+
+    @pytest.mark.parametrize("transport_interface", [Mock(spec=AbstractTransportInterface),
+                                                     MagicMock(spec=AbstractTransportInterface)])
+    def test_transport_interface__set__valid(self, transport_interface):
+        assert Client.transport_interface.fset(self.mock_client, transport_interface) is None
+        assert self.mock_client._Client__transport_interface == transport_interface
 
     # p2_client_timeout
 
     def test_p2_client_timeout__get(self):
-        with pytest.raises(NotImplementedError):
-            Client.p2_client_timeout.fget(self.mock_client)
+        self.mock_client._Client__p2_client_timeout = Mock()
+        assert Client.p2_client_timeout.fget(self.mock_client) == self.mock_client._Client__p2_client_timeout
             
-    def test_p2_client_timeout__set(self):
-        with pytest.raises(NotImplementedError):
-            Client.p2_client_timeout.fset(self.mock_client, Mock())
+    @pytest.mark.parametrize("p2_client_timeout", [Mock(), "P2Client"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_p2_client_timeout__set__type_error(self, mock_isinstance, p2_client_timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client.p2_client_timeout.fset(self.mock_client, p2_client_timeout)
+        mock_isinstance.assert_called_once_with(p2_client_timeout, (int, float))
+
+    @pytest.mark.parametrize("p2_client_timeout", [0, -0.01])
+    def test_p2_client_timeout__set__value_error(self, p2_client_timeout):
+        with pytest.raises(ValueError):
+            Client.p2_client_timeout.fset(self.mock_client, p2_client_timeout)
+
+    @pytest.mark.parametrize("p2_client_timeout", [Client.DEFAULT_P2_CLIENT_TIMEOUT, 1])
+    def test_p2_client_timeout__set__valid(self, p2_client_timeout):
+        assert Client.p2_client_timeout.fset(self.mock_client, p2_client_timeout) is None
+        assert self.mock_client._Client__p2_client_timeout == p2_client_timeout
 
     # p2_client_measured
 
     def test_p2_client_measured__get(self):
-        with pytest.raises(NotImplementedError):
-            Client.p2_client_measured.fget(self.mock_client)
+        self.mock_client._Client__p2_client_measured = Mock()
+        assert Client.p2_client_measured.fget(self.mock_client) == self.mock_client._Client__p2_client_measured
 
     # p6_client_timeout
 
     def test_p6_client_timeout__get(self):
-        with pytest.raises(NotImplementedError):
-            Client.p6_client_timeout.fget(self.mock_client)
+        self.mock_client._Client__p6_client_timeout = Mock()
+        assert Client.p6_client_timeout.fget(self.mock_client) == self.mock_client._Client__p6_client_timeout
 
-    def test_p6_client_timeout__set(self):
-        with pytest.raises(NotImplementedError):
-            Client.p6_client_timeout.fset(self.mock_client, Mock())
+    @pytest.mark.parametrize("p6_client_timeout", [Mock(), "P2Client"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_p6_client_timeout__set__type_error(self, mock_isinstance, p6_client_timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout)
+        mock_isinstance.assert_called_once_with(p6_client_timeout, (int, float))
+
+    @pytest.mark.parametrize("p6_client_timeout", [0, -0.01])
+    def test_p6_client_timeout__set__value_error(self, p6_client_timeout):
+        with pytest.raises(ValueError):
+            Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout)
+
+    @pytest.mark.parametrize("p6_client_timeout, p2_client_timeout", [
+        (Client.DEFAULT_P6_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT + 0.1),
+        (100, 101),
+    ])
+    def test_p6_client_timeout__set__inconsistent(self, p6_client_timeout, p2_client_timeout):
+        self.mock_client.p2_client_timeout = p2_client_timeout
+        with pytest.raises(InconsistencyError):
+            Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout)
+
+    @pytest.mark.parametrize("p6_client_timeout, p2_client_timeout", [
+        (Client.DEFAULT_P6_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT),
+        (100, 99),
+    ])
+    def test_p6_client_timeout__set__valid(self, p6_client_timeout, p2_client_timeout):
+        self.mock_client.p2_client_timeout = p2_client_timeout
+        assert Client.p6_client_timeout.fset(self.mock_client, p6_client_timeout) is None
+        assert self.mock_client._Client__p6_client_timeout == p6_client_timeout
             
     # p6_client_measured
 
