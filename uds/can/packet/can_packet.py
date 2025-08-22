@@ -91,7 +91,15 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
                              **packet_type_specific_kwargs)
 
     def __str__(self) -> str:
-        """Present object in string format."""
+        """
+        Return a concise string representation of the CanPacket.
+        
+        The returned string includes the class name and key packet fields: payload (hexadecimal string or None),
+        addressing_type, addressing_format, packet_type, raw_frame_data (hexadecimal string), and can_id.
+        
+        Returns:
+            str: Formatted representation suitable for logging and debugging.
+        """
         return (f"{self.__class__.__name__}("
                 f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
                 f"addressing_type={self.addressing_type}, "

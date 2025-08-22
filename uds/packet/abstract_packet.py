@@ -17,7 +17,18 @@ class AbstractPacketContainer(ABC):
     """Abstract definition of a container with packet information."""
 
     def __str__(self) -> str:
-        """Present object in string format."""
+        """
+        Return a concise, human-readable string representation of the packet container.
+        
+        The string includes the concrete class name and the current values of:
+        - payload: shown as `None` or a hex string produced by `bytes_to_hex`.
+        - addressing_type
+        - packet_type
+        - raw_frame_data: shown as a hex string produced by `bytes_to_hex`.
+        
+        Returns:
+            str: Formatted representation suitable for debugging and logging.
+        """
         return (f"{self.__class__.__name__}("
                 f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "
@@ -75,7 +86,20 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         self._validate_attributes()
 
     def __str__(self) -> str:
-        """Present object in string format."""
+        """
+        Return a compact string representation of the packet record.
+        
+        The string includes the concrete class name and these fields:
+        - payload: diagnostic payload as a hex string or None
+        - addressing_type: addressing scheme
+        - packet_type: packet/N_PCI type
+        - raw_frame_data: raw frame bytes as a hex string
+        - direction: transmit/receive direction
+        - transmission_time: timestamp when the packet was fully transmitted
+        
+        Returns:
+            str: Human-readable single-line representation.
+        """
         return (f"{self.__class__.__name__}("
                 f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "

@@ -96,9 +96,15 @@ class NibbleEnum(AIntEnum):  # type: ignore
 
     def __new__(cls, value: int) -> "NibbleEnum":
         """
-        Creation of a new member.
-
-        :param value: One nibble (4 bits) integer.
+        Create and return a new NibbleEnum member from an integer.
+        
+        The input `value` is validated to be a 4-bit nibble (0 through 15) via validate_nibble; a ValueError is raised if validation fails.
+        
+        Parameters:
+            value (int): Integer in the range 0..15 used as the enum member's value.
+        
+        Returns:
+            NibbleEnum: The newly created enum member with the given integer value.
         """
         validate_nibble(value)
         member = int.__new__(cls, value)

@@ -11,11 +11,17 @@ from .enums import Endianness
 
 def bytes_to_hex(bytes_list: RawBytesAlias) -> str:
     """
-    Convert a list of bytes to hex string.
-
-    :param bytes_list: List of bytes to convert.
-
-    :return: String with provided list of bytes presented as hexadecimal values.
+    Convert a sequence of raw bytes to a parenthesized, comma-separated hex string.
+    
+    The result formats each byte as an uppercase two-digit hex literal prefixed with `0x`
+    and joined with `, `, e.g. "(0x01, 0xFF, 0x0A)".
+    
+    Parameters:
+        bytes_list: A sequence of byte values (0–255). The input is validated and
+            invalid values will cause the same errors raised by validate_raw_bytes.
+    
+    Returns:
+        A string containing the formatted hex representation of the input bytes.
     """
     validate_raw_bytes(bytes_list)
     bytes_str = ", ".join(f"0x{byte_value:02X}" for byte_value in bytes_list)
@@ -24,12 +30,22 @@ def bytes_to_hex(bytes_list: RawBytesAlias) -> str:
 
 def bytes_to_int(bytes_list: RawBytesAlias, endianness: Endianness = Endianness.BIG_ENDIAN) -> int:
     """
-    Convert a list of bytes to integer value.
-
-    :param bytes_list: List of bytes to convert.
-    :param endianness: Order of bytes to use.
-
-    :return: The integer value represented by provided list of bytes.
+    Convert a sequence of bytes to an integer using the specified endianness.
+    
+    Validates the input byte sequence and the provided endianness, then returns the integer
+    value produced by int.from_bytes(bytes, byteorder). The endianness may be any member
+    of the Endianness enum (defaults to Endianness.BIG_ENDIAN).
+    
+    Parameters:
+        bytes_list (RawBytesAlias): Sequence of raw bytes to convert.
+        endianness (Endianness): Byte order to use; will be normalized via Endianness.validate_member.
+    
+    Returns:
+        int: Integer represented by the byte sequence.
+    
+    Raises:
+        Any exception raised by validate_raw_bytes or Endianness.validate_member when the input
+        bytes or endianness are invalid.
     """
     validate_raw_bytes(bytes_list)
     return int.from_bytes(bytes=bytes_list, byteorder=Endianness.validate_member(endianness).value)

@@ -46,7 +46,16 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         super().__init__(frame=frame, direction=direction, transmission_time=transmission_time)
 
     def __str__(self) -> str:
-        """Present object in string format."""
+        """
+        Return a concise, human-readable string describing this CAN packet record.
+        
+        The representation includes payload (hex string or None), addressing_type,
+        addressing_format, packet_type, raw_frame_data (hex), can_id, direction,
+        and transmission_time.
+        
+        Returns:
+            str: Formatted representation suitable for logging and debugging.
+        """
         return (f"{self.__class__.__name__}("
                 f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
                 f"addressing_type={self.addressing_type}, "

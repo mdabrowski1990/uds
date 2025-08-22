@@ -19,7 +19,14 @@ class AbstractUdsMessageContainer(ABC):
     """Abstract definition of a container with diagnostic message information."""
 
     def __str__(self) -> str:
-        """Present object in string format."""
+        """
+        Return a concise string representation showing the class name, payload (as hex), and addressing type.
+        
+        The format is: "<ClassName>(payload=<hex string>, addressing_type=<value>)".
+        
+        Returns:
+            str: Formatted string representation.
+        """
         return (f"{self.__class__.__name__}("
                 f"payload={bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type})")
@@ -135,7 +142,11 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
             and self.direction == other.direction
 
     def __str__(self) -> str:
-        """Present object in string format."""
+        """
+        Return a human-readable string representation of the message record.
+        
+        The returned string includes the class name and these fields: payload (rendered as a hex string), addressing_type, direction, transmission_start, and transmission_end.
+        """
         return (f"{self.__class__.__name__}("
                 f"payload={bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "

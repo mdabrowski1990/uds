@@ -56,11 +56,17 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     @classmethod
     def is_request_sid(cls, value: int) -> bool:
         """
-        Check whether given value is Service Identifier (SID).
-
-        :param value: Value to check.
-
-        :return: True if value is valid SID, else False.
+        Return True if `value` is a valid request Service Identifier (SID) value.
+        
+        A value is considered a request SID if it belongs to the module-wide ALL_REQUEST_SIDS set.
+        If the value is in that set but not a defined enum member of this class, an
+        UnrecognizedSIDWarning is emitted to indicate the SID is legitimate but not registered here.
+        
+        Parameters:
+            value (int): SID value (byte) to check.
+        
+        Returns:
+            bool: True when `value` is a request SID, False otherwise.
         """
         if value in ALL_REQUEST_SIDS:
             if not cls.is_member(value):
@@ -120,11 +126,15 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
     @classmethod
     def is_response_sid(cls, value: int) -> bool:
         """
-        Check whether given value is Response Service Identifier (RSID).
-
-        :param value: Value to check.
-
-        :return: True if value is valid RSID, else False.
+        Return whether the given integer is a Response Service Identifier (RSID).
+        
+        Checks membership against ALL_RESPONSE_SIDS. If the value is within the allowed RSID set but not defined as a ResponseSID enum member, emits UnrecognizedSIDWarning.
+        
+        Parameters:
+            value (int): RSID byte value to check (0–255).
+        
+        Returns:
+            bool: True if value is a valid RSID (defined or recognized but not listed in the enum), False otherwise.
         """
         if value in ALL_RESPONSE_SIDS:
             if not cls.is_member(value):
