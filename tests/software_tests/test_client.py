@@ -13,6 +13,12 @@ class TestClient:
 
     def setup_method(self):
         self.mock_client = Mock(spec=Client)
+        # patching
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
+
+    def teardown_method(self):
+        self._patcher_warn.stop()
 
     # __init__
 
@@ -367,10 +373,25 @@ class TestClient:
         with pytest.raises(ValueError):
             Client._update_p2_client_measured(self.mock_client, p2_client)
 
-    @pytest.mark.parametrize("p2_client", [0.001, 43.21])
-    def test_update_p2_client_measured__valid(self, p2_client):
-        assert Client._update_p2_client_measured(self.mock_client, p2_client) is None
-        assert self.mock_client._Client__p2_client_measured == p2_client
+    @pytest.mark.parametrize("p2_client_measured, p2_client_timeout", [
+        (1.001, 1),
+        (100.1, 100),
+    ])
+    def test_update_p2_client_measured__valid__with_warning(self, p2_client_measured, p2_client_timeout):
+        self.mock_client.p2_client_timeout = p2_client_timeout
+        assert Client._update_p2_client_measured(self.mock_client, p2_client_measured) is None
+        assert self.mock_client._Client__p2_client_measured == p2_client_measured
+        self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("p2_client_measured, p2_client_timeout", [
+        (0.001, 1),
+        (100, 100),
+    ])
+    def test_update_p2_client_measured__valid__without_warning(self, p2_client_measured, p2_client_timeout):
+        self.mock_client.p2_client_timeout = p2_client_timeout
+        assert Client._update_p2_client_measured(self.mock_client, p2_client_measured) is None
+        assert self.mock_client._Client__p2_client_measured == p2_client_measured
+        self.mock_warn.assert_not_called()
 
     # _update_p2_ext_client_measured
 
@@ -387,10 +408,25 @@ class TestClient:
         with pytest.raises(ValueError):
             Client._update_p2_ext_client_measured(self.mock_client, p2_ext_client)
 
-    @pytest.mark.parametrize("p2_ext_client", [0.001, 43.21])
-    def test_update_p2_ext_client_measured__valid(self, p2_ext_client):
-        assert Client._update_p2_ext_client_measured(self.mock_client, p2_ext_client) is None
-        assert self.mock_client._Client__p2_ext_client_measured == p2_ext_client
+    @pytest.mark.parametrize("p2_ext_client_measured, p2_ext_client_timeout", [
+        (1.001, 1),
+        (100.1, 100),
+    ])
+    def test_update_p2_ext_client_measured__valid__with_warning(self, p2_ext_client_measured, p2_ext_client_timeout):
+        self.mock_client.p2_ext_client_timeout = p2_ext_client_timeout
+        assert Client._update_p2_ext_client_measured(self.mock_client, p2_ext_client_measured) is None
+        assert self.mock_client._Client__p2_ext_client_measured == p2_ext_client_measured
+        self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("p2_ext_client_measured, p2_ext_client_timeout", [
+        (0.001, 1),
+        (100, 100),
+    ])
+    def test_update_p2_ext_client_measured__valid__without_warning(self, p2_ext_client_measured, p2_ext_client_timeout):
+        self.mock_client.p2_ext_client_timeout = p2_ext_client_timeout
+        assert Client._update_p2_ext_client_measured(self.mock_client, p2_ext_client_measured) is None
+        assert self.mock_client._Client__p2_ext_client_measured == p2_ext_client_measured
+        self.mock_warn.assert_not_called()
         
     # _update_p6_client_measured
 
@@ -407,10 +443,25 @@ class TestClient:
         with pytest.raises(ValueError):
             Client._update_p6_client_measured(self.mock_client, p6_client)
 
-    @pytest.mark.parametrize("p6_client", [0.001, 43.21])
-    def test_update_p6_client_measured__valid(self, p6_client):
-        assert Client._update_p6_client_measured(self.mock_client, p6_client) is None
-        assert self.mock_client._Client__p6_client_measured == p6_client
+    @pytest.mark.parametrize("p6_client_measured, p6_client_timeout", [
+        (1.001, 1),
+        (100.1, 100),
+    ])
+    def test_update_p6_client_measured__valid__with_warning(self, p6_client_measured, p6_client_timeout):
+        self.mock_client.p6_client_timeout = p6_client_timeout
+        assert Client._update_p6_client_measured(self.mock_client, p6_client_measured) is None
+        assert self.mock_client._Client__p6_client_measured == p6_client_measured
+        self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("p6_client_measured, p6_client_timeout", [
+        (0.001, 1),
+        (100, 100),
+    ])
+    def test_update_p6_client_measured__valid__without_warning(self, p6_client_measured, p6_client_timeout):
+        self.mock_client.p6_client_timeout = p6_client_timeout
+        assert Client._update_p6_client_measured(self.mock_client, p6_client_measured) is None
+        assert self.mock_client._Client__p6_client_measured == p6_client_measured
+        self.mock_warn.assert_not_called()
         
     # _update_p6_ext_client_measured
 
@@ -427,10 +478,25 @@ class TestClient:
         with pytest.raises(ValueError):
             Client._update_p6_ext_client_measured(self.mock_client, p6_ext_client)
 
-    @pytest.mark.parametrize("p6_ext_client", [0.001, 43.21])
-    def test_update_p6_ext_client_measured__valid(self, p6_ext_client):
-        assert Client._update_p6_ext_client_measured(self.mock_client, p6_ext_client) is None
-        assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client
+    @pytest.mark.parametrize("p6_ext_client_measured, p6_ext_client_timeout", [
+        (1.001, 1),
+        (100.1, 100),
+    ])
+    def test_update_p6_ext_client_measured__valid__with_warning(self, p6_ext_client_measured, p6_ext_client_timeout):
+        self.mock_client.p6_ext_client_timeout = p6_ext_client_timeout
+        assert Client._update_p6_ext_client_measured(self.mock_client, p6_ext_client_measured) is None
+        assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
+        self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("p6_ext_client_measured, p6_ext_client_timeout", [
+        (0.001, 1),
+        (100, 100),
+    ])
+    def test_update_p6_ext_client_measured__valid__without_warning(self, p6_ext_client_measured, p6_ext_client_timeout):
+        self.mock_client.p6_ext_client_timeout = p6_ext_client_timeout
+        assert Client._update_p6_ext_client_measured(self.mock_client, p6_ext_client_measured) is None
+        assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
+        self.mock_warn.assert_not_called()
 
     # start_tester_present
 

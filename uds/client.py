@@ -3,11 +3,12 @@
 __all__ = ["Client"]
 
 from typing import Optional, Tuple
+from warnings import warn
 
 from uds.addressing import AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import InconsistencyError, ReassignmentError, TimeMillisecondsAlias
+from uds.utilities import InconsistencyError, ReassignmentError, TimeMillisecondsAlias, ValueWarning
 
 
 class Client:
@@ -209,7 +210,7 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client timeout.
+        :raise InconsistencyError: P3Client_phys value must be greater or equal than P6Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -234,7 +235,7 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client timeout.
+        :raise InconsistencyError: P3Client_func value must be greater or equal than P6Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -259,7 +260,7 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client timeout.
+        :raise InconsistencyError: S3Client value must be greater or equal than P6Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -283,6 +284,9 @@ class Client:
             raise TypeError("Provided value is not int or float type.")
         if value <= 0:
             raise ValueError("P2Client parameter value must be a positive number.")
+        if value > self.p2_client_timeout:
+            warn("Measured value of P2Client was greater than P2Client timeout.",
+                 category=ValueWarning)
         self.__p2_client_measured = value
 
     def _update_p2_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
@@ -298,6 +302,9 @@ class Client:
             raise TypeError("Provided value is not int or float type.")
         if value <= 0:
             raise ValueError("P2*Client parameter value must be a positive number.")
+        if value > self.p2_ext_client_timeout:
+            warn("Measured value of P2*Client was greater than P2*Client timeout.",
+                 category=ValueWarning)
         self.__p2_ext_client_measured = value
 
     def _update_p6_client_measured(self, value: TimeMillisecondsAlias) -> None:
@@ -313,6 +320,9 @@ class Client:
             raise TypeError("Provided value is not int or float type.")
         if value <= 0:
             raise ValueError("P6Client parameter value must be a positive number.")
+        if value > self.p6_client_timeout:
+            warn("Measured value of P6Client was greater than P6Client timeout.",
+                 category=ValueWarning)
         self.__p6_client_measured = value
 
     def _update_p6_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
@@ -328,6 +338,9 @@ class Client:
             raise TypeError("Provided value is not int or float type.")
         if value <= 0:
             raise ValueError("P6*Client parameter value must be a positive number.")
+        if value > self.p6_ext_client_timeout:
+            warn("Measured value of P6*Client was greater than P6*Client timeout.",
+                 category=ValueWarning)
         self.__p6_ext_client_measured = value
 
     def start_tester_present(self,
