@@ -5,12 +5,14 @@ Module with common and reused implementation of enums.
 named values. This module provides extension to `aenum <https://pypi.org/project/aenum/>`_ package.
 """
 
-__all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum"]
+__all__ = ["ExtendableEnum", "ValidatedEnum", "ByteEnum", "NibbleEnum",
+           "Endianness"]
 
 from typing import Any
 
 from aenum import Enum as AEnum
 from aenum import IntEnum as AIntEnum
+from aenum import StrEnum as AStrEnum
 from aenum import extend_enum
 
 from .common_types import validate_nibble, validate_raw_byte
@@ -102,3 +104,18 @@ class NibbleEnum(AIntEnum):  # type: ignore
         member = int.__new__(cls, value)
         member._value_ = value  # noqa: vulture
         return member
+
+
+class Endianness(ValidatedEnum, AStrEnum):  # type: ignore
+    """
+    Endianness values definitions.
+
+    `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
+    """
+
+    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore  # noqa: vulture
+    """Little Endian stores the most significant byte at the largest memory address and the least significant byte
+    at the smallest."""
+    BIG_ENDIAN: "Endianness" = "big"  # type: ignore
+    """Big Endian stores the most significant byte at the smallest memory address and the least significant byte
+    at the largest."""

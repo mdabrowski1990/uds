@@ -70,37 +70,37 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         return False
 
     # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
-    DiagnosticSessionControl: "RequestSID" = 0x10  # type: ignore  # noqa: F841
-    ECUReset: "RequestSID" = 0x11  # type: ignore  # noqa: F841
-    SecurityAccess: "RequestSID" = 0x27  # type: ignore  # noqa: F841
-    CommunicationControl: "RequestSID" = 0x28  # type: ignore  # noqa: F841
-    Authentication: "RequestSID" = 0x29  # type: ignore  # noqa: F841
-    TesterPresent: "RequestSID" = 0x3E  # type: ignore  # noqa: F841
-    ControlDTCSetting: "RequestSID" = 0x85  # type: ignore  # noqa: F841
-    ResponseOnEvent: "RequestSID" = 0x86  # type: ignore  # noqa: F841
-    LinkControl: "RequestSID" = 0x87  # type: ignore  # noqa: F841
+    DiagnosticSessionControl: "RequestSID" = 0x10  # type: ignore  # noqa: vulture
+    ECUReset: "RequestSID" = 0x11  # type: ignore  # noqa: vulture
+    SecurityAccess: "RequestSID" = 0x27  # type: ignore  # noqa: vulture
+    CommunicationControl: "RequestSID" = 0x28  # type: ignore  # noqa: vulture
+    Authentication: "RequestSID" = 0x29  # type: ignore  # noqa: vulture
+    TesterPresent: "RequestSID" = 0x3E  # type: ignore  # noqa: vulture
+    ControlDTCSetting: "RequestSID" = 0x85  # type: ignore  # noqa: vulture
+    ResponseOnEvent: "RequestSID" = 0x86  # type: ignore  # noqa: vulture
+    LinkControl: "RequestSID" = 0x87  # type: ignore  # noqa: vulture
     # Data transmission - more information in ISO 14229-1:2020, chapter 11
-    ReadDataByIdentifier: "RequestSID" = 0x22  # type: ignore  # noqa: F841
-    ReadMemoryByAddress: "RequestSID" = 0x23  # type: ignore  # noqa: F841
-    ReadScalingDataByIdentifier: "RequestSID" = 0x24  # type: ignore  # noqa: F841
-    ReadDataByPeriodicIdentifier: "RequestSID" = 0x2A  # type: ignore  # noqa: F841
-    DynamicallyDefineDataIdentifier: "RequestSID" = 0x2C  # type: ignore  # noqa: F841
-    WriteDataByIdentifier: "RequestSID" = 0x2E  # type: ignore  # noqa: F841
-    WriteMemoryByAddress: "RequestSID" = 0x3D  # type: ignore  # noqa: F841
+    ReadDataByIdentifier: "RequestSID" = 0x22  # type: ignore  # noqa: vulture
+    ReadMemoryByAddress: "RequestSID" = 0x23  # type: ignore  # noqa: vulture
+    ReadScalingDataByIdentifier: "RequestSID" = 0x24  # type: ignore  # noqa: vulture
+    ReadDataByPeriodicIdentifier: "RequestSID" = 0x2A  # type: ignore  # noqa: vulture
+    DynamicallyDefineDataIdentifier: "RequestSID" = 0x2C  # type: ignore  # noqa: vulture
+    WriteDataByIdentifier: "RequestSID" = 0x2E  # type: ignore  # noqa: vulture
+    WriteMemoryByAddress: "RequestSID" = 0x3D  # type: ignore  # noqa: vulture
     # Stored data transmission - more information in ISO 14229-1:2020, chapter 12
-    ClearDiagnosticInformation: "RequestSID" = 0x14  # type: ignore  # noqa: F841
-    ReadDTCInformation: "RequestSID" = 0x19  # type: ignore  # noqa: F841
+    ClearDiagnosticInformation: "RequestSID" = 0x14  # type: ignore  # noqa: vulture
+    ReadDTCInformation: "RequestSID" = 0x19  # type: ignore  # noqa: vulture
     # InputOutput control - more information in ISO 14229-1:2020, chapter 13
-    InputOutputControlByIdentifier: "RequestSID" = 0x2F  # type: ignore  # noqa: F841
+    InputOutputControlByIdentifier: "RequestSID" = 0x2F  # type: ignore  # noqa: vulture
     # Routine - more information in ISO 14229-1:2020, chapter 14
-    RoutineControl: "RequestSID" = 0x31  # type: ignore  # noqa: F841
+    RoutineControl: "RequestSID" = 0x31  # type: ignore  # noqa: vulture
     # Upload download - more information in ISO 14229-1:2020, chapter 15
-    RequestDownload: "RequestSID" = 0x34  # type: ignore  # noqa: F841
-    RequestUpload: "RequestSID" = 0x35  # type: ignore  # noqa: F841
-    TransferData: "RequestSID" = 0x36  # type: ignore  # noqa: F841
-    RequestTransferExit: "RequestSID" = 0x37  # type: ignore  # noqa: F841
-    RequestFileTransfer: "RequestSID" = 0x38  # type: ignore  # noqa: F841
-    SecuredDataTransmission: "RequestSID" = 0x84  # type: ignore  # noqa: F841
+    RequestDownload: "RequestSID" = 0x34  # type: ignore  # noqa: vulture
+    RequestUpload: "RequestSID" = 0x35  # type: ignore  # noqa: vulture
+    TransferData: "RequestSID" = 0x36  # type: ignore  # noqa: vulture
+    RequestTransferExit: "RequestSID" = 0x37  # type: ignore  # noqa: vulture
+    RequestFileTransfer: "RequestSID" = 0x38  # type: ignore  # noqa: vulture
+    SecuredDataTransmission: "RequestSID" = 0x84  # type: ignore  # noqa: vulture
 
 
 @unique
@@ -115,7 +115,7 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         invisible in the documentation.
     """
 
-    NegativeResponse: "ResponseSID" = 0x7F  # type: ignore  # noqa: F841
+    NegativeResponse: "ResponseSID" = 0x7F  # type: ignore
 
     @classmethod
     def is_response_sid(cls, value: int) -> bool:

@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 
 from uds.addressing import AddressingType, TransmissionDirection
-from uds.utilities import ReassignmentError
+from uds.utilities import ReassignmentError, bytes_to_hex
 
 from .abstract_packet_type import AbstractPacketType
 
@@ -18,12 +18,11 @@ class AbstractPacketContainer(ABC):
 
     def __str__(self) -> str:
         """Present object in string format."""
-        payload_str = "None" if self.payload is None else f"[{', '.join(f'0x{byte:02X}' for byte in self.payload)}]"
         return (f"{self.__class__.__name__}("
-                f"payload={payload_str}, "
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "
                 f"packet_type={self.packet_type}, "
-                f"raw_frame_data=[{', '.join(f'0x{byte:02X}' for byte in self.raw_frame_data)}])")
+                f"raw_frame_data={bytes_to_hex(self.raw_frame_data)})")
 
     @property
     @abstractmethod
@@ -77,12 +76,11 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
     def __str__(self) -> str:
         """Present object in string format."""
-        payload_str = "None" if self.payload is None else f"[{', '.join(f'0x{byte:02X}' for byte in self.payload)}]"
         return (f"{self.__class__.__name__}("
-                f"payload={payload_str}, "
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "
                 f"packet_type={self.packet_type}, "
-                f"raw_frame_data=[{', '.join(f'0x{byte:02X}' for byte in self.raw_frame_data)}], "
+                f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
                 f"direction={self.direction}, "
                 f"transmission_time={self.transmission_time})")
 

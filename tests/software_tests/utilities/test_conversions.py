@@ -1,17 +1,9 @@
 import pytest
 from mock import patch
 
-from uds.utilities import ValidatedEnum
-from uds.utilities.bytes_operations import Endianness, InconsistencyError, bytes_to_int, int_to_bytes
+from uds.utilities.conversions import Endianness, InconsistencyError, bytes_to_hex, bytes_to_int, int_to_bytes
 
-SCRIPT_LOCATION = "uds.utilities.bytes_operations"
-
-
-class TestEndianness:
-    """Unit tests for `Endianness` class."""
-
-    def test_inheritance_validated_enum(self):
-        assert issubclass(Endianness, ValidatedEnum)
+SCRIPT_LOCATION = "uds.utilities.conversions"
 
 
 class TestFunctions:
@@ -26,6 +18,17 @@ class TestFunctions:
     def teardown_method(self):
         self._patcher_validate_raw_bytes.stop()
         self._patcher_validate_endianness.stop()
+
+    # bytes_to_hex
+
+    @pytest.mark.parametrize("bytes_list, expected_output", [
+        (b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F",
+         "(0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F)"),
+        ([0x00], "(0x00)"),
+    ])
+    def test_bytes_to_hex(self, bytes_list, expected_output):
+        assert bytes_to_hex(bytes_list) == expected_output
+        self.mock_validate_raw_bytes.assert_called_once_with(bytes_list)
 
     # bytes_to_int
 

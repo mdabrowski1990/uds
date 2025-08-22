@@ -1,7 +1,7 @@
 import pytest
 from aenum import IntEnum, StrEnum
 
-from uds.utilities.enums import ByteEnum, ExtendableEnum, NibbleEnum, ValidatedEnum
+from uds.utilities.enums import ByteEnum, Endianness, ExtendableEnum, NibbleEnum, ValidatedEnum
 
 SCRIPT_LOCATION = "uds.utilities.enums"
 
@@ -286,3 +286,10 @@ class TestMultipleEnums:
         assert member.name == name
         assert member.value == value
         assert isinstance(member, enum_class)
+
+
+class TestEndianness:
+    """Unit tests for `Endianness` class."""
+
+    def test_inheritance_validated_enum(self):
+        assert issubclass(Endianness, ValidatedEnum)
