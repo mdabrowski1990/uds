@@ -1,29 +1,25 @@
-"""Module with bytes list operations implementation."""
+"""Module with various conversion functions."""
 
-__all__ = ["Endianness", "bytes_to_int", "int_to_bytes"]
+__all__ = ["bytes_to_hex", "bytes_to_int", "int_to_bytes", ]
 
 from typing import Optional
 
-from aenum import StrEnum as AStrEnum
-
 from .common_types import RawBytesAlias, validate_raw_bytes
 from .custom_exceptions import InconsistencyError
-from .enums import ValidatedEnum
+from .enums import Endianness
 
 
-class Endianness(ValidatedEnum, AStrEnum):  # type: ignore
+def bytes_to_hex(bytes_list: RawBytesAlias) -> str:
     """
-    Endianness values definitions.
+    Convert a list of bytes to hex string.
 
-    `Endianness <https://en.wikipedia.org/wiki/Endianness>`_ determines order of bytes in a bytes sequence.
+    :param bytes_list: List of bytes to convert.
+
+    :return: String with provided list of bytes presented as hexadecimal values.
     """
-
-    LITTLE_ENDIAN: "Endianness" = "little"  # type: ignore  # noqa: F841
-    """Little Endian stores the most significant byte at the largest memory address and the least significant byte
-    at the smallest."""
-    BIG_ENDIAN: "Endianness" = "big"  # type: ignore
-    """Big Endian stores the most significant byte at the smallest memory address and the least significant byte
-    at the largest."""
+    validate_raw_bytes(bytes_list)
+    bytes_str = ", ".join(f"0x{byte_value:02X}" for byte_value in bytes_list)
+    return f"({bytes_str})"
 
 
 def bytes_to_int(bytes_list: RawBytesAlias, endianness: Endianness = Endianness.BIG_ENDIAN) -> int:

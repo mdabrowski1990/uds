@@ -12,7 +12,7 @@ from typing import Sequence, Union
 
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.packet import AbstractPacketRecord, PacketsRecordsSequence, PacketsRecordsTuple
-from uds.utilities import RawBytesAlias, ReassignmentError, validate_raw_bytes
+from uds.utilities import RawBytesAlias, ReassignmentError, bytes_to_hex, validate_raw_bytes
 
 
 class AbstractUdsMessageContainer(ABC):
@@ -21,7 +21,7 @@ class AbstractUdsMessageContainer(ABC):
     def __str__(self) -> str:
         """Present object in string format."""
         return (f"{self.__class__.__name__}("
-                f"payload=[{', '.join(f'0x{byte:02X}' for byte in self.payload)}], "
+                f"payload={bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type})")
 
     @abstractmethod
@@ -137,7 +137,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
     def __str__(self) -> str:
         """Present object in string format."""
         return (f"{self.__class__.__name__}("
-                f"payload=[{', '.join(f'0x{byte:02X}' for byte in self.payload)}], "
+                f"payload={bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "
                 f"direction={self.direction}, "
                 f"transmission_start={self.transmission_start}, "

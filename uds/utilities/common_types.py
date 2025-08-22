@@ -1,6 +1,7 @@
 """Module with all common types (and its aliases) used in the package and helper functions for these types."""
 
-__all__ = ["TimeMillisecondsAlias", "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
+__all__ = ["TimeMillisecondsAlias",
+           "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
            "validate_nibble", "validate_raw_byte", "validate_raw_bytes"]
 
 from typing import List, Set, Tuple, Union
