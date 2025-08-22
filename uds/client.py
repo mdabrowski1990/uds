@@ -147,14 +147,15 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6Client timeout value must be greater or equal than P2Client.
+        :raise InconsistencyError: P6Client timeout value must be greater or equal than P2Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         if value < self.p2_client_timeout:
-            raise InconsistencyError("P6Client timeout value must be greater or equal than P2Client timeout.")
+            raise InconsistencyError("P6Client timeout value must be greater or equal than "
+                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
         self.__p6_client_timeout = value
 
     @property  # noqa: vulture
@@ -176,7 +177,8 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P2*Client and P6Client.
+        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P2*Client timeout and
+            P6Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -207,7 +209,7 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client.
+        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -232,7 +234,7 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client.
+        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -257,14 +259,15 @@ class Client:
 
         :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client.
+        :raise InconsistencyError: P6*Client timeout value must be greater or equal than P6Client timeout.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         if value < self.p6_client_timeout:
-            raise InconsistencyError("S3Client value must be greater or equal than P6Client timeout.")
+            raise InconsistencyError("S3Client value must be greater or equal than "
+                                     f"P6Client timeout ({self.p6_client_timeout} ms).")
         self.__s3_client = value
 
     def _update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
