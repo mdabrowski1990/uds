@@ -9,6 +9,7 @@ SCRIPT_LOCATION = "uds.client"
 
 
 class TestClient:
+    """Unit tests for `Client` class."""
 
     def setup_method(self):
         self.mock_client = Mock(spec=Client)
@@ -350,7 +351,87 @@ class TestClient:
         self.mock_client.p6_client_timeout = p6_client_timeout
         assert Client.s3_client.fset(self.mock_client, s3_client) is None
         assert self.mock_client._Client__s3_client == s3_client
+
+    # _update_p2_client_measured
+
+    @pytest.mark.parametrize("p2_client", [Mock(), "Some time"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_p2_client_measured__type_error(self, mock_isinstance, p2_client):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client._update_p2_client_measured(self.mock_client, p2_client)
+        mock_isinstance.assert_called_once_with(p2_client, (int, float))
+
+    @pytest.mark.parametrize("p2_client", [0, -0.01])
+    def test_update_p2_client_measured__value_error(self, p2_client):
+        with pytest.raises(ValueError):
+            Client._update_p2_client_measured(self.mock_client, p2_client)
+
+    @pytest.mark.parametrize("p2_client", [0.001, 43.21])
+    def test_update_p2_client_measured__valid(self, p2_client):
+        assert Client._update_p2_client_measured(self.mock_client, p2_client) is None
+        assert self.mock_client._Client__p2_client_measured == p2_client
+
+    # _update_p2_ext_client_measured
+
+    @pytest.mark.parametrize("p2_ext_client", [Mock(), "Some time"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_p2_ext_client_measured__type_error(self, mock_isinstance, p2_ext_client):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client._update_p2_ext_client_measured(self.mock_client, p2_ext_client)
+        mock_isinstance.assert_called_once_with(p2_ext_client, (int, float))
+
+    @pytest.mark.parametrize("p2_ext_client", [0, -0.01])
+    def test_update_p2_ext_client_measured__value_error(self, p2_ext_client):
+        with pytest.raises(ValueError):
+            Client._update_p2_ext_client_measured(self.mock_client, p2_ext_client)
+
+    @pytest.mark.parametrize("p2_ext_client", [0.001, 43.21])
+    def test_update_p2_ext_client_measured__valid(self, p2_ext_client):
+        assert Client._update_p2_ext_client_measured(self.mock_client, p2_ext_client) is None
+        assert self.mock_client._Client__p2_ext_client_measured == p2_ext_client
         
+    # _update_p6_client_measured
+
+    @pytest.mark.parametrize("p6_client", [Mock(), "Some time"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_p6_client_measured__type_error(self, mock_isinstance, p6_client):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client._update_p6_client_measured(self.mock_client, p6_client)
+        mock_isinstance.assert_called_once_with(p6_client, (int, float))
+
+    @pytest.mark.parametrize("p6_client", [0, -0.01])
+    def test_update_p6_client_measured__value_error(self, p6_client):
+        with pytest.raises(ValueError):
+            Client._update_p6_client_measured(self.mock_client, p6_client)
+
+    @pytest.mark.parametrize("p6_client", [0.001, 43.21])
+    def test_update_p6_client_measured__valid(self, p6_client):
+        assert Client._update_p6_client_measured(self.mock_client, p6_client) is None
+        assert self.mock_client._Client__p6_client_measured == p6_client
+        
+    # _update_p6_ext_client_measured
+
+    @pytest.mark.parametrize("p6_ext_client", [Mock(), "Some time"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_p6_ext_client_measured__type_error(self, mock_isinstance, p6_ext_client):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client._update_p6_ext_client_measured(self.mock_client, p6_ext_client)
+        mock_isinstance.assert_called_once_with(p6_ext_client, (int, float))
+
+    @pytest.mark.parametrize("p6_ext_client", [0, -0.01])
+    def test_update_p6_ext_client_measured__value_error(self, p6_ext_client):
+        with pytest.raises(ValueError):
+            Client._update_p6_ext_client_measured(self.mock_client, p6_ext_client)
+
+    @pytest.mark.parametrize("p6_ext_client", [0.001, 43.21])
+    def test_update_p6_ext_client_measured__valid(self, p6_ext_client):
+        assert Client._update_p6_ext_client_measured(self.mock_client, p6_ext_client) is None
+        assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client
+
     # start_tester_present
 
     def test_start_tester_present(self):
@@ -386,3 +467,83 @@ class TestClient:
     def test_clear_response_queue(self):
         with pytest.raises(NotImplementedError):
             Client.clear_response_queue(self.mock_client)
+
+
+@pytest.mark.integration
+class TestClientIntegration:
+    """Integration tests for `Client` class."""
+
+    @pytest.mark.parametrize("kwargs, attributes", [
+        (
+            {
+                "transport_interface": Mock(spec=AbstractTransportInterface)
+            },
+            {
+                "p2_client_timeout": Client.DEFAULT_P2_CLIENT_TIMEOUT,
+                "p2_client_measured": None,
+                "p2_ext_client_timeout": Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT,
+                "p2_ext_client_measured": None,
+                "p6_client_timeout": Client.DEFAULT_P6_CLIENT_TIMEOUT,
+                "p6_client_measured": None,
+                "p6_ext_client_timeout": Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT,
+                "p6_ext_client_measured": None,
+                "p3_client_physical": Client.DEFAULT_P3_CLIENT,
+                "p3_client_functional": Client.DEFAULT_P3_CLIENT,
+                "s3_client": Client.DEFAULT_S3_CLIENT,
+            }
+        ),
+        (
+            {
+                "transport_interface": Mock(spec=AbstractTransportInterface),
+                "p2_client_timeout": 20,
+                "p2_ext_client_timeout": 2000,
+                "p6_client_timeout": 25,
+                "p6_ext_client_timeout": 10000,
+                "p3_client_physical": 50,
+                "p3_client_functional": 60,
+                "s3_client": 1500,
+            },
+            {
+                "p2_client_timeout": 20,
+                "p2_client_measured": None,
+                "p2_ext_client_timeout": 2000,
+                "p2_ext_client_measured": None,
+                "p6_client_timeout": 25,
+                "p6_client_measured": None,
+                "p6_ext_client_timeout": 10000,
+                "p6_ext_client_measured": None,
+                "p3_client_physical": 50,
+                "p3_client_functional": 60,
+                "s3_client": 1500,
+            }
+        ),
+    ])
+    def test_init(self, kwargs, attributes):
+        client = Client(**kwargs)
+        for attr_name, attr_value in attributes.items():
+            assert getattr(client, attr_name) == attr_value
+
+    @pytest.mark.parametrize("kwargs", [
+        {
+            "transport_interface": Mock(spec=AbstractTransportInterface),
+            "p2_client_timeout": 100,
+            "p6_client_timeout": 95,
+            "p3_client_physical": 150,
+            "p3_client_functional": 150,
+        },
+        {
+            "transport_interface": Mock(spec=AbstractTransportInterface),
+            "p2_client_timeout": 100,
+            "p6_client_timeout": 100,
+            "p3_client_physical": 99,
+            "p3_client_functional": 99,
+        },
+        {
+            "transport_interface": Mock(spec=AbstractTransportInterface),
+            "p2_ext_client_timeout": 5000,
+            "p6_ext_client_timeout": 4000,
+        },
+    ])
+    def test_init__value_error(self, kwargs):
+        with pytest.raises(ValueError):
+            Client(**kwargs)

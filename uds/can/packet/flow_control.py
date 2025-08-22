@@ -215,7 +215,7 @@ def validate_flow_control_data(addressing_format: CanAddressingFormat, raw_frame
         raise InconsistencyError("Provided `raw_frame_data` is too short.")
     if dlc < CanDlcHandler.MIN_BASE_UDS_DLC and dlc != min_dlc:
         raise InconsistencyError("Data padding was used for CAN frame with "
-                                         f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+                                 f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual DLC: {dlc}.")
 
 
 def create_flow_control_data(addressing_format: CanAddressingFormat,
@@ -279,8 +279,8 @@ def create_flow_control_data(addressing_format: CanAddressingFormat,
     data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
     if data_bytes_to_pad > 0:
         if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise InconsistencyError(f"CAN Frame Data Padding shall not be used for CAN frames with "
-                                             f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
+            raise InconsistencyError("CAN Frame Data Padding shall not be used for CAN frames with "
+                                     f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}.")
     return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
 

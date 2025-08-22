@@ -85,7 +85,9 @@ class CanAddressingInformation:
         expected_ai_bytes_number = cls.get_ai_data_bytes_number(addressing_format)
         if expected_ai_bytes_number != len(ai_data_bytes):
             raise InconsistencyError("Number of Addressing Information data bytes does not match provided "
-                                             "CAN Addressing Format.")
+                                     f"CAN Addressing Format. CAN Addressing Format: {addressing_format}. "
+                                     f"Provided AI Data Bytes number: {len(ai_data_bytes)}. "
+                                     f"Expected AI Data Bytes number: {expected_ai_bytes_number}.")
 
     @classmethod
     def validate_addressing_params(cls,

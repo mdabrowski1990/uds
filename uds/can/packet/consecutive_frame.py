@@ -105,12 +105,12 @@ def create_consecutive_frame_data(addressing_format: CanAddressingFormat,
     cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
     if len(cf_bytes) > frame_data_bytes_number:
         raise InconsistencyError("Provided value of `payload` contains of too many bytes. "
-                                         "Consider increasing DLC value or shortening the payload.")
+                                 "Consider increasing DLC value or shortening the payload.")
     data_bytes_to_pad = frame_data_bytes_number - len(cf_bytes)
     if data_bytes_to_pad > 0:
         if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
             raise InconsistencyError("CAN Frame Data Padding shall not be used for CAN frames with "
-                                             f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+                                     f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}.")
     return cf_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
 
@@ -153,7 +153,7 @@ def generate_consecutive_frame_data(addressing_format: CanAddressingFormat,
     cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
     if len(cf_bytes) > frame_data_bytes_number:
         raise InconsistencyError("Provided value of `payload` contains of too many bytes. "
-                                         "Consider increasing DLC value or shortening the payload.")
+                                 "Consider increasing DLC value or shortening the payload.")
     data_padding = ((frame_data_bytes_number - len(cf_bytes)) * bytearray([filler_byte]))
     return cf_bytes + data_padding
 
@@ -224,8 +224,8 @@ def get_consecutive_frame_max_payload_size(addressing_format: CanAddressingForma
     ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     output = frame_data_bytes_number - ai_data_bytes_number - SN_BYTES_USED
     if output <= 0:
-        raise InconsistencyError("Provided values cannot be used to transmit a valid Consecutive Frame "
-                                         "packet. Consider using greater DLC value.")
+        raise InconsistencyError("Provided values cannot be used to transmit a valid Consecutive Frame packet. "
+                                 "Consider using greater DLC value.")
     return output
 
 

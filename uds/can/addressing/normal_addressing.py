@@ -66,8 +66,7 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
                                       "not supported by Normal Addressing format and must be equal None.")
         addressing_type = AddressingType.validate_member(addressing_type)
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
-            raise InconsistencyError("Provided value of CAN ID is incompatible with "
-                                             "Normal Addressing format.")
+            raise InconsistencyError("Provided value of CAN ID is incompatible with Normal Addressing format.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,  # type: ignore
@@ -148,8 +147,8 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         if (self.rx_physical_params["target_address"] != self.tx_physical_params["source_address"]
                 or self.rx_physical_params["source_address"] != self.tx_physical_params["target_address"]):
             raise InconsistencyError("Target Address and Source Address for incoming physically addressed "
-                                             "CAN packets must equal Source Address and Target Address for outgoing "
-                                             "physically addressed CAN packets.")
+                                     "CAN packets must equal Source Address and Target Address for outgoing "
+                                     "physically addressed CAN packets.")
         if self.rx_functional_params["can_id"] == self.tx_functional_params["can_id"]:
             raise InconsistencyError("CAN ID used for transmission cannot be used for receiving too.")
 
@@ -187,7 +186,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         if can_id is None:
             if None in (target_address, source_address):
                 raise InconsistencyError("Values of target_address and source_address must be provided, "
-                                                 "for Normal Fixed Addressing format if can_id value is None.")
+                                         "for Normal Fixed Addressing format if can_id value is None.")
             validate_raw_byte(target_address)  # type: ignore
             validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = cls.encode_can_id(addressing_type=addressing_type,

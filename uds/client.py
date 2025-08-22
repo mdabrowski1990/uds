@@ -55,10 +55,10 @@ class Client:
         self.p3_client_physical = p3_client_physical
         self.p3_client_functional = p3_client_functional
         self.s3_client = s3_client
-        self.__p2_client_measured = None
-        self.__p2_ext_client_measured = None
-        self.__p6_client_measured = None
-        self.__p6_ext_client_measured = None
+        self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
+        self.__p2_ext_client_measured: Optional[TimeMillisecondsAlias] = None
+        self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
+        self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
 
     @property
     def transport_interface(self) -> AbstractTransportInterface:
@@ -296,7 +296,7 @@ class Client:
         if value <= 0:
             raise ValueError("P2*Client parameter value must be a positive number.")
         self.__p2_ext_client_measured = value
-        
+
     def _update_p6_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P6Client parameter.
@@ -311,7 +311,7 @@ class Client:
         if value <= 0:
             raise ValueError("P6Client parameter value must be a positive number.")
         self.__p6_client_measured = value
-        
+
     def _update_p6_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P6*Client parameter.

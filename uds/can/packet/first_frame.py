@@ -107,8 +107,8 @@ def create_first_frame_data(addressing_format: CanAddressingFormat,
     ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
     frame_length = CanDlcHandler.decode_dlc(dlc)
     if len(ff_data_bytes) != frame_length:
-        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for "
-                                         "a First Frame with provided DLC.")
+        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for a First Frame "
+                                 "with provided DLC.")
     return ff_data_bytes
 
 
@@ -150,8 +150,8 @@ def generate_first_frame_data(addressing_format: CanAddressingFormat,
     ff_data_bytes = ai_data_bytes + ff_dl_data_bytes + bytearray(payload)
     frame_length = CanDlcHandler.decode_dlc(dlc)
     if len(ff_data_bytes) != frame_length:
-        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for "
-                                         "a First Frame with provided DLC.")
+        raise InconsistencyError("Provided value of `payload` contains incorrect number of bytes for a First Frame "
+                                 "with provided DLC.")
     return ff_data_bytes
 
 

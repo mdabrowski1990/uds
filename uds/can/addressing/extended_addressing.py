@@ -66,8 +66,7 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         addressing_type = AddressingType.validate_member(addressing_type)
         validate_raw_byte(target_address)  # type: ignore
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
-            raise InconsistencyError("Provided value of CAN ID is incompatible with "
-                                             "Extended Addressing format.")
+            raise InconsistencyError("Provided value of CAN ID is incompatible with Extended Addressing format.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,  # type: ignore

@@ -105,7 +105,7 @@ class AbstractConditionalDataRecord(ABC):
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.name in names:
                     raise InconsistencyError("Data Records within one message have to have unique names. "
-                                                     f"Multiple `{data_record.name}` found.")
+                                             f"Multiple `{data_record.name}` found.")
                 names.add(data_record.name)
                 if not data_record.fixed_total_length:
                     if data_record.max_occurrences != 1 and i != len(value) - 1:
@@ -122,8 +122,8 @@ class AbstractConditionalDataRecord(ABC):
             else:
                 raise ValueError("Provided sequence contains an element which is not a Data Record.")
         if min_total_length % 8 != 0 or max_total_length % 8:
-            raise InconsistencyError("Total length of diagnostic message continuation must always be divisible "
-                                             "by 8.")
+            raise InconsistencyError("Total length of diagnostic message continuation must always be divisible by 8. "
+                                     f"Min length: {min_total_length}. Max length: {max_total_length}.")
 
     def get_message_continuation(self, raw_value: int) -> AliasMessageStructure:
         """

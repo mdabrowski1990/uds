@@ -28,10 +28,10 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         """
         if self.rx_physical_params["address_extension"] != self.tx_physical_params["address_extension"]:
             raise InconsistencyError("Addressing Extension parameter must be the same for incoming and "
-                                             "outgoing physically addressed CAN packets.")
+                                     "outgoing physically addressed CAN packets.")
         if self.rx_functional_params["address_extension"] != self.tx_functional_params["address_extension"]:
             raise InconsistencyError("Addressing Extension parameter must be the same for incoming and "
-                                             "outgoing functionally addressed CAN packets.")
+                                     "outgoing functionally addressed CAN packets.")
         rx_can_ids = {self.rx_physical_params["can_id"], self.rx_functional_params["can_id"]}
         tx_can_ids = {self.tx_physical_params["can_id"], self.tx_functional_params["can_id"]}
         if (self.rx_physical_params["can_id"] in tx_can_ids
@@ -72,8 +72,7 @@ class Mixed11BitCanAddressingInformation(AbstractCanAddressingInformation):
         addressing_type = AddressingType.validate_member(addressing_type)
         validate_raw_byte(address_extension)  # type: ignore
         if not cls.is_compatible_can_id(can_id=can_id, addressing_type=addressing_type):  # type: ignore
-            raise InconsistencyError("Provided value of CAN ID is incompatible with "
-                                             "Mixed 11-bit Addressing format.")
+            raise InconsistencyError("Provided value of CAN ID is incompatible with Mixed 11-bit Addressing format.")
         return CANAddressingParams(addressing_format=cls.ADDRESSING_FORMAT,
                                    addressing_type=addressing_type,
                                    can_id=can_id,  # type: ignore
@@ -155,15 +154,15 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
         """
         if self.rx_physical_params["address_extension"] != self.tx_physical_params["address_extension"]:
             raise InconsistencyError("Addressing Extension parameter must be the same for incoming and "
-                                             "outgoing physically addressed CAN packets.")
+                                     "outgoing physically addressed CAN packets.")
         if self.rx_functional_params["address_extension"] != self.tx_functional_params["address_extension"]:
             raise InconsistencyError("Addressing Extension parameter must be the same for incoming and "
-                                             "outgoing functionally addressed CAN packets.")
+                                     "outgoing functionally addressed CAN packets.")
         if (self.rx_physical_params["target_address"] != self.tx_physical_params["source_address"]
                 or self.rx_physical_params["source_address"] != self.tx_physical_params["target_address"]):
-            raise InconsistencyError("Target Address and Source Address for incoming physically addressed "
-                                             "CAN packets must equal Source Address and Target Address for outgoing "
-                                             "physically addressed CAN packets.")
+            raise InconsistencyError("Target Address and Source Address for incoming physically addressed CAN packets "
+                                     "must equal Source Address and Target Address for outgoing physically addressed "
+                                     "CAN packets.")
         if self.rx_functional_params["can_id"] == self.tx_functional_params["can_id"]:
             raise InconsistencyError("CAN ID used for transmission cannot be used for receiving too.")
 
@@ -197,7 +196,8 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
         validate_raw_byte(address_extension)  # type: ignore
         if can_id is None:
             if None in (target_address, source_address):
-                raise InconsistencyError("Values of target_address and source_address must be provided for Mixed 29-bit Addressing Format if can_id value is None.")
+                raise InconsistencyError("Values of target_address and source_address must be provided for "
+                                         "Mixed 29-bit Addressing Format if can_id value is None.")
             validate_raw_byte(target_address)  # type: ignore
             validate_raw_byte(source_address)  # type: ignore
             encoded_can_id = cls.encode_can_id(addressing_type=addressing_type,
