@@ -9,7 +9,7 @@ __all__ = ["CanAddressingInformation"]
 from typing import Dict, Optional, Type
 
 from uds.addressing import AddressingType
-from uds.utilities import InconsistentArgumentsError, RawBytesAlias, validate_raw_bytes
+from uds.utilities import InconsistencyError, RawBytesAlias, validate_raw_bytes
 
 from ..frame import CanIdHandler
 from .abstract_addressing_information import AbstractCanAddressingInformation, CANAddressingParams
@@ -77,15 +77,17 @@ class CanAddressingInformation:
         :param addressing_format: CAN Addressing Format used.
         :param ai_data_bytes: Data bytes to validate.
 
-        :raise InconsistentArgumentsError: Provided number of Addressing Information data bytes does not match
+        :raise InconsistencyError: Provided number of Addressing Information data bytes does not match
             CAN Addressing Format used.
         """
         CanAddressingFormat.validate_member(addressing_format)
         validate_raw_bytes(ai_data_bytes, allow_empty=True)
         expected_ai_bytes_number = cls.get_ai_data_bytes_number(addressing_format)
         if expected_ai_bytes_number != len(ai_data_bytes):
-            raise InconsistentArgumentsError("Number of Addressing Information data bytes does not match provided "
-                                             "CAN Addressing Format.")
+            raise InconsistencyError("Number of Addressing Information data bytes does not match provided "
+                                     f"CAN Addressing Format. CAN Addressing Format: {addressing_format}. "
+                                     f"Provided AI Data Bytes number: {len(ai_data_bytes)}. "
+                                     f"Expected AI Data Bytes number: {expected_ai_bytes_number}.")
 
     @classmethod
     def validate_addressing_params(cls,

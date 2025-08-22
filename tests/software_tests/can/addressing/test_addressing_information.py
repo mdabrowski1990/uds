@@ -6,7 +6,7 @@ from uds.can.addressing.addressing_information import (
     CanAddressingFormat,
     CanAddressingInformation,
     CanIdHandler,
-    InconsistentArgumentsError,
+    InconsistencyError,
 )
 
 SCRIPT_LOCATION = "uds.can.addressing.addressing_information"
@@ -82,7 +82,7 @@ class TestCanAddressingInformation:
     def test_validate_ai_data_bytes__inconsistent(self, mock_get_ai_data_bytes_number,
                                                   addressing_format, ai_data_bytes, expected_ai_bytes_number):
         mock_get_ai_data_bytes_number.return_value = expected_ai_bytes_number
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             CanAddressingInformation.validate_ai_data_bytes(addressing_format=addressing_format,
                                                             ai_data_bytes=ai_data_bytes)
         mock_get_ai_data_bytes_number.assert_called_once_with(addressing_format)

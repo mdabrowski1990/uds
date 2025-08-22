@@ -183,11 +183,10 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
-        if not hasattr(self, "_UdsMessageRecord__packets_records"):
-            self.__validate_packets_records(value)
-            self.__packets_records = tuple(value)
-        else:
-            raise ReassignmentError("You cannot change value of 'packets_records' attribute once it is assigned.")
+        if hasattr(self, "_UdsMessageRecord__packets_records"):
+            raise ReassignmentError("Value of 'packets_records' attribute cannot be changed once assigned.")
+        self.__validate_packets_records(value)
+        self.__packets_records = tuple(value)
 
     @property
     def payload(self) -> bytes:

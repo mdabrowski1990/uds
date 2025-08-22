@@ -74,12 +74,9 @@ class AbstractTransportInterface(ABC):
         """
         if not self.is_supported_network_manager(value):
             raise ValueError("Unsupported network manager was provided.")
-        try:
-            getattr(self, "_AbstractTransportInterface__network_manager")
-        except AttributeError:
-            self.__network_manager = value
-        else:
-            raise ReassignmentError("You cannot change value of 'network_manager' attribute once it is assigned.")
+        if hasattr(self, "_AbstractTransportInterface__network_manager"):
+            raise ReassignmentError("Value of 'network_manager' attribute cannot be changed once assigned.")
+        self.__network_manager = value
 
     @staticmethod
     @abstractmethod

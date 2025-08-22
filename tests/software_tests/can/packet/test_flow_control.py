@@ -13,7 +13,7 @@ from uds.can.packet.flow_control import (
     CanFlowStatus,
     CanSTminTranslator,
     DefaultFlowControlParametersGenerator,
-    InconsistentArgumentsError,
+    InconsistencyError,
     create_flow_control_data,
     encode_flow_status,
     extract_block_size,
@@ -243,7 +243,7 @@ class TestCanFlowControl:
         mock_is_flow_control.return_value = True
         mock_get_flow_control_min_dlc.return_value = min_dlc
         self.mock_can_dlc_handler.encode_dlc.return_value = dlc
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             validate_flow_control_data(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
         self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data, allow_empty=False)
         mock_is_flow_control.assert_called_once_with(addressing_format=addressing_format, raw_frame_data=raw_frame_data)
@@ -352,7 +352,7 @@ class TestCanFlowControl:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         mock_encode_flow_status.return_value = fs_data_bytes
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             create_flow_control_data(addressing_format=addressing_format,
                                      flow_status=flow_status,
                                      block_size=block_size,
@@ -446,7 +446,7 @@ class TestCanFlowControl:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         mock_generate_flow_status.return_value = fs_data_bytes
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             generate_flow_control_data(addressing_format=addressing_format,
                                        flow_status=flow_status,
                                        dlc=dlc,

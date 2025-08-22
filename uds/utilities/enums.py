@@ -33,7 +33,7 @@ class ExtendableEnum(AEnum):  # type: ignore
         """
         for member in cls:
             if member.name == name:
-                raise ValueError(f"Name '{name}' is already in use.")
+                raise ValueError(f"Name {name!r} is already in use.")
             if member.value == value:
                 raise ValueError(f"Value '{value}' is already in use.")
         extend_enum(cls, name, value)

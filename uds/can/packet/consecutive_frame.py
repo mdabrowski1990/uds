@@ -8,13 +8,7 @@ __all__ = ["CONSECUTIVE_FRAME_N_PCI", "SN_BYTES_USED",
 
 from typing import Optional
 
-from uds.utilities import (
-    InconsistentArgumentsError,
-    RawBytesAlias,
-    validate_nibble,
-    validate_raw_byte,
-    validate_raw_bytes,
-)
+from uds.utilities import InconsistencyError, RawBytesAlias, validate_nibble, validate_raw_byte, validate_raw_bytes
 
 from ..addressing import CanAddressingFormat, CanAddressingInformation
 from ..frame import DEFAULT_FILLER_BYTE, CanDlcHandler
@@ -51,7 +45,7 @@ def validate_consecutive_frame_data(addressing_format: CanAddressingFormat, raw_
     :param raw_frame_data: Raw data bytes of a CAN frame to validate.
 
     :raise ValueError: The value of N_PCI in provided data is not Consecutive Frame N_PCI.
-    :raise InconsistentArgumentsError: Provided data does not carry any payload.
+    :raise InconsistencyError: Provided data does not carry any payload.
     """
     validate_raw_bytes(raw_frame_data, allow_empty=False)
     if not is_consecutive_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
@@ -59,7 +53,7 @@ def validate_consecutive_frame_data(addressing_format: CanAddressingFormat, raw_
     min_dlc = get_consecutive_frame_min_dlc(addressing_format)
     dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
     if min_dlc > dlc:
-        raise InconsistentArgumentsError("Provided `raw_frame_data` does not contain any payload bytes.")
+        raise InconsistencyError("Provided `raw_frame_data` does not contain any payload bytes.")
 
 
 def create_consecutive_frame_data(addressing_format: CanAddressingFormat,
@@ -92,7 +86,7 @@ def create_consecutive_frame_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Provided parameters cannot be used together to create a valid
+    :raise InconsistencyError: Provided parameters cannot be used together to create a valid
         Consecutive Frame data.
 
     :return: Raw data bytes of a CAN frame.
@@ -110,13 +104,13 @@ def create_consecutive_frame_data(addressing_format: CanAddressingFormat,
     sn_data_bytes = encode_sequence_number(sequence_number=sequence_number)
     cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
     if len(cf_bytes) > frame_data_bytes_number:
-        raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes. "
-                                         "Consider increasing DLC value or shortening the payload.")
+        raise InconsistencyError("Provided value of `payload` contains of too many bytes. "
+                                 "Consider increasing DLC value or shortening the payload.")
     data_bytes_to_pad = frame_data_bytes_number - len(cf_bytes)
     if data_bytes_to_pad > 0:
         if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise InconsistentArgumentsError("CAN Frame Data Padding shall not be used for CAN frames with "
-                                             f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+            raise InconsistencyError("CAN Frame Data Padding shall not be used for CAN frames with "
+                                     f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}.")
     return cf_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
 
@@ -145,7 +139,7 @@ def generate_consecutive_frame_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Provided `payload` contains invalid number of bytes.
+    :raise InconsistencyError: Provided `payload` contains invalid number of bytes.
 
     :return: Raw data bytes of a CAN frame.
     """
@@ -158,8 +152,8 @@ def generate_consecutive_frame_data(addressing_format: CanAddressingFormat,
     sn_data_bytes = encode_sequence_number(sequence_number=sequence_number)
     cf_bytes = ai_data_bytes + sn_data_bytes + bytearray(payload)
     if len(cf_bytes) > frame_data_bytes_number:
-        raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes. "
-                                         "Consider increasing DLC value or shortening the payload.")
+        raise InconsistencyError("Provided value of `payload` contains of too many bytes. "
+                                 "Consider increasing DLC value or shortening the payload.")
     data_padding = ((frame_data_bytes_number - len(cf_bytes)) * bytearray([filler_byte]))
     return cf_bytes + data_padding
 
@@ -218,7 +212,7 @@ def get_consecutive_frame_max_payload_size(addressing_format: CanAddressingForma
     :param dlc: DLC value of a CAN frame that carries a considered CAN Packet.
         Leave None to get the result for the greatest possible DLC value.
 
-    :raise InconsistentArgumentsError: Provided dlc cannot be used for Consecutive Frame with in the provided
+    :raise InconsistencyError: Provided dlc cannot be used for Consecutive Frame with in the provided
         CAN Addressing Format.
 
     :return: The maximum number of payload bytes that could be carried in a Consecutive Frame.
@@ -230,8 +224,8 @@ def get_consecutive_frame_max_payload_size(addressing_format: CanAddressingForma
     ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     output = frame_data_bytes_number - ai_data_bytes_number - SN_BYTES_USED
     if output <= 0:
-        raise InconsistentArgumentsError("Provided values cannot be used to transmit a valid Consecutive Frame "
-                                         "packet. Consider using greater DLC value.")
+        raise InconsistencyError("Provided values cannot be used to transmit a valid Consecutive Frame packet. "
+                                 "Consider using greater DLC value.")
     return output
 
 

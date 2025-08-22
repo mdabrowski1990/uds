@@ -25,7 +25,7 @@ from warnings import warn
 from aenum import unique
 
 from uds.utilities import (
-    InconsistentArgumentsError,
+    InconsistencyError,
     NibbleEnum,
     RawBytesAlias,
     TimeMillisecondsAlias,
@@ -203,7 +203,7 @@ def validate_flow_control_data(addressing_format: CanAddressingFormat, raw_frame
     :param raw_frame_data: Raw data bytes of a CAN frame to validate.
 
     :raise ValueError: The value of N_PCI in provided data is not Flow Control N_PCI.
-    :raise InconsistentArgumentsError: Provided data does not carry all Flow Control parameters.
+    :raise InconsistencyError: Provided data does not carry all Flow Control parameters.
     """
     validate_raw_bytes(raw_frame_data, allow_empty=False)
     if not is_flow_control(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
@@ -212,10 +212,10 @@ def validate_flow_control_data(addressing_format: CanAddressingFormat, raw_frame
     min_dlc = get_flow_control_min_dlc(addressing_format=addressing_format)
     dlc = CanDlcHandler.encode_dlc(len(raw_frame_data))
     if min_dlc > dlc:
-        raise InconsistentArgumentsError("Provided `raw_frame_data` is too short.")
+        raise InconsistencyError("Provided `raw_frame_data` is too short.")
     if dlc < CanDlcHandler.MIN_BASE_UDS_DLC and dlc != min_dlc:
-        raise InconsistentArgumentsError("Data padding was used for CAN frame with "
-                                         f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+        raise InconsistencyError("Data padding was used for CAN frame with "
+                                 f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual DLC: {dlc}.")
 
 
 def create_flow_control_data(addressing_format: CanAddressingFormat,
@@ -252,7 +252,7 @@ def create_flow_control_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Invalid DLC value was provided.
+    :raise InconsistencyError: Invalid DLC value was provided.
 
     :return: Raw data bytes of a CAN frame.
     """
@@ -275,12 +275,12 @@ def create_flow_control_data(addressing_format: CanAddressingFormat,
     else:
         fc_bytes += bytearray([filler_byte])
     if len(fc_bytes) > frame_data_bytes_number:
-        raise InconsistentArgumentsError("Provided value of `dlc` is too small.")
+        raise InconsistencyError("Provided value of `dlc` is too small.")
     data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
     if data_bytes_to_pad > 0:
         if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise InconsistentArgumentsError(f"CAN Frame Data Padding shall not be used for CAN frames with "
-                                             f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}")
+            raise InconsistencyError("CAN Frame Data Padding shall not be used for CAN frames with "
+                                     f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: dlc={dlc}.")
     return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
 
@@ -313,7 +313,7 @@ def generate_flow_control_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Provided DLC value is too small.
+    :raise InconsistencyError: Provided DLC value is too small.
 
     :return: Raw data bytes of a CAN frame.
     """
@@ -331,7 +331,7 @@ def generate_flow_control_data(addressing_format: CanAddressingFormat,
         validate_raw_byte(st_min)
         fc_bytes += bytearray([st_min])
     if len(fc_bytes) > frame_data_bytes_number:
-        raise InconsistentArgumentsError("Provided value of `dlc` is too small to fit all parameters.")
+        raise InconsistencyError("Provided value of `dlc` is too small to fit all parameters.")
     data_bytes_to_pad = frame_data_bytes_number - len(fc_bytes)
     return fc_bytes + data_bytes_to_pad * bytearray([filler_byte])
 

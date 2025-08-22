@@ -5,7 +5,7 @@ from uds.can.addressing.normal_addressing import (
     AddressingType,
     CanAddressingFormat,
     CanIdHandler,
-    InconsistentArgumentsError,
+    InconsistencyError,
     NormalCanAddressingInformation,
     NormalFixedCanAddressingInformation,
     UnusedArgumentError,
@@ -64,7 +64,7 @@ class TestNormalCanAddressingInformation:
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
         self.mock_addressing_information.tx_functional_params = tx_functional_params
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             NormalCanAddressingInformation._validate_addressing_information(self.mock_addressing_information)
 
     @pytest.mark.parametrize("rx_physical_params, tx_physical_params, rx_functional_params, tx_functional_params", [
@@ -132,7 +132,7 @@ class TestNormalCanAddressingInformation:
     @patch(f"{SCRIPT_LOCATION}.NormalCanAddressingInformation.is_compatible_can_id")
     def test_validate_addressing_params__inconsistent(self, mock_is_compatible_can_id, addressing_type, can_id):
         mock_is_compatible_can_id.return_value = False
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             NormalCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type, can_id=can_id)
         mock_is_compatible_can_id.assert_called_once_with(can_id=can_id,
                                                           addressing_type=self.mock_validate_addressing_type.return_value)
@@ -244,7 +244,7 @@ class TestNormalFixedCanAddressingInformation:
         self.mock_addressing_information.tx_physical_params = tx_physical_params
         self.mock_addressing_information.rx_functional_params = rx_functional_params
         self.mock_addressing_information.tx_functional_params = tx_functional_params
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             NormalFixedCanAddressingInformation._validate_addressing_information(self.mock_addressing_information)
 
     @pytest.mark.parametrize("rx_physical_params, tx_physical_params, "
@@ -306,7 +306,7 @@ class TestNormalFixedCanAddressingInformation:
     def test_validate_addressing_params__inconsistent__missing_info(self, addressing_type, can_id, target_address,
                                                                     source_address):
         self.mock_validate_addressing_type.return_value = addressing_type
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             NormalFixedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
                                                                            can_id=can_id,
                                                                            target_address=target_address,
@@ -328,7 +328,7 @@ class TestNormalFixedCanAddressingInformation:
             "target_address": decoded_ta,
             "source_address": decoded_sa
         }
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             NormalFixedCanAddressingInformation.validate_addressing_params(addressing_type=addressing_type,
                                                                            can_id=can_id,
                                                                            target_address=ta,

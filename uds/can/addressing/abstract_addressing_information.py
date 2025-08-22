@@ -99,7 +99,7 @@ class AbstractCanAddressingInformation(AbstractAddressingInformation, ABC):
         :param address_extension: Address Extension value to validate.
 
         :raise UnusedArgumentError: At least one provided parameter is not supported by Addressing format used.
-        :raise InconsistentArgumentsError: Provided values are not consistent with each other (cannot be used together)
+        :raise InconsistencyError: Provided values are not consistent with each other (cannot be used together)
             or with the Addressing format used.
 
         :return: Normalized dictionary with the provided information.

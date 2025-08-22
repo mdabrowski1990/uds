@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from typing import List, Mapping, Optional, Sequence, Tuple, TypedDict, Union
 
-from uds.utilities import InconsistentArgumentsError, ReassignmentError
+from uds.utilities import InconsistencyError, ReassignmentError
 
 SinglePhysicalValueAlias = Union[int, float, str]
 """
@@ -156,10 +156,9 @@ class AbstractDataRecord(ABC):
         stripped_names = value.strip()
         if stripped_names == "":
             raise ValueError("Name must not be empty.")
-        if not hasattr(self, "_AbstractDataRecord__name"):
-            self.__name = stripped_names
-        else:
-            raise ReassignmentError("You cannot change Data Record name. Create a new Data Record instead.")
+        if hasattr(self, "_AbstractDataRecord__name"):
+            raise ReassignmentError("Value of 'name' attribute cannot be changed once assigned.")
+        self.__name = stripped_names
 
     @property
     def length(self) -> int:
@@ -181,10 +180,9 @@ class AbstractDataRecord(ABC):
             raise TypeError("Length must be an integer.")
         if value <= 0:
             raise ValueError("Length must be a positive value.")
-        if not hasattr(self, "_AbstractDataRecord__length"):
-            self.__length = value
-        else:
-            raise ReassignmentError("You cannot change Data Record length. Create a new Data Record instead.")
+        if hasattr(self, "_AbstractDataRecord__length"):
+            raise ReassignmentError("Value of 'length' attribute cannot be changed once assigned.")
+        self.__length = value
 
     @property
     def children(self) -> Tuple["AbstractDataRecord", ...]:
@@ -200,7 +198,7 @@ class AbstractDataRecord(ABC):
 
         :raise TypeError: Provided value is not a sequence.
         :raise ValueError: At least one of the provided elements in the sequence is not a Data Record or is reoccurring.
-        :raise InconsistentArgumentsError: Provided sequence of Data Records cannot be children for this Data Record.
+        :raise InconsistencyError: Provided sequence of Data Records cannot be children for this Data Record.
         """
         if not isinstance(value, Sequence):
             raise TypeError("Provided value is not a sequence.")
@@ -214,9 +212,9 @@ class AbstractDataRecord(ABC):
             children_length += child.length
             children_names.add(child.name)
         if children_length not in {self.length, 0}:
-            raise InconsistentArgumentsError("Total children length does not match the length of this Data Record.")
+            raise InconsistencyError("Total children length does not match the length of this Data Record.")
         if len(children_names) != len(value):
-            raise InconsistentArgumentsError("Each child has to have unique name.")
+            raise InconsistencyError("Each child has to have unique name.")
         self.__children = tuple(value)
 
     @property
@@ -239,11 +237,9 @@ class AbstractDataRecord(ABC):
             raise TypeError("Minimal occurrence number must be an integer.")
         if value < 0:
             raise ValueError("Minimal occurrence number must be a non-negative value.")
-        if not hasattr(self, "_AbstractDataRecord__min_occurrences"):
-            self.__min_occurrences = value
-        else:
-            raise ReassignmentError("You cannot change minimal number of Data Record occurrences. "
-                                    "Create a new Data Record instead.")
+        if hasattr(self, "_AbstractDataRecord__min_occurrences"):
+            raise ReassignmentError("Value of 'min_occurrences' attribute cannot be changed once assigned.")
+        self.__min_occurrences = value
 
     @property
     def max_occurrences(self) -> Optional[int]:
@@ -270,11 +266,9 @@ class AbstractDataRecord(ABC):
                 raise TypeError("Maximal occurrence number must be an integer or None.")
             if value < max(self.min_occurrences, 1):
                 raise ValueError("Maximal occurrence number must be greater or equal minimal occurrences number.")
-        if not hasattr(self, "_AbstractDataRecord__max_occurrences"):
-            self.__max_occurrences = value
-        else:
-            raise ReassignmentError("You cannot change maximal number of Data Record occurrences. "
-                                    "Create a new Data Record instead.")
+        if hasattr(self, "_AbstractDataRecord__max_occurrences"):
+            raise ReassignmentError("Value of 'max_occurrences' attribute cannot be changed once assigned.")
+        self.__max_occurrences = value
 
     @property
     def unit(self) -> Optional[str]:

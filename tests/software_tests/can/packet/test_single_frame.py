@@ -9,7 +9,7 @@ from uds.can.packet.single_frame import (
     SINGLE_FRAME_N_PCI,
     CanAddressingFormat,
     CanDlcHandler,
-    InconsistentArgumentsError,
+    InconsistencyError,
     create_single_frame_data,
     encode_sf_dl,
     extract_sf_dl,
@@ -165,7 +165,7 @@ class TestCanSingleFrame:
         mock_extract_sf_dl_data_bytes.return_value = sf_dl_data_bytes
         self.mock_can_dlc_handler.encode_dlc.return_value = dlc
         mock_get_single_frame_min_dlc.return_value = min_dlc
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             validate_single_frame_data(addressing_format=addressing_format,
                                        raw_frame_data=raw_frame_data)
         self.mock_validate_raw_bytes.assert_called_once_with(raw_frame_data, allow_empty=False)
@@ -257,7 +257,7 @@ class TestCanSingleFrame:
         mock_encode_sf_dl.return_value = sf_dl_bytes
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             create_single_frame_data(addressing_format=addressing_format,
                                      payload=payload,
                                      dlc=dlc,
@@ -356,7 +356,7 @@ class TestCanSingleFrame:
         self.mock_can_addressing_information.encode_ai_data_bytes.return_value = ai_data_bytes
         self.mock_can_dlc_handler.decode_dlc.return_value = data_bytes_number
         mock_generate_sf_dl_bytes.return_value = sf_dl_bytes
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             generate_single_frame_data(addressing_format=addressing_format,
                                        payload=payload,
                                        dlc=dlc,
@@ -475,7 +475,7 @@ class TestCanSingleFrame:
         self.mock_can_dlc_handler.decode_dlc.return_value = frame_data_bytes_number
         self.mock_can_addressing_information.get_ai_data_bytes_number.return_value = ai_data_bytes_number
         mock_get_sf_dl_bytes_number.return_value = sf_dl_bytes_number
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             get_max_sf_dl(addressing_format=addressing_format, dlc=dlc)
         self.mock_can_dlc_handler.decode_dlc.assert_called_once_with(dlc)
         self.mock_can_addressing_information.get_ai_data_bytes_number.assert_called_once_with(addressing_format)
@@ -618,7 +618,7 @@ class TestCanSingleFrame:
     def test_validate_sf_dl__inconsistent(self, mock_get_max_sf_dl,
                                           sf_dl, max_sf, dlc, addressing_format):
         mock_get_max_sf_dl.return_value = max_sf
-        with pytest.raises(InconsistentArgumentsError):
+        with pytest.raises(InconsistencyError):
             validate_sf_dl(sf_dl=sf_dl, dlc=dlc, addressing_format=addressing_format)
         mock_get_max_sf_dl.assert_called_once_with(addressing_format=addressing_format, dlc=dlc)
 

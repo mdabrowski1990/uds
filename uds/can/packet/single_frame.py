@@ -11,7 +11,7 @@ from typing import Optional
 from warnings import warn
 
 from uds.utilities import (
-    InconsistentArgumentsError,
+    InconsistencyError,
     RawBytesAlias,
     ValueWarning,
     validate_nibble,
@@ -61,7 +61,7 @@ def validate_single_frame_data(addressing_format: CanAddressingFormat, raw_frame
     :param raw_frame_data: Raw data bytes of a CAN frame to validate.
 
     :raise ValueError: The value of N_PCI in provided data is not Single Frame N_PCI.
-    :raise InconsistentArgumentsError: Provided frame data of a CAN frames does not carry a properly encoded
+    :raise InconsistencyError: Provided frame data of a CAN frames does not carry a properly encoded
         Single Frame CAN packet.
     """
     validate_raw_bytes(raw_frame_data, allow_empty=False)
@@ -74,15 +74,16 @@ def validate_single_frame_data(addressing_format: CanAddressingFormat, raw_frame
     else:
         sf_dl = sf_dl_data_bytes[1]
         if sf_dl_data_bytes[0] & 0xF != 0:
-            raise InconsistentArgumentsError("Value of Single Frame Data Length must use 0x00 at the first byte when "
-                                             "long SF_DL format (for DLC > {MAX_DLC_VALUE_SHORT_SF_DL})) is used.")
+            raise InconsistencyError("Value of Single Frame Data Length must use 0x00 at the first byte when "
+                                     f"long SF_DL format (for DLC > {MAX_DLC_VALUE_SHORT_SF_DL})) is used. "
+                                     f"Actual value: {sf_dl_data_bytes}.")
     min_dlc = get_single_frame_min_dlc(addressing_format=addressing_format, payload_length=sf_dl)
     if min_dlc > dlc:
-        raise InconsistentArgumentsError("Value of Single Frame Data Length is greater than number of payload bytes.")
+        raise InconsistencyError("Value of Single Frame Data Length is greater than number of payload bytes.")
     if min_dlc < dlc:
         if dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise InconsistentArgumentsError("Data padding was used for CAN frame with "
-                                             f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+            raise InconsistencyError("Data padding was used for CAN frame with "
+                                     f"DLC lesser than {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: {dlc}")
         if dlc > CanDlcHandler.MIN_BASE_UDS_DLC:
             warn(message=f"DLC greater than {CanDlcHandler.MIN_BASE_UDS_DLC} is used for CAN Packets "
                          f"without data padding which unnecessarily increases the bus load.",
@@ -117,7 +118,7 @@ def create_single_frame_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Provided `payload` contains invalid number of bytes.
+    :raise InconsistencyError: Provided `payload` contains invalid number of bytes.
 
     :return: Raw data bytes of a CAN frame.
     """
@@ -134,13 +135,13 @@ def create_single_frame_data(addressing_format: CanAddressingFormat,
                                addressing_format=addressing_format)
     sf_bytes = ai_data_bytes + sf_dl_bytes + bytearray(payload)
     if len(sf_bytes) > frame_data_bytes_number:
-        raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
-                                         "Consider increasing DLC value.")
+        raise InconsistencyError("Provided value of `payload` contains of too many bytes to fit in. "
+                                 "Consider increasing DLC value.")
     data_bytes_to_pad = frame_data_bytes_number - len(sf_bytes)
     if data_bytes_to_pad > 0:
         if dlc is not None and dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-            raise InconsistentArgumentsError("CAN Frame Data Padding shall not be used for CAN frames with "
-                                             f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+            raise InconsistencyError("CAN Frame Data Padding shall not be used for CAN frames with "
+                                     f"DLC < {CanDlcHandler.MIN_BASE_UDS_DLC}.")
     return sf_bytes + data_bytes_to_pad * bytearray([filler_byte])
 
 
@@ -172,7 +173,7 @@ def generate_single_frame_data(addressing_format: CanAddressingFormat,
         The value must only be provided if `addressing_format` requires CAN frame data field to contain
         Address Extension parameter.
 
-    :raise InconsistentArgumentsError: Provided `payload` contains invalid number of bytes.
+    :raise InconsistencyError: Provided `payload` contains invalid number of bytes.
 
     :return: Raw data bytes of a CAN frame.
     """
@@ -185,8 +186,8 @@ def generate_single_frame_data(addressing_format: CanAddressingFormat,
     sf_dl_bytes = generate_sf_dl_bytes(sf_dl_short=sf_dl_short, sf_dl_long=sf_dl_long)
     sf_bytes = ai_data_bytes + sf_dl_bytes + bytearray(payload)
     if len(sf_bytes) > frame_data_bytes_number:
-        raise InconsistentArgumentsError("Provided value of `payload` contains of too many bytes to fit in. "
-                                         "Consider increasing DLC value.")
+        raise InconsistencyError("Provided value of `payload` contains of too many bytes to fit in. "
+                                 "Consider increasing DLC value.")
     data_padding = ((frame_data_bytes_number - len(sf_bytes)) * bytearray([filler_byte]))
     return sf_bytes + data_padding
 
@@ -246,7 +247,7 @@ def get_max_sf_dl(addressing_format: CanAddressingFormat,
     :param dlc: DLC value to use.
         Leave None to get the result for the greatest possible DLC value.
 
-    :raise InconsistentArgumentsError: Single Frame packet cannot use provided attributes.
+    :raise InconsistencyError: Single Frame packet cannot use provided attributes.
 
     :return: The maximum number value of SF_DL for the provided DLC and CAN Addressing Format.
     """
@@ -260,8 +261,8 @@ def get_max_sf_dl(addressing_format: CanAddressingFormat,
         CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     output = frame_data_bytes_number - ai_data_bytes_number - sf_dl_bytes_number
     if output <= 0:
-        raise InconsistentArgumentsError("Provided values cannot be used to transmit a valid Single Frame packet. "
-                                         "Consider using greater DLC value or changing the CAN Addressing Format.")
+        raise InconsistencyError("Provided values cannot be used to transmit a valid Single Frame packet. "
+                                 "Consider using greater DLC value or changing the CAN Addressing Format.")
     return output
 
 
@@ -364,7 +365,7 @@ def validate_sf_dl(addressing_format: CanAddressingFormat,
 
     :raise TypeError: Provided value of Single Frame Data Length is not int type.
     :raise ValueError: Provided value of Single Frame Data Length is too small.
-    :raise InconsistentArgumentsError: It is impossible for a Single Frame with provided DLC to contain as many
+    :raise InconsistencyError: It is impossible for a Single Frame with provided DLC to contain as many
         payload bytes as the provided value of Single Frame Data Length.
     """
     if not isinstance(sf_dl, int):
@@ -373,5 +374,6 @@ def validate_sf_dl(addressing_format: CanAddressingFormat,
         raise ValueError(f"Provided value of Single Frame Data Length is too small (<1). Actual value: {sf_dl}")
     max_sf = get_max_sf_dl(addressing_format=addressing_format, dlc=dlc)
     if sf_dl > max_sf:
-        raise InconsistentArgumentsError("Provided value of `sf_dl` is greater than maximum valid value of "
-                                         "Single Frame Data Length for provided DLC and Addressing Format.")
+        raise InconsistencyError("Provided value of `sf_dl` is greater than maximum valid value of Single Frame "
+                                 "Data Length for provided DLC and Addressing Format. "
+                                 f"Max SF_DL = {max_sf}. Actual value: {sf_dl}.")

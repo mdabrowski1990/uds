@@ -14,16 +14,16 @@ class ReassignmentError(Exception):
     """
 
 
-class InconsistentArgumentsError(ValueError):
+class InconsistencyError(ValueError):
     """
-    Provided arguments values are not compatible with each other.
+    An attempt to set a value that cannot be used with other provided or already set value.
 
     Example:
         A function takes two parameters: `a`, `b`
 
         Let's assume that the function requires that: `a > b`
 
-        The function would raise InconsistentArgumentsError when values of `a` and `b` are not satisfying
+        The function would raise InconsistencyError when values of `a` and `b` are not satisfying
         the requirement (`a > b`), e.g. `a = 0`, `b = 1`.
     """
 
