@@ -76,7 +76,7 @@ def validate_single_frame_data(addressing_format: CanAddressingFormat, raw_frame
         if sf_dl_data_bytes[0] & 0xF != 0:
             raise InconsistencyError("Value of Single Frame Data Length must use 0x00 at the first byte when "
                                      f"long SF_DL format (for DLC > {MAX_DLC_VALUE_SHORT_SF_DL})) is used. "
-                                     f"Actual value: 0x{sf_dl_data_bytes:02X}.")
+                                     f"Actual value: {sf_dl_data_bytes}.")
     min_dlc = get_single_frame_min_dlc(addressing_format=addressing_format, payload_length=sf_dl)
     if min_dlc > dlc:
         raise InconsistencyError("Value of Single Frame Data Length is greater than number of payload bytes.")
