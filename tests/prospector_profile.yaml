@@ -6,7 +6,6 @@ doc-warnings: true
 autodetect: false
 test-warnings: true
 
-
 # default tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#defaults
 
 pep8:
@@ -44,7 +43,6 @@ mccabe:
   options:
     max-complexity: 12
 
-
 # additional tools configuration: http://prospector.landscape.io/en/master/supported_tools.html#optional-extras
 
 mypy:
@@ -54,11 +52,10 @@ mypy:
   disable:
     - attr-defined
 
-
 vulture:
   run: true
 
-bandit:  # there is probably no use of it (not applicable for this project), but it is run anyway to make sure everything is secured
+bandit:  # run it as a security precaution
   run: true
 
 pyroma:
