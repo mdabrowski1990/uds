@@ -17,8 +17,8 @@ pep8:
 pylint:
   options:
     max-line-length: 120
-    max-args: 10
-    max-positional-arguments: 10
+    max-args: 12
+    max-positional-arguments: 12
     max-attributes: 25
     min-public-methods: 1
     max-public-methods: 30

@@ -83,8 +83,16 @@ class TestPyCanTransportInterface:
     # __init__
 
     @pytest.mark.parametrize("network_manager, addressing_information, configuration_params", [
-        (Mock(), Mock(), {}),
-        (Mock(spec=BusABC), Mock(spec=CanAddressingInformation), {"param1": Mock(), "param2": Mock(), "dlc": 8}),
+        (
+            Mock(),
+            Mock(),
+            {}
+        ),
+        (
+            Mock(spec=BusABC),
+            Mock(spec=CanAddressingInformation),
+            {"network_manager_receives_own_frames": False, "param1": Mock(), "param2": Mock(), "dlc": 8}
+        ),
     ])
     def test_init(self, network_manager, addressing_information, configuration_params):
         assert PyCanTransportInterface.__init__(self=self.mock_can_transport_interface,
@@ -97,9 +105,11 @@ class TestPyCanTransportInterface:
                 == self.mock_async_buffered_reader.return_value)
         assert self.mock_can_transport_interface._PyCanTransportInterface__notifier is None
         assert self.mock_can_transport_interface._PyCanTransportInterface__async_notifier is None
-        self.mock_abstract_can_ti_init.assert_called_once_with(network_manager=network_manager,
-                                                               addressing_information=addressing_information,
-                                                               **configuration_params)
+        self.mock_abstract_can_ti_init.assert_called_once_with(
+            network_manager=network_manager,
+            addressing_information=addressing_information,
+            network_manager_receives_own_frames=configuration_params.pop("network_manager_receives_own_frames", True),
+            **configuration_params)
         self.mock_buffered_reader.assert_called_once()
         self.mock_async_buffered_reader.assert_called_once()
 

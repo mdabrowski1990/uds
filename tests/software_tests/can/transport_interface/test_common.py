@@ -58,19 +58,23 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == AbstractCanTransportInterface.DEFAULT_FLOW_CONTROL_PARAMETERS)
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
-        self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
+        self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager,
+                                                                            network_manager_receives_own_frames=True)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information)
 
-    @pytest.mark.parametrize("network_manager, addressing_information, n_as_timeout, n_ar_timeout, n_bs_timeout, "
-                             "n_br, n_cs, n_cr_timeout, flow_control_parameters_generator, segmenter_configuration", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), {"a": 1, "bc": 2, "def_xyz": Mock()})
+    @pytest.mark.parametrize("network_manager, addressing_information, network_manager_receives_own_frames, "
+                             "n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout, "
+                             "flow_control_parameters_generator, segmenter_configuration", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), {"a": 1, "bc": 2, "def_xyz": Mock()})
     ])
-    def test_init__all_args(self, network_manager, addressing_information, n_as_timeout, n_ar_timeout, n_bs_timeout,
-                            n_br, n_cs, n_cr_timeout, flow_control_parameters_generator, segmenter_configuration):
+    def test_init__all_args(self, network_manager, addressing_information, network_manager_receives_own_frames,
+                            n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout,
+                            flow_control_parameters_generator, segmenter_configuration):
         assert AbstractCanTransportInterface.__init__(
             self.mock_can_transport_interface,
             network_manager=network_manager,
             addressing_information=addressing_information,
+            network_manager_receives_own_frames=network_manager_receives_own_frames,
             n_as_timeout=n_as_timeout,
             n_ar_timeout=n_ar_timeout,
             n_bs_timeout=n_bs_timeout,
@@ -92,232 +96,11 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == flow_control_parameters_generator)
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
-        self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
+        self.mock_abstract_transport_interface_init.assert_called_once_with(
+            network_manager=network_manager,
+            network_manager_receives_own_frames=network_manager_receives_own_frames)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information,
                                                         **segmenter_configuration)
-
-    # _update_n_ar_measured
-
-    @pytest.mark.parametrize("value", [Mock(), "some value"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_ar_measured__type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value)
-        mock_isinstance.assert_called_once_with(value, (int, float))
-
-    @pytest.mark.parametrize("value", [-1, -0.0001])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_ar_measured__value_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
-        with pytest.raises(ValueError):
-            AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value)
-        mock_isinstance.assert_called_once_with(value, (int, float))
-
-    @pytest.mark.parametrize("value", [0, AbstractCanTransportInterface.N_AR_TIMEOUT])
-    def test_update_n_ar_measured__no_warning(self, value):
-        self.mock_can_transport_interface.n_ar_timeout = AbstractCanTransportInterface.N_AR_TIMEOUT
-        assert AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured == value
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("value, n_ar_timeout", [
-        (AbstractCanTransportInterface.N_AR_TIMEOUT + 1, AbstractCanTransportInterface.N_AR_TIMEOUT),
-        (AbstractCanTransportInterface.N_AR_TIMEOUT - 1, AbstractCanTransportInterface.N_AR_TIMEOUT // 2),
-    ])
-    def test_update_n_ar_measured__warning(self, value, n_ar_timeout):
-        self.mock_can_transport_interface.n_ar_timeout = n_ar_timeout
-        assert AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured == value
-        self.mock_warn.assert_called_once()
-        
-    # _update_n_as_measured
-
-    @pytest.mark.parametrize("value", [Mock(), "some value"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_as_measured__type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value)
-        mock_isinstance.assert_called_once_with(value, (int, float))
-
-    @pytest.mark.parametrize("value", [-1, -0.0001])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_as_measured__value_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
-        with pytest.raises(ValueError):
-            AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value)
-        mock_isinstance.assert_called_once_with(value, (int, float))
-
-    @pytest.mark.parametrize("value", [0, AbstractCanTransportInterface.N_AS_TIMEOUT])
-    def test_update_n_as_measured__no_warning(self, value):
-        self.mock_can_transport_interface.n_as_timeout = AbstractCanTransportInterface.N_AS_TIMEOUT
-        assert AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured == value
-        self.mock_warn.assert_not_called()
-
-    @pytest.mark.parametrize("value, n_as_timeout", [
-        (AbstractCanTransportInterface.N_AS_TIMEOUT + 1, AbstractCanTransportInterface.N_AS_TIMEOUT),
-        (AbstractCanTransportInterface.N_AS_TIMEOUT - 1, AbstractCanTransportInterface.N_AS_TIMEOUT // 2),
-    ])
-    def test_update_n_as_measured__warning(self, value, n_as_timeout):
-        self.mock_can_transport_interface.n_as_timeout = n_as_timeout
-        assert AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured == value
-        self.mock_warn.assert_called_once()
-
-    # _update_n_bs_measured
-
-    @pytest.mark.parametrize("message_record", [
-        Mock(), "not a message"
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_bs_measured__type_error(self, mock_isinstance, message_record):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
-                                                                message_record=message_record)
-        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
-
-    @pytest.mark.parametrize("message_record", [
-        Mock(direction=TransmissionDirection.RECEIVED), Mock(direction="not transmitted")
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_bs_measured__value_error(self, mock_isinstance, message_record):
-        mock_isinstance.return_value = True
-        with pytest.raises(ValueError):
-            AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
-                                                                message_record=message_record)
-        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
-
-    def test_update_n_bs_measured__1_record(self):
-        mock_message_record = Mock(spec=UdsMessageRecord,
-                                   direction=TransmissionDirection.TRANSMITTED,
-                                   packets_records=(Mock(spec=CanPacketRecord),))
-        assert AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
-                                                                   message_record=mock_message_record) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured is None
-
-    @pytest.mark.parametrize("message_record, expected_n_bs_measurements", [
-        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.TRANSMITTED, packets_records=(
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
-                     transmission_time=datetime(year=1234, month=1, day=2)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=1000)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=3000)))),
-         (1,)),
-        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.TRANSMITTED, packets_records=(
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=12,
-                                                microsecond=987654)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=154)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=57000)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=58954)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=58955)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=868955)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=14,
-                                                microsecond=955)),
-        )),
-         (12.5, 56.846, 0.001)),
-    ])
-    def test_update_n_bs_measured__multiple_records(self, message_record, expected_n_bs_measurements):
-        assert AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
-                                                                   message_record=message_record) is None
-        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured
-                == expected_n_bs_measurements)
-
-    # _update_n_cr_measured
-
-    @pytest.mark.parametrize("message_record", [
-        Mock(), "not a message"
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_cr_measured__type_error(self, mock_isinstance, message_record):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
-                                                                message_record=message_record)
-        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
-
-    @pytest.mark.parametrize("message_record", [
-        Mock(direction=TransmissionDirection.TRANSMITTED), Mock(direction="not received")
-    ])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_update_n_cr_measured__value_error(self, mock_isinstance, message_record):
-        mock_isinstance.return_value = True
-        with pytest.raises(ValueError):
-            AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
-                                                                message_record=message_record)
-        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
-
-    def test_update_n_cr_measured__1_record(self):
-        mock_message_record = Mock(spec=UdsMessageRecord,
-                                   direction=TransmissionDirection.RECEIVED,
-                                   packets_records=(Mock(spec=CanPacketRecord),))
-        assert AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
-                                                                   message_record=mock_message_record) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured is None
-
-    @pytest.mark.parametrize("message, expected_n_cr_measurements", [
-        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.RECEIVED, packets_records=(
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
-                     transmission_time=datetime(year=1234, month=1, day=2)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=1000)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=3000)))),
-         (2,)),
-        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.RECEIVED, packets_records=(
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=12,
-                                                microsecond=987654)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=154)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=57000)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=58954)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=58955)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
-                                                microsecond=868955)),
-                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
-                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=14,
-                                                microsecond=955)),
-        )),
-         (1.954, 810.0, 132)),
-    ])
-    def test_update_n_cr_measured__multiple_records(self, message, expected_n_cr_measurements):
-        assert AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
-                                                                   message_record=message) is None
-        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured
-                == expected_n_cr_measurements)
-
-    # clear_measurements
-
-    def test_clear_measurements(self):
-        assert AbstractCanTransportInterface.clear_measurements(self.mock_can_transport_interface) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured is None
 
     # segmenter
 
@@ -341,6 +124,65 @@ class TestAbstractCanTransportInterface:
         with pytest.raises(TypeError):
             AbstractCanTransportInterface.segmenter.fset(self.mock_can_transport_interface, value)
         mock_isinstance.assert_called_once_with(value, self.mock_can_segmenter)
+
+        # dlc
+
+    def test_dlc__get(self):
+        assert AbstractCanTransportInterface.dlc.fget(self.mock_can_transport_interface) \
+               == self.mock_can_transport_interface.segmenter.dlc
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_dlc__set(self, value):
+        AbstractCanTransportInterface.dlc.fset(self.mock_can_transport_interface, value)
+        assert self.mock_can_transport_interface.segmenter.dlc == value
+
+    # use_data_optimization
+
+    def test_use_data_optimization__get(self):
+        assert AbstractCanTransportInterface.use_data_optimization.fget(self.mock_can_transport_interface) \
+               == self.mock_can_transport_interface.segmenter.use_data_optimization
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_use_data_optimization__set(self, value):
+        AbstractCanTransportInterface.use_data_optimization.fset(self.mock_can_transport_interface, value)
+        assert self.mock_can_transport_interface.segmenter.use_data_optimization == value
+
+    # filler_byte
+
+    def test_filler_byte__get(self):
+        assert AbstractCanTransportInterface.filler_byte.fget(self.mock_can_transport_interface) \
+               == self.mock_can_transport_interface.segmenter.filler_byte
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_filler_byte__set(self, value):
+        AbstractCanTransportInterface.filler_byte.fset(self.mock_can_transport_interface, value)
+        assert self.mock_can_transport_interface.segmenter.filler_byte == value
+
+    # flow_control_parameters_generator
+
+    def test_flow_control_parameters_generator__get(self):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator = Mock()
+        assert (AbstractCanTransportInterface.flow_control_parameters_generator.fget(self.mock_can_transport_interface)
+                == self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator)
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_flow_control_parameters_generator__set(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        assert AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface,
+                                                                                    value) is None
+        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator
+                == value)
+        mock_isinstance.assert_called_once_with(value, AbstractFlowControlParametersGenerator)
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_flow_control_parameters_generator__set__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface,
+                                                                                 value)
+        mock_isinstance.assert_called_once_with(value, AbstractFlowControlParametersGenerator)
 
     # n_as
 
@@ -688,60 +530,225 @@ class TestAbstractCanTransportInterface:
         assert (AbstractCanTransportInterface.n_cr_measured.fget(self.mock_can_transport_interface)
                 == self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured)
 
-    # dlc
+    # _update_n_ar_measured
 
-    def test_dlc__get(self):
-        assert AbstractCanTransportInterface.dlc.fget(self.mock_can_transport_interface) \
-               == self.mock_can_transport_interface.segmenter.dlc
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_dlc__set(self, value):
-        AbstractCanTransportInterface.dlc.fset(self.mock_can_transport_interface, value)
-        assert self.mock_can_transport_interface.segmenter.dlc == value
-
-    # use_data_optimization
-
-    def test_use_data_optimization__get(self):
-        assert AbstractCanTransportInterface.use_data_optimization.fget(self.mock_can_transport_interface) \
-               == self.mock_can_transport_interface.segmenter.use_data_optimization
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_use_data_optimization__set(self, value):
-        AbstractCanTransportInterface.use_data_optimization.fset(self.mock_can_transport_interface, value)
-        assert self.mock_can_transport_interface.segmenter.use_data_optimization == value
-
-    # filler_byte
-
-    def test_filler_byte__get(self):
-        assert AbstractCanTransportInterface.filler_byte.fget(self.mock_can_transport_interface) \
-               == self.mock_can_transport_interface.segmenter.filler_byte
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    def test_filler_byte__set(self, value):
-        AbstractCanTransportInterface.filler_byte.fset(self.mock_can_transport_interface, value)
-        assert self.mock_can_transport_interface.segmenter.filler_byte == value
-
-    # flow_control_parameters_generator
-
-    def test_flow_control_parameters_generator__get(self):
-        self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator = Mock()
-        assert (AbstractCanTransportInterface.flow_control_parameters_generator.fget(self.mock_can_transport_interface)
-                == self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator)
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
+    @pytest.mark.parametrize("value", [Mock(), "some value"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_flow_control_parameters_generator__set(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
-        assert AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface,
-                                                                                    value) is None
-        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator
-                == value)
-        mock_isinstance.assert_called_once_with(value, AbstractFlowControlParametersGenerator)
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_flow_control_parameters_generator__set__type_error(self, mock_isinstance, value):
+    def test_update_n_ar_measured__type_error(self, mock_isinstance, value):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
-            AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface, value)
-        mock_isinstance.assert_called_once_with(value, AbstractFlowControlParametersGenerator)
+            AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value)
+        mock_isinstance.assert_called_once_with(value, (int, float))
+
+    @pytest.mark.parametrize("value", [-1, -0.0001])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_n_ar_measured__value_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        with pytest.raises(ValueError):
+            AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value)
+        mock_isinstance.assert_called_once_with(value, (int, float))
+
+    @pytest.mark.parametrize("value", [0, AbstractCanTransportInterface.N_AR_TIMEOUT])
+    def test_update_n_ar_measured__no_warning(self, value):
+        self.mock_can_transport_interface.n_ar_timeout = AbstractCanTransportInterface.N_AR_TIMEOUT
+        assert AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured == value
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("value, n_ar_timeout", [
+        (AbstractCanTransportInterface.N_AR_TIMEOUT + 1, AbstractCanTransportInterface.N_AR_TIMEOUT),
+        (AbstractCanTransportInterface.N_AR_TIMEOUT - 1, AbstractCanTransportInterface.N_AR_TIMEOUT // 2),
+    ])
+    def test_update_n_ar_measured__warning(self, value, n_ar_timeout):
+        self.mock_can_transport_interface.n_ar_timeout = n_ar_timeout
+        assert AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured == value
+        self.mock_warn.assert_called_once()
+        
+    # _update_n_as_measured
+
+    @pytest.mark.parametrize("value", [Mock(), "some value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_n_as_measured__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value)
+        mock_isinstance.assert_called_once_with(value, (int, float))
+
+    @pytest.mark.parametrize("value", [-1, -0.0001])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_n_as_measured__value_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        with pytest.raises(ValueError):
+            AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value)
+        mock_isinstance.assert_called_once_with(value, (int, float))
+
+    @pytest.mark.parametrize("value", [0, AbstractCanTransportInterface.N_AS_TIMEOUT])
+    def test_update_n_as_measured__no_warning(self, value):
+        self.mock_can_transport_interface.n_as_timeout = AbstractCanTransportInterface.N_AS_TIMEOUT
+        assert AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured == value
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("value, n_as_timeout", [
+        (AbstractCanTransportInterface.N_AS_TIMEOUT + 1, AbstractCanTransportInterface.N_AS_TIMEOUT),
+        (AbstractCanTransportInterface.N_AS_TIMEOUT - 1, AbstractCanTransportInterface.N_AS_TIMEOUT // 2),
+    ])
+    def test_update_n_as_measured__warning(self, value, n_as_timeout):
+        self.mock_can_transport_interface.n_as_timeout = n_as_timeout
+        assert AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured == value
+        self.mock_warn.assert_called_once()
+
+    # _update_n_bs_measured
+
+    @pytest.mark.parametrize("message_record", [
+        Mock(), "not a message"
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_n_bs_measured__type_error(self, mock_isinstance, message_record):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
+                                                                message_record=message_record)
+        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
+
+    @pytest.mark.parametrize("message_record", [
+        Mock(direction=TransmissionDirection.RECEIVED), Mock(direction="not transmitted")
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_n_bs_measured__value_error(self, mock_isinstance, message_record):
+        mock_isinstance.return_value = True
+        with pytest.raises(ValueError):
+            AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
+                                                                message_record=message_record)
+        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
+
+    def test_update_n_bs_measured__1_record(self):
+        mock_message_record = Mock(spec=UdsMessageRecord,
+                                   direction=TransmissionDirection.TRANSMITTED,
+                                   packets_records=(Mock(spec=CanPacketRecord),))
+        assert AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
+                                                                   message_record=mock_message_record) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured is None
+
+    @pytest.mark.parametrize("message_record, expected_n_bs_measurements", [
+        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.TRANSMITTED, packets_records=(
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
+                     transmission_time=datetime(year=1234, month=1, day=2)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=1000)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=3000)))),
+         (1,)),
+        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.TRANSMITTED, packets_records=(
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=12,
+                                                microsecond=987654)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=154)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=57000)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=58954)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=58955)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=868955)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=14,
+                                                microsecond=955)),
+        )),
+         (12.5, 56.846, 0.001)),
+    ])
+    def test_update_n_bs_measured__multiple_records(self, message_record, expected_n_bs_measurements):
+        assert AbstractCanTransportInterface._update_n_bs_measured(self.mock_can_transport_interface,
+                                                                   message_record=message_record) is None
+        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured
+                == expected_n_bs_measurements)
+
+    # _update_n_cr_measured
+
+    @pytest.mark.parametrize("message_record", [
+        Mock(), "not a message"
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_n_cr_measured__type_error(self, mock_isinstance, message_record):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
+                                                                message_record=message_record)
+        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
+
+    @pytest.mark.parametrize("message_record", [
+        Mock(direction=TransmissionDirection.TRANSMITTED), Mock(direction="not received")
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_update_n_cr_measured__value_error(self, mock_isinstance, message_record):
+        mock_isinstance.return_value = True
+        with pytest.raises(ValueError):
+            AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
+                                                                message_record=message_record)
+        mock_isinstance.assert_called_once_with(message_record, UdsMessageRecord)
+
+    def test_update_n_cr_measured__1_record(self):
+        mock_message_record = Mock(spec=UdsMessageRecord,
+                                   direction=TransmissionDirection.RECEIVED,
+                                   packets_records=(Mock(spec=CanPacketRecord),))
+        assert AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
+                                                                   message_record=mock_message_record) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured is None
+
+    @pytest.mark.parametrize("message, expected_n_cr_measurements", [
+        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.RECEIVED, packets_records=(
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
+                     transmission_time=datetime(year=1234, month=1, day=2)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=1000)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=1234, month=1, day=2, microsecond=3000)))),
+         (2,)),
+        (Mock(spec=UdsMessageRecord, direction=TransmissionDirection.RECEIVED, packets_records=(
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FIRST_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=12,
+                                                microsecond=987654)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=154)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=57000)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=58954)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.FLOW_CONTROL,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=58955)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=13,
+                                                microsecond=868955)),
+                Mock(spec=CanPacketRecord, packet_type=CanPacketType.CONSECUTIVE_FRAME,
+                     transmission_time=datetime(year=2024, month=9, day=22, hour=14, minute=43, second=14,
+                                                microsecond=955)),
+        )),
+         (1.954, 810.0, 132)),
+    ])
+    def test_update_n_cr_measured__multiple_records(self, message, expected_n_cr_measurements):
+        assert AbstractCanTransportInterface._update_n_cr_measured(self.mock_can_transport_interface,
+                                                                   message_record=message) is None
+        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured
+                == expected_n_cr_measurements)
+
+    # clear_measurements
+
+    def test_clear_measurements(self):
+        assert AbstractCanTransportInterface.clear_measurements(self.mock_can_transport_interface) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured is None

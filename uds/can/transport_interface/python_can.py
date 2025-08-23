@@ -36,15 +36,20 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def __init__(self,
                  network_manager: BusABC,
                  addressing_information: AbstractCanAddressingInformation,
+                 network_manager_receives_own_frames: bool = True,
                  **configuration_params: Any) -> None:
         """
         Create Transport Interface that uses python-can package to control CAN bus.
 
         :param network_manager: Python-can bus object for handling CAN network.
-
-            .. warning:: Bus must have capability of observing transmitted frames.
-
         :param addressing_information: Addressing Information of UDS entity simulated by this CAN Transport Interface.
+        :param network_manager_receives_own_frames: Whether provided network manager receives own frames.
+
+            .. warning:: It is recommended to have this flag set and switch it to False only when network manager does
+                not receive own frames.
+                When this flag is False, CAN Frames transmission time is altered which affects accuracy of all
+                measured timing parameters.
+
         :param configuration_params: Additional configuration parameters.
 
             - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
@@ -62,6 +67,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         super().__init__(network_manager=network_manager,
                          addressing_information=addressing_information,
+                         network_manager_receives_own_frames=network_manager_receives_own_frames,
                          **configuration_params)
         self.__frames_buffer = BufferedReader()
         self.__async_frames_buffer = AsyncBufferedReader()

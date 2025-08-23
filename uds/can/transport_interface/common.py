@@ -44,6 +44,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     def __init__(self,
                  network_manager: Any,
                  addressing_information: AbstractCanAddressingInformation,
+                 network_manager_receives_own_frames: bool = True,
                  n_as_timeout: TimeMillisecondsAlias = N_AS_TIMEOUT,
                  n_ar_timeout: TimeMillisecondsAlias = N_AR_TIMEOUT,
                  n_bs_timeout: TimeMillisecondsAlias = N_BS_TIMEOUT,
@@ -58,6 +59,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :param network_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
         :param addressing_information: Addressing Information of UDS entity simulated by this CAN Transport Interface.
+        :param network_manager_receives_own_frames: Whether provided network manager receives own frames.
         :param n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
         :param n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
         :param n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
@@ -73,7 +75,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             - :parameter filler_byte: Filler byte value to use for
                 :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
         """
-        super().__init__(network_manager=network_manager)
+        super().__init__(network_manager=network_manager,
+                         network_manager_receives_own_frames=network_manager_receives_own_frames)
         self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
@@ -87,96 +90,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.flow_control_parameters_generator = flow_control_parameters_generator
         self.segmenter = CanSegmenter(addressing_information=addressing_information, **segmenter_configuration)
 
-    # Common
-
-    def _update_n_ar_measured(self, value: TimeMillisecondsAlias) -> None:
-        """
-        Update measured values of :ref:`N_Ar <knowledge-base-can-n-ar>`.
-
-        :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
-        """
-        if not isinstance(value, (int, float)):
-            raise TypeError("Provided value is not int or float type.")
-        if value < 0:
-            raise ValueError("Provided time parameter cannot be a negative number.")
-        if value > self.n_ar_timeout:
-            warn("Measured value of N_Ar was greater than N_Ar timeout.",
-                 category=ValueWarning)
-        self.__n_ar_measured = value
-
-    def _update_n_as_measured(self, value: TimeMillisecondsAlias) -> None:
-        """
-        Update measured values of :ref:`N_As <knowledge-base-can-n-as>`.
-
-        :param value: Value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
-        """
-        if not isinstance(value, (int, float)):
-            raise TypeError("Provided value is not int or float type.")
-        if value < 0:
-            raise ValueError("Provided time parameter cannot be a negative number.")
-        if value > self.n_as_timeout:
-            warn("Measured value of N_As was greater than N_As timeout.",
-                 category=ValueWarning)
-        self.__n_as_measured = value
-
-    def _update_n_bs_measured(self, message_record: UdsMessageRecord) -> None:
-        """
-        Update measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` according to timestamps of CAN packet records.
-
-        :param message_record: Record of UDS message transmitted over CAN.
-
-        :raise TypeError: Provided value is not UDS message record.
-        :raise ValueError: Provided UDS message record was not transmitted.
-        """
-        if not isinstance(message_record, UdsMessageRecord):
-            raise TypeError("Provided value is not UDS Message Record type.")
-        if message_record.direction != TransmissionDirection.TRANSMITTED:
-            raise ValueError("Provided UDS Message Record was not transmitted.")
-        if len(message_record.packets_records) == 1:
-            self.__n_bs_measured = None
-        else:
-            n_bs_measured = []
-            for i, packet_record in enumerate(message_record.packets_records[1:]):
-                if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
-                    n_bs = packet_record.transmission_time - message_record.packets_records[i].transmission_time
-                    n_bs_measured.append(round(n_bs.total_seconds() * 1000, 3))
-            self.__n_bs_measured = tuple(n_bs_measured)
-
-    def _update_n_cr_measured(self, message_record: UdsMessageRecord) -> None:
-        """
-        Update measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` according to timestamps of CAN packet records.
-
-        :param message_record: Record of UDS message received over CAN.
-
-        :raise TypeError: Provided value is not UDS message record.
-        :raise ValueError: Provided UDS message record was not received.
-        """
-        if not isinstance(message_record, UdsMessageRecord):
-            raise TypeError("Provided value is not UDS Message Record type.")
-        if message_record.direction != TransmissionDirection.RECEIVED:
-            raise ValueError("Provided UDS Message Record was not received.")
-        if len(message_record.packets_records) == 1:
-            self.__n_cr_measured = None
-        else:
-            n_cr_measured = []
-            for i, packet_record in enumerate(message_record.packets_records[1:]):
-                if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-                    n_cr = packet_record.transmission_time - message_record.packets_records[i].transmission_time
-                    n_cr_measured.append(round(n_cr.total_seconds() * 1000, 3))
-            self.__n_cr_measured = tuple(n_cr_measured)
-
-    def clear_measurements(self) -> None:
-        """Clear measured values of CAN communication parameters."""
-        self.__n_ar_measured = None
-        self.__n_as_measured = None
-        self.__n_bs_measured = None
-        self.__n_cr_measured = None
+    # General
 
     @property
     def segmenter(self) -> CanSegmenter:
@@ -195,6 +109,87 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         if not isinstance(value, CanSegmenter):
             raise TypeError("Provided value is not CAN Segmenter type.")
         self.__segmenter = value
+
+    # Communication parameters
+
+    @property
+    def dlc(self) -> int:
+        """
+        Value of base CAN DLC to use for output CAN packets.
+
+        .. note:: All output CAN packets will have this DLC value set unless
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
+        """
+        return self.segmenter.dlc
+
+    @dlc.setter
+    def dlc(self, value: int) -> None:
+        """
+        Set value of base CAN DLC to use for output CAN packets.
+
+        :param value: Value to set.
+        """
+        self.segmenter.dlc = value
+
+    @property
+    def use_data_optimization(self) -> bool:
+        """
+        Information whether to use CAN Frame Data Optimization during CAN packets creation.
+
+        .. seealso::
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+        """
+        return self.segmenter.use_data_optimization
+
+    @use_data_optimization.setter
+    def use_data_optimization(self, value: bool) -> None:
+        """
+        Set whether to use CAN Frame Data Optimization during CAN packets creation.
+
+        .. seealso::
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+
+        :param value: Value to set.
+        """
+        self.segmenter.use_data_optimization = value
+
+    @property
+    def filler_byte(self) -> int:
+        """
+        Filler byte value to use for output CAN Frame Data Padding during segmentation.
+
+        .. seealso::
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
+        """
+        return self.segmenter.filler_byte
+
+    @filler_byte.setter
+    def filler_byte(self, value: int) -> None:
+        """
+        Set value of filler byte to use for output CAN Frame Data Padding.
+
+        .. seealso::
+            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
+
+        :param value: Value to set.
+        """
+        self.segmenter.filler_byte = value
+
+    @property
+    def flow_control_parameters_generator(self) -> AbstractFlowControlParametersGenerator:
+        """Get generator of Flow Control parameters (Flow Status, Block Size, Separation Time minimum)."""
+        return self.__flow_control_parameters_generator
+
+    @flow_control_parameters_generator.setter
+    def flow_control_parameters_generator(self, value: AbstractFlowControlParametersGenerator) -> None:
+        """
+        Set value of Flow Control parameters (Flow Status, Block Size, Separation Time minimum) generator.
+
+        :param value: Value to set.
+        """
+        if not isinstance(value, AbstractFlowControlParametersGenerator):
+            raise TypeError("Provided Flow Control parameters generator value has incorrect type.")
+        self.__flow_control_parameters_generator = value
 
     # Time parameter - CAN Network Layer
 
@@ -431,83 +426,91 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         """
         return self.__n_cr_measured
 
-    # Communication parameters
-
-    @property
-    def dlc(self) -> int:
+    def _update_n_ar_measured(self, value: TimeMillisecondsAlias) -> None:
         """
-        Value of base CAN DLC to use for output CAN packets.
-
-        .. note:: All output CAN packets will have this DLC value set unless
-            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
-        """
-        return self.segmenter.dlc
-
-    @dlc.setter
-    def dlc(self, value: int) -> None:
-        """
-        Set value of base CAN DLC to use for output CAN packets.
+        Update measured values of :ref:`N_Ar <knowledge-base-can-n-ar>`.
 
         :param value: Value to set.
-        """
-        self.segmenter.dlc = value
 
-    @property
-    def use_data_optimization(self) -> bool:
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range.
         """
-        Information whether to use CAN Frame Data Optimization during CAN packets creation.
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value < 0:
+            raise ValueError("Provided time parameter cannot be a negative number.")
+        if value > self.n_ar_timeout:
+            warn("Measured value of N_Ar was greater than N_Ar timeout.",
+                 category=ValueWarning)
+        self.__n_ar_measured = value
 
-        .. seealso::
-            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+    def _update_n_as_measured(self, value: TimeMillisecondsAlias) -> None:
         """
-        return self.segmenter.use_data_optimization
-
-    @use_data_optimization.setter
-    def use_data_optimization(self, value: bool) -> None:
-        """
-        Set whether to use CAN Frame Data Optimization during CAN packets creation.
-
-        .. seealso::
-            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`
+        Update measured values of :ref:`N_As <knowledge-base-can-n-as>`.
 
         :param value: Value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range.
         """
-        self.segmenter.use_data_optimization = value
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided value is not int or float type.")
+        if value < 0:
+            raise ValueError("Provided time parameter cannot be a negative number.")
+        if value > self.n_as_timeout:
+            warn("Measured value of N_As was greater than N_As timeout.",
+                 category=ValueWarning)
+        self.__n_as_measured = value
 
-    @property
-    def filler_byte(self) -> int:
+    def _update_n_bs_measured(self, message_record: UdsMessageRecord) -> None:
         """
-        Filler byte value to use for output CAN Frame Data Padding during segmentation.
+        Update measured values of :ref:`N_Bs <knowledge-base-can-n-bs>` according to timestamps of CAN packet records.
 
-        .. seealso::
-            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
+        :param message_record: Record of UDS message transmitted over CAN.
+
+        :raise TypeError: Provided value is not UDS message record.
+        :raise ValueError: Provided UDS message record was not transmitted.
         """
-        return self.segmenter.filler_byte
+        if not isinstance(message_record, UdsMessageRecord):
+            raise TypeError("Provided value is not UDS Message Record type.")
+        if message_record.direction != TransmissionDirection.TRANSMITTED:
+            raise ValueError("Provided UDS Message Record was not transmitted.")
+        if len(message_record.packets_records) == 1:
+            self.__n_bs_measured = None
+        else:
+            n_bs_measured = []
+            for i, packet_record in enumerate(message_record.packets_records[1:]):
+                if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
+                    n_bs = packet_record.transmission_time - message_record.packets_records[i].transmission_time
+                    n_bs_measured.append(round(n_bs.total_seconds() * 1000, 3))
+            self.__n_bs_measured = tuple(n_bs_measured)
 
-    @filler_byte.setter
-    def filler_byte(self, value: int) -> None:
+    def _update_n_cr_measured(self, message_record: UdsMessageRecord) -> None:
         """
-        Set value of filler byte to use for output CAN Frame Data Padding.
+        Update measured values of :ref:`N_Cr <knowledge-base-can-n-cr>` according to timestamps of CAN packet records.
 
-        .. seealso::
-            :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`
+        :param message_record: Record of UDS message received over CAN.
 
-        :param value: Value to set.
+        :raise TypeError: Provided value is not UDS message record.
+        :raise ValueError: Provided UDS message record was not received.
         """
-        self.segmenter.filler_byte = value
+        if not isinstance(message_record, UdsMessageRecord):
+            raise TypeError("Provided value is not UDS Message Record type.")
+        if message_record.direction != TransmissionDirection.RECEIVED:
+            raise ValueError("Provided UDS Message Record was not received.")
+        if len(message_record.packets_records) == 1:
+            self.__n_cr_measured = None
+        else:
+            n_cr_measured = []
+            for i, packet_record in enumerate(message_record.packets_records[1:]):
+                if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
+                    n_cr = packet_record.transmission_time - message_record.packets_records[i].transmission_time
+                    n_cr_measured.append(round(n_cr.total_seconds() * 1000, 3))
+            self.__n_cr_measured = tuple(n_cr_measured)
 
-    @property
-    def flow_control_parameters_generator(self) -> AbstractFlowControlParametersGenerator:
-        """Get generator of Flow Control parameters (Flow Status, Block Size, Separation Time minimum)."""
-        return self.__flow_control_parameters_generator
-
-    @flow_control_parameters_generator.setter
-    def flow_control_parameters_generator(self, value: AbstractFlowControlParametersGenerator) -> None:
-        """
-        Set value of Flow Control parameters (Flow Status, Block Size, Separation Time minimum) generator.
-
-        :param value: Value to set.
-        """
-        if not isinstance(value, AbstractFlowControlParametersGenerator):
-            raise TypeError("Provided Flow Control parameters generator value has incorrect type.")
-        self.__flow_control_parameters_generator = value
+    def clear_measurements(self) -> None:
+        """Clear measured values of CAN communication parameters."""
+        self.__n_ar_measured = None
+        self.__n_as_measured = None
+        self.__n_bs_measured = None
+        self.__n_cr_measured = None
