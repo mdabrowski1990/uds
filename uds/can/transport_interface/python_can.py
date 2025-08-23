@@ -462,20 +462,29 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         can_frame = PythonCanMessage(arbitration_id=packet.can_id,
                                      is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                                      data=packet.raw_frame_data,
-                                     is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc))
+                                     is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc),
+                                     is_rx=False,
+                                     is_error_frame=False,
+                                     is_remote_frame=False)
         timeout_s = (self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout) / 1000.
         time_start_s = time()
         self.network_manager.send(can_frame)
-        observed_frame = None
-        while observed_frame is None \
-                or observed_frame.arbitration_id != packet.can_id \
-                or bytes(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx:
-            timeout_left = timeout_s - (time() - time_start_s)
-            if timeout_left <= 0:
-                raise TimeoutError("Timeout was reached before observing a CAN packet being transmitted.")
-            observed_frame = self.__frames_buffer.get_message(timeout=timeout_left)
-        time_sent_s = time()  # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
+        if self.network_manager_receives_own_frames:
+            observed_frame = None
+            while observed_frame is None \
+                    or observed_frame.arbitration_id != packet.can_id \
+                    or bytes(observed_frame.data) != packet.raw_frame_data \
+                    or not observed_frame.is_rx:
+                timeout_left = timeout_s - (time() - time_start_s)
+                if timeout_left <= 0:
+                    raise TimeoutError("Timeout was reached before observing a CAN packet being transmitted.")
+                observed_frame = self.__frames_buffer.get_message(timeout=timeout_left)
+            transmission_time = datetime.fromtimestamp(observed_frame.timestamp)
+        else:
+            observed_frame = can_frame
+            observed_frame.timestamp = time()
+            transmission_time = datetime.now()
+        time_sent_s = time()
         if is_flow_control_packet:
             self._update_n_ar_measured((time_sent_s - time_start_s) * 1000.)
         else:
@@ -484,7 +493,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
                                addressing_format=packet.addressing_format,
-                               transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
+                               transmission_time=transmission_time)
 
     async def async_send_packet(self,
                                 packet: CanPacket,  # type: ignore
@@ -513,16 +522,22 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         timeout_s = (self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout) / 1000.
         time_start_s = time()
         self.network_manager.send(can_frame)
-        observed_frame = None
-        while observed_frame is None \
-                or observed_frame.arbitration_id != packet.can_id \
-                or bytes(observed_frame.data) != packet.raw_frame_data \
-                or not observed_frame.is_rx:
-            timeout_left = timeout_s - (time() - time_start_s)
-            if timeout_left <= 0:
-                raise TimeoutError("Timeout was reached before a CAN packet could be transmitted.")
-            observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
-        time_sent_s = time()  # Temporary solution due to https://github.com/mdabrowski1990/uds/issues/228
+        if self.network_manager_receives_own_frames:
+            observed_frame = None
+            while observed_frame is None \
+                    or observed_frame.arbitration_id != packet.can_id \
+                    or bytes(observed_frame.data) != packet.raw_frame_data \
+                    or not observed_frame.is_rx:
+                timeout_left = timeout_s - (time() - time_start_s)
+                if timeout_left <= 0:
+                    raise TimeoutError("Timeout was reached before a CAN packet could be transmitted.")
+                observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left)
+            transmission_time = datetime.fromtimestamp(observed_frame.timestamp)
+        else:
+            observed_frame = can_frame
+            observed_frame.timestamp = time()
+            transmission_time = datetime.now()
+        time_sent_s = time()
         if is_flow_control_packet:
             self._update_n_ar_measured((time_sent_s - time_start_s) * 1000.)
         else:
@@ -531,7 +546,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
                                addressing_format=packet.addressing_format,
-                               transmission_time=datetime.fromtimestamp(observed_frame.timestamp))
+                               transmission_time=transmission_time)
 
     def receive_packet(self, timeout: Optional[TimeMillisecondsAlias] = None) -> CanPacketRecord:
         """
