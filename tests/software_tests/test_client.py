@@ -2,8 +2,9 @@ from unittest.mock import MagicMock
 
 import pytest
 from mock import Mock, patch
+from datetime import datetime
 
-from uds.client import AbstractTransportInterface, Client, InconsistencyError, ReassignmentError
+from uds.client import AbstractTransportInterface, Client, InconsistencyError, ReassignmentError, RequestSID, UdsMessageRecord, NRC, ResponseSID
 
 SCRIPT_LOCATION = "uds.client"
 
@@ -12,7 +13,7 @@ class TestClient:
     """Unit tests for `Client` class."""
 
     def setup_method(self):
-        self.mock_client = Mock(spec=Client)
+        self.mock_client = MagicMock(spec=Client)
         # patching
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
@@ -418,13 +419,168 @@ class TestClient:
         assert self.mock_client._Client__p6_ext_client_measured == p6_ext_client_measured
         self.mock_warn.assert_not_called()
 
+    # _update_measured_client_values
+
+    @pytest.mark.parametrize("request_message, response_messages, p2_client, p6_client", [
+        (Mock(spec=UdsMessageRecord,
+              transmission_start=datetime(2020, 1, 1, 12, 0, 0),
+              transmission_end=datetime(2020, 1, 1, 12, 0, 0, 500)),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 14000),
+               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 15500)), ),
+         13.5,
+         15),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start=datetime(2025, 8, 24, 19, 21, 17, 917304),
+              transmission_end=datetime(2025, 8, 24, 19, 21, 17, 919054)),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2025, 8, 24, 19, 21, 18, 17804),
+               transmission_end=datetime(2025, 8, 24, 19, 21, 18, 19054)),),
+         98.75,
+         100),
+    ])
+    def test_update_measured_client_values__direct_response(self, request_message, response_messages,
+                                                            p2_client, p6_client):
+        assert Client._update_measured_client_values(self.mock_client,
+                                                     request_record=request_message,
+                                                     response_records=response_messages) is None
+        self.mock_client._update_p2_client_measured.assert_called_once_with(p2_client)
+        self.mock_client._update_p6_client_measured.assert_called_once_with(p6_client)
+        self.mock_client._update_p2_ext_client_measured.assert_not_called()
+        self.mock_client._update_p6_ext_client_measured.assert_not_called()
+
+    @pytest.mark.parametrize("request_message, response_messages, p2_client, p2_ext_client, p6_ext_client", [
+        (Mock(spec=UdsMessageRecord,
+              transmission_start=datetime(2020, 1, 1, 12, 0, 0),
+              transmission_end=datetime(2020, 1, 1, 12, 0, 0, 500)),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 14000),
+               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 15500)),
+          Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 514000),
+               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 989000))),
+         13.5,
+         973.5,
+         988.5),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start=datetime(2025, 8, 24, 19, 21, 17, 917304),
+              transmission_end=datetime(2025, 8, 24, 19, 21, 17, 919054)),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2025, 8, 24, 19, 21, 18, 17804),
+               transmission_end=datetime(2025, 8, 24, 19, 21, 18, 19054)),
+          Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2025, 8, 24, 19, 21, 18, 698454),
+               transmission_end=datetime(2025, 8, 24, 19, 21, 18, 701304)),
+          Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2025, 8, 24, 19, 21, 19, 17804),
+               transmission_end=datetime(2025, 8, 24, 19, 21, 19, 19054))),
+         98.75,
+         317.75,
+         1100),
+    ])
+    def test_update_measured_client_values__delayed_response(self, request_message, response_messages,
+                                                             p2_client, p2_ext_client, p6_ext_client):
+        assert Client._update_measured_client_values(self.mock_client,
+                                                     request_record=request_message,
+                                                     response_records=response_messages) is None
+        self.mock_client._update_p2_client_measured.assert_called_once_with(p2_client)
+        self.mock_client._update_p2_ext_client_measured.assert_called_once_with(p2_ext_client)
+        self.mock_client._update_p6_ext_client_measured.assert_called_once_with(p6_ext_client)
+        self.mock_client._update_p6_client_measured.assert_not_called()
+
     # _receive_response
 
-    # TODO: tests
+    @pytest.mark.parametrize("sid, timeout, response_records", [
+        (
+            0x10,
+            50,
+            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
+             TimeoutError]
+        ),
+        (
+            0x22,
+            1000,
+            TimeoutError
+        ),
+    ])
+    def test_receive_response__timeout(self, sid, timeout, response_records):
+        self.mock_client.transport_interface.receive_message.side_effect = response_records
+        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) is None
+        self.mock_client.transport_interface.receive_message.assert_called()
+
+    @pytest.mark.parametrize("sid, timeout, response_records", [
+        (
+            0x10,
+            0.00000000001,
+            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78")] * 1000,
+        ),
+        (
+            0x22,
+            0,
+            [Mock(spec=UdsMessageRecord, payload=b"\x50\x03\x00\x50\x12\x34")] * 1000,
+        ),
+    ])
+    def test_receive_response__no_response(self, sid, timeout, response_records):
+        self.mock_client.transport_interface.receive_message.side_effect = response_records
+        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) is None
+
+    @pytest.mark.parametrize("sid, timeout, response_records", [
+        (
+            0x10,
+            50,
+            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
+             Mock(spec=UdsMessageRecord, payload=b"\x50\x03\x00\x50\x12\x34")]
+        ),
+        (
+            0x22,
+            1000,
+            [Mock(spec=UdsMessageRecord, payload=b"\x62\x12\x34\x56\x78\x9A\xBC\xDC\xEF\x0F")]
+        ),
+    ])
+    def test_receive_response__positive_response(self, sid, timeout, response_records):
+        self.mock_client.transport_interface.receive_message.side_effect = response_records
+        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) == response_records[-1]
+        self.mock_client.transport_interface.receive_message.assert_called()
+
+    @pytest.mark.parametrize("sid, timeout, response_records", [
+        (
+            0x10,
+            50,
+            [Mock(spec=UdsMessageRecord, payload=b"\x54"),
+             Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x22")]
+        ),
+        (
+            0x22,
+            1000,
+            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78")]
+        ),
+    ])
+    def test_receive_response__negative_response(self, sid, timeout, response_records):
+        self.mock_client.transport_interface.receive_message.side_effect = response_records
+        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) == response_records[-1]
+        self.mock_client.transport_interface.receive_message.assert_called()
 
     # is_response_pending_message
 
-    # TODO: tests
+    @pytest.mark.parametrize("message, sid", [
+        (Mock(spec=UdsMessageRecord, payload=b"\x7F\x13\x78"), 0x13),
+        (Mock(spec=UdsMessageRecord, payload=(ResponseSID.NegativeResponse,
+                                              RequestSID.ReadDTCInformation,
+                                              NRC.RequestCorrectlyReceived_ResponsePending)),
+         RequestSID.ReadDTCInformation),
+    ])
+    def test_is_response_pending_message__true(self, message, sid):
+        assert Client.is_response_pending_message(message=message, request_sid=sid) is True
+
+    @pytest.mark.parametrize("message, sid", [
+        (Mock(spec=UdsMessageRecord, payload=b"\x7F\x13\x78"), 0x10),
+        (Mock(spec=UdsMessageRecord, payload=(RequestSID.ReadDTCInformation,
+                                              RequestSID.ReadDTCInformation,
+                                              NRC.RequestCorrectlyReceived_ResponsePending)),
+         RequestSID.ReadDTCInformation),
+    ])
+    def test_is_response_pending_message__false(self, message, sid):
+        assert Client.is_response_pending_message(message=message, request_sid=sid) is False
 
     # start_tester_present
 
@@ -440,7 +596,23 @@ class TestClient:
             
     # send_request_receive_responses
 
-    # TODO: tests
+    @pytest.mark.parametrize("request_message", [
+        Mock(payload=b"\x10\x03"),
+        Mock(payload=b"\x3E\x00"),
+    ])
+    def test_send_request_receive_responses__no_response(self, request_message):
+        self.mock_client._receive_response.return_value = None
+        self.mock_client.transport_interface.send_message.return_value = MagicMock(spec=UdsMessageRecord,
+                                                                                   payload=request_message.payload)
+        assert (Client.send_request_receive_responses(self.mock_client, request=request_message)
+                is (self.mock_client.transport_interface.send_message.return_value, None))
+        self.mock_client.transport_interface.send_message.assert_called_once_with(request_message)
+
+    def test_send_request_receive_responses__direct_response(self):
+        ...
+
+    def test_send_request_receive_responses__delayed_response(self):
+        ...
             
     # get_response
     
