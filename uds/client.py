@@ -343,36 +343,6 @@ class Client:
                  category=ValueWarning)
         self.__p6_ext_client_measured = value
 
-    def start_tester_present(self,
-                             addressing_type: AddressingType = AddressingType.FUNCTIONAL,
-                             sprmib: bool = True) -> None:  # noqa: vulture
-        """
-        Start sending Tester Precent cyclically.
-
-        :param addressing_type: Addressing Type to use for cyclical messages.
-        :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
-        """
-        raise NotImplementedError
-
-    def stop_tester_present(self) -> None:
-        """Stop sending Tester Precent cyclically."""
-        raise NotImplementedError
-
-    def send_request_receive_responses(self,
-                                       request: UdsMessage  # noqa: vulture
-                                       ) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
-        """
-        Send diagnostic request and receive all responses (till the final one).
-
-        :param request: Request message to send.
-
-        :return: Tuple with two elements:
-
-            - record of diagnostic request message that was sent
-            - tuple with diagnostic response messages that were received in the response
-        """
-        raise NotImplementedError
-
     def get_response(self, timeout: Optional[TimeMillisecondsAlias] = None) -> Optional[UdsMessageRecord]:
         """
         Wait for the first received response message.
@@ -409,3 +379,35 @@ class Client:
     def clear_response_queue(self) -> None:
         """Clear all response messages that are currently stored in the queue."""
         raise NotImplementedError
+
+    def start_tester_present(self,
+                             addressing_type: AddressingType = AddressingType.FUNCTIONAL,
+                             sprmib: bool = True) -> None:  # noqa: vulture
+        """
+        Start sending Tester Precent cyclically.
+
+        :param addressing_type: Addressing Type to use for cyclical messages.
+        :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
+        """
+        raise NotImplementedError
+
+    def stop_tester_present(self) -> None:
+        """Stop sending Tester Precent cyclically."""
+        raise NotImplementedError
+
+    def send_request_receive_responses(self,
+                                       request: UdsMessage) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
+        """
+        Send diagnostic request and receive all responses (till the final one).
+
+        :param request: Request message to send.
+
+        :return: Tuple with two elements:
+
+            - record of diagnostic request message that was sent
+            - tuple with diagnostic response messages that were received in the response
+        """
+        request_record = self.transport_interface.send_message(request)
+        response_records = []
+
+        return request_record, tuple(response_records)
