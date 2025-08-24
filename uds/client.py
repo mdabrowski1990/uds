@@ -2,11 +2,12 @@
 
 __all__ = ["Client"]
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from warnings import warn
+from time import time
 
 from uds.addressing import AddressingType
-from uds.message import UdsMessage, UdsMessageRecord
+from uds.message import UdsMessage, UdsMessageRecord, RequestSID, ResponseSID, RESPONSE_REQUEST_SID_DIFF, NRC
 from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import InconsistencyError, ReassignmentError, TimeMillisecondsAlias, ValueWarning
 
@@ -22,8 +23,6 @@ class Client:
     """Default value of P2*Client timeout."""
     DEFAULT_P6_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 5000
     """Default value of P6*Client timeout."""
-    DEFAULT_P3_CLIENT: TimeMillisecondsAlias = DEFAULT_P2_CLIENT_TIMEOUT * 1.5
-    """Default value of P3Client_phys and P3Client_func time parameters."""
     DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000
     """Default value of S3Client time parameter."""
 
@@ -33,19 +32,15 @@ class Client:
                  p2_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_EXT_CLIENT_TIMEOUT,
                  p6_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_CLIENT_TIMEOUT,
                  p6_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_EXT_CLIENT_TIMEOUT,
-                 p3_client_physical: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
-                 p3_client_functional: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
                  s3_client: TimeMillisecondsAlias = DEFAULT_S3_CLIENT) -> None:
         """
-        Create Client for UDS communication.
+        Configure Client for UDS communication.
 
         :param transport_interface: Transport Interface object for managing UDS communication.
         :param p2_client_timeout: Timeout value for P2Client parameter.
         :param p2_ext_client_timeout: Timeout value for P2*Client parameter.
         :param p6_client_timeout: Timeout value for P6Client parameter.
         :param p6_ext_client_timeout: Timeout value for P*Client parameter.
-        :param p3_client_physical: Value of P3Client_phys time parameter.
-        :param p3_client_functional: Value of P3Client_func time parameter.
         :param s3_client: Value of S3Client time parameter.
         """
         self.transport_interface = transport_interface
@@ -53,8 +48,6 @@ class Client:
         self.p2_ext_client_timeout = p2_ext_client_timeout
         self.p6_client_timeout = p6_client_timeout
         self.p6_ext_client_timeout = p6_ext_client_timeout
-        self.p3_client_physical = p3_client_physical
-        self.p3_client_functional = p3_client_functional
         self.s3_client = s3_client
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p2_ext_client_measured: Optional[TimeMillisecondsAlias] = None
@@ -197,56 +190,6 @@ class Client:
         return self.__p6_ext_client_measured
 
     @property
-    def p3_client_physical(self) -> TimeMillisecondsAlias:
-        """Get value of P3Client_phys parameter."""
-        return self.__p3_client_physical
-
-    @p3_client_physical.setter
-    def p3_client_physical(self, value: TimeMillisecondsAlias) -> None:
-        """
-        Set value of P3Client_phys parameter.
-
-        :param value: value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P3Client_phys value must be greater or equal than P6Client timeout.
-        """
-        if not isinstance(value, (int, float)):
-            raise TypeError("Provided time parameter value must be int or float type.")
-        if value <= 0:
-            raise ValueError("Provided timeout parameter value must be greater than 0.")
-        if value < self.p6_client_timeout:
-            raise InconsistencyError("P3Client value must be greater or equal than "
-                                     f"P6Client timeout ({self.p6_client_timeout} ms).")
-        self.__p3_client_physical = value
-
-    @property
-    def p3_client_functional(self) -> TimeMillisecondsAlias:
-        """Get value of P3Client_func parameter."""
-        return self.__p3_client_functional
-
-    @p3_client_functional.setter
-    def p3_client_functional(self, value: TimeMillisecondsAlias) -> None:
-        """
-        Set value of P3Client_func parameter.
-
-        :param value: value to set.
-
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided time value must be a positive number.
-        :raise InconsistencyError: P3Client_func value must be greater or equal than P6Client timeout.
-        """
-        if not isinstance(value, (int, float)):
-            raise TypeError("Provided time parameter value must be int or float type.")
-        if value <= 0:
-            raise ValueError("Provided timeout parameter value must be greater than 0.")
-        if value < self.p6_client_timeout:
-            raise InconsistencyError("P3Client value must be greater or equal than "
-                                     f"P6Client timeout ({self.p6_client_timeout} ms).")
-        self.__p3_client_functional = value
-
-    @property
     def s3_client(self) -> TimeMillisecondsAlias:
         """Get value of S3Client parameter."""
         return self.__s3_client
@@ -343,6 +286,55 @@ class Client:
                  category=ValueWarning)
         self.__p6_ext_client_measured = value
 
+    def _receive_response(self, sid: RequestSID, timeout: TimeMillisecondsAlias) -> Optional[UdsMessageRecord]:
+        """
+        Received UDS message.
+
+        :param sid: SID of the last sent request message.
+        :param timeout: Maximal time (in milliseconds) to wait.
+
+        :return: Record with response message received to the last UDS request message sent.
+            None if a timeout was reached.
+        """
+        time_start_s = time()
+        while True:
+            time_elapsed_ms = (time() - time_start_s) * 1000.
+            time_remaining_ms = timeout - time_elapsed_ms
+            if time_remaining_ms <= 0:
+                return None
+            try:
+                response_record = self.transport_interface.receive_message(timeout=time_remaining_ms)
+            except TimeoutError:
+                return None
+            # positive response message received
+            if response_record.payload[0] == sid + RESPONSE_REQUEST_SID_DIFF:
+                return response_record
+            # negative response message received
+            if response_record.payload[0] == ResponseSID.Negative and response_record.payload[1] == sid:
+                return response_record
+
+    @staticmethod
+    def is_response_pending_message(message: UdsMessageRecord, request_sid: RequestSID) -> bool:
+        """
+        Check if provided UDS message record contains Negative Response with Response Pending NRC.
+
+        :param message: UDS Message Record to check.
+        :param request_sid: Request SID value sent in the proceeding UDS request message.
+
+        :raise TypeError: Provided message value is not an instance of UdsMessageRecord class.
+
+        :return: True if provided UDS message record contains Negative Response with Response Pending NRC,
+            False otherwise.
+        """
+        if not isinstance(message, UdsMessageRecord):
+            raise TypeError("Provided message value is not an instance of UdsMessageRecord class.")
+        RequestSID.validate(request_sid)
+        if len(message.payload) != 3:
+            return False
+        return (message.payload[0] == ResponseSID.NegativeResponse
+                and message.payload[1] == request_sid
+                and message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
+
     def get_response(self, timeout: Optional[TimeMillisecondsAlias] = None) -> Optional[UdsMessageRecord]:
         """
         Wait for the first received response message.
@@ -408,6 +400,23 @@ class Client:
             - tuple with diagnostic response messages that were received in the response
         """
         request_record = self.transport_interface.send_message(request)
-        response_records = []
-
+        time_last_message = time_request_sent = request_record.transmission_end.timestamp()
+        sid = ResponseSID(request_record.payload[0])
+        response_records: List[UdsMessageRecord] = []
+        while (len(response_records) == 0
+               or self.is_response_pending_message(message=response_records[-1], request_sid=sid)):
+            time_elapsed_since_request_ms = (time() - time_request_sent) * 1000.
+            time_elapsed_since_last_message_ms = (time() - time_last_message) * 1000.
+            if len(response_records) == 0:
+                final_timeout = self.p6_client_timeout - time_elapsed_since_request_ms
+                next_message_timeout = self.p2_client_timeout - time_elapsed_since_last_message_ms
+            else:
+                final_timeout = self.p6_ext_client_timeout - time_elapsed_since_request_ms
+                next_message_timeout = self.p2_ext_client_timeout - time_elapsed_since_last_message_ms
+            timeout = min(final_timeout, next_message_timeout)
+            response_record = self._receive_response(sid=sid, timeout=timeout)
+            if response_record is None:
+                break
+            response_records.append(response_record)
+        # TODO: update measured times (P2, P6, P2*, P6*)
         return request_record, tuple(response_records)
