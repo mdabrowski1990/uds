@@ -8,7 +8,6 @@ from .python_can import (
     AbstractUseCaseTests,
 )
 
-
 # Receive Own Frames
 
 
