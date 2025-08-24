@@ -1,10 +1,19 @@
+from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
 from mock import Mock, patch
-from datetime import datetime
 
-from uds.client import AbstractTransportInterface, Client, InconsistencyError, ReassignmentError, RequestSID, UdsMessageRecord, NRC, ResponseSID
+from uds.client import (
+    NRC,
+    AbstractTransportInterface,
+    Client,
+    InconsistencyError,
+    ReassignmentError,
+    RequestSID,
+    ResponseSID,
+    UdsMessageRecord,
+)
 
 SCRIPT_LOCATION = "uds.client"
 

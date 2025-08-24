@@ -2,12 +2,12 @@
 
 __all__ = ["Client"]
 
-from typing import Optional, Tuple, List, Sequence
-from warnings import warn
 from time import time
+from typing import List, Optional, Sequence, Tuple
+from warnings import warn
 
 from uds.addressing import AddressingType
-from uds.message import UdsMessage, UdsMessageRecord, RequestSID, ResponseSID, RESPONSE_REQUEST_SID_DIFF, NRC
+from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import InconsistencyError, ReassignmentError, TimeMillisecondsAlias, ValueWarning, bytes_to_hex
 
