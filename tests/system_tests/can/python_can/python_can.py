@@ -32,6 +32,7 @@ class AbstractPythonCanTests(ABC):
             CAN cables connection
     """
 
+    RECEIVE_OWN_FRAMES: bool = True
     MAKE_TIMING_CHECKS: bool = True
     TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 30
     WAIT_AFTER_TEST_CASE: TimeMillisecondsAlias = 250.
@@ -224,6 +225,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.tx_physical_params
@@ -302,6 +304,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.tx_physical_params
@@ -389,6 +392,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.rx_physical_params
@@ -477,6 +481,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.rx_physical_params
@@ -563,6 +568,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.rx_physical_params
@@ -643,6 +649,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.rx_physical_params
@@ -692,8 +699,10 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param example_can_addressing_information: Example Addressing Information of a CAN Node.
         :param message: UDS message to send.
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         datetime_before_send = datetime.now()
         message_record = can_transport_interface.send_message(message)
         datetime_after_send = datetime.now()
@@ -728,8 +737,10 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param example_can_addressing_information: Example Addressing Information of a CAN Node.
         :param message: UDS message to send.
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         datetime_before_send = datetime.now()
         message_record = await can_transport_interface.async_send_message(message)
         datetime_after_send = datetime.now()
@@ -774,10 +785,13 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         self.send_message(can_transport_interface=can_transport_interface_2nd_node,
                           message=message,
@@ -825,10 +839,13 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         send_message_task = asyncio.create_task(
             self.async_send_message(can_transport_interface=can_transport_interface_2nd_node,
@@ -876,10 +893,13 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         self.send_message(can_transport_interface=can_transport_interface_2nd_node,
                           message=message,
@@ -924,10 +944,13 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param timeout: Timeout value to pass to receive message method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         send_message_task = asyncio.create_task(self.async_send_message(
             can_transport_interface=can_transport_interface_2nd_node,
@@ -974,10 +997,12 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_bs_timeout=timeout)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.ContinueToSend,
@@ -1041,10 +1066,12 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_bs_timeout=timeout)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.ContinueToSend,
@@ -1106,10 +1133,12 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_bs_timeout=timeout)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.ContinueToSend,
@@ -1154,10 +1183,12 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_bs_timeout=timeout)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.ContinueToSend,
@@ -1206,11 +1237,14 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information,
-                                                          n_br=0)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information,
+            n_br=0)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         packets = can_transport_interface_2nd_node.segmenter.segmentation(message)
         for i, packet in enumerate(packets):
@@ -1261,10 +1295,13 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         packets = can_transport_interface_2nd_node.segmenter.segmentation(message)
 
@@ -1317,11 +1354,14 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information,
-                                                          n_br=0)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information,
+            n_br=0)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         packets = can_transport_interface_2nd_node.segmenter.segmentation(message)
         self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
@@ -1370,10 +1410,13 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         :param send_after: Time when to send First Frame after call of receive method [ms].
         :param delay: Time distance to use for sending Consecutive Frames [ms].
         """
-        can_transport_interface = PyCanTransportInterface(network_manager=self.can_interface_1,
-                                                          addressing_information=example_can_addressing_information)
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
+            addressing_information=example_can_addressing_information)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         packets = can_transport_interface_2nd_node.segmenter.segmentation(message)
 
@@ -1445,9 +1488,11 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface_1 = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         can_transport_interface_2 = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information.get_other_end())
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.tx_physical_params
@@ -1524,9 +1569,11 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface_1 = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         can_transport_interface_2 = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information.get_other_end())
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.tx_physical_params
@@ -1600,11 +1647,13 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
                                                                                   repeat_wait=repeat_wait)
         can_transport_interface_1 = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_br=n_br,
             flow_control_parameters_generator=flow_control_parameters_generator)
         can_transport_interface_2 = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end(),
             n_cs=n_cs)
 
@@ -1665,11 +1714,13 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
                                                                                   repeat_wait=repeat_wait)
         can_transport_interface_1 = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_br=n_br,
             flow_control_parameters_generator=flow_control_parameters_generator)
         can_transport_interface_2 = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end(),
             n_cs=n_cs)
 
@@ -1734,6 +1785,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.tx_physical_params
@@ -1802,6 +1854,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.rx_physical_params
@@ -1870,6 +1923,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.rx_physical_params
@@ -1948,6 +2002,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.rx_physical_params
@@ -2023,6 +2078,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.tx_physical_params
@@ -2099,6 +2155,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=parametrized_can_addressing_information)
         if addressing_type == AddressingType.PHYSICAL:
             addressing_params = parametrized_can_addressing_information.tx_physical_params
@@ -2155,10 +2212,12 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_bs_timeout=timeout)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.Overflow)
@@ -2194,10 +2253,12 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information,
             n_bs_timeout=timeout)
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
+            network_manager_receives_own_frames=self.RECEIVE_OWN_FRAMES,
             addressing_information=example_can_addressing_information.get_other_end())
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.Overflow)
