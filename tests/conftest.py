@@ -17,7 +17,6 @@ from uds.utilities import RawBytesAlias
 
 # Common
 
-
 @fixture(params=[
     (0x00, 0xFF, 0xAA, 0x55),
     [0x00],
@@ -37,9 +36,7 @@ def example_transmission_direction(request: FixtureRequest) -> TransmissionDirec
     """Example value of Transmission Direction."""
     return request.param
 
-
 # CAN Specific
-
 
 def make_can_addressing_information(addressing_format: CanAddressingFormat) -> AbstractCanAddressingInformation:
     """

@@ -50,7 +50,7 @@ class Client:
         self.p6_ext_client_timeout = p6_ext_client_timeout
         self.s3_client = s3_client
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
-        self.__p2_ext_client_measured: Optional[TimeMillisecondsAlias] = None
+        self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias]] = None
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
 
@@ -123,8 +123,8 @@ class Client:
         self.__p2_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p2_ext_client_measured(self) -> Optional[TimeMillisecondsAlias]:
-        """Get last measured value of P2*Client parameter."""
+    def p2_ext_client_measured(self) -> Optional[Tuple[TimeMillisecondsAlias]]:
+        """Get last measured values of P2*Client parameter."""
         return self.__p2_ext_client_measured
 
     @property
@@ -232,23 +232,27 @@ class Client:
                  category=ValueWarning)
         self.__p2_client_measured = value
 
-    def _update_p2_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
+    def _update_p2_ext_client_measured(self, *values: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P2*Client parameter.
 
-        :param value: Value to set.
+        :param values: Values to set.
 
-        :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
+        :raise RuntimeError: At least one P2*Client value must be provided.
+        :raise TypeError: One of provided values is not int or float type.
+        :raise ValueError: One of provided values is out of range.
         """
-        if not isinstance(value, (int, float)):
-            raise TypeError("Provided value is not int or float type.")
-        if value <= 0:
-            raise ValueError("P2*Client parameter value must be a positive number.")
-        if value > self.p2_ext_client_timeout:
-            warn("Measured value of P2*Client was greater than P2*Client timeout.",
-                 category=ValueWarning)
-        self.__p2_ext_client_measured = value
+        if len(values) == 0:
+            raise RuntimeError("P2Client parameter value must be greater or equal than P2*Client timeout ")
+        for value in values:
+            if not isinstance(value, (int, float)):
+                raise TypeError("One of provided values is not int or float type.")
+            if value <= 0:
+                raise ValueError("P2*Client parameter value must be a positive number.")
+            if value > self.p2_ext_client_timeout:
+                warn("Measured value of P2*Client was greater than P2*Client timeout.",
+                     category=ValueWarning)
+        self.__p2_ext_client_measured = tuple(values)
 
     def _update_p6_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
@@ -298,9 +302,12 @@ class Client:
         p2_measured = response_records[0].transmission_start - request_record.transmission_end
         self._update_p2_client_measured(p2_measured.total_seconds() * 1000.)
         if len(response_records) > 1:
-            p2_ext_measured = response_records[-1].transmission_end - response_records[-2].transmission_end
+            p2_ext_measured_list = []
+            for i, response_record in enumerate(response_records[1:]):
+                _p2_ext_measured = response_record.transmission_end - response_records[i].transmission_end
+                p2_ext_measured_list.append(_p2_ext_measured.total_seconds() * 1000.)
             p6_ext_measured = response_records[-1].transmission_end - request_record.transmission_end
-            self._update_p2_ext_client_measured(p2_ext_measured.total_seconds() * 1000.)
+            self._update_p2_ext_client_measured(*p2_ext_measured_list)
             self._update_p6_ext_client_measured(p6_ext_measured.total_seconds() * 1000.)
         else:
             p6_measured = response_records[-1].transmission_end - request_record.transmission_end
