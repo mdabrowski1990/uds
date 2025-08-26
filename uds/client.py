@@ -3,7 +3,7 @@
 __all__ = ["Client"]
 
 from time import time
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 from uds.addressing import AddressingType
@@ -50,7 +50,7 @@ class Client:
         self.p6_ext_client_timeout = p6_ext_client_timeout
         self.s3_client = s3_client
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
-        self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias]] = None
+        self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
 
@@ -123,7 +123,7 @@ class Client:
         self.__p2_ext_client_timeout = value
 
     @property  # noqa: vulture
-    def p2_ext_client_measured(self) -> Optional[Tuple[TimeMillisecondsAlias]]:
+    def p2_ext_client_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
         """Get last measured values of P2*Client parameter."""
         return self.__p2_ext_client_measured
 
@@ -343,7 +343,7 @@ class Client:
         return None
 
     @staticmethod
-    def is_response_pending_message(message: UdsMessageRecord, request_sid: RequestSID) -> bool:
+    def is_response_pending_message(message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
         """
         Check if provided UDS message record contains Negative Response with Response Pending NRC.
 
@@ -355,8 +355,9 @@ class Client:
         :return: True if provided UDS message record contains Negative Response with Response Pending NRC,
             False otherwise.
         """
-        if not isinstance(message, UdsMessageRecord):
+        if not isinstance(message, (UdsMessage, UdsMessageRecord)):
             raise TypeError("Provided message value is not an instance of UdsMessageRecord class.")
+        request_sid = RequestSID.validate_member(request_sid)
         if len(message.payload) != 3:
             return False
         return (message.payload[0] == ResponseSID.NegativeResponse
@@ -443,6 +444,8 @@ class Client:
         if response_record is None:  # timeout achieved - no response
             return request_record, tuple()
         response_records.append(response_record)
+        print(request_record)
+        print(response_records)
         while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
             time_elapsed_since_request_ms = (time() - time_request_sent) * 1000.
             time_elapsed_since_last_message_ms = (time() - time_last_message) * 1000.

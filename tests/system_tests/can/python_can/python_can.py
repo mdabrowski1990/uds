@@ -54,7 +54,7 @@ class AbstractPythonCanTests(ABC):
         self._timers: List[Timer] = []
 
     def teardown_method(self):
-        """Finish all tasks that were open during test."""
+        """Finish all tasks that were opened during test."""
         self.can_interface_1.flush_tx_buffer()
         self.can_interface_2.flush_tx_buffer()
         for _timer in self._timers:

@@ -139,26 +139,31 @@ class AbstractClientTests(ABC):
                      addressing_type=AddressingType.PHYSICAL))),
         (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(0, 255, 2), *(1, 255, 2)],
                     addressing_type=AddressingType.PHYSICAL),
-         UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                    addressing_type=AddressingType.PHYSICAL),
-         UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                    addressing_type=AddressingType.PHYSICAL),
-         UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                    addressing_type=AddressingType.PHYSICAL),
-         UdsMessage(payload=[0x6E, 0x23, 0x45],
-                    addressing_type=AddressingType.PHYSICAL)),
+         (UdsMessage(payload=[0x7F, 0x2E, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x2E, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x2E, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x6E, 0x23, 0x45],
+                     addressing_type=AddressingType.PHYSICAL))),
     ])
-    @pytest.mark.parametrize("p2_client_timeout, p6_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout, "
+    @pytest.mark.parametrize("p2_client_timeout, p6_client_timeout, "
+                             "p2_ext_client_timeout, p6_ext_client_timeout, "
                              "delay, send_after", [
-        (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT, Client.DEFAULT_P2_CLIENT_TIMEOUT - 30),
-        (100, 100, 50),
+        (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT,
+         Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT,
+         1000, 500),
+        (100, 100, 1000, 5000, 750, 50),
     ])
     def test_send_request_receive_delayed_response(self, request_message, response_messages,
                                                    p2_client_timeout, p6_client_timeout,
                                                    p2_ext_client_timeout, p6_ext_client_timeout, delay, send_after):
         client = Client(transport_interface=self.transport_interface_1,
                         p2_client_timeout=p2_client_timeout,
-                        p6_client_timeout=p6_client_timeout)
+                        p6_client_timeout=p6_client_timeout,
+                        p2_ext_client_timeout=p2_ext_client_timeout,
+                        p6_ext_client_timeout=p6_ext_client_timeout)
         for i, response_message in enumerate(response_messages[:-1], start=1):
             self.send_message(transport_interface=response_message,
                               message=request_message,

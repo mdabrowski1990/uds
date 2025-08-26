@@ -11,6 +11,7 @@ from uds.client import (
     ReassignmentError,
     RequestSID,
     ResponseSID,
+    UdsMessage,
     UdsMessageRecord,
 )
 
@@ -25,9 +26,12 @@ class TestClient:
         # patching
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
+        self._patcher_validate_request_sid = patch(f"{SCRIPT_LOCATION}.RequestSID.validate_member")
+        self.mock_validate_request_sid = self._patcher_validate_request_sid.start()
 
     def teardown_method(self):
         self._patcher_warn.stop()
+        self._patcher_validate_request_sid.stop()
 
     # __init__
 
@@ -324,6 +328,10 @@ class TestClient:
 
     # _update_p2_ext_client_measured
 
+    def test_update_p2_ext_client_measured__runtime_error(self):
+        with pytest.raises(RuntimeError):
+            Client._update_p2_ext_client_measured(self.mock_client)
+
     @pytest.mark.parametrize("p2_ext_client_measured_list", [
         [Mock()],
         [Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, "Some time", Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT],
@@ -580,6 +588,16 @@ class TestClient:
     # is_response_pending_message
 
     @pytest.mark.parametrize("message, sid", [
+        (Mock(), Mock())
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_is_response_pending_message__type_error(self, mock_isinstance, message, sid):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client.is_response_pending_message(message=message, request_sid=sid)
+        mock_isinstance.assert_called_once_with(message, (UdsMessage, UdsMessageRecord))
+
+    @pytest.mark.parametrize("message, sid", [
         (Mock(spec=UdsMessageRecord, payload=b"\x7F\x13\x78"), 0x13),
         (Mock(spec=UdsMessageRecord, payload=(ResponseSID.NegativeResponse,
                                               RequestSID.ReadDTCInformation,
@@ -587,17 +605,22 @@ class TestClient:
          RequestSID.ReadDTCInformation),
     ])
     def test_is_response_pending_message__true(self, message, sid):
+        self.mock_validate_request_sid.return_value = sid
         assert Client.is_response_pending_message(message=message, request_sid=sid) is True
+        self.mock_validate_request_sid.assert_called_once_with(sid)
 
     @pytest.mark.parametrize("message, sid", [
         (Mock(spec=UdsMessageRecord, payload=b"\x7F\x13\x78"), 0x10),
+        (Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x78\x78"), 0x10),
         (Mock(spec=UdsMessageRecord, payload=(RequestSID.ReadDTCInformation,
                                               RequestSID.ReadDTCInformation,
                                               NRC.RequestCorrectlyReceived_ResponsePending)),
          RequestSID.ReadDTCInformation),
     ])
     def test_is_response_pending_message__false(self, message, sid):
+        self.mock_validate_request_sid.return_value = sid
         assert Client.is_response_pending_message(message=message, request_sid=sid) is False
+        self.mock_validate_request_sid.assert_called_once_with(sid)
 
     # start_tester_present
 
@@ -628,6 +651,38 @@ class TestClient:
         self.mock_client._receive_response.assert_called_once_with(sid=request_message.payload[0],
                                                                    timeout=mock_min.return_value)
         mock_min.assert_called_once()
+        self.mock_client._update_measured_client_values.assert_not_called()
+
+    @pytest.mark.parametrize("request_message, response_messages", [
+        (Mock(payload=b"\x22\x12\x34"),
+         (Mock(payload=b"\x7F\x22\x78"),
+          None)),
+        (Mock(payload=b"\x2E\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\xF0"),
+         (Mock(payload=b"\x7F\x2E\x78"),
+          Mock(payload=b"\x7F\x2E\x78"),
+          Mock(payload=b"\x7F\x2E\x78"),
+          None)),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.min")
+    def test_send_request_receive_responses__timeout_error(self,  mock_min, request_message, response_messages):
+        sid = request_message.payload[0]
+        request_record = MagicMock(spec=UdsMessageRecord, payload=request_message.payload)
+        response_records = tuple([Mock(spec=UdsMessageRecord, payload=response_message.payload)
+                                  if response_message is not None else None
+                                  for response_message in response_messages])
+        self.mock_client._receive_response.side_effect = response_records
+        self.mock_client.transport_interface.send_message.return_value = request_record
+        self.mock_client.is_response_pending_message.return_value = True
+        with pytest.raises(TimeoutError):
+            Client.send_request_receive_responses(self.mock_client, request=request_message)
+        self.mock_client.transport_interface.send_message.assert_called_once_with(request_message)
+        self.mock_client._receive_response.assert_has_calls(
+            [call(sid=sid, timeout=mock_min.return_value) for _ in range(len(response_messages))])
+        mock_min.assert_called()
+        self.mock_client.is_response_pending_message.assert_has_calls(
+            [call(message=response_record, request_sid=RequestSID(sid)) for response_record in response_records[:-1]],
+            any_order=False)
+        self.mock_client._update_measured_client_values.assert_not_called()
 
     @pytest.mark.parametrize("request_message, response_message", [
         (Mock(payload=b"\x10\x03"), Mock(payload=b"\x50\x03\x12\x34\x56\x78")),
@@ -651,8 +706,37 @@ class TestClient:
         self.mock_client._update_measured_client_values.assert_called_once_with(
             request_record=request_record, response_records=list(response_records))
 
-    def test_send_request_receive_responses__delayed_response(self):
-        ...
+    @pytest.mark.parametrize("request_message, response_messages", [
+        (Mock(payload=b"\x22\x12\x34"),
+         (Mock(payload=b"\x7F\x22\x78"),
+          Mock(payload=b"\x62\x12\x34\x00\xFF\x55\xAA"))),
+        (Mock(payload=b"\x2E\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\xF0"),
+         (Mock(payload=b"\x7F\x2E\x78"),
+          Mock(payload=b"\x7F\x2E\x78"),
+          Mock(payload=b"\x7F\x2E\x78"),
+          Mock(payload=b"\x6E\xF0\xE1"))),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.min")
+    def test_send_request_receive_responses__delayed_response(self,  mock_min, request_message, response_messages):
+        sid = request_message.payload[0]
+        request_record = MagicMock(spec=UdsMessageRecord, payload=request_message.payload)
+        response_records = tuple([Mock(spec=UdsMessageRecord, payload=response_message.payload)
+                                  for response_message in response_messages])
+        self.mock_client._receive_response.side_effect = response_records
+        self.mock_client.transport_interface.send_message.return_value = request_record
+        self.mock_client.is_response_pending_message.side_effect \
+            = lambda message, request_sid: message.payload != response_messages[-1].payload
+        assert (Client.send_request_receive_responses(self.mock_client, request=request_message)
+                == (request_record, response_records))
+        self.mock_client.transport_interface.send_message.assert_called_once_with(request_message)
+        self.mock_client._receive_response.assert_has_calls(
+            [call(sid=sid, timeout=mock_min.return_value) for _ in range(len(response_messages))])
+        mock_min.assert_called()
+        self.mock_client.is_response_pending_message.assert_has_calls(
+            [call(message=response_record, request_sid=RequestSID(sid)) for response_record in response_records],
+            any_order=False)
+        self.mock_client._update_measured_client_values.assert_called_once_with(
+            request_record=request_record, response_records=list(response_records))
             
     # get_response
     
