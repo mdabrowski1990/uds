@@ -383,7 +383,6 @@ class TestAbstractDataRecord:
         self.mock_data_record.length = sum(child.length for child in children)
         output = AbstractDataRecord.get_children_values(self.mock_data_record, raw_value)
         assert isinstance(output, OrderedDict)
-        print(output)
         for i, (name, value) in enumerate(output.items()):
             assert name == children[i].name
             assert value == expected_children_values[i]

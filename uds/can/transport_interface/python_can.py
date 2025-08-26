@@ -13,7 +13,7 @@ from can import Message as PythonCanMessage
 from can import Notifier
 from uds.addressing import TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning
+from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning, bytes_to_hex
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanDlcHandler, CanIdHandler
@@ -150,7 +150,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 time_elapsed_ms = (time() - time_start_s) * 1000.
                 timeout_left_ms = timeout - time_elapsed_ms
                 if timeout_left_ms <= 0:
-                    raise TimeoutError("Timeout was reached before observing a CAN packet being transmitted.")
+                    raise TimeoutError("Timeout was reached before observing a CAN packet being transmitted. "
+                                       f"CAN ID = 0x{can_frame.arbitration_id:X}. "
+                                       f"Raw Frame Data = {bytes_to_hex(can_frame.data)}.")
                 observed_frame = self.__frames_buffer.get_message(timeout=timeout_left_ms)
         else:
             observed_frame = can_frame
@@ -175,11 +177,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                    or observed_frame.arbitration_id != can_frame.arbitration_id
                    or bytes(observed_frame.data) != bytes(can_frame.data)):
                 time_elapsed_s = time() - time_start_s
-                timeout_left_s = timeout * 1000. - time_elapsed_s
+                timeout_left_s = timeout / 1000. - time_elapsed_s
                 if timeout_left_s <= 0:
                     raise TimeoutError("Timeout was reached before observing a CAN packet being transmitted.")
                 observed_frame = await wait_for(self.__async_frames_buffer.get_message(), timeout=timeout_left_s)
-                print(observed_frame)
         else:
             observed_frame = can_frame
             observed_frame.timestamp = time()
