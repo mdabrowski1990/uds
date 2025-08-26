@@ -243,7 +243,7 @@ class Client:
         :raise ValueError: One of provided values is out of range.
         """
         if len(values) == 0:
-            raise RuntimeError("P2Client parameter value must be greater or equal than P2*Client timeout ")
+            raise RuntimeError("At least one P2*Client value must be provided.")
         for value in values:
             if not isinstance(value, (int, float)):
                 raise TypeError("One of provided values is not int or float type.")
@@ -444,9 +444,8 @@ class Client:
         if response_record is None:  # timeout achieved - no response
             return request_record, tuple()
         response_records.append(response_record)
-        print(request_record)
-        print(response_records)
         while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
+            time_last_message = response_records[-1].transmission_end.timestamp()
             time_elapsed_since_request_ms = (time() - time_request_sent) * 1000.
             time_elapsed_since_last_message_ms = (time() - time_last_message) * 1000.
             final_timeout = self.p6_ext_client_timeout - time_elapsed_since_request_ms
