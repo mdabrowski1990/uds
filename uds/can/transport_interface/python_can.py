@@ -13,7 +13,12 @@ from can import Message as PythonCanMessage
 from can import Notifier
 from uds.addressing import TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning, bytes_to_hex
+from uds.utilities import (
+    NewMessageReceptionWarning,
+    TimeMillisecondsAlias,
+    UnexpectedPacketReceptionWarning,
+    bytes_to_hex,
+)
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanDlcHandler, CanIdHandler
