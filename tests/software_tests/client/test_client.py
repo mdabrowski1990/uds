@@ -636,9 +636,17 @@ class TestClient:
             
     # send_request_receive_responses
 
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_send_request_receive_responses__type_error(self, mock_isinstance):
+        mock_isinstance.return_value = False
+        mock_request = Mock()
+        with pytest.raises(TypeError):
+            Client.send_request_receive_responses(self.mock_client, mock_request)
+        mock_isinstance.assert_called_once_with(mock_request, UdsMessage)
+
     @pytest.mark.parametrize("request_message", [
-        Mock(payload=b"\x10\x83"),
-        Mock(payload=b"\x3E\x80"),
+        Mock(spec=UdsMessage, payload=b"\x10\x83"),
+        Mock(spec=UdsMessage, payload=b"\x3E\x80"),
     ])
     @patch(f"{SCRIPT_LOCATION}.min")
     def test_send_request_receive_responses__no_response(self, mock_min, request_message):
@@ -654,17 +662,19 @@ class TestClient:
         self.mock_client._update_measured_client_values.assert_not_called()
 
     @pytest.mark.parametrize("request_message, response_messages", [
-        (Mock(payload=b"\x22\x12\x34"),
-         (Mock(payload=b"\x7F\x22\x78"),
+        (Mock(spec=UdsMessage, payload=b"\x22\x12\x34"),
+         (Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
           None)),
-        (Mock(payload=b"\x2E\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\xF0"),
-         (Mock(payload=b"\x7F\x2E\x78"),
-          Mock(payload=b"\x7F\x2E\x78"),
-          Mock(payload=b"\x7F\x2E\x78"),
+        (Mock(spec=UdsMessage, payload=b"\x2E\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\xF0"),
+         (Mock(spec=UdsMessageRecord, payload=b"\x7F\x2E\x78"),
+          Mock(spec=UdsMessageRecord, payload=b"\x7F\x2E\x78"),
+          Mock(spec=UdsMessageRecord, payload=b"\x7F\x2E\x78"),
           None)),
     ])
+    @patch(f"{SCRIPT_LOCATION}.time")
     @patch(f"{SCRIPT_LOCATION}.min")
-    def test_send_request_receive_responses__timeout_error(self,  mock_min, request_message, response_messages):
+    def test_send_request_receive_responses__timeout_error(self, mock_min, mock_time,
+                                                           request_message, response_messages):
         sid = request_message.payload[0]
         request_record = MagicMock(spec=UdsMessageRecord, payload=request_message.payload)
         response_records = tuple([Mock(spec=UdsMessageRecord, payload=response_message.payload)
@@ -685,11 +695,13 @@ class TestClient:
         self.mock_client._update_measured_client_values.assert_not_called()
 
     @pytest.mark.parametrize("request_message, response_message", [
-        (Mock(payload=b"\x10\x03"), Mock(payload=b"\x50\x03\x12\x34\x56\x78")),
-        (Mock(payload=b"\x3E\x00"), Mock(payload=b"\x7E\x00")),
+        (Mock(spec=UdsMessage, payload=b"\x10\x03"), Mock(payload=b"\x50\x03\x12\x34\x56\x78")),
+        (Mock(spec=UdsMessage, payload=b"\x3E\x00"), Mock(payload=b"\x7E\x00")),
     ])
+    @patch(f"{SCRIPT_LOCATION}.time")
     @patch(f"{SCRIPT_LOCATION}.min")
-    def test_send_request_receive_responses__direct_response(self, mock_min, request_message, response_message):
+    def test_send_request_receive_responses__direct_response(self, mock_min, mock_time,
+                                                             request_message, response_message):
         request_record = MagicMock(spec=UdsMessageRecord, payload=request_message.payload)
         response_records = (response_message, )
         self.mock_client._receive_response.return_value = response_message
@@ -707,17 +719,19 @@ class TestClient:
             request_record=request_record, response_records=list(response_records))
 
     @pytest.mark.parametrize("request_message, response_messages", [
-        (Mock(payload=b"\x22\x12\x34"),
-         (Mock(payload=b"\x7F\x22\x78"),
-          Mock(payload=b"\x62\x12\x34\x00\xFF\x55\xAA"))),
-        (Mock(payload=b"\x2E\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\xF0"),
-         (Mock(payload=b"\x7F\x2E\x78"),
-          Mock(payload=b"\x7F\x2E\x78"),
-          Mock(payload=b"\x7F\x2E\x78"),
-          Mock(payload=b"\x6E\xF0\xE1"))),
+        (Mock(spec=UdsMessage, payload=b"\x22\x12\x34"),
+         (Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
+          Mock(spec=UdsMessageRecord, payload=b"\x62\x12\x34\x00\xFF\x55\xAA"))),
+        (Mock(spec=UdsMessage, payload=b"\x2E\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\xF0"),
+         (Mock(spec=UdsMessageRecord, payload=b"\x7F\x2E\x78"),
+          Mock(spec=UdsMessageRecord, payload=b"\x7F\x2E\x78"),
+          Mock(spec=UdsMessageRecord, payload=b"\x7F\x2E\x78"),
+          Mock(spec=UdsMessageRecord, payload=b"\x6E\xF0\xE1"))),
     ])
+    @patch(f"{SCRIPT_LOCATION}.time")
     @patch(f"{SCRIPT_LOCATION}.min")
-    def test_send_request_receive_responses__delayed_response(self,  mock_min, request_message, response_messages):
+    def test_send_request_receive_responses__delayed_response(self, mock_min, mock_time,
+                                                              request_message, response_messages):
         sid = request_message.payload[0]
         request_record = MagicMock(spec=UdsMessageRecord, payload=request_message.payload)
         response_records = tuple([Mock(spec=UdsMessageRecord, payload=response_message.payload)

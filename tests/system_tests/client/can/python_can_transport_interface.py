@@ -27,7 +27,7 @@ class TestClientWithPythonCanKvaser(AbstractClientTests):
             network_manager=self.can_interface_1,
             addressing_information=self.addressing_information)
         self.transport_interface_2 = PyCanTransportInterface(
-            network_manager=self.can_interface_1,
+            network_manager=self.can_interface_2,
             addressing_information=self.addressing_information.get_other_end())
 
     def teardown_method(self):

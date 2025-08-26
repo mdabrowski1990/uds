@@ -96,7 +96,7 @@ class AbstractClientTests(ABC):
         client = Client(transport_interface=self.transport_interface_1,
                         p2_client_timeout=p2_client_timeout,
                         p6_client_timeout=p6_client_timeout)
-        self.send_message(transport_interface=response_message,
+        self.send_message(transport_interface=self.transport_interface_2,
                           message=request_message,
                           delay=send_after)
         datetime_before = datetime.now()
@@ -165,11 +165,11 @@ class AbstractClientTests(ABC):
                         p2_ext_client_timeout=p2_ext_client_timeout,
                         p6_ext_client_timeout=p6_ext_client_timeout)
         for i, response_message in enumerate(response_messages[:-1], start=1):
-            self.send_message(transport_interface=response_message,
+            self.send_message(transport_interface=self.transport_interface_2,
                               message=request_message,
                               delay=delay * i)
-        self.send_message(transport_interface=response_messages[-1],
-                          message=request_message,
+        self.send_message(transport_interface=self.transport_interface_2,
+                          message=response_messages[-1],
                           delay=delay * len(response_messages[:-1]) + send_after)
         datetime_before = datetime.now()
         request_record, response_records = client.send_request_receive_responses(request=request_message)

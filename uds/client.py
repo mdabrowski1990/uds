@@ -423,6 +423,7 @@ class Client:
 
         :param request: Request message to send.
 
+        :raise TypeError: Provided value is not an instance of UdsMessage class.
         :raise TimeoutError: Response was initiated with Response Pending message, but never finalized.
 
         :return: Tuple with two elements:
@@ -430,6 +431,8 @@ class Client:
             - record of diagnostic request message that was sent
             - tuple with diagnostic response messages that were received in the response
         """
+        if not isinstance(request, UdsMessage):
+            raise TypeError("Provided request value is not an instance of UdsMessage class.")
         request_record = self.transport_interface.send_message(request)
         time_last_message = time_request_sent = request_record.transmission_end.timestamp()
         sid = RequestSID(request_record.payload[0])
