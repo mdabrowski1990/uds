@@ -456,8 +456,9 @@ class Client:
             timeout = min(final_timeout, next_message_timeout)
             response_record = self._receive_response(sid=sid, timeout=timeout)
             if response_record is None:  # timeout achieved - no following response
-                raise TimeoutError("P2*Client timeout reached. The response was initiated with Response Pending "
-                                   f"message {bytes_to_hex(response_records[-1].payload)}, but never received.")
+                raise TimeoutError(f"P2*Client timeout ({self.p2_ext_client_timeout} ms) reached after receiving "
+                                   f"{len(response_records)} response pending messages "
+                                   f"({bytes_to_hex(response_records[-1].payload)}).")
             response_records.append(response_record)
         self._update_measured_client_values(request_record=request_record, response_records=response_records)
         return request_record, tuple(response_records)
