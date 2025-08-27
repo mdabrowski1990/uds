@@ -8,8 +8,7 @@ from .python_can import (
     AbstractUseCaseTests,
 )
 
-# Receive Own Frames
-
+# Configs
 
 class KvaserConfig_ReceiveOwnFrames(AbstractPythonCanTests):
     """
@@ -25,39 +24,11 @@ class KvaserConfig_ReceiveOwnFrames(AbstractPythonCanTests):
         self.can_interface_1 = Bus(interface="kvaser",
                                    channel=0,
                                    fd=True,
-                                   receive_own_messages=True)
+                                   receive_own_messages=self.RECEIVE_OWN_FRAMES)
         self.can_interface_2 = Bus(interface="kvaser",
                                    channel=1,
                                    fd=True,
-                                   receive_own_messages=True)
-
-class TestKvaserCanPacket_ReceiveOwnFrames(AbstractCanPacketTests, KvaserConfig_ReceiveOwnFrames):
-    """CAN packets related system tests for Python CAN Transport Interface."""
-
-    # TODO: https://github.com/mdabrowski1990/uds/issues/228 - set MAKE_TIMING_CHECKS to true when resolved
-    MAKE_TIMING_CHECKS: bool = False
-
-
-class TestKvaserMessage_ReceiveOwnFrames(AbstractMessageTests, KvaserConfig_ReceiveOwnFrames):
-    """UDS message related system tests for Python CAN Transport Interface."""
-
-    # TODO: https://github.com/mdabrowski1990/uds/issues/228 - set MAKE_TIMING_CHECKS to true when resolved
-    MAKE_TIMING_CHECKS: bool = False
-
-
-class TestKvaserUseCase_ReceiveOwnFrames(AbstractUseCaseTests, KvaserConfig_ReceiveOwnFrames):
-    """Use case based system tests for Python CAN Transport Interface."""
-
-
-class TestKvaserErrorGuessing_ReceiveOwnFrames(AbstractErrorGuessingTests, KvaserConfig_ReceiveOwnFrames):
-    """Error guessing system tests for Python CAN Transport Interface."""
-
-    # TODO: https://github.com/mdabrowski1990/uds/issues/228 - set MAKE_TIMING_CHECKS to true when resolved
-    MAKE_TIMING_CHECKS: bool = False
-
-
-# Do Not Receive Own Frames
-
+                                   receive_own_messages=self.RECEIVE_OWN_FRAMES)
 
 class KvaserConfig_DoNotReceiveOwnFrames(AbstractPythonCanTests):
     """
@@ -73,23 +44,43 @@ class KvaserConfig_DoNotReceiveOwnFrames(AbstractPythonCanTests):
         self.can_interface_1 = Bus(interface="kvaser",
                                    channel=0,
                                    fd=True,
-                                   receive_own_messages=False)
+                                   receive_own_messages=self.RECEIVE_OWN_FRAMES)
         self.can_interface_2 = Bus(interface="kvaser",
                                    channel=1,
                                    fd=True,
-                                   receive_own_messages=False)
+                                   receive_own_messages=self.RECEIVE_OWN_FRAMES)
+
+# Can Packet
+
+class TestKvaserCanPacket_ReceiveOwnFrames(AbstractCanPacketTests, KvaserConfig_ReceiveOwnFrames):
+    """CAN packets related system tests for Python CAN Transport Interface."""
 
 class TestKvaserCanPacket_DoNotReceiveOwnFrames(AbstractCanPacketTests, KvaserConfig_DoNotReceiveOwnFrames):
     """CAN packets related system tests for Python CAN Transport Interface."""
 
+# Message
+
+class TestKvaserMessage_ReceiveOwnFrames(AbstractMessageTests, KvaserConfig_ReceiveOwnFrames):
+    """UDS message related system tests for Python CAN Transport Interface."""
 
 class TestKvaserMessage_DoNotReceiveOwnFrames(AbstractMessageTests, KvaserConfig_DoNotReceiveOwnFrames):
     """UDS message related system tests for Python CAN Transport Interface."""
 
+# Use-Cases
+
+class TestKvaserUseCase_ReceiveOwnFrames(AbstractUseCaseTests, KvaserConfig_ReceiveOwnFrames):
+    """Use case based system tests for Python CAN Transport Interface."""
 
 class TestKvaserUseCase_DoNotReceiveOwnFrames(AbstractUseCaseTests, KvaserConfig_DoNotReceiveOwnFrames):
     """Use case based system tests for Python CAN Transport Interface."""
 
+# Error Guessing
+
+class TestKvaserErrorGuessing_ReceiveOwnFrames(AbstractErrorGuessingTests, KvaserConfig_ReceiveOwnFrames):
+    """Error guessing system tests for Python CAN Transport Interface."""
+
+    # TODO: https://github.com/mdabrowski1990/uds/issues/228 - set MAKE_TIMING_CHECKS to true when resolved
+    # MAKE_TIMING_CHECKS: bool = False
 
 class TestKvaserErrorGuessing_DoNotReceiveOwnFrames(AbstractErrorGuessingTests, KvaserConfig_DoNotReceiveOwnFrames):
     """Error guessing system tests for Python CAN Transport Interface."""
