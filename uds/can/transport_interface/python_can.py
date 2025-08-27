@@ -150,8 +150,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         if self.network_manager_receives_own_frames:
             observed_frame = None
             while (observed_frame is None
-                   or observed_frame.arbitration_id != can_frame.arbitration_id
-                   or bytes(observed_frame.data) != bytes(can_frame.data)):
+                   or (observed_frame.arbitration_id != can_frame.arbitration_id
+                       and bytes(observed_frame.data) != bytes(can_frame.data))):
                 time_elapsed_s = time() - time_start_s
                 timeout_left_s = timeout / 1000. - time_elapsed_s
                 if timeout_left_s <= 0:
@@ -180,8 +180,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         if self.network_manager_receives_own_frames:
             observed_frame = None
             while (observed_frame is None
-                   or observed_frame.arbitration_id != can_frame.arbitration_id
-                   or bytes(observed_frame.data) != bytes(can_frame.data)):
+                   or (observed_frame.arbitration_id != can_frame.arbitration_id
+                       and bytes(observed_frame.data) != bytes(can_frame.data))):
                 time_elapsed_s = time() - time_start_s
                 timeout_left_s = timeout / 1000. - time_elapsed_s
                 if timeout_left_s <= 0:
@@ -527,12 +527,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                      is_rx=False,
                                      is_error_frame=False,
                                      is_remote_frame=False)
-        timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         time_start_s = time()
         self.network_manager.send(can_frame)
-        time_elapsed_ms = (time() - time_start_s) * 1000.
-        remaining_timeout_ms = timeout_ms - time_elapsed_ms
-        observed_frame = self._get_sent_frame(can_frame=can_frame, timeout=remaining_timeout_ms)
+        timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
+        observed_frame = self._get_sent_frame(can_frame=can_frame, timeout=timeout_ms)
         time_sent_s = time()
         transmission_time = datetime.fromtimestamp(observed_frame.timestamp)
         if is_flow_control_packet:
@@ -572,12 +570,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                      is_rx=False,
                                      is_error_frame=False,
                                      is_remote_frame=False)
-        timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         time_start_s = time()
         self.network_manager.send(can_frame)
-        time_elapsed_ms = (time() - time_start_s) * 1000.
-        remaining_timeout_ms = timeout_ms - time_elapsed_ms
-        observed_frame = await self._async_get_sent_frame(can_frame=can_frame, timeout=remaining_timeout_ms)
+        timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
+        observed_frame = await self._async_get_sent_frame(can_frame=can_frame, timeout=timeout_ms)
         time_sent_s = time()
         transmission_time = datetime.fromtimestamp(observed_frame.timestamp)
         if is_flow_control_packet:

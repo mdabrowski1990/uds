@@ -26,7 +26,8 @@ if __name__ == "__main__":
               f"Timestamp before send: {timestamp_before_send}\n"
               f"Message timestamp: {sent_message.timestamp}\n"
               f"Current timestamp: {timestamp_after_send}\n"
-              f"Timestamp before send <= Message timestamp <= Current timestamp: {timestamp_before_send <= sent_message.timestamp <= timestamp_after_send} (expected `True`)")
+              f"Timestamp before send <= Message timestamp <= Current timestamp: {timestamp_before_send <= sent_message.timestamp <= timestamp_after_send} (expected `True`)\n"
+              f"Current timestamp - Message timestamp: {timestamp_after_send - sent_message.timestamp:06f} (excepted >= 0)")
 
     kvaser_interface_1.shutdown()
     kvaser_interface_2.shutdown()
