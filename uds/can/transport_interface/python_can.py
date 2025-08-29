@@ -656,6 +656,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about transmitted UDS message.
         """
+        self.__setup_notifier()
         self.clear_tx_frames_buffers()
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [self.send_packet(packets_to_send.pop(0))]
@@ -698,6 +699,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about transmitted UDS message.
         """
+        self.__setup_async_notifier(loop)
         self.clear_tx_frames_buffers()
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
@@ -749,6 +751,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise ValueError("Provided timeout value is less or equal 0.")
         if timeout is not None:
             time_end_ms = (time() * 1000.) + timeout
+        self.__setup_notifier()
         while True:
             if timeout is not None:
                 time_now_ms = time() * 1000.
@@ -787,6 +790,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise ValueError("Provided timeout value is less or equal 0.")
         if timeout is not None:
             time_end_ms = (time() * 1000.) + timeout
+        loop = get_running_loop() if loop is None else loop
         while True:
             if timeout is not None:
                 time_now_ms = time() * 1000.
