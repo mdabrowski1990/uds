@@ -44,7 +44,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
     def __init__(self,
                  network_manager: Any,
                  addressing_information: AbstractCanAddressingInformation,
-                 network_manager_receives_own_frames: bool = True,
                  n_as_timeout: TimeMillisecondsAlias = N_AS_TIMEOUT,
                  n_ar_timeout: TimeMillisecondsAlias = N_AR_TIMEOUT,
                  n_bs_timeout: TimeMillisecondsAlias = N_BS_TIMEOUT,
@@ -59,7 +58,6 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         :param network_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
         :param addressing_information: Addressing Information of UDS entity simulated by this CAN Transport Interface.
-        :param network_manager_receives_own_frames: Whether provided network manager receives own frames.
         :param n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
         :param n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
         :param n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
@@ -75,8 +73,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             - :parameter filler_byte: Filler byte value to use for
                 :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
         """
-        super().__init__(network_manager=network_manager,
-                         network_manager_receives_own_frames=network_manager_receives_own_frames)
+        super().__init__(network_manager=network_manager)
         self.__n_ar_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_as_measured: Optional[TimeMillisecondsAlias] = None
         self.__n_bs_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None

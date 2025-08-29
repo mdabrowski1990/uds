@@ -21,16 +21,13 @@ class AbstractTransportInterface(ABC):
     """
 
     def __init__(self,
-                 network_manager: Any,
-                 network_manager_receives_own_frames: bool) -> None:
+                 network_manager: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param network_manager: An object that handles the network (Physical and Data layers of OSI Model).
-        :param network_manager_receives_own_frames: Whether provided network manager receives own frames.
         """
         self.network_manager = network_manager
-        self.network_manager_receives_own_frames = network_manager_receives_own_frames
 
     @property
     @abstractmethod
@@ -80,20 +77,6 @@ class AbstractTransportInterface(ABC):
         if hasattr(self, "_AbstractTransportInterface__network_manager"):
             raise ReassignmentError("Value of 'network_manager' attribute cannot be changed once assigned.")
         self.__network_manager = value
-
-    @property
-    def network_manager_receives_own_frames(self) -> bool:
-        """Get flag that informs whether configured network manager receives own frames."""
-        return self.__network_manager_receives_own_frames
-
-    @network_manager_receives_own_frames.setter
-    def network_manager_receives_own_frames(self, value: bool) -> None:
-        """
-        Set flag whether configured network manager receives own frames.
-
-        :param value: Value to set.
-        """
-        self.__network_manager_receives_own_frames = bool(value)
 
     @staticmethod
     @abstractmethod
