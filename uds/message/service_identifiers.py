@@ -64,7 +64,8 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         """
         if value in ALL_REQUEST_SIDS:
             if not cls.is_member(value):
-                warn(message=f"SID 0x{value:X} is not recognized by this version of the package.",
+                warn(message=f"SID 0x{value:X} is not recognized by this version of the package. "
+                             "Define it manually using `add_member` method.",
                      category=UnrecognizedSIDWarning)
             return True
         return False
@@ -128,7 +129,8 @@ class ResponseSID(ValidatedEnum, ExtendableEnum, ByteEnum):
         """
         if value in ALL_RESPONSE_SIDS:
             if not cls.is_member(value):
-                warn(message=f"RSID 0x{value:X} is not recognized by this version of the package",
+                warn(message=f"RSID 0x{value:X} is not recognized by this version of the package. "
+                             "Define it manually using `add_member` method.",
                      category=UnrecognizedSIDWarning)
             return True
         return False

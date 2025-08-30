@@ -55,13 +55,13 @@ def validate_raw_bytes(value: RawBytesAlias, allow_empty: bool = False) -> None:
     :param value: Value to validate.
     :param allow_empty: True if empty list is allowed, False otherwise.
 
-    :raise TypeError: Provided value is not tuple, list, bytearray or bytes type.
+    :raise TypeError: Value must be either tuple, list, bytearray or bytes type.
     :raise ValueError: Provided value does not contain raw bytes (int values between 0x00-0xFF) only.
     """
     if not isinstance(value, (tuple, list, bytearray, bytes)):
         raise TypeError(f"Provided value is not tuple, list, bytearray or bytes type. Actual type: {type(value)}")
     if not allow_empty and not value:
-        raise ValueError("Provided values is empty sequence.")
+        raise ValueError("Provided values is an empty sequence.")
     if not all(isinstance(raw_byte, int) and 0x00 <= raw_byte <= 0xFF for raw_byte in value):
         raise ValueError("Provided value does not contain raw bytes (int value between 0x00 and 0xFF) only. "
                          f"Actual value: {value!r}")

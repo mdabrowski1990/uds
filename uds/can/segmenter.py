@@ -37,7 +37,8 @@ class CanSegmenter(AbstractSegmenter):
         """
         Configure CAN Segmenter.
 
-        :param addressing_information: Addressing Information configuration of a CAN node.
+        :param addressing_information: Addressing Information configuration of a node that is taking part in
+            DoCAN communication.
         :param dlc: Base CAN DLC value to use for creating CAN Packets.
         :param use_data_optimization: Information whether to use CAN Frame Data Optimization in created CAN Packets
             during segmentation.
@@ -138,7 +139,8 @@ class CanSegmenter(AbstractSegmenter):
         message_payload_size = len(message.payload)
         if message_payload_size > MAX_LONG_FF_DL_VALUE:
             raise SegmentationError("Provided diagnostic message cannot be segmented to CAN Packet as it is too big "
-                                    "to transmit it over CAN bus.")
+                                    "to transmit it over CAN bus. "
+                                    f"Maximal diagnostic message length: {MAX_LONG_FF_DL_VALUE}")
         if message_payload_size <= get_max_sf_dl(addressing_format=self.addressing_format,
                                                  dlc=self.dlc):
             single_frame = CanPacket(packet_type=CanPacketType.SINGLE_FRAME,
@@ -202,8 +204,6 @@ class CanSegmenter(AbstractSegmenter):
 
         :raise ValueError: Provided value is not CAN packets sequence.
         :raise NotImplementedError: There is missing implementation for the provided initial packet type.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
 
         :return: True if the packets form exactly one diagnostic message.
             False if there are missing, additional or inconsistent (e.g. two packets that initiate a message) packets.
@@ -231,7 +231,8 @@ class CanSegmenter(AbstractSegmenter):
                 else:
                     return False
             return payload_bytes_found >= total_payload_size
-        raise NotImplementedError(f"Unknown packet type received: {packets[0].packet_type}")
+        raise NotImplementedError("There is missing implementation for the CAN Packet of provided type: "
+                                  f"{packets[0].packet_type}.")
 
     def get_flow_control_packet(self,
                                 flow_status: CanFlowStatus,
@@ -263,14 +264,12 @@ class CanSegmenter(AbstractSegmenter):
         :param packets: CAN packets to desegment into UDS message.
 
         :raise SegmentationError: Provided packets are not a complete packets sequence that form a diagnostic message.
-        :raise NotImplementedError: There is missing implementation for the provided CAN Packets.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
+        :raise NotImplementedError: There is missing implementation for the provided CAN Packets type.
 
         :return: A diagnostic message that is an outcome of CAN packets desegmentation.
         """
         if not self.is_desegmented_message(packets):
-            raise SegmentationError("Provided packets are not a complete packets sequence")
+            raise SegmentationError("Provided packets are not a complete packets sequence.")
         if isinstance(packets[0], CanPacketRecord):
             return UdsMessageRecord(packets)  # type: ignore
         if isinstance(packets[0], CanPacket):
@@ -285,7 +284,7 @@ class CanSegmenter(AbstractSegmenter):
                 return UdsMessage(payload=payload_bytes[:packets[0].data_length],
                                   addressing_type=packets[0].addressing_type)
             raise SegmentationError("Unexpectedly, something went wrong...")
-        raise NotImplementedError("Missing implementation for provided CAN Packet.")
+        raise NotImplementedError("Missing implementation for the provided CAN Packet type.")
 
     def segmentation(self, message: UdsMessage) -> Tuple[CanPacket, ...]:
         """
@@ -294,14 +293,13 @@ class CanSegmenter(AbstractSegmenter):
         :param message: UDS message to divide into packets.
 
         :raise TypeError: Provided value is not instance of UdsMessage class.
-        :raise NotImplementedError: There is missing implementation for the Addressing Type used by provided message.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
+        :raise NotImplementedError: There is missing implementation for the Addressing Type used by
+            the provided message.
 
         :return: CAN packets that are an outcome of UDS message segmentation.
         """
         if not isinstance(message, UdsMessage):
-            raise TypeError(f"Provided value is not instance of UdsMessage class. Actual type: {type(message)}")
+            raise TypeError(f"Provided value is not instance of UdsMessage class. Actual type: {type(message)}.")
         if message.addressing_type == AddressingType.PHYSICAL:
             return self.__physical_segmentation(message)
         if message.addressing_type == AddressingType.FUNCTIONAL:

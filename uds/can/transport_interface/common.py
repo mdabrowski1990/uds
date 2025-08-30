@@ -57,7 +57,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         Create Transport Interface (an object for handling UDS Transport and Network layers).
 
         :param network_manager: An object that handles CAN bus (Physical and Data layers of OSI Model).
-        :param addressing_information: Addressing Information of UDS entity simulated by this CAN Transport Interface.
+        :param addressing_information: Addressing Information configuration of a simulated node that is taking part in
+            DoCAN communication.
         :param n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
         :param n_ar_timeout: Timeout value for :ref:`N_Ar <knowledge-base-can-n-ar>` time parameter.
         :param n_bs_timeout: Timeout value for :ref:`N_Bs <knowledge-base-can-n-bs>` time parameter.
@@ -104,7 +105,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise TypeError: Provided value is not CAN Segmenter.
         """
         if not isinstance(value, CanSegmenter):
-            raise TypeError("Provided value is not CAN Segmenter type.")
+            raise TypeError(f"Provided value is not CAN Segmenter type. Actual type: {type(value)}.")
         self.__segmenter = value
 
     # Communication parameters

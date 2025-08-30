@@ -13,7 +13,7 @@ from uds.translator.data_record import (
     RawDataRecord,
     SingleOccurrenceInfo,
     TextDataRecord,
-    TextEncoding,
+    TextEncoding
 )
 from uds.translator.translator import (
     Collection,
@@ -23,7 +23,7 @@ from uds.translator.translator import (
     Service,
     Translator,
     UdsMessage,
-    UdsMessageRecord,
+    UdsMessageRecord, InconsistencyError
 )
 
 SCRIPT_LOCATION = "uds.translator.translator"
@@ -58,12 +58,18 @@ class TestTranslator:
 
     @pytest.mark.parametrize("services", [
         {Mock(spec=Service), Mock(spec=Service), Mock()},
-        [Mock(spec=Service, request_sid=1, response_sid=2),
-         Mock(spec=Service, request_sid=4, response_sid=5),
-         Mock(spec=Service, request_sid=3, response_sid=4)],
     ])
     def test_services__set__value_error(self, services):
         with pytest.raises(ValueError):
+            Translator.services.fset(self.mock_translator, services)
+
+    @pytest.mark.parametrize("services", [
+        [Mock(spec=Service, request_sid=1, response_sid=2),
+         Mock(spec=Service, request_sid=4, response_sid=5),
+         Mock(spec=Service, request_sid=3, response_sid=4)]
+    ])
+    def test_services__set__inconsistent(self, services):
+        with pytest.raises(InconsistencyError):
             Translator.services.fset(self.mock_translator, services)
 
     @pytest.mark.parametrize("services", [

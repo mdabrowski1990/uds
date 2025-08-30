@@ -72,10 +72,12 @@ class UdsMessage(AbstractUdsMessageContainer):
 
         :param other: Object to compare.
 
+        :raise TypeError: Compared value is not an instance of UdsMessage class.
+
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
-            raise TypeError("UDS Message addressing only be compared with another UDS Message")
+            raise TypeError("UDS Message addressing only be compared with another UDS Message.")
         return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
@@ -126,6 +128,8 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
 
         :param other: Object to compare.
 
+        :raise TypeError: Compared value is not an instance of UdsMessageRecord class.
+
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
@@ -158,7 +162,7 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
             raise TypeError(f"Provided value is not a sequence. Actual type: {type(value)}")
         if not value or any(not isinstance(element, AbstractPacketRecord) for element in value):
             raise ValueError("Provided value must contain only instances of AbstractPacketRecord class. "
-                             f"Actual value: {value}")
+                             f"Actual value: {value}.")
 
     @property
     def packets_records(self) -> PacketsRecordsTuple:

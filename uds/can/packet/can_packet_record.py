@@ -66,7 +66,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         if isinstance(self.frame, PythonCanMessage):
             return self.frame.arbitration_id
-        raise NotImplementedError(f"Missing implementation for: {self.frame}")
+        raise NotImplementedError(f"Missing implementation for currently stored CAN frame type: {type(self.frame)}.")
 
     @property
     def raw_frame_data(self) -> bytes:
@@ -77,7 +77,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         if isinstance(self.frame, PythonCanMessage):
             return bytes(self.frame.data)
-        raise NotImplementedError(f"Missing implementation for: {self.frame}")
+        raise NotImplementedError(f"Missing implementation for currently stored CAN frame type: {type(self.frame)}.")
 
     @property
     def addressing_format(self) -> CanAddressingFormat:

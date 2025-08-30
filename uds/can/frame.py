@@ -110,16 +110,22 @@ class CanIdHandler:
         :raise ValueError: Provided value is out of CAN Identifier values range.
         """
         if not isinstance(value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if extended_can_id is None:
             if not cls.is_can_id(value):
-                raise ValueError("Provided value is out of CAN Identifier values range.")
+                raise ValueError("Provided value is out of CAN Identifier values range. "
+                                 f"Expected: {cls.MIN_STANDARD_VALUE} <= CAN ID <= {cls.MAX_EXTENDED_VALUE}. "
+                                 f"Actual value: {value}")
         elif extended_can_id:
             if not cls.is_extended_can_id(value):
-                raise ValueError("Provided value is out of Extended (29-bit) CAN Identifier values range.")
+                raise ValueError("Provided value is out of Extended (29-bit) CAN Identifier values range. "
+                                 f"Expected: {cls.MIN_EXTENDED_VALUE} <= CAN ID <= {cls.MAX_EXTENDED_VALUE}. "
+                                 f"Actual value: {value}")
         else:
             if not cls.is_standard_can_id(value):
-                raise ValueError("Provided value is out of Standard (11-bit) CAN Identifier values range.")
+                raise ValueError("Provided value is out of Standard (11-bit) CAN Identifier values range."
+                                 f"Expected: {cls.MIN_STANDARD_VALUE} <= CAN ID <= {cls.MAX_STANDARD_VALUE}. "
+                                 f"Actual value: {value}")
 
     @classmethod
     def validate_priority(cls, value: int) -> None:
@@ -132,9 +138,10 @@ class CanIdHandler:
         :raise ValueError: Provided value is out of Priority values range.
         """
         if not isinstance(value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if not cls.MIN_PRIORITY_VALUE <= value <= cls.MAX_PRIORITY_VALUE:
-            raise ValueError("Provided value is not in Priority values range.")
+            raise ValueError("Provided Priority value is out of range. "
+                f"Expected: {cls.MIN_PRIORITY_VALUE} <= Priority <= {cls.MAX_PRIORITY_VALUE}. Actual value: {value}")
 
 
 class CanDlcHandler:
@@ -227,9 +234,10 @@ class CanDlcHandler:
         :raise ValueError: Provided value is not a valid DLC value.
         """
         if not isinstance(value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if not cls.MIN_DLC_VALUE <= value <= cls.MAX_DLC_VALUE:
-            raise ValueError("Provided value is out of DLC values range.")
+            raise ValueError("Provided DLC value is out of range. "
+                f"Expected: {cls.MIN_DLC_VALUE} <= DLC <= {cls.MAX_DLC_VALUE}. Actual value: {value}")
 
     @classmethod
     def validate_data_bytes_number(cls, value: int, exact_value: bool = True) -> None:
@@ -253,4 +261,6 @@ class CanDlcHandler:
                 raise ValueError("Provided value is not a valid CAN Frame data bytes number.")
         else:
             if not cls.MIN_DATA_BYTES_NUMBER <= value <= cls.MAX_DATA_BYTES_NUMBER:
-                raise ValueError("Provided value is out of CAN Frame data bytes number range.")
+                raise ValueError("Provided data bytes number of a CAN frame is out of range. "
+                                 f"Expected: {cls.MIN_DATA_BYTES_NUMBER} <= DLC <= {cls.MAX_DATA_BYTES_NUMBER}. "
+                                 f"Actual value: {value}")

@@ -77,9 +77,11 @@ class MappingDataRecord(RawDataRecord):
         :raise ValueError: At least one key is out of raw values range.
         """
         if not isinstance(value, dict):
-            raise TypeError("Provided value is not dict type.")
+            raise TypeError(f"Provided value is not dict type. Actual type: {type(value)}")
         if not all(isinstance(key, int) and self.min_raw_value <= key <= self.max_raw_value for key in value.keys()):
-            raise ValueError("Provided dict contain values that are out of raw values range.")
+            raise ValueError("Provided dict contain values that are out of raw values range. "
+                             f"Expected: {self.min_raw_value} <= key <= {self.max_raw_value}. "
+                             f"Actual keys: {list(value.keys())}.")
         self.__values_mapping = MappingProxyType(value)
         self.__labels_mapping = MappingProxyType({v: k for k, v in self.__values_mapping.items()})
 

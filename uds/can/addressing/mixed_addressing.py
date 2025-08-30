@@ -315,7 +315,7 @@ class Mixed29BitCanAddressingInformation(AbstractCanAddressingInformation):
                     + CanIdHandler.MIXED_29BIT_FUNCTIONAL_ADDRESSING_MASKED_VALUE
                     + target_address_value
                     + source_address_value)
-        raise NotImplementedError("Provided Addressing Type is not handled.")
+        raise NotImplementedError(f"Provided Addressing Type is not handled: {addressing_type!r}")
 
     @classmethod
     def encode_ai_data_bytes(cls,
