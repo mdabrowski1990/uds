@@ -13,17 +13,18 @@ from uds.translator.data_record import (
     RawDataRecord,
     SingleOccurrenceInfo,
     TextDataRecord,
-    TextEncoding
+    TextEncoding,
 )
 from uds.translator.translator import (
     Collection,
+    InconsistencyError,
     MappingProxyType,
     RequestSID,
     ResponseSID,
     Service,
     Translator,
     UdsMessage,
-    UdsMessageRecord, InconsistencyError
+    UdsMessageRecord,
 )
 
 SCRIPT_LOCATION = "uds.translator.translator"

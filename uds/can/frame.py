@@ -141,7 +141,8 @@ class CanIdHandler:
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if not cls.MIN_PRIORITY_VALUE <= value <= cls.MAX_PRIORITY_VALUE:
             raise ValueError("Provided Priority value is out of range. "
-                f"Expected: {cls.MIN_PRIORITY_VALUE} <= Priority <= {cls.MAX_PRIORITY_VALUE}. Actual value: {value}")
+                             f"Expected: {cls.MIN_PRIORITY_VALUE} <= Priority <= {cls.MAX_PRIORITY_VALUE}. "
+                             f"Actual value: {value}")
 
 
 class CanDlcHandler:
@@ -237,7 +238,7 @@ class CanDlcHandler:
             raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if not cls.MIN_DLC_VALUE <= value <= cls.MAX_DLC_VALUE:
             raise ValueError("Provided DLC value is out of range. "
-                f"Expected: {cls.MIN_DLC_VALUE} <= DLC <= {cls.MAX_DLC_VALUE}. Actual value: {value}")
+                             f"Expected: {cls.MIN_DLC_VALUE} <= DLC <= {cls.MAX_DLC_VALUE}. Actual value: {value}")
 
     @classmethod
     def validate_data_bytes_number(cls, value: int, exact_value: bool = True) -> None:
