@@ -110,14 +110,3 @@ class TestAbstractSegmenter:
                                                                     packets=value) is True
         self.mock_abstract_segmenter.is_supported_packet_type.assert_has_calls(
             [call(element) for element in value], any_order=True)
-
-    # is_input_packet
-
-    @pytest.mark.parametrize("frame_attributes", [
-        {"data": list(range(10)), "can_id": 0x7BF},
-        {"data": list(range(100, 256)), "mac": "AB:CD:EF:98", "ip": "126.1.0.32"},
-    ])
-    def test_is_input_packet(self, frame_attributes):
-        assert (AbstractSegmenter.is_input_packet(self.mock_abstract_segmenter, **frame_attributes)
-                == self.mock_abstract_segmenter.addressing_information.is_input_packet.return_value)
-        self.mock_abstract_segmenter.addressing_information.is_input_packet.assert_called_once_with(**frame_attributes)

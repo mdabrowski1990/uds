@@ -14,9 +14,12 @@ class TestAbstractTransportInterface:
 
     # __init__
 
-    @pytest.mark.parametrize("network_manager", [Mock(), "some network manager"])
-    def test_init__valid(self, network_manager):
-        assert AbstractTransportInterface.__init__(self=self.mock_transport_interface,
+    @pytest.mark.parametrize("network_manager, network_manager_receives_own_frames", [
+        (Mock(), Mock()),
+        ("some network manager", False),
+    ])
+    def test_init__valid(self, network_manager, network_manager_receives_own_frames):
+        assert AbstractTransportInterface.__init__(self.mock_transport_interface,
                                                    network_manager=network_manager) is None
         assert self.mock_transport_interface.network_manager == network_manager
 

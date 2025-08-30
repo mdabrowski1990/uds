@@ -216,7 +216,7 @@ class Service:
         if isinstance(value, int):
             if not data_record.min_raw_value <= value <= data_record.max_raw_value:
                 raise ValueError("Provided occurrence value is out of range. "
-                                 f"Data Record name = {data_record.name}. "
+                                 f"Data Record name = {data_record.name!r}. "
                                  f"Data Record min raw value = {data_record.min_raw_value}. "
                                  f"Data Record max raw value = {data_record.max_occurrences}. "
                                  f"Provided sequence = {value}. Occurrence value = {value}.")
@@ -224,7 +224,7 @@ class Service:
         if isinstance(value, Mapping):
             return [data_record.get_raw_value_from_children(value)]
         raise TypeError(f"Incorrect value was provided for a Single Occurrence Data Record. "
-                        f"Data Record name = {data_record.name}. Provided value = {value}.")
+                        f"Data Record name = {data_record.name!r}. Provided value = {value}.")
 
     @staticmethod
     def _get_reoccurring_data_record_occurrences(data_record: AbstractDataRecord,
@@ -242,10 +242,10 @@ class Service:
         """
         if not isinstance(value, Sequence):
             raise TypeError("A sequence of values has to be provided for a reoccurring Data Record. "
-                            f"Data Record name = {data_record.name}.")
+                            f"Data Record name = {data_record.name!r}.")
         if len(value) < data_record.min_occurrences or len(value) > (data_record.max_occurrences or float("inf")):
             raise ValueError("A sequence of values has to contain proper number of Data Record occurrences."
-                             f"Data Record name = {data_record.name}. "
+                             f"Data Record name = {data_record.name!r}. "
                              f"Data Record min occurrences number = {data_record.min_occurrences}. "
                              f"Data Record max occurrences number = {data_record.max_occurrences}. "
                              f"Provided sequence = {value}.")
@@ -254,7 +254,7 @@ class Service:
             if isinstance(occurrence_value, int):
                 if not data_record.min_raw_value <= occurrence_value <= data_record.max_raw_value:
                     raise ValueError("Provided occurrence value is out of range. "
-                                     f"Data Record name = {data_record.name}. "
+                                     f"Data Record name = {data_record.name!r}. "
                                      f"Data Record min raw value = {data_record.min_raw_value}. "
                                      f"Data Record max raw value = {data_record.max_raw_value}. "
                                      f"Provided sequence = {value}. Occurrence value = {occurrence_value}.")
@@ -263,7 +263,7 @@ class Service:
                 raw_values.append(data_record.get_raw_value_from_children(occurrence_value))
             else:
                 raise ValueError("Incorrect value was provided for at least one occurrence of a Multi Occurrences "
-                                 f"Data Record. Data Record name = {data_record.name}. "
+                                 f"Data Record. Data Record name = {data_record.name!r}. "
                                  f"Provided values = {value}. Incorrect occurrence = {occurrence_value}.")
         return raw_values
 
@@ -448,7 +448,7 @@ class Service:
         if sid != self.request_sid:
             raise ValueError(f"Provided payload contains Negative Response for another service with SID=0x{sid:02X}.")
         if nrc not in self.supported_nrc:
-            warn(message=f"Received NRC code `0x{nrc:02X}` that is not supported by {self.name} service.",
+            warn(message=f"Received NRC code `0x{nrc:02X}` that is not supported by {self.name!r} service.",
                  category=UserWarning)
         return self._get_rsid_info(positive=False), self._get_sid_info(), self._get_nrc_info(NRC(nrc))
 
@@ -510,7 +510,7 @@ class Service:
         """
         NRC.validate_member(nrc)
         if nrc not in self.supported_nrc:
-            warn(message=f"NRC code {nrc} is not supported by service {self.name}.",
+            warn(message=f"NRC code {nrc} is not supported by service {self.name!r}.",
                  category=UserWarning)
         return bytearray([ResponseSID.NegativeResponse, self.request_sid, nrc])
 

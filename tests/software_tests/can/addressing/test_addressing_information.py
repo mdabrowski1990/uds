@@ -521,3 +521,134 @@ class TestCanAddressingInformationIntegration:
         assert ai.tx_physical_params == ai_other_end.rx_physical_params
         assert ai.rx_functional_params == ai_other_end.tx_functional_params
         assert ai.tx_functional_params == ai_other_end.rx_functional_params
+
+    # is_input_packet
+
+    @pytest.mark.parametrize("addressing_format, rx_physical_params, tx_physical_params, "
+                             "rx_functional_params, tx_functional_params, can_id, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_ADDRESSING,
+         {"can_id": 0x611},
+         {"can_id": 0x612},
+         {"can_id": 0x6FE},
+         {"can_id": 0x6FF},
+         0x611, [0x10, 0x01]),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+         {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
+         {"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
+         {"can_id": 0x18DBF0E1, "target_address": 0xF0, "source_address": 0xE1},
+         {"can_id": 0x18DBE1F0},
+         0xDA1234, [0xAB, 0xCD, 0x12, 0xF5]),
+        (CanAddressingFormat.EXTENDED_ADDRESSING,
+         {"can_id": 0x1234, "target_address": 0xF0},
+         {"can_id": 0xFEDCBA, "target_address": 0xE2},
+         {"can_id": 0x1234, "target_address": 0xBB},
+         {"can_id": 0xFEDCBA, "target_address": 0x12},
+         0x1234, [0xF0, *range(63)]),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         {"can_id": 0x645, "address_extension": 0x01},
+         {"can_id": 0x646, "address_extension": 0x01},
+         {"can_id": 0x6DE, "address_extension": 0x05},
+         {"can_id": 0x6DF, "address_extension": 0x05},
+         0x645, [0x01, 0x3E]),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+         {"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
+         {"can_id": 0x18CED0C2, "address_extension": 0x52, "target_address": 0xD0, "source_address": 0xC2},
+         {"can_id": 0x1CCD7186, "address_extension": 0xFF, "target_address": 0x71, "source_address": 0x86},
+         {"can_id": 0x1CCD8671, "address_extension": 0xFF},
+         0x18CEC2D0, [0x52, 0x3E])
+    ])
+    def test_is_input_packet__physical(self, addressing_format, rx_physical_params, tx_physical_params,
+                                       rx_functional_params, tx_functional_params, can_id, raw_frame_data):
+        addressing_information = CanAddressingInformation(addressing_format=addressing_format,
+                                                          rx_physical_params=rx_physical_params,
+                                                          tx_physical_params=tx_physical_params,
+                                                          rx_functional_params=rx_functional_params,
+                                                          tx_functional_params=tx_functional_params)
+        assert addressing_information.is_input_packet(can_id=can_id,
+                                                      raw_frame_data=raw_frame_data) is AddressingType.PHYSICAL
+
+    @pytest.mark.parametrize("addressing_format, rx_physical_params, tx_physical_params, "
+                             "rx_functional_params, tx_functional_params, can_id, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_ADDRESSING,
+         {"can_id": 0x611},
+         {"can_id": 0x612},
+         {"can_id": 0x6FE},
+         {"can_id": 0x6FF},
+         0x6FE, [0x10, 0x01]),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+         {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
+         {"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
+         {"can_id": 0x18DBF0E1, "target_address": 0xF0, "source_address": 0xE1},
+         {"can_id": 0x18DBE1F0},
+         0x18DBF0E1, [0xAB, 0xCD, 0x12, 0xF5]),
+        (CanAddressingFormat.EXTENDED_ADDRESSING,
+         {"can_id": 0x1234, "target_address": 0xF0},
+         {"can_id": 0xFEDCBA, "target_address": 0xE2},
+         {"can_id": 0x1234, "target_address": 0xBB},
+         {"can_id": 0xFEDCBA, "target_address": 0x12},
+         0x1234, [0xBB, *range(63)]),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         {"can_id": 0x645, "address_extension": 0x01},
+         {"can_id": 0x646, "address_extension": 0x01},
+         {"can_id": 0x6DE, "address_extension": 0x05},
+         {"can_id": 0x6DF, "address_extension": 0x05},
+         0x6DE, [0x05, 0x3E]),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+         {"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
+         {"can_id": 0x18CED0C2, "address_extension": 0x52, "target_address": 0xD0, "source_address": 0xC2},
+         {"can_id": 0x1CCD7186, "address_extension": 0xFF, "target_address": 0x71, "source_address": 0x86},
+         {"can_id": 0x1CCD8671, "address_extension": 0xFF},
+         0x1CCD7186, [0xFF, 0x3E])
+    ])
+    def test_is_input_packet__functional(self, addressing_format, rx_physical_params, tx_physical_params,
+                                       rx_functional_params, tx_functional_params, can_id, raw_frame_data):
+        addressing_information = CanAddressingInformation(addressing_format=addressing_format,
+                                                          rx_physical_params=rx_physical_params,
+                                                          tx_physical_params=tx_physical_params,
+                                                          rx_functional_params=rx_functional_params,
+                                                          tx_functional_params=tx_functional_params)
+        assert addressing_information.is_input_packet(can_id=can_id,
+                                                      raw_frame_data=raw_frame_data) is AddressingType.FUNCTIONAL
+
+    @pytest.mark.parametrize("addressing_format, rx_physical_params, tx_physical_params, "
+                             "rx_functional_params, tx_functional_params, can_id, raw_frame_data", [
+        (CanAddressingFormat.NORMAL_ADDRESSING,
+         {"can_id": 0x611},
+         {"can_id": 0x612},
+         {"can_id": 0x6FE},
+         {"can_id": 0x6FF},
+         0x6FF, [0x10, 0x01]),
+        (CanAddressingFormat.NORMAL_FIXED_ADDRESSING,
+         {"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
+         {"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
+         {"can_id": 0x18DBF0E1, "target_address": 0xF0, "source_address": 0xE1},
+         {"can_id": 0x18DBE1F0},
+         0xDBF0E1, [0xAB, 0xCD, 0x12, 0xF5]),
+        (CanAddressingFormat.EXTENDED_ADDRESSING,
+         {"can_id": 0x1234, "target_address": 0xF0},
+         {"can_id": 0xFEDCBA, "target_address": 0xE2},
+         {"can_id": 0x1234, "target_address": 0xBB},
+         {"can_id": 0xFEDCBA, "target_address": 0x12},
+         0x1234, [0xE2, *range(63)]),
+        (CanAddressingFormat.MIXED_11BIT_ADDRESSING,
+         {"can_id": 0x645, "address_extension": 0x01},
+         {"can_id": 0x646, "address_extension": 0x01},
+         {"can_id": 0x6DE, "address_extension": 0x05},
+         {"can_id": 0x6DF, "address_extension": 0x05},
+         0x6DF, [0x01, 0x3E]),
+        (CanAddressingFormat.MIXED_29BIT_ADDRESSING,
+         {"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
+         {"can_id": 0x18CED0C2, "address_extension": 0x52, "target_address": 0xD0, "source_address": 0xC2},
+         {"can_id": 0x1CCD7186, "address_extension": 0xFF, "target_address": 0x71, "source_address": 0x86},
+         {"can_id": 0x1CCD8671, "address_extension": 0xFF},
+         0x1CCD7186, [0x52, 0x3E])
+    ])
+    def test_is_input_packet__none(self, addressing_format, rx_physical_params, tx_physical_params,
+                                       rx_functional_params, tx_functional_params, can_id, raw_frame_data):
+        addressing_information = CanAddressingInformation(addressing_format=addressing_format,
+                                                          rx_physical_params=rx_physical_params,
+                                                          tx_physical_params=tx_physical_params,
+                                                          rx_functional_params=rx_functional_params,
+                                                          tx_functional_params=tx_functional_params)
+        assert addressing_information.is_input_packet(can_id=can_id,
+                                                      raw_frame_data=raw_frame_data) is None

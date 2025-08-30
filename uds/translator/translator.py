@@ -6,6 +6,7 @@ from types import MappingProxyType
 from typing import Collection, Dict, FrozenSet, Mapping, Optional, Union
 
 from uds.message import RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
+from uds.utilities import InconsistencyError
 
 from .service import DataRecordsValuesAlias, DecodedMessageAlias, Service
 
@@ -39,16 +40,20 @@ class Translator:
         Set diagnostic services translators.
 
         :param value: Diagnostic services translators to set.
+
+        :raise TypeError: Provided value is not a collection.
+        :raise ValueError: Provided value does not contain collection of Service instances only.
+        :raise InconsistencyError: Multiple translators were provided for at least one Service.
         """
         if not isinstance(value, Collection):
-            raise TypeError("Provided value is not a collection.")
+            raise TypeError(f"Provided value is not a collection. Actual type: {type(value)}.")
         services_mapping: Dict[Union[RequestSID, ResponseSID], Service] = {}
         for service in value:
             if not isinstance(service, Service):
                 raise ValueError("At least one collection element is not instance of Service class.")
             if service.request_sid in services_mapping or service.response_sid in services_mapping:
-                raise ValueError("Multiple services translators were provided for "
-                                 f"SID = {service.request_sid} or RSID = {service.response_sid}.")
+                raise InconsistencyError("Multiple translators were provided for Service with "
+                                         f"SID = {service.request_sid} or RSID = {service.response_sid}.")
             services_mapping[service.request_sid] = service
             services_mapping[service.response_sid] = service
         self.__services = frozenset(value)

@@ -194,12 +194,12 @@ def get_consecutive_frame_min_dlc(addressing_format: CanAddressingFormat, payloa
     :return: The lowest value of DLC for a Consecutive Frame that would carry provided payload size.
     """
     if not isinstance(payload_length, int):
-        raise TypeError("Provided `payload_length` value is not int type.")
+        raise TypeError(f"Provided `payload_length` value is not int type. Actual type: {payload_length}.")
     ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     max_payload_length = CanDlcHandler.MAX_DATA_BYTES_NUMBER - SN_BYTES_USED - ai_data_bytes_number
     if not 1 <= payload_length <= max_payload_length:
         raise ValueError("Provided `payload_length` value is out of range. "
-                         f"Expected: 1 <= payload_length <= {max_payload_length}.")
+                         f"Expected: 1 <= payload_length <= {max_payload_length}. Actual value: {payload_length}")
     return CanDlcHandler.get_min_dlc(ai_data_bytes_number + SN_BYTES_USED + payload_length)
 
 

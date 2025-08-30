@@ -205,7 +205,7 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
             - :parameter st_min: (required for: FC with ContinueToSend Flow Status)
                 Separation Time minimum information carried by this Flow Control frame.
 
-        :raise NotImplementedError: There is missing implementation for current CAN Packet Type.
+        :raise NotImplementedError: There is missing implementation for the provided CAN Packet Type.
         """
         CanPacketType.validate_member(packet_type)
         if packet_type == CanPacketType.SINGLE_FRAME:
@@ -233,4 +233,5 @@ class CanPacket(AbstractCanPacketContainer, AbstractPacket):
                                                                    dlc=dlc,
                                                                    **packet_type_specific_kwargs))
         else:
-            raise NotImplementedError("No handling for given CAN Packet Packet Type.")
+            raise NotImplementedError("There is missing implementation for the provided CAN Packet Type: "
+                                      f"{self.packet_type}.")

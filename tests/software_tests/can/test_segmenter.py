@@ -35,8 +35,6 @@ class TestCanSegmenter:
         # patching
         self._patcher_abstract_segmenter_init = patch(f"{SCRIPT_LOCATION}.AbstractSegmenter.__init__")
         self.mock_abstract_segmenter_init = self._patcher_abstract_segmenter_init.start()
-        self._patcher_abstract_segmenter_is_input_packet = patch(f"{SCRIPT_LOCATION}.AbstractSegmenter.is_input_packet")
-        self.mock_abstract_segmenter_is_input_packet = self._patcher_abstract_segmenter_is_input_packet.start()
         self._patcher_uds_message = patch(f"{SCRIPT_LOCATION}.UdsMessage")
         self.mock_uds_message = self._patcher_uds_message.start()
         self._patcher_uds_message_record = patch(f"{SCRIPT_LOCATION}.UdsMessageRecord")
@@ -60,7 +58,6 @@ class TestCanSegmenter:
 
     def teardown_method(self):
         self._patcher_abstract_segmenter_init.stop()
-        self._patcher_abstract_segmenter_is_input_packet.stop()
         self._patcher_uds_message.stop()
         self._patcher_uds_message_record.stop()
         self._patcher_dlc_handler.stop()
@@ -333,21 +330,6 @@ class TestCanSegmenter:
                                                      dlc=self.mock_can_segmenter.dlc,
                                                      filler_byte=self.mock_can_segmenter.filler_byte,
                                                      **functional_ai)
-
-    # is_input_packet
-
-    @pytest.mark.parametrize("can_id, raw_frame_data, additional_kwargs", [
-        (Mock(), Mock(), {}),
-        (0x654, b"\x00\xFF\xF1\xB9\x8A", {"abc": "something", "xyz": "else"}),
-    ])
-    def test_is_input_packet(self, can_id, raw_frame_data, additional_kwargs):
-        assert CanSegmenter.is_input_packet(
-            self.mock_can_segmenter,
-            can_id=can_id,
-            raw_frame_data=raw_frame_data,
-            **additional_kwargs) == self.mock_abstract_segmenter_is_input_packet.return_value
-        self.mock_abstract_segmenter_is_input_packet.assert_called_once_with(can_id=can_id,
-                                                                             raw_frame_data=raw_frame_data)
 
     # is_desegmented_message
 
@@ -647,88 +629,6 @@ class TestCanSegmenter:
 @pytest.mark.integration
 class TestCanSegmenterIntegration:
     """Integration tests for `CanSegmenter` class."""
-
-    # is_input_packet
-
-    @pytest.mark.parametrize("addressing_information, can_id, raw_frame_data", [
-        (NormalCanAddressingInformation(rx_physical_params={"can_id": 0x611},
-                                        tx_physical_params={"can_id": 0x612},
-                                        rx_functional_params={"can_id": 0x6FE},
-                                        tx_functional_params={"can_id": 0x6FF}), 0x611, [0x10, 0x01]),
-        (NormalFixedCanAddressingInformation(rx_physical_params={"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
-                                             tx_physical_params={"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
-                                             rx_functional_params={"can_id": 0x18DBF0E1, "target_address": 0xF0, "source_address": 0xE1},
-                                             tx_functional_params={"can_id": 0x18DBE1F0}), 0xDA1234, [0xAB, 0xCD, 0x12, 0xF5]),
-        (ExtendedCanAddressingInformation(rx_physical_params={"can_id": 0x1234, "target_address": 0xF0},
-                                          tx_physical_params={"can_id": 0xFEDCBA, "target_address": 0xE2},
-                                          rx_functional_params={"can_id": 0x1234, "target_address": 0xBB},
-                                          tx_functional_params={"can_id": 0xFEDCBA, "target_address": 0x12}), 0x1234, [0xF0, *range(63)]),
-        (Mixed11BitCanAddressingInformation(rx_physical_params={"can_id": 0x645, "address_extension": 0x01},
-                                            tx_physical_params={"can_id": 0x646, "address_extension": 0x01},
-                                            rx_functional_params={"can_id": 0x6DE, "address_extension": 0x05},
-                                            tx_functional_params={"can_id": 0x6DF, "address_extension": 0x05}), 0x645, [0x01, 0x3E]),
-        (Mixed29BitCanAddressingInformation(rx_physical_params={"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
-                                            tx_physical_params={"can_id": 0x18CED0C2, "address_extension": 0x52, "target_address": 0xD0, "source_address": 0xC2},
-                                            rx_functional_params={"can_id": 0x1CCD7186, "address_extension": 0xFF, "target_address": 0x71, "source_address": 0x86},
-                                            tx_functional_params={"can_id": 0x1CCD8671, "address_extension": 0xFF}), 0x18CEC2D0, [0x52, 0x3E]),
-    ])
-    def test_is_input_packet__physical(self, addressing_information, can_id, raw_frame_data):
-        can_segmenter = CanSegmenter(addressing_information=addressing_information)
-        assert can_segmenter.is_input_packet(can_id=can_id,
-                                             raw_frame_data=raw_frame_data) is AddressingType.PHYSICAL
-
-    @pytest.mark.parametrize("addressing_information, can_id, raw_frame_data", [
-        (NormalCanAddressingInformation(rx_physical_params={"can_id": 0x611},
-                                        tx_physical_params={"can_id": 0x612},
-                                        rx_functional_params={"can_id": 0x6FE},
-                                        tx_functional_params={"can_id": 0x6FF}), 0x6FE, [0x10, 0x01]),
-        (NormalFixedCanAddressingInformation(rx_physical_params={"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
-                                             tx_physical_params={"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
-                                             rx_functional_params={"can_id": 0x18DBF0E1, "target_address": 0xF0, "source_address": 0xE1},
-                                             tx_functional_params={"can_id": 0x18DBE1F0}), 0x18DBF0E1, [0xAB, 0xCD, 0x12, 0xF5]),
-        (ExtendedCanAddressingInformation(rx_physical_params={"can_id": 0x1234, "target_address": 0xF0},
-                                          tx_physical_params={"can_id": 0xFEDCBA, "target_address": 0xE2},
-                                          rx_functional_params={"can_id": 0x1234, "target_address": 0xBB},
-                                          tx_functional_params={"can_id": 0xFEDCBA, "target_address": 0x12}), 0x1234, [0xBB, *range(63)]),
-        (Mixed11BitCanAddressingInformation(rx_physical_params={"can_id": 0x645, "address_extension": 0x01},
-                                            tx_physical_params={"can_id": 0x646, "address_extension": 0x01},
-                                            rx_functional_params={"can_id": 0x6DE, "address_extension": 0x05},
-                                            tx_functional_params={"can_id": 0x6DF, "address_extension": 0x05}), 0x6DE, [0x05, 0x3E]),
-        (Mixed29BitCanAddressingInformation(rx_physical_params={"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
-                                            tx_physical_params={"can_id": 0x18CED0C2, "address_extension": 0x52, "target_address": 0xD0, "source_address": 0xC2},
-                                            rx_functional_params={"can_id": 0x1CCD7186, "address_extension": 0xFF, "target_address": 0x71, "source_address": 0x86},
-                                            tx_functional_params={"can_id": 0x1CCD8671, "address_extension": 0xFF}), 0x1CCD7186, [0xFF, 0x3E]),
-    ])
-    def test_is_input_packet__functional(self, addressing_information, can_id, raw_frame_data):
-        can_segmenter = CanSegmenter(addressing_information=addressing_information)
-        assert can_segmenter.is_input_packet(can_id=can_id,
-                                             raw_frame_data=raw_frame_data) is AddressingType.FUNCTIONAL
-
-    @pytest.mark.parametrize("addressing_information, can_id, raw_frame_data", [
-        (NormalCanAddressingInformation(rx_physical_params={"can_id": 0x611},
-                                        tx_physical_params={"can_id": 0x612},
-                                        rx_functional_params={"can_id": 0x6FE},
-                                        tx_functional_params={"can_id": 0x6FF}), 0x6FF, [0x10, 0x01]),
-        (NormalFixedCanAddressingInformation(rx_physical_params={"can_id": 0xDA1234, "target_address": 0x12, "source_address": 0x34},
-                                             tx_physical_params={"can_id": 0xDA3412, "target_address": 0x34, "source_address": 0x12},
-                                             rx_functional_params={"can_id": 0x18DBF0E1, "target_address": 0xF0, "source_address": 0xE1},
-                                             tx_functional_params={"can_id": 0x18DBE1F0}), 0xDBF0E1, [0xAB, 0xCD, 0x12, 0xF5]),
-        (ExtendedCanAddressingInformation(rx_physical_params={"can_id": 0x1234, "target_address": 0xF0},
-                                          tx_physical_params={"can_id": 0xFEDCBA, "target_address": 0xE2},
-                                          rx_functional_params={"can_id": 0x1234, "target_address": 0xBB},
-                                          tx_functional_params={"can_id": 0xFEDCBA, "target_address": 0x12}), 0x1234, [0xE2, *range(63)]),
-        (Mixed11BitCanAddressingInformation(rx_physical_params={"can_id": 0x645, "address_extension": 0x01},
-                                            tx_physical_params={"can_id": 0x646, "address_extension": 0x01},
-                                            rx_functional_params={"can_id": 0x6DE, "address_extension": 0x05},
-                                            tx_functional_params={"can_id": 0x6DF, "address_extension": 0x05}), 0x6DF, [0x01, 0x3E]),
-        (Mixed29BitCanAddressingInformation(rx_physical_params={"can_id": 0x18CEC2D0, "address_extension": 0x52, "target_address": 0xC2, "source_address": 0xD0},
-                                            tx_physical_params={"can_id": 0x18CED0C2, "address_extension": 0x52, "target_address": 0xD0, "source_address": 0xC2},
-                                            rx_functional_params={"can_id": 0x1CCD7186, "address_extension": 0xFF, "target_address": 0x71, "source_address": 0x86},
-                                            tx_functional_params={"can_id": 0x1CCD8671, "address_extension": 0xFF}), 0x1CCD7186, [0x52, 0x3E]),
-    ])
-    def test_is_input_packet__none(self, addressing_information, can_id, raw_frame_data):
-        can_segmenter = CanSegmenter(addressing_information=addressing_information)
-        assert can_segmenter.is_input_packet(can_id=can_id, raw_frame_data=raw_frame_data) is None
 
     # get_flow_control_packet
 
