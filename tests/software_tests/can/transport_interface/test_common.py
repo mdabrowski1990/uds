@@ -94,8 +94,7 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == flow_control_parameters_generator)
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
-        self.mock_abstract_transport_interface_init.assert_called_once_with(
-            network_manager=network_manager)
+        self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information,
                                                         **segmenter_configuration)
 
@@ -108,18 +107,18 @@ class TestAbstractCanTransportInterface:
 
     @pytest.mark.parametrize("value", [Mock(), "CAN Segmenter"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_segmenter__set(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
-        assert AbstractCanTransportInterface.segmenter.fset(self.mock_can_transport_interface, value) is None
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__segmenter == value
-        mock_isinstance.assert_called_once_with(value, self.mock_can_segmenter)
-
-    @pytest.mark.parametrize("value", [Mock(), "CAN Segmenter"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_segmenter__set__type_error(self, mock_isinstance, value):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             AbstractCanTransportInterface.segmenter.fset(self.mock_can_transport_interface, value)
+        mock_isinstance.assert_called_once_with(value, self.mock_can_segmenter)
+
+    @pytest.mark.parametrize("value", [Mock(), "CAN Segmenter"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_segmenter__set__valid(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        assert AbstractCanTransportInterface.segmenter.fset(self.mock_can_transport_interface, value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__segmenter == value
         mock_isinstance.assert_called_once_with(value, self.mock_can_segmenter)
 
         # dlc
@@ -164,21 +163,21 @@ class TestAbstractCanTransportInterface:
 
     @pytest.mark.parametrize("value", ["something", Mock()])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_flow_control_parameters_generator__set(self, mock_isinstance, value):
-        mock_isinstance.return_value = True
-        assert AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface,
-                                                                                    value) is None
-        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator
-                == value)
-        mock_isinstance.assert_called_once_with(value, AbstractFlowControlParametersGenerator)
-
-    @pytest.mark.parametrize("value", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_flow_control_parameters_generator__set__type_error(self, mock_isinstance, value):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
             AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface,
                                                                                  value)
+        mock_isinstance.assert_called_once_with(value, AbstractFlowControlParametersGenerator)
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_flow_control_parameters_generator__set__valid(self, mock_isinstance, value):
+        mock_isinstance.return_value = True
+        assert AbstractCanTransportInterface.flow_control_parameters_generator.fset(self.mock_can_transport_interface,
+                                                                                    value) is None
+        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__flow_control_parameters_generator
+                == value)
         mock_isinstance.assert_called_once_with(value, AbstractFlowControlParametersGenerator)
 
     # n_as
@@ -207,30 +206,30 @@ class TestAbstractCanTransportInterface:
         mock_le.assert_called_once_with(0)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_as_timeout__set__warning(self, mock_isinstance):
+    def test_n_as_timeout__set__valid_with_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=True)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_as_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_as_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_AS_TIMEOUT)
         self.mock_warn.assert_called_once()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_timeout == mock_value
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_as_timeout__set__no_warning(self, mock_isinstance):
+    def test_n_as_timeout__set__valid_without_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=False)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_as_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_as_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_AS_TIMEOUT)
         self.mock_warn.assert_not_called()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_timeout == mock_value
 
     def test_n_as_measured__get(self):
         self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured = Mock()
@@ -263,30 +262,30 @@ class TestAbstractCanTransportInterface:
         mock_le.assert_called_once_with(0)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_ar_timeout__set__warning(self, mock_isinstance):
+    def test_n_ar_timeout__set__valid_with_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=True)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_ar_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_ar_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_AR_TIMEOUT)
         self.mock_warn.assert_called_once()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_timeout == mock_value
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_ar_timeout__set__no_warning(self, mock_isinstance):
+    def test_n_ar_timeout__set__valid_without_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=False)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_ar_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_ar_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_AR_TIMEOUT)
         self.mock_warn.assert_not_called()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_timeout == mock_value
 
     def test_n_ar_measured__get(self):
         self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured = Mock()
@@ -319,30 +318,30 @@ class TestAbstractCanTransportInterface:
         mock_le.assert_called_once_with(0)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_bs_timeout__set__warning(self, mock_isinstance):
+    def test_n_bs_timeout__set__valid_with_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=True)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_bs_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_bs_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_BS_TIMEOUT)
         self.mock_warn.assert_called_once()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_timeout == mock_value
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_bs_timeout__set__no_warning(self, mock_isinstance):
+    def test_n_bs_timeout__set__valid_without_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=False)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_bs_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_bs_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_BS_TIMEOUT)
         self.mock_warn.assert_not_called()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_timeout == mock_value
 
     def test_n_bs_measured__get(self):
         self.mock_can_transport_interface._AbstractCanTransportInterface__n_bs_measured = Mock()
@@ -384,12 +383,12 @@ class TestAbstractCanTransportInterface:
         (0, 450),
     ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_br__set(self, mock_isinstance, value, max_value):
+    def test_n_br__set__valid(self, mock_isinstance, value, max_value):
         mock_isinstance.return_value = True
         self.mock_can_transport_interface.n_br_max = max_value
-        AbstractCanTransportInterface.n_br.fset(self.mock_can_transport_interface, value)
-        mock_isinstance.assert_called_once_with(value, (int, float))
+        assert AbstractCanTransportInterface.n_br.fset(self.mock_can_transport_interface, value) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_br == value
+        mock_isinstance.assert_called_once_with(value, (int, float))
 
     @pytest.mark.parametrize("n_bs_timeout, n_ar_measured", [
         (1000, 10),
@@ -446,12 +445,12 @@ class TestAbstractCanTransportInterface:
     def test_n_cs__set__valid(self, mock_isinstance, value, max_value):
         mock_isinstance.return_value = True
         self.mock_can_transport_interface.n_cs_max = max_value
-        AbstractCanTransportInterface.n_cs.fset(self.mock_can_transport_interface, value)
-        mock_isinstance.assert_called_once_with(value, (int, float))
+        assert AbstractCanTransportInterface.n_cs.fset(self.mock_can_transport_interface, value) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cs == value
+        mock_isinstance.assert_called_once_with(value, (int, float))
 
     def test_n_cs__set__none(self):
-        AbstractCanTransportInterface.n_cs.fset(self.mock_can_transport_interface, None)
+        assert AbstractCanTransportInterface.n_cs.fset(self.mock_can_transport_interface, None) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cs is None
 
     @pytest.mark.parametrize("n_cr_timeout, n_as_measured", [
@@ -497,30 +496,30 @@ class TestAbstractCanTransportInterface:
         mock_le.assert_called_once_with(0)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_cr_timeout__set__valid_with_warn(self, mock_isinstance):
+    def test_n_cr_timeout__set__valid_with_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=True)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_cr_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_cr_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_CR_TIMEOUT)
         self.mock_warn.assert_called_once()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_timeout == mock_value
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_n_cr_timeout__set__valid_without_warn(self, mock_isinstance):
+    def test_n_cr_timeout__set__valid_without_warning(self, mock_isinstance):
         mock_isinstance.return_value = True
         mock_le = Mock(return_value=False)
         mock_ne = Mock(return_value=False)
         mock_value = MagicMock(__le__=mock_le, __ne__=mock_ne)
-        AbstractCanTransportInterface.n_cr_timeout.fset(self.mock_can_transport_interface, mock_value)
+        assert AbstractCanTransportInterface.n_cr_timeout.fset(self.mock_can_transport_interface, mock_value) is None
+        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_timeout == mock_value
         mock_isinstance.assert_called_once_with(mock_value, (int, float))
         mock_le.assert_called_once_with(0)
         mock_ne.assert_called_once_with(self.mock_can_transport_interface.N_CR_TIMEOUT)
         self.mock_warn.assert_not_called()
-        assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_timeout == mock_value
 
     def test_n_cr_measured__get(self):
         self.mock_can_transport_interface._AbstractCanTransportInterface__n_cr_measured = Mock()
@@ -546,7 +545,7 @@ class TestAbstractCanTransportInterface:
         mock_isinstance.assert_called_once_with(value, (int, float))
 
     @pytest.mark.parametrize("value", [0, AbstractCanTransportInterface.N_AR_TIMEOUT])
-    def test_update_n_ar_measured__no_warning(self, value):
+    def test_update_n_ar_measured__valid_without_warning(self, value):
         self.mock_can_transport_interface.n_ar_timeout = AbstractCanTransportInterface.N_AR_TIMEOUT
         assert AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured == value
@@ -556,7 +555,7 @@ class TestAbstractCanTransportInterface:
         (AbstractCanTransportInterface.N_AR_TIMEOUT + 1, AbstractCanTransportInterface.N_AR_TIMEOUT),
         (AbstractCanTransportInterface.N_AR_TIMEOUT - 1, AbstractCanTransportInterface.N_AR_TIMEOUT // 2),
     ])
-    def test_update_n_ar_measured__warning(self, value, n_ar_timeout):
+    def test_update_n_ar_measured__valid_with_warning(self, value, n_ar_timeout):
         self.mock_can_transport_interface.n_ar_timeout = n_ar_timeout
         assert AbstractCanTransportInterface._update_n_ar_measured(self.mock_can_transport_interface, value) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured == value
@@ -581,7 +580,7 @@ class TestAbstractCanTransportInterface:
         mock_isinstance.assert_called_once_with(value, (int, float))
 
     @pytest.mark.parametrize("value", [0, AbstractCanTransportInterface.N_AS_TIMEOUT])
-    def test_update_n_as_measured__no_warning(self, value):
+    def test_update_n_as_measured__valid_without_warning(self, value):
         self.mock_can_transport_interface.n_as_timeout = AbstractCanTransportInterface.N_AS_TIMEOUT
         assert AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured == value
@@ -591,7 +590,7 @@ class TestAbstractCanTransportInterface:
         (AbstractCanTransportInterface.N_AS_TIMEOUT + 1, AbstractCanTransportInterface.N_AS_TIMEOUT),
         (AbstractCanTransportInterface.N_AS_TIMEOUT - 1, AbstractCanTransportInterface.N_AS_TIMEOUT // 2),
     ])
-    def test_update_n_as_measured__warning(self, value, n_as_timeout):
+    def test_update_n_as_measured__valid_with_warning(self, value, n_as_timeout):
         self.mock_can_transport_interface.n_as_timeout = n_as_timeout
         assert AbstractCanTransportInterface._update_n_as_measured(self.mock_can_transport_interface, value) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured == value

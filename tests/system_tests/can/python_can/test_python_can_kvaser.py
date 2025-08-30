@@ -11,11 +11,7 @@ from .python_can import (
 # Configs
 
 class KvaserConfig(AbstractPythonCanTests):
-    """
-    Configuration for Python CAN Transport Interface tests with Kvaser CAN interfaces.
-
-    Interfaces receive own CAN Frames.
-    """
+    """Configuration for Python CAN Transport Interface tests with Kvaser CAN interfaces."""
 
     def _define_interfaces(self):
         """Configure CAN bus objects that manage CAN interfaces."""

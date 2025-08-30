@@ -15,7 +15,6 @@ from uds.can.transport_interface.python_can import (
     CanPacketRecord,
     CanPacketType,
     PyCanTransportInterface,
-    PythonCanMessage,
     TransmissionDirection,
     UdsMessage,
 )

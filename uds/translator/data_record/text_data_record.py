@@ -153,7 +153,7 @@ class TextDataRecord(AbstractDataRecord):
         :return: Raw value decoded from provided character.
         """
         if not isinstance(physical_value, str):
-            raise TypeError("Provided value is not str type.")
+            raise TypeError(f"Provided value is not str type. Actual type: {type(physical_value)}.")
         if len(physical_value) != 1:
-            raise ValueError(f"Provided value is not a single character. Actual value: {physical_value!r}")
+            raise ValueError(f"Provided value is not a single character. Actual value: {physical_value!r}.")
         return self.__ENCODINGS[self.encoding]["decode"](physical_value)
