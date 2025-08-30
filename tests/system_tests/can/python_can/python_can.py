@@ -62,8 +62,8 @@ class AbstractPythonCanTests(ABC):
         for _timer in self._timers:
             _timer.cancel()
         if self._timers:
-            sleep(self.TASK_TIMING_TOLERANCE / 1000.)
             for _timer in self._timers:
+                _timer.join(self.TASK_TIMING_TOLERANCE / 1000.)
                 del _timer
             self._timers = []
         self.can_interface_1.shutdown()
