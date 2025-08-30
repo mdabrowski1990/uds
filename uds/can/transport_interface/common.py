@@ -204,7 +204,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param value: Value of timeout to set.
 
         :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal 0.
+        :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -241,7 +241,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param value: Value of timeout to set.
 
         :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal 0.
+        :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -278,7 +278,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param value: Value of timeout to set.
 
         :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal 0.
+        :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")
@@ -400,7 +400,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param value: Value of timeout to set.
 
         :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is less or equal 0.
+        :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided time parameter value must be int or float type.")

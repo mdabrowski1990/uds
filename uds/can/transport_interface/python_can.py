@@ -553,7 +553,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about transmitted CAN packet.
         """
         if not isinstance(packet, CanPacket):
-            raise TypeError("Provided value is not an instance of CanPacket class.")
+            raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         can_frame = PythonCanMessage(arbitration_id=packet.can_id,
@@ -594,9 +594,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param packet: CAN packet to send.
         :param loop: An asyncio event loop used for observing messages.
 
-        :raise TypeError: Provided packet is not CAN packet.
-        :raise TimeoutError: Timeout was reached before a CAN packet could be transmitted.
-
         :return: Record with historic information about transmitted CAN packet.
         """
         return self.send_packet(packet=packet)
@@ -611,7 +608,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             Leave None to wait forever.
 
         :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal 0.
+        :raise ValueError: Provided timeout value is less or equal to 0.
 
         :return: Record with historic information about received CAN packet.
         """
@@ -619,7 +616,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if not isinstance(timeout, (int, float)):
                 raise TypeError("Timeout value must be None, int or float type.")
             if timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal 0. Actual value: {timeout}")
+                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
         self.__setup_notifier()
         return self._wait_for_packet(buffer=self.__rx_frames_buffer, timeout=timeout)
 
@@ -634,7 +631,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param loop: An asyncio event loop used for observing messages.
 
         :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal 0.
+        :raise ValueError: Provided timeout value is less or equal to 0.
 
         :return: Record with historic information about received CAN packet.
         """
@@ -642,7 +639,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if not isinstance(timeout, (int, float)):
                 raise TypeError("Timeout value must be None, int or float type.")
             if timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal 0. Actual value: {timeout}")
+                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
         if isinstance(loop, AbstractEventLoop):
             self.__setup_async_notifier(loop=loop)
         else:
@@ -748,7 +745,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             Leave None to wait forever.
 
         :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal 0.
+        :raise ValueError: Provided timeout value is less or equal to 0.
         :raise TimeoutError: Timeout was reached.
             Either Single Frame / First Frame not received within [timeout] ms
             or N_As, N_Ar, N_Bs, N_Cr timeout reached.
@@ -759,7 +756,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if not isinstance(timeout, (int, float)):
                 raise TypeError("Timeout value must be None, int or float type.")
             if timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal 0. Actual value: {timeout}")
+                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
         if timeout is not None:
             time_end_ms = (time() * 1000.) + timeout
         self.__setup_notifier()
@@ -787,7 +784,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param loop: An asyncio event loop to use for scheduling this task.
 
         :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal 0.
+        :raise ValueError: Provided timeout value is less or equal to 0.
         :raise TimeoutError: Timeout was reached.
             Either Single Frame / First Frame not received within [timeout] ms
             or N_As, N_Ar, N_Bs, N_Cr timeout reached.
@@ -798,7 +795,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if not isinstance(timeout, (int, float)):
                 raise TypeError("Timeout value must be None, int or float type.")
             if timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal 0. Actual value: {timeout}")
+                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
         if timeout is not None:
             time_end_ms = (time() * 1000.) + timeout
         loop = get_running_loop() if loop is None else loop
