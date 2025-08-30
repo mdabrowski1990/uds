@@ -133,11 +133,11 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
         :param value: Value of transmission time to set.
 
-        :raise TypeError: Provided value has unexpected type.
+        :raise TypeError: Provided value is not datetime type.
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, datetime):
-            raise TypeError("Provided value is not datetime type")
+            raise TypeError(f"Provided value is not datetime type. Actual type: {type(value)}.")
         if hasattr(self, "_AbstractPacketRecord__transmission_time"):
             raise ReassignmentError("Value of 'transmission_time' attribute cannot be changed once assigned.")
         self.__transmission_time = value

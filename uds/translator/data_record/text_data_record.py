@@ -114,7 +114,7 @@ class TextDataRecord(AbstractDataRecord):
             return 0x7F
         if self.encoding == TextEncoding.BCD:
             return 9
-        raise NotImplementedError(f"Missing implementation for {self.encoding}.")
+        raise NotImplementedError(f"Missing implementation for {self.encoding!r}.")
 
     def get_physical_values(self, *raw_values: int) -> str:
         """
@@ -147,10 +147,13 @@ class TextDataRecord(AbstractDataRecord):
 
         :param physical_value: A single character.
 
+        :raise TypeError: Provided value is not str type.
+        :raise ValueError: Provided value is not a single character.
+
         :return: Raw value decoded from provided character.
         """
         if not isinstance(physical_value, str):
-            raise TypeError("Provided value is not str type.")
+            raise TypeError(f"Provided value is not str type. Actual type: {type(physical_value)}.")
         if len(physical_value) != 1:
-            raise ValueError("Provided value is not a single character.")
+            raise ValueError(f"Provided value is not a single character. Actual value: {physical_value!r}.")
         return self.__ENCODINGS[self.encoding]["decode"](physical_value)

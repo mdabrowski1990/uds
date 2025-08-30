@@ -3,9 +3,9 @@
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Sequence, Type, Union
+from typing import Sequence, Type, Union
 
-from uds.addressing import AbstractAddressingInformation, AddressingType
+from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import (
     AbstractPacket,
@@ -100,16 +100,6 @@ class AbstractSegmenter(ABC):
             return False
         # check if all packets are the same type
         return len({type(packet) for packet in packets}) == 1
-
-    def is_input_packet(self, **frame_attributes: Any) -> Optional[AddressingType]:
-        """
-        Check if provided frame attributes belong to a packet for this Segmenter.
-
-        :param frame_attributes: Attributes of a frame to be checked.
-
-        :return: Addressing Type used for transmission of this packet, None otherwise.
-        """
-        return self.addressing_information.is_input_packet(**frame_attributes)
 
     @abstractmethod
     def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:

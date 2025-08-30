@@ -109,7 +109,7 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
 
         None in other cases.
 
-        :raise NotImplementedError: There is missing implementation for current CAN Packet Type.
+        :raise NotImplementedError: There is missing implementation for the set CAN Packet Type.
         """
         if self.packet_type == CanPacketType.SINGLE_FRAME:
             return extract_sf_dl(addressing_format=self.addressing_format,
@@ -120,7 +120,8 @@ class AbstractCanPacketContainer(AbstractPacketContainer, ABC):
         if self.packet_type in {CanPacketType.CONSECUTIVE_FRAME,
                                 CanPacketType.FLOW_CONTROL}:
             return None
-        raise NotImplementedError("No handling for given CAN Packet Packet Type.")
+        raise NotImplementedError("There is missing implementation for the currently set CAN Packet Type: "
+                                  f"{self.packet_type}.")
 
     @property
     def sequence_number(self) -> Optional[int]:

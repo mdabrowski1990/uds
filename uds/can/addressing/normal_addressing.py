@@ -290,8 +290,6 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         :param priority: Priority parameter value to use.
 
         :raise NotImplementedError: There is missing implementation for the provided Addressing Type.
-            Please create an issue in our `Issues Tracking System <https://github.com/mdabrowski1990/uds/issues>`_
-            with detailed description if you face this error.
 
         :return: Value of CAN ID (compatible with Normal Fixed Addressing Format) that was generated from
             the provided values.
@@ -313,7 +311,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
                     + CanIdHandler.NORMAL_FIXED_FUNCTIONAL_ADDRESSING_MASKED_VALUE
                     + target_address_value
                     + source_address_value)
-        raise NotImplementedError("Provided Addressing Type is not handled.")
+        raise NotImplementedError(f"Provided Addressing Type is not handled: {addressing_type!r}")
 
     @classmethod
     def encode_ai_data_bytes(cls,

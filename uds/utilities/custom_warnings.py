@@ -30,7 +30,7 @@ class UnexpectedPacketReceptionWarning(RuntimeWarning):
 
 class NewMessageReceptionWarning(RuntimeWarning):
     """
-    A new UDS message transmission was started while in process of receiving UDS message.
+    A new message transmission was started while in process of receiving another message.
 
     .. seealso::
         :ref:`Unexpected CAN Packet handling <knowledge-base-can-unexpected-packet-arrival>`

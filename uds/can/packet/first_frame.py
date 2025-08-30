@@ -55,7 +55,7 @@ def validate_first_frame_data(addressing_format: CanAddressingFormat, raw_frame_
     :param addressing_format: CAN Addressing Format used.
     :param raw_frame_data: Raw data bytes of a CAN frame to validate.
 
-        :raise ValueError: The value of N_PCI in provided data is not Single Frame N_PCI.
+        :raise ValueError: The value of N_PCI in provided data is not First Frame N_PCI.
     """
     validate_raw_bytes(raw_frame_data, allow_empty=False)
     if not is_first_frame(addressing_format=addressing_format, raw_frame_data=raw_frame_data):
