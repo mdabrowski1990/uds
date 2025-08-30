@@ -2,22 +2,20 @@
 
 __all__ = ["PyCanTransportInterface"]
 
-from asyncio import AbstractEventLoop, get_running_loop, wait_for, sleep as async_sleep
+from asyncio import AbstractEventLoop, get_running_loop
+from asyncio import sleep as async_sleep
+from asyncio import wait_for
 from datetime import datetime
-from time import time, sleep
+from time import sleep, time
 from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
 from can import AsyncBufferedReader, BufferedReader, BusABC
 from can import Message as PythonCanMessage
 from can import Notifier
-from uds.addressing import TransmissionDirection, AddressingType
+from uds.addressing import AddressingType, TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.utilities import (
-    NewMessageReceptionWarning,
-    TimeMillisecondsAlias,
-    UnexpectedPacketReceptionWarning,
-)
+from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanDlcHandler, CanIdHandler
@@ -132,7 +130,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         self.__teardown_notifier()
         if self.__async_notifier is None:
-            self.__async_rx_frames_buffer.is_stopped = False
             self.__async_notifier = Notifier(bus=self.network_manager,
                                              listeners=[self.__async_rx_frames_buffer,
                                                         self.__async_tx_frames_buffer],
@@ -183,7 +180,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         for cf_packet in cf_packets_block:
             time_to_wait = time_end_s - time()
             if time_to_wait > 0:
-                await async_sleep(time_end_s-time())
+                await async_sleep(time_end_s - time())
             cf_packet_record = await self.async_send_packet(cf_packet, loop=loop)
             time_end_s = cf_packet_record.transmission_time.timestamp() + delay / 1000.
             packet_records.append(cf_packet_record)
@@ -286,11 +283,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             received_frame = await wait_for(buffer.get_message(), timeout=timeout_left_s)
             packet_addressing_type = self.addressing_information.is_input_packet(
                 can_id=received_frame.arbitration_id, raw_frame_data=received_frame.data)
-        return CanPacketRecord(frame=received_frame,  # type: ignore
+        return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))
 
     def _receive_cf_packets_block(self,
                                   sequence_number: int,
@@ -566,7 +563,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                      is_error_frame=False,
                                      is_remote_frame=False)
         time_start_s = time()
-        self.network_manager.send(msg=can_frame, timeout=timeout_ms/1000.)
+        self.network_manager.send(msg=can_frame, timeout=timeout_ms / 1000.)
         time_sent_s = time()
         sent_frame = PythonCanMessage(arbitration_id=can_frame.arbitration_id,
                                       is_extended_id=can_frame.is_extended_id,
@@ -677,7 +674,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 cf_number_to_send = len(packets_to_send) if flow_control_record.block_size == 0 \
                     else flow_control_record.block_size
                 delay_between_cf = self.n_cs if self.n_cs is not None \
-                    else CanSTminTranslator.decode(flow_control_record.st_min)
+                    else CanSTminTranslator.decode(flow_control_record.st_min)  # type: ignore
                 packet_records.extend(
                     self._send_cf_packets_block(
                         cf_packets_block=packets_to_send[:cf_number_to_send],
@@ -722,7 +719,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 cf_number_to_send = len(packets_to_send) if flow_control_record.block_size == 0 \
                     else flow_control_record.block_size
                 delay_between_cf = self.n_cs if self.n_cs is not None \
-                    else CanSTminTranslator.decode(flow_control_record.st_min)
+                    else CanSTminTranslator.decode(flow_control_record.st_min)  # type: ignore
                 packet_records.extend(
                     await self._async_send_cf_packets_block(cf_packets_block=packets_to_send[:cf_number_to_send],
                                                             delay=delay_between_cf,

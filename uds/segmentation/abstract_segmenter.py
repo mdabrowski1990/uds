@@ -3,9 +3,9 @@
 __all__ = ["SegmentationError", "AbstractSegmenter"]
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Sequence, Type, Union
+from typing import Sequence, Type, Union
 
-from uds.addressing import AbstractAddressingInformation, AddressingType
+from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import (
     AbstractPacket,

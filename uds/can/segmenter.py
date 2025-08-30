@@ -2,13 +2,13 @@
 
 __all__ = ["CanSegmenter"]
 
-from typing import Any, Optional, Tuple, Type, Union
+from typing import Optional, Tuple, Type, Union
 
 from uds.addressing import AbstractAddressingInformation, AddressingType
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter, SegmentationError
-from uds.utilities import RawBytesAlias, validate_raw_byte
+from uds.utilities import validate_raw_byte
 
 from .addressing import AbstractCanAddressingInformation, CanAddressingFormat
 from .frame import DEFAULT_FILLER_BYTE, CanDlcHandler

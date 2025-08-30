@@ -39,6 +39,7 @@ class AbstractPythonCanTests(ABC):
     can_interface_1: Bus
     can_interface_2: Bus
     sent_message: Optional[UdsMessageRecord]
+    received_message: Optional[UdsMessageRecord]
     sent_packet: Optional[CanPacketRecord]
     _timers: List[Timer]
 
@@ -51,6 +52,7 @@ class AbstractPythonCanTests(ABC):
         self._define_interfaces()
         self.sent_message: Optional[UdsMessageRecord] = None
         self.sent_packet: Optional[CanPacketRecord] = None
+        self.received_message: Optional[UdsMessageRecord] = None
         self._timers: List[Timer] = []
 
     def teardown_method(self):
@@ -139,12 +141,36 @@ class AbstractPythonCanTests(ABC):
         await asyncio.sleep(delay / 1000.)
         return await can_transport_interface.async_send_packet(packet=packet)
 
+    def receive_message(self,
+                        can_transport_interface: PyCanTransportInterface,
+                        timeout: TimeMillisecondsAlias,
+                        delay: TimeMillisecondsAlias) -> Timer:
+        """
+        Receive DoCAN message over CAN interface.
+
+        .. note:: The result (UDS message record) will be available be in `self.sent_message` attribute.
+
+        :param can_transport_interface: Transport Interface to use for transmission.
+        :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
+        :param delay: Time [ms] after which the reception will be started.
+
+        :return: Timer object with scheduled task.
+        """
+
+        def _receive_message():
+            self.received_message = can_transport_interface.receive_message(timeout)
+
+        timer = Timer(interval=delay/1000., function=_receive_message)
+        self._timers.append(timer)
+        timer.start()
+        return timer
+
     def send_message(self,
                      can_transport_interface: PyCanTransportInterface,
                      message: UdsMessage,
                      delay: TimeMillisecondsAlias) -> Timer:
         """
-        Send CAN message over CAN interface.
+        Send DoCAN message over CAN interface.
 
         .. note:: The result (UDS message record) will be available be in `self.sent_message` attribute.
 
@@ -168,7 +194,7 @@ class AbstractPythonCanTests(ABC):
                                  message: UdsMessage,
                                  delay: TimeMillisecondsAlias) -> UdsMessageRecord:
         """
-        Send CAN message asynchronously over CAN interface.
+        Send DoCAN message asynchronously over CAN interface.
 
         :param can_transport_interface: Transport Interface to use for transmission.
         :param message: UDS message to send.
@@ -683,7 +709,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
 
 
 class AbstractMessageTests(AbstractPythonCanTests, ABC):
-    """Common implementation of system tests related to sending and receiving UDS messages."""
+    """Common implementation of system tests related to sending and receiving UDS (DoCAN) messages."""
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
@@ -982,7 +1008,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 970),  # ms
+        (1000, 950),  # ms
         (50, 20),
     ])
     def test_send_message__multi_packets(self, example_can_addressing_information,
@@ -1052,7 +1078,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
     @pytest.mark.parametrize("timeout, send_after", [
         # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
         (1000, 950),  # ms
-        (50, 10),
+        (50, 20),
     ])
     @pytest.mark.asyncio
     async def test_async_send_message__multi_packets(self, example_can_addressing_information,
@@ -1221,7 +1247,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
     @pytest.mark.parametrize("timeout, send_after, delay", [
         # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
         (1000, 950, 20),  # ms
-        (50, 10, 50),
+        (50, 20, 50),
     ])
     def test_receive_message__multi_packets(self, example_can_addressing_information,
                                             message, timeout, send_after, delay):
@@ -1278,7 +1304,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
     @pytest.mark.parametrize("timeout, send_after, delay", [
         # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
         (1000, 950, 20),  # ms
-        (50, 10, 50),
+        (50, 20, 50),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__multi_packets(self, example_can_addressing_information,
@@ -1338,9 +1364,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("timeout, send_after, delay", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950, 20),  # ms
-        (50, 10, 50),
+        (1000, 50, 20),  # ms
+        (50, 0, 50),
     ])
     def test_receive_message__multi_packets__timeout(self, example_can_addressing_information,
                                                      message, timeout, send_after, delay):
@@ -1382,9 +1407,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("timeout, send_after, delay", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950, 20),  # ms
-        (50, 10, 50),
+        (1000, 50, 20),  # ms
+        (50, 0, 50),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__multi_packets__timeout(self, example_can_addressing_information,
@@ -1443,9 +1467,27 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             0, 0, 2, 5,
         ),
     ])
-    @pytest.mark.asyncio
-    async def test_async_full_duplex(self, example_can_addressing_information,
-                                     tx_message, rx_message, tx_block_size, tx_st_min, rx_block_size, rx_st_min):
+    def test_full_duplex(self, example_can_addressing_information,
+                         tx_message, rx_message, tx_block_size, tx_st_min, rx_block_size, rx_st_min):
+        """
+        Check for a full-duplex communication during synchronous UDS message sending.
+
+        Procedure:
+        1. Schedule receiving messages on both Transport Interfaces.
+        2. Schedule sending messages on both Transport Interfaces.
+        3. Wait till all tasks are finished (messages are sent and received).
+        4. Validate UDS message record attributes.
+            Expected: Attributes of received UDS message records are in line with messages attributes scheduled for
+                the transmission.
+
+        :param example_can_addressing_information: Example Addressing Information of a CAN Node.
+        :param tx_message: UDS message to send on interface 1 and receive on interface 2.
+        :param rx_message: UDS message to send on interface 2 and receive on interface 1.
+        :param tx_block_size: Block Size parameter value for interface 1.
+        :param tx_st_min: STmin parameter value for interface 1.
+        :param rx_block_size: Block Size parameter value for interface 2.
+        :param rx_st_min: STmin parameter value for interface 2.
+        """
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=example_can_addressing_information,
@@ -1456,9 +1498,79 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             addressing_information=example_can_addressing_information.get_other_end(),
             flow_control_parameters_generator=DefaultFlowControlParametersGenerator(block_size=rx_block_size,
                                                                                     st_min=rx_st_min))
-        received_tx_message_task = asyncio.create_task(
-            can_transport_interface.async_receive_message(timeout=50))
+        timer_1 = self.receive_message(can_transport_interface=can_transport_interface_2nd_node,
+                                       delay=0,
+                                       timeout=50)
+        timer_2 = self.send_message(can_transport_interface=can_transport_interface_2nd_node,
+                                    message=rx_message,
+                                    delay=10)
+        timer_3 = self.send_message(can_transport_interface=can_transport_interface,
+                                    message=tx_message,
+                                    delay=10)
+        received_rx_message_record = can_transport_interface.receive_message(timeout=50)
+        while not all([timer_1.finished.is_set(), timer_2.finished.is_set(), timer_3.finished.is_set()]):
+            sleep(self.TASK_TIMING_TOLERANCE / 1000.)
+        received_tx_message_record = self.received_message
+        assert isinstance(received_tx_message_record, UdsMessageRecord)
+        assert isinstance(received_rx_message_record, UdsMessageRecord)
+        assert received_tx_message_record.payload == tx_message.payload
+        assert received_tx_message_record.addressing_type == tx_message.addressing_type
+        assert received_rx_message_record.payload == rx_message.payload
+        assert received_rx_message_record.addressing_type == rx_message.addressing_type
+
+    @pytest.mark.parametrize("tx_message, rx_message, tx_block_size, tx_st_min, rx_block_size, rx_st_min", [
+        (
+            UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
+            UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
+            0, 0, 0, 0
+        ),
+        (
+            UdsMessage(payload=[0x22, *range(10)], addressing_type=AddressingType.PHYSICAL),
+            UdsMessage(payload=[0x62, *range(15)], addressing_type=AddressingType.PHYSICAL),
+            2, 25, 5, 120
+        ),
+        (
+            UdsMessage(payload=[0x22, *range(256), *range(256), *range(256)],
+                       addressing_type=AddressingType.PHYSICAL),
+            UdsMessage(payload=[0x62, *range(256), *range(256), *range(256)],
+                       addressing_type=AddressingType.PHYSICAL),
+            0, 0, 2, 5,
+        ),
+    ])
+    @pytest.mark.asyncio
+    async def test_async_full_duplex(self, example_can_addressing_information,
+                                     tx_message, rx_message, tx_block_size, tx_st_min, rx_block_size, rx_st_min):
+        """
+        Check for a full-duplex communication during asynchronous UDS message sending.
+
+        Procedure:
+        1. Schedule receiving messages on both Transport Interfaces.
+        2. Schedule sending messages on both Transport Interfaces.
+        3. Wait till all tasks are finished (messages are sent and received).
+        4. Validate UDS message record attributes.
+            Expected: Attributes of received UDS message records are in line with the transmitted UDS messages records.
+
+        :param example_can_addressing_information: Example Addressing Information of a CAN Node.
+        :param tx_message: UDS message to send on interface 1 and receive on interface 2.
+        :param rx_message: UDS message to send on interface 2 and receive on interface 1.
+        :param tx_block_size: Block Size parameter value for interface 1.
+        :param tx_st_min: STmin parameter value for interface 1.
+        :param rx_block_size: Block Size parameter value for interface 2.
+        :param rx_st_min: STmin parameter value for interface 2.
+        """
+        can_transport_interface = PyCanTransportInterface(
+            network_manager=self.can_interface_1,
+            addressing_information=example_can_addressing_information,
+            flow_control_parameters_generator=DefaultFlowControlParametersGenerator(block_size=tx_block_size,
+                                                                                    st_min=tx_st_min))
+        can_transport_interface_2nd_node = PyCanTransportInterface(
+            network_manager=self.can_interface_2,
+            addressing_information=example_can_addressing_information.get_other_end(),
+            flow_control_parameters_generator=DefaultFlowControlParametersGenerator(block_size=rx_block_size,
+                                                                                    st_min=rx_st_min))
         received_rx_message_task = asyncio.create_task(
+            can_transport_interface.async_receive_message(timeout=50))
+        received_tx_message_task = asyncio.create_task(
             can_transport_interface_2nd_node.async_receive_message(timeout=50))
         sent_tx_message_task = asyncio.create_task(
             can_transport_interface.async_send_message(message=tx_message))
@@ -1477,6 +1589,12 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         assert isinstance(received_rx_message_record, UdsMessageRecord)
         assert isinstance(sent_tx_message_record, UdsMessageRecord)
         assert isinstance(sent_rx_message_record, UdsMessageRecord)
+        assert received_tx_message_record.payload == sent_tx_message_record.payload == tx_message.payload
+        assert (received_tx_message_record.addressing_type == sent_tx_message_record.addressing_type
+                == tx_message.addressing_type)
+        assert received_rx_message_record.payload == sent_rx_message_record.payload == rx_message.payload
+        assert (received_rx_message_record.addressing_type == sent_rx_message_record.addressing_type
+                == rx_message.addressing_type)
 
 
 class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
@@ -2226,9 +2344,8 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 970),  # ms
-        (50, 20),
+        (1000, 50),  # ms
+        (50, 0),
     ])
     def test_overflow_during_message_sending(self, example_can_addressing_information,
                                              message, timeout, send_after):
@@ -2264,9 +2381,8 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950),  # ms
-        (50, 10),
+        (1000, 50),  # ms
+        (50, 0),
     ])
     @pytest.mark.asyncio
     async def test_overflow_during_async_message_sending(self, example_can_addressing_information,

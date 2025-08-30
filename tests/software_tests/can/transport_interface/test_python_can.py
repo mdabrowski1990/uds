@@ -8,6 +8,7 @@ from uds.addressing import AddressingType
 from uds.can import DEFAULT_FILLER_BYTE, CanAddressingInformation, DefaultFlowControlParametersGenerator
 from uds.can.transport_interface.python_can import (
     AbstractCanTransportInterface,
+    AbstractEventLoop,
     BusABC,
     CanFlowStatus,
     CanPacket,
@@ -16,7 +17,7 @@ from uds.can.transport_interface.python_can import (
     PyCanTransportInterface,
     PythonCanMessage,
     TransmissionDirection,
-    UdsMessage,AbstractEventLoop
+    UdsMessage,
 )
 
 SCRIPT_LOCATION = "uds.can.transport_interface.python_can"
@@ -254,8 +255,18 @@ class TestPyCanTransportInterface:
         ([Mock(spec=CanPacket), Mock(spec=CanPacket), Mock(spec=CanPacket)], 12.34),
     ])
     def test_send_cf_packets_block(self, packets, delay):
-        mock_fc_transmission_time = Mock(timestamp=Mock(return_value=MagicMock()))
-        packet_records = tuple(MagicMock(spec=CanPacketRecord) for _ in packets)
+        mock_fc_timestamp_gt = Mock(return_value=False)
+        mock_cf_timestamp_gt = Mock(return_value=True)
+        mock_fc_timestamp = MagicMock(__add__=lambda this, other: this,
+                                      __sub__=lambda this, other: this,
+                                      __gt__=mock_fc_timestamp_gt)
+        mock_cf_timestamp = MagicMock(__add__=lambda this, other: this,
+                                      __sub__=lambda this, other: this,
+                                      __gt__=mock_cf_timestamp_gt)
+        mock_fc_transmission_time = Mock(timestamp=Mock(return_value=mock_fc_timestamp))
+        packet_records = tuple(MagicMock(spec=CanPacketRecord,
+                                         transmission_time=Mock(timestamp=Mock(return_value=mock_cf_timestamp)))
+                               for _ in packets)
         self.mock_can_transport_interface.send_packet.side_effect = packet_records
         assert PyCanTransportInterface._send_cf_packets_block(self.mock_can_transport_interface,
                                                               cf_packets_block=packets,
@@ -263,6 +274,8 @@ class TestPyCanTransportInterface:
                                                               delay=delay) == packet_records
         self.mock_can_transport_interface.send_packet.assert_has_calls(
             [call(packet) for packet in packets], any_order=False)
+        mock_fc_timestamp_gt.assert_called_once_with(0)
+        mock_cf_timestamp_gt.assert_has_calls([call(0)] * len(packets[1:]))
         self.mock_sleep.assert_called()
         self.mock_async_sleep.assert_not_called()
 
@@ -275,8 +288,18 @@ class TestPyCanTransportInterface:
     @pytest.mark.asyncio
     async def test_async_send_cf_packets_block(self, packets, delay):
         mock_loop = Mock()
-        mock_fc_transmission_time = Mock(timestamp=Mock(return_value=MagicMock()))
-        packet_records = tuple(MagicMock(spec=CanPacketRecord) for _ in packets)
+        mock_fc_timestamp_gt = Mock(return_value=False)
+        mock_cf_timestamp_gt = Mock(return_value=True)
+        mock_fc_timestamp = MagicMock(__add__=lambda this, other: this,
+                                      __sub__=lambda this, other: this,
+                                      __gt__=mock_fc_timestamp_gt)
+        mock_cf_timestamp = MagicMock(__add__=lambda this, other: this,
+                                      __sub__=lambda this, other: this,
+                                      __gt__=mock_cf_timestamp_gt)
+        mock_fc_transmission_time = Mock(timestamp=Mock(return_value=mock_fc_timestamp))
+        packet_records = tuple(MagicMock(spec=CanPacketRecord,
+                                         transmission_time=Mock(timestamp=Mock(return_value=mock_cf_timestamp)))
+                               for _ in packets)
         self.mock_can_transport_interface.async_send_packet.side_effect = packet_records
         assert await PyCanTransportInterface._async_send_cf_packets_block(self.mock_can_transport_interface,
                                                                           cf_packets_block=packets,
@@ -285,6 +308,8 @@ class TestPyCanTransportInterface:
                                                                           loop=mock_loop) == packet_records
         self.mock_can_transport_interface.async_send_packet.assert_has_calls(
             [call(packet, loop=mock_loop) for packet in packets], any_order=False)
+        mock_fc_timestamp_gt.assert_called_once_with(0)
+        mock_cf_timestamp_gt.assert_has_calls([call(0)] * len(packets[1:]))
         self.mock_sleep.assert_not_called()
         self.mock_async_sleep.assert_called()
 
