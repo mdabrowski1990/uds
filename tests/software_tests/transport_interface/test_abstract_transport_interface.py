@@ -21,10 +21,8 @@ class TestAbstractTransportInterface:
     def test_init__valid(self, network_manager, network_manager_receives_own_frames):
         assert AbstractTransportInterface.__init__(
             self=self.mock_transport_interface,
-            network_manager=network_manager,
-            network_manager_receives_own_frames=network_manager_receives_own_frames) is None
+            network_manager=network_manager) is None
         assert self.mock_transport_interface.network_manager == network_manager
-        assert self.mock_transport_interface.network_manager_receives_own_frames == network_manager_receives_own_frames
 
     # addressing_information
 
@@ -65,18 +63,3 @@ class TestAbstractTransportInterface:
         with pytest.raises(ValueError):
             AbstractTransportInterface.network_manager.fset(self.mock_transport_interface, value)
         self.mock_transport_interface.is_supported_network_manager.assert_called_with(value)
-
-    # network_manager_receives_own_frames
-
-    def test_network_manager_receives_own_frames__get(self):
-        self.mock_transport_interface._AbstractTransportInterface__network_manager_receives_own_frames = Mock()
-        assert (AbstractTransportInterface.network_manager_receives_own_frames.fget(self.mock_transport_interface)
-                == self.mock_transport_interface._AbstractTransportInterface__network_manager_receives_own_frames)
-
-    @pytest.mark.parametrize("value", [Mock(), True, False])
-    def test_network_manager_receives_own_frames__set(self, value):
-        assert (AbstractTransportInterface.network_manager_receives_own_frames.fset(
-            self.mock_transport_interface, value) is None)
-        assert (self.mock_transport_interface._AbstractTransportInterface__network_manager_receives_own_frames
-                == bool(value))
-        

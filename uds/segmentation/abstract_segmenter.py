@@ -101,16 +101,6 @@ class AbstractSegmenter(ABC):
         # check if all packets are the same type
         return len({type(packet) for packet in packets}) == 1
 
-    def is_input_packet(self, **frame_attributes: Any) -> Optional[AddressingType]:
-        """
-        Check if provided frame attributes belong to a packet for this Segmenter.
-
-        :param frame_attributes: Attributes of a frame to be checked.
-
-        :return: Addressing Type used for transmission of this packet, None otherwise.
-        """
-        return self.addressing_information.is_input_packet(**frame_attributes)
-
     @abstractmethod
     def is_desegmented_message(self, packets: PacketsContainersSequence) -> bool:
         """

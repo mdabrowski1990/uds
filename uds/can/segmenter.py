@@ -194,20 +194,6 @@ class CanSegmenter(AbstractSegmenter):
                                  **self.addressing_information.tx_functional_params)
         return (single_frame,)
 
-    def is_input_packet(self,  # type: ignore  # pylint: disable=arguments-differ
-                        can_id: int,
-                        raw_frame_data: RawBytesAlias,
-                        **_: Any) -> Optional[AddressingType]:
-        """
-        Check if a frame with provided attributes is an input packet for this CAN Segmenter.
-
-        :param raw_frame_data: Raw data bytes carried by a CAN frame to check.
-        :param can_id: CAN Identifier of a CAN frame to check.
-
-        :return: Addressing Type used for transmission of this packet, None otherwise.
-        """
-        return super().is_input_packet(can_id=can_id, raw_frame_data=raw_frame_data)
-
     def is_desegmented_message(self, packets: CanPacketsContainersSequence) -> bool:
         """
         Check whether provided packets are full sequence of packets that form exactly one diagnostic message.

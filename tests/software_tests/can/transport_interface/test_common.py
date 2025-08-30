@@ -58,23 +58,21 @@ class TestAbstractCanTransportInterface:
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == AbstractCanTransportInterface.DEFAULT_FLOW_CONTROL_PARAMETERS)
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
-        self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager,
-                                                                            network_manager_receives_own_frames=True)
+        self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information)
 
-    @pytest.mark.parametrize("network_manager, addressing_information, network_manager_receives_own_frames, "
+    @pytest.mark.parametrize("network_manager, addressing_information, "
                              "n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout, "
                              "flow_control_parameters_generator, segmenter_configuration", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), {"a": 1, "bc": 2, "def_xyz": Mock()})
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), {"a": 1, "bc": 2, "def_xyz": Mock()})
     ])
-    def test_init__all_args(self, network_manager, addressing_information, network_manager_receives_own_frames,
+    def test_init__all_args(self, network_manager, addressing_information,
                             n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout,
                             flow_control_parameters_generator, segmenter_configuration):
         assert AbstractCanTransportInterface.__init__(
             self.mock_can_transport_interface,
             network_manager=network_manager,
             addressing_information=addressing_information,
-            network_manager_receives_own_frames=network_manager_receives_own_frames,
             n_as_timeout=n_as_timeout,
             n_ar_timeout=n_ar_timeout,
             n_bs_timeout=n_bs_timeout,
@@ -97,8 +95,7 @@ class TestAbstractCanTransportInterface:
                 == flow_control_parameters_generator)
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
         self.mock_abstract_transport_interface_init.assert_called_once_with(
-            network_manager=network_manager,
-            network_manager_receives_own_frames=network_manager_receives_own_frames)
+            network_manager=network_manager)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information,
                                                         **segmenter_configuration)
 
