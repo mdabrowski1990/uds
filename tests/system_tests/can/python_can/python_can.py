@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from threading import Timer
 from time import sleep, time
-from typing import List, Optional
+from typing import Optional
 
 import pytest
+from tests.system_tests import BaseSystemTests
 
 from can import Bus, Message
 from uds.addressing import AddressingType, TransmissionDirection
@@ -22,50 +23,45 @@ from uds.message import UdsMessage, UdsMessageRecord
 from uds.utilities import TimeMillisecondsAlias
 
 
-class AbstractPythonCanTests(ABC):
+class AbstractPythonCanTests(BaseSystemTests, ABC):
     """
     Definition of system tests (with hardware) for Diagnostic over CAN (DoCAN) with python-can.
 
-    Requires hardware setup:
-        - 2x CAN bus hardware interfaces that addressing be controlled using python-can package
-        - both CAN interfaces are connected (so they can communicate with other) - termination (resistor) is part of
-            CAN cables connection
+    Required hardware setup:
+        - 2x CAN bus hardware interfaces that can be controlled using python-can package
+        - both CAN interfaces are connected (so they can communicate with each other) using CAN bus cabling (twisted
+          cables pair with a termination resistor)
     """
 
-    MAKE_TIMING_CHECKS: bool = True
-    TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 30
-    TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 2
+    TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 2  # python-can has low accuracy
 
     can_interface_1: Bus
     can_interface_2: Bus
-    sent_message: Optional[UdsMessageRecord]
-    received_message: Optional[UdsMessageRecord]
     sent_packet: Optional[CanPacketRecord]
-    _timers: List[Timer]
 
     @abstractmethod
     def _define_interfaces(self):
         """Define python-can interfaces"""
 
     def setup_method(self):
-        """Prepare CAN bus objects for tests."""
+        """
+        Prepare for testing:
+        - configue python-can interfaces used for CAN communication
+        - define variables used during tests
+        """
         self._define_interfaces()
-        self.sent_message: Optional[UdsMessageRecord] = None
-        self.sent_packet: Optional[CanPacketRecord] = None
-        self.received_message: Optional[UdsMessageRecord] = None
-        self._timers: List[Timer] = []
+        super().setup_method()
 
     def teardown_method(self):
-        """Finish all tasks that were opened during test."""
+        """
+        Clean after tests:
+        - stop transmission using CAN interfaces
+        - disconnect python-can interfaces
+        - kill all started tasks
+        """
         self.can_interface_1.flush_tx_buffer()
         self.can_interface_2.flush_tx_buffer()
-        for _timer in self._timers:
-            _timer.cancel()
-        if self._timers:
-            for _timer in self._timers:
-                _timer.join(self.TASK_TIMING_TOLERANCE / 1000.)
-                del _timer
-            self._timers = []
+        super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
 
@@ -100,110 +96,6 @@ class AbstractPythonCanTests(ABC):
         """
         await asyncio.sleep(delay / 1000.)
         return can_interface.send(frame)
-
-    def send_packet(self,
-                    can_transport_interface: PyCanTransportInterface,
-                    packet: CanPacket,
-                    delay: TimeMillisecondsAlias) -> Timer:
-        """
-        Send CAN packet over CAN interface.
-
-        .. note:: The result (UDS message record) will be available be in `self.sent_packet` attribute.
-
-        :param can_transport_interface: Transport Interface to use for transmission.
-        :param packet: CAN packet to send.
-        :param delay: Time [ms] after which the transmission will be started.
-
-        :return: Timer object with scheduled task.
-        """
-
-        def _send_packet():
-            self.sent_packet = can_transport_interface.send_packet(packet)
-
-        timer = Timer(interval=delay/1000., function=_send_packet)
-        self._timers.append(timer)
-        timer.start()
-        return timer
-
-    @staticmethod
-    async def async_send_packet(can_transport_interface: PyCanTransportInterface,
-                                packet: CanPacket,
-                                delay: TimeMillisecondsAlias) -> CanPacketRecord:
-        """
-        Send CAN packet asynchronously over CAN interface.
-
-        :param can_transport_interface: Transport Interface to use for transmission.
-        :param packet: CAN packet to send.
-        :param delay: Time [ms] after which the transmission will be started.
-
-        :return: Future CAN packet record.
-        """
-        await asyncio.sleep(delay / 1000.)
-        return await can_transport_interface.async_send_packet(packet=packet)
-
-    def receive_message(self,
-                        can_transport_interface: PyCanTransportInterface,
-                        timeout: TimeMillisecondsAlias,
-                        delay: TimeMillisecondsAlias) -> Timer:
-        """
-        Receive DoCAN message over CAN interface.
-
-        .. note:: The result (UDS message record) will be available be in `self.sent_message` attribute.
-
-        :param can_transport_interface: Transport Interface to use for transmission.
-        :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
-        :param delay: Time [ms] after which the reception will be started.
-
-        :return: Timer object with scheduled task.
-        """
-
-        def _receive_message():
-            self.received_message = can_transport_interface.receive_message(timeout)
-
-        timer = Timer(interval=delay/1000., function=_receive_message)
-        self._timers.append(timer)
-        timer.start()
-        return timer
-
-    def send_message(self,
-                     can_transport_interface: PyCanTransportInterface,
-                     message: UdsMessage,
-                     delay: TimeMillisecondsAlias) -> Timer:
-        """
-        Send DoCAN message over CAN interface.
-
-        .. note:: The result (UDS message record) will be available be in `self.sent_message` attribute.
-
-        :param can_transport_interface: Transport Interface to use for transmission.
-        :param message: UDS message to send.
-        :param delay: Time [ms] after which the transmission will be started.
-
-        :return: Timer object with scheduled task.
-        """
-
-        def _send_message():
-            self.sent_message = can_transport_interface.send_message(message)
-
-        timer = Timer(interval=delay/1000., function=_send_message)
-        self._timers.append(timer)
-        timer.start()
-        return timer
-
-    @staticmethod
-    async def async_send_message(can_transport_interface: PyCanTransportInterface,
-                                 message: UdsMessage,
-                                 delay: TimeMillisecondsAlias) -> UdsMessageRecord:
-        """
-        Send DoCAN message asynchronously over CAN interface.
-
-        :param can_transport_interface: Transport Interface to use for transmission.
-        :param message: UDS message to send.
-        :param delay: Time [ms] after which the transmission will be started.
-
-        :return: Future UDS message record.
-        """
-        await asyncio.sleep(delay / 1000.)
-        return await can_transport_interface.async_send_message(message=message)
 
 
 class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
@@ -823,7 +715,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
             addressing_information=example_can_addressing_information.get_other_end())
-        self.send_message(can_transport_interface=can_transport_interface_2nd_node,
+        self.send_message(transport_interface=can_transport_interface_2nd_node,
                           message=message,
                           delay=send_after)
         time_before_receive = time()
@@ -878,7 +770,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             network_manager=self.can_interface_2,
             addressing_information=example_can_addressing_information.get_other_end())
         send_message_task = asyncio.create_task(
-            self.async_send_message(can_transport_interface=can_transport_interface_2nd_node,
+            self.async_send_message(transport_interface=can_transport_interface_2nd_node,
                                     message=message,
                                     delay=send_after))
 
@@ -931,7 +823,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         can_transport_interface_2nd_node = PyCanTransportInterface(
             network_manager=self.can_interface_2,
             addressing_information=example_can_addressing_information.get_other_end())
-        self.send_message(can_transport_interface=can_transport_interface_2nd_node,
+        self.send_message(transport_interface=can_transport_interface_2nd_node,
                           message=message,
                           delay=send_after)
         time_before_receive = time()
@@ -983,7 +875,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             network_manager=self.can_interface_2,
             addressing_information=example_can_addressing_information.get_other_end())
         send_message_task = asyncio.create_task(self.async_send_message(
-            can_transport_interface=can_transport_interface_2nd_node,
+            transport_interface=can_transport_interface_2nd_node,
             message=message,
             delay=send_after))
         time_before_receive = time()
@@ -1039,7 +931,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             flow_status=CanFlowStatus.ContinueToSend,
             block_size=0,
             st_min=0)
-        self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
+        self.send_packet(transport_interface=can_transport_interface_2nd_node,
                          packet=flow_control_packet,
                          delay=send_after)
         time_before_send = time()
@@ -1110,7 +1002,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             block_size=0,
             st_min=0)
         send_packet_task = asyncio.create_task(self.async_send_packet(
-            can_transport_interface=can_transport_interface_2nd_node,
+            transport_interface=can_transport_interface_2nd_node,
             packet=flow_control_packet,
             delay=send_after))
         time_before_send = time()
@@ -1177,7 +1069,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             flow_status=CanFlowStatus.ContinueToSend,
             block_size=0,
             st_min=0)
-        self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
+        self.send_packet(transport_interface=can_transport_interface_2nd_node,
                          packet=flow_control_packet,
                          delay=send_after)
         time_before_receive = time()
@@ -1226,7 +1118,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             block_size=0,
             st_min=0)
         send_packet_task = asyncio.create_task(self.async_send_packet(
-            can_transport_interface=can_transport_interface_2nd_node,
+            transport_interface=can_transport_interface_2nd_node,
             packet=flow_control_packet,
             delay=send_after))
         time_before_receive = time()
@@ -1277,7 +1169,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             addressing_information=example_can_addressing_information.get_other_end())
         packets = can_transport_interface_2nd_node.segmenter.segmentation(message)
         for i, packet in enumerate(packets):
-            self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
+            self.send_packet(transport_interface=can_transport_interface_2nd_node,
                              packet=packet,
                              delay=send_after + i * delay)
         time_before_receive = time()
@@ -1336,7 +1228,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
 
         async def _send_message():
             for packet in packets:
-                await self.async_send_packet(can_transport_interface=can_transport_interface_2nd_node,
+                await self.async_send_packet(transport_interface=can_transport_interface_2nd_node,
                                              packet=packet,
                                              delay=send_after if packet == packets[0] else delay)
 
@@ -1392,11 +1284,11 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             network_manager=self.can_interface_2,
             addressing_information=example_can_addressing_information.get_other_end())
         packets = can_transport_interface_2nd_node.segmenter.segmentation(message)
-        self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
+        self.send_packet(transport_interface=can_transport_interface_2nd_node,
                          packet=packets[0],
                          delay=send_after)
         for i, cf_packet in enumerate(packets[1:-1], start=1):
-            self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
+            self.send_packet(transport_interface=can_transport_interface_2nd_node,
                              packet=cf_packet,
                              delay=send_after + i * delay)
         with pytest.raises(TimeoutError):
@@ -1439,7 +1331,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
 
         async def _send_message():
             for packet in packets[:-1]:
-                await self.async_send_packet(can_transport_interface=can_transport_interface_2nd_node,
+                await self.async_send_packet(transport_interface=can_transport_interface_2nd_node,
                                              packet=packet,
                                              delay=send_after if packet == packets[0] else delay)
 
@@ -1498,13 +1390,13 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             addressing_information=example_can_addressing_information.get_other_end(),
             flow_control_parameters_generator=DefaultFlowControlParametersGenerator(block_size=rx_block_size,
                                                                                     st_min=rx_st_min))
-        timer_1 = self.receive_message(can_transport_interface=can_transport_interface_2nd_node,
+        timer_1 = self.receive_message(transport_interface=can_transport_interface_2nd_node,
                                        delay=0,
                                        timeout=50)
-        timer_2 = self.send_message(can_transport_interface=can_transport_interface_2nd_node,
+        timer_2 = self.send_message(transport_interface=can_transport_interface_2nd_node,
                                     message=rx_message,
                                     delay=10)
-        timer_3 = self.send_message(can_transport_interface=can_transport_interface,
+        timer_3 = self.send_message(transport_interface=can_transport_interface,
                                     message=tx_message,
                                     delay=10)
         received_rx_message_record = can_transport_interface.receive_message(timeout=50)
@@ -1809,7 +1701,7 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
             addressing_information=example_can_addressing_information.get_other_end(),
             n_cs=n_cs)
 
-        timer = self.send_message(can_transport_interface=can_transport_interface_1,
+        timer = self.send_message(transport_interface=can_transport_interface_1,
                                   message=message,
                                   delay=send_after)
         received_message_record = can_transport_interface_2.receive_message(timeout=timeout)
@@ -1876,7 +1768,7 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
 
         receive_message_task = asyncio.create_task(can_transport_interface_2.async_receive_message(timeout=timeout))
         send_message_task = asyncio.create_task(
-            self.async_send_message(can_transport_interface=can_transport_interface_1,
+            self.async_send_message(transport_interface=can_transport_interface_1,
                                     message=message,
                                     delay=send_after))
         sent_message_record = await send_message_task
@@ -2370,7 +2262,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
             addressing_information=example_can_addressing_information.get_other_end())
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.Overflow)
-        self.send_packet(can_transport_interface=can_transport_interface_2nd_node,
+        self.send_packet(transport_interface=can_transport_interface_2nd_node,
                          packet=flow_control_packet,
                          delay=send_after)
         with pytest.raises(OverflowError):
@@ -2409,7 +2301,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         flow_control_packet = can_transport_interface_2nd_node.segmenter.get_flow_control_packet(
             flow_status=CanFlowStatus.Overflow)
         send_packet_task = asyncio.create_task(self.async_send_packet(
-            can_transport_interface=can_transport_interface_2nd_node,
+            transport_interface=can_transport_interface_2nd_node,
             packet=flow_control_packet,
             delay=send_after))
         with pytest.raises(OverflowError):
