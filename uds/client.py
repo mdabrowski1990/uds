@@ -13,7 +13,7 @@ from uds.utilities import InconsistencyError, ReassignmentError, TimeMillisecond
 
 
 class Client:
-    """Simulator of UDS Client entity."""
+    """Simulation for UDS Client entity."""
 
     DEFAULT_P2_CLIENT_TIMEOUT: TimeMillisecondsAlias = 50
     """Default value of P2Client timeout."""
@@ -98,7 +98,11 @@ class Client:
 
     @property  # noqa: vulture
     def p2_client_measured(self) -> Optional[TimeMillisecondsAlias]:
-        """Get last measured value of P2Client parameter."""
+        """
+        Get last measured value of P2Client parameter.
+
+        :return: The last measured value or None if measurement was not performed.
+        """
         return self.__p2_client_measured
 
     @property
@@ -124,7 +128,11 @@ class Client:
 
     @property  # noqa: vulture
     def p2_ext_client_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
-        """Get last measured values of P2*Client parameter."""
+        """
+        Get last measured values of P2*Client parameter.
+
+        :return: The last measured values or None if measurement was not performed.
+        """
         return self.__p2_ext_client_measured
 
     @property
@@ -154,7 +162,11 @@ class Client:
 
     @property  # noqa: vulture
     def p6_client_measured(self) -> Optional[TimeMillisecondsAlias]:
-        """Get last measured value of P6Client parameter."""
+        """
+        Get last measured value of P6Client parameter.
+
+        :return: The last measured value or None if measurement was not performed.
+        """
         return self.__p6_client_measured
 
     @property
@@ -186,7 +198,11 @@ class Client:
 
     @property  # noqa: vulture
     def p6_ext_client_measured(self) -> Optional[TimeMillisecondsAlias]:
-        """Get last measured value of P6*Client parameter."""
+        """
+        Get last measured value of P6*Client parameter.
+
+        :return: The last measured value or None if measurement was not performed.
+        """
         return self.__p6_ext_client_measured
 
     @property
