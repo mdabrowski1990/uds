@@ -26,12 +26,22 @@ class AbstractClientTests(BaseSystemTests, ABC):
         """
 
     def setup_method(self):
-        """Prepare Transport Interfaces for testing."""
+        """
+        Prepare for testing:
+        - configue Transport Interfaces
+        - define variables used during tests
+        """
         self._define_transport_interfaces()
         super().setup_method()
 
     def teardown_method(self):
-        """Finish all tasks that were open during test."""
+        """
+        Clean after tests:
+        - stop all initiated transmissions
+        - kill all started tasks
+        - disconnect Transport Interfaces
+        """
+        super().teardown_method()
         del self.transport_interface_1
         del self.transport_interface_2
 
