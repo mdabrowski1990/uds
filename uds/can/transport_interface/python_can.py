@@ -6,7 +6,7 @@ from asyncio import AbstractEventLoop, get_running_loop
 from asyncio import sleep as async_sleep
 from asyncio import wait_for
 from datetime import datetime
-from time import sleep, time
+from time import sleep, time, monotonic
 from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
@@ -238,10 +238,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         packet_addressing_type = None
         if timeout is not None:
-            time_end_ms = (time() * 1000.) + timeout
+            time_end_ms = (monotonic() * 1000.) + timeout
         while packet_addressing_type is None:
             if timeout is not None:
-                time_now_ms = time() * 1000.
+                time_now_ms = monotonic() * 1000.
                 if time_end_ms <= time_now_ms:
                     raise TimeoutError("Timeout was reached before a CAN packet was received.")
                 timeout = time_end_ms - time_now_ms
@@ -273,10 +273,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         packet_addressing_type = None
         if timeout is not None:
-            time_end_ms = (time() * 1000.) + timeout
+            time_end_ms = (monotonic() * 1000.) + timeout
         while packet_addressing_type is None:
             if timeout is not None:
-                time_now_ms = time() * 1000.
+                time_now_ms = monotonic() * 1000.
                 if time_end_ms <= time_now_ms:
                     raise TimeoutError("Timeout was reached before a CAN packet was received.")
                 timeout = time_end_ms - time_now_ms
@@ -310,7 +310,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         received_cf: List[CanPacketRecord] = []
         received_payload_size = 0
         remaining_timeout = self.n_cr_timeout
-        time_start_ms = time() * 1000.
+        time_start_ms = monotonic() * 1000.
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
             received_packet = self.receive_packet(timeout=remaining_timeout)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
@@ -324,9 +324,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 received_payload_size += len(received_packet.payload)  # type: ignore
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
                 remaining_timeout = self.n_cr_timeout
-                time_start_ms = time() * 1000.
+                time_start_ms = monotonic() * 1000.
             else:
-                time_now_ms = time() * 1000.
+                time_now_ms = monotonic() * 1000.
                 remaining_timeout = (time_start_ms + self.n_cr_timeout) - time_now_ms
         return tuple(received_cf)
 
@@ -353,7 +353,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         received_cf: List[CanPacketRecord] = []
         received_payload_size: int = 0
         remaining_timeout = self.n_cr_timeout
-        time_start_ms = time() * 1000.
+        time_start_ms = monotonic() * 1000.
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
             received_packet = await self.async_receive_packet(timeout=remaining_timeout, loop=loop)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
@@ -367,9 +367,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 received_payload_size += len(received_packet.payload)  # type: ignore
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
                 remaining_timeout = self.n_cr_timeout
-                time_start_ms = time() * 1000.
+                time_start_ms = monotonic() * 1000.
             else:
-                time_now_ms = time() * 1000.
+                time_now_ms = monotonic() * 1000.
                 remaining_timeout = (time_start_ms + self.n_cr_timeout) - time_now_ms
         return tuple(received_cf)
 
@@ -563,9 +563,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                      is_rx=False,
                                      is_error_frame=False,
                                      is_remote_frame=False)
-        time_start_s = time()
+        time_start_s = monotonic()
         self.network_manager.send(msg=can_frame, timeout=timeout_ms / 1000.)
-        time_sent_s = time()
+        time_sent_s = monotonic()
         sent_frame = PythonCanMessage(arbitration_id=can_frame.arbitration_id,
                                       is_extended_id=can_frame.is_extended_id,
                                       data=can_frame.data,
@@ -758,11 +758,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
         if timeout is not None:
-            time_end_ms = (time() * 1000.) + timeout
+            time_end_ms = (monotonic() * 1000.) + timeout
         self.__setup_notifier()
         while True:
             if timeout is not None:
-                time_now_ms = time() * 1000.
+                time_now_ms = monotonic() * 1000.
                 if time_end_ms <= time_now_ms:
                     raise TimeoutError("Timeout was reached before a UDS message was received.")
                 timeout = time_end_ms - time_now_ms
@@ -797,12 +797,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
         if timeout is not None:
-            time_end_ms = (time() * 1000.) + timeout
+            time_end_ms = (monotonic() * 1000.) + timeout
         loop = get_running_loop() if loop is None else loop
         self.__setup_async_notifier(loop=loop)
         while True:
             if timeout is not None:
-                time_now_ms = time() * 1000.
+                time_now_ms = monotonic() * 1000.
                 if time_end_ms <= time_now_ms:
                     raise TimeoutError("Timeout was reached before a UDS message was received.")
                 timeout = time_end_ms - time_now_ms

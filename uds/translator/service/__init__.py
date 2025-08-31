@@ -8,3 +8,4 @@ from .service import (
     Service,
     SingleDataRecordValueAlias,
 )
+from .tester_present import TESTER_PRESENT

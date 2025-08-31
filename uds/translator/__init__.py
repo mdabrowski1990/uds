@@ -15,5 +15,5 @@ from .data_record import (
     TextDataRecord,
     TextEncoding,
 )
-from .service import DecodedMessageAlias, Service
+from .service import DecodedMessageAlias, Service, TESTER_PRESENT
 from .translator import Translator
