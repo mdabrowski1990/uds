@@ -3,8 +3,9 @@
 __all__ = ["TESTER_PRESENT"]
 
 from uds.message import RequestSID
+
+from ..data_record import MappingDataRecord, RawDataRecord
 from .service import Service
-from ..data_record import RawDataRecord, MappingDataRecord
 
 ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",
                                   length=7)

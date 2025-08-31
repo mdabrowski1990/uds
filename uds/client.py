@@ -2,16 +2,16 @@
 
 __all__ = ["Client"]
 
-from time import time, monotonic
+from threading import Event, Thread
+from time import monotonic, time
 from typing import List, Optional, Sequence, Tuple, Union
 from warnings import warn
-from threading import Thread, Event
 
 from uds.addressing import AddressingType
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
+from uds.translator import TESTER_PRESENT
 from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import InconsistencyError, ReassignmentError, TimeMillisecondsAlias, ValueWarning, bytes_to_hex
-from uds.translator import TESTER_PRESENT
 
 
 class Client:
@@ -362,6 +362,21 @@ class Client:
             time_remaining_ms = timeout - time_elapsed_ms
         return None
 
+    def _send_tester_present(self, tester_present_message: UdsMessage) -> None:
+        """
+        Schedule a single Tester Present message transmission for a cyclic sending.
+
+        :param tester_present_message: Tester Present message to send.
+        """
+        period = self.s3_client / 1000.0
+        next_call = monotonic()
+        while not self.__tester_present_stop_event.is_set():
+            self.transport_interface.send_message(tester_present_message)
+            next_call += period
+            remaining_wait = next_call - monotonic()
+            if self.__tester_present_stop_event.wait(remaining_wait):
+                break
+
     @staticmethod
     def is_response_pending_message(message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
         """
@@ -430,27 +445,22 @@ class Client:
         :param addressing_type: Addressing Type to use for cyclical messages.
         :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
         """
-
-        payload = TESTER_PRESENT.encode_request({
-            "SubFunction": {
-                "suppressPosRspMsgIndicationBit": sprmib,
-                "zeroSubFunction": 0}
-        })
-        tester_present_message = UdsMessage(payload=payload,
-                                            addressing_type=AddressingType.validate_member(addressing_type))
-
-        def _send_tester_present():
-            period = self.s3_client / 1000.0
-            next_call = monotonic()
-            while not self.__tester_present_stop_event.is_set():
-                self.transport_interface.send_message(tester_present_message)
-                next_call += period
-                remaining_wait = next_call - monotonic()
-                if self.__tester_present_stop_event.wait(remaining_wait):
-                    break
-
-        self.__tester_present_thread = Thread(target=_send_tester_present, daemon=True)
-        self.__tester_present_thread.start()
+        if self.__tester_present_thread is None:
+            payload = TESTER_PRESENT.encode_request({
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": sprmib,
+                    "zeroSubFunction": 0}
+            })
+            tester_present_message = UdsMessage(payload=payload,
+                                                addressing_type=AddressingType.validate_member(addressing_type))
+            self.__tester_present_thread = Thread(target=self._send_tester_present,
+                                                  args=(tester_present_message, ),
+                                                  daemon=True)
+            self.__tester_present_stop_event.clear()
+            self.__tester_present_thread.start()
+        else:
+            warn("Tester Present is already transmitted cyclically.",
+                 category=UserWarning)
 
     def stop_tester_present(self) -> None:
         """Stop sending Tester Precent cyclically."""
