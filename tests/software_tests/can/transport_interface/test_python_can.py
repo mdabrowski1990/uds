@@ -1629,7 +1629,7 @@ class TestPyCanTransportInterface:
                                                 __le__=mock_is_timeout_reached)
         self.mock_can_packet_type_is_initial_packet_type.return_value = True
         assert (await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
-                                                                    timeout=timeout,
+                                                                    start_timeout=timeout,
                                                                     loop=mock_loop)
                 == self.mock_can_transport_interface._async_message_receive_start.return_value)
         self.mock_can_transport_interface._PyCanTransportInterface__setup_async_notifier.assert_called_once_with(

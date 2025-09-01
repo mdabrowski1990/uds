@@ -269,10 +269,10 @@ class AbstractClientTests(BaseSystemTests, ABC):
         tester_present_records: List[UdsMessageRecord] = []
         client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
         for i in range(5):
-            tester_present_records.append(self.transport_interface_2.receive_message(timeout=2*s3_client))
+            tester_present_records.append(self.transport_interface_2.receive_message(start_timeout=2 * s3_client))
         client.stop_tester_present()
         with pytest.raises(TimeoutError):
-            self.transport_interface_2.receive_message(timeout=2 * s3_client)
+            self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
         # check sent messages
         payload = b"\x3E\x80" if sprmib else b"\x3E\x00"
         assert all([tp_record.payload == payload for tp_record in tester_present_records])
@@ -319,15 +319,15 @@ class AbstractClientTests(BaseSystemTests, ABC):
         client = Client(transport_interface=self.transport_interface_1,
                         s3_client=s3_client)
         client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
-        tester_present_record_1 = self.transport_interface_2.receive_message(timeout=2*s3_client)
+        tester_present_record_1 = self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
         client.stop_tester_present()
         with pytest.raises(TimeoutError):
-            self.transport_interface_2.receive_message(timeout=2 * s3_client)
+            self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
         client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
-        tester_present_record_2 = self.transport_interface_2.receive_message(timeout=2 * s3_client)
+        tester_present_record_2 = self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
         client.stop_tester_present()
         with pytest.raises(TimeoutError):
-            self.transport_interface_2.receive_message(timeout=2 * s3_client)
+            self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
         # check sent messages
         payload = b"\x3E\x80" if sprmib else b"\x3E\x00"
         assert tester_present_record_1.payload == tester_present_record_2.payload == payload

@@ -347,7 +347,7 @@ class Client:
         time_remaining_ms = timeout
         while time_remaining_ms > 0:
             try:
-                response_record = self.transport_interface.receive_message(timeout=time_remaining_ms)
+                response_record = self.transport_interface.receive_message(start_timeout=time_remaining_ms)
             except TimeoutError:
                 return None
             # positive response message received

@@ -32,7 +32,7 @@ async def main():
                                      addressing_information=addressing_information)
 
     # receive UDS message
-    received_message_record = await can_ti.async_receive_message(timeout=1000)  # timeout=1000 [ms]
+    received_message_record = await can_ti.async_receive_message(start_timeout=1000)  # timeout=1000 [ms]
 
     # show received message
     print(received_message_record)

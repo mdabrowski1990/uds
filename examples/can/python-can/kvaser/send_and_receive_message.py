@@ -60,7 +60,7 @@ def main():
 
     # send and receive message
     timer.start()
-    received_message_record = can_ti_2.receive_message(timeout=1000)  # timeout=1000 [ms]
+    received_message_record = can_ti_2.receive_message(start_timeout=1000)  # timeout=1000 [ms]
 
     # wait till message is received
     while not timer.finished.is_set():

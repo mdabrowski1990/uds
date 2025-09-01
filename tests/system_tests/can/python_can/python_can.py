@@ -719,7 +719,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
                           message=message,
                           delay=send_after)
         time_before_receive = time()
-        message_record = can_transport_interface.receive_message(timeout=timeout)
+        message_record = can_transport_interface.receive_message(start_timeout=timeout)
         time_after_receive = time()
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.RECEIVED
@@ -775,7 +775,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
                                     delay=send_after))
 
         time_before_receive = time()
-        message_record = await can_transport_interface.async_receive_message(timeout=timeout)
+        message_record = await can_transport_interface.async_receive_message(start_timeout=timeout)
         time_after_receive = time()
         await send_message_task
         assert isinstance(message_record, UdsMessageRecord)
@@ -828,10 +828,10 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
                           delay=send_after)
         time_before_receive = time()
         with pytest.raises(TimeoutError):
-            can_transport_interface.receive_message(timeout=timeout)
+            can_transport_interface.receive_message(start_timeout=timeout)
         time_after_receive = time()
         # receive message later
-        message_record = can_transport_interface.receive_message(timeout=(send_after - timeout) * 10)
+        message_record = can_transport_interface.receive_message(start_timeout=(send_after - timeout) * 10)
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
@@ -880,10 +880,10 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             delay=send_after))
         time_before_receive = time()
         with pytest.raises(TimeoutError):
-            await can_transport_interface.async_receive_message(timeout=timeout)
+            await can_transport_interface.async_receive_message(start_timeout=timeout)
         time_after_receive = time()
         # receive message later
-        message_record = await can_transport_interface.async_receive_message(timeout=(send_after - timeout) * 10)
+        message_record = await can_transport_interface.async_receive_message(start_timeout=(send_after - timeout) * 10)
         await send_message_task
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.RECEIVED
@@ -1173,7 +1173,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
                              packet=packet,
                              delay=send_after + i * delay)
         time_before_receive = time()
-        message_record = can_transport_interface.receive_message(timeout=timeout)
+        message_record = can_transport_interface.receive_message(start_timeout=timeout)
         time_after_receive = time()
         assert isinstance(message_record, UdsMessageRecord)
         assert len(message_record.packets_records) == len(packets) + 1, \
@@ -1234,7 +1234,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
 
         send_message_task = asyncio.create_task(_send_message())
         time_before_receive = time()
-        message_record = await can_transport_interface.async_receive_message(timeout=timeout)
+        message_record = await can_transport_interface.async_receive_message(start_timeout=timeout)
         time_after_receive = time()
         await send_message_task
         assert isinstance(message_record, UdsMessageRecord)
@@ -1292,7 +1292,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
                              packet=cf_packet,
                              delay=send_after + i * delay)
         with pytest.raises(TimeoutError):
-            can_transport_interface.receive_message(timeout=timeout)
+            can_transport_interface.receive_message(start_timeout=timeout)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
@@ -1337,7 +1337,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
 
         send_message_task = asyncio.create_task(_send_message())
         with pytest.raises(TimeoutError):
-            await can_transport_interface.async_receive_message(timeout=timeout)
+            await can_transport_interface.async_receive_message(start_timeout=timeout)
         await send_message_task
 
     @pytest.mark.parametrize("tx_message, rx_message, tx_block_size, tx_st_min, rx_block_size, rx_st_min", [
@@ -1399,7 +1399,7 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         timer_3 = self.send_message(transport_interface=can_transport_interface,
                                     message=tx_message,
                                     delay=10)
-        received_rx_message_record = can_transport_interface.receive_message(timeout=50)
+        received_rx_message_record = can_transport_interface.receive_message(start_timeout=50)
         while not all([timer_1.finished.is_set(), timer_2.finished.is_set(), timer_3.finished.is_set()]):
             sleep(self.TASK_TIMING_TOLERANCE / 1000.)
         received_tx_message_record = self.received_message
@@ -1461,9 +1461,9 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             flow_control_parameters_generator=DefaultFlowControlParametersGenerator(block_size=rx_block_size,
                                                                                     st_min=rx_st_min))
         received_rx_message_task = asyncio.create_task(
-            can_transport_interface.async_receive_message(timeout=50))
+            can_transport_interface.async_receive_message(start_timeout=50))
         received_tx_message_task = asyncio.create_task(
-            can_transport_interface_2nd_node.async_receive_message(timeout=50))
+            can_transport_interface_2nd_node.async_receive_message(start_timeout=50))
         sent_tx_message_task = asyncio.create_task(
             can_transport_interface.async_send_message(message=tx_message))
         sent_rx_message_task = asyncio.create_task(
@@ -1704,7 +1704,7 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
         timer = self.send_message(transport_interface=can_transport_interface_1,
                                   message=message,
                                   delay=send_after)
-        received_message_record = can_transport_interface_2.receive_message(timeout=timeout)
+        received_message_record = can_transport_interface_2.receive_message(start_timeout=timeout)
         while not timer.finished.is_set():
             sleep(self.TASK_TIMING_TOLERANCE / 1000.)
         assert isinstance(self.sent_message, UdsMessageRecord)
@@ -1766,7 +1766,8 @@ class AbstractUseCaseTests(AbstractPythonCanTests, ABC):
             addressing_information=example_can_addressing_information.get_other_end(),
             n_cs=n_cs)
 
-        receive_message_task = asyncio.create_task(can_transport_interface_2.async_receive_message(timeout=timeout))
+        receive_message_task = asyncio.create_task(can_transport_interface_2.async_receive_message(
+            start_timeout=timeout))
         send_message_task = asyncio.create_task(
             self.async_send_message(transport_interface=can_transport_interface_1,
                                     message=message,
