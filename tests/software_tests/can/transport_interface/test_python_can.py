@@ -1544,9 +1544,9 @@ class TestPyCanTransportInterface:
     def test_receive_message__timeout_error(self, timeout):
         mock_is_timeout_reached = Mock(return_value=True)
         self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                     __add__=lambda this, other: this,
-                                                     __mul__=lambda this, other: this,
-                                                     __le__=mock_is_timeout_reached)
+                                                __add__=lambda this, other: this,
+                                                __mul__=lambda this, other: this,
+                                                __le__=mock_is_timeout_reached)
         mock_received_packet_record = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
         self.mock_can_transport_interface.receive_packet.return_value = mock_received_packet_record
         with pytest.raises(TimeoutError):
@@ -1557,9 +1557,9 @@ class TestPyCanTransportInterface:
     def test_receive_message__initial_packet(self, timeout):
         mock_is_timeout_reached = Mock(return_value=False)
         self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                     __add__=lambda this, other: this,
-                                                     __mul__=lambda this, other: this,
-                                                     __le__=mock_is_timeout_reached)
+                                                __add__=lambda this, other: this,
+                                                __mul__=lambda this, other: this,
+                                                __le__=mock_is_timeout_reached)
         self.mock_can_packet_type_is_initial_packet_type.return_value = True
         assert (PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout)
                 == self.mock_can_transport_interface._message_receive_start.return_value)
@@ -1573,9 +1573,9 @@ class TestPyCanTransportInterface:
     def test_receive_message__cf_then_initial_packet(self, timeout):
         mock_is_timeout_reached = Mock(return_value=False)
         self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                     __add__=lambda this, other: this,
-                                                     __mul__=lambda this, other: this,
-                                                     __le__=mock_is_timeout_reached)
+                                                __add__=lambda this, other: this,
+                                                __mul__=lambda this, other: this,
+                                                __le__=mock_is_timeout_reached)
         self.mock_can_packet_type_is_initial_packet_type.side_effect = [False, True]
         assert (PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout)
                 == self.mock_can_transport_interface._message_receive_start.return_value)
@@ -1609,9 +1609,9 @@ class TestPyCanTransportInterface:
     async def test_async_receive_message__timeout_error(self, timeout):
         mock_is_timeout_reached = Mock(return_value=True)
         self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                     __add__=lambda this, other: this,
-                                                     __mul__=lambda this, other: this,
-                                                     __le__=mock_is_timeout_reached)
+                                                __add__=lambda this, other: this,
+                                                __mul__=lambda this, other: this,
+                                                __le__=mock_is_timeout_reached)
         mock_received_packet_record = Mock(spec=CanPacketRecord, packet_type=CanPacketType.SINGLE_FRAME)
         self.mock_can_transport_interface.receive_packet.return_value = mock_received_packet_record
         with pytest.raises(TimeoutError):
@@ -1624,9 +1624,9 @@ class TestPyCanTransportInterface:
         mock_loop = Mock(spec=AbstractEventLoop)
         mock_is_timeout_reached = Mock(return_value=False)
         self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                     __add__=lambda this, other: this,
-                                                     __mul__=lambda this, other: this,
-                                                     __le__=mock_is_timeout_reached)
+                                                __add__=lambda this, other: this,
+                                                __mul__=lambda this, other: this,
+                                                __le__=mock_is_timeout_reached)
         self.mock_can_packet_type_is_initial_packet_type.return_value = True
         assert (await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
                                                                     timeout=timeout,
@@ -1645,9 +1645,9 @@ class TestPyCanTransportInterface:
     async def test_async_receive_message__cf_then_initial_packet(self, timeout):
         mock_is_timeout_reached = Mock(return_value=False)
         self.mock_time.return_value = MagicMock(__sub__=lambda this, other: this,
-                                                     __add__=lambda this, other: this,
-                                                     __mul__=lambda this, other: this,
-                                                     __le__=mock_is_timeout_reached)
+                                                __add__=lambda this, other: this,
+                                                __mul__=lambda this, other: this,
+                                                __le__=mock_is_timeout_reached)
         self.mock_can_packet_type_is_initial_packet_type.side_effect = [False, True]
         assert (await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface, timeout)
                 == self.mock_can_transport_interface._async_message_receive_start.return_value)
