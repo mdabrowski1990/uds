@@ -440,7 +440,7 @@ class Client:
                              addressing_type: AddressingType = AddressingType.FUNCTIONAL,
                              sprmib: bool = True) -> None:
         """
-        Start sending Tester Precent cyclically.
+        Start sending Tester Present cyclically.
 
         :param addressing_type: Addressing Type to use for cyclical messages.
         :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
@@ -463,7 +463,7 @@ class Client:
                  category=UserWarning)
 
     def stop_tester_present(self) -> None:
-        """Stop sending Tester Precent cyclically."""
+        """Stop sending Tester Present cyclically."""
         if self.__tester_present_thread is None:
             warn("Cyclical sending of Tester Present is already stopped.",
                  category=UserWarning)

@@ -33,6 +33,8 @@ class TestClient:
         self.mock_monotonic = self._patcher_monotonic.start()
         self._patcher_thread = patch(f"{SCRIPT_LOCATION}.Thread")
         self.mock_thread = self._patcher_thread.start()
+        self._patcher_event = patch(f"{SCRIPT_LOCATION}.Event")
+        self.mock_event = self._patcher_event.start()
         self._patcher_tester_present = patch(f"{SCRIPT_LOCATION}.TESTER_PRESENT")
         self.mock_tester_present = self._patcher_tester_present.start()
         self._patcher_validate_request_sid = patch(f"{SCRIPT_LOCATION}.RequestSID.validate_member")
@@ -42,6 +44,7 @@ class TestClient:
         self._patcher_warn.stop()
         self._patcher_monotonic.stop()
         self._patcher_thread.stop()
+        self._patcher_event.stop()
         self._patcher_tester_present.stop()
         self._patcher_validate_request_sid.stop()
 
@@ -61,6 +64,8 @@ class TestClient:
         assert self.mock_client._Client__p2_ext_client_measured is None
         assert self.mock_client._Client__p6_client_measured is None
         assert self.mock_client._Client__p6_ext_client_measured is None
+        assert self.mock_client._Client__tester_present_thread is None
+        assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
     @pytest.mark.parametrize("transport_interface, p2_client_timeout, p2_ext_client_timeout, p6_client_timeout, "
                              "p6_ext_client_timeout, s3_client", [
@@ -86,6 +91,8 @@ class TestClient:
         assert self.mock_client._Client__p2_ext_client_measured is None
         assert self.mock_client._Client__p6_client_measured is None
         assert self.mock_client._Client__p6_ext_client_measured is None
+        assert self.mock_client._Client__tester_present_thread is None
+        assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
     # transport_interface
 
