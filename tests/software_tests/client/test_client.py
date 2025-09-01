@@ -3,14 +3,17 @@ from datetime import datetime
 import pytest
 from mock import MagicMock, Mock, call, patch
 
+from uds.addressing import AddressingType
 from uds.client import (
     NRC,
     AbstractTransportInterface,
     Client,
+    Event,
     InconsistencyError,
     ReassignmentError,
     RequestSID,
     ResponseSID,
+    Thread,
     UdsMessage,
     UdsMessageRecord,
 )
@@ -26,11 +29,23 @@ class TestClient:
         # patching
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
+        self._patcher_monotonic = patch(f"{SCRIPT_LOCATION}.monotonic")
+        self.mock_monotonic = self._patcher_monotonic.start()
+        self._patcher_thread = patch(f"{SCRIPT_LOCATION}.Thread")
+        self.mock_thread = self._patcher_thread.start()
+        self._patcher_event = patch(f"{SCRIPT_LOCATION}.Event")
+        self.mock_event = self._patcher_event.start()
+        self._patcher_tester_present = patch(f"{SCRIPT_LOCATION}.TESTER_PRESENT")
+        self.mock_tester_present = self._patcher_tester_present.start()
         self._patcher_validate_request_sid = patch(f"{SCRIPT_LOCATION}.RequestSID.validate_member")
         self.mock_validate_request_sid = self._patcher_validate_request_sid.start()
 
     def teardown_method(self):
         self._patcher_warn.stop()
+        self._patcher_monotonic.stop()
+        self._patcher_thread.stop()
+        self._patcher_event.stop()
+        self._patcher_tester_present.stop()
         self._patcher_validate_request_sid.stop()
 
     # __init__
@@ -49,6 +64,8 @@ class TestClient:
         assert self.mock_client._Client__p2_ext_client_measured is None
         assert self.mock_client._Client__p6_client_measured is None
         assert self.mock_client._Client__p6_ext_client_measured is None
+        assert self.mock_client._Client__tester_present_thread is None
+        assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
     @pytest.mark.parametrize("transport_interface, p2_client_timeout, p2_ext_client_timeout, p6_client_timeout, "
                              "p6_ext_client_timeout, s3_client", [
@@ -74,6 +91,8 @@ class TestClient:
         assert self.mock_client._Client__p2_ext_client_measured is None
         assert self.mock_client._Client__p6_client_measured is None
         assert self.mock_client._Client__p6_ext_client_measured is None
+        assert self.mock_client._Client__tester_present_thread is None
+        assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
     # transport_interface
 
@@ -518,13 +537,15 @@ class TestClient:
     @pytest.mark.parametrize("sid, timeout, response_records", [
         (
             0x10,
-            50,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
              TimeoutError]
         ),
         (
             0x22,
-            1000,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             TimeoutError
         ),
     ])
@@ -536,7 +557,8 @@ class TestClient:
     @pytest.mark.parametrize("sid, timeout, response_records", [
         (
             0x10,
-            0.00000000001,
+            MagicMock(__gt__=Mock(side_effect=[True, False]),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78")] * 1000,
         ),
         (
@@ -552,13 +574,15 @@ class TestClient:
     @pytest.mark.parametrize("sid, timeout, response_records", [
         (
             0x10,
-            50,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
              Mock(spec=UdsMessageRecord, payload=b"\x50\x03\x00\x50\x12\x34")]
         ),
         (
             0x22,
-            1000,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x62\x12\x34\x56\x78\x9A\xBC\xDC\xEF\x0F")]
         ),
     ])
@@ -570,13 +594,15 @@ class TestClient:
     @pytest.mark.parametrize("sid, timeout, response_records", [
         (
             0x10,
-            50,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x54"),
              Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x22")]
         ),
         (
             0x22,
-            1000,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78")]
         ),
     ])
@@ -584,6 +610,28 @@ class TestClient:
         self.mock_client.transport_interface.receive_message.side_effect = response_records
         assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) == response_records[-1]
         self.mock_client.transport_interface.receive_message.assert_called()
+
+    # _send_tester_present
+
+    def test_send_tester_present__send_2_then_wait(self):
+        mock_tp = Mock()
+        mock_is_set = Mock(return_value=False)
+        mock_wait = Mock(side_effect=[False, True])
+        self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
+        assert Client._send_tester_present(self.mock_client, tester_present_message=mock_tp) is None
+        self.mock_client.transport_interface.send_message.assert_has_calls([call(mock_tp), call(mock_tp)])
+        assert mock_is_set.call_count == 2
+        assert mock_wait.call_count == 2
+
+    def test_send_tester_present__stopped(self):
+        mock_tp = Mock()
+        mock_is_set = Mock(return_value=True)
+        mock_wait = Mock()
+        self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
+        assert Client._send_tester_present(self.mock_client, tester_present_message=mock_tp) is None
+        self.mock_client.transport_interface.send_message.assert_not_called()
+        mock_is_set.assert_called_once_with()
+        mock_wait.assert_not_called()
 
     # is_response_pending_message
 
@@ -624,15 +672,54 @@ class TestClient:
 
     # start_tester_present
 
-    def test_start_tester_present(self):
-        with pytest.raises(NotImplementedError):
-            Client.start_tester_present(self.mock_client)
+    @pytest.mark.parametrize("addressing_type, sprmib", [
+        (AddressingType.FUNCTIONAL, True),
+        (AddressingType.PHYSICAL, False),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.UdsMessage")
+    def test_start_tester_present__start(self, mock_uds_message, addressing_type, sprmib):
+        mock_event = Mock(spec=Event)
+        self.mock_client._Client__tester_present_stop_event = mock_event
+        self.mock_client._Client__tester_present_thread = None
+        assert Client.start_tester_present(self.mock_client,
+                                           addressing_type=addressing_type,
+                                           sprmib=sprmib) is None
+        assert self.mock_client._Client__tester_present_thread == self.mock_thread.return_value
+        mock_event.clear.assert_called_once_with()
+        self.mock_tester_present.encode_request.assert_called_once_with({
+            "SubFunction": {
+                "suppressPosRspMsgIndicationBit": sprmib,
+                "zeroSubFunction": 0}
+        })
+        mock_uds_message.assert_called_once_with(payload=self.mock_tester_present.encode_request.return_value,
+                                                 addressing_type=addressing_type)
+        self.mock_thread.assert_called_once_with(target=self.mock_client._send_tester_present,
+                                                 args=(mock_uds_message.return_value,),
+                                                 daemon=True)
+        self.mock_warn.assert_not_called()
+
+    def test_start_tester_present__started(self):
+        self.mock_client._Client__tester_present_thread = Mock(spec=Thread)
+        assert Client.start_tester_present(self.mock_client) is None
+        self.mock_warn.assert_called_once()
 
     # stop_tester_present
 
-    def test_stop_tester_present(self):
-        with pytest.raises(NotImplementedError):
-            Client.stop_tester_present(self.mock_client)
+    def test_stop_tester_present__stop(self):
+        mock_thread = Mock(spec=Thread)
+        mock_event =  Mock(spec=Event)
+        self.mock_client._Client__tester_present_thread = mock_thread
+        self.mock_client._Client__tester_present_stop_event = mock_event
+        assert Client.stop_tester_present(self.mock_client) is None
+        assert self.mock_client._Client__tester_present_thread is None
+        mock_event.set.assert_called_once_with()
+        mock_thread.join.assert_called_once()
+        self.mock_warn.assert_not_called()
+
+    def test_stop_tester_present__stopped(self):
+        self.mock_client._Client__tester_present_thread = None
+        assert Client.stop_tester_present(self.mock_client) is None
+        self.mock_warn.assert_called_once()
             
     # send_request_receive_responses
 
