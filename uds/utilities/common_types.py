@@ -1,6 +1,6 @@
 """Module with all common types (and its aliases) used in the package and helper functions for these types."""
 
-__all__ = ["TimeMillisecondsAlias",
+__all__ = ["TimeMillisecondsAlias", "TimestampSecondsAlias",
            "RawBytesAlias", "RawBytesTupleAlias", "RawBytesListAlias", "RawBytesSetAlias",
            "validate_nibble", "validate_raw_byte", "validate_raw_bytes"]
 
@@ -8,6 +8,8 @@ from typing import List, Set, Tuple, Union
 
 TimeMillisecondsAlias = Union[int, float]
 """Alias of a time value in milliseconds."""
+TimestampSecondsAlias = float
+"""Alias of a timestamp value in seconds."""
 RawBytesTupleAlias = Tuple[int, ...]
 """Alias of a tuple filled with byte values."""
 RawBytesSetAlias = Set[int]

@@ -88,7 +88,8 @@ class BaseSystemTests(ABC):
 
     def receive_message(self,
                         transport_interface: AbstractTransportInterface,
-                        timeout: TimeMillisecondsAlias,
+                        start_timeout: TimeMillisecondsAlias,
+                        end_timeout: TimeMillisecondsAlias,
                         delay: TimeMillisecondsAlias) -> Timer:
         """
         Receive UDS message over Transport Interface.
@@ -96,14 +97,16 @@ class BaseSystemTests(ABC):
         .. note:: The result (UDS message record) will be available be in `self.sent_message` attribute.
 
         :param transport_interface: Transport Interface to use for transmission.
-        :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
+        :param start_timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
+        :param end_timeout: Maximal time (in milliseconds) to wait for UDS message transmission to finish.
         :param delay: Time [ms] after which the reception will be started.
 
         :return: Timer object with scheduled task.
         """
 
         def _receive_message():
-            self.received_message = transport_interface.receive_message(timeout)
+            self.received_message = transport_interface.receive_message(start_timeout=start_timeout,
+                                                                        end_timeout=end_timeout)
 
         timer = Timer(interval=delay/1000., function=_receive_message)
         self._timers.append(timer)

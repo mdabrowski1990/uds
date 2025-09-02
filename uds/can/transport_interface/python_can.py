@@ -15,7 +15,7 @@ from can import Message as PythonCanMessage
 from can import Notifier
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning
+from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning, TimestampSecondsAlias
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanDlcHandler, CanIdHandler
@@ -153,9 +153,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         packet_records = []
         timestamp_end_s = fc_transmission_time.timestamp() + delay / 1000.
         for cf_packet in cf_packets_block:
-            time_to_wait = timestamp_end_s - time()
-            if time_to_wait > 0:
-                sleep(time_to_wait)
+            time_to_wait_s = timestamp_end_s - time()
+            if time_to_wait_s > 0:
+                sleep(time_to_wait_s)
             cf_packet_record = self.send_packet(cf_packet)
             timestamp_end_s = cf_packet_record.transmission_time.timestamp() + delay / 1000.
             packet_records.append(cf_packet_record)
@@ -179,9 +179,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         packet_records = []
         timestamp_end_s = fc_transmission_time.timestamp() + delay / 1000.
         for cf_packet in cf_packets_block:
-            time_to_wait = timestamp_end_s - time()
-            if time_to_wait > 0:
-                await async_sleep(timestamp_end_s - time())
+            time_to_wait_s = timestamp_end_s - time()
+            if time_to_wait_s > 0:
+                await async_sleep(time_to_wait_s)
             cf_packet_record = await self.async_send_packet(cf_packet, loop=loop)
             timestamp_end_s = cf_packet_record.transmission_time.timestamp() + delay / 1000.
             packet_records.append(cf_packet_record)
@@ -295,7 +295,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def _receive_cf_packets_block(self,
                                   sequence_number: int,
                                   block_size: int,
-                                  remaining_data_length: int) -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
+                                  remaining_data_length: int,
+                                  timestamp_end: Optional[TimestampSecondsAlias]
+                                  ) -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
         """
         Receive block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
@@ -304,6 +306,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param block_size: :ref:`Block Size <knowledge-base-can-block-size>` value sent in the last
             :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`.
         :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
 
         :return: Either:
             - Record of UDS message if reception was interrupted by a new UDS message transmission.
@@ -313,13 +316,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         received_payload_size = 0
         remaining_timeout_ms = self.n_cr_timeout
         timestamp_start_s = time()
+        timeout_end_ms = float("inf")
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
-            received_packet = self.receive_packet(timeout=remaining_timeout_ms)
+            if timestamp_end is not None:
+                timeout_end_ms = (timestamp_end - time()) * 1000.
+            received_packet = self.receive_packet(timeout=min(remaining_timeout_ms, timeout_end_ms))
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 warn(message="A new DoCAN message transmission was started. "
                              "Reception of the previous message was aborted.",
                      category=NewMessageReceptionWarning)
-                return self._message_receive_start(initial_packet=received_packet)
+                return self._message_receive_start(initial_packet=received_packet,
+                                                   timestamp_end=timestamp_end)
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
                 received_cf.append(received_packet)
@@ -336,7 +343,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                               sequence_number: int,
                                               block_size: int,
                                               remaining_data_length: int,
-                                              loop: Optional[AbstractEventLoop] = None
+                                              timestamp_end: Optional[TimestampSecondsAlias],
+                                              loop: AbstractEventLoop
                                               ) -> Union[UdsMessageRecord, Tuple[CanPacketRecord, ...]]:
         """
         Receive asynchronously block of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
@@ -346,6 +354,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param block_size: :ref:`Block Size <knowledge-base-can-block-size>` value sent in the last
             :ref:`Flow Control CAN packet <knowledge-base-can-flow-control>`.
         :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
         :param loop: An asyncio event loop used for observing messages.
 
         :return: Either:
@@ -356,13 +365,19 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         received_payload_size: int = 0
         remaining_timeout_ms = self.n_cr_timeout
         timestamp_start_s = time()
+        timeout_end_ms = float("inf")
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
-            received_packet = await self.async_receive_packet(timeout=remaining_timeout_ms, loop=loop)
+            if timestamp_end is not None:
+                timeout_end_ms = (timestamp_end - time()) * 1000.
+            received_packet = await self.async_receive_packet(timeout=min(remaining_timeout_ms, timeout_end_ms),
+                                                              loop=loop)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 warn(message="A new DoCAN message transmission was started. "
                              "Reception of the previous message was aborted.",
                      category=NewMessageReceptionWarning)
-                return await self._async_message_receive_start(initial_packet=received_packet, loop=loop)
+                return await self._async_message_receive_start(initial_packet=received_packet,
+                                                               timestamp_end=timestamp_end,
+                                                               loop=loop)
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
                 received_cf.append(received_packet)
@@ -375,13 +390,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 remaining_timeout_ms = self.n_cr_timeout - time_elapsed_ms
         return tuple(received_cf)
 
-    def _receive_consecutive_frames(self, first_frame: CanPacketRecord) -> UdsMessageRecord:
+    def _receive_consecutive_frames(self,
+                                    first_frame: CanPacketRecord,
+                                    timestamp_end: Optional[TimestampSecondsAlias]) -> UdsMessageRecord:
         """
         Receive Consecutive Frames after reception of First Frame.
 
         :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
 
-        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
+        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached or Consecutive Frames
+            were not received before reaching timestamp_end.
         :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
             OVERFLOW was sent.
 
@@ -402,7 +421,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     warn(message="A new DoCAN message transmission was started. "
                                  "Reception of the previous message was aborted.",
                          category=NewMessageReceptionWarning)
-                    return self._message_receive_start(initial_packet=received_packet)
+                    return self._message_receive_start(initial_packet=received_packet,
+                                                       timestamp_end=timestamp_end)
             flow_status, block_size, st_min = next(flow_control_iterator)
             fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
                                                                block_size=block_size,
@@ -414,7 +434,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 remaining_data_length = message_data_length - received_data_length
                 cf_block = self._receive_cf_packets_block(sequence_number=sequence_number,
                                                           block_size=block_size,  # type: ignore
-                                                          remaining_data_length=remaining_data_length)
+                                                          remaining_data_length=remaining_data_length,
+                                                          timestamp_end=timestamp_end)
                 if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
@@ -426,11 +447,13 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     async def _async_receive_consecutive_frames(self,
                                                 first_frame: CanPacketRecord,
-                                                loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+                                                timestamp_end: Optional[TimestampSecondsAlias],
+                                                loop: AbstractEventLoop) -> UdsMessageRecord:
         """
         Receive asynchronously Consecutive Frames after reception of First Frame.
 
         :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
         :param loop: An asyncio event loop used for observing messages.
 
         :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached.
@@ -455,7 +478,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     warn(message="A new DoCAN message transmission was started. "
                                  "Reception of the previous message was aborted.",
                          category=NewMessageReceptionWarning)
-                    return await self._async_message_receive_start(initial_packet=received_packet, loop=loop)
+                    return await self._async_message_receive_start(initial_packet=received_packet,
+                                                                   timestamp_end=timestamp_end,
+                                                                   loop=loop)
             flow_status, block_size, st_min = next(flow_control_iterator)
             fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
                                                                block_size=block_size,
@@ -468,6 +493,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 cf_block = await self._async_receive_cf_packets_block(sequence_number=sequence_number,
                                                                       block_size=block_size,  # type: ignore
                                                                       remaining_data_length=remaining_data_length,
+                                                                      timestamp_end=timestamp_end,
                                                                       loop=loop)
                 if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
                     return cf_block
@@ -480,11 +506,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
     def _message_receive_start(self,
                                initial_packet: CanPacketRecord,
-                               timestamp_end: Optional[TimeMillisecondsAlias]) -> UdsMessageRecord:
+                               timestamp_end: Optional[TimestampSecondsAlias]) -> UdsMessageRecord:
         """
         Continue to receive message after receiving initial packet.
 
         :param initial_packet: Record of a packet initiating UDS message reception.
+        :param timestamp_end: The final timestamp till when the reception must be completed.
 
         :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
 
@@ -493,18 +520,19 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         if initial_packet.packet_type == CanPacketType.SINGLE_FRAME:
             return UdsMessageRecord([initial_packet])
         if initial_packet.packet_type == CanPacketType.FIRST_FRAME:
-            return self._receive_consecutive_frames(first_frame=initial_packet)
+            return self._receive_consecutive_frames(first_frame=initial_packet,
+                                                    timestamp_end=timestamp_end)
         raise NotImplementedError(f"CAN packet of unhandled type was received: {initial_packet.packet_type}")
 
     async def _async_message_receive_start(self,
                                            initial_packet: CanPacketRecord,
-                                           timestamp_end: Optional[TimeMillisecondsAlias],
-                                           loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
+                                           timestamp_end: Optional[TimestampSecondsAlias],
+                                           loop: AbstractEventLoop) -> UdsMessageRecord:
         """
         Continue to receive message asynchronously after receiving initial packet.
 
         :param initial_packet: Record of a packet initiating UDS message reception.
-        :param timestamp_end: The final timestamp till when message reception
+        :param timestamp_end: The final timestamp till when the reception must be completed.
         :param loop: An asyncio event loop used for observing messages.
 
         :raise NotImplementedError: Unhandled CAN packet starting a new CAN message transmission was received.
@@ -514,7 +542,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         if initial_packet.packet_type == CanPacketType.SINGLE_FRAME:
             return UdsMessageRecord([initial_packet])
         if initial_packet.packet_type == CanPacketType.FIRST_FRAME:
-            return await self._async_receive_consecutive_frames(first_frame=initial_packet, loop=loop)
+            return await self._async_receive_consecutive_frames(first_frame=initial_packet,
+                                                                timestamp_end=timestamp_end,
+                                                                loop=loop)
         raise NotImplementedError(f"CAN packet of unhandled type was received: {initial_packet.packet_type}")
 
     def clear_rx_frames_buffers(self) -> None:
@@ -569,9 +599,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                      is_rx=False,
                                      is_error_frame=False,
                                      is_remote_frame=False)
-        time_start_s = time()
+        timestamp_start = time()
         self.network_manager.send(msg=can_frame, timeout=timeout_ms / 1000.)
-        time_sent_s = time()
+        timestamp_sent = time()
         sent_frame = PythonCanMessage(arbitration_id=can_frame.arbitration_id,
                                       is_extended_id=can_frame.is_extended_id,
                                       data=can_frame.data,
@@ -579,12 +609,12 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                       is_rx=False,
                                       is_error_frame=False,
                                       is_remote_frame=False,
-                                      timestamp=time_sent_s)
+                                      timestamp=timestamp_sent)
         transmission_time = datetime.fromtimestamp(sent_frame.timestamp)
         if is_flow_control_packet:
-            self._update_n_ar_measured((time_sent_s - time_start_s) * 1000.)
+            self._update_n_ar_measured((timestamp_sent - timestamp_start) * 1000.)
         else:
-            self._update_n_as_measured((time_sent_s - time_start_s) * 1000.)
+            self._update_n_as_measured((timestamp_sent - timestamp_start) * 1000.)
         return CanPacketRecord(frame=sent_frame,
                                direction=TransmissionDirection.TRANSMITTED,
                                addressing_type=packet.addressing_type,
@@ -646,10 +676,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Timeout value must be None, int or float type.")
             if timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
-        if isinstance(loop, AbstractEventLoop):
-            self.__setup_async_notifier(loop=loop)
-        else:
-            self.__setup_async_notifier(loop=get_running_loop())
+        loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
+        self.__setup_async_notifier(loop=loop)
         return await self._async_wait_for_packet(buffer=self.__async_rx_frames_buffer, timeout=timeout)
 
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:
@@ -766,21 +794,21 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        time_now_s = time()
+        timestamp_now = time()
         if start_timeout is not None:
-            time_start_timeout_s = time_now_s + start_timeout / 1000.
-        if end_timeout is not None:
-            time_end_timeout_s = time_now_s + end_timeout / 1000.
+            timestamp_start_timeout = timestamp_now + start_timeout / 1000.
+        timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.
         self.__setup_notifier()
         while True:
             if start_timeout is not None:
-                time_now_s = time()
-                if time_start_timeout_s <= time_now_s:
+                timestamp_now = time()
+                if timestamp_start_timeout <= timestamp_now:
                     raise TimeoutError("Timeout was reached before a UDS message was received.")
-                start_timeout = (time_start_timeout_s - time_now_s) * 1000.
+                start_timeout = (timestamp_start_timeout - timestamp_now) * 1000.
             received_packet = self.receive_packet(timeout=start_timeout)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                return self._message_receive_start(initial_packet=received_packet)
+                return self._message_receive_start(initial_packet=received_packet,
+                                                   timestamp_end=timestamp_end_timeout)
             warn(message="A CAN packet that does not start UDS message transmission was received.",
                  category=UnexpectedPacketReceptionWarning)
 
@@ -810,21 +838,22 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        timestamp_now_s = time()
+        timestamp_now = time()
         if start_timeout is not None:
-            timestamp_start_timeout_s = timestamp_now_s + start_timeout / 1000.
-        if end_timeout is not None:
-            time_end_timeout_s = timestamp_now_s + end_timeout / 1000.
+            timestamp_start_timeout = timestamp_now + start_timeout / 1000.
+        timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.
         loop = get_running_loop() if loop is None else loop
         self.__setup_async_notifier(loop=loop)
         while True:
             if start_timeout is not None:
-                time_now_s = time()
-                if time_start_timeout_s <= time_now_s:
+                timestamp_now = time()
+                if timestamp_start_timeout <= timestamp_now:
                     raise TimeoutError("Timeout was reached before a UDS message was received.")
-                start_timeout = time_start_timeout_s - time_now_s
+                start_timeout = (timestamp_start_timeout - timestamp_now) * 1000.
             received_packet = await self.async_receive_packet(timeout=start_timeout, loop=loop)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                return await self._async_message_receive_start(initial_packet=received_packet, loop=loop)
+                return await self._async_message_receive_start(initial_packet=received_packet,
+                                                               timestamp_end=timestamp_end_timeout,
+                                                               loop=loop)
             warn(message="A CAN packet that does not start UDS message transmission was received.",
                  category=UnexpectedPacketReceptionWarning)

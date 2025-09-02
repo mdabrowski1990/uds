@@ -5,7 +5,7 @@ from .common_types import (
     RawBytesListAlias,
     RawBytesSetAlias,
     RawBytesTupleAlias,
-    TimeMillisecondsAlias,
+    TimeMillisecondsAlias, TimestampSecondsAlias,
     validate_nibble,
     validate_raw_byte,
     validate_raw_bytes,
