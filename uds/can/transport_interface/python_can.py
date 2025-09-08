@@ -308,6 +308,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param remaining_data_length: Number of remaining data bytes to receive in UDS message.
         :param timestamp_end: The final timestamp till when the reception must be completed.
 
+        :raise TimeoutError: Timeout was reached. Either:
+            - Consecutive Frame did not arrive before reaching N_Cr timeout
+            - Diagnostic message reception
+
         :return: Either:
             - Record of UDS message if reception was interrupted by a new UDS message transmission.
             - Tuple with records of received Consecutive Frames.
@@ -320,7 +324,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
             if timestamp_end is not None:
                 timeout_end_ms = (timestamp_end - time()) * 1000.
-            received_packet = self.receive_packet(timeout=min(remaining_timeout_ms, timeout_end_ms))
+            if remaining_timeout_ms < 0:
+                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
+            if timeout_end_ms < 0:
+                raise TimeoutError("Total message reception timeout was reached.")
+            received_packet = self.receive_packet(timeout=min(timeout_end_ms, remaining_timeout_ms))
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 warn(message="A new DoCAN message transmission was started. "
                              "Reception of the previous message was aborted.",
@@ -369,6 +377,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
             if timestamp_end is not None:
                 timeout_end_ms = (timestamp_end - time()) * 1000.
+            if remaining_timeout_ms < 0:
+                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
+            if timeout_end_ms < 0:
+                raise TimeoutError("Total message reception timeout was reached.")
             received_packet = await self.async_receive_packet(timeout=min(remaining_timeout_ms, timeout_end_ms),
                                                               loop=loop)
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
@@ -399,8 +411,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param first_frame: :ref:`First Frame <knowledge-base-can-first-frame>` that was received.
         :param timestamp_end: The final timestamp till when the reception must be completed.
 
-        :raise TimeoutError: :ref:`N_Cr <knowledge-base-can-n-cr>` timeout was reached or Consecutive Frames
-            were not received before reaching timestamp_end.
         :raise OverflowError: Flow Control packet with :ref:`Flow Status <knowledge-base-can-flow-status>` equal to
             OVERFLOW was sent.
 
