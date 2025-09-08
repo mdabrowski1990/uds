@@ -88,8 +88,8 @@ class BaseSystemTests(ABC):
 
     def receive_message(self,
                         transport_interface: AbstractTransportInterface,
-                        start_timeout: TimeMillisecondsAlias,
-                        end_timeout: TimeMillisecondsAlias,
+                        start_timeout: Optional[TimeMillisecondsAlias],
+                        end_timeout: Optional[TimeMillisecondsAlias],
                         delay: TimeMillisecondsAlias) -> Timer:
         """
         Receive UDS message over Transport Interface.

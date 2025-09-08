@@ -1506,7 +1506,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
                                                                                     st_min=rx_st_min))
         timer_1 = self.receive_message(transport_interface=can_transport_interface_2nd_node,
                                        delay=0,
-                                       timeout=50)
+                                       start_timeout=50,
+                                       end_timeout=None)
         timer_2 = self.send_message(transport_interface=can_transport_interface_2nd_node,
                                     message=rx_message,
                                     delay=10)
