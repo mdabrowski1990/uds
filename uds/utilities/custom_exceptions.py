@@ -43,3 +43,13 @@ class UnusedArgumentError(ValueError):
 
 class AmbiguityError(ValueError):
     """Operation cannot be executed because it is ambiguous."""
+
+
+class MessageTransmissionNotStartedError(TimeoutError):
+    """
+    Timeout Error where a timeout was reached before message transmission has been started.
+
+    Example:
+        Timeout defined by `start_timeout` argument was reached by
+        :meth:`~uds.transport_interface.abstract_transport_interface.AbstractTransportInterface.receive_message`
+    """

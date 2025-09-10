@@ -11,7 +11,14 @@ from uds.addressing import AddressingType
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 from uds.translator import TESTER_PRESENT
 from uds.transport_interface import AbstractTransportInterface
-from uds.utilities import InconsistencyError, ReassignmentError, TimeMillisecondsAlias, ValueWarning, bytes_to_hex
+from uds.utilities import (
+    InconsistencyError,
+    ReassignmentError,
+MessageTransmissionNotStartedError,
+    TimeMillisecondsAlias,
+    ValueWarning,
+    bytes_to_hex,
+)
 
 
 class Client:
@@ -19,11 +26,11 @@ class Client:
 
     DEFAULT_P2_CLIENT_TIMEOUT: TimeMillisecondsAlias = 100  # P2Client_max > P2Server_max (default: 50 ms)
     """Default value of P2Client timeout."""
-    DEFAULT_P6_CLIENT_TIMEOUT: TimeMillisecondsAlias = 1000  # P6Client_max > P2Client_max
+    DEFAULT_P6_CLIENT_TIMEOUT: TimeMillisecondsAlias = 10000  # P6Client_max > P2Client_max
     """Default value of P6Client timeout."""
     DEFAULT_P2_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 5050  # P2*Client_max > P2*Server_max (default: 5000 ms)
     """Default value of P2*Client timeout."""
-    DEFAULT_P6_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 10000  # P6*Client_max > P2*Client_max
+    DEFAULT_P6_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 50000  # P6*Client_max > P2*Client_max
     """Default value of P6*Client timeout."""
     DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000
     """Default value of S3Client time parameter."""
@@ -229,9 +236,9 @@ class Client:
             raise TypeError("Provided time parameter value must be int or float type.")
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
-        if value < self.p6_client_timeout:
+        if value < self.p2_client_timeout:
             raise InconsistencyError("S3Client value must be greater or equal than "
-                                     f"P6Client timeout ({self.p6_client_timeout} ms).")
+                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
         self.__s3_client = value
 
     def _update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
@@ -343,17 +350,20 @@ class Client:
         :param sid: SID of the last sent request message.
         :param start_timeout: Maximal time (in milliseconds) to wait.
 
+        :raise TimeoutError: P6Client timeout reached.
+
         :return: Record with response message received to the last UDS request message sent.
             None if a timeout was reached.
         """
-        timestamp_start = monotonic()
+        timestamp_start = time()
         start_timeout_remaining_ms = start_timeout
         end_timeout_remaining_ms = end_timeout
         while start_timeout_remaining_ms > 0 and end_timeout_remaining_ms > 0:
             try:
                 response_record = self.transport_interface.receive_message(start_timeout=start_timeout_remaining_ms,
                                                                            end_timeout=end_timeout_remaining_ms)
-            except TimeoutError:
+                print(f"timestamp (_receive_response) = {time()}")
+            except MessageTransmissionNotStartedError:
                 return None
             # positive response message received
             if response_record.payload[0] == sid + RESPONSE_REQUEST_SID_DIFF:
@@ -363,7 +373,7 @@ class Client:
                 return response_record
             # other response message received
             # TODO: add it to response queue when created - https://github.com/mdabrowski1990/uds/issues/63
-            time_elapsed_ms = (monotonic() - timestamp_start) * 1000.
+            time_elapsed_ms = (time() - timestamp_start) * 1000.
             start_timeout_remaining_ms = start_timeout - time_elapsed_ms
             end_timeout_remaining_ms = end_timeout - time_elapsed_ms
         return None
@@ -500,18 +510,27 @@ class Client:
         sid = RequestSID(request_record.payload[0])
         response_records: List[UdsMessageRecord] = []
         # get the first response (either final response or negative response with response pending nrc)
-        response_record = self._receive_response(sid=sid,
-                                                 start_timeout=self.p2_client_timeout,
-                                                 end_timeout=self.p6_client_timeout)
+        try:
+            response_record = self._receive_response(sid=sid,
+                                                     start_timeout=self.p2_client_timeout,
+                                                     end_timeout=self.p6_client_timeout)
+        except TimeoutError as exception:
+            raise TimeoutError("P6Client timeout reached.") from exception
         if response_record is None:  # timeout achieved - no response
             return request_record, tuple()
         response_records.append(response_record)
-        timestamp_start_timeout = response_records[-1].transmission_end.timestamp() + self.p2_ext_client_timeout / 1000.
-        timestamp_end_timeout = time_request_sent + self.p6_ext_client_measured / 1000.
+        timestamp_end_timeout = time_request_sent + self.p6_ext_client_timeout / 1000.
+        print(f"timestamp_end_timeout = {timestamp_end_timeout}")
         while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
-            response_record = self._receive_response(sid=sid,
-                                                     start_timeout=timestamp_start_timeout - time(),
-                                                     end_timeout=timestamp_end_timeout - time())
+            timestamp_start_timeout = (response_records[-1].transmission_end.timestamp()
+                                       + self.p2_ext_client_timeout / 1000.)
+            try:
+                response_record = self._receive_response(sid=sid,
+                                                         start_timeout=(timestamp_start_timeout - time()) * 1000.,
+                                                         end_timeout=(timestamp_end_timeout - time()) * 1000.)
+                print(f"timestamp (send_request_receive_responses) = {time()}")
+            except TimeoutError as exception:
+                raise TimeoutError("P6*Client timeout reached.") from exception
             if response_record is None:  # timeout achieved - no following response
                 raise TimeoutError(f"P2*Client timeout ({self.p2_ext_client_timeout} ms) reached after receiving "
                                    f"{len(response_records)} response pending messages "

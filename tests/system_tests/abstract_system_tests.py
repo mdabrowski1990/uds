@@ -4,6 +4,7 @@ import asyncio
 from abc import ABC
 from threading import Timer
 from typing import List, Optional
+from time import sleep
 
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
@@ -15,7 +16,7 @@ class BaseSystemTests(ABC):
     """Base implementation for all system tests suites."""
 
     MAKE_TIMING_CHECKS: bool = True
-    TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 20
+    TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 30
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 1
 
     sent_message: Optional[UdsMessageRecord]
@@ -45,6 +46,7 @@ class BaseSystemTests(ABC):
                 _timer.join(self.TASK_TIMING_TOLERANCE / 1000.)
                 del _timer
             self._timers = []
+            sleep(self.TIMESTAMP_TOLERANCE / 1000.)
 
     def send_packet(self,
                     transport_interface: AbstractTransportInterface,

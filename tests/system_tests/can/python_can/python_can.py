@@ -1352,8 +1352,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34] + [*range(100, 164)] * 65, addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("end_timeout, send_after, delay", [
-        (1000, 50, 20),  # ms
-        (2500, 10, 50),
+        (100, 50, 20),  # ms
+        (1500, 10, 50),
     ])
     def test_receive_message__multi_packets__end_timeout(self, example_can_addressing_information,
                                                          message, end_timeout, send_after, delay):
@@ -1401,8 +1401,8 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34] + [*range(100, 164)] * 65, addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("end_timeout, send_after, delay", [
-        (1000, 50, 20),  # ms
-        (2500, 10, 50),
+        (100, 50, 20),  # ms
+        (1500, 10, 50),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__multi_packets__end_timeout(self, example_can_addressing_information,

@@ -15,7 +15,12 @@ from can import Message as PythonCanMessage
 from can import Notifier
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
-from uds.utilities import NewMessageReceptionWarning, TimeMillisecondsAlias, UnexpectedPacketReceptionWarning, TimestampSecondsAlias
+from uds.utilities import (
+    NewMessageReceptionWarning,
+    TimeMillisecondsAlias,
+    TimestampSecondsAlias,
+    UnexpectedPacketReceptionWarning, MessageTransmissionNotStartedError
+)
 
 from ..addressing import AbstractCanAddressingInformation
 from ..frame import CanDlcHandler, CanIdHandler
@@ -247,7 +252,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 timeout_left_s = timestamp_end_s - timestamp_now_s
             else:
                 timeout_left_s = self._MAX_LISTENER_TIMEOUT
+            print(f"timestamp (_wait_for_packet - before) = {time()}")
+            print(f"timeout = {timeout_left_s}")
             received_frame = buffer.get_message(timeout=timeout_left_s)
+            print(f"timestamp (_wait_for_packet - after) = {time()}")
             if received_frame is None:
                 raise TimeoutError("Timeout was reached before a CAN packet was received.")
             packet_addressing_type = self.addressing_information.is_input_packet(
@@ -327,6 +335,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if timeout_end_ms < 0:
                 raise TimeoutError("Total message reception timeout was reached.")
             received_packet = self.receive_packet(timeout=min(timeout_end_ms, remaining_timeout_ms))
+            print(f"timestamp (_receive_cf_packets_block) = {time()}")
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 warn(message="A new DoCAN message transmission was started. "
                              "Reception of the previous message was aborted.",
@@ -446,6 +455,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                                           block_size=block_size,  # type: ignore
                                                           remaining_data_length=remaining_data_length,
                                                           timestamp_end=timestamp_end)
+                print(f"timestamp (_receive_consecutive_frames) = {time()}")
                 if isinstance(cf_block, UdsMessageRecord):  # handle in case another message interrupted
                     return cf_block
                 packets_records.extend(cf_block)
@@ -813,9 +823,13 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if start_timeout is not None:
                 timestamp_now = time()
                 if timestamp_start_timeout <= timestamp_now:
-                    raise TimeoutError("Timeout was reached before a UDS message was received.")
+                    raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")
                 start_timeout = (timestamp_start_timeout - timestamp_now) * 1000.
-            received_packet = self.receive_packet(timeout=start_timeout)
+            try:
+                received_packet = self.receive_packet(timeout=start_timeout)
+            except TimeoutError as exception:
+                raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.") \
+                    from exception
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 return self._message_receive_start(initial_packet=received_packet,
                                                    timestamp_end=timestamp_end_timeout)
@@ -861,9 +875,13 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if start_timeout is not None:
                 timestamp_now = time()
                 if timestamp_start_timeout <= timestamp_now:
-                    raise TimeoutError("Timeout was reached before a UDS message was received.")
+                    raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")
                 start_timeout = (timestamp_start_timeout - timestamp_now) * 1000.
-            received_packet = await self.async_receive_packet(timeout=start_timeout, loop=loop)
+            try:
+                received_packet = await self.async_receive_packet(timeout=start_timeout, loop=loop)
+            except TimeoutError as exception:
+                raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.") \
+                    from exception
             if CanPacketType.is_initial_packet_type(received_packet.packet_type):
                 return await self._async_message_receive_start(initial_packet=received_packet,
                                                                timestamp_end=timestamp_end_timeout,
