@@ -15,6 +15,12 @@ from uds.can.addressing import (
 )
 from uds.utilities import RawBytesAlias
 
+# Performance tests related
+
+@fixture
+def task_tolerance_ms():
+    return 2
+
 # Common
 
 @fixture(params=[

@@ -1,4 +1,5 @@
 from random import choice, randint
+from time import time
 
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
@@ -1661,6 +1662,54 @@ class TestPyCanTransportInterface:
                         loop=self.mock_get_running_loop.return_value)]
         )
         self.mock_warn.assert_called_once()
+
+
+@pytest.mark.performance
+class TestPyCanTransportInterfacePerformance:
+
+    def setup_method(self):
+        self.mock_can_transport_interface = MagicMock(spec=PyCanTransportInterface,
+                                                      _PyCanTransportInterface__rx_frames_buffer=Mock(),
+                                                      _PyCanTransportInterface__tx_frames_buffer=Mock(),
+                                                      _PyCanTransportInterface__async_rx_frames_buffer=Mock(),
+                                                      _PyCanTransportInterface__async_tx_frames_buffer=Mock())
+
+
+    # receive_message
+
+    @pytest.mark.parametrize("start_timeout", [50, 100])
+    @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
+    def test_receive_message__start_timeout(self, mock_is_initial_packet_type, task_tolerance_ms, start_timeout):
+        mock_is_initial_packet_type.return_value = False
+        self.mock_can_transport_interface.receive_packet.return_value = Mock()
+        timestamp_before = time()
+        with pytest.raises(TimeoutError):
+            PyCanTransportInterface.receive_message(self.mock_can_transport_interface,
+                                                    start_timeout=start_timeout)
+        timestamp_after = time()
+        execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+        assert (start_timeout
+                <= execution_time_ms
+                <= start_timeout + task_tolerance_ms)
+
+    # async_receive_message
+
+    @pytest.mark.parametrize("start_timeout", [50, 100])
+    @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
+    @pytest.mark.asyncio
+    async def test_async_receive_message__start_timeout(self, mock_is_initial_packet_type, task_tolerance_ms, start_timeout):
+        mock_is_initial_packet_type.return_value = False
+        self.mock_can_transport_interface.async_receive_packet.return_value = Mock()
+        timestamp_before = time()
+        with pytest.raises(TimeoutError):
+            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
+                                                                start_timeout=start_timeout)
+        timestamp_after = time()
+        execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+        assert (start_timeout
+                <= execution_time_ms
+                <= start_timeout + task_tolerance_ms)
+
 
 
 @pytest.mark.integration

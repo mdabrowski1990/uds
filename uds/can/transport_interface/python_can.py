@@ -6,7 +6,7 @@ from asyncio import AbstractEventLoop, get_running_loop
 from asyncio import sleep as async_sleep
 from asyncio import wait_for
 from datetime import datetime
-from time import sleep, time
+from time import sleep, time, monotonic
 from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
@@ -356,7 +356,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
         return tuple(received_cf)
 
-    async def _async_receive_cf_packets_block(self,
+    async def _async_receive_cf_packets_block(self,  # TODO: performance tests and time management rework
                                               sequence_number: int,
                                               block_size: int,
                                               remaining_data_length: int,
@@ -432,7 +432,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
             try:
-                received_packet = self.receive_packet(timeout=self.n_br)
+                timeout = (packets_records[-1].transmission_time.timestamp() / 1000. + self.n_br) - time()
+                received_packet = self.receive_packet(timeout=timeout)
             except (TimeoutError, ValueError):
                 pass
             else:
@@ -490,7 +491,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
             try:
-                received_packet = await self.async_receive_packet(timeout=self.n_br, loop=loop)
+                timeout = (packets_records[-1].transmission_time.timestamp() / 1000. + self.n_br) - time()
+                received_packet = await self.async_receive_packet(timeout=timeout, loop=loop)
             except (TimeoutError, ValueError):
                 pass
             else:
@@ -814,7 +816,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        timestamp_now = time()
+        timestamp_now = time()  # TODO: switch to monotonic
         if start_timeout is not None:
             timestamp_start_timeout = timestamp_now + start_timeout / 1000.
         timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.
@@ -865,7 +867,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        timestamp_now = time()
+        timestamp_now = time()  # TODO: switch to monotonic
         if start_timeout is not None:
             timestamp_start_timeout = timestamp_now + start_timeout / 1000.
         timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.

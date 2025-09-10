@@ -38,10 +38,9 @@ jobs:
         run: |
           pytest tests/software_tests --cov-report=term-missing --cov=uds -m "integration"
 
-# TODO: uncomment when performance tests are added
-#      - name: Execute performance tests with coverage report [pytest]
-#        run: |
-#          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "performance"
+      - name: Execute performance tests with coverage report [pytest]
+        run: |
+          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "performance"
 
 
   code_coverage:
@@ -113,7 +112,17 @@ jobs:
           files: coverage.xml
           flags: integration-tests-branch
 
-# TODO: add performance tests upload when added
+      - name: Execute performance tests with instruction coverage [pytest]
+        run: |
+          pytest tests/software_tests --cov-report=xml --cov=uds -m "performance"
+
+      - name: Upload performance tests report with instruction coverage [CodeCov]
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          flags: performance-tests
 
 
   static_code_analysis:
