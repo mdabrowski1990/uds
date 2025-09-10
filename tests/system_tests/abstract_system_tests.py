@@ -15,7 +15,7 @@ class BaseSystemTests(ABC):
     """Base implementation for all system tests suites."""
 
     MAKE_TIMING_CHECKS: bool = True
-    TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 30
+    TASK_TIMING_TOLERANCE: TimeMillisecondsAlias = 20
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 1
 
     sent_message: Optional[UdsMessageRecord]

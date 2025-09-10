@@ -324,8 +324,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
             if timestamp_end is not None:
                 timeout_end_ms = (timestamp_end - time()) * 1000.
-            if remaining_timeout_ms < 0:
-                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
             if timeout_end_ms < 0:
                 raise TimeoutError("Total message reception timeout was reached.")
             received_packet = self.receive_packet(timeout=min(timeout_end_ms, remaining_timeout_ms))
@@ -345,6 +343,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             else:
                 time_elapsed_ms = (time() - timestamp_start_s) * 1000.
                 remaining_timeout_ms = self.n_cr_timeout - time_elapsed_ms
+            if remaining_timeout_ms < 0:
+                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
         return tuple(received_cf)
 
     async def _async_receive_cf_packets_block(self,
@@ -377,8 +377,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while received_payload_size < remaining_data_length and (len(received_cf) != block_size or block_size == 0):
             if timestamp_end is not None:
                 timeout_end_ms = (timestamp_end - time()) * 1000.
-            if remaining_timeout_ms < 0:
-                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
             if timeout_end_ms < 0:
                 raise TimeoutError("Total message reception timeout was reached.")
             received_packet = await self.async_receive_packet(timeout=min(remaining_timeout_ms, timeout_end_ms),
@@ -400,6 +398,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             else:
                 time_elapsed_ms = (time() - timestamp_start_s) * 1000.
                 remaining_timeout_ms = self.n_cr_timeout - time_elapsed_ms
+            if remaining_timeout_ms < 0:
+                raise TimeoutError("Timeout (N_Cr) was reached before Consecutive Frame CAN packet was received.")
         return tuple(received_cf)
 
     def _receive_consecutive_frames(self,
@@ -828,6 +828,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                     loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message over CAN.
+
+        .. warning:: This method might be finished a few milliseconds before reaching end_timeout due to the way
+            asyncio.wait_for works for small time values.
 
         :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
             Leave None to wait forever.
