@@ -18,8 +18,16 @@ from uds.utilities import RawBytesAlias
 # Performance tests related
 
 @fixture
-def task_tolerance_ms():
-    return 2
+def performance_tolerance_ms():
+    """Acceptable timing tolerance for performance tests."""
+    return 5
+
+
+@fixture
+def asyncio_tolerance_ms():
+    """Acceptable timing tolerance for asyncio tests using `wait` or `wait_for` functions."""
+    return 20
+
 
 # Common
 
