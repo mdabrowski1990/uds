@@ -1693,22 +1693,6 @@ class TestPyCanTransportInterfacePerformance:
         self._patcher_datetime.stop()
         self._pather_can_packet_record.stop()
 
-    # _send_cf_packets_block
-
-    # TODO
-
-    # _async_send_cf_packets_block
-
-    # TODO
-
-    # _wait_for_flow_control
-
-    # TODO
-
-    # _async_wait_for_flow_control
-
-    # TODO
-
     # _wait_for_packet
 
     @pytest.mark.parametrize("timeout", [10, 75])

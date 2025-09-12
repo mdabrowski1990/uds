@@ -362,7 +362,6 @@ class Client:
             try:
                 response_record = self.transport_interface.receive_message(start_timeout=start_timeout_remaining_ms,
                                                                            end_timeout=end_timeout_remaining_ms)
-                print(f"timestamp (_receive_response) = {time()}")
             except MessageTransmissionNotStartedError:
                 return None
             # positive response message received
@@ -520,7 +519,6 @@ class Client:
             return request_record, tuple()
         response_records.append(response_record)
         timestamp_end_timeout = time_request_sent + self.p6_ext_client_timeout / 1000.
-        print(f"timestamp_end_timeout = {timestamp_end_timeout}")
         while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
             timestamp_start_timeout = (response_records[-1].transmission_end.timestamp()
                                        + self.p2_ext_client_timeout / 1000.)
@@ -528,7 +526,6 @@ class Client:
                 response_record = self._receive_response(sid=sid,
                                                          start_timeout=(timestamp_start_timeout - time()) * 1000.,
                                                          end_timeout=(timestamp_end_timeout - time()) * 1000.)
-                print(f"timestamp (send_request_receive_responses) = {time()}")
             except TimeoutError as exception:
                 raise TimeoutError("P6*Client timeout reached.") from exception
             if response_record is None:  # timeout achieved - no following response
