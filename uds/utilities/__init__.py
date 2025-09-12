@@ -6,7 +6,7 @@ from .common_types import (
     RawBytesSetAlias,
     RawBytesTupleAlias,
     TimeMillisecondsAlias,
-    TimestampSecondsAlias,
+    TimestampAlias,
     validate_nibble,
     validate_raw_byte,
     validate_raw_bytes,

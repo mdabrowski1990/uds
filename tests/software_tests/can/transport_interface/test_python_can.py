@@ -1,4 +1,4 @@
-from random import choice, randint
+from random import choice, randint, random
 from time import sleep, perf_counter
 from asyncio import sleep as asyncio_sleep
 
@@ -1670,7 +1670,7 @@ class TestPyCanTransportInterface:
 @pytest.mark.performance
 class TestPyCanTransportInterfacePerformance:
 
-    REPETITIONS = 20
+    REPETITIONS = 100
 
     def setup_method(self):
         self.mock_can_transport_interface = MagicMock(spec=PyCanTransportInterface,
@@ -1682,79 +1682,148 @@ class TestPyCanTransportInterfacePerformance:
         self.mock_warn = self._patcher_warn.start()
         self._patcher_get_running_loop = patch(f"{SCRIPT_LOCATION}.get_running_loop")
         self.mock_get_running_loop = self._patcher_get_running_loop.start()
+        self._patcher_datetime = patch(f"{SCRIPT_LOCATION}.datetime")
+        self.mock_datetime = self._patcher_datetime.start()
+        self._pather_can_packet_record = patch(f"{SCRIPT_LOCATION}.CanPacketRecord")
+        self.mock_can_packet_record = self._pather_can_packet_record.start()
 
     def teardown_method(self):
         self._patcher_warn.stop()
         self._patcher_get_running_loop.stop()
+        self._patcher_datetime.stop()
+        self._pather_can_packet_record.stop()
 
-    # _wait_for_packet
+    # _send_cf_packets_block
 
     # TODO
 
-    # _async_wait_for_packet
+    # _async_send_cf_packets_block
 
-    @pytest.mark.parametrize("rep", range(REPETITIONS))
+    # TODO
+
+    # _wait_for_flow_control
+
+    # TODO
+
+    # _async_wait_for_flow_control
+
+    # TODO
+
+    # _wait_for_packet
+
     @pytest.mark.parametrize("timeout", [10, 75])
-    @pytest.mark.asyncio
-    async def test_async_wait_for_packet__timeout(self, asyncio_tolerance_ms, rep,
-                                                  timeout):
-        async def _get_message():
-            await asyncio_sleep(2*timeout)
+    def test_wait_for_packet__timeout(self,
+                                      performance_tolerance_ms, mean_performance_tolerance_ms,
+                                      timeout):
+        def _get_message(*_, **__):
+            sleep(0.005)
             return Mock()
+
         mock_buffer = Mock(spec=AsyncBufferedReader,
                            get_message=_get_message)
-        self.mock_can_transport_interface.addressing_information.is_input_packet.return_value = Mock()
-        timestamp_before = perf_counter()
-        with pytest.raises(TimeoutError):
-            await PyCanTransportInterface._async_wait_for_packet(self.mock_can_transport_interface,
-                                                                 buffer=mock_buffer,
-                                                                 timeout=timeout)
-        timestamp_after = perf_counter()
-        execution_time_ms = (timestamp_after - timestamp_before) * 1000.
-        assert timeout <= execution_time_ms
+        self.mock_can_transport_interface.addressing_information.is_input_packet.return_value = None
 
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            with pytest.raises(TimeoutError):
+                PyCanTransportInterface._wait_for_packet(self.mock_can_transport_interface,
+                                                         buffer=mock_buffer,
+                                                         timeout=timeout)
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (timeout
+                    <= execution_time_ms
+                    <= timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
+        assert (timeout
+                <= mean_execution_time_ms
+                <= timeout + mean_performance_tolerance_ms)
+
+    # _async_wait_for_packet
+
+    @pytest.mark.parametrize("timeout", [10, 75])
+    @pytest.mark.asyncio
+    async def test_async_wait_for_packet__timeout(self,
+                                                  performance_tolerance_ms, mean_performance_tolerance_ms,
+                                                  timeout):
+        async def _get_message(*_, **__):
+            await asyncio_sleep(0.005)
+            return Mock()
+
+        mock_buffer = Mock(spec=AsyncBufferedReader,
+                           get_message=_get_message)
+        self.mock_can_transport_interface.addressing_information.is_input_packet.return_value = None
+
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            with pytest.raises(TimeoutError):
+                await PyCanTransportInterface._async_wait_for_packet(self.mock_can_transport_interface,
+                                                                     buffer=mock_buffer,
+                                                                     timeout=timeout)
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (timeout
+                    <= execution_time_ms
+                    <= timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
+        assert (timeout
+                <= mean_execution_time_ms
+                <= timeout + mean_performance_tolerance_ms)
 
     # _receive_cf_packets_block
 
-    @pytest.mark.parametrize("rep", range(REPETITIONS))
     @pytest.mark.parametrize("n_cr_timeout", [10, 75])
     @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
     def test_receive_cf_packets_block__n_cr_timeout(self, mock_is_initial_packet_type,
-                                                    performance_tolerance_ms, rep,
+                                                    performance_tolerance_ms, mean_performance_tolerance_ms,
                                                     n_cr_timeout):
-        def _get_packet_record(*args, **kwargs):
-            sleep((performance_tolerance_ms / 1000.) / 4.)
+        def _get_packet_record(*_, **__):
+            sleep(0.005)
             return Mock(spec=CanPacketRecord,
                         packet_type=Mock())
 
         mock_is_initial_packet_type.return_value = False
         self.mock_can_transport_interface.receive_packet.side_effect = _get_packet_record
         self.mock_can_transport_interface.n_cr_timeout = n_cr_timeout
-        timestamp_before = perf_counter()
-        with pytest.raises(TimeoutError):
-            PyCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
-                                                              sequence_number=Mock(),
-                                                              block_size=float("inf"),
-                                                              remaining_data_length=float("inf"),
-                                                              timestamp_end=None)
-        timestamp_after = perf_counter()
-        execution_time_ms = (timestamp_after - timestamp_before) * 1000.
-        assert (n_cr_timeout
-                <= execution_time_ms
-                <= n_cr_timeout + performance_tolerance_ms)
 
-    @pytest.mark.parametrize("rep", range(REPETITIONS))
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            with pytest.raises(TimeoutError):
+                PyCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
+                                                                  sequence_number=Mock(),
+                                                                  block_size=float("inf"),
+                                                                  remaining_data_length=float("inf"),
+                                                                  timestamp_end=None)
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (n_cr_timeout
+                    <= execution_time_ms
+                    <= n_cr_timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
+        assert (n_cr_timeout
+                <= mean_execution_time_ms
+                <= n_cr_timeout + mean_performance_tolerance_ms)
+
     @pytest.mark.parametrize("timeout_end", [10, 75])
     @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
     def test_receive_cf_packets_block__end_timeout(self, mock_is_initial_packet_type,
-                                                         performance_tolerance_ms, rep,
+                                                         performance_tolerance_ms, mean_performance_tolerance_ms,
                                                          timeout_end):
         current_sn = 0
 
-        def _get_packet_record(*args, **kwargs):
+        def _get_packet_record(*_, **__):
             nonlocal current_sn
             current_sn = (current_sn + 1) & 0xF
-            sleep((performance_tolerance_ms / 1000.) / 4.)
+            sleep(0.005)
             return Mock(spec=CanPacketRecord,
                         packet_type=CanPacketType.CONSECUTIVE_FRAME,
                         sequence_number=current_sn,
@@ -1764,29 +1833,38 @@ class TestPyCanTransportInterfacePerformance:
         self.mock_can_transport_interface.receive_packet.side_effect = _get_packet_record
         self.mock_can_transport_interface.n_cr_timeout = 1000
         sequence_number = 1
-        timestamp_end = perf_counter() + timeout_end / 1000.
-        with pytest.raises(TimeoutError):
-            PyCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
-                                                              sequence_number=sequence_number,
-                                                              block_size=float("inf"),
-                                                              remaining_data_length=float("inf"),
-                                                              timestamp_end=timestamp_end)
-        timestamp_after = perf_counter()
-        assert (timestamp_end
-                <= timestamp_after
-                <= timestamp_end + performance_tolerance_ms / 1000.)
+
+        diff_times = []
+        for _ in range(self.REPETITIONS):
+            current_sn = 0
+            timestamp_end = perf_counter() + timeout_end / 1000.
+            with pytest.raises(TimeoutError):
+                PyCanTransportInterface._receive_cf_packets_block(self.mock_can_transport_interface,
+                                                                  sequence_number=sequence_number,
+                                                                  block_size=float("inf"),
+                                                                  remaining_data_length=float("inf"),
+                                                                  timestamp_end=timestamp_end)
+            timestamp_after = perf_counter()
+            diff_times.append(abs(timestamp_after - timestamp_end) * 1000.)
+            assert (timestamp_end
+                    <= timestamp_after
+                    <= timestamp_end + performance_tolerance_ms / 1000.)
+
+        mean_diff_time_ms = sum(diff_times) / len(diff_times)
+        assert (0
+                <= mean_diff_time_ms
+                <= mean_performance_tolerance_ms)
 
     # _async_receive_cf_packets_block
 
-    @pytest.mark.parametrize("rep", range(REPETITIONS))
     @pytest.mark.parametrize("n_cr_timeout", [10, 75])
     @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
     @pytest.mark.asyncio
     async def test_async_receive_cf_packets_block__n_cr_timeout(self, mock_is_initial_packet_type,
-                                                                performance_tolerance_ms, rep,
+                                                                performance_tolerance_ms, mean_performance_tolerance_ms,
                                                                 n_cr_timeout):
-        def _get_packet_record(*args, **kwargs):
-            sleep((performance_tolerance_ms / 1000.) / 4.)
+        async def _get_packet_record(*_, **__):
+            await asyncio_sleep(0.005)
             return Mock(spec=CanPacketRecord,
                         packet_type=Mock())
 
@@ -1794,33 +1872,41 @@ class TestPyCanTransportInterfacePerformance:
         self.mock_can_transport_interface.async_receive_packet.side_effect = _get_packet_record
         self.mock_can_transport_interface.n_cr_timeout = n_cr_timeout
         mock_loop = Mock()
-        timestamp_before = perf_counter()
-        with pytest.raises(TimeoutError):
-            await PyCanTransportInterface._async_receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                          sequence_number=Mock(),
-                                                                          block_size=float("inf"),
-                                                                          remaining_data_length=float("inf"),
-                                                                          timestamp_end=None,
-                                                                          loop=mock_loop)
-        timestamp_after = perf_counter()
-        execution_time_ms = (timestamp_after - timestamp_before) * 1000.
-        assert (n_cr_timeout
-                <= execution_time_ms
-                <= n_cr_timeout + performance_tolerance_ms)
 
-    @pytest.mark.parametrize("rep", range(REPETITIONS))
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            with pytest.raises(TimeoutError):
+                await PyCanTransportInterface._async_receive_cf_packets_block(self.mock_can_transport_interface,
+                                                                              sequence_number=Mock(),
+                                                                              block_size=float("inf"),
+                                                                              remaining_data_length=float("inf"),
+                                                                              timestamp_end=None,
+                                                                              loop=mock_loop)
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (n_cr_timeout
+                    <= execution_time_ms
+                    <= n_cr_timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
+        assert (n_cr_timeout
+                <= mean_execution_time_ms
+                <= n_cr_timeout + mean_performance_tolerance_ms)
+
     @pytest.mark.parametrize("timeout_end", [10, 75])
     @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
     @pytest.mark.asyncio
     async def test_async_receive_cf_packets_block__end_timeout(self, mock_is_initial_packet_type,
-                                                               performance_tolerance_ms, rep,
+                                                               performance_tolerance_ms, mean_performance_tolerance_ms,
                                                                timeout_end):
         current_sn = 0
 
-        def _get_packet_record(*args, **kwargs):
+        async def _get_packet_record(*_, **__):
             nonlocal current_sn
             current_sn = (current_sn + 1) & 0xF
-            sleep((performance_tolerance_ms / 1000.) / 4.)
+            await asyncio_sleep(0.005)
             return Mock(spec=CanPacketRecord,
                         packet_type=CanPacketType.CONSECUTIVE_FRAME,
                         sequence_number=current_sn,
@@ -1831,68 +1917,93 @@ class TestPyCanTransportInterfacePerformance:
         self.mock_can_transport_interface.n_cr_timeout = 1000
         sequence_number = 1
         mock_loop = Mock()
-        timestamp_end = perf_counter() + timeout_end / 1000.
-        with pytest.raises(TimeoutError):
-            await PyCanTransportInterface._async_receive_cf_packets_block(self.mock_can_transport_interface,
-                                                                          sequence_number=sequence_number,
-                                                                          block_size=float("inf"),
-                                                                          remaining_data_length=float("inf"),
-                                                                          timestamp_end=timestamp_end,
-                                                                          loop=mock_loop)
-        timestamp_after = perf_counter()
-        assert (timestamp_end
-                <= timestamp_after
-                <= timestamp_end + performance_tolerance_ms / 1000.)
+
+        diff_times = []
+        for _ in range(self.REPETITIONS):
+            current_sn = 0
+            timestamp_end = perf_counter() + timeout_end / 1000.
+            with pytest.raises(TimeoutError):
+                await PyCanTransportInterface._async_receive_cf_packets_block(self.mock_can_transport_interface,
+                                                                              sequence_number=sequence_number,
+                                                                              block_size=float("inf"),
+                                                                              remaining_data_length=float("inf"),
+                                                                              timestamp_end=timestamp_end,
+                                                                              loop=mock_loop)
+            timestamp_after = perf_counter()
+            diff_times.append(abs(timestamp_after - timestamp_end) * 1000.)
+            assert (timestamp_end
+                    <= timestamp_after
+                    <= timestamp_end + performance_tolerance_ms / 1000.)
+
+        mean_diff_time_ms = sum(diff_times) / len(diff_times)
+        assert (0
+                <= mean_diff_time_ms
+                <= mean_performance_tolerance_ms)
 
     # receive_message
 
-    @pytest.mark.parametrize("rep", range(REPETITIONS))
     @pytest.mark.parametrize("start_timeout", [10, 75])
     @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
     def test_receive_message__start_timeout(self, mock_is_initial_packet_type,
-                                            performance_tolerance_ms, rep,
+                                            performance_tolerance_ms, mean_performance_tolerance_ms,
                                             start_timeout):
-        def _get_packet_record(*args, **kwargs):
-            sleep((performance_tolerance_ms / 1000.) / 4.)
+        def _get_packet_record(*_, **__):
+            sleep(0.005)
             return Mock(spec=CanPacketRecord)
 
         mock_is_initial_packet_type.return_value = False
         self.mock_can_transport_interface.receive_packet.side_effect = _get_packet_record
-        timestamp_before = perf_counter()
-        with pytest.raises(TimeoutError):
-            PyCanTransportInterface.receive_message(self.mock_can_transport_interface,
-                                                    start_timeout=start_timeout)
-        timestamp_after = perf_counter()
-        execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            with pytest.raises(TimeoutError):
+                PyCanTransportInterface.receive_message(self.mock_can_transport_interface,
+                                                        start_timeout=start_timeout)
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (start_timeout
+                    <= execution_time_ms
+                    <= start_timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
         assert (start_timeout
-                <= execution_time_ms
-                <= start_timeout + performance_tolerance_ms)
+                <= mean_execution_time_ms
+                <= start_timeout + mean_performance_tolerance_ms)
 
     # async_receive_message
 
-    @pytest.mark.parametrize("rep", range(REPETITIONS))
     @pytest.mark.parametrize("start_timeout", [10, 75])
     @patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
     @pytest.mark.asyncio
     async def test_async_receive_message__start_timeout(self, mock_is_initial_packet_type,
-                                                        performance_tolerance_ms, rep,
+                                                        performance_tolerance_ms, mean_performance_tolerance_ms,
                                                         start_timeout):
-        def _get_packet_record(*args, **kwargs):
-            sleep((performance_tolerance_ms / 1000.) / 4.)
+        async def _get_packet_record(*_, **__):
+            await asyncio_sleep(0.005)
             return Mock(spec=CanPacketRecord)
 
         mock_is_initial_packet_type.return_value = False
         self.mock_can_transport_interface.async_receive_packet.side_effect = _get_packet_record
-        timestamp_before = perf_counter()
-        with pytest.raises(MessageTransmissionNotStartedError):
-            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
-                                                                start_timeout=start_timeout)
-        timestamp_after = perf_counter()
-        execution_time_ms = (timestamp_after - timestamp_before) * 1000.
-        assert (start_timeout
-                <= execution_time_ms
-                <= start_timeout + performance_tolerance_ms)
 
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            with pytest.raises(MessageTransmissionNotStartedError):
+                await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
+                                                                    start_timeout=start_timeout)
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (start_timeout
+                    <= execution_time_ms
+                    <= start_timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
+        assert (start_timeout
+                <= mean_execution_time_ms
+                <= start_timeout + mean_performance_tolerance_ms)
 
 
 @pytest.mark.integration
