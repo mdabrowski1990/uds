@@ -172,6 +172,8 @@ class AbstractTransportInterface(ABC):
         """
         Receive UDS message.
 
+        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
+
         :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
             Leave None to wait forever.
         :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
@@ -189,6 +191,8 @@ class AbstractTransportInterface(ABC):
                                     loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message.
+
+        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
 
         :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
             Leave None to wait forever.

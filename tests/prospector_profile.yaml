@@ -23,6 +23,7 @@ pylint:
     max-public-methods: 30
     max-parents: 15
     max-branches: 12
+    max-locals: 20
 
   disable:
     - django-not-available

@@ -3,7 +3,7 @@
 __all__ = ["Client"]
 
 from threading import Event, Thread
-from time import monotonic, time
+from time import perf_counter, time
 from typing import List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
@@ -13,8 +13,8 @@ from uds.translator import TESTER_PRESENT
 from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import (
     InconsistencyError,
+    MessageTransmissionNotStartedError,
     ReassignmentError,
-MessageTransmissionNotStartedError,
     TimeMillisecondsAlias,
     ValueWarning,
     bytes_to_hex,
@@ -355,13 +355,15 @@ class Client:
         :return: Record with response message received to the last UDS request message sent.
             None if a timeout was reached.
         """
-        timestamp_start = time()
-        start_timeout_remaining_ms = start_timeout
-        end_timeout_remaining_ms = end_timeout
-        while start_timeout_remaining_ms > 0 and end_timeout_remaining_ms > 0:
+        timestamp_start = perf_counter()
+        remaining_start_timeout_ms = start_timeout  # either P2Client or P2*Client
+        remaining_end_timeout__ms = end_timeout  # either P6Client or P6*Client
+        while remaining_start_timeout_ms > 0 and remaining_end_timeout__ms > 0:
+            # try to receive a message
             try:
-                response_record = self.transport_interface.receive_message(start_timeout=start_timeout_remaining_ms,
-                                                                           end_timeout=end_timeout_remaining_ms)
+                response_record = self.transport_interface.receive_message(
+                    start_timeout=min(remaining_start_timeout_ms, remaining_end_timeout__ms),
+                    end_timeout=remaining_end_timeout__ms)
             except MessageTransmissionNotStartedError:
                 return None
             # positive response message received
@@ -372,9 +374,10 @@ class Client:
                 return response_record
             # other response message received
             # TODO: add it to response queue when created - https://github.com/mdabrowski1990/uds/issues/63
-            time_elapsed_ms = (time() - timestamp_start) * 1000.
-            start_timeout_remaining_ms = start_timeout - time_elapsed_ms
-            end_timeout_remaining_ms = end_timeout - time_elapsed_ms
+            # update time parameters
+            time_elapsed_ms = (perf_counter() - timestamp_start) * 1000.
+            remaining_start_timeout_ms = start_timeout - time_elapsed_ms
+            remaining_end_timeout__ms = end_timeout - time_elapsed_ms
         return None
 
     def _send_tester_present(self, tester_present_message: UdsMessage) -> None:
@@ -384,11 +387,11 @@ class Client:
         :param tester_present_message: Tester Present message to send.
         """
         period = self.s3_client / 1000.0
-        next_call = monotonic()
+        next_call = perf_counter()
         while not self.__tester_present_stop_event.is_set():
             self.transport_interface.send_message(tester_present_message)
             next_call += period
-            remaining_wait = next_call - monotonic()
+            remaining_wait = next_call - perf_counter()
             if self.__tester_present_stop_event.wait(remaining_wait):
                 break
 
@@ -508,34 +511,34 @@ class Client:
         time_request_sent = request_record.transmission_end.timestamp()
         sid = RequestSID(request_record.payload[0])
         response_records: List[UdsMessageRecord] = []
+        time_elapsed_ms = (time() - time_request_sent) * 1000.
         # get the first response (either final response or negative response with response pending nrc)
         try:
             response_record = self._receive_response(sid=sid,
-                                                     start_timeout=self.p2_client_timeout,
-                                                     end_timeout=self.p6_client_timeout)
+                                                     start_timeout=self.p2_client_timeout - time_elapsed_ms,
+                                                     end_timeout=self.p6_client_timeout - time_elapsed_ms)
         except TimeoutError as exception:
             raise TimeoutError("P6Client timeout reached.") from exception
         if response_record is None:  # timeout achieved - no response
             return request_record, tuple()
         response_records.append(response_record)
-        timestamp_end_timeout = time_request_sent + self.p6_ext_client_timeout / 1000.
+        timestamp_p6_ext_timeout = time_request_sent + self.p6_ext_client_timeout / 1000.
         while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
-            timestamp_start_timeout = (response_records[-1].transmission_end.timestamp()
-                                       + self.p2_ext_client_timeout / 1000.)
+            timestamp_now = time()
+            timestamp_p2_ext_timeout = (response_records[-1].transmission_end.timestamp()
+                                        + self.p2_ext_client_timeout / 1000.)
+            remaining_p2_ext_timeout = (timestamp_p2_ext_timeout - timestamp_now) * 1000.
+            remaining_p6_ext_timeout = (timestamp_p6_ext_timeout - timestamp_now) * 1000.
             try:
                 response_record = self._receive_response(sid=sid,
-                                                         start_timeout=(timestamp_start_timeout - time()) * 1000.,
-                                                         end_timeout=(timestamp_end_timeout - time()) * 1000.)
+                                                         start_timeout=remaining_p2_ext_timeout,
+                                                         end_timeout=remaining_p6_ext_timeout)
             except TimeoutError as exception:
                 raise TimeoutError("P6*Client timeout reached.") from exception
             if response_record is None:  # timeout achieved - no following response
                 raise TimeoutError(f"P2*Client timeout ({self.p2_ext_client_timeout} ms) reached after receiving "
                                    f"{len(response_records)} response pending messages "
                                    f"({bytes_to_hex(response_records[-1].payload)}).")
-            if (self.is_response_pending_message(message=response_record, request_sid=sid)
-                    or response_record.payload[0] == sid + RESPONSE_REQUEST_SID_DIFF):
-                response_records.append(response_record)
-            else:
-                pass  # TODO: add it to response queue when created - https://github.com/mdabrowski1990/uds/issues/63
+            response_records.append(response_record)
         self._update_measured_client_values(request_record=request_record, response_records=response_records)
         return request_record, tuple(response_records)

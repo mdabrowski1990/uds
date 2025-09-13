@@ -3,7 +3,7 @@ from random import choice
 from tests.conftest import make_can_addressing_information
 
 from can import Bus
-from uds.can import CanAddressingFormat, PyCanTransportInterface, DefaultFlowControlParametersGenerator
+from uds.can import CanAddressingFormat, DefaultFlowControlParametersGenerator, PyCanTransportInterface
 from uds.utilities import TimeMillisecondsAlias
 
 from ..test_client import AbstractClientTests

@@ -3,8 +3,8 @@ __all__ = ['BaseSystemTests']
 import asyncio
 from abc import ABC
 from threading import Timer
-from typing import List, Optional
 from time import sleep
+from typing import List, Optional
 
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
@@ -44,9 +44,11 @@ class BaseSystemTests(ABC):
         if self._timers:
             for _timer in self._timers:
                 _timer.join(self.TASK_TIMING_TOLERANCE / 1000.)
-                del _timer
             self._timers = []
-            sleep(self.TIMESTAMP_TOLERANCE / 1000.)
+            sleep(self.TASK_TIMING_TOLERANCE / 1000.)
+            for _timer in self._timers:
+                _timer.join()
+                del _timer
 
     def send_packet(self,
                     transport_interface: AbstractTransportInterface,

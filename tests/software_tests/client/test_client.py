@@ -1,4 +1,5 @@
 from datetime import datetime
+from time import perf_counter, sleep
 
 import pytest
 from mock import MagicMock, Mock, call, patch
@@ -856,6 +857,88 @@ class TestClient:
     def test_clear_response_queue(self):
         with pytest.raises(NotImplementedError):
             Client.clear_response_queue(self.mock_client)
+
+
+@pytest.mark.performance
+class TestClientPerformance:
+    """Performance tests for `Client` class."""
+
+    REPETITIONS = 100
+
+    def setup_method(self):
+        self.mock_client = MagicMock(spec=Client)
+        # patching
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
+
+    def teardown_method(self):
+        self._patcher_warn.stop()
+
+    # _receive_response
+
+    @pytest.mark.parametrize("start_timeout, end_timeout", [
+        (10, 2000),
+        (75, 75),
+    ])
+    def test_receive_response__start_timeout(self,
+                                             performance_tolerance_ms, mean_performance_tolerance_ms,
+                                             start_timeout, end_timeout):
+        def _get_message(*_, **__):
+            sleep(0.005)
+            return MagicMock(payload=[MagicMock(__eq__=Mock(return_value=False))])
+
+        self.mock_client.transport_interface.receive_message.side_effect = _get_message
+
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            assert Client._receive_response(self.mock_client,
+                                            sid=MagicMock(),
+                                            start_timeout=start_timeout,
+                                            end_timeout=end_timeout) is None
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (start_timeout
+                    <= execution_time_ms
+                    <= start_timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
+        assert (start_timeout
+                <= mean_execution_time_ms
+                <= start_timeout + mean_performance_tolerance_ms)
+
+    @pytest.mark.parametrize("start_timeout, end_timeout", [
+        (2000, 10),
+        (50, 50),
+    ])
+    def test_receive_response__end_timeout(self,
+                                             performance_tolerance_ms, mean_performance_tolerance_ms,
+                                             start_timeout, end_timeout):
+        def _get_message(*_, **__):
+            sleep(0.005)
+            return MagicMock(payload=[MagicMock(__eq__=Mock(return_value=False))])
+
+        self.mock_client.transport_interface.receive_message.side_effect = _get_message
+
+        execution_times = []
+        for _ in range(self.REPETITIONS):
+            timestamp_before = perf_counter()
+            assert Client._receive_response(self.mock_client,
+                                            sid=MagicMock(),
+                                            start_timeout=start_timeout,
+                                            end_timeout=end_timeout) is None
+            timestamp_after = perf_counter()
+            execution_time_ms = (timestamp_after - timestamp_before) * 1000.
+            execution_times.append(execution_time_ms)
+            assert (end_timeout
+                    <= execution_time_ms
+                    <= end_timeout + performance_tolerance_ms)
+
+        mean_execution_time_ms = sum(execution_times) / len(execution_times)
+        assert (end_timeout
+                <= mean_execution_time_ms
+                <= end_timeout + mean_performance_tolerance_ms)
 
 
 @pytest.mark.integration

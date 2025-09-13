@@ -1,6 +1,6 @@
-from random import choice, randint, random
-from time import sleep, perf_counter
 from asyncio import sleep as asyncio_sleep
+from random import choice, randint
+from time import perf_counter, sleep
 
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
@@ -11,16 +11,17 @@ from uds.can import DEFAULT_FILLER_BYTE, CanAddressingInformation, DefaultFlowCo
 from uds.can.transport_interface.python_can import (
     AbstractCanTransportInterface,
     AbstractEventLoop,
+    AsyncBufferedReader,
+    BufferedReader,
     BusABC,
     CanFlowStatus,
     CanPacket,
     CanPacketRecord,
     CanPacketType,
+    MessageTransmissionNotStartedError,
     PyCanTransportInterface,
     TransmissionDirection,
     UdsMessage,
-AsyncBufferedReader,
-MessageTransmissionNotStartedError
 )
 
 SCRIPT_LOCATION = "uds.can.transport_interface.python_can"
@@ -1703,7 +1704,7 @@ class TestPyCanTransportInterfacePerformance:
             sleep(0.005)
             return Mock()
 
-        mock_buffer = Mock(spec=AsyncBufferedReader,
+        mock_buffer = Mock(spec=BufferedReader,
                            get_message=_get_message)
         self.mock_can_transport_interface.addressing_information.is_input_packet.return_value = None
 

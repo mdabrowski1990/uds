@@ -2,7 +2,7 @@ import asyncio
 from abc import ABC, abstractmethod
 from datetime import datetime
 from threading import Timer
-from time import sleep, time, perf_counter
+from time import perf_counter, sleep, time
 from typing import Optional
 
 import pytest

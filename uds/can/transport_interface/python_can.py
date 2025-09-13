@@ -6,7 +6,7 @@ from asyncio import AbstractEventLoop, get_running_loop
 from asyncio import sleep as async_sleep
 from asyncio import wait_for
 from datetime import datetime
-from time import sleep, time, perf_counter
+from time import perf_counter, sleep, time
 from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
@@ -16,10 +16,11 @@ from can import Notifier
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.utilities import (
+    MessageTransmissionNotStartedError,
     NewMessageReceptionWarning,
     TimeMillisecondsAlias,
     TimestampAlias,
-    UnexpectedPacketReceptionWarning, MessageTransmissionNotStartedError
+    UnexpectedPacketReceptionWarning,
 )
 
 from ..addressing import AbstractCanAddressingInformation
@@ -241,10 +242,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        if timeout is None:
-            timeout_left_s = self._MAX_LISTENER_TIMEOUT
-        else:
+        if timeout is not None:
             timestamp_timeout = perf_counter() + timeout / 1000.
+        else:
+            timeout_left_s = self._MAX_LISTENER_TIMEOUT
         packet_addressing_type = None
         while packet_addressing_type is None:
             if timeout is not None:
@@ -806,7 +807,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive UDS message over CAN.
 
-        .. warning:: Must not be called within an asynchronous function.
+        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
 
         :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
             Leave None to wait forever.
@@ -827,11 +828,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        if start_timeout is None:
-            remaining_timeout = None
-        else:
+        if start_timeout is not None:
             timestamp_start_timeout = timestamp_now + start_timeout / 1000.
-            remaining_timeout = (timestamp_start_timeout - timestamp_now) * 1000.
+        remaining_timeout_ms = None
         timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.
         self.__setup_notifier()
         while True:
@@ -840,10 +839,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 timestamp_now = perf_counter()
                 if timestamp_start_timeout <= timestamp_now:
                     raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")
-                remaining_timeout = (timestamp_start_timeout - timestamp_now) * 1000.
+                remaining_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
             # receive packet
             try:
-                received_packet = self.receive_packet(timeout=remaining_timeout)
+                received_packet = self.receive_packet(timeout=remaining_timeout_ms)
             except TimeoutError as exception:
                 raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.") \
                     from exception
@@ -860,6 +859,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                     loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message over CAN.
+
+        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
 
         :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
             Leave None to wait forever.
@@ -881,10 +882,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        if start_timeout is None:
-            remaining_timeout = None
-        else:
+        if start_timeout is not None:
             timestamp_start_timeout = timestamp_now + start_timeout / 1000.
+        remaining_timeout = None
         timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.
         loop = get_running_loop() if loop is None else loop
         self.__setup_async_notifier(loop=loop)
