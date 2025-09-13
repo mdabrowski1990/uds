@@ -35,7 +35,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     .. note:: Documentation for python-can package: https://python-can.readthedocs.io/
     """
 
-    _MAX_LISTENER_TIMEOUT: float = 4280000.  # ms
+    _MAX_LISTENER_TIMEOUT: float = 4280.  # s
     """Maximal timeout value accepted by python-can listeners."""
     _MIN_NOTIFIER_TIMEOUT: float = 0.001  # s
     """Minimal timeout for notifiers that does not cause malfunctioning of listeners."""
@@ -358,7 +358,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             # handle following Consecutive Frame
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
-                timestamp_start = time()
+                timestamp_start = perf_counter()
                 received_cf.append(received_packet)
                 received_payload_size += len(received_packet.payload)  # type: ignore
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
@@ -416,7 +416,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             # handle following Consecutive Frame
             if (received_packet.packet_type == CanPacketType.CONSECUTIVE_FRAME
                     and received_packet.sequence_number == sequence_number):
-                timestamp_start = time()
+                timestamp_start = perf_counter()
                 received_cf.append(received_packet)
                 received_payload_size += len(received_packet.payload)  # type: ignore
                 sequence_number = (received_packet.sequence_number + 1) & 0xF
