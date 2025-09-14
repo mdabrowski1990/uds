@@ -30,8 +30,8 @@ class TestClient:
         # patching
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
-        self._patcher_monotonic = patch(f"{SCRIPT_LOCATION}.monotonic")
-        self.mock_monotonic = self._patcher_monotonic.start()
+        self._patcher_perf_counter = patch(f"{SCRIPT_LOCATION}.perf_counter")
+        self.mock_perf_counter = self._patcher_perf_counter.start()
         self._patcher_thread = patch(f"{SCRIPT_LOCATION}.Thread")
         self.mock_thread = self._patcher_thread.start()
         self._patcher_event = patch(f"{SCRIPT_LOCATION}.Event")
@@ -43,7 +43,7 @@ class TestClient:
 
     def teardown_method(self):
         self._patcher_warn.stop()
-        self._patcher_monotonic.stop()
+        self._patcher_perf_counter.stop()
         self._patcher_thread.stop()
         self._patcher_event.stop()
         self._patcher_tester_present.stop()

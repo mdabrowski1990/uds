@@ -253,10 +253,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 timeout_left_s = timestamp_timeout - timestamp_now
                 if timeout_left_s <= 0:
                     raise TimeoutError("Timeout was reached before a CAN packet was received.")
-            try:
-                received_frame = buffer.get_message(timeout=timeout_left_s)
-            except TimeoutError:
-                pass
+            received_frame = buffer.get_message(timeout=timeout_left_s)
             if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
@@ -443,18 +440,25 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
-            try:
-                timeout = (packets_records[-1].transmission_time.timestamp() / 1000. + self.n_br) - time()
-                received_packet = self.receive_packet(timeout=timeout)
-            except (TimeoutError, ValueError):
-                pass
-            else:
-                if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                    warn(message="A new DoCAN message transmission was started. "
-                                 "Reception of the previous message was aborted.",
-                         category=NewMessageReceptionWarning)
-                    return self._message_receive_start(initial_packet=received_packet,
-                                                       timestamp_end=timestamp_end)
+            time_now = time()
+            if timestamp_end is not None:
+                remaining_end_timeout_ms = (timestamp_end - time()) * 1000.
+                if remaining_end_timeout_ms < 0:
+                    raise TimeoutError("Total message reception timeout was reached.")
+            time_elapsed_ms = (time_now - packets_records[-1].transmission_time.timestamp()) * 1000.
+            remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
+            if remaining_n_br_timeout_ms > 0:
+                try:
+                    received_packet = self.receive_packet(timeout=remaining_n_br_timeout_ms)
+                except TimeoutError:
+                    pass
+                else:
+                    if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                        warn(message="A new DoCAN message transmission was started. "
+                                     "Reception of the previous message was aborted.",
+                             category=NewMessageReceptionWarning)
+                        return self._message_receive_start(initial_packet=received_packet,
+                                                           timestamp_end=timestamp_end)
             flow_status, block_size, st_min = next(flow_control_iterator)
             fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
                                                                block_size=block_size,
