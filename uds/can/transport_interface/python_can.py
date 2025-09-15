@@ -505,19 +505,26 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
-            try:
-                timeout = (packets_records[-1].transmission_time.timestamp() / 1000. + self.n_br) - time()
-                received_packet = await self.async_receive_packet(timeout=timeout, loop=loop)
-            except (TimeoutError, ValueError):
-                pass
-            else:
-                if CanPacketType.is_initial_packet_type(received_packet.packet_type):
-                    warn(message="A new DoCAN message transmission was started. "
-                                 "Reception of the previous message was aborted.",
-                         category=NewMessageReceptionWarning)
-                    return await self._async_message_receive_start(initial_packet=received_packet,
-                                                                   timestamp_end=timestamp_end,
-                                                                   loop=loop)
+            time_now = time()
+            if timestamp_end is not None:
+                remaining_end_timeout_ms = (timestamp_end - time()) * 1000.
+                if remaining_end_timeout_ms < 0:
+                    raise TimeoutError("Total message reception timeout was reached.")
+            time_elapsed_ms = (time_now - packets_records[-1].transmission_time.timestamp()) * 1000.
+            remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
+            if remaining_n_br_timeout_ms > 0:
+                try:
+                    received_packet = await self.async_receive_packet(timeout=remaining_n_br_timeout_ms, loop=loop)
+                except (TimeoutError, ValueError):
+                    pass
+                else:
+                    if CanPacketType.is_initial_packet_type(received_packet.packet_type):
+                        warn(message="A new DoCAN message transmission was started. "
+                                     "Reception of the previous message was aborted.",
+                             category=NewMessageReceptionWarning)
+                        return await self._async_message_receive_start(initial_packet=received_packet,
+                                                                       timestamp_end=timestamp_end,
+                                                                       loop=loop)
             flow_status, block_size, st_min = next(flow_control_iterator)
             fc_packet = self.segmenter.get_flow_control_packet(flow_status=flow_status,
                                                                block_size=block_size,
@@ -831,11 +838,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if not isinstance(start_timeout, (int, float)):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        if start_timeout is not None:
+                raise ValueError(f"Provided `start_timeout` value is less or equal to 0. Actual value: {start_timeout}")
             timestamp_start_timeout = timestamp_now + start_timeout / 1000.
         remaining_timeout_ms = None
-        timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.
+        if end_timeout is not None:
+            if not isinstance(end_timeout, (int, float)):
+                raise TypeError("Timeout value must be None, int or float type.")
+            if end_timeout <= 0:
+                raise ValueError(f"Provided `end_timeout` value is less or equal to 0. Actual value: {start_timeout}")
+            timestamp_end_timeout = timestamp_now + end_timeout / 1000.
+        else:
+            timestamp_end_timeout = None
         self.__setup_notifier()
         while True:
             # calculate remaining timeout
@@ -885,11 +898,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if not isinstance(start_timeout, (int, float)):
                 raise TypeError("Timeout value must be None, int or float type.")
             if start_timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {start_timeout}")
-        if start_timeout is not None:
+                raise ValueError(f"Provided `start_timeout` value is less or equal to 0. Actual value: {start_timeout}")
             timestamp_start_timeout = timestamp_now + start_timeout / 1000.
-        remaining_timeout = None
-        timestamp_end_timeout = None if end_timeout is None else timestamp_now + end_timeout / 1000.
+        remaining_timeout_ms = None
+        if end_timeout is not None:
+            if not isinstance(end_timeout, (int, float)):
+                raise TypeError("Timeout value must be None, int or float type.")
+            if end_timeout <= 0:
+                raise ValueError(f"Provided `end_timeout` value is less or equal to 0. Actual value: {start_timeout}")
+            timestamp_end_timeout = timestamp_now + end_timeout / 1000.
+        else:
+            timestamp_end_timeout = None
         loop = get_running_loop() if loop is None else loop
         self.__setup_async_notifier(loop=loop)
         while True:
@@ -898,10 +917,10 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 timestamp_now = perf_counter()
                 if timestamp_start_timeout <= timestamp_now:
                     raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.")
-                remaining_timeout = (timestamp_start_timeout - timestamp_now) * 1000.
+                remaining_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
             # receive packet
             try:
-                received_packet = await self.async_receive_packet(timeout=remaining_timeout, loop=loop)
+                received_packet = await self.async_receive_packet(timeout=remaining_timeout_ms, loop=loop)
             except TimeoutError as exception:
                 raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.") \
                     from exception
