@@ -440,12 +440,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
-            time_now = time()
             if timestamp_end is not None:
-                remaining_end_timeout_ms = (timestamp_end - time()) * 1000.
+                remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
                 if remaining_end_timeout_ms < 0:
                     raise TimeoutError("Total message reception timeout was reached.")
-            time_elapsed_ms = (time_now - packets_records[-1].transmission_time.timestamp()) * 1000.
+            time_elapsed_ms = (time() - packets_records[-1].transmission_time.timestamp()) * 1000.
             remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
             if remaining_n_br_timeout_ms > 0:
                 try:
@@ -505,12 +504,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         sequence_number: int = 1
         flow_control_iterator = iter(self.flow_control_parameters_generator)
         while True:
-            time_now = time()
             if timestamp_end is not None:
-                remaining_end_timeout_ms = (timestamp_end - time()) * 1000.
+                remaining_end_timeout_ms = (timestamp_end - perf_counter()) * 1000.
                 if remaining_end_timeout_ms < 0:
                     raise TimeoutError("Total message reception timeout was reached.")
-            time_elapsed_ms = (time_now - packets_records[-1].transmission_time.timestamp()) * 1000.
+            time_elapsed_ms = (time() - packets_records[-1].transmission_time.timestamp()) * 1000.
             remaining_n_br_timeout_ms = self.n_br - time_elapsed_ms
             if remaining_n_br_timeout_ms > 0:
                 try:
@@ -818,8 +816,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         Receive UDS message over CAN.
 
-        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
-
         :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
             Leave None to wait forever.
         :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
@@ -849,6 +845,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             timestamp_end_timeout = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
+        if start_timeout is not None and end_timeout is not None and end_timeout < start_timeout:
+            timestamp_start_timeout = timestamp_end_timeout
         self.__setup_notifier()
         while True:
             # calculate remaining timeout
@@ -876,8 +874,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                     loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message over CAN.
-
-        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
 
         :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
             Leave None to wait forever.
@@ -909,6 +905,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             timestamp_end_timeout = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
+        if start_timeout is not None and end_timeout is not None and end_timeout < start_timeout:
+            timestamp_start_timeout = timestamp_end_timeout
         loop = get_running_loop() if loop is None else loop
         self.__setup_async_notifier(loop=loop)
         while True:
