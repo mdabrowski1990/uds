@@ -5,6 +5,7 @@ __all__ = ["PyCanTransportInterface"]
 from asyncio import AbstractEventLoop, get_running_loop
 from asyncio import sleep as async_sleep
 from asyncio import wait_for
+from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
 from datetime import datetime
 from time import perf_counter, sleep, time
 from typing import Any, List, Optional, Tuple, Union
@@ -307,7 +308,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                     raise TimeoutError("Timeout was reached before a CAN packet was received.")
             try:
                 received_frame = await wait_for(buffer.get_message(), timeout=timeout_left_s)
-            except TimeoutError:
+            except (TimeoutError, AsyncioTimeoutError):
                 pass
             else:
                 packet_addressing_type = self.addressing_information.is_input_packet(
@@ -528,7 +529,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             if remaining_n_br_timeout_ms > 0:
                 try:
                     received_packet = await self.async_receive_packet(timeout=remaining_n_br_timeout_ms, loop=loop)
-                except (TimeoutError, ValueError):
+                except (TimeoutError, AsyncioTimeoutError):
                     pass
                 else:
                     if CanPacketType.is_initial_packet_type(received_packet.packet_type):
@@ -906,7 +907,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             # receive packet
             try:
                 received_packet = await self.async_receive_packet(timeout=remaining_timeout_ms, loop=loop)
-            except TimeoutError as exception:
+            except (TimeoutError, AsyncioTimeoutError) as exception:
                 raise MessageTransmissionNotStartedError("Timeout was reached before a UDS message was received.") \
                     from exception
             # handle received packet
