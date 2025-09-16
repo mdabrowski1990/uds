@@ -2238,11 +2238,11 @@ class TestPyCanTransportInterfacePerformance:
         execution_times = []
         for _ in range(self.REPETITIONS):
             timestamp_before = perf_counter()
-            timestamp_end = timestamp_before + end_timeout / 1000.
             with pytest.raises(TimeoutError):
-                PyCanTransportInterface._receive_consecutive_frames(self.mock_can_transport_interface,
-                                                                    first_frame=mock_first_frame,
-                                                                    timestamp_end=timestamp_end)
+                PyCanTransportInterface._receive_consecutive_frames(
+                    self.mock_can_transport_interface,
+                    first_frame=mock_first_frame,
+                    timestamp_end=timestamp_before + end_timeout / 1000.)
             timestamp_after = perf_counter()
             execution_time_ms = (timestamp_after - timestamp_before) * 1000.
             execution_times.append(execution_time_ms)
@@ -2288,12 +2288,12 @@ class TestPyCanTransportInterfacePerformance:
         execution_times = []
         for _ in range(self.REPETITIONS):
             timestamp_before = perf_counter()
-            timestamp_end = timestamp_before + end_timeout / 1000.
             with pytest.raises(TimeoutError):
-                await PyCanTransportInterface._async_receive_consecutive_frames(self.mock_can_transport_interface,
-                                                                                first_frame=mock_first_frame,
-                                                                                timestamp_end=timestamp_end,
-                                                                                loop=get_running_loop())
+                await PyCanTransportInterface._async_receive_consecutive_frames(
+                    self.mock_can_transport_interface,
+                    first_frame=mock_first_frame,
+                    timestamp_end=timestamp_before + end_timeout / 1000.,
+                    loop=get_running_loop())
             timestamp_after = perf_counter()
             execution_time_ms = (timestamp_after - timestamp_before) * 1000.
             execution_times.append(execution_time_ms)
