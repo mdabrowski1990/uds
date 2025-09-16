@@ -17,6 +17,7 @@ from uds.client import (
     Thread,
     UdsMessage,
     UdsMessageRecord,
+    MessageTransmissionNotStartedError
 )
 
 SCRIPT_LOCATION = "uds.client"
@@ -293,21 +294,21 @@ class TestClient:
         with pytest.raises(ValueError):
             Client.s3_client.fset(self.mock_client, s3_client)
 
-    @pytest.mark.parametrize("s3_client, p6_client_timeout", [
-        (Client.DEFAULT_P6_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT + 0.1),
+    @pytest.mark.parametrize("s3_client, p2_client_timeout", [
+        (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P2_CLIENT_TIMEOUT + 0.1),
         (100, 101),
     ])
-    def test_s3_client__set__inconsistent(self, s3_client, p6_client_timeout):
-        self.mock_client.p6_client_timeout = p6_client_timeout
+    def test_s3_client__set__inconsistent(self, s3_client, p2_client_timeout):
+        self.mock_client.p2_client_timeout = p2_client_timeout
         with pytest.raises(InconsistencyError):
             Client.s3_client.fset(self.mock_client, s3_client)
 
-    @pytest.mark.parametrize("s3_client, p6_client_timeout", [
-        (Client.DEFAULT_S3_CLIENT, Client.DEFAULT_P6_CLIENT_TIMEOUT),
-        (100, 100),
+    @pytest.mark.parametrize("s3_client, p2_client_timeout", [
+        (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P2_CLIENT_TIMEOUT),
+        (500, 100),
     ])
-    def test_s3_client__set__valid(self, s3_client, p6_client_timeout):
-        self.mock_client.p6_client_timeout = p6_client_timeout
+    def test_s3_client__set__valid(self, s3_client, p2_client_timeout):
+        self.mock_client.p2_client_timeout = p2_client_timeout
         assert Client.s3_client.fset(self.mock_client, s3_client) is None
         assert self.mock_client._Client__s3_client == s3_client
 
@@ -535,46 +536,61 @@ class TestClient:
 
     # _receive_response
 
-    @pytest.mark.parametrize("sid, timeout, response_records", [
+    @pytest.mark.parametrize("sid, start_timeout, end_timeout, response_records", [
         (
             0x10,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
-             TimeoutError]
+             MessageTransmissionNotStartedError]
+        ),
+        (
+            0x22,
+            float("inf"),
+            float("inf"),
+            MessageTransmissionNotStartedError
+        ),
+    ])
+    def test_receive_response__timeout(self, sid, start_timeout, end_timeout, response_records):
+        self.mock_client.transport_interface.receive_message.side_effect = response_records
+        assert Client._receive_response(self.mock_client,
+                                        sid=sid,
+                                        start_timeout=start_timeout,
+                                        end_timeout=end_timeout) is None
+        self.mock_client.transport_interface.receive_message.assert_called()
+
+    @pytest.mark.parametrize("sid, start_timeout, end_timeout, response_record", [
+        (
+            0x10,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
+            MagicMock(__gt__=Mock(return_value=False),
+                      __sub__=lambda this, other: this),
+            Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
         ),
         (
             0x22,
             MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
-            TimeoutError
-        ),
-    ])
-    def test_receive_response__timeout(self, sid, timeout, response_records):
-        self.mock_client.transport_interface.receive_message.side_effect = response_records
-        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) is None
-        self.mock_client.transport_interface.receive_message.assert_called()
-
-    @pytest.mark.parametrize("sid, timeout, response_records", [
-        (
-            0x10,
             MagicMock(__gt__=Mock(side_effect=[True, False]),
                       __sub__=lambda this, other: this),
-            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78")] * 1000,
-        ),
-        (
-            0x22,
-            0,
-            [Mock(spec=UdsMessageRecord, payload=b"\x50\x03\x00\x50\x12\x34")] * 1000,
+            Mock(spec=UdsMessageRecord, payload=b"\x50\x03\x00\x50\x12\x34"),
         ),
     ])
-    def test_receive_response__no_response(self, sid, timeout, response_records):
-        self.mock_client.transport_interface.receive_message.side_effect = response_records
-        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) is None
+    def test_receive_response__no_response(self, sid, start_timeout, end_timeout, response_record):
+        self.mock_client.transport_interface.receive_message.return_value = response_record
+        assert Client._receive_response(self.mock_client,
+                                        sid=sid,
+                                        start_timeout=start_timeout,
+                                        end_timeout=end_timeout) is None
 
-    @pytest.mark.parametrize("sid, timeout, response_records", [
+    @pytest.mark.parametrize("sid, start_timeout, end_timeout, response_records", [
         (
             0x10,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
@@ -584,17 +600,24 @@ class TestClient:
             0x22,
             MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x62\x12\x34\x56\x78\x9A\xBC\xDC\xEF\x0F")]
         ),
     ])
-    def test_receive_response__positive_response(self, sid, timeout, response_records):
+    def test_receive_response__positive_response(self, sid, start_timeout, end_timeout, response_records):
         self.mock_client.transport_interface.receive_message.side_effect = response_records
-        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) == response_records[-1]
+        assert Client._receive_response(self.mock_client,
+                                        sid=sid,
+                                        start_timeout=start_timeout,
+                                        end_timeout=end_timeout) == response_records[-1]
         self.mock_client.transport_interface.receive_message.assert_called()
 
-    @pytest.mark.parametrize("sid, timeout, response_records", [
+    @pytest.mark.parametrize("sid, start_timeout, end_timeout, response_records", [
         (
             0x10,
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x54"),
@@ -604,12 +627,17 @@ class TestClient:
             0x22,
             MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
+            MagicMock(__gt__=Mock(return_value=True),
+                      __sub__=lambda this, other: this),
             [Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78")]
         ),
     ])
-    def test_receive_response__negative_response(self, sid, timeout, response_records):
+    def test_receive_response__negative_response(self, sid, start_timeout, end_timeout, response_records):
         self.mock_client.transport_interface.receive_message.side_effect = response_records
-        assert Client._receive_response(self.mock_client, sid=sid, timeout=timeout) == response_records[-1]
+        assert Client._receive_response(self.mock_client,
+                                        sid=sid,
+                                        start_timeout=start_timeout,
+                                        end_timeout=end_timeout) == response_records[-1]
         self.mock_client.transport_interface.receive_message.assert_called()
 
     # _send_tester_present

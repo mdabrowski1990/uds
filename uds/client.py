@@ -357,13 +357,13 @@ class Client:
         """
         timestamp_start = perf_counter()
         remaining_start_timeout_ms = start_timeout  # either P2Client or P2*Client
-        remaining_end_timeout__ms = end_timeout  # either P6Client or P6*Client
-        while remaining_start_timeout_ms > 0 and remaining_end_timeout__ms > 0:
+        remaining_end_timeout_ms = end_timeout  # either P6Client or P6*Client
+        while remaining_start_timeout_ms > 0 and remaining_end_timeout_ms > 0:
             # try to receive a message
             try:
                 response_record = self.transport_interface.receive_message(
-                    start_timeout=min(remaining_start_timeout_ms, remaining_end_timeout__ms),
-                    end_timeout=remaining_end_timeout__ms)
+                    start_timeout=min(remaining_start_timeout_ms, remaining_end_timeout_ms),
+                    end_timeout=remaining_end_timeout_ms)
             except MessageTransmissionNotStartedError:
                 return None
             # positive response message received
@@ -377,7 +377,7 @@ class Client:
             # update time parameters
             time_elapsed_ms = (perf_counter() - timestamp_start) * 1000.
             remaining_start_timeout_ms = start_timeout - time_elapsed_ms
-            remaining_end_timeout__ms = end_timeout - time_elapsed_ms
+            remaining_end_timeout_ms = end_timeout - time_elapsed_ms
         return None
 
     def _send_tester_present(self, tester_present_message: UdsMessage) -> None:
