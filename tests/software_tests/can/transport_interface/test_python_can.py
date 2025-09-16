@@ -1,6 +1,6 @@
-from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
 from asyncio import get_running_loop
 from asyncio import sleep as asyncio_sleep
+from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
 from datetime import datetime
 from random import randint
 from time import perf_counter, sleep
