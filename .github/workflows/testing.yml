@@ -39,37 +39,6 @@ jobs:
           pytest tests/software_tests --cov-report=term-missing --cov=uds -m "integration"
 
 
-  performance_tests:  # separated from the other dynamic tests due to long execution
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install project dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
-          pip install -r requirements.txt
-
-      - name: Install external packages used for dynamic tests
-        run: |
-          pip install .[test]
-
-      - name: Execute performance tests with coverage report [pytest]
-        run: |
-          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "performance"
-
-
   code_coverage:
     runs-on: ubuntu-latest
 

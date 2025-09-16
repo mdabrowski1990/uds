@@ -1,4 +1,4 @@
-from asyncio import TimeoutError as AsyncioTimeoutError
+from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
 from asyncio import get_running_loop
 from asyncio import sleep as asyncio_sleep
 from datetime import datetime
