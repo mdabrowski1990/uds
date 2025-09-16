@@ -143,6 +143,21 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                              timeout=self._MIN_NOTIFIER_TIMEOUT,
                                              loop=loop)
 
+    @staticmethod
+    def __validate_timeout(value: Optional[TimeMillisecondsAlias]) -> None:
+        """
+        Validate value of a timeout.
+
+        :param value: Value of a timeout to check.
+
+        :raise TypeError: Provided value is not int or float type.
+        """
+        if value is not None:
+            if not isinstance(value, (int, float)):
+                raise TypeError("Timeout value must be None, int or float type.")
+            if value <= 0:
+                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {value}")
+
     def _send_cf_packets_block(self,
                                cf_packets_block: List[CanPacket],
                                delay: TimeMillisecondsAlias,
@@ -685,16 +700,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param timeout: Maximal time (in milliseconds) to wait.
             Leave None to wait forever.
 
-        :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal to 0.
-
         :return: Record with historic information about received CAN packet.
         """
-        if timeout is not None:
-            if not isinstance(timeout, (int, float)):
-                raise TypeError("Timeout value must be None, int or float type.")
-            if timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
+        self.__validate_timeout(timeout)
         self.__setup_notifier()
         return self._wait_for_packet(buffer=self.__rx_frames_buffer, timeout=timeout)
 
@@ -708,16 +716,9 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             Leave None to wait forever.
         :param loop: An asyncio event loop used for observing messages.
 
-        :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal to 0.
-
         :return: Record with historic information about received CAN packet.
         """
-        if timeout is not None:
-            if not isinstance(timeout, (int, float)):
-                raise TypeError("Timeout value must be None, int or float type.")
-            if timeout <= 0:
-                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
+        self.__validate_timeout(timeout)
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
         self.__setup_async_notifier(loop=loop)
         return await self._async_wait_for_packet(buffer=self.__async_rx_frames_buffer, timeout=timeout)
@@ -821,8 +822,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
             Leave None to wait forever.
 
-        :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal to 0.
         :raise TimeoutError: Timeout was reached.
             Either Single Frame / First Frame not received within [timeout] ms
             or N_As, N_Ar, N_Bs, N_Cr timeout reached.
@@ -830,23 +829,18 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received UDS message.
         """
         timestamp_now = perf_counter()
+        self.__validate_timeout(start_timeout)
+        self.__validate_timeout(end_timeout)
         if start_timeout is not None:
-            if not isinstance(start_timeout, (int, float)):
-                raise TypeError("Timeout value must be None, int or float type.")
-            if start_timeout <= 0:
-                raise ValueError(f"Provided `start_timeout` value is less or equal to 0. Actual value: {start_timeout}")
-            timestamp_start_timeout = timestamp_now + start_timeout / 1000.
+            if end_timeout is not None and end_timeout < start_timeout:
+                timestamp_start_timeout = timestamp_now + end_timeout / 1000.
+            else:
+                timestamp_start_timeout = timestamp_now + start_timeout / 1000.
         remaining_timeout_ms = None
         if end_timeout is not None:
-            if not isinstance(end_timeout, (int, float)):
-                raise TypeError("Timeout value must be None, int or float type.")
-            if end_timeout <= 0:
-                raise ValueError(f"Provided `end_timeout` value is less or equal to 0. Actual value: {start_timeout}")
             timestamp_end_timeout = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
-        if start_timeout is not None and end_timeout is not None and end_timeout < start_timeout:
-            timestamp_start_timeout = timestamp_end_timeout
         self.__setup_notifier()
         while True:
             # calculate remaining timeout
@@ -881,8 +875,6 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             Leave None to wait forever.
         :param loop: An asyncio event loop to use for scheduling this task.
 
-        :raise TypeError: Timeout value must be None, int or float type.
-        :raise ValueError: Provided timeout value is less or equal to 0.
         :raise TimeoutError: Timeout was reached.
             Either Single Frame / First Frame not received within [timeout] ms
             or N_As, N_Ar, N_Bs, N_Cr timeout reached.
@@ -890,23 +882,18 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received UDS message.
         """
         timestamp_now = perf_counter()
+        self.__validate_timeout(start_timeout)
+        self.__validate_timeout(end_timeout)
         if start_timeout is not None:
-            if not isinstance(start_timeout, (int, float)):
-                raise TypeError("Timeout value must be None, int or float type.")
-            if start_timeout <= 0:
-                raise ValueError(f"Provided `start_timeout` value is less or equal to 0. Actual value: {start_timeout}")
-            timestamp_start_timeout = timestamp_now + start_timeout / 1000.
+            if end_timeout is not None and end_timeout < start_timeout:
+                timestamp_start_timeout = timestamp_now + end_timeout / 1000.
+            else:
+                timestamp_start_timeout = timestamp_now + start_timeout / 1000.
         remaining_timeout_ms = None
         if end_timeout is not None:
-            if not isinstance(end_timeout, (int, float)):
-                raise TypeError("Timeout value must be None, int or float type.")
-            if end_timeout <= 0:
-                raise ValueError(f"Provided `end_timeout` value is less or equal to 0. Actual value: {start_timeout}")
             timestamp_end_timeout = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
-        if start_timeout is not None and end_timeout is not None and end_timeout < start_timeout:
-            timestamp_start_timeout = timestamp_end_timeout
         loop = get_running_loop() if loop is None else loop
         self.__setup_async_notifier(loop=loop)
         while True:

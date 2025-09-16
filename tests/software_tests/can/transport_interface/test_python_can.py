@@ -1,7 +1,9 @@
-from asyncio import sleep as asyncio_sleep, TimeoutError as AsyncioTimeoutError, get_running_loop
-from random import randint
-from time import perf_counter, sleep, time
+from asyncio import TimeoutError as AsyncioTimeoutError
+from asyncio import get_running_loop
+from asyncio import sleep as asyncio_sleep
 from datetime import datetime
+from random import randint
+from time import perf_counter, sleep
 
 import pytest
 from mock import AsyncMock, MagicMock, Mock, call, patch
@@ -258,6 +260,25 @@ class TestPyCanTransportInterface:
         assert self.mock_can_transport_interface._PyCanTransportInterface__async_notifier == mock_notifier
         self.mock_notifier.assert_not_called()
         self.mock_can_transport_interface._PyCanTransportInterface__teardown_notifier.assert_called_once_with()
+
+    # __validate_timeout
+
+    @pytest.mark.parametrize("value", ["some value", Mock()])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_validate_timeout__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            PyCanTransportInterface._PyCanTransportInterface__validate_timeout(value)
+        mock_isinstance.assert_called_once_with(value, (int, float))
+
+    @pytest.mark.parametrize("value", [0, -0.231])
+    def test_validate_timeout__value_error(self, value):
+        with pytest.raises(ValueError):
+            PyCanTransportInterface._PyCanTransportInterface__validate_timeout(value)
+
+    @pytest.mark.parametrize("value", [None, 0.1, 543])
+    def test_validate_timeout__valid(self, value):
+        assert PyCanTransportInterface._PyCanTransportInterface__validate_timeout(value) is None
 
     # _send_cf_packets_block
 
@@ -1265,23 +1286,11 @@ class TestPyCanTransportInterface:
 
     # receive_packet
 
-    @pytest.mark.parametrize("timeout", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_receive_packet__type_error(self, mock_isinstance, timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            PyCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout)
-        mock_isinstance.assert_called_once_with(timeout, (int, float))
-
-    @pytest.mark.parametrize("timeout", [0, -654])
-    def test_receive_packet__value_error(self, timeout):
-        with pytest.raises(ValueError):
-            PyCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout)
-
-    @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
-    def test_receive_packet__valid(self, timeout):
+    @pytest.mark.parametrize("timeout", [Mock(), 123.456])
+    def test_receive_packet(self, timeout):
         assert (PyCanTransportInterface.receive_packet(self.mock_can_transport_interface, timeout)
                 == self.mock_can_transport_interface._wait_for_packet.return_value)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_called_once_with(timeout)
         self.mock_can_transport_interface._wait_for_packet.assert_called_once_with(
             buffer=self.mock_can_transport_interface._PyCanTransportInterface__rx_frames_buffer,
             timeout=timeout)
@@ -1290,32 +1299,17 @@ class TestPyCanTransportInterface:
 
     # async_receive_packet
 
-    @pytest.mark.parametrize("timeout", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    @pytest.mark.asyncio
-    async def test_async_receive_packet__type_error(self, mock_isinstance, timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            await PyCanTransportInterface.async_receive_packet(self.mock_can_transport_interface, timeout)
-        mock_isinstance.assert_called_once_with(timeout, (int, float))
-
-    @pytest.mark.parametrize("timeout", [0, -654])
-    @pytest.mark.asyncio
-    async def test_async_receive_packet__value_error(self, timeout):
-        with pytest.raises(ValueError):
-            await PyCanTransportInterface.async_receive_packet(self.mock_can_transport_interface, timeout)
-
     @pytest.mark.parametrize("timeout, loop", [
-        (None, None),
-        (0.001, Mock(spec=AbstractEventLoop)),
-        (123.456, None),
+        (Mock(), None),
+        (123.456, Mock(spec=AbstractEventLoop)),
     ])
     @pytest.mark.asyncio
-    async def test_async_receive_packet__valid(self, timeout, loop):
+    async def test_async_receive_packet(self, timeout, loop):
         assert (await PyCanTransportInterface.async_receive_packet(self.mock_can_transport_interface,
                                                                    timeout=timeout,
                                                                    loop=loop)
                 == self.mock_can_transport_interface._async_wait_for_packet.return_value)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_called_once_with(timeout)
         self.mock_can_transport_interface._async_wait_for_packet.assert_called_once_with(
             buffer=self.mock_can_transport_interface._PyCanTransportInterface__async_rx_frames_buffer,
             timeout=timeout)
@@ -1756,32 +1750,6 @@ class TestPyCanTransportInterface:
 
     # receive_message
 
-    @pytest.mark.parametrize("start_timeout", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_receive_message__type_error__start_timeout(self, mock_isinstance, start_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, start_timeout=start_timeout)
-        mock_isinstance.assert_called_once_with(start_timeout, (int, float))
-
-    @pytest.mark.parametrize("end_timeout", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_receive_message__type_error__end_timeout(self, mock_isinstance, end_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, end_timeout=end_timeout)
-        mock_isinstance.assert_called_once_with(end_timeout, (int, float))
-
-    @pytest.mark.parametrize("start_timeout", [0, -654])
-    def test_receive_message__value_error__start_timeout(self, start_timeout):
-        with pytest.raises(ValueError):
-            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, start_timeout=start_timeout)
-
-    @pytest.mark.parametrize("end_timeout", [0, -654])
-    def test_receive_message__value_error__end_timeout(self, end_timeout):
-        with pytest.raises(ValueError):
-            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, end_timeout=end_timeout)
-
     @pytest.mark.parametrize("start_timeout", [0.001, 123.456])
     def test_receive_message__timeout_error__no_time(self, start_timeout):
         mock_is_timeout_reached = Mock(return_value=True)
@@ -1792,12 +1760,15 @@ class TestPyCanTransportInterface:
         with pytest.raises(MessageTransmissionNotStartedError):
             PyCanTransportInterface.receive_message(self.mock_can_transport_interface,
                                                     start_timeout=start_timeout)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(None)])
         mock_is_timeout_reached.assert_called_once()
         self.mock_can_transport_interface._PyCanTransportInterface__setup_notifier.assert_called_once_with()
         self.mock_can_transport_interface.receive_packet.assert_not_called()
 
-    @pytest.mark.parametrize("timeout", [0.001, 123.456])
-    def test_receive_message__timeout_error__no_packet(self, timeout):
+    @pytest.mark.parametrize("start_timeout", [0.001, 123.456])
+    def test_receive_message__timeout_error__no_packet(self, start_timeout):
         mock_is_timeout_reached = Mock(return_value=False)
         self.mock_perf_counter.return_value = MagicMock(__sub__=lambda this, other: this,
                                                         __add__=lambda this, other: this,
@@ -1805,7 +1776,11 @@ class TestPyCanTransportInterface:
                                                         __le__=mock_is_timeout_reached)
         self.mock_can_transport_interface.receive_packet.side_effect = TimeoutError
         with pytest.raises(MessageTransmissionNotStartedError):
-            PyCanTransportInterface.receive_message(self.mock_can_transport_interface, timeout)
+            PyCanTransportInterface.receive_message(self.mock_can_transport_interface,
+                                                    start_timeout=start_timeout)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(None)])
         mock_is_timeout_reached.assert_called_once()
         self.mock_can_transport_interface._PyCanTransportInterface__setup_notifier.assert_called_once_with()
         self.mock_can_transport_interface.receive_packet.assert_called_once()
@@ -1826,6 +1801,9 @@ class TestPyCanTransportInterface:
                                                         start_timeout=start_timeout,
                                                         end_timeout=end_timeout)
                 == self.mock_can_transport_interface._message_receive_start.return_value)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(end_timeout)])
         self.mock_can_transport_interface._message_receive_start.assert_called_once_with(
             initial_packet=self.mock_can_transport_interface.receive_packet.return_value,
             timestamp_end=None if end_timeout is None else self.mock_perf_counter.return_value)
@@ -1849,6 +1827,9 @@ class TestPyCanTransportInterface:
                                                         start_timeout=start_timeout,
                                                         end_timeout=end_timeout)
                 == self.mock_can_transport_interface._message_receive_start.return_value)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(end_timeout)])
         self.mock_can_transport_interface._message_receive_start.assert_called_once_with(
             initial_packet=self.mock_can_transport_interface.receive_packet.return_value,
             timestamp_end=None if end_timeout is None else self.mock_perf_counter.return_value)
@@ -1860,40 +1841,6 @@ class TestPyCanTransportInterface:
         self.mock_warn.assert_called_once()
 
     # async_receive_message
-
-    @pytest.mark.parametrize("start_timeout", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    @pytest.mark.asyncio
-    async def test_async_receive_message__type_error__start_timeout(self, mock_isinstance, start_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
-                                                                start_timeout=start_timeout)
-        mock_isinstance.assert_called_once_with(start_timeout, (int, float))
-
-    @pytest.mark.parametrize("end_timeout", ["something", Mock()])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    @pytest.mark.asyncio
-    async def test_async_receive_message__type_error__end_timeout(self, mock_isinstance, end_timeout):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
-                                                                end_timeout=end_timeout)
-        mock_isinstance.assert_called_once_with(end_timeout, (int, float))
-
-    @pytest.mark.parametrize("start_timeout", [0, -654])
-    @pytest.mark.asyncio
-    async def test_async_receive_message__value_error__start_timeout(self, start_timeout):
-        with pytest.raises(ValueError):
-            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
-                                                                start_timeout=start_timeout)
-
-    @pytest.mark.parametrize("end_timeout", [0, -654])
-    @pytest.mark.asyncio
-    async def test_async_receive_message__value_error__end_timeout(self, end_timeout):
-        with pytest.raises(ValueError):
-            await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
-                                                                end_timeout=end_timeout)
 
     @pytest.mark.parametrize("start_timeout", [0.001, 123.456])
     @pytest.mark.asyncio
@@ -1908,6 +1855,9 @@ class TestPyCanTransportInterface:
             await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
                                                                 start_timeout=start_timeout,
                                                                 loop=mock_loop)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(None)])
         mock_is_timeout_reached.assert_called_once()
         self.mock_can_transport_interface._PyCanTransportInterface__setup_async_notifier.assert_called_once_with(
             loop=mock_loop)
@@ -1927,6 +1877,9 @@ class TestPyCanTransportInterface:
             await PyCanTransportInterface.async_receive_message(self.mock_can_transport_interface,
                                                                 start_timeout=start_timeout,
                                                                 loop=mock_loop)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(None)])
         mock_is_timeout_reached.assert_called_once()
         self.mock_can_transport_interface._PyCanTransportInterface__setup_async_notifier.assert_called_once_with(
             loop=mock_loop)
@@ -1951,6 +1904,9 @@ class TestPyCanTransportInterface:
                                                                     end_timeout=end_timeout,
                                                                     loop=mock_loop)
                 == self.mock_can_transport_interface._async_message_receive_start.return_value)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(end_timeout)])
         self.mock_can_transport_interface._PyCanTransportInterface__setup_async_notifier.assert_called_once_with(
             loop=mock_loop)
         self.mock_can_transport_interface._async_message_receive_start.assert_called_once_with(
@@ -1978,6 +1934,9 @@ class TestPyCanTransportInterface:
                                                                     end_timeout=end_timeout,
                                                                     loop=None)
                 == self.mock_can_transport_interface._async_message_receive_start.return_value)
+        self.mock_can_transport_interface._PyCanTransportInterface__validate_timeout.assert_has_calls([
+            call(start_timeout),
+            call(end_timeout)])
         self.mock_can_transport_interface._async_message_receive_start.assert_called_once_with(
             initial_packet=self.mock_can_transport_interface.async_receive_packet.return_value,
             timestamp_end=None if end_timeout is None else self.mock_perf_counter.return_value,
