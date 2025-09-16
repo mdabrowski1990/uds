@@ -22,12 +22,12 @@ class KvaserConfig(AbstractPythonCanTests):
                                    channel=1,
                                    fd=True)
 
-# Can Packet
+# Can Packets Transmission and Reception
 
 class TestKvaserCanPacket(AbstractCanPacketTests, KvaserConfig):
     """CAN packets related system tests for Python CAN Transport Interface."""
 
-# Message
+# Messages Transmission and Reception
 
 class TestKvaserMessage(AbstractMessageTests, KvaserConfig):
     """UDS message related system tests for Python CAN Transport Interface."""

@@ -126,7 +126,7 @@ class CanSTminTranslator:
 
         :param time_value: STmin time in milliseconds.
 
-        :raise TypeError: Provided value is not int or flow type.
+        :raise TypeError: Provided value is not int or float type.
         :raise ValueError: Value out of supported range.
 
         :return: Raw value of STmin.

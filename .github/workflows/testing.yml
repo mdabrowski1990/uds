@@ -38,11 +38,6 @@ jobs:
         run: |
           pytest tests/software_tests --cov-report=term-missing --cov=uds -m "integration"
 
-# TODO: uncomment when performance tests are added
-#      - name: Execute performance tests with coverage report [pytest]
-#        run: |
-#          pytest tests/software_tests --cov-report=term-missing --cov=uds -m "performance"
-
 
   code_coverage:
     runs-on: ubuntu-latest
@@ -113,8 +108,6 @@ jobs:
           files: coverage.xml
           flags: integration-tests-branch
 
-# TODO: add performance tests upload when added
-
 
   static_code_analysis:
     runs-on: ubuntu-latest
@@ -169,6 +162,7 @@ jobs:
         run: |
           pip-audit
 
+
   sorting_imports:
     runs-on: ubuntu-latest
 
@@ -195,6 +189,7 @@ jobs:
           isort uds -c -v
           isort tests -c -v
           isort examples -c -v
+
 
   documentation_checks:
     runs-on: windows-latest

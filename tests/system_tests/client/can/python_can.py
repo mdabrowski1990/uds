@@ -3,7 +3,7 @@ from random import choice
 from tests.conftest import make_can_addressing_information
 
 from can import Bus
-from uds.can import CanAddressingFormat, PyCanTransportInterface
+from uds.can import CanAddressingFormat, DefaultFlowControlParametersGenerator, PyCanTransportInterface
 from uds.utilities import TimeMillisecondsAlias
 
 from ..test_client import AbstractClientTests
@@ -11,6 +11,9 @@ from ..test_client import AbstractClientTests
 
 class TestClientWithPythonCanKvaser(AbstractClientTests):
     """Client tests for UDS over CAN with python-can package as network manager."""
+
+    transport_interface_1: PyCanTransportInterface
+    transport_interface_2: PyCanTransportInterface
 
     TIMESTAMP_TOLERANCE: TimeMillisecondsAlias = 2  # python-can has low accuracy
 
@@ -38,3 +41,9 @@ class TestClientWithPythonCanKvaser(AbstractClientTests):
         super().teardown_method()
         self.can_interface_1.shutdown()
         self.can_interface_2.shutdown()
+
+    def configure_slow_message_reception(self):
+        """Change configuration of Transport Interfaces to reach timeouts easily."""
+        self.transport_interface_1.flow_control_parameters_generator = DefaultFlowControlParametersGenerator(
+            block_size=5,
+            st_min=100)

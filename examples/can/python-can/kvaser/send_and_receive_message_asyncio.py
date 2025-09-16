@@ -50,7 +50,7 @@ async def main():
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x62, 0x10, 0x00, *range(100)])
 
     # send and receive message
-    receive_message_task = asyncio.create_task(can_ti_2.async_receive_message(timeout=1000))  # timeout=1000 ms
+    receive_message_task = asyncio.create_task(can_ti_2.async_receive_message(start_timeout=1000))  # timeout=1000 ms
     sent_message_record = await can_ti_1.async_send_message(message)
     received_message_record = await receive_message_task
 

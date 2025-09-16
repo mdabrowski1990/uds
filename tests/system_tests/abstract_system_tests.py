@@ -3,6 +3,7 @@ __all__ = ['BaseSystemTests']
 import asyncio
 from abc import ABC
 from threading import Timer
+from time import sleep
 from typing import List, Optional
 
 from uds.message import UdsMessage, UdsMessageRecord
@@ -43,8 +44,11 @@ class BaseSystemTests(ABC):
         if self._timers:
             for _timer in self._timers:
                 _timer.join(self.TASK_TIMING_TOLERANCE / 1000.)
-                del _timer
             self._timers = []
+            sleep(self.TASK_TIMING_TOLERANCE / 1000.)
+            for _timer in self._timers:
+                _timer.join()
+                del _timer
 
     def send_packet(self,
                     transport_interface: AbstractTransportInterface,
@@ -88,7 +92,8 @@ class BaseSystemTests(ABC):
 
     def receive_message(self,
                         transport_interface: AbstractTransportInterface,
-                        timeout: TimeMillisecondsAlias,
+                        start_timeout: Optional[TimeMillisecondsAlias],
+                        end_timeout: Optional[TimeMillisecondsAlias],
                         delay: TimeMillisecondsAlias) -> Timer:
         """
         Receive UDS message over Transport Interface.
@@ -96,14 +101,16 @@ class BaseSystemTests(ABC):
         .. note:: The result (UDS message record) will be available be in `self.sent_message` attribute.
 
         :param transport_interface: Transport Interface to use for transmission.
-        :param timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
+        :param start_timeout: Maximal time (in milliseconds) to wait for UDS message transmission to start.
+        :param end_timeout: Maximal time (in milliseconds) to wait for UDS message transmission to finish.
         :param delay: Time [ms] after which the reception will be started.
 
         :return: Timer object with scheduled task.
         """
 
         def _receive_message():
-            self.received_message = transport_interface.receive_message(timeout)
+            self.received_message = transport_interface.receive_message(start_timeout=start_timeout,
+                                                                        end_timeout=end_timeout)
 
         timer = Timer(interval=delay/1000., function=_receive_message)
         self._timers.append(timer)

@@ -166,11 +166,17 @@ class AbstractTransportInterface(ABC):
         """
 
     @abstractmethod
-    def receive_message(self, timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
+    def receive_message(self,
+                        start_timeout: Optional[TimeMillisecondsAlias] = None,
+                        end_timeout: Optional[TimeMillisecondsAlias] = None) -> UdsMessageRecord:
         """
         Receive UDS message.
 
-        :param timeout: Maximal time (in milliseconds) to wait.
+        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
+
+        :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
+            Leave None to wait forever.
+        :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
             Leave None to wait forever.
 
         :raise TimeoutError: Timeout was reached.
@@ -180,12 +186,17 @@ class AbstractTransportInterface(ABC):
 
     @abstractmethod
     async def async_receive_message(self,
-                                    timeout: Optional[TimeMillisecondsAlias] = None,
+                                    start_timeout: Optional[TimeMillisecondsAlias] = None,
+                                    end_timeout: Optional[TimeMillisecondsAlias] = None,
                                     loop: Optional[AbstractEventLoop] = None) -> UdsMessageRecord:
         """
         Receive asynchronously UDS message.
 
-        :param timeout: Maximal time (in milliseconds) to wait.
+        .. warning:: Value of end_timeout must not be less than the value of start_timeout.
+
+        :param start_timeout: Maximal time (in milliseconds) to wait for the start of a message transmission.
+            Leave None to wait forever.
+        :param end_timeout: Maximal time (in milliseconds) to wait for a message transmission to finish.
             Leave None to wait forever.
         :param loop: An asyncio event loop to use for scheduling this task.
 

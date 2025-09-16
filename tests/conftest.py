@@ -15,6 +15,18 @@ from uds.can.addressing import (
 )
 from uds.utilities import RawBytesAlias
 
+# Performance tests related
+
+@fixture
+def performance_tolerance_ms():
+    """Acceptable time tolerance for a single measurement (performance tests)."""
+    return 50
+
+@fixture
+def mean_performance_tolerance_ms(performance_tolerance_ms):
+    """Acceptable mean time tolerance for multiple measurement (performance tests)."""
+    return performance_tolerance_ms / 4.
+
 # Common
 
 @fixture(params=[
