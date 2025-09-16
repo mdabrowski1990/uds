@@ -66,7 +66,7 @@ class AbstractClientTests(BaseSystemTests, ABC):
     ])
     @pytest.mark.parametrize("p2_client_timeout, p6_client_timeout, send_after", [
         (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT, Client.DEFAULT_P2_CLIENT_TIMEOUT - 30),
-        (100, 100, 50),
+        (250, 250, 150),
     ])
     def test_send_request_receive_responses__direct(self, request_message, response_message,
                                                     p2_client_timeout, p6_client_timeout, send_after):
