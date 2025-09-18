@@ -6,6 +6,7 @@ from threading import Event, Thread
 from time import perf_counter, time
 from typing import List, Optional, Sequence, Tuple, Union
 from warnings import warn
+from queue import SimpleQueue, Empty
 
 from uds.addressing import AddressingType
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
@@ -34,6 +35,7 @@ class Client:
     """Default value of P6*Client timeout."""
     DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000
     """Default value of S3Client time parameter."""
+    RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 200
 
     def __init__(self,
                  transport_interface: AbstractTransportInterface,
@@ -64,6 +66,9 @@ class Client:
         self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__tester_present_thread: Optional[Thread] = None
         self.__tester_present_stop_event: Event = Event()
+        self.__receiving_thread: Optional[Thread] = None
+        self.__receiving_stop_event: Event = Event()
+        self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
 
     @property
     def transport_interface(self) -> AbstractTransportInterface:
@@ -345,7 +350,7 @@ class Client:
                           start_timeout: TimeMillisecondsAlias,
                           end_timeout: TimeMillisecondsAlias) -> Optional[UdsMessageRecord]:
         """
-        Received UDS message.
+        Receive UDS response message to previously sent request.
 
         :param sid: SID of the last sent request message.
         :param start_timeout: Maximal time (in milliseconds) to wait.
@@ -373,12 +378,25 @@ class Client:
             if response_record.payload[0] == ResponseSID.NegativeResponse and response_record.payload[1] == sid:
                 return response_record
             # other response message received
-            # TODO: add it to response queue when created - https://github.com/mdabrowski1990/uds/issues/63
+            self.__response_queue.put_nowait(response_record)
             # update time parameters
             time_elapsed_ms = (perf_counter() - timestamp_start) * 1000.
             remaining_start_timeout_ms = start_timeout - time_elapsed_ms
             remaining_end_timeout_ms = end_timeout - time_elapsed_ms
         return None
+
+    def _receive(self) -> None:
+        period = self.RECEIVING_TASK_CYCLE
+        while not self.__receiving_stop_event.is_set():
+            try:
+                response = self.transport_interface.receive_message(start_timeout=self.RECEIVING_TASK_CYCLE,
+                                                                    end_timeout=self.p6_ext_client_timeout)
+            except TimeoutError:
+                pass
+            else:
+                self.__response_queue.put_nowait(response)
+            if self.__receiving_stop_event.wait(period):
+                break
 
     def _send_tester_present(self, tester_present_message: UdsMessage) -> None:
         """
@@ -433,7 +451,15 @@ class Client:
 
         :return: Record with the first response message received or None if no message was received.
         """
-        raise NotImplementedError
+        if timeout is not None:
+            if not isinstance(timeout, (int, float)):
+                raise TypeError("Timeout value must be None, int or float type.")
+            if timeout <= 0:
+                raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
+        try:
+            return self.__response_queue.get(timeout=timeout)
+        except Empty:
+            return None
 
     def get_response_no_wait(self) -> Optional[UdsMessageRecord]:
         """
@@ -448,11 +474,40 @@ class Client:
 
         :return: Record with the first response message received or None if no message was received.
         """
-        raise NotImplementedError
+        try:
+            return self.__response_queue.get_nowait()
+        except Empty:
+            return None
 
     def clear_response_queue(self) -> None:
         """Clear all response messages that are currently stored in the queue."""
-        raise NotImplementedError
+        while not self.__response_queue.empty():
+            self.__response_queue.get_nowait()
+
+    def start_receiving(self) -> None:
+        """
+        Start receiving task in the background.
+
+        All response messages sent to this Client while receiving is active, will be collected and accessible via
+        :meth:`~uds.client.Client.get_response` and :meth:`~uds.client.Client.get_response_no_wait` methods.
+        """
+        if self.__receiving_thread is None:
+            self.__receiving_stop_event.clear()
+            self.__receiving_thread = Thread(target=self._receive)
+            self.__receiving_thread.start()
+        else:
+            warn("Receiving is already active.",
+                 category=UserWarning)
+
+    def stop_receiving(self) -> None:
+        """Stop receiving task."""
+        if self.__receiving_thread is None:
+            warn("Receiving is already stopped.",
+                 category=UserWarning)
+        else:
+            self.__receiving_stop_event.set()
+            self.__receiving_thread.join()
+            self.__receiving_thread = None
 
     def start_tester_present(self,
                              addressing_type: AddressingType = AddressingType.FUNCTIONAL,
@@ -464,6 +519,7 @@ class Client:
         :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
         """
         if self.__tester_present_thread is None:
+            self.__tester_present_stop_event.clear()
             payload = TESTER_PRESENT.encode_request({
                 "SubFunction": {
                     "suppressPosRspMsgIndicationBit": sprmib,
@@ -474,7 +530,6 @@ class Client:
             self.__tester_present_thread = Thread(target=self._send_tester_present,
                                                   args=(tester_present_message, ),
                                                   daemon=True)
-            self.__tester_present_stop_event.clear()
             self.__tester_present_thread.start()
         else:
             warn("Tester Present is already transmitted cyclically.",
