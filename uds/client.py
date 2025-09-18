@@ -493,7 +493,8 @@ class Client:
         """
         if self.__receiving_thread is None:
             self.__receiving_stop_event.clear()
-            self.__receiving_thread = Thread(target=self._receive)
+            self.__receiving_thread = Thread(target=self._receive,
+                                             daemon=True)
             self.__receiving_thread.start()
         else:
             warn("Receiving is already active.",
