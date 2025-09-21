@@ -27,7 +27,8 @@ class TestClient:
     """Unit tests for `Client` class."""
 
     def setup_method(self):
-        self.mock_client = MagicMock(spec=Client)
+        self.mock_client = MagicMock(spec=Client,
+                                     _Client__response_queue=Mock())
         # patching
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
@@ -567,9 +568,9 @@ class TestClient:
     @pytest.mark.parametrize("sid, start_timeout, end_timeout, response_record", [
         (
             0x10,
-            MagicMock(__gt__=Mock(return_value=True),
+            MagicMock(__gt__=MagicMock(side_effect=[True, False]),
                       __sub__=lambda this, other: this),
-            MagicMock(__gt__=Mock(return_value=False),
+            MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
             Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
         ),
@@ -582,12 +583,13 @@ class TestClient:
             Mock(spec=UdsMessageRecord, payload=b"\x50\x03\x00\x50\x12\x34"),
         ),
     ])
-    def test_receive_response__no_response(self, sid, start_timeout, end_timeout, response_record):
+    def test_receive_response__response_to_other_request(self, sid, start_timeout, end_timeout, response_record):
         self.mock_client.transport_interface.receive_message.return_value = response_record
         assert Client._receive_response(self.mock_client,
                                         sid=sid,
                                         start_timeout=start_timeout,
                                         end_timeout=end_timeout) is None
+        self.mock_client._Client__response_queue.put_nowait.assert_called_once_with(response_record)
 
     @pytest.mark.parametrize("sid, start_timeout, end_timeout, response_records", [
         (
