@@ -35,7 +35,8 @@ class Client:
     """Default value of P6*Client timeout."""
     DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000
     """Default value of S3Client time parameter."""
-    RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 200
+    DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 50
+    """Default value of receiving task cycle."""
 
     def __init__(self,
                  transport_interface: AbstractTransportInterface,
@@ -385,17 +386,16 @@ class Client:
             remaining_end_timeout_ms = end_timeout - time_elapsed_ms
         return None
 
-    def _receive(self) -> None:
-        period = self.RECEIVING_TASK_CYCLE
+    def _receive(self, cycle: TimeMillisecondsAlias) -> None:
         while not self.__receiving_stop_event.is_set():
             try:
-                response = self.transport_interface.receive_message(start_timeout=self.RECEIVING_TASK_CYCLE,
+                response = self.transport_interface.receive_message(start_timeout=cycle,
                                                                     end_timeout=self.p6_ext_client_timeout)
             except TimeoutError:
                 pass
             else:
                 self.__response_queue.put_nowait(response)
-            if self.__receiving_stop_event.wait(period):
+            if self.__receiving_stop_event.wait(cycle):
                 break
 
     def _send_tester_present(self, tester_present_message: UdsMessage) -> None:
@@ -484,7 +484,7 @@ class Client:
         while not self.__response_queue.empty():
             self.__response_queue.get_nowait()
 
-    def start_receiving(self) -> None:
+    def start_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:
         """
         Start receiving task in the background.
 
@@ -494,6 +494,7 @@ class Client:
         if self.__receiving_thread is None:
             self.__receiving_stop_event.clear()
             self.__receiving_thread = Thread(target=self._receive,
+                                             kwargs={"cycle": cycle},
                                              daemon=True)
             self.__receiving_thread.start()
         else:
