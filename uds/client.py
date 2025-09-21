@@ -387,6 +387,11 @@ class Client:
         return None
 
     def _receive(self, cycle: TimeMillisecondsAlias) -> None:
+        """
+        Schedule reception of a UDS message for a cyclic response collecting.
+
+        :param cycle: Time (in milliseconds) used for this task cycle.
+        """
         while not self.__receiving_stop_event.is_set():
             try:
                 response = self.transport_interface.receive_message(start_timeout=cycle,
@@ -395,7 +400,7 @@ class Client:
                 pass
             else:
                 self.__response_queue.put_nowait(response)
-            if self.__receiving_stop_event.wait(cycle):
+            if self.__receiving_stop_event.wait():
                 break
 
     def _send_tester_present(self, tester_present_message: UdsMessage) -> None:

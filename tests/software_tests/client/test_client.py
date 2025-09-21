@@ -30,6 +30,8 @@ class TestClient:
         self.mock_client = MagicMock(spec=Client,
                                      _Client__response_queue=Mock())
         # patching
+        self._patcher_min = patch(f"{SCRIPT_LOCATION}.min")
+        self.mock_min = self._patcher_min.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
         self.mock_warn = self._patcher_warn.start()
         self._patcher_perf_counter = patch(f"{SCRIPT_LOCATION}.perf_counter")
@@ -46,6 +48,7 @@ class TestClient:
         self.mock_validate_request_sid = self._patcher_validate_request_sid.start()
 
     def teardown_method(self):
+        self._patcher_min.stop()
         self._patcher_warn.stop()
         self._patcher_perf_counter.stop()
         self._patcher_time.stop()
@@ -583,7 +586,7 @@ class TestClient:
             Mock(spec=UdsMessageRecord, payload=b"\x50\x03\x00\x50\x12\x34"),
         ),
     ])
-    def test_receive_response__response_to_other_request(self, sid, start_timeout, end_timeout, response_record):
+    def test_receive_response__one_other_response(self, sid, start_timeout, end_timeout, response_record):
         self.mock_client.transport_interface.receive_message.return_value = response_record
         assert Client._receive_response(self.mock_client,
                                         sid=sid,
@@ -607,7 +610,8 @@ class TestClient:
                       __sub__=lambda this, other: this),
             MagicMock(__gt__=Mock(return_value=True),
                       __sub__=lambda this, other: this),
-            [Mock(spec=UdsMessageRecord, payload=b"\x62\x12\x34\x56\x78\x9A\xBC\xDC\xEF\x0F")]
+            [   Mock(spec=UdsMessageRecord, payload=b"\x7F\x11\x78"),
+                Mock(spec=UdsMessageRecord, payload=b"\x62\x12\x34\x56\x78\x9A\xBC\xDC\xEF\x0F")]
         ),
     ])
     def test_receive_response__positive_response(self, sid, start_timeout, end_timeout, response_records):
@@ -704,6 +708,38 @@ class TestClient:
         assert Client.is_response_pending_message(message=message, request_sid=sid) is False
         self.mock_validate_request_sid.assert_called_once_with(sid)
 
+    # get_response
+
+    # TODO
+
+    def test_get_response(self):
+        with pytest.raises(NotImplementedError):
+            Client.get_response(self.mock_client)
+
+    # get_response_no_wait
+
+    # TODO
+
+    def test_get_response_no_wait(self):
+        with pytest.raises(NotImplementedError):
+            Client.get_response_no_wait(self.mock_client)
+
+    # clear_response_queue
+
+    # TODO
+
+    def test_clear_response_queue(self):
+        with pytest.raises(NotImplementedError):
+            Client.clear_response_queue(self.mock_client)
+
+    # start_receiving
+
+    # TODO
+
+    # stop_receiving
+
+    # TODO
+
     # start_tester_present
 
     @pytest.mark.parametrize("addressing_type, sprmib", [
@@ -741,7 +777,7 @@ class TestClient:
 
     def test_stop_tester_present__stop(self):
         mock_thread = Mock(spec=Thread)
-        mock_event =  Mock(spec=Event)
+        mock_event = Mock(spec=Event)
         self.mock_client._Client__tester_present_thread = mock_thread
         self.mock_client._Client__tester_present_stop_event = mock_event
         assert Client.stop_tester_present(self.mock_client) is None
@@ -754,7 +790,7 @@ class TestClient:
         self.mock_client._Client__tester_present_thread = None
         assert Client.stop_tester_present(self.mock_client) is None
         self.mock_warn.assert_called_once()
-            
+
     # send_request_receive_responses
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
@@ -795,15 +831,15 @@ class TestClient:
 
     @pytest.mark.parametrize("request_message, response_messages", [
         (
-            Mock(spec=UdsMessage, payload=b"\x10\x03"),
-            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x78"),
-             None],
+                Mock(spec=UdsMessage, payload=b"\x10\x03"),
+                [Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x78"),
+                 None],
         ),
         (
-            Mock(spec=UdsMessage, payload=b"\x22\x12\x34"),
-            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
-             Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
-             None],
+                Mock(spec=UdsMessage, payload=b"\x22\x12\x34"),
+                [Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
+                 Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
+                 None],
         ),
     ])
     def test_send_request_receive_responses__timeout_error__p2_ext(self, request_message, response_messages):
@@ -818,15 +854,15 @@ class TestClient:
 
     @pytest.mark.parametrize("request_message, response_messages", [
         (
-            Mock(spec=UdsMessage, payload=b"\x10\x03"),
-            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x78"),
-             TimeoutError],
+                Mock(spec=UdsMessage, payload=b"\x10\x03"),
+                [Mock(spec=UdsMessageRecord, payload=b"\x7F\x10\x78"),
+                 TimeoutError],
         ),
         (
-            Mock(spec=UdsMessage, payload=b"\x22\x12\x34"),
-            [Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
-             Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
-             TimeoutError],
+                Mock(spec=UdsMessage, payload=b"\x22\x12\x34"),
+                [Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
+                 Mock(spec=UdsMessageRecord, payload=b"\x7F\x22\x78"),
+                 TimeoutError],
         ),
     ])
     def test_send_request_receive_responses__timeout_error__p6_ext(self, request_message, response_messages):
@@ -845,7 +881,7 @@ class TestClient:
     ])
     def test_send_request_receive_responses__direct_response(self, request_message, response_message):
         request_record = MagicMock(spec=UdsMessageRecord, payload=request_message.payload)
-        response_records = (response_message, )
+        response_records = (response_message,)
         self.mock_client._receive_response.return_value = response_message
         self.mock_client.transport_interface.send_message.return_value = request_record
         self.mock_client.is_response_pending_message.return_value = False
@@ -882,24 +918,6 @@ class TestClient:
         assert self.mock_client._receive_response.call_count == len(response_records)
         self.mock_client._update_measured_client_values.assert_called_once_with(
             request_record=request_record, response_records=list(response_records))
-            
-    # get_response
-    
-    def test_get_response(self):
-        with pytest.raises(NotImplementedError):
-            Client.get_response(self.mock_client)
-
-    # get_response_no_wait
-    
-    def test_get_response_no_wait(self):
-        with pytest.raises(NotImplementedError):
-            Client.get_response_no_wait(self.mock_client)
-
-    # clear_response_queue
-
-    def test_clear_response_queue(self):
-        with pytest.raises(NotImplementedError):
-            Client.clear_response_queue(self.mock_client)
 
 
 @pytest.mark.performance
