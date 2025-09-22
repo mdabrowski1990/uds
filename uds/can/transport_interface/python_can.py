@@ -152,6 +152,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param value: Value of a timeout to check.
 
         :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is a negative number.
         """
         if value is not None:
             if not isinstance(value, (int, float)):

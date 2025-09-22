@@ -296,7 +296,7 @@ class Client:
         :param value: Value to set.
 
         :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
+        :raise ValueError: Provided time value must be a positive number.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided value is not int or float type.")
@@ -336,7 +336,7 @@ class Client:
         :param value: Value to set.
 
         :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
+        :raise ValueError: Provided time value must be a positive number.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided value is not int or float type.")
@@ -354,7 +354,7 @@ class Client:
         :param value: Value to set.
 
         :raise TypeError: Provided value is not int or float type.
-        :raise ValueError: Provided value is out of range.
+        :raise ValueError: Provided time value must be a positive number.
         """
         if not isinstance(value, (int, float)):
             raise TypeError("Provided value is not int or float type.")
@@ -405,8 +405,6 @@ class Client:
 
         :param sid: SID of the last sent request message.
         :param start_timeout: Maximal time (in milliseconds) to wait.
-
-        :raise TimeoutError: P6Client timeout reached.
 
         :return: Record with response message received to the last UDS request message sent.
             None if a timeout was reached.
@@ -505,6 +503,9 @@ class Client:
 
         :param timeout: Maximal time to wait for a response message.
             Leave None to wait forever.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided value is out of range.
 
         :return: Record with the first response message received or None if no message was received.
         """
