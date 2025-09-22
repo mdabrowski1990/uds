@@ -2,10 +2,11 @@
 
 __all__ = ["Client"]
 
+from functools import wraps
 from queue import Empty, SimpleQueue
 from threading import Event, Thread
 from time import perf_counter, time
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 from uds.addressing import AddressingType
@@ -35,7 +36,7 @@ class Client:
     """Default value of P6*Client timeout."""
     DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000
     """Default value of S3Client time parameter."""
-    DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 50
+    DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 20
     """Default value of receiving task cycle."""
 
     def __init__(self,
@@ -68,8 +69,14 @@ class Client:
         self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
         self.__receiving_thread: Optional[Thread] = None
         self.__receiving_stop_event: Event = Event()
+        self.__receiving_break_event: Event = Event()
+        self.__receiving_not_in_progress: Event = Event()
         self.__tester_present_thread: Optional[Thread] = None
         self.__tester_present_stop_event: Event = Event()
+        self.__receiving_stop_event.set()
+        self.__receiving_break_event.clear()
+        self.__receiving_not_in_progress.set()
+        self.__tester_present_stop_event.set()
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
@@ -254,6 +261,11 @@ class Client:
                                      f"P2Client timeout ({self.p2_client_timeout} ms).")
         self.__s3_client = value
 
+    @property
+    def is_receiving(self) -> bool:
+        """Get flag whether receiving thread is started."""
+        return self.__receiving_thread is not None
+
     def _update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P2Client parameter.
@@ -340,7 +352,8 @@ class Client:
         :param response_records: Records of received responses to provided message.
         """
         p2_measured = response_records[0].transmission_start - request_record.transmission_end
-        self._update_p2_client_measured(p2_measured.total_seconds() * 1000.)
+        if p2_measured.total_seconds() > 0:
+            self._update_p2_client_measured(p2_measured.total_seconds() * 1000.)
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
@@ -351,7 +364,8 @@ class Client:
             self._update_p6_ext_client_measured(p6_ext_measured.total_seconds() * 1000.)
         else:
             p6_measured = response_records[-1].transmission_end - request_record.transmission_end
-            self._update_p6_client_measured(p6_measured.total_seconds() * 1000.)
+            if p6_measured.total_seconds() > 0:
+                self._update_p6_client_measured(p6_measured.total_seconds() * 1000.)
 
     def _receive_response(self,
                           sid: RequestSID,
@@ -400,6 +414,9 @@ class Client:
         :param cycle: Time (in milliseconds) used for this task cycle.
         """
         while not self.__receiving_stop_event.is_set():
+            if self.__receiving_break_event.wait(cycle / 1000.):
+                continue
+            self.__receiving_not_in_progress.clear()
             try:
                 response = self.transport_interface.receive_message(start_timeout=cycle,
                                                                     end_timeout=self.p6_ext_client_timeout)
@@ -407,6 +424,7 @@ class Client:
                 pass
             else:
                 self.__response_queue.put_nowait(response)
+            self.__receiving_not_in_progress.set()
 
     def _send_tester_present_task(self, tester_present_message: UdsMessage) -> None:
         """
@@ -422,6 +440,30 @@ class Client:
             remaining_wait = next_call - perf_counter()
             if self.__tester_present_stop_event.wait(remaining_wait):
                 break
+
+    @staticmethod
+    def _decorator_wait(method: Callable) -> Callable:  # type: ignore
+        """
+        Decorate a method that blocks receiving task.
+
+        :param method: Method to decorate.
+
+        :return: Decorated method.
+        """
+
+        @wraps(method)
+        def wrapper(self, *args: Any, **kwargs: Any) -> Any:
+            # pylint: disable=protected-access
+            self.__receiving_break_event.set()
+            self.__receiving_not_in_progress.wait(timeout=self.p6_ext_client_timeout)
+            try:
+                return_value = method(self, *args, **kwargs)
+            except Exception as error:
+                self.__receiving_break_event.clear()
+                raise error
+            self.__receiving_break_event.clear()
+            return return_value
+        return wrapper
 
     @staticmethod
     def is_response_pending_message(message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
@@ -500,26 +542,28 @@ class Client:
 
         All response messages sent to this Client while receiving is active, will be collected and accessible via
         :meth:`~uds.client.Client.get_response` and :meth:`~uds.client.Client.get_response_no_wait` methods.
+
+        .. warning:: Cycle value would be overwritten with default value if request message is sent while receiving.
         """
-        if self.__receiving_thread is None:
+        if self.is_receiving:
+            warn("Receiving is already active.",
+                 category=UserWarning)
+        else:
             self.__receiving_stop_event.clear()
             self.__receiving_thread = Thread(target=self._receive_task,
                                              kwargs={"cycle": cycle},
                                              daemon=True)
             self.__receiving_thread.start()
-        else:
-            warn("Receiving is already active.",
-                 category=UserWarning)
 
     def stop_receiving(self) -> None:
         """Stop receiving task."""
-        if self.__receiving_thread is None:
+        if self.is_receiving:
+            self.__receiving_stop_event.set()
+            self.__receiving_thread.join()  # type: ignore
+            self.__receiving_thread = None
+        else:
             warn("Receiving is already stopped.",
                  category=UserWarning)
-        else:
-            self.__receiving_stop_event.set()
-            self.__receiving_thread.join()
-            self.__receiving_thread = None
 
     def start_tester_present(self,
                              addressing_type: AddressingType = AddressingType.FUNCTIONAL,
@@ -557,6 +601,7 @@ class Client:
             self.__tester_present_thread.join(timeout=self.s3_client / 1000.)
             self.__tester_present_thread = None
 
+    @_decorator_wait
     def send_request_receive_responses(self,
                                        request: UdsMessage) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
         """

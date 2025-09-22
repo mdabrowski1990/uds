@@ -244,6 +244,83 @@ class AbstractClientTests(BaseSystemTests, ABC):
     @pytest.mark.parametrize("request_message, response_message", [
         (UdsMessage(payload=[0x3E, 0x00],
                     addressing_type=AddressingType.FUNCTIONAL),
+         UdsMessage(payload=[0x54],
+                    addressing_type=AddressingType.FUNCTIONAL)),
+        (UdsMessage(payload=[0x22, 0x10, 0x00],
+                    addressing_type=AddressingType.PHYSICAL),
+         UdsMessage(payload=[0x19, 0x04, *range(255)],
+                    addressing_type=AddressingType.PHYSICAL)),
+        (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(0, 255, 2), *(1, 255, 2)],
+                    addressing_type=AddressingType.PHYSICAL),
+         UdsMessage(payload=[0x7E, 0x00],
+                    addressing_type=AddressingType.FUNCTIONAL)),
+    ])
+    @pytest.mark.parametrize("p2_client_timeout, send_after", [
+        (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P2_CLIENT_TIMEOUT - 30),
+        (250, 150),
+    ])
+    def test_send_request_receive_responses__other(self, request_message, response_message,
+                                                    p2_client_timeout, send_after):
+        """
+        Check Client for sending UDS request and receiving other UDS response.
+
+        Procedure:
+        1. Configure Client.
+        2. Schedule response message sending by the second Transport Interface.
+        3. Schedule request message reception by the second Transport Interface.
+        4. Send UDS request message and received UDS response by the Client.
+        5. Validate attributes of request and response records.
+            Expected: Request record received, response records are empty.
+        6. Check queue with response messages.
+            Expected: One response message record stored.
+
+        :param request_message: Request message to send by Client.
+        :param response_message: Response message to receive by Client.
+        :param p2_client_timeout: P2Client timeout value to configure in Client.
+        :param send_after: Time after which response message would be sent.
+        """
+        client = Client(transport_interface=self.transport_interface_1,
+                        p2_client_timeout=p2_client_timeout)
+        self.send_message(transport_interface=self.transport_interface_2,
+                          message=response_message,
+                          delay=send_after)
+        self.receive_message(transport_interface=self.transport_interface_2,
+                             delay=0,
+                             start_timeout=1000,
+                             end_timeout=None)
+        time_before = time()
+        request_record, response_records = client.send_request_receive_responses(request=request_message)
+        time_after = time()
+        # check sent message
+        assert isinstance(request_record, UdsMessageRecord)
+        assert request_record.direction == TransmissionDirection.TRANSMITTED
+        assert request_record.payload == request_message.payload
+        assert request_record.addressing_type == request_message.addressing_type
+        # check received response
+        assert response_records == ()
+        # measured time parameters
+        assert client.p2_client_measured is None
+        assert client.p6_client_measured is None
+        assert client.p2_ext_client_measured is None
+        assert client.p6_ext_client_measured is None
+        # check that other response message was received
+        other_response_record = client.get_response_no_wait()
+        assert isinstance(other_response_record, UdsMessageRecord)
+        assert other_response_record.direction == TransmissionDirection.RECEIVED
+        assert other_response_record.payload == response_message.payload
+        assert other_response_record.addressing_type == response_message.addressing_type
+        # performance checks
+        if self.MAKE_TIMING_CHECKS:
+            assert (datetime.fromtimestamp(time_before - self.TIMESTAMP_TOLERANCE / 1000.)
+                    <= request_record.transmission_start
+                    <= request_record.transmission_end
+                    < other_response_record.transmission_start
+                    <= other_response_record.transmission_end
+                    <= datetime.fromtimestamp(time_after + self.TIMESTAMP_TOLERANCE / 1000.))
+
+    @pytest.mark.parametrize("request_message, response_message", [
+        (UdsMessage(payload=[0x3E, 0x00],
+                    addressing_type=AddressingType.FUNCTIONAL),
          UdsMessage(payload=[0x7E, 0x00],
                     addressing_type=AddressingType.FUNCTIONAL)),
         (UdsMessage(payload=[0x22, 0x10, 0x00],
@@ -629,7 +706,7 @@ class AbstractClientTests(BaseSystemTests, ABC):
         UdsMessage(payload=[*range(255)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("cycle", [10, 500])
-    def test_receive_message(self, message, cycle):
+    def test_receive_message_without_request(self, message, cycle):
         """
         Check for receiving messages in the background.
 
@@ -662,3 +739,82 @@ class AbstractClientTests(BaseSystemTests, ABC):
         assert record.addressing_type == message.addressing_type
         assert record.direction == TransmissionDirection.RECEIVED
         assert client.get_response_no_wait() is None
+
+    @pytest.mark.parametrize("request_message, response_message, other_message", [
+        (
+            UdsMessage(payload=[0x19, 0x02, 0xFF],
+                       addressing_type=AddressingType.FUNCTIONAL),
+            UdsMessage(payload=[0x59, 0x02, 0xFF],
+                       addressing_type=AddressingType.FUNCTIONAL),
+            UdsMessage(payload=[0x7E, 0x00],
+                       addressing_type=AddressingType.FUNCTIONAL),
+        ),
+        (
+            UdsMessage(payload=[0x22, 0x10, 0x00],
+                       addressing_type=AddressingType.PHYSICAL),
+            UdsMessage(payload=[0x62, 0x10, 0x00, *range(255)],
+                       addressing_type=AddressingType.PHYSICAL),
+            UdsMessage(payload=[0x7E, 0x00],
+                       addressing_type=AddressingType.PHYSICAL),
+        ),
+    ])
+    @pytest.mark.parametrize("send_after, period, pause", [
+        (450, 10, 2200),
+        (250, 15, 2000),
+    ])
+    def test_send_request_while_receiving(self, request_message, response_message, other_message,
+                                          send_after, period, pause):
+        """
+        Check for receiving messages in the background.
+
+        Procedure:
+        1. Configure Client.
+        2. Start receiving.
+        3. Schedule message to be received by Client (1 answer to the request and 20 other messages).
+        4. Send message by client and received response.
+            Expected: Request sent and response received.
+        5. Wait for all messages delivery.
+        6. Check sent and received messages.
+            Expected: All received messages received by Client (both before and after request sending).
+
+        :param request_message: Request message to send by Client.
+        :param response_message: Response message to receive by Client.
+        :param other_message: Other message to received by Client.
+        :param send_after: Time in milliseconds to send response after.
+        :param period: Period used for sending other messages.
+        """
+        client = Client(transport_interface=self.transport_interface_1,
+                        p2_client_timeout=1000)
+        client.start_receiving()
+        self.send_message(transport_interface=self.transport_interface_2,
+                          message=response_message,
+                          delay=send_after)
+        for i in range(1, 21):
+            delay = i*period
+            if i > 2:
+                delay += pause
+            self.send_message(transport_interface=self.transport_interface_2,
+                              message=other_message,
+                              delay=delay)
+        request_record, response_records = client.send_request_receive_responses(request=request_message)
+        sleep(3)  # wait for all messages to be received
+        client.stop_receiving()
+        # check sent message
+        assert isinstance(request_record, UdsMessageRecord)
+        assert request_record.direction == TransmissionDirection.TRANSMITTED
+        assert request_record.payload == request_message.payload
+        assert request_record.addressing_type == request_message.addressing_type
+        # check received response
+        assert isinstance(response_records, tuple)
+        assert len(response_records) == 1
+        response_record = response_records[0]
+        assert response_record.direction == TransmissionDirection.RECEIVED
+        assert response_record.payload == response_message.payload
+        assert response_record.addressing_type == response_message.addressing_type
+        # check other messages
+        for _ in range(20):
+            other_message_record = client.get_response_no_wait()
+            assert isinstance(other_message_record, UdsMessageRecord)
+            assert other_message_record.direction == TransmissionDirection.RECEIVED
+            assert other_message_record.payload == other_message_record.payload
+            assert other_message_record.addressing_type == other_message_record.addressing_type
