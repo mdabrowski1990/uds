@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from time import perf_counter, time, sleep
+from time import perf_counter, sleep, time
 from typing import List
 
 import pytest

@@ -2,11 +2,11 @@
 
 __all__ = ["Client"]
 
+from queue import Empty, SimpleQueue
 from threading import Event, Thread
 from time import perf_counter, time
 from typing import List, Optional, Sequence, Tuple, Union
 from warnings import warn
-from queue import SimpleQueue, Empty
 
 from uds.addressing import AddressingType
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord

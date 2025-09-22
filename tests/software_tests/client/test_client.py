@@ -9,6 +9,7 @@ from uds.client import (
     NRC,
     AbstractTransportInterface,
     Client,
+    Empty,
     Event,
     InconsistencyError,
     MessageTransmissionNotStartedError,
@@ -18,7 +19,6 @@ from uds.client import (
     Thread,
     UdsMessage,
     UdsMessageRecord,
-Empty
 )
 
 SCRIPT_LOCATION = "uds.client"
