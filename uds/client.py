@@ -452,7 +452,7 @@ class Client:
         """
 
         @wraps(method)
-        def wrapper(self, *args: Any, **kwargs: Any) -> Any:
+        def wrapper(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
             # pylint: disable=protected-access
             self.__receiving_break_event.set()
             self.__receiving_not_in_progress.wait(timeout=self.p6_ext_client_timeout)
