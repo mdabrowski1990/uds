@@ -71,6 +71,13 @@ class Client:
         self.__tester_present_thread: Optional[Thread] = None
         self.__tester_present_stop_event: Event = Event()
 
+    def __del__(self) -> None:
+        """Safely finish all tasks."""
+        if self.__tester_present_thread is not None:
+            self.stop_tester_present()
+        if self.__receiving_thread is not None:
+            self.stop_receiving()
+
     @property
     def transport_interface(self) -> AbstractTransportInterface:
         """Get Transport Interface used."""
@@ -386,7 +393,7 @@ class Client:
             remaining_end_timeout_ms = end_timeout - time_elapsed_ms
         return None
 
-    def _receive(self, cycle: TimeMillisecondsAlias) -> None:
+    def _receive_task(self, cycle: TimeMillisecondsAlias) -> None:
         """
         Schedule reception of a UDS message for a cyclic response collecting.
 
@@ -400,10 +407,8 @@ class Client:
                 pass
             else:
                 self.__response_queue.put_nowait(response)
-            if self.__receiving_stop_event.wait():
-                break
 
-    def _send_tester_present(self, tester_present_message: UdsMessage) -> None:
+    def _send_tester_present_task(self, tester_present_message: UdsMessage) -> None:
         """
         Schedule a single Tester Present message transmission for a cyclic sending.
 
@@ -462,7 +467,7 @@ class Client:
             if timeout <= 0:
                 raise ValueError(f"Provided timeout value is less or equal to 0. Actual value: {timeout}")
         try:
-            return self.__response_queue.get(timeout=timeout)
+            return self.__response_queue.get(timeout=None if timeout is None else timeout / 1000.)
         except Empty:
             return None
 
@@ -498,7 +503,7 @@ class Client:
         """
         if self.__receiving_thread is None:
             self.__receiving_stop_event.clear()
-            self.__receiving_thread = Thread(target=self._receive,
+            self.__receiving_thread = Thread(target=self._receive_task,
                                              kwargs={"cycle": cycle},
                                              daemon=True)
             self.__receiving_thread.start()
@@ -534,7 +539,7 @@ class Client:
             })
             tester_present_message = UdsMessage(payload=payload,
                                                 addressing_type=AddressingType.validate_member(addressing_type))
-            self.__tester_present_thread = Thread(target=self._send_tester_present,
+            self.__tester_present_thread = Thread(target=self._send_tester_present_task,
                                                   args=(tester_present_message, ),
                                                   daemon=True)
             self.__tester_present_thread.start()

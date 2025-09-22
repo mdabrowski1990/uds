@@ -113,6 +113,23 @@ class TestClient:
         assert self.mock_client._Client__tester_present_thread is None
         assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
+    @pytest.mark.parametrize("tester_present_thread, receiving_thread", [
+        (None, Mock()),
+        (Mock(), None),
+    ])
+    def test_del(self, tester_present_thread, receiving_thread):
+        self.mock_client._Client__tester_present_thread = tester_present_thread
+        self.mock_client._Client__receiving_thread = receiving_thread
+        assert Client.__del__(self.mock_client) is None
+        if tester_present_thread is None:
+            self.mock_client.stop_tester_present.assert_not_called()
+        else:
+            self.mock_client.stop_tester_present.assert_called_once_with()
+        if receiving_thread is None:
+            self.mock_client.stop_receiving.assert_not_called()
+        else:
+            self.mock_client.stop_receiving.assert_called_once_with()
+
     # transport_interface
 
     def test_transport_interface__get(self):
@@ -659,24 +676,53 @@ class TestClient:
                                         end_timeout=end_timeout) == response_records[-1]
         self.mock_client.transport_interface.receive_message.assert_called()
 
-    # _send_tester_present
+    # _receive_task
 
-    def test_send_tester_present__send_2_then_wait(self):
+    def test_receive_task__stopped(self):
+        mock_is_set = Mock(return_value=True)
+        self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
+        assert Client._receive_task(self.mock_client, cycle=Mock()) is None
+        self.mock_client.transport_interface.receive_message.assert_not_called()
+
+    @pytest.mark.parametrize("cycle", [10, 321])
+    def test_receive_task__no_message(self, cycle):
+        mock_is_set = Mock(side_effect=[False, True])
+        self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
+        self.mock_client.transport_interface.receive_message.side_effect = TimeoutError
+        assert Client._receive_task(self.mock_client, cycle=cycle) is None
+        self.mock_client.transport_interface.receive_message.assert_called_once_with(
+            start_timeout=cycle,
+            end_timeout=self.mock_client.p6_ext_client_timeout)
+        self.mock_client._Client__response_queue.put_nowait.assert_not_called()
+
+    @pytest.mark.parametrize("cycle", [10, 321])
+    def test_receive_task__1_message(self, cycle):
+        mock_message = Mock()
+        mock_is_set = Mock(side_effect=[False, False, False, True])
+        self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
+        self.mock_client.transport_interface.receive_message.side_effect = [TimeoutError, mock_message, TimeoutError]
+        assert Client._receive_task(self.mock_client, cycle=cycle) is None
+        assert self.mock_client.transport_interface.receive_message.call_count == 3
+        self.mock_client._Client__response_queue.put_nowait.assert_called_once_with(mock_message)
+
+    # _send_tester_present_task
+
+    def test_send_tester_present_task__send_2_then_wait(self):
         mock_tp = Mock()
         mock_is_set = Mock(return_value=False)
         mock_wait = Mock(side_effect=[False, True])
         self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
-        assert Client._send_tester_present(self.mock_client, tester_present_message=mock_tp) is None
+        assert Client._send_tester_present_task(self.mock_client, tester_present_message=mock_tp) is None
         self.mock_client.transport_interface.send_message.assert_has_calls([call(mock_tp), call(mock_tp)])
         assert mock_is_set.call_count == 2
         assert mock_wait.call_count == 2
 
-    def test_send_tester_present__stopped(self):
+    def test_send_tester_present_task__stopped(self):
         mock_tp = Mock()
         mock_is_set = Mock(return_value=True)
         mock_wait = Mock()
         self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
-        assert Client._send_tester_present(self.mock_client, tester_present_message=mock_tp) is None
+        assert Client._send_tester_present_task(self.mock_client, tester_present_message=mock_tp) is None
         self.mock_client.transport_interface.send_message.assert_not_called()
         mock_is_set.assert_called_once_with()
         mock_wait.assert_not_called()
@@ -737,13 +783,13 @@ class TestClient:
     def test_get_response__empty(self, timeout):
         self.mock_client._Client__response_queue.get.side_effect = Empty
         assert Client.get_response(self.mock_client, timeout=timeout) is None
-        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=timeout)
+        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=None if timeout is None else timeout/1000.)
 
     @pytest.mark.parametrize("timeout", [None, 1])
     def test_get_response__response(self, timeout):
         assert (Client.get_response(self.mock_client, timeout=timeout)
                 == self.mock_client._Client__response_queue.get.return_value)
-        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=timeout)
+        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=None if timeout is None else timeout/1000.)
 
     # get_response_no_wait
 
@@ -822,7 +868,7 @@ class TestClient:
         })
         mock_uds_message.assert_called_once_with(payload=self.mock_tester_present.encode_request.return_value,
                                                  addressing_type=addressing_type)
-        self.mock_thread.assert_called_once_with(target=self.mock_client._send_tester_present,
+        self.mock_thread.assert_called_once_with(target=self.mock_client._send_tester_present_task,
                                                  args=(mock_uds_message.return_value,),
                                                  daemon=True)
         self.mock_warn.assert_not_called()

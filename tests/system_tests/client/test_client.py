@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from time import perf_counter, time
+from time import perf_counter, time, sleep
 from typing import List
 
 import pytest
@@ -624,4 +624,41 @@ class AbstractClientTests(BaseSystemTests, ABC):
 
     # background receiving
 
-    
+    @pytest.mark.parametrize("message", [
+        UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+        UdsMessage(payload=[*range(255)], addressing_type=AddressingType.PHYSICAL),
+    ])
+    @pytest.mark.parametrize("cycle", [10, 500])
+    def test_receive_message(self, message, cycle):
+        """
+        Check for receiving messages in the background.
+
+        Procedure:
+        1. Configure Client.
+        2. Check that messages stored.
+            Expected: No message is stored.
+        3. Start receiving.
+        4. Check that messages stored.
+            Expected: No message is stored.
+        5. Send a message to the client.
+        6. Wait for message transmission.
+        7. Stop receiving.
+        8. Check received messages.
+            Expected: 1 message stored.
+
+        :param message: Message to be received.
+        :param cycle: Receiving message cycle.
+        """
+        client = Client(transport_interface=self.transport_interface_1)
+        assert client.get_response_no_wait() is None
+        client.start_receiving(cycle=cycle)
+        assert client.get_response(timeout=1000) is None
+        self.transport_interface_2.send_message(message)
+        sleep(1)
+        client.stop_receiving()
+        record = client.get_response_no_wait()
+        assert isinstance(record, UdsMessageRecord)
+        assert record.payload == message.payload
+        assert record.addressing_type == message.addressing_type
+        assert record.direction == TransmissionDirection.RECEIVED
+        assert client.get_response_no_wait() is None
