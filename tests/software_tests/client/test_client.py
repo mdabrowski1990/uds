@@ -545,6 +545,42 @@ class TestClient:
         self.mock_client._update_p6_client_measured.assert_called_once_with(p6_client)
         self.mock_client._update_p2_ext_client_measured.assert_not_called()
         self.mock_client._update_p6_ext_client_measured.assert_not_called()
+        self.mock_client.assert_not_called()
+
+    @pytest.mark.parametrize("request_message, response_messages, p2_client, p6_client", [
+        (Mock(spec=UdsMessageRecord,
+              transmission_start=datetime(2020, 1, 1, 12, 0, 0),
+              transmission_end=datetime(2020, 1, 1, 12, 0, 0, 500)),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 499),
+               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 15500)), ),
+         -0.001,
+         15),
+        (Mock(spec=UdsMessageRecord,
+              transmission_start=datetime(2025, 8, 24, 19, 21, 17, 917304),
+              transmission_end=datetime(2025, 8, 24, 19, 21, 17, 917304)),
+         (Mock(spec=UdsMessageRecord,
+               transmission_start=datetime(2025, 8, 24, 19, 21, 17, 916304),
+               transmission_end=datetime(2025, 8, 24, 19, 21, 17, 916304)),),
+         -1,
+         -1),
+    ])
+    def test_update_measured_client_values__direct_response__negative(self, request_message, response_messages,
+                                                                      p2_client, p6_client):
+        assert Client._update_measured_client_values(self.mock_client,
+                                                     request_record=request_message,
+                                                     response_records=response_messages) is None
+        if p2_client < 0:
+            self.mock_client._update_p2_client_measured.assert_not_called()
+        else:
+            self.mock_client._update_p2_client_measured.assert_called_once_with(p2_client)
+        if p6_client < 0:
+            self.mock_client._update_p6_client_measured.assert_not_called()
+        else:
+            self.mock_client._update_p6_client_measured.assert_called_once_with(p6_client)
+        self.mock_client._update_p2_ext_client_measured.assert_not_called()
+        self.mock_client._update_p6_ext_client_measured.assert_not_called()
+        self.mock_warn.assert_called()
 
     @pytest.mark.parametrize("request_message, response_messages, p2_client, p2_ext_client, p6_ext_client", [
         (Mock(spec=UdsMessageRecord,

@@ -23,7 +23,7 @@ from uds.utilities import (
 )
 
 
-def decorator_wait(method: Callable) -> Callable:  # type: ignore
+def decorator_block_receiving(method: Callable) -> Callable:  # type: ignore
     """
     Decorate a method that blocks receiving task.
 
@@ -377,6 +377,9 @@ class Client:
         p2_measured = response_records[0].transmission_start - request_record.transmission_end
         if p2_measured.total_seconds() > 0:
             self._update_p2_client_measured(p2_measured.total_seconds() * 1000.)
+        else:
+            warn("Measured P2Client value is negative. Check Transport Interface accuracy.",
+                 category=RuntimeWarning)
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
@@ -389,6 +392,9 @@ class Client:
             p6_measured = response_records[-1].transmission_end - request_record.transmission_end
             if p6_measured.total_seconds() > 0:
                 self._update_p6_client_measured(p6_measured.total_seconds() * 1000.)
+            else:
+                warn("Measured P6Client value is negative. Check Transport Interface accuracy.",
+                     category=RuntimeWarning)
 
     def _receive_response(self,
                           sid: RequestSID,
@@ -600,7 +606,7 @@ class Client:
             self.__tester_present_thread.join(timeout=self.s3_client / 1000.)
             self.__tester_present_thread = None
 
-    @decorator_wait
+    @decorator_block_receiving
     def send_request_receive_responses(self,
                                        request: UdsMessage) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
         """
