@@ -65,11 +65,11 @@ class Client:
         self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
-        self.__tester_present_thread: Optional[Thread] = None
-        self.__tester_present_stop_event: Event = Event()
+        self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
         self.__receiving_thread: Optional[Thread] = None
         self.__receiving_stop_event: Event = Event()
-        self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
+        self.__tester_present_thread: Optional[Thread] = None
+        self.__tester_present_stop_event: Event = Event()
 
     @property
     def transport_interface(self) -> AbstractTransportInterface:
@@ -486,7 +486,7 @@ class Client:
 
     def clear_response_queue(self) -> None:
         """Clear all response messages that are currently stored in the queue."""
-        while not self.__response_queue.empty():
+        for _ in range(self.__response_queue.qsize()):
             self.__response_queue.get_nowait()
 
     def start_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:

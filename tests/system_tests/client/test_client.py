@@ -621,3 +621,7 @@ class AbstractClientTests(BaseSystemTests, ABC):
         payload = b"\x3E\x80" if sprmib else b"\x3E\x00"
         assert tester_present_record_1.payload == tester_present_record_2.payload == payload
         assert tester_present_record_1.addressing_type == tester_present_record_2.addressing_type  # do not compare with addressing_type in case the same rx and tx AI parameters
+
+    # background receiving
+
+    

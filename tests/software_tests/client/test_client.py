@@ -18,6 +18,7 @@ from uds.client import (
     Thread,
     UdsMessage,
     UdsMessageRecord,
+Empty
 )
 
 SCRIPT_LOCATION = "uds.client"
@@ -28,7 +29,8 @@ class TestClient:
 
     def setup_method(self):
         self.mock_client = MagicMock(spec=Client,
-                                     _Client__response_queue=Mock())
+                                     _Client__response_queue=Mock(),
+                                     _Client__receiving_stop_event=Mock())
         # patching
         self._patcher_min = patch(f"{SCRIPT_LOCATION}.min")
         self.mock_min = self._patcher_min.start()
@@ -42,6 +44,8 @@ class TestClient:
         self.mock_thread = self._patcher_thread.start()
         self._patcher_event = patch(f"{SCRIPT_LOCATION}.Event")
         self.mock_event = self._patcher_event.start()
+        self._patcher_simple_queue = patch(f"{SCRIPT_LOCATION}.SimpleQueue")
+        self.mock_simple_queue = self._patcher_simple_queue.start()
         self._patcher_tester_present = patch(f"{SCRIPT_LOCATION}.TESTER_PRESENT")
         self.mock_tester_present = self._patcher_tester_present.start()
         self._patcher_validate_request_sid = patch(f"{SCRIPT_LOCATION}.RequestSID.validate_member")
@@ -73,6 +77,9 @@ class TestClient:
         assert self.mock_client._Client__p2_ext_client_measured is None
         assert self.mock_client._Client__p6_client_measured is None
         assert self.mock_client._Client__p6_ext_client_measured is None
+        assert self.mock_client._Client__response_queue is self.mock_simple_queue.return_value
+        assert self.mock_client._Client__receiving_thread is None
+        assert self.mock_client._Client__receiving_stop_event == self.mock_event.return_value
         assert self.mock_client._Client__tester_present_thread is None
         assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
@@ -100,6 +107,9 @@ class TestClient:
         assert self.mock_client._Client__p2_ext_client_measured is None
         assert self.mock_client._Client__p6_client_measured is None
         assert self.mock_client._Client__p6_ext_client_measured is None
+        assert self.mock_client._Client__response_queue is self.mock_simple_queue.return_value
+        assert self.mock_client._Client__receiving_thread is None
+        assert self.mock_client._Client__receiving_stop_event == self.mock_event.return_value
         assert self.mock_client._Client__tester_present_thread is None
         assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
@@ -710,35 +720,84 @@ class TestClient:
 
     # get_response
 
-    # TODO
+    @pytest.mark.parametrize("timeout", [Mock(), "not a timeout"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_response__type_error(self, mock_isinstance, timeout):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            Client.get_response(self.mock_client, timeout=timeout)
+        mock_isinstance.assert_called_once_with(timeout, (int, float))
 
-    def test_get_response(self):
-        with pytest.raises(NotImplementedError):
-            Client.get_response(self.mock_client)
+    @pytest.mark.parametrize("timeout", [0, -0.043])
+    def test_get_response__value_error(self, timeout):
+        with pytest.raises(ValueError):
+            Client.get_response(self.mock_client, timeout=timeout)
+
+    @pytest.mark.parametrize("timeout", [1, 453.231])
+    def test_get_response__empty(self, timeout):
+        self.mock_client._Client__response_queue.get.side_effect = Empty
+        assert Client.get_response(self.mock_client, timeout=timeout) is None
+        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=timeout)
+
+    @pytest.mark.parametrize("timeout", [None, 1])
+    def test_get_response__response(self, timeout):
+        assert (Client.get_response(self.mock_client, timeout=timeout)
+                == self.mock_client._Client__response_queue.get.return_value)
+        self.mock_client._Client__response_queue.get.assert_called_once_with(timeout=timeout)
 
     # get_response_no_wait
 
-    # TODO
+    def test_get_response_no_wait__empty(self):
+        self.mock_client._Client__response_queue.get_nowait.side_effect = Empty
+        assert Client.get_response_no_wait(self.mock_client) is None
+        self.mock_client._Client__response_queue.get_nowait.assert_called_once_with()
 
-    def test_get_response_no_wait(self):
-        with pytest.raises(NotImplementedError):
-            Client.get_response_no_wait(self.mock_client)
+    def test_get_response_no_wait__response(self):
+        assert (Client.get_response_no_wait(self.mock_client)
+                == self.mock_client._Client__response_queue.get_nowait.return_value)
+        self.mock_client._Client__response_queue.get_nowait.assert_called_once_with()
 
     # clear_response_queue
 
-    # TODO
-
-    def test_clear_response_queue(self):
-        with pytest.raises(NotImplementedError):
-            Client.clear_response_queue(self.mock_client)
+    @pytest.mark.parametrize("queue_size", [0, 31])
+    def test_clear_response_queue(self, queue_size):
+        self.mock_client._Client__response_queue.qsize = Mock(return_value=queue_size)
+        assert Client.clear_response_queue(self.mock_client) is None
+        assert self.mock_client._Client__response_queue.get_nowait.call_count == queue_size
 
     # start_receiving
 
-    # TODO
+    @pytest.mark.parametrize("cycle", [Mock(), 234])
+    def test_start_receiving__not_running(self, cycle):
+        self.mock_client._Client__receiving_thread = None
+        assert Client.start_receiving(self.mock_client, cycle=cycle) is None
+        assert self.mock_client._Client__receiving_thread == self.mock_thread.return_value
+        self.mock_thread.return_value.start.assert_called_once_with()
+        self.mock_client._Client__receiving_stop_event.clear.assert_called_once_with()
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("cycle", [Mock(), 234])
+    def test_start_receiving__running(self, cycle):
+        self.mock_client._Client__receiving_thread = Mock()
+        assert Client.start_receiving(self.mock_client, cycle=cycle) is None
+        self.mock_thread.return_value.start.assert_not_called()
+        self.mock_warn.assert_called_once()
 
     # stop_receiving
 
-    # TODO
+    def test_stop_receiving__running(self):
+        mock_thread = Mock(spec=Thread)
+        self.mock_client._Client__receiving_thread = mock_thread
+        assert Client.stop_receiving(self.mock_client) is None
+        assert self.mock_client._Client__receiving_thread is None
+        self.mock_client._Client__receiving_stop_event.set.assert_called_once_with()
+        mock_thread.join.assert_called_once_with()
+        self.mock_warn.assert_not_called()
+
+    def test_stop_receiving__not_running(self):
+        self.mock_client._Client__receiving_thread = None
+        assert Client.stop_receiving(self.mock_client) is None
+        self.mock_warn.assert_called_once()
 
     # start_tester_present
 
