@@ -23,6 +23,29 @@ from uds.utilities import (
 )
 
 
+def decorator_wait(method: Callable) -> Callable:  # type: ignore
+    """
+    Decorate a method that blocks receiving task.
+
+    :param method: Method to decorate.
+
+    :return: Decorated method.
+    """
+    @wraps(method)
+    def wrapper(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
+        # pylint: disable=protected-access
+        self._Client__receiving_break_event.set()
+        self._Client__receiving_not_in_progress.wait(timeout=self.p6_ext_client_timeout)
+        try:
+            return_value = method(self, *args, **kwargs)
+        except Exception as error:
+            self._Client__receiving_break_event.clear()
+            raise error
+        self._Client__receiving_break_event.clear()
+        return return_value
+    return wrapper
+
+
 class Client:
     """Simulation for UDS Client entity."""
 
@@ -442,30 +465,6 @@ class Client:
                 break
 
     @staticmethod
-    def _decorator_wait(method: Callable) -> Callable:  # type: ignore
-        """
-        Decorate a method that blocks receiving task.
-
-        :param method: Method to decorate.
-
-        :return: Decorated method.
-        """
-
-        @wraps(method)
-        def wrapper(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
-            # pylint: disable=protected-access
-            self.__receiving_break_event.set()
-            self.__receiving_not_in_progress.wait(timeout=self.p6_ext_client_timeout)
-            try:
-                return_value = method(self, *args, **kwargs)
-            except Exception as error:
-                self.__receiving_break_event.clear()
-                raise error
-            self.__receiving_break_event.clear()
-            return return_value
-        return wrapper
-
-    @staticmethod
     def is_response_pending_message(message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
         """
         Check if provided UDS message record contains Negative Response with Response Pending NRC.
@@ -601,7 +600,7 @@ class Client:
             self.__tester_present_thread.join(timeout=self.s3_client / 1000.)
             self.__tester_present_thread = None
 
-    @_decorator_wait
+    @decorator_wait
     def send_request_receive_responses(self,
                                        request: UdsMessage) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
         """

@@ -29,10 +29,11 @@ class TestClient:
 
     def setup_method(self):
         self.mock_client = MagicMock(spec=Client,
-                                     _Client__response_queue=Mock(),
                                      _Client__receiving_stop_event=Mock(),
                                      _Client__receiving_break_event=Mock(),
-                                     _Client__receiving_not_in_progress=Mock())
+                                     _Client__receiving_not_in_progress=Mock(),
+                                     _Client__tester_present_stop_event=Mock(),
+                                     _Client__response_queue=Mock())
         # patching
         self._patcher_min = patch(f"{SCRIPT_LOCATION}.min")
         self.mock_min = self._patcher_min.start()
