@@ -2,21 +2,20 @@
 
 Diagnostics over CAN
 ====================
-Diagnostics over CAN (DoCAN) is also called CAN Transport Protocol (CAN ISO TP or CAN-TP). It is an underlying protocol
-defined by `ISO 15765 <https://en.wikipedia.org/wiki/ISO_15765>`_ that is used by UDS (but also some other protocols
-like SAE J1979 or `KWP2000 <https://en.wikipedia.org/wiki/Keyword_Protocol_2000>`_) for
-:ref:`message segmentation <knowledge-base-segmentation>` when communicating over CAN bus.
-In other words, UDS (and some other protocols) uses DoCAN as adaptation to CAN networks.
-It is presented in :ref:`UDS OSI Model <knowledge-base-osi-model>`.
+Diagnostics over CAN (DoCAN) also known as CAN Transport Protocol (CAN-TP, ISO 15765-2),
+is the transport layer protocol used by UDS and several other diagnostic protocols (e.g., SAE J1979,
+`KWP2000 <https://en.wikipedia.org/wiki/Keyword_Protocol_2000>`_)
+for :ref:`message segmentation <knowledge-base-segmentation>` on CAN networks.
+In other words, DoCAN provides the adaptation that allows UDS to operate on CAN.
+It is illustrated in the :ref:`UDS OSI Model <knowledge-base-osi-model>`.
 
 
 .. _knowledge-base-can-frame:
 
 CAN Frame
 ---------
-`CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_ are the only type of CAN frames that
-are used by DoCAN and therefore UDS communication. CAN data frames consist of many different fields,
-but the key in terms of DoCAN communication are listed below:
+DoCAN (and therefore UDS) uses only `CAN data frames <https://elearning.vector.com/mod/page/view.php?id=345>`_.
+A CAN data frame consists of several fields, but for DoCAN communication the most relevant are:
 
 - CAN Identifier (CAN ID)
 
@@ -30,12 +29,11 @@ but the key in terms of DoCAN communication are listed below:
 
 - Data Length Code (DLC)
 
-  Data Length Code (DLC) is a field that informs about number of data bytes that a CAN frame contains.
+  DLC is a field that informs about number of data bytes that a CAN frame contains.
 
 - CAN Data Field
 
-  CAN Data consists of CAN frame payload bytes. The number of bytes that CAN Data Field contains is determined by
-  frame's DLC values as presented in the table:
+  Data Field contains the payload. Its length is determined by the DLC value, as shown in the table:
 
   +-----+--------------------------+----------------------------+---------------------+
   | DLC | Number of CAN Data bytes | Supported by CLASSICAL CAN | Supported by CAN FD |
@@ -89,8 +87,8 @@ CAN Packets are :ref:`CAN Frames <knowledge-base-can-frame>` exchanged during Do
 
 Data Field
 ``````````
-CAN Packets must have Data Length Code (DLC) equal to 8 (for CLASSICAL CAN and CAN FD) or greater (for CAN FD).
-The only exception is usage of `CAN Frame Data Optimization`_.
+In DoCAN, a CAN Packet must use a DLC of 8 (Classical CAN and CAN FD), or greater than 8 (CAN FD only).
+The only exception is when :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is applied.
 
 +-----+------------------------------------------------------------------------+
 | DLC |                               Description                              |
@@ -122,12 +120,17 @@ where:
 
 CAN Frame Data Padding
 ''''''''''''''''''''''
-If a number of bytes specified in a Packet is shorter than a number of bytes in CAN frame's data field,
-then the sender has to pad any unused bytes in the frame. This can only be a case for
-:ref:`Single Frame <knowledge-base-can-single-frame>`, :ref:`Flow Control <knowledge-base-can-flow-control>` and
-the last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` of a segmented message.
-Unless specified differently, the default value 0xCC shall be used for the frame padding to minimize the bit stuffing
-insertions and bit alteration on the wire.
+If the payload of a CAN Packet is shorter than the available bytes in the frame’s data field, the sender must pad
+the unused bytes.
+
+Padding applies only to:
+
+- :ref:`Single Frame <knowledge-base-can-single-frame>`
+- :ref:`Flow Control <knowledge-base-can-flow-control>`
+- The last :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+Unless specified otherwise, the padding value shall be 0xCC, which minimizes bit stuffing and signal distortion
+on the bus.
 
 .. note:: CAN frame data padding is mandatory for :ref:`CAN frames <knowledge-base-can-frame>` with DLC>8,
   optional for frames with DLC=8 and forbidden for frames with DLC<8.
@@ -139,8 +142,8 @@ CAN Frame Data Optimization
 '''''''''''''''''''''''''''
 CAN frame data optimization is an alternative to `CAN Frame Data Padding`_.
 If a number of bytes specified in a CAN Packet is shorter than a number of bytes in CAN frame's data field,
-then the sender might decrease DLC value of the :ref:`CAN frame <knowledge-base-can-frame>` to the minimal number
-that is required to send a desired number of data bytes in a single CAN packet.
+then the sender might decrease DLC value of the :ref:`CAN frame <knowledge-base-can-frame>` to the smallest DLC that
+can still accommodate the payload.
 
 .. note:: CAN Frame Data Optimization might always be used for CAN Packets with less than 8 bytes of data to send.
 
@@ -208,17 +211,15 @@ where:
 - FS - :ref:`Flow Status <knowledge-base-can-flow-status>`
 - BS - :ref:`Block Size <knowledge-base-can-block-size>`
 - ST_min - :ref:`Separation Time minimum <knowledge-base-can-st-min>`
-- N/A - Not Applicable (byte does not carry any information)
+- N/A - Not applicable (the byte does not contain protocol information)
 
 
 .. _knowledge-base-can-single-frame:
 
 Single Frame
 ''''''''''''
-Single Frame (SF) is used by CAN entities to transmit a diagnostic message with a payload short enough to fit it
-into a single CAN packet. In other words, Single Frame carries payload of an entire diagnostic message.
-Number of payload bytes carried by SF is specified by
-:ref:`Single Frame Data Length <knowledge-base-can-single-frame-data-length>` value.
+Single Frame (SF) is used to transmit an entire diagnostic message that fits into one CAN Packet.
+Payload length is defined by :ref:`SF_DL <knowledge-base-can-single-frame-data-length>`.
 
 
 .. _knowledge-base-can-single-frame-data-length:
@@ -238,11 +239,9 @@ SF_DL specifies number of diagnostic message payload bytes transmitted in a Sing
 
 First Frame
 '''''''''''
-First Frame (FF) is used by CAN entities to indicate start of a diagnostic message transmission.
-First Frames are only used during a transmission of a segmented diagnostic messages that could not fit into a
-:ref:`Single Frame <knowledge-base-can-single-frame>`.
-Number of payload bytes carried by FF is specified by
-:ref:`First Frame Data Length <knowledge-base-can-first-frame-data-length>` value.
+First Frame (FF) marks the start of a segmented diagnostic message which could not fit into
+a :ref:`Single Frame <knowledge-base-can-single-frame>`.
+Payload length is given by :ref:`FF_DL <knowledge-base-can-first-frame-data-length>`.
 
 
 .. _knowledge-base-can-first-frame-data-length:
@@ -261,12 +260,8 @@ was initiated by a First Frame.
 
 Consecutive Frame
 '''''''''''''''''
-Consecutive Frame (CF) is used by CAN entities to continue transmission of a diagnostic message.
-:ref:`First Frame <knowledge-base-can-first-frame>` shall always precede (one or more) Consecutive Frames.
-Consecutive Frames carry following payload bytes of a diagnostic message that could not fit into
-a :ref:`First Frame <knowledge-base-can-first-frame>` that preceded them.
-To avoid ambiguity and to make sure that no Consecutive Frame is lost, the order of Consecutive Frames is determined by
-:ref:`Sequence Number <knowledge-base-can-sequence-number>` value.
+Consecutive Frame (CF) carries the remaining payload after a :ref:`First Frame <knowledge-base-can-first-frame>`.
+Order is indicated by :ref:`Sequence Number <knowledge-base-can-sequence-number>`.
 
 
 .. _knowledge-base-can-sequence-number:
@@ -275,14 +270,13 @@ Sequence Number
 ...............
 Sequence Number (SN) is 4-bit value used to specify the order of Consecutive Frames.
 
-The rules of proper Sequence Number value assignment are following:
+The rules for assigning Sequence Numbers are:
 
 - SN value of the first :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` that directly follows
   a :ref:`First Frame <knowledge-base-can-first-frame>` shall be set to 1.
 - SN shall be incremented by 1 for each following :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
 - SN value shall not be affected by :ref:`Flow Control <knowledge-base-can-flow-control>` packets.
-- when SN reaches the value of 15, it shall wraparound and be set to 0 in the next
-  :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
+- When SN reaches 15, the next :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` shall use SN = 0.
 
 
 .. _knowledge-base-can-flow-control:
@@ -308,7 +302,7 @@ a Consecutive Frames transmission.
 
 Values of Flow Status:
 
-- 0x0 - ContinueToSend (CTS)
+- **0x0 - ContinueToSend (CTS)**
 
   ContinueToSend value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
   with CTS) is ready to receive a maximum of :ref:`Block Size <knowledge-base-can-block-size>` number of
@@ -317,7 +311,7 @@ Values of Flow Status:
   Reception of a :ref:`Flow Control <knowledge-base-can-flow-control>` packet with ContinueToSend value shall cause
   the sender to resume ConsecutiveFrames sending.
 
-- 0x1 - wait (WAIT)
+- **0x1 - wait (WAIT)**
 
   Wait value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded with WAIT)
   is not ready to receive another :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
@@ -330,7 +324,7 @@ Values of Flow Status:
   the :ref:`Flow Control <knowledge-base-can-flow-control>` packet (that contains WAIT value of Flow Status)
   are not relevant and shall be ignored.
 
-- 0x2 - Overflow (OVFLW)
+- **0x2 - Overflow (OVFLW)**
 
   Overflow value of Flow Status informs a sender of a diagnostic message that receiving entity (that responded
   with OVFLW) is not able to receive a full diagnostic message as it is too big and reception of the message would
@@ -425,10 +419,9 @@ STmin values:
 
 CAN Addressing Formats
 ----------------------
-CAN Addressing Formats define a way of storing :ref:`Network Address Information <knowledge-base-n-ai>` in
-`CAN Packet`_.
-
-ISO 15765 defines following 3 addressing formats:
+CAN addressing formats define how :ref:`Network Address Information <knowledge-base-n-ai>` is encoded within
+a `CAN Packet`_.
+ISO 15765 specifies the following three addressing formats:
 
 - :ref:`Normal addressing <knowledge-base-can-normal-addressing>`
 - :ref:`Extended addressing <knowledge-base-can-extended-addressing>`
@@ -446,22 +439,19 @@ ISO 15765 defines following 3 addressing formats:
 
 Normal Addressing
 `````````````````
-Normal CAN Addressing Format is usually used when direct communication with servers is possible -
-a client (Diagnostic Tester) is connected to the same CAN network as targeted servers (ECUs).
+Normal CAN Addressing is typically used when a client (Diagnostic Tester) communicates directly with servers (ECUs)
+in the same CAN network.
 
-When Normal CAN Addressing Format is used, then the value of CAN Identifier carries the entire
-:ref:`Network Address Information <knowledge-base-n-ai>`. This means that basing solely on CAN Identifier value,
-it is possible to identify :ref:`an addressing type <knowledge-base-addressing>`, a transmitting and receiving entities
-of a diagnostic packet/message.
+In this format, the CAN Identifier itself carries the complete :ref:`Network Address Information <knowledge-base-n-ai>`.
+The CAN Identifier alone provides sufficient information to identify
+the :ref:`addressing type <knowledge-base-addressing>`, as well as the transmitting and receiving nodes.
 
 .. note:: With normal addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
 
-Following parameters contain :ref:`Network Address Information <knowledge-base-n-ai>` for
-Normal CAN Addressing Format:
+In Normal Addressing Format, the :ref:`Network Address Information <knowledge-base-n-ai>` is contained in the CAN ID,
+which indicates the addressing type as well as the transmitting and receiving nodes.
 
-- CAN ID - informs about addressing type, transmitting and receiving nodes
-
-ISO 15765-4 recommends to use following CAN Identifiers for Normal Addressing:
+ISO 15765-4 specifies the following CAN Identifiers as examples for Normal CAN Addressing:
 
 - 0x7DF - functionally addressed request message
 - 0x7E0 - physical request to Engine Control Module
@@ -492,8 +482,9 @@ ISO 15765-4 recommends to use following CAN Identifiers for Normal Addressing:
 
 Normal Fixed Addressing
 '''''''''''''''''''''''
-Normal Fixed CAN Addressing Format is a special case of `Normal Addressing`_ in which the mapping of
-:ref:`Network Address Information <knowledge-base-n-ai>` into the CAN identifier is further specified.
+Normal Fixed CAN Addressing is a specialized variant of :ref:`Normal Addressing <knowledge-base-can-normal-addressing>`,
+where the mapping of :ref:`Network Address Information <knowledge-base-n-ai>` into the 29-bit CAN Identifier
+is strictly predefined by ISO 15765-4.
 
 .. note:: With normal fixed addressing, only 29-bit (extended) CAN Identifiers are allowed.
 
@@ -502,8 +493,8 @@ Normal Fixed CAN Addressing Format:
 
 - CAN ID (with embedded **Target Address** and **Source Address**) - informs about addressing type,
   transmitting and receiving nodes
-  - **Source Address** informs about transmitting node
-  - **Target Address** informs about receiving node
+  - **Source Address** identifies the transmitting node
+  - **Target Address** identifies the receiving node
 
 CAN Identifier values used for UDS communication using normal fixed addressing:
 
@@ -588,66 +579,69 @@ ISO 15765-4 recommends to use following parameters for Normal Fixed Addressing:
 
 Extended Addressing
 ```````````````````
-Extended CAN Addressing Format is usually used when direct communication with servers is not possible -
-a client (Diagnostic Tester) is not connected to the same CAN network as server(s), therefore one or more ECU Gateways
-are used to pass on the packets/messages.
+The Extended CAN Addressing Format is typically used when direct communication with servers is not possible.
+In this case, a client (Diagnostic Tester) is not connected to the same CAN network as the server(s),
+and one or more ECU Gateways forward diagnostic messages.
 
-When Extended CAN Addressing Format is used, then the value of **the first CAN frame byte informs about a target** of
-a packet and remaining :ref:`Network Address Information <knowledge-base-n-ai>` (a transmitting entity and
-:ref:`an addressing type <knowledge-base-addressing>`) are determined by CAN Identifier value.
+In Extended CAN Addressing, **the first byte of the CAN frame data field contains the Network Target Address (N_TA)**,
+which identifies the receiving node.
+The remaining :ref:`Network Address Information <knowledge-base-n-ai>` (the transmitting entity and the
+:ref:`addressing type <knowledge-base-addressing>`) are derived from the CAN Identifier.
 
-.. note:: With extended addressing, both 11-bit (standard) and 29-bit (extended) CAN Identifiers are allowed.
+.. note:: Extended addressing may be used with both 11-bit (standard) and 29-bit (extended) CAN Identifiers.
 
-Following parameters specifies :ref:`Network Address Information <knowledge-base-n-ai>` for
-Extended CAN Addressing Format:
+In Extended CAN Addressing Format, the following parameters define the
+:ref:`Network Address Information <knowledge-base-n-ai>`:
 
-- CAN ID - informs about addressing type and transmitting node
-- Target Address (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - informs about
-  a receiving node
+- CAN ID – encodes the addressing type and transmitting node
+- Target Address – contained in the first data byte of the :ref:`CAN Frame <knowledge-base-can-frame>`,
+  identifies the receiving node
 
-.. note:: :ref:`Network Protocol Control Information <knowledge-base-n-pci>` is placed in the **second byte** of
-  :ref:`CAN frame data field <knowledge-base-can-data-field>` when Extended CAN Addressing format is used.
+.. note:: In Extended CAN Addressing, the :ref:`Network Protocol Control Information <knowledge-base-n-pci>`
+  is located in the second byte of the :ref:`CAN frame data field <knowledge-base-can-data-field>`.
 
 
 .. _knowledge-base-can-mixed-addressing:
 
 Mixed Addressing
 ````````````````
-Mixed CAN Addressing Format (just like Extended CAN Addressing Format) is used when direct communication with servers
-is not possible - a client (Diagnostic Tester) is not connected to the same CAN network as server(s),
-therefore one or more ECU Gateways are used to pass on the packets/messages.
+Mixed CAN Addressing Format is used in cases where direct communication with servers is not possible.
+A client (Diagnostic Tester) is not connected to the same CAN network as the server(s),
+and messages are therefore forwarded by one or more ECU Gateways.
 
-When Mixed CAN Addressing Format is used, then the value of **the first byte of a CAN frame is an address extension** of
-:ref:`Network Address Information <knowledge-base-n-ai>`.
-**The balue of the address extension shall be the same for each for transmitted and received packets.**
+When the Mixed CAN Addressing Format is used,
+**the first byte of the CAN frame data field contains an Address Extension (N_AE)**, which forms part of
+the :ref:`Network Address Information <knowledge-base-n-ai>`.
+The value of this Address Extension must remain consistent across all packets exchanged between the same sender
+and receiver for a given :ref:`addressing type <knowledge-base-addressing>`.
 
 .. note:: :ref:`Network Protocol Control Information <knowledge-base-n-pci>` is placed in the **second byte** of
   :ref:`CAN frame data field <knowledge-base-can-data-field>` if mixed addressing format is used.
 
 Following parameters specify :ref:`Network Address Information <knowledge-base-n-ai>` for
-Extended CAN Addressing Format:
+Mixed CAN Addressing Format:
 
 - CAN ID - informs about addressing type, transmitting and receiving nodes within the network
-- Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - extends
-  information carried by CAN Identifier
+- Addressing Extension (located in the first data byte of a :ref:`CAN Frame <knowledge-base-can-frame>`) - provides
+  an additional 8-bit addressing field (N_AE) extending the information in the CAN Identifier
 
 Mixed CAN Addressing Format has two sub-types, depending which CAN ID format is used:
 
-- `Mixed Addressing - 11-bit CAN Identifier`_
-- `Mixed Addressing - 29-bit CAN Identifier`_
+- `Mixed Addressing with 11-bit CAN Identifier`_
+- `Mixed Addressing with 29-bit CAN Identifier`_
 
 
 .. _knowledge-base-can-mixed-11-bit-addressing:
 
-Mixed Addressing - 11-bit CAN Identifier
-''''''''''''''''''''''''''''''''''''''''
+Mixed Addressing with 11-bit CAN Identifier
+'''''''''''''''''''''''''''''''''''''''''''
 It is a subtype `Mixed Addressing`_ when only 11-bit (standard) CAN Identifiers are used.
 
 
 .. _knowledge-base-can-mixed-29-bit-addressing:
 
-Mixed Addressing - 29-bit CAN Identifier
-''''''''''''''''''''''''''''''''''''''''
+Mixed Addressing with 29-bit CAN Identifier
+'''''''''''''''''''''''''''''''''''''''''''
 It is a subtype `Mixed Addressing`_ when only 29-bit (extended) CAN Identifiers are used.
 The mapping of :ref:`Network Address Information <knowledge-base-n-ai>` into the CAN identifier is further specified.
 
@@ -727,17 +721,18 @@ where:
 
 Segmentation on CAN
 -------------------
-Segmentation rules that are specific for CAN and DoCAN are described in this chapter.
+This chapter describes segmentation rules specific to CAN networks and Diagnostic Communication over CAN (DoCAN),
+as defined in ISO 15765-2.
 
 
 .. _knowledge-base-can-unsegmented-message-transmission:
 
 Unsegmented message transmission
 ````````````````````````````````
-When mentioning unsegmented message transmission, we mean a case when an entire
-:ref:`Diagnostic Message <knowledge-base-diagnostic-message>` can be fully transmitted in a single packet.
-:ref:`Single Frame (CAN Packet) <knowledge-base-can-single-frame>` is the type of CAN Packet that shall be used in
-this scenario.
+An unsegmented message transmission occurs when a complete :ref:`Diagnostic Message <knowledge-base-diagnostic-message>`
+fits entirely within a single :ref:`CAN Packet <knowledge-base-can-packet>`.
+In this case, the sender shall use a :ref:`Single Frame (CAN Packet) <knowledge-base-can-single-frame>` to transmit
+the message.
 
 .. figure:: ../../images/CAN_Unsegmented_Message.png
   :alt: Unsegmented Message on CAN
@@ -754,15 +749,16 @@ this scenario.
 
 Segmented message transmission
 ``````````````````````````````
-When a :ref:`Diagnostic Message <knowledge-base-diagnostic-message>` to be transmitted on CAN, contains payload which
-size is greater than a :ref:`Single Frame <knowledge-base-can-single-frame>` capacity, then the message payload
-must be divided and transmitted by many :ref:`CAN packets <knowledge-base-can-packet>`.
-The first packet to carry such messages is :ref:`First Frame (CAN Packet) <knowledge-base-can-first-frame>`
-and its transmission is followed by :ref:`Consecutive Frames (CAN Packets) <knowledge-base-can-consecutive-frame>`.
-A receiver controls the stream of incoming :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`
-by sending :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` after
-:ref:`First Frame <knowledge-base-can-first-frame>` and each complete transmission of
-:ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` block.
+If the payload of a :ref:`Diagnostic Message <knowledge-base-diagnostic-message>` exceeds the capacity of
+a :ref:`Single Frame <knowledge-base-can-single-frame>`, the message shall be segmented and transmitted using multiple
+:ref:`CAN Packets <knowledge-base-can-packet>`.
+The first packet shall be a :ref:`First Frame (CAN Packet) <knowledge-base-can-first-frame>`, followed by a sequence of
+:ref:`Consecutive Frames (CAN Packets) <knowledge-base-can-consecutive-frame>`.
+
+The receiving node manages the transmission flow by sending
+:ref:`Flow Control (CAN Packets) <knowledge-base-can-flow-control>` after
+the :ref:`First Frame <knowledge-base-can-first-frame>` and after each block of
+:ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>`.
 
 .. note:: The size of :ref:`Consecutive Frames <knowledge-base-can-consecutive-frame>` block is determined by
   :ref:`Block Size <knowledge-base-can-block-size>` parameter provided in
@@ -795,7 +791,7 @@ by sending :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` af
 
 Performance and Error Handling
 ------------------------------
-:ref:`ISO standards <knowledge-base-uds-standards>` defines following time parameters Diagnostic on CAN communication:
+ISO 15765-2 defines the following network layer timing parameters for Diagnostics over CAN (DoCAN):
 
 - N_As_
 - N_Ar_
@@ -822,15 +818,15 @@ Performance and Error Handling
 
 N_As
 ````
-N_As is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-can-packet>` by a sender.
-It is measured from the beginning of the :ref:`CAN Frame <knowledge-base-can-frame>` (that carries such CAN Packet)
-transmission till the reception of a confirmation that this CAN Frame was received by a receiver.
+N_As is the maximum allowable time for a sender to transmit a :ref:`CAN Packet <knowledge-base-can-packet>`.
+It is measured from the start of CAN frame transmission until the transmission confirmation is received from
+the data link layer.
 
 Timeout value:
   1000 ms
 
 Error handling:
-  If N_As timeout is exceeded, then the transmission of
+  If N_As timeout is exceeded, the transmission of
   the :ref:`diagnostic message <knowledge-base-diagnostic-message>` shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
@@ -843,15 +839,15 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 
 N_Ar
 ````
-N_Ar is a time parameter related to transmission of any :ref:`CAN Packet <knowledge-base-can-packet>` by a receiver.
-It is measured from the beginning of the :ref:`CAN Frame <knowledge-base-can-frame>` (that carries such CAN Packet)
-transmission till the reception of a confirmation that this CAN Frame was received by a sender.
+N_Ar is the maximum allowable time for a receiver to transmit a :ref:`CAN Packet <knowledge-base-can-packet>`.
+It is measured from the start of CAN frame transmission until the reception of transmission confirmation from
+the data link layer.
 
 Timeout value:
   1000 ms
 
 Error handling:
-  If N_Ar timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
+  If N_Ar timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
@@ -872,7 +868,7 @@ Timeout value:
   1000 ms
 
 Error handling:
-  If N_Bs timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
+  If N_Bs timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
@@ -890,7 +886,7 @@ or transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`), till the 
 :ref:`Flow Control <knowledge-base-can-flow-control>` transmission.
 
 Performance requirement:
-  A receiving entity is obliged to transmit :ref:`Flow Control <knowledge-base-can-flow-control>` packet before value
+  A receiving entity is required to transmit :ref:`Flow Control <knowledge-base-can-flow-control>` packet before value
   of N_Br achieves maximal value threshold.
 
   .. code-block::
@@ -913,7 +909,7 @@ transmission by a sender. It is measured from the end of the last CAN Packet tra
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` transmission.
 
 Performance requirement:
-  A sending entity is obliged to transmit :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
+  A sending entity is required to transmit :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
   before value of N_Cs achieves maximal value threshold.
 
   .. code-block::
@@ -939,7 +935,7 @@ Timeout value:
   1000 ms
 
 Error handling:
-  If N_Cr timeout is exceeded, then the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
+  If N_Cr timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
@@ -964,11 +960,10 @@ According to ISO 15765-2:2016:
 
 Half-duplex
 '''''''''''
-`Half-duplex <https://en.wikipedia.org/wiki/Duplex_(telecommunications)#Half_duplex>`_ means that only one
-UDS message (in one direction) can be transmitted at a time.
-That means that each node has up to one role (either sender or receiver) at any time.
+`Half-duplex <https://en.wikipedia.org/wiki/Duplex_(telecommunications)#Half_duplex>`_ allows communication
+in only one direction at a time. Each node can act either as sender or receiver, but not both simultaneously.
 
-Handling of unexpected CAN packets in case of half-duplex communication:
+Handling of unexpected CAN packets during half-duplex communication:
 
 +--------------+--------------------------+-------------------------+-----------------------+--------------+---------+
 |    Status    |       Single Frame       |       First Frame       |   Consecutive Frame   | Flow Control | Unknown |
@@ -1009,11 +1004,11 @@ Handling of unexpected CAN packets in case of half-duplex communication:
 
 Full-duplex
 '''''''''''
-`Full-duplex <https://en.wikipedia.org/wiki/Duplex_(telecommunications)#Full_duplex>`_ means that UDS messages can be
-transmitted in both directions at once.
-That means that a node could be sender of one UDS message and receiver of another one at the same time.
+`Full-duplex <https://en.wikipedia.org/wiki/Duplex_(telecommunications)#Full_duplex>`_ allows simultaneous
+bidirectional communication.
+A node may act as sender for one message while simultaneously receiving another.
 
-Handling of unexpected CAN packets in case of full-duplex communication:
+Handling of unexpected CAN packets during full-duplex communication:
 
 +--------------+--------------------------+-------------------------+-------------------------+--------------+---------+
 |    Status    |       Single Frame       |       First Frame       |    Consecutive Frame    | Flow Control | Unknown |
