@@ -2,20 +2,20 @@
 
 Diagnostic Service
 ==================
-Diagnostic services are functions that are offered by servers (ECUs) to a client via UDS protocol.
-Services are identified through Service Identifier (SID) values.
+Diagnostic services are functions offered by Servers (ECUs) to a Client via the UDS protocol.
+Each service is identified by a Service Identifier (SID) value.
 
 
 .. _knowledge-base-sid:
 
 Service Identifier
 ------------------
-Service Identifier (SID) is data parameter that is always located in the first payload byte (also called
-Application Data - A_Data) of each :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
-SID value determines whether the message is :ref:`request message <knowledge-base-request-message>`
-or :ref:`diagnostic response <knowledge-base-response-message>`.
-General purpose (application) and format of :ref:`diagnostic message <knowledge-base-diagnostic-message>` is also
-determined by SID value.
+The Service Identifier (SID) is the first byte of the payload (Application Data, A_Data) in each
+:ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+
+The SID value determines whether the message is a :ref:`request message <knowledge-base-request-message>`
+or a :ref:`diagnostic response <knowledge-base-response-message>`.
+It also defines the general purpose and format of the diagnostic message.
 
 List of all Service Identifier (SID) values and their application:
 
@@ -110,23 +110,20 @@ List of all Service Identifier (SID) values and their application:
 
 Request Service Identifier
 ``````````````````````````
-Request Service Identifier is a sub-type of Service Identifier (SID). It is the first byte of each request message
-and its value identifies diagnostic service for which this message is relevant.
+Request Service Identifier is a subtype of SID. It is the first byte of each request message and identifies
+the diagnostic service for which the message is relevant.
 
-.. note:: SID's bit 6 (2nd most significant bit) equals 0 for all request messages.
-
-.. warning:: When we refer to SID value sometimes we mean Request Service Identifier which might lead to some confusion.
-  Unfortunately, there is no other suitable acronym for it.
+.. note:: The 2nd most significant bit (bit 6) of all Request Service Identifiers is 0.
 
 
 .. _knowledge-base-rsid:
 
 Response Service Identifier
 ```````````````````````````
-Response Service Identifier (RSID) is a sub-type of Service Identifier (SID). It is the first byte of each response
-message and its value identifies diagnostic service for which this message is relevant.
+Response Service Identifier (RSID) is a subtype of SID. It is the first byte of each response message and identifies
+the diagnostic service for which the message is relevant.
 
-.. note:: RSID's bit 6 (2nd most significant bit) always equals 1.
+.. note:: The 2nd most significant bit (bit 6) of all Response Service Identifiers is 1.
 
 
 DiagnosticSessionControl

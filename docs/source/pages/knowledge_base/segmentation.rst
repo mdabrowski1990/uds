@@ -8,21 +8,20 @@ Segmentation
 
 Message Segmentation
 --------------------
-To transmit a diagnostic message, its information (payload and addressing) must be unambiguously encoded into one
-or more segments (those segments are called :ref:`Packets <knowledge-base-packet>` by this documentation)
-that are specific for the bus used.
+To transmit a diagnostic message, its information (payload and addressing) must be encoded into one or more segments.
+In this documentation, these segments are referred to as :ref:`Packets <knowledge-base-packet>`.
 
-.. note:: Segmentation process is specific for each bus due to various topologies and
-  communication models (e.g. Master/Slave) enforced by them.
+.. note:: The segmentation process is network-specific due to differences in topologies and communication models
+   (e.g., Master/Slave) enforced by each network.
 
 
 .. _knowledge-base-packets-desegmentation:
 
 Packets Desegmentation
 ----------------------
-By desegmentation, we mean an unambiguous operation which is the reverse process to a `message segmentation`_.
-It transforms one or more :ref:`packets <knowledge-base-packet>` into
-a :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
+Desegmentation is the reverse of :ref:`message segmentation <knowledge-base-message-segmentation>`.
+It reconstructs a :ref:`diagnostic message <knowledge-base-diagnostic-message>` from one or more
+:ref:`Packets <knowledge-base-packet>`.
 
-.. note:: There are many ways to segment a diagnostic message into packets, but there is always only one correct way
-  to perform desegmentation and decode a diagnostic message out of packets.
+.. note:: While a diagnostic message can be segmented in multiple ways, there is always only one correct method
+   to perform desegmentation and decode the message from packets.
