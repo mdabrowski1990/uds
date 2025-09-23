@@ -4,35 +4,35 @@ Contribution
 ============
 
 
-How to contribute?
-------------------
-If you want to become a contributor, please visit `UDS project page <https://github.com/mdabrowski1990/uds>`_
-and read `CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ file.
+How to Contribute
+-----------------
+If you would like to contribute, please visit the `UDS project page <https://github.com/mdabrowski1990/uds>`_
+and review the `CONTRIBUTING.md <https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md>`_ guidelines.
 
-`Contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_ for more information about contributing.
+For additional details, feel free to `contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_.
 
 
 Sponsoring
 ----------
-If you consider sponsoring our development team, please visit our `wiki page with detailed information for sponsors
-<https://github.com/mdabrowski1990/uds/wiki/Sponsoring>`_.
+If you are interested in sponsoring the development of this project, please see our
+`Sponsoring wiki page <https://github.com/mdabrowski1990/uds/wiki/Sponsoring>`_.
 
-Your sponsorship would enable us to improve the quality of our code, speed up the development and
-provide more features. **We also offer special treatment for all our sponsors.**
-Please `contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_ for more details.
+Your support helps us improve code quality, accelerate development, and deliver more features.
+**Special benefits are available for sponsors — please
+`contact us <https://uds.readthedocs.io/en/latest/index.html#contact>`_ for details.**
 
 
-Reporting issues
+Reporting Issues
 ----------------
-To report issues, please use our `issues tracking system <https://github.com/mdabrowski1990/uds/issues>`_.
+To report bugs or request enhancements, please use the `issue tracker <https://github.com/mdabrowski1990/uds/issues>`_.
 
 
 Our Sponsors
 ------------
-Full list of our sponsors:
+We are grateful to our sponsors for their support:
 
-* `Merit Automotive <https://merit-automotive.com/>`_ |Merit Logo| - sponsoring since September 2021
+* `Merit Automotive <https://merit-automotive.com/>`_ |Merit Logo| — sponsor since September 2021
 
 
 .. |Merit Logo| image:: ../images/MeritAutomotive.png
-    :height: 50
+   :height: 50

@@ -1,6 +1,7 @@
 User Guide
 ==========
-In this part of the documentation, you will find the essential components and capabilities of this package.
+This section of the documentation introduces the essential components and features of the package,
+along with practical guidance on how to use them.
 
 .. toctree::
   :caption: Table of Contents

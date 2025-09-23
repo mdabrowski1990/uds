@@ -254,6 +254,8 @@ WriteMemoryByAddress service allows the client to write information into server'
 memory address.
 
 
+.. _knowledge-base-service-tester-present:
+
 TesterPresent
 -------------
 TesterPresent service is used by the client to indicate to a server(s) that the client is still connected to a vehicle
