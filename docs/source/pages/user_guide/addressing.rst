@@ -4,7 +4,8 @@ Addressing
 ==========
 The :ref:`addressing <knowledge-base-addressing>` related implementation common to all networks is located
 in the :mod:`uds.addressing` sub-package.
-Each network type has its own specific implementation for encoding addressing information and extracting it from packets.
+Each network type has its own specific implementation for encoding addressing information and
+extracting it from packets.
 
 
 AddressingType

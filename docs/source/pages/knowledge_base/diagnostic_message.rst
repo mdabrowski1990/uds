@@ -264,10 +264,10 @@ List of NRC values:
 
 - **0x74-0x77 - ISO Reserved**: This range of values is reserved for future definition by ISO 14229 Standard.
 
-- **0x78 - requestCorrectlyReceived-ResponsePending**: This NRC indicates that the request message was received 
-  correctly, and that all parameters in the request message were valid (these checks can be delayed until after sending 
-  this NRC if executing the boot software), but the action to be performed is not yet completed and the server is not 
-  yet ready to receive another request. As soon as the requested service has been completed, the server shall send 
+- **0x78 - requestCorrectlyReceived-ResponsePending**: This NRC indicates that the request message was received
+  correctly, and that all parameters in the request message were valid (these checks can be delayed until after sending
+  this NRC if executing the boot software), but the action to be performed is not yet completed and the server is not
+  yet ready to receive another request. As soon as the requested service has been completed, the server shall send
   a positive response message or negative response message with a response code different from this.
 
 - **0x79-0x7D - ISO Reserved**: This range of values is reserved for future definition by ISO 14229 Standard.
