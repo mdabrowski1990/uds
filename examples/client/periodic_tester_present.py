@@ -13,10 +13,10 @@ def main():
     # https://uds.readthedocs.io/en/stable/pages/user_guide/client.html#configuration
     client = Client(transport_interface=transport_interface)
 
-    # start periodic TesterPresent sending
+    # start periodic Tester Present sending
     client.start_tester_present()
 
-    # stop periodic TesterPresent sending
+    # stop periodic Tester Present sending
     client.stop_tester_present()
 
 
