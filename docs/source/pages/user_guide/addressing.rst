@@ -25,7 +25,7 @@ Methods:
     import uds
 
     # check if provided value is AddressingType member
-    uds.addressing.AddressingType.is_member(uds.addressing.AddressingType.PHYSICAL)
+    uds.addressing.AddressingType.is_member(uds.addressing.AddressingType.PHYSICAL)  # True
 
     # convert a valid string to enum member
     uds.addressing.AddressingType.validate_member("Functional")  # uds.addressing.AddressingType.FUNCTIONAL
