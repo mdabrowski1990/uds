@@ -2,8 +2,9 @@
 
 Client
 ======
-This part of the documentation explains :ref:`Client <knowledge-base-client>` implementation.
-Implementation is provided in :mod:`uds.client`, with :class:`~uds.client.Client` as the main entry point.
+This section explains :ref:`Client <knowledge-base-client>` implementation.
+The implementation is provided in :mod:`uds.client` module with :class:`~uds.client.Client` class as
+the main entry point.
 
 Attributes:
 
@@ -33,17 +34,20 @@ Attributes:
 
 Methods:
 
-- :meth:`~uds.client.Client.__init__`
-- :meth:`~uds.client.Client.__del__`
-- :meth:`~uds.client.Client.is_response_pending_message`
-- :meth:`~uds.client.Client.get_response`
-- :meth:`~uds.client.Client.get_response_no_wait`
-- :meth:`~uds.client.Client.clear_response_queue`
-- :meth:`~uds.client.Client.start_receiving`
-- :meth:`~uds.client.Client.stop_receiving`
-- :meth:`~uds.client.Client.start_tester_present`
-- :meth:`~uds.client.Client.stop_tester_present`
-- :meth:`~uds.client.Client.send_request_receive_responses`
+- :meth:`~uds.client.Client.__init__` - configure :ref:`Client <knowledge-base-client>`
+- :meth:`~uds.client.Client.__del__` - close threads safely
+- :meth:`~uds.client.Client.is_response_pending_message` - check whether a message is a negative response
+  with Response Pending (0x78) :ref:`NRC <knowledge-base-nrc>`
+- :meth:`~uds.client.Client.get_response` - wait for the next response collected by `Background Receiving`_
+- :meth:`~uds.client.Client.get_response_no_wait` - get the next response collected by `Background Receiving`_
+  without waiting
+- :meth:`~uds.client.Client.clear_response_queue` - clear messages collected so far by `Background Receiving`_
+- :meth:`~uds.client.Client.start_receiving` - start collecting responses
+- :meth:`~uds.client.Client.stop_receiving` - stop collecting responses
+- :meth:`~uds.client.Client.start_tester_present` - start sending Tester Present messages periodically
+- :meth:`~uds.client.Client.stop_tester_present` - stop sending Tester Present messages periodically
+- :meth:`~uds.client.Client.send_request_receive_responses` - send request message and collect all responses till
+  the final one
 
 
 Configuration

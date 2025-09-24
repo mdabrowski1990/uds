@@ -10,7 +10,7 @@ def main():
     transport_interface: AbstractTransportInterface
 
     # configure client
-    # https://uds.readthedocs.io/en/stable/pages/user_guide/quickstart.html#create-transport-interface
+    # https://uds.readthedocs.io/en/stable/pages/user_guide/client.html#configuration
     client = Client(transport_interface=transport_interface)
 
     # start collecting all response messages sent to client

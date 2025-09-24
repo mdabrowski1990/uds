@@ -10,7 +10,7 @@ def main():
     transport_interface: AbstractTransportInterface
 
     # configure client
-    # TODO: put link here
+    # https://uds.readthedocs.io/en/stable/pages/user_guide/client.html#configuration
     client = Client(transport_interface=transport_interface)
 
     # start periodic TesterPresent sending
