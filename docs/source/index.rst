@@ -44,7 +44,7 @@ Current implementation status of package features:
 
 +-----------------------------------------+--------------------------------------------+
 |                 Feature                 |            Implementation Status           |
-+=========================================+============================================+
++-----------------------------------------+--------------------------------------------+
 | UDS Messages and Packets                | Available since version `0.0.2             |
 |                                         | <https://pypi.org/project/py-uds/0.0.2/>`_ |
 +-----------------------------------------+--------------------------------------------+
@@ -60,7 +60,8 @@ Current implementation status of package features:
 | Packets Desegmentation                  | Available since version `0.2.0             |
 |                                         | <https://pypi.org/project/py-uds/0.2.0/>`_ |
 +-----------------------------------------+--------------------------------------------+
-| Client Simulation                       | Planned                                    |
+| Client Simulation                       | Available since version `3.0.0             |
+|                                         | <https://pypi.org/project/py-uds/3.0.0/>`_ |
 +-----------------------------------------+--------------------------------------------+
 | Server Simulation                       | Planned                                    |
 +-----------------------------------------+--------------------------------------------+
@@ -104,7 +105,7 @@ An overview of features that are required to fully implement UDS protocol is pre
 | Presentation |                                      |                                            |
 |              | - diagnostic messages interpretation |                                            |
 +--------------+--------------------------------------+--------------------------------------------+
-| Layer 5      | - Client simulation                  | *To be provided with Client feature.*      |
+| Layer 5      | - Client simulation                  | - :mod:`uds.client`                        |
 | Session      |                                      |                                            |
 |              | - Server simulation                  | *To be provided with Server feature.*      |
 |              |                                      |                                            |
