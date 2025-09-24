@@ -18,6 +18,12 @@ due to inactivity.
 Default value:
   2000 ms
 
+Minimum value:
+  P2\ :sub:`Client`
+
+Maximum value:
+  S3\ :sub:`Server`
+
 
 .. _knowledge-base-s3-server:
 
@@ -61,22 +67,30 @@ Client Side Parameters
 
 P2\ :sub:`Client`
 `````````````````
-P2\ :sub:`Client` is the time a client waits from transmitting a request until the start of the first
+P2\ :sub:`Client` is the time on the client side from transmitting a request until the start of the first
 response message (positive or negative, or *Response Pending* NRC 0x78).
 
 Timeout value:
   P2\ :sub:`Server_max` + △P2 (or greater)
+
+Error handling:
+  If P2\ :sub:`Client` timeout is exceeded, then the reception of
+  the :ref:`response message <knowledge-base-response-message>` shall be aborted.
 
 
 .. _knowledge-base-p2*-client:
 
 P2*\ :sub:`Client`
 ``````````````````
-P2*\ :sub:`Client` is the time a client waits after receiving a *Response Pending* negative response (NRC 0x78)
+P2*\ :sub:`Client` is the time on the client side after receiving a *Response Pending* negative response (NRC 0x78)
 until the next response is received.
 
 Timeout value:
   P2*\ :sub:`Server_max` + △P2\ :sub:`response` (or greater)
+
+Error handling:
+  If P2*\ :sub:`Client` timeout is exceeded, then the reception of
+  the :ref:`response message <knowledge-base-response-message>` shall be aborted.
 
 
 .. _knowledge-base-p3-client:
@@ -84,14 +98,19 @@ Timeout value:
 
 P3\ :sub:`Client_Phys`
 ``````````````````````
-P3\ :sub:`Client_Phys` is the waiting time on the client side after sending a
-:ref:`physically addressed <knowledge-base-physical-addressing>` request that does **not** require a response.
+P3\ :sub:`Client_Phys` is the time on the client side after sending a
+:ref:`physically addressed <knowledge-base-physical-addressing>` request message that does **not** require a response.
 If the server does respond, this timer does not apply.
 
 Minimum value:
   P2\ :sub:`Server_max` + △P2
 
   P2\ :sub:`Client`
+
+Performance requirement:
+  The client shall assume that the addressed server has received and successfully processed the request,
+  if no response was received within P3\ :sub:`Client_Phys` time.
+  The client might proceed with sending a following request.
 
 
 .. _knowledge-base-p3-client-func:
@@ -107,6 +126,11 @@ Minimum value:
 
   P2\ :sub:`Client`
 
+Performance requirement:
+  The client shall assume that all addressed servers have received and successfully processed the request,
+  if no response was received within P3\ :sub:`Client_Func` time.
+  The client might proceed with sending a following request.
+
 
 .. _knowledge-base-p6-client:
 
@@ -119,6 +143,10 @@ If one or more *Response Pending* messages are sent, then P6*\ :sub:`Client` app
 Timeout value:
   P2\ :sub:`Server_max` + △P6 (or greater)
 
+Error handling:
+  If P6\ :sub:`Client` timeout is exceeded, then the reception of
+  the :ref:`response message <knowledge-base-response-message>` shall be aborted.
+
 
 .. _knowledge-base-p6*-client:
 
@@ -130,6 +158,10 @@ If the final response is sent immediately, P6\ :sub:`Client` applies.
 
 Timeout value:
   P2*\ :sub:`Server_max` + △P6 (or greater)
+
+Error handling:
+  If P6*\ :sub:`Client` timeout is exceeded, then the reception of
+  the :ref:`response message <knowledge-base-response-message>` shall be aborted.
 
 
 Server Side Parameters
@@ -150,6 +182,11 @@ Maximum value:
   specific for the server
   default: 50 ms
 
+Performance requirement:
+  The server shall send a response (assuming the request requires one) within P2\ :sub:`Server`.
+  If the final response is not yet available, the server shall send a negative response with
+  :ref:`NRC <knowledge-base-nrc>` Response Pending (0x78).
+
 
 .. _knowledge-base-p2*-server:
 
@@ -165,17 +202,27 @@ Maximum value:
   specific for the server
   default: 5000 ms
 
+Performance requirement:
+  After sending a negative response with :ref:`NRC <knowledge-base-nrc>` Response Pending (0x78),
+  the server shall provide the next response within P2*\ :sub:`Server`.
+  If the final response is still not available, the server shall send another Response Pending (0x78).
+
 
 .. _knowledge-base-p4-server:
 
 P4\ :sub:`Server`
 `````````````````
 P4\ :sub:`Server` is the total time from receiving a request until sending the final response.
-If the server sends Response Pending messages, the P2*\ :sub:Server extension applies, but the final response must
-still arrive within the P4\ :sub:Server limit.
+If the server sends Response Pending messages, P2*\ :sub:`Server` applies between intermediate responses,
+but the final response must still be sent within the overall P4\ :sub:`Server` limit.
 
 Minimum value:
   P2\ :sub:`Server`
 
 Maximum value:
   specific for the server
+
+Performance requirement:
+  The server shall send the final response within P4\ :sub:`Server` after receiving the request.
+  If the final response is still not available when this time expires, the server shall abort
+  the :ref:`response message <knowledge-base-response-message>` transmission.

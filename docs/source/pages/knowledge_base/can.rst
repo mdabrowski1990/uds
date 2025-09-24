@@ -801,25 +801,25 @@ ISO 15765-2 defines the following network layer timing parameters for Diagnostic
 - N_Cr_
 
 .. figure:: ../../images/CAN_Timings.png
-    :alt: Diagnostic on CAN timings
-    :figclass: align-center
-    :width: 100%
+  :alt: Diagnostic on CAN timings
+  :figclass: align-center
+  :width: 100%
 
-    Network layer time values (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) present during UDS on CAN communication.
+  Network layer time values (N_As, N_Ar, N_Bs, N_Br, N_Cs, N_Cr) present during UDS on CAN communication.
 
 .. note:: The example uses
-    :ref:`segmented diagnostic message transmission <knowledge-base-can-segmented-message-transmission>`
-    as it enables to present all CAN timing parameters.
-    For :ref:`unsegmented diagnostic message transmission <knowledge-base-can-unsegmented-message-transmission>` though,
-    the only applicable time parameter is N_As_.
+  :ref:`segmented diagnostic message transmission <knowledge-base-can-segmented-message-transmission>`
+  as it enables to present all CAN timing parameters.
+  For :ref:`unsegmented diagnostic message transmission <knowledge-base-can-unsegmented-message-transmission>` though,
+  the only applicable time parameter is N_As_.
 
 
 .. _knowledge-base-can-n-as:
 
 N_As
 ````
-N_As is the maximum allowable time for a sender to transmit a :ref:`CAN Packet <knowledge-base-can-packet>`.
-It is measured from the start of CAN frame transmission until the transmission confirmation is received from
+N_As is the time parameter of a :ref:`CAN Packet <knowledge-base-can-packet>` transmission on the sender side.
+It is measured from the start of the CAN frame transmission until the transmission confirmation is received from
 the data link layer.
 
 Timeout value:
@@ -830,17 +830,18 @@ Error handling:
   the :ref:`diagnostic message <knowledge-base-diagnostic-message>` shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
-  - :ref:`Single Frame <knowledge-base-can-single-frame>`
-  - :ref:`First Frame <knowledge-base-can-first-frame>`
-  - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+- :ref:`Single Frame <knowledge-base-can-single-frame>`
+- :ref:`First Frame <knowledge-base-can-first-frame>`
+- :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
 .. _knowledge-base-can-n-ar:
 
 N_Ar
 ````
-N_Ar is the maximum allowable time for a receiver to transmit a :ref:`CAN Packet <knowledge-base-can-packet>`.
-It is measured from the start of CAN frame transmission until the reception of transmission confirmation from
+N_Ar is the time parameter of a :ref:`CAN Packet <knowledge-base-can-packet>` transmission on the receiver side.
+It is measured from the start of the CAN frame transmission until the transmission confirmation is received from
 the data link layer.
 
 Timeout value:
@@ -851,17 +852,19 @@ Error handling:
   shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
-  - :ref:`Flow Control <knowledge-base-can-flow-control>`
+
+- :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
 .. _knowledge-base-can-n-bs:
 
 N_Bs
 ````
-N_Bs is a time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` reception
-by a sender. It is measured from the end of the last CAN Packet transmission (either transmitted
-:ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-or received :ref:`Flow Control <knowledge-base-can-flow-control>`), till the reception of
+N_Bs is the time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` reception
+by a sender.
+It is measured from the end of the last CAN Packet transmission (either transmitted
+:ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`,
+or received :ref:`Flow Control <knowledge-base-can-flow-control>`) until the reception of
 :ref:`Flow Control <knowledge-base-can-flow-control>`.
 
 Timeout value:
@@ -872,22 +875,24 @@ Error handling:
   shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
-  - :ref:`Flow Control <knowledge-base-can-flow-control>`
+
+- :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
 .. _knowledge-base-can-n-br:
 
 N_Br
 ````
-N_Br is a time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` transmission
-by a receiver. It is measured from the end of the last CAN Packet transmission (either received
-:ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
-or transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`), till the start of
+N_Br is the time parameter related to :ref:`Flow Control (CAN Packet) <knowledge-base-can-flow-control>` transmission
+by a receiver.
+It is measured from the end of the last CAN Packet transmission (either received
+:ref:`First Frame <knowledge-base-can-first-frame>`, :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`,
+or transmitted :ref:`Flow Control <knowledge-base-can-flow-control>`) until the start of
 :ref:`Flow Control <knowledge-base-can-flow-control>` transmission.
 
 Performance requirement:
-  A receiving entity is required to transmit :ref:`Flow Control <knowledge-base-can-flow-control>` packet before value
-  of N_Br achieves maximal value threshold.
+  A receiving entity shall transmit the :ref:`Flow Control <knowledge-base-can-flow-control>` packet before
+  N_Br reaches its maximal allowed value.
 
   .. code-block::
 
@@ -895,22 +900,24 @@ Performance requirement:
     [N_Br max] = 900ms - [N_Ar]
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
-  - :ref:`Flow Control <knowledge-base-can-flow-control>`
+
+- :ref:`Flow Control <knowledge-base-can-flow-control>`
 
 
 .. _knowledge-base-can-n-cs:
 
 N_Cs
 ````
-N_Cs is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
-transmission by a sender. It is measured from the end of the last CAN Packet transmission (either received
+N_Cs is the time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+transmission by a sender.
+It is measured from the end of the last CAN Packet transmission (either received
 :ref:`Flow Control <knowledge-base-can-flow-control>` or transmitted
-:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the start of
-:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` transmission.
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`) until the start of
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame`> transmission.
 
 Performance requirement:
-  A sending entity is required to transmit :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
-  before value of N_Cs achieves maximal value threshold.
+  A sending entity shall transmit the :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
+  before N_Cs reaches its maximal allowed value.
 
   .. code-block::
 
@@ -918,28 +925,31 @@ Performance requirement:
     [N_Cs max] = 900ms - [N_As]
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
-  - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+- :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
 .. _knowledge-base-can-n-cr:
 
 N_Cr
 ````
-N_Cr is a time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
-reception by a receiver. It is measured from the end of the last CAN Packet transmission (either transmitted
+N_Cr is the time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+reception by a receiver.
+It is measured from the end of the last CAN Packet transmission (either transmitted
 :ref:`Flow Control <knowledge-base-can-flow-control>` or received
-:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`), till the reception of
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`) until the reception of
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
 
 Timeout value:
   1000 ms
 
 Error handling:
-  If N_Cr timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
+  If the N_Cr timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
   shall be aborted.
 
 Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
-  - :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
+
+- :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`
 
 
 .. _knowledge-base-can-unexpected-packet-arrival:
