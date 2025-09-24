@@ -103,9 +103,9 @@ class Client:
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
-        if self.__tester_present_thread is not None:
+        if self.is_tester_present_sent:
             self.stop_tester_present()
-        if self.__receiving_thread is not None:
+        if self.is_receiving:
             self.stop_receiving()
 
     @property
@@ -286,8 +286,13 @@ class Client:
 
     @property
     def is_receiving(self) -> bool:
-        """Get flag whether receiving thread is started."""
+        """Get flag whether receiving thread is running."""
         return self.__receiving_thread is not None
+
+    @property
+    def is_tester_present_sent(self) -> bool:
+        """Get flag whether Tester Present thread is running periodic sending."""
+        return self.__tester_present_thread is not None
 
     def _update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
@@ -580,7 +585,10 @@ class Client:
         :param addressing_type: Addressing Type to use for cyclical messages.
         :param sprmib: Whether to use Suppress Positive Response Message Indication Bit.
         """
-        if self.__tester_present_thread is None:
+        if self.is_tester_present_sent:
+            warn("Tester Present is already transmitted cyclically.",
+                 category=UserWarning)
+        else:
             self.__tester_present_stop_event.clear()
             payload = TESTER_PRESENT.encode_request({
                 "SubFunction": {
@@ -593,19 +601,16 @@ class Client:
                                                   args=(tester_present_message, ),
                                                   daemon=True)
             self.__tester_present_thread.start()
-        else:
-            warn("Tester Present is already transmitted cyclically.",
-                 category=UserWarning)
 
     def stop_tester_present(self) -> None:
         """Stop sending Tester Present cyclically."""
-        if self.__tester_present_thread is None:
+        if self.is_tester_present_sent:
+            self.__tester_present_stop_event.set()
+            self.__tester_present_thread.join(timeout=self.s3_client / 1000.)  # type: ignore
+            self.__tester_present_thread = None
+        else:
             warn("Cyclical sending of Tester Present is already stopped.",
                  category=UserWarning)
-        else:
-            self.__tester_present_stop_event.set()
-            self.__tester_present_thread.join(timeout=self.s3_client / 1000.)
-            self.__tester_present_thread = None
 
     @decorator_block_receiving
     def send_request_receive_responses(self,

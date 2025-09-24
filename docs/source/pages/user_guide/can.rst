@@ -2,11 +2,11 @@
 
 Diagnostics over CAN
 ====================
-This part of documentation explains implementation for :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>`
-protocol.
+This part of the documentation explains the implementation of the
+:ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol.
 
-DoCAN implementation is located in :mod:`uds.can` module and divided into smaller modules, each handling one of
-the following features:
+DoCAN implementation is located in the :mod:`uds.can` sub-package and divided into smaller modules
+each handling one of the following features:
 
 - `Addressing`_
 - `Frame`_
@@ -14,27 +14,24 @@ the following features:
 - `Segmentation`_
 - `Transport`_
 
-
-.. note:: You might use :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol separately from UDS.
+.. note:: You may use the :ref:`Diagnostics over CAN (DoCAN) <knowledge-base-docan>` protocol independently from UDS.
 
 
 Addressing
 ----------
-:ref:`CAN Addressing <knowledge-base-can-addressing>` might use one of multiple formats.
-This is the reason behind dividing CAN addressing related implementation into multiple modules.
-The whole implementation can be found in :mod:`uds.can.addressing` sub-package.
+:ref:`CAN Addressing <knowledge-base-can-addressing>` may use multiple formats.
+The CAN addressing implementation is divided into multiple sub-modules and located in :mod:`uds.can.addressing`.
 
 
 CanAddressingFormat
 ```````````````````
-:class:`~uds.can.addressing.addressing_format.CanAddressingFormat` class is an Enum with all possible
-:ref:`CAN Addressing Formats <knowledge-base-can-addressing>` defined.
+:class:`~uds.can.addressing.addressing_format.CanAddressingFormat` is an Enum containing all possible
+:ref:`CAN Addressing Formats <knowledge-base-can-addressing>`.
 
 Methods:
 
-- :meth:`~uds.utilities.enums.ValidatedEnum.is_member`
-- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member`
-  this Enum
+- :meth:`~uds.utilities.enums.ValidatedEnum.is_member` – check if a value is a valid enum member
+- :meth:`~uds.utilities.enums.ValidatedEnum.validate_member` – validate and convert a value to an enum member
 
 **Example code:**
 
@@ -42,9 +39,13 @@ Methods:
 
     import uds
 
-    # check if there is member defined for the value
+    # check if provided value is CanAddressingFormat member
     uds.can.CanAddressingFormat.is_member(uds.can.CanAddressingFormat.NORMAL_ADDRESSING)  # True
+
+    # convert a valid string to enum member
     uds.can.CanAddressingFormat.validate_member("Extended Addressing")  # uds.can.CanAddressingFormat.EXTENDED_ADDRESSING
+
+    # check invalid values
     uds.can.CanAddressingFormat.is_member("not a CAN Addressing Format")  # False
     uds.can.CanAddressingFormat.validate_member("not a CAN Addressing Format")  # raises ValueError
 

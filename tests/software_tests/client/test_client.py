@@ -120,22 +120,23 @@ class TestClient:
         assert self.mock_client._Client__tester_present_thread is None
         assert self.mock_client._Client__tester_present_stop_event == self.mock_event.return_value
 
-    @pytest.mark.parametrize("tester_present_thread, receiving_thread", [
-        (None, Mock()),
-        (Mock(), None),
+    @pytest.mark.parametrize("is_tester_present_sent, is_receiving", [
+        (False, True),
+        (True, False),
+        (True, True),
     ])
-    def test_del(self, tester_present_thread, receiving_thread):
-        self.mock_client._Client__tester_present_thread = tester_present_thread
-        self.mock_client._Client__receiving_thread = receiving_thread
+    def test_del(self, is_tester_present_sent, is_receiving):
+        self.mock_client.is_tester_present_sent = is_tester_present_sent
+        self.mock_client.is_receiving = is_receiving
         assert Client.__del__(self.mock_client) is None
-        if tester_present_thread is None:
-            self.mock_client.stop_tester_present.assert_not_called()
-        else:
+        if is_tester_present_sent:
             self.mock_client.stop_tester_present.assert_called_once_with()
-        if receiving_thread is None:
-            self.mock_client.stop_receiving.assert_not_called()
         else:
+            self.mock_client.stop_tester_present.assert_not_called()
+        if is_receiving:
             self.mock_client.stop_receiving.assert_called_once_with()
+        else:
+            self.mock_client.stop_receiving.assert_not_called()
 
     # transport_interface
 
@@ -362,6 +363,16 @@ class TestClient:
     def test_is_receiving__false(self):
         self.mock_client._Client__receiving_thread = None
         assert Client.is_receiving.fget(self.mock_client) is False
+        
+    # is_tester_present_sent
+
+    def test_is_tester_present_sent__true(self):
+        self.mock_client._Client__tester_present_thread = Mock()
+        assert Client.is_tester_present_sent.fget(self.mock_client) is True
+
+    def test_is_tester_present_sent__false(self):
+        self.mock_client._Client__tester_present_thread = None
+        assert Client.is_tester_present_sent.fget(self.mock_client) is False
 
     # _update_p2_client_measured
 
@@ -921,6 +932,7 @@ class TestClient:
     @patch(f"{SCRIPT_LOCATION}.UdsMessage")
     def test_start_tester_present__start(self, mock_uds_message, addressing_type, sprmib):
         mock_event = Mock(spec=Event)
+        self.mock_client.is_tester_present_sent = False
         self.mock_client._Client__tester_present_stop_event = mock_event
         self.mock_client._Client__tester_present_thread = None
         assert Client.start_tester_present(self.mock_client,
@@ -941,7 +953,7 @@ class TestClient:
         self.mock_warn.assert_not_called()
 
     def test_start_tester_present__started(self):
-        self.mock_client._Client__tester_present_thread = Mock(spec=Thread)
+        self.mock_client.is_tester_present_sent = True
         assert Client.start_tester_present(self.mock_client) is None
         self.mock_warn.assert_called_once()
 
@@ -950,6 +962,7 @@ class TestClient:
     def test_stop_tester_present__stop(self):
         mock_thread = Mock(spec=Thread)
         mock_event = Mock(spec=Event)
+        self.mock_client.is_tester_present_sent = True
         self.mock_client._Client__tester_present_thread = mock_thread
         self.mock_client._Client__tester_present_stop_event = mock_event
         assert Client.stop_tester_present(self.mock_client) is None
@@ -959,7 +972,7 @@ class TestClient:
         self.mock_warn.assert_not_called()
 
     def test_stop_tester_present__stopped(self):
-        self.mock_client._Client__tester_present_thread = None
+        self.mock_client.is_tester_present_sent = False
         assert Client.stop_tester_present(self.mock_client) is None
         self.mock_warn.assert_called_once()
 

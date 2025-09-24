@@ -5,6 +5,7 @@ UDS Time Parameters
 Session Parameters
 ------------------
 
+
 .. _knowledge-base-s3-client:
 
 S3 :sub:`Client`
@@ -26,8 +27,6 @@ On the server side, the S3\ :sub:`Server` parameter defines the inactivity time 
 after which the server shall exit the current diagnostic session and return to Default Session.
 
 S3\ :sub:`Server` = 5000 ms
-
-.. _knowledge-base-p2-client:
 
 
 Network Delays
@@ -57,6 +56,8 @@ Network Delays
 Client Side Parameters
 ----------------------
 
+
+.. _knowledge-base-p2-client:
 
 P2\ :sub:`Client`
 `````````````````

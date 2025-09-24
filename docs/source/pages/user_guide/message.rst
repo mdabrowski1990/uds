@@ -62,8 +62,8 @@ Methods:
 
 UDS Message Record
 ------------------
-:class:`~uds.message.uds_message.UdsMessageRecord` class is meant to provide containers for historic information
-carried by either transmitted or received :ref:`diagnostic messages <knowledge-base-diagnostic-message>`.
+:class:`~uds.message.uds_message.UdsMessageRecord` class is meant to provide containers for recorded information
+about transmitted or received :ref:`diagnostic messages <knowledge-base-diagnostic-message>`.
 
 Attributes:
 
@@ -79,7 +79,7 @@ Methods:
 - :meth:`~uds.message.uds_message.UdsMessageRecord.__str__`
 - :meth:`~uds.message.uds_message.UdsMessageRecord.__eq__`
 
-.. note:: **A user would not create objects of** class:`~uds.message.uds_message.UdsMessageRecord` **class**
+.. note:: **A user would not create objects of** :class:`~uds.message.uds_message.UdsMessageRecord` **class**
   in typical situations, but one would probably use them quite often as they are returned by communication layers
   (e.g. :mod:`uds.transport_interface`) of :mod:`uds` package.
 
@@ -109,8 +109,7 @@ Methods:
   :attr:`~uds.message.service_identifiers.POSSIBLE_REQUEST_SIDS` value as some Request SID values are reserved for
   further extension by UDS specification and others are ECU specific (defined by ECU's manufacturer).
 
-.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method on
-  :class:`~uds.message.service_identifiers.RequestSID` class to add Request SID value.
+.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` to add new SID values.”
 
 **Example code:**
 
@@ -151,8 +150,7 @@ Methods:
   :attr:`~uds.message.service_identifiers.POSSIBLE_RESPONSE_SIDS` value as some Response SID values are reserved for
   further extension by UDS specification and other are ECU specific (defined by ECU's manufacturer).
 
-.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` method on
-  :class:`~uds.message.service_identifiers.ResponseSID` class to add Response SID.
+.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` to add new Response SID values.”
 
 **Example code:**
 
@@ -167,7 +165,7 @@ Methods:
     uds.message.ResponseSID.is_member(0xFA)  # False
     uds.message.ResponseSID.validate_member(0xFA)  # raises ValueError
 
-    # example how to add a new Response SID value
+    # define a new Response SID value
     new_member = uds.message.ResponseSID.add_member("NewResponseSIDMemberName", 0xFA)
 
     # check if the value was successfully added as a new member
@@ -204,7 +202,7 @@ Methods:
     uds.message.NRC.is_member(0xF0)  # False
     uds.message.NRC.validate_member(0xF0)  # raises ValueError
 
-    # example how to add a new NRC value
+    # define a new NRC value
     new_member = uds.message.NRC.add_member("NewNRCMemberName", 0xF0)
 
     # check if the value was added as a new member

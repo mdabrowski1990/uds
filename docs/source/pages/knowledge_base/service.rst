@@ -187,6 +187,8 @@ Authentication service provides a means for the client to prove its identity, al
 diagnostic services, which have restricted access for, for example security, emissions, or safety reasons.
 
 
+.. _knowledge-base-service-read-data-by-periodic-identifier:
+
 ReadDataByPeriodicIdentifier
 ----------------------------
 ReadDataByPeriodicIdentifier service allows the client to request the periodic transmission of data record values
