@@ -908,12 +908,12 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 
 N_Cs
 ````
-N_Cs is the time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+N_Cs is the time parameter related to :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
 transmission by a sender.
 It is measured from the end of the last CAN Packet transmission (either received
 :ref:`Flow Control <knowledge-base-can-flow-control>` or transmitted
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`) until the start of
-:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame`> transmission.
+:ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` transmission.
 
 Performance requirement:
   A sending entity shall transmit the :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
@@ -933,7 +933,7 @@ Affected :ref:`CAN Packets <knowledge-base-can-packet>`:
 
 N_Cr
 ````
-N_Cr is the time parameter related to :ref:`Consecutive Frame (CAN Packet) <knowledge-base-can-consecutive-frame>`
+N_Cr is the time parameter related to :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>` packet
 reception by a receiver.
 It is measured from the end of the last CAN Packet transmission (either transmitted
 :ref:`Flow Control <knowledge-base-can-flow-control>` or received
