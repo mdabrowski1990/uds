@@ -2,7 +2,8 @@
 
 Diagnostic Service
 ==================
-Diagnostic services are functions offered by Servers (ECUs) to a Client via the UDS protocol.
+Diagnostic services are functions offered by :ref:`Servers (ECUs) <knowledge-base-server>` to
+a :ref:`Client <knowledge-base-client>` via the UDS protocol.
 Each service is identified by a Service Identifier (SID) value.
 
 
