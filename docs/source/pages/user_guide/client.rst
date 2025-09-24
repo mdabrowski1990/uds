@@ -159,7 +159,7 @@ Methods:
     client.send_request_receive_responses(some_request)
 
     # get the next collected response with a timeout
-    client.get_response(timeout=1000)
+    client.get_response(timeout=1000)  # ms
 
     # get next response immediately
     client.get_response_no_wait()
