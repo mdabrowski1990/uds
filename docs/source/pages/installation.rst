@@ -29,5 +29,4 @@ If you would like to test features under development, you can install the latest
 
 :shell:`pip install git+https://github.com/mdabrowski1990/uds.git@main`
 
-.. warning::
-   The development version may be unstable. Use it at your own risk.
+.. warning:: The development version may be unstable. Use it at your own risk.
