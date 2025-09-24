@@ -1,9 +1,9 @@
 """Send a request message, collect all responses."""
 
-from uds.client import Client
-from uds.transport_interface import AbstractTransportInterface
-from uds.message import UdsMessage
 from uds.addressing import AddressingType
+from uds.client import Client
+from uds.message import UdsMessage
+from uds.transport_interface import AbstractTransportInterface
 
 
 def main():

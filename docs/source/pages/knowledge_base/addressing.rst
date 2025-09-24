@@ -4,6 +4,7 @@ Addressing
 ==========
 In UDS communication, addressing determines the participants involved in a message exchange, specifying the sender
 and one or more receivers.
+
 The following addressing types are defined:
 
 - `Physical Addressing`_
