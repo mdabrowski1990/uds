@@ -141,7 +141,7 @@ Working with Client
 -------------------
 *This step is optional.*
 
-If you decided to use Client implementation.
+If you decide to use the Client implementation (for example, to simulate a diagnostic tester).
 
 
 Configuration
