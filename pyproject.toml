@@ -76,7 +76,7 @@ static-code-analysis = [
     "mypy == 1.16.1",
     "vulture == 2.14",
     "bandit == 1.8.5",
-    "pyroma == 4.2",
+    "pyroma == 5.0",
 ]
 dependency-scan = [
     "pip-audit == 2.9.0",
@@ -133,7 +133,7 @@ include = ["uds*"]
 
 
 [tool.pytest.ini_options]
-minversion = "7.0"
+minversion = "8.0"
 markers = [
     "integration: Software integration tests.",
     "performance: Performance (non-functional) tests."

@@ -35,7 +35,7 @@ __all__ = [
     "__license__",
 ]
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 __author__ = "Maciej Dąbrowski"
 __maintainer__ = "Maciej Dąbrowski"
 __credits__ = [
