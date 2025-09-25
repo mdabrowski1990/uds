@@ -2,14 +2,14 @@
 
 Python-CAN
 ==========
-Examples with `python-can`_ package being used for controlling CAN bus (handling CAN frames transmission and reception).
+Examples using the `python-can`_ package to control the CAN bus, including transmission and reception of CAN frames.
 
 .. seealso:: https://github.com/mdabrowski1990/uds/tree/main/examples/can/python-can
 
 
 Kvaser interface
 ----------------
-Examples with `Kvaser CAN interfaces`_ used as a hardware device to send and receive CAN messages.
+Examples demonstrating the use of `Kvaser CAN interfaces`_ as hardware devices for sending and receiving CAN messages.
 
 .. seealso:: https://github.com/mdabrowski1990/uds/tree/main/examples/can/python-can/kvaser
 

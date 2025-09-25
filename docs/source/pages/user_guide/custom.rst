@@ -193,7 +193,7 @@ Methods:
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_supported_packets_sequence_type`
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_input_packet`
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_desegmented_message`
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.segmentation`
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.__init__`
 
@@ -203,7 +203,7 @@ Requires implementation in concrete classes (abstract attributes and methods):
 - :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_class`
 - :attr:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.supported_packet_record_class`
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.is_desegmented_message`
-- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
+- :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.segmentation`
 - :meth:`~uds.segmentation.abstract_segmenter.AbstractSegmenter.desegmentation`
 
 .. warning:: **A user shall not use**

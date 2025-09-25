@@ -2,50 +2,50 @@
 
 Packet (N_PDU)
 ==============
-In ISO Standards, the name Network :ref:`Protocol Data Unit <knowledge-base-pdu>` (N_PDU in short) is used.
-For various reasons we decided to use **Packet** name instead.
+In ISO Standards, the term `Network Protocol Data Unit <knowledge-base-pdu>`_ (N_PDU) is used.
+In this implementation, we refer to it as a **Packet**.
 
-The packets are created during :ref:`segmentation <knowledge-base-segmentation>` of a
+Packets are created during the :ref:`segmentation <knowledge-base-segmentation>` of a
 :ref:`diagnostic message <knowledge-base-diagnostic-message>`.
-Each :ref:`diagnostic message <knowledge-base-diagnostic-message>` consists of at least one Packet (N_PDU).
+Each diagnostic message consists of at least one **Packet** (N_PDU).
 
-Packet contains following information:
+A **Packet** contains the following fields:
 
-  - `Network Address Information`_ (N_AI) - packet addressing
-  - `Network Data Field`_ (N_Data) - packet data
-  - `Network Protocol Control Information`_ (N_PCI) - packet type
+- `Network Address Information`_ (N_AI) — packet addressing
+- `Network Data Field`_ (N_Data) — packet payload
+- `Network Protocol Control Information`_ (N_PCI) — packet type
 
 
 .. _knowledge-base-n-ai:
 
 Network Address Information
 ---------------------------
-Network Address Information (N_AI) field carries all :ref:`addressing <knowledge-base-addressing>` related information.
+The **Network Address Information (N_AI)** field carries all :ref:`addressing <knowledge-base-addressing>` information.
 
 It identifies:
 
-- the sender
-- recipient(s) of the packet
-- :ref:`addressing <knowledge-base-addressing>` type (:ref:`Physical Addressing <knowledge-base-physical-addressing>`
-  or :ref:`Functional Addressing <knowledge-base-functional-addressing>`) used
+- The sender of the **Packet**
+- The recipient(s) of the **Packet**
+- The :ref:`addressing <knowledge-base-addressing>` type used
 
 
 .. _knowledge-base-n-data:
 
 Network Data Field
 ------------------
-Network Data Field (N_Data) carries diagnostic message data. It might be an entire diagnostic message data
-(if a :ref:`diagnostic message <knowledge-base-diagnostic-message>` fits into one packet) or just a part of it
-(if :ref:`segmentation <knowledge-base-segmentation>` had to be used to divide
-a :ref:`diagnostic message <knowledge-base-diagnostic-message>` into smaller parts).
+The **Network Data Field (N_Data)** carries the diagnostic message content.
 
-For some communication buses, some packets might not carry any data (e.g.
-:ref:`CAN Flow Control <knowledge-base-can-flow-control>`) as they are used to manage the packets flow.
+- If the diagnostic message fits into a single **Packet**, N_Data contains the entire message.
+- If segmentation is used, N_Data carries only a portion of the message.
+
+On some communication buses, certain **Packets** may not carry any data (e.g.,
+:ref:`CAN Flow Control <knowledge-base-can-flow-control>`), as they are used solely to manage the flow of packets.
 
 
 .. _knowledge-base-n-pci:
 
 Network Protocol Control Information
 ------------------------------------
-Network Protocol Control Information (N_PCI) identifies the type of `Packet (N_PDU)`_.
-N_PCI values and their interpretation are bus specific.
+The **Network Protocol Control Information (N_PCI)** field identifies the type of the **Packet (N_PDU)**.
+N_PCI values and their interpretation are specific to each communication bus.
+

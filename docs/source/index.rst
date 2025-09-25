@@ -42,33 +42,27 @@ Features
 ````````
 Current implementation status of package features:
 
-+-----------------------------------------+--------------------------------------------+
-|                 Feature                 |            Implementation Status           |
-+=========================================+============================================+
-| UDS Messages and Packets                | Available since version `0.0.2             |
-|                                         | <https://pypi.org/project/py-uds/0.0.2/>`_ |
-+-----------------------------------------+--------------------------------------------+
-| Packets Reception and Transmission      | Available since version `0.3.0             |
-|                                         | <https://pypi.org/project/py-uds/0.3.0/>`_ |
-+-----------------------------------------+--------------------------------------------+
-| UDS Messages Reception and Transmission | Available since version `1.0.0             |
-|                                         | <https://pypi.org/project/py-uds/1.0.0/>`_ |
-+-----------------------------------------+--------------------------------------------+
-| Messages Segmentation                   | Available since version `0.2.0             |
-|                                         | <https://pypi.org/project/py-uds/0.2.0/>`_ |
-+-----------------------------------------+--------------------------------------------+
-| Packets Desegmentation                  | Available since version `0.2.0             |
-|                                         | <https://pypi.org/project/py-uds/0.2.0/>`_ |
-+-----------------------------------------+--------------------------------------------+
-| Client Simulation                       | Planned                                    |
-+-----------------------------------------+--------------------------------------------+
-| Server Simulation                       | Planned                                    |
-+-----------------------------------------+--------------------------------------------+
-| UDS Sniffer                             | Planned                                    |
-+-----------------------------------------+--------------------------------------------+
-| UDS Messages Translator                 | Available since version `2.0.0             |
-|                                         | <https://pypi.org/project/py-uds/2.0.0/>`_ |
-+-----------------------------------------+--------------------------------------------+
++-----------------------------------------+---------------------------------------------------------------------------+
+|                 Feature                 |                           Implementation Status                           |
++=========================================+===========================================================================+
+| UDS Messages and Packets                | Available since version `0.0.2 <https://pypi.org/project/py-uds/0.0.2/>`_ |
++-----------------------------------------+---------------------------------------------------------------------------+
+| Packets Reception and Transmission      | Available since version `0.3.0 <https://pypi.org/project/py-uds/0.3.0/>`_ |
++-----------------------------------------+---------------------------------------------------------------------------+
+| UDS Messages Reception and Transmission | Available since version `1.0.0 <https://pypi.org/project/py-uds/1.0.0/>`_ |
++-----------------------------------------+---------------------------------------------------------------------------+
+| Messages Segmentation                   | Available since version `0.2.0 <https://pypi.org/project/py-uds/0.2.0/>`_ |
++-----------------------------------------+---------------------------------------------------------------------------+
+| Packets Desegmentation                  | Available since version `0.2.0 <https://pypi.org/project/py-uds/0.2.0/>`_ |
++-----------------------------------------+---------------------------------------------------------------------------+
+| Client Simulation                       | Available since version `3.0.0 <https://pypi.org/project/py-uds/3.0.0/>`_ |
++-----------------------------------------+---------------------------------------------------------------------------+
+| Server Simulation                       | Planned                                                                   |
++-----------------------------------------+---------------------------------------------------------------------------+
+| UDS Sniffer                             | Planned                                                                   |
++-----------------------------------------+---------------------------------------------------------------------------+
+| UDS Messages Translator                 | Available since version `2.0.0 <https://pypi.org/project/py-uds/2.0.0/>`_ |
++-----------------------------------------+---------------------------------------------------------------------------+
 
 
 Buses supported
@@ -96,7 +90,7 @@ An overview of features that are required to fully implement UDS protocol is pre
 
 +--------------+--------------------------------------+--------------------------------------------+
 |   OSI Layer  |            Functionalities           |               Implementation               |
-+--------------+--------------------------------------+--------------------------------------------+
++==============+======================================+============================================+
 | Layer 7      | - diagnostic messages support        | - :mod:`uds.message`                       |
 | Application  |                                      |                                            |
 +--------------+--------------------------------------+--------------------------------------------+
@@ -104,7 +98,7 @@ An overview of features that are required to fully implement UDS protocol is pre
 | Presentation |                                      |                                            |
 |              | - diagnostic messages interpretation |                                            |
 +--------------+--------------------------------------+--------------------------------------------+
-| Layer 5      | - Client simulation                  | *To be provided with Client feature.*      |
+| Layer 5      | - Client simulation                  | - :mod:`uds.client`                        |
 | Session      |                                      |                                            |
 |              | - Server simulation                  | *To be provided with Server feature.*      |
 |              |                                      |                                            |
@@ -147,7 +141,7 @@ Contact
 -------
 - e-mail: uds-package-development@googlegroups.com
 - group: `UDS package development <https://groups.google.com/g/uds-package-development/about>`_
-- discord: https://discord.gg/y3waVmR5PZ
+- discord: `UDS Discord <https://discord.gg/y3waVmR5PZ>`_
 
 
 .. admonition:: Documentation generated

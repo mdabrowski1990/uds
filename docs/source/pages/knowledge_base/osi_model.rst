@@ -2,15 +2,18 @@
 
 UDS OSI Model
 =============
-Overview of `OSI model <https://en.wikipedia.org/wiki/OSI_model>`_ for UDS protocol.
+The Unified Diagnostic Services (UDS) protocol can be described using
+the `OSI model <https://en.wikipedia.org/wiki/OSI_model>`_.
+Each OSI layer has specific responsibilities and relevant standards for UDS communications.
 
 
 .. _knowledge-base-uds-standards:
 
 UDS Standards
 -------------
-UDS is defined by multiple standards which are the main source of information and requirements about this protocol.
-Full list of standards is included in the table below:
+UDS is defined across multiple standards, which serve as the authoritative source of information and requirements
+for this protocol.
+The table below summarizes the main standards for different OSI layers and network types:
 
 +--------------+-------------+-------------+-------------+-------------+----------------+-------------+
 |   OSI Layer  |    Common   |     CAN     |   FlexRay   |   Ethernet  |     K-Line     |     LIN     |
@@ -41,44 +44,34 @@ Full list of standards is included in the table below:
 
 where:
 
-- OSI Layer - OSI Model Layer for which standards are relevant
-- Common - standards mentioned in this column are always relevant for UDS communication regardless of bus used
-- CAN - standards which are specific for UDS on CAN implementation
-- FlexRay - standards which are specific for UDS on FlexRay implementation
-- Ethernet - standards which are specific for UDS on IP implementation
-- K-Line - standards which are specific for UDS on K-Line implementation
-- LIN - standards which are specific for UDS on LIN implementation
+- **OSI Layer**: OSI layer for which the standard is relevant.
+- **Common**: Standards applicable to UDS regardless of the underlying network.
+- **CAN/FlexRay/Ethernet/K-Line/LIN**: Standards specific to UDS implementation on the given network.
 
 
 .. _knowledge-base-pdu:
 
-Protocol Data Units
--------------------
-Each layer of OSI Model defines their own
-`Protocol Data Unit (PDU) <https://en.wikipedia.org/wiki/Protocol_data_unit>`_.
-To make things simpler for the users and our developers, in the implementation we distinguish following PDUs:
+Protocol Data Units (PDUs)
+--------------------------
+Each OSI layer defines its own `Protocol Data Unit (PDU) <https://en.wikipedia.org/wiki/Protocol_data_unit>`_.
+For simplicity, the UDS implementation distinguishes the following PDUs:
 
-- Application Protocol Data Unit (A_PDU) - called `diagnostic message` or `UDS Message` in the implementation
-  and documentation. More information about A_PDU can be found in:
-
+- **Application PDU (A_PDU)**: Represents a `diagnostic message` or `UDS message`.
+  More information:
   - :ref:`knowledge base section - diagnostic message <knowledge-base-diagnostic-message>`
-
   - :ref:`implementation - diagnostic message <implementation-diagnostic-message>`
 
-- Network Protocol Data Unit (N_PDU) - called `packet` in the implementation and documentation.
-  More information about N_PDU can be found in:
-
+- **Network PDU (N_PDU)**: Represents a `packet`.
+  More information:
   - :ref:`knowledge base section - packet <knowledge-base-packet>`
+  - Implementation: :mod:`uds.packet`
 
-  - implementation - :mod:`uds.packet`
-
-- Data Protocol Data Unit (D_PDU) - called `frame` in the implementation and documentation.
-  We do not have any internal `frames <https://en.wikipedia.org/wiki/Frame_(networking)>`_ documentation.
-  Implementation of frames is usually provided by external packages.
+- **Data PDU (D_PDU)**: Represents a `frame`. No internal documentation is provided; frame handling
+  is typically performed by external libraries.
 
 .. figure:: ../../diagrams/KnowledgeBase-PDUs.png
   :alt: UDS PDUs
   :figclass: align-center
   :width: 100%
 
-  UDS Protocol Data Units on different layers of OSI Model.
+  Illustration of UDS Protocol Data Units across OSI layers.
