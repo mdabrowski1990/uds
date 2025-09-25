@@ -1,4 +1,4 @@
-"""Implementation for UDS Client Simulation."""
+"""Implementation for :ref:`UDS Client <knowledge-base-client>` Simulation."""
 
 __all__ = ["Client"]
 
@@ -50,15 +50,15 @@ class Client:
     """Simulation for UDS Client entity."""
 
     DEFAULT_P2_CLIENT_TIMEOUT: TimeMillisecondsAlias = 100  # P2Client_max > P2Server_max (default: 50 ms)
-    """Default value of P2Client timeout."""
+    """Default value of :ref:`P2Client <knowledge-base-p2-client>` timeout."""
     DEFAULT_P6_CLIENT_TIMEOUT: TimeMillisecondsAlias = 10000  # P6Client_max > P2Client_max
-    """Default value of P6Client timeout."""
+    """Default value of :ref:`P6Client <knowledge-base-p6-client>` timeout."""
     DEFAULT_P2_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 5050  # P2*Client_max > P2*Server_max (default: 5000 ms)
-    """Default value of P2*Client timeout."""
+    """Default value of :ref:`P2*Client <knowledge-base-p2*-client>` timeout."""
     DEFAULT_P6_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 50000  # P6*Client_max > P2*Client_max
-    """Default value of P6*Client timeout."""
+    """Default value of :ref:`P6*Client <knowledge-base-p6*-client>` timeout."""
     DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000
-    """Default value of S3Client time parameter."""
+    """Default value of :ref:`S3Client <knowledge-base-s3-client>` time parameter."""
     DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 20
     """Default value of receiving task cycle."""
 
@@ -131,7 +131,7 @@ class Client:
 
     @property
     def p2_client_timeout(self) -> TimeMillisecondsAlias:
-        """Get timeout value for P2Client parameter."""
+        """Get timeout value for :ref:`P2Client <knowledge-base-p2-client>` parameter."""
         return self.__p2_client_timeout
 
     @p2_client_timeout.setter
@@ -161,7 +161,7 @@ class Client:
 
     @property
     def p2_ext_client_timeout(self) -> TimeMillisecondsAlias:
-        """Get timeout value for P2*Client parameter."""
+        """Get timeout value for :ref:`P2*Client <knowledge-base-p2*-client>` parameter."""
         return self.__p2_ext_client_timeout
 
     @p2_ext_client_timeout.setter
@@ -191,7 +191,7 @@ class Client:
 
     @property
     def p6_client_timeout(self) -> TimeMillisecondsAlias:
-        """Get timeout value for P6Client parameter."""
+        """Get timeout value for :ref:`P6Client <knowledge-base-p6-client>` parameter."""
         return self.__p6_client_timeout
 
     @p6_client_timeout.setter
@@ -225,7 +225,7 @@ class Client:
 
     @property
     def p6_ext_client_timeout(self) -> TimeMillisecondsAlias:
-        """Get timeout value for P6*Client parameter."""
+        """Get timeout value for :ref:`P6*Client <knowledge-base-p6*-client>` parameter."""
         return self.__p6_ext_client_timeout
 
     @p6_ext_client_timeout.setter
@@ -261,7 +261,7 @@ class Client:
 
     @property
     def s3_client(self) -> TimeMillisecondsAlias:
-        """Get value of S3Client parameter."""
+        """Get value of :ref:`S3Client <knowledge-base-s3-client>` parameter."""
         return self.__s3_client
 
     @s3_client.setter
