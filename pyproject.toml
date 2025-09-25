@@ -3,6 +3,8 @@ name = "py-uds"
 description = "UDS (Unified Diagnostic Services) protocol handler."
 requires-python = ">=3.9"
 readme = "README.rst"
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -101,10 +103,6 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
-
-
-[tool.setuptools]
-license-files = ["LICENSE"]
 
 
 [tool.setuptools.dynamic]
