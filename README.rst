@@ -83,7 +83,7 @@ Contact
 -------
 - e-mail: uds-package-development@googlegroups.com
 - group: `UDS package development`_
-- discord: https://discord.gg/y3waVmR5PZ
+- discord: `UDS discord server`_
 
 
 .. _SECURITY.md: https://github.com/mdabrowski1990/uds/blob/main/SECURITY.md
@@ -91,6 +91,8 @@ Contact
 .. _CONTRIBUTING.md: https://github.com/mdabrowski1990/uds/blob/main/CONTRIBUTING.md
 
 .. _UDS package development: https://groups.google.com/g/uds-package-development/about
+
+.. _UDS discord server: https://discord.gg/y3waVmR5PZ
 
 .. _Unified Diagnostic Services: https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
 
