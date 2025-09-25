@@ -16,7 +16,7 @@ def main():
     # start collecting all response messages sent to the client
     client.start_receiving()
 
-    # yry to get a response immediately
+    # try to get a response immediately
     response_message_record = client.get_response_no_wait()
     if response_message_record is None:
         print("No response received so far.")
