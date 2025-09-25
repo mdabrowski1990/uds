@@ -16,7 +16,7 @@ This ensures that the server(s) the client communicates with do not exit the cur
 due to inactivity.
 
 Default value:
-  2000 ms
+  2000ms
 
 Minimum value:
   P2\ :sub:`Client`
