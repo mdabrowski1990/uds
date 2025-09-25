@@ -32,7 +32,7 @@ S3\ :sub:`Server`
 On the server side, the S3\ :sub:`Server` parameter defines the inactivity time (without any request messages)
 after which the server shall exit the current diagnostic session and return to Default Session.
 
-S3\ :sub:`Server` = 5000 ms
+S3\ :sub:`Server` = 5000ms
 
 
 Network Delays
@@ -180,7 +180,7 @@ Minimum value:
 
 Maximum value:
   specific for the server
-  default: 50 ms
+  default: 50ms
 
 Performance requirement:
   The server shall send a response (assuming the request requires one) within P2\ :sub:`Server`.
@@ -200,7 +200,7 @@ Minimum value:
 
 Maximum value:
   specific for the server
-  default: 5000 ms
+  default: 5000ms
 
 Performance requirement:
   After sending a negative response with :ref:`NRC <knowledge-base-nrc>` Response Pending (0x78),

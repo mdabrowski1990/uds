@@ -131,7 +131,7 @@ Example:
     sent_message_record = transport_interface.send_message(uds_message)
 
     # receive a message
-    received_message_record = transport_interface.receive_message(timeout=1000)  # timeout in [ms]
+    received_message_record = transport_interface.receive_message(timeout=1000)  # ms
 
 
 .. seealso:: :ref:`Diagnostic Message implementation <implementation-diagnostic-message>`

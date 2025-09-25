@@ -2,41 +2,38 @@
 
 Client
 ======
-This section explains :ref:`Client <knowledge-base-client>` implementation.
-The implementation is provided in :mod:`uds.client` module with :class:`~uds.client.Client` class as
-the main entry point.
+This section describes the :ref:`Client <knowledge-base-client>` implementation,
+provided in the :mod:`uds.client` module.
+The main entry point is the :class:`~uds.client.Client` class.
 
 Attributes:
 
-- :attr:`~uds.client.Client.DEFAULT_P2_CLIENT_TIMEOUT` - default value of :ref:`P2Client <knowledge-base-p2-client>`
+- :attr:`~uds.client.Client.DEFAULT_P2_CLIENT_TIMEOUT` - default :ref:`P2Client <knowledge-base-p2-client>` timeout
+- :attr:`~uds.client.Client.DEFAULT_P6_CLIENT_TIMEOUT` - default :ref:`P6Client <knowledge-base-p6-client>` timeout
+- :attr:`~uds.client.Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT` - default :ref:`P2*Client <knowledge-base-p2*-client>`
   timeout
-- :attr:`~uds.client.Client.DEFAULT_P6_CLIENT_TIMEOUT` - default value of :ref:`P6Client <knowledge-base-p6-client>`
+- :attr:`~uds.client.Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT` - default :ref:`P6*Client <knowledge-base-p6*-client>`
   timeout
-- :attr:`~uds.client.Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT` - default value of
-  :ref:`P2*Client <knowledge-base-p2*-client>` timeout
-- :attr:`~uds.client.Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT` - default value of
-  :ref:`P6*Client <knowledge-base-p6*-client>` timeout
 - :attr:`~uds.client.Client.DEFAULT_S3_CLIENT` - default :ref:`S3Client <knowledge-base-s3-client>` value
-- :attr:`~uds.client.Client.DEFAULT_RECEIVING_TASK_CYCLE` - default value used by `Background Receiving`_
-- :attr:`~uds.client.Client.transport_interface` - Transport Interface used
-- :attr:`~uds.client.Client.p2_client_timeout` - :ref:`P2Client <knowledge-base-p2-client>` timeout value
-- :attr:`~uds.client.Client.p2_client_measured` - the last measured value of :ref:`P2Client <knowledge-base-p2-client>`
-- :attr:`~uds.client.Client.p2_ext_client_timeout` - :ref:`P2*Client <knowledge-base-p2*-client>` timeout value
-- :attr:`~uds.client.Client.p2_ext_client_measured` - the last measured value of
-  :ref:`P2*Client <knowledge-base-p2*-client>`
-- :attr:`~uds.client.Client.p6_client_timeout` - :ref:`P6Client <knowledge-base-p6-client>` timeout value
-- :attr:`~uds.client.Client.p6_client_measured` - the last measured value of :ref:`P6Client <knowledge-base-p6-client>`
-- :attr:`~uds.client.Client.p6_ext_client_timeout` - :ref:`P6*Client <knowledge-base-p6*-client>` timeout value
-- :attr:`~uds.client.Client.p6_ext_client_measured` - the last measured value of
-  :ref:`P6*Client <knowledge-base-p6*-client>`
-- :attr:`~uds.client.Client.s3_client` - :ref:`S3Client <knowledge-base-s3-client>` value
+- :attr:`~uds.client.Client.DEFAULT_RECEIVING_TASK_CYCLE` - default cycle used by `Background Receiving`_
+- :attr:`~uds.client.Client.transport_interface` - transport interface in use
+- :attr:`~uds.client.Client.p2_client_timeout` - configured :ref:`P2Client <knowledge-base-p2-client>` timeout
+- :attr:`~uds.client.Client.p2_client_measured` - last measured :ref:`P2Client <knowledge-base-p2-client>` value
+- :attr:`~uds.client.Client.p2_ext_client_timeout` - configured :ref:`P2*Client <knowledge-base-p2*-client>` timeout
+- :attr:`~uds.client.Client.p2_ext_client_measured` - last measured :ref:`P2*Client <knowledge-base-p2*-client>` value
+- :attr:`~uds.client.Client.p6_client_timeout` - configured :ref:`P6Client <knowledge-base-p6-client>` timeout
+- :attr:`~uds.client.Client.p6_client_measured` - last measured :ref:`P6Client <knowledge-base-p6-client>` value
+- :attr:`~uds.client.Client.p6_ext_client_timeout` - configured :ref:`P6*Client <knowledge-base-p6*-client>` timeout
+- :attr:`~uds.client.Client.p6_ext_client_measured` - last measured :ref:`P6*Client <knowledge-base-p6*-client>` value
+- :attr:`~uds.client.Client.s3_client` - configured :ref:`S3Client <knowledge-base-s3-client>` value
 - :attr:`~uds.client.Client.is_receiving` - whether `Background Receiving`_ is on
+- :attr:`~uds.client.Client.is_tester_present_sent` - whether `Tester Present`_ is sent periodically
 
 Methods:
 
-- :meth:`~uds.client.Client.__init__` - configure :ref:`Client <knowledge-base-client>`
-- :meth:`~uds.client.Client.__del__` - close threads safely
-- :meth:`~uds.client.Client.is_response_pending_message` - check whether a message is a negative response
+- :meth:`~uds.client.Client.__init__` - create and configure the :ref:`Client <knowledge-base-client>`
+- :meth:`~uds.client.Client.__del__` - clean up and stop background tasks safely
+- :meth:`~uds.client.Client.is_response_pending_message` - check if a message is a negative response
   with Response Pending (0x78) :ref:`NRC <knowledge-base-nrc>`
 - :meth:`~uds.client.Client.get_response` - wait for the next response collected by `Background Receiving`_
 - :meth:`~uds.client.Client.get_response_no_wait` - get the next response collected by `Background Receiving`_
@@ -52,7 +49,7 @@ Methods:
 
 Configuration
 -------------
-Configuration of :ref:`Client <knowledge-base-client>` is done at :class:`~uds.client.Client` object creation.
+The :ref:`Client <knowledge-base-client>` is configured during :class:`~uds.client.Client` object creation.
 The following arguments can be provided:
 
 - :ref:`transport_interface <implementation-abstract-transport-interface>`
@@ -68,7 +65,7 @@ The following arguments can be provided:
 
     import uds
 
-    # let's assume Transport Interface object is already created
+    # assume Transport Interface object exists
     transport_interface: uds.transport_interface.AbstractTransportInterface
 
     # configure Client object
@@ -92,7 +89,7 @@ the final response.
 
     import uds
 
-    # let's assume Client object is already created
+    # assume Client object exists
     client: uds.client.Client
 
     # define an example request message
@@ -110,13 +107,15 @@ Manage periodic :ref:`TesterPresent <knowledge-base-service-tester-present>` mes
 - :meth:`~uds.client.Client.start_tester_present` - start sending Tester Present messages periodically
 - :meth:`~uds.client.Client.stop_tester_present` - stop sending Tester Present messages periodically
 
-Period used for transmission is controlled by :attr:`~uds.client.Client.s3_client` value.
+Period used for transmission is controlled by :attr:`~uds.client.Client.s3_client`.
+
+Whether Tester Present is currently active is indicated by :attr:`~uds.client.Client.is_tester_present_sent`.
 
 **Example code:**
 
   .. code-block::  python
 
-    # let's assume Client object is already created
+    # assume Client object exists
     client: uds.client.Client
 
     # set period for Tester Present messages
@@ -140,16 +139,19 @@ Methods:
 
 - :meth:`~uds.client.Client.start_receiving` - start collecting responses
 - :meth:`~uds.client.Client.stop_receiving` - stop collecting responses
-- :meth:`~uds.client.Client.get_response` - get response, wait if no response stored
-- :meth:`~uds.client.Client.get_response_no_wait` - get response, do not wait
+- :meth:`~uds.client.Client.get_response` - get the next response (waits if none are available)
+- :meth:`~uds.client.Client.get_response_no_wait` - get the next response immediately (returns None if none
+  are available)
+
+Whether responses are currently being collected is indicated by :attr:`~uds.client.Client.is_receiving`.
 
 **Example code:**
 
   .. code-block::  python
 
-    # let's assume Client object is already created
+    # assume Client object exists
     client: uds.client.Client
-    # let's assume some request message is already created
+    # assume some request message object exists
     some_request: uds.message.UdsMessage
 
     # start collecting responses

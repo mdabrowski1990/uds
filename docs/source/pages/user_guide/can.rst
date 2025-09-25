@@ -169,10 +169,10 @@ Addressing Information in
 *From the user perspective, objects creation and passing them correctly are the only interactions.*
 *This is why we only explain how to properly initialize objects of this class.*
 
-In case of :ref:`Mixed CAN Addressing Format <knowledge-base-can-mixed-addressing>`, each address is carried by
-CAN Identifier and first data byte of :ref:`CAN Frame <knowledge-base-can-frame>` (called **Address Extension**).
+In the :ref:`Mixed CAN Addressing Format <knowledge-base-can-mixed-addressing>`,
+each address is carried by the CAN Identifier and the first data byte of the CAN Frame (**Address Extension**).
 Exactly two parameters "can_id" and "address_extension" shall be passed to each address upon
-:class:`~uds.can.addressing.extended_addressing.ExtendedCanAddressingInformation` object creation.
+:class:`~uds.can.addressing.mixed_addressing.Mixed11BitCanAddressingInformation` object creation.
 
 .. note:: Value of "address_extension" parameter must be the same for transmitting (Tx) and receiving (Rx) addresses.
   It applies to both addresses pairs (for physical and functional communication).

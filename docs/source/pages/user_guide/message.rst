@@ -109,7 +109,7 @@ Methods:
   :attr:`~uds.message.service_identifiers.POSSIBLE_REQUEST_SIDS` value as some Request SID values are reserved for
   further extension by UDS specification and others are ECU specific (defined by ECU's manufacturer).
 
-.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` to add new SID values.”
+.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` to add new SID values.
 
 **Example code:**
 
@@ -150,7 +150,7 @@ Methods:
   :attr:`~uds.message.service_identifiers.POSSIBLE_RESPONSE_SIDS` value as some Response SID values are reserved for
   further extension by UDS specification and other are ECU specific (defined by ECU's manufacturer).
 
-.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` to add new Response SID values.”
+.. note:: Use :meth:`~uds.utilities.enums.ExtendableEnum.add_member` to add new Response SID values.
 
 **Example code:**
 

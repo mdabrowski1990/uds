@@ -386,29 +386,33 @@ STmin values:
 
   The value of STmin in this range represents the value in milliseconds (ms).
 
-  0x00 = 0 ms
+  Meaning of example values:
 
-  0xFF = 127 ms
+    0x00 -> 0ms
+
+    0x20 -> 32ms
+
+    0x7F -> 127ms
 
 - 0x80-0xF0 - Reserved
 
   This range of values is reserved for future extension by ISO 15765.
 
-- 0xF1-0xF9 - Separation Time minimum range 100-900 μs
+- 0xF1-0xF9 - Separation Time minimum range 100-900μs
 
   The value of STmin in this range represents the value in microseconds (μs) according to the formula:
 
   .. code-block::
 
-    (STmin - 0xF0) * 100 μs
+    (STmin - 0xF0) * 100μs
 
   Meaning of example values:
 
-  0xF1 -> 100 μs
+    0xF1 -> 100μs
 
-  0xF5 -> 500 μs
+    0xF5 -> 500μs
 
-  0xF9 -> 900 μs
+    0xF9 -> 900μs
 
 - 0xFA-0xFF - Reserved
 
@@ -823,7 +827,7 @@ It is measured from the start of the CAN frame transmission until the transmissi
 the data link layer.
 
 Timeout value:
-  1000 ms
+  1000ms
 
 Error handling:
   If N_As timeout is exceeded, the transmission of
@@ -845,7 +849,7 @@ It is measured from the start of the CAN frame transmission until the transmissi
 the data link layer.
 
 Timeout value:
-  1000 ms
+  1000ms
 
 Error handling:
   If N_Ar timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
@@ -868,7 +872,7 @@ or received :ref:`Flow Control <knowledge-base-can-flow-control>`) until the rec
 :ref:`Flow Control <knowledge-base-can-flow-control>`.
 
 Timeout value:
-  1000 ms
+  1000ms
 
 Error handling:
   If N_Bs timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
@@ -941,7 +945,7 @@ It is measured from the end of the last CAN Packet transmission (either transmit
 :ref:`Consecutive Frame <knowledge-base-can-consecutive-frame>`.
 
 Timeout value:
-  1000 ms
+  1000ms
 
 Error handling:
   If the N_Cr timeout is exceeded, the reception of the :ref:`diagnostic message <knowledge-base-diagnostic-message>`
