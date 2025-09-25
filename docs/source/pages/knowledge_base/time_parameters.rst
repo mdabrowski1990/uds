@@ -10,7 +10,7 @@ Session Parameters
 
 S3 :sub:`Client`
 ````````````````
-On the client side, the S3\ :sub:`Client` parameter defines the time interval for sending cyclical
+On the client side, the S3\ :sub:`Client` parameter defines the time interval for sending periodic
 :ref:`Tester Present <knowledge-base-service-tester-present>` request messages.
 This ensures that the server(s) the client communicates with do not exit the current diagnostic session
 due to inactivity.
@@ -29,8 +29,8 @@ Maximum value:
 
 S3\ :sub:`Server`
 `````````````````
-On the server side, the S3\ :sub:`Server` parameter defines the inactivity time (without any request messages)
-after which the server shall exit the current diagnostic session and return to Default Session.
+On the server side, the S3\ :sub:`Server` parameter defines the inactivity time (i.e. the period without any
+request messages), after which the server shall exit the current diagnostic session and return to the Default Session.
 
 S3\ :sub:`Server` = 5000ms
 
