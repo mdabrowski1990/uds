@@ -10,7 +10,7 @@ from warnings import warn
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
 from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
-from ..data_record import (
+from .data_record import (
     AbstractConditionalDataRecord,
     AbstractDataRecord,
     AliasMessageStructure,

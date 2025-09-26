@@ -15,5 +15,6 @@ from .data_record import (
     TextDataRecord,
     TextEncoding,
 )
-from .service import TESTER_PRESENT, DecodedMessageAlias, Service
+from .service import DecodedMessageAlias, Service
+from .service_definitions import DIAGNOSTIC_SESSION_CONTROL, TESTER_PRESENT
 from .translator import Translator

@@ -1,7 +1,7 @@
 import pytest
 from mock import MagicMock, Mock, call, patch
 
-from uds.translator.service.service import (
+from uds.translator.service import (
     NRC,
     RESPONSE_REQUEST_SID_DIFF,
     AbstractConditionalDataRecord,
@@ -13,7 +13,7 @@ from uds.translator.service.service import (
     SingleOccurrenceInfo,
 )
 
-SCRIPT_LOCATION = "uds.translator.service.service"
+SCRIPT_LOCATION = "uds.translator.service"
 
 class TestService:
     """Unit tests for `Service` class."""

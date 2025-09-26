@@ -158,5 +158,6 @@ max-line-length = 120
 ignore = ["D004"]
 ignore-path-errors = [
     "docs\\source\\pages\\knowledge_base\\addressing.rst;D001",  # tables
+    "docs\\source\\pages\\knowledge_base\\service.rst;D001",  # tables
     "docs\\source\\pages\\user_guide\\message_translation.rst;D001",  # long reference
 ]
