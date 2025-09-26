@@ -177,7 +177,8 @@ Response Format
 +------------------------+--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
 
 .. note:: :ref:`P2Server_max <knowledge-base-p2-server>` is provided directly in milliseconds.
-   :ref:`P2*Server_max <knowledge-base-p2*-server>` is encoded in units of 10 ms, so it must be multiplied by 10 to obtain the value in milliseconds.
+  :ref:`P2*Server_max <knowledge-base-p2*-server>` is encoded in units of 10 ms, so it must be multiplied by 10
+  to obtain the value in milliseconds.
 
 
 ECUReset
