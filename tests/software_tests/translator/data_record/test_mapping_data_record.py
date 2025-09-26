@@ -1,75 +1,43 @@
 import pytest
 from mock import Mock, patch
 
-from uds.translator.data_record.mapping_data_record import MappingDataRecord, MappingProxyType
+from uds.translator.data_record.mapping_data_record import (
+    AbstractMappingDataRecord,
+    LinearFormulaDataRecord,
+    MappingAndLinearFormulaDataRecord,
+    MappingDataRecord,
+    MappingProxyType,
+    RawDataRecord,
+)
 
 SCRIPT_LOCATION = "uds.translator.data_record.mapping_data_record"
 
 
-class TestMappingDataRecord:
+class TestAbstractMappingDataRecord:
+    """Unit tests for `AbstractMappingDataRecord` class."""
 
     def setup_method(self):
-        self.mock_data_record = Mock(spec=MappingDataRecord,
-                                     min_raw_value=0)
-        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
-        self.mock_warn = self._patcher_warn.start()
+        self.mock_data_record = Mock(spec=AbstractMappingDataRecord,
+                                     min_raw_value = 0)
 
-    def teardown_method(self):
-        self._patcher_warn.stop()
-
-    # __init__
-
-    @pytest.mark.parametrize("name, length, values_mapping", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}),
-        (Mock(), Mock(), Mock()),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
-    def test_init__mandatory_args(self, mock_abstract_data_record_class, name, length, values_mapping):
-        assert MappingDataRecord.__init__(self.mock_data_record, name, length, values_mapping) is None
-        mock_abstract_data_record_class.assert_called_once_with(name=name,
-                                                                length=length,
-                                                                children=tuple(),
-                                                                unit=None,
-                                                                min_occurrences=1,
-                                                                max_occurrences=1)
-        assert self.mock_data_record.values_mapping == values_mapping
-
-    @pytest.mark.parametrize("name, length, values_mapping, children, unit, min_occurrences, max_occurrences", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], "m/s", 0, None),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
-    def test_init__all_args(self, mock_abstract_data_record_class,
-                            name, length, values_mapping, children, unit, min_occurrences, max_occurrences):
-        assert MappingDataRecord.__init__(self.mock_data_record,
-                                          name=name,
-                                          length=length,
-                                          values_mapping=values_mapping,
-                                          children=children,
-                                          unit=unit,
-                                          min_occurrences=min_occurrences,
-                                          max_occurrences=max_occurrences) is None
-        mock_abstract_data_record_class.assert_called_once_with(name=name,
-                                                                length=length,
-                                                                children=children,
-                                                                unit=unit,
-                                                                min_occurrences=min_occurrences,
-                                                                max_occurrences=max_occurrences)
-        assert self.mock_data_record.values_mapping == values_mapping
+    @pytest.mark.parametrize("values_mapping", [Mock(), {1: "abc"}])
+    def test_init(self, values_mapping):
+        assert AbstractMappingDataRecord.__init__(self.mock_data_record, values_mapping) is None
+        assert self.mock_data_record.values_mapping==values_mapping
 
     # values_mapping
 
     def test_values_mapping__get(self):
-        self.mock_data_record._MappingDataRecord__values_mapping = Mock()
-        assert (MappingDataRecord.values_mapping.fget(self.mock_data_record)
-                == self.mock_data_record._MappingDataRecord__values_mapping)
+        self.mock_data_record._AbstractMappingDataRecord__values_mapping = Mock()
+        assert (AbstractMappingDataRecord.values_mapping.fget(self.mock_data_record)
+                == self.mock_data_record._AbstractMappingDataRecord__values_mapping)
 
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_values_mapping__type_error(self, mock_isinstance):
         mock_isinstance.return_value = False
         mock_value = Mock()
         with pytest.raises(TypeError):
-            MappingDataRecord.values_mapping.fset(self.mock_data_record, mock_value)
+            AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mock_value)
         mock_isinstance.assert_called_once_with(mock_value, dict)
 
     @pytest.mark.parametrize("max_raw_value, mapping_value", [
@@ -79,7 +47,7 @@ class TestMappingDataRecord:
     def test_values_mapping__value_error(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
         with pytest.raises(ValueError):
-            MappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
+            AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value)
 
     @pytest.mark.parametrize("max_raw_value, mapping_value", [
         (1, {0: "No", 1: "Yes"}),
@@ -87,19 +55,83 @@ class TestMappingDataRecord:
     ])
     def test_values_mapping__valid(self, max_raw_value, mapping_value):
         self.mock_data_record.max_raw_value = max_raw_value
-        assert MappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value) is None
-        assert isinstance(self.mock_data_record._MappingDataRecord__values_mapping, MappingProxyType)
-        assert isinstance(self.mock_data_record._MappingDataRecord__labels_mapping, MappingProxyType)
+        assert AbstractMappingDataRecord.values_mapping.fset(self.mock_data_record, mapping_value) is None
+        assert isinstance(self.mock_data_record._AbstractMappingDataRecord__values_mapping, MappingProxyType)
+        assert isinstance(self.mock_data_record._AbstractMappingDataRecord__labels_mapping, MappingProxyType)
         for key, value in mapping_value.items():
-            assert self.mock_data_record._MappingDataRecord__values_mapping[key] == value
-            assert self.mock_data_record._MappingDataRecord__labels_mapping[value] == key
+            assert self.mock_data_record._AbstractMappingDataRecord__values_mapping[key] == value
+            assert self.mock_data_record._AbstractMappingDataRecord__labels_mapping[value] == key
 
     # labels_mapping
 
     def test_labels_mapping__get(self):
-        self.mock_data_record._MappingDataRecord__labels_mapping = Mock()
-        assert (MappingDataRecord.labels_mapping.fget(self.mock_data_record)
-                == self.mock_data_record._MappingDataRecord__labels_mapping)
+        self.mock_data_record._AbstractMappingDataRecord__labels_mapping = Mock()
+        assert (AbstractMappingDataRecord.labels_mapping.fget(self.mock_data_record)
+                == self.mock_data_record._AbstractMappingDataRecord__labels_mapping)
+
+
+class TestMappingDataRecord:
+    """Unit tests for `MappingDataRecord` class."""
+
+    def setup_method(self):
+        self.mock_data_record = Mock(spec=MappingDataRecord)
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
+
+    def teardown_method(self):
+        self._patcher_warn.stop()
+
+    # inheritance
+
+    def test_inheritance(self):
+        assert issubclass(MappingDataRecord, RawDataRecord)
+        assert issubclass(MappingDataRecord, AbstractMappingDataRecord)
+
+    # __init__
+
+    @pytest.mark.parametrize("name, length, values_mapping", [
+        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}),
+        (Mock(), Mock(), Mock()),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.RawDataRecord.__init__")
+    @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
+    def test_init__mandatory_args(self, mock_abstract_mapping_data_record_init, mock_raw_data_record_init,
+                                  name, length, values_mapping):
+        assert MappingDataRecord.__init__(self.mock_data_record, name, length, values_mapping) is None
+        mock_raw_data_record_init.assert_called_once_with(self.mock_data_record,
+                                                          name=name,
+                                                          length=length,
+                                                          children=tuple(),
+                                                          unit=None,
+                                                          min_occurrences=1,
+                                                          max_occurrences=1)
+        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
+                                                                       values_mapping=values_mapping)
+
+    @pytest.mark.parametrize("name, length, values_mapping, children, unit, min_occurrences, max_occurrences", [
+        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], "m/s", 0, None),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
+    @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
+    def test_init__all_args(self, mock_abstract_mapping_data_record_init, mock_abstract_data_record_init,
+                            name, length, values_mapping, children, unit, min_occurrences, max_occurrences):
+        assert MappingDataRecord.__init__(self.mock_data_record,
+                                          name=name,
+                                          length=length,
+                                          values_mapping=values_mapping,
+                                          children=children,
+                                          unit=unit,
+                                          min_occurrences=min_occurrences,
+                                          max_occurrences=max_occurrences) is None
+        mock_abstract_data_record_init.assert_called_once_with(name=name,
+                                                               length=length,
+                                                               children=children,
+                                                               unit=unit,
+                                                               min_occurrences=min_occurrences,
+                                                               max_occurrences=max_occurrences)
+        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
+                                                                       values_mapping=values_mapping)
 
     # get_physical_value
 
@@ -144,9 +176,121 @@ class TestMappingDataRecord:
         mock_get_raw_value.assert_called_once_with(physical_value)
 
 
+class TestMappingAndLinearFormulaDataRecord:
+    """Unit tests for `MappingAndLinearFormulaDataRecord` class."""
+
+    def setup_method(self):
+        self.mock_data_record = Mock(spec=MappingAndLinearFormulaDataRecord)
+
+    # inheritance
+
+    def test_inheritance(self):
+        assert issubclass(MappingAndLinearFormulaDataRecord, LinearFormulaDataRecord)
+        assert issubclass(MappingAndLinearFormulaDataRecord, AbstractMappingDataRecord)
+
+    # __init__
+
+    @pytest.mark.parametrize("name, length, values_mapping, factor, offset", [
+        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 1.25, 9.5),
+        (Mock(), Mock(), Mock(), Mock(), Mock()),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__init__")
+    @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
+    def test_init__mandatory_args(self, mock_abstract_mapping_data_record_init, mock_linear_data_record_init,
+                                  name, length, values_mapping, factor, offset):
+        assert MappingAndLinearFormulaDataRecord.__init__(self.mock_data_record,
+                                                          name=name,
+                                                          length=length,
+                                                          values_mapping=values_mapping,
+                                                          factor=factor,
+                                                          offset=offset) is None
+        mock_linear_data_record_init.assert_called_once_with(self.mock_data_record,
+                                                             name=name,
+                                                             length=length,
+                                                             factor=factor,
+                                                             offset=offset,
+                                                             unit=None,
+                                                             min_occurrences=1,
+                                                             max_occurrences=1)
+        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
+                                                                       values_mapping=values_mapping)
+
+    @pytest.mark.parametrize("name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences", [
+        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 5, 10, "m/s", 0, None),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__init__")
+    @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
+    def test_init__all_args(self, mock_abstract_mapping_data_record_init, mock_linear_data_record_init,
+                            name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences):
+        assert MappingAndLinearFormulaDataRecord.__init__(self.mock_data_record,
+                                                          name=name,
+                                                          length=length,
+                                                          values_mapping=values_mapping,
+                                                          factor=factor,
+                                                          offset=offset,
+                                                          unit=unit,
+                                                          min_occurrences=min_occurrences,
+                                                          max_occurrences=max_occurrences) is None
+        mock_linear_data_record_init.assert_called_once_with(self.mock_data_record,
+                                                             name=name,
+                                                             length=length,
+                                                             factor=factor,
+                                                             offset=offset,
+                                                             unit=unit,
+                                                             min_occurrences=min_occurrences,
+                                                             max_occurrences=max_occurrences)
+        mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
+                                                                       values_mapping=values_mapping)
+
+    # get_physical_value
+
+    @pytest.mark.parametrize("raw_value, values_mapping", [
+        (0, {0: "foo", 1: "bar"}),
+        (3, {i: Mock() for i in range(7)})
+    ])
+    def test_get_physical_value__from_values_mapping(self, raw_value, values_mapping):
+        self.mock_data_record.values_mapping = values_mapping
+        assert (MappingAndLinearFormulaDataRecord.get_physical_value(self.mock_data_record, raw_value)
+                == values_mapping[raw_value])
+
+    @pytest.mark.parametrize("raw_value, values_mapping", [
+        (0, {1: "foo", 2: "bar"}),
+        (3, {i: Mock() for i in range(4, 13)})
+    ])
+    @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.get_physical_value")
+    def test_get_physical_value__not_in_values_mapping(self, mock_get_physical_value, raw_value, values_mapping):
+        self.mock_data_record.values_mapping = values_mapping
+        assert (MappingAndLinearFormulaDataRecord.get_physical_value(self.mock_data_record, raw_value)
+                == mock_get_physical_value.return_value)
+        mock_get_physical_value.assert_called_once_with(raw_value)
+
+    # get_raw_value
+
+    @pytest.mark.parametrize("physical_value, labels_mapping", [
+        ("foo", {"foo": 0, "bar": 1}),
+        ("ECU#4", {f"ECU#{i}": i for i in range(7)})
+    ])
+    def test_get_raw_value__from_labels_mapping(self, physical_value, labels_mapping):
+        self.mock_data_record.labels_mapping = labels_mapping
+        assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
+                == labels_mapping[physical_value])
+
+    @pytest.mark.parametrize("physical_value, labels_mapping", [
+        (2, {"foo": 0, "bar": 1}),
+        (Mock(), {f"ECU#{i}": i for i in range(7)})
+    ])
+    @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.get_raw_value")
+    def test_get_raw_value__not_in_labels_mapping(self, mock_get_raw_value, physical_value, labels_mapping):
+        self.mock_data_record.labels_mapping = labels_mapping
+        assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
+                == mock_get_raw_value.return_value)
+        mock_get_raw_value.assert_called_once_with(physical_value)
+
+
 @pytest.mark.integration
 class TestMappingDataRecordIntegration:
-    """Integration tests for the MappingDataRecord class."""
+    """Integration tests for `MappingDataRecord` class."""
 
     def setup_class(self):
         self.dtc_status_bit0 = MappingDataRecord(name="Test Failed",
@@ -624,3 +768,49 @@ class TestMappingDataRecordIntegration:
         assert output["raw_value"] == dtc_status_values
         assert output["children"] == expected_output["children"]
         assert output["unit"] == expected_output["unit"]
+
+
+@pytest.mark.integration
+class TestMappingAndLinearFormulaDataRecord:
+    """Integration tests for `MappingAndLinearFormulaDataRecord` class."""
+
+    def setup_class(self):
+        self.vehicle_speed_data_record = MappingAndLinearFormulaDataRecord(name="Vehicle Speed Records",
+                                                                           length=16,
+                                                                           values_mapping={0xFFFF: "Error",
+                                                                                           0xFFFE: "Init"},
+                                                                           factor=0.01,
+                                                                           offset=-100,
+                                                                           unit="km/h")
+
+    # get_physical_value
+
+    @pytest.mark.parametrize("raw_value, physical_value", [
+        (0xFFFE, "Init"),
+        (0xFFFF, "Error"),
+        (0xFFFD, 555.33),
+        (0x0000, -100),
+    ])
+    def test_get_physical_value__valid(self, raw_value, physical_value):
+        assert self.vehicle_speed_data_record.get_physical_value(raw_value) == physical_value
+
+    @pytest.mark.parametrize("incorrect_value", [-1, 0x10000, "Error"])
+    def test_get_physical_value__invalid(self, incorrect_value):
+        with pytest.raises((TypeError, ValueError)):
+            self.vehicle_speed_data_record.get_physical_value(incorrect_value)
+
+    # get_raw_value
+
+    @pytest.mark.parametrize("raw_value, physical_value", [
+        (0xFFFE, "Init"),
+        (0xFFFF, "Error"),
+        (0xFFFD, 555.33),
+        (0x0000, -100),
+    ])
+    def test_get_raw_value__valid(self, raw_value, physical_value):
+        assert self.vehicle_speed_data_record.get_raw_value(physical_value) == raw_value
+
+    @pytest.mark.parametrize("incorrect_value", ["Active", -101, 555.36])
+    def test_get_raw_value__invalid(self, incorrect_value):
+        with pytest.raises((TypeError, ValueError)):
+            self.vehicle_speed_data_record.get_raw_value(incorrect_value)

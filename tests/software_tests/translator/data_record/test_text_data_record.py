@@ -57,7 +57,7 @@ class TestEncodingAndDecodingFunctions:
 
 
 class TestTextDataRecord:
-    """Unit tests for TextDataRecord."""
+    """Unit tests for `TextDataRecord` class."""
 
     def setup_method(self):
         self.mock_data_record = Mock(spec=TextDataRecord)
@@ -182,7 +182,7 @@ class TestTextDataRecord:
 
 @pytest.mark.integration
 class TestTextDataRecordIntegration:
-    """Integration tests for the TextDataRecord class."""
+    """Integration tests for `TextDataRecord` class."""
 
     def setup_class(self):
         self.bcd = TextDataRecord(name="BCD",

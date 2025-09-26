@@ -637,7 +637,7 @@ class TestCanSingleFrame:
 
 @pytest.mark.integration
 class TestCanSingleFrameIntegration:
-    """Integration tests for CAN Single Frame module."""
+    """Integration tests for functions in CAN Single Frame module."""
 
     # validate_single_frame_data
 

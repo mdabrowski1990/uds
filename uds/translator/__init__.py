@@ -10,6 +10,7 @@ from .data_record import (
     ConditionalMappingDataRecord,
     CustomFormulaDataRecord,
     LinearFormulaDataRecord,
+    MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
     TextDataRecord,

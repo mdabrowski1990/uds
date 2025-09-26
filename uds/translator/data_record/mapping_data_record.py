@@ -1,7 +1,8 @@
 """Mapping Data Record implementation."""
 
-__all__ = ["MappingDataRecord"]
+__all__ = ["MappingDataRecord", "MappingAndLinearFormulaDataRecord"]
 
+from abc import ABC, abstractmethod
 from types import MappingProxyType
 from typing import Dict, Optional, Sequence, Union
 from warnings import warn
@@ -9,10 +10,63 @@ from warnings import warn
 from uds.utilities import ValueWarning
 
 from .abstract_data_record import AbstractDataRecord
+from .formula_data_record import LinearFormulaDataRecord
 from .raw_data_record import RawDataRecord
 
 
-class MappingDataRecord(RawDataRecord):
+class AbstractMappingDataRecord(ABC):
+    """Mapping storing functionality for Data Records."""
+
+    def __init__(self, values_mapping: Dict[int, str]) -> None:
+        """
+        Define mapping to use by this Data Record.
+
+        :param values_mapping: Mapping of raw values to labels with their meaning.
+            Dict keys are raw_values. Dict values are corresponding labels.
+        """
+        self.values_mapping = values_mapping
+
+    @property
+    def values_mapping(self) -> MappingProxyType[int, str]:
+        """Get raw values mapping to their corresponding labels."""
+        return self.__values_mapping
+
+    @values_mapping.setter
+    def values_mapping(self, value: Dict[int, str]) -> None:
+        """
+        Set the mapping between raw values and their labels.
+
+        :param value: Mapping to set.
+
+        :raise TypeError: Provided value is not dict type.
+        :raise ValueError: At least one key is out of raw values range.
+        """
+        if not isinstance(value, dict):
+            raise TypeError(f"Provided value is not dict type. Actual type: {type(value)}")
+        if not all(isinstance(key, int) and self.min_raw_value <= key <= self.max_raw_value for key in value.keys()):
+            raise ValueError("Provided dict contain values that are out of raw values range. "
+                             f"Expected: {self.min_raw_value} <= key <= {self.max_raw_value}. "
+                             f"Actual keys: {list(value.keys())}.")
+        self.__values_mapping = MappingProxyType(value)
+        self.__labels_mapping = MappingProxyType({v: k for k, v in self.__values_mapping.items()})
+
+    @property
+    def labels_mapping(self) -> MappingProxyType[str, int]:
+        """Get labels mapping to raw values."""
+        return self.__labels_mapping
+
+    @property
+    @abstractmethod
+    def min_raw_value(self) -> int:
+        """Minimum raw (bit) value for this Data Record."""
+
+    @property
+    @abstractmethod
+    def max_raw_value(self) -> int:
+        """Maximum raw (bit) value for this Data Record."""
+
+
+class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
     """
     Data Record with mapping between raw values and human-readable labels.
 
@@ -53,42 +107,15 @@ class MappingDataRecord(RawDataRecord):
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
         """
-        super().__init__(name=name,
-                         length=length,
-                         children=children,
-                         unit=unit,
-                         min_occurrences=min_occurrences,
-                         max_occurrences=max_occurrences)
-        self.values_mapping = values_mapping
-
-    @property
-    def values_mapping(self) -> MappingProxyType[int, str]:
-        """Get raw values mapping to their corresponding labels."""
-        return self.__values_mapping
-
-    @values_mapping.setter
-    def values_mapping(self, value: Dict[int, str]) -> None:
-        """
-        Set the mapping between raw values and their labels.
-
-        :param value: Mapping to set.
-
-        :raise TypeError: Provided value is not dict type.
-        :raise ValueError: At least one key is out of raw values range.
-        """
-        if not isinstance(value, dict):
-            raise TypeError(f"Provided value is not dict type. Actual type: {type(value)}")
-        if not all(isinstance(key, int) and self.min_raw_value <= key <= self.max_raw_value for key in value.keys()):
-            raise ValueError("Provided dict contain values that are out of raw values range. "
-                             f"Expected: {self.min_raw_value} <= key <= {self.max_raw_value}. "
-                             f"Actual keys: {list(value.keys())}.")
-        self.__values_mapping = MappingProxyType(value)
-        self.__labels_mapping = MappingProxyType({v: k for k, v in self.__values_mapping.items()})
-
-    @property
-    def labels_mapping(self) -> MappingProxyType[str, int]:
-        """Get labels mapping to raw values."""
-        return self.__labels_mapping
+        RawDataRecord.__init__(self,
+                               name=name,
+                               length=length,
+                               children=children,
+                               unit=unit,
+                               min_occurrences=min_occurrences,
+                               max_occurrences=max_occurrences)
+        AbstractMappingDataRecord.__init__(self,
+                                           values_mapping=values_mapping)
 
     def get_physical_value(self, raw_value: int) -> Union[str, int]:  # type: ignore
         """
@@ -106,6 +133,89 @@ class MappingDataRecord(RawDataRecord):
         return super().get_physical_value(raw_value)
 
     def get_raw_value(self, physical_value: Union[str, int]) -> int:  # type: ignore
+        """
+        Get raw value that represents provided physical value.
+
+        :param physical_value: Physical value (a label) of this Data Record single occurrence.
+
+        :return: Raw Value for this occurrence.
+        """
+        if physical_value in self.labels_mapping:
+            return self.labels_mapping[physical_value]  # type: ignore
+        return super().get_raw_value(physical_value)  # type: ignore
+
+
+class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMappingDataRecord):
+    """
+    Data Record with both mapping (raw value <-> label) and linear transformation capabilities.
+
+    MappingAndLinearFormulaDataRecord extends LinearFormulaDataRecord with a predefined mapping
+    between raw integer values and human-readable labels. When a raw value is found in the mapping,
+    the corresponding label is returned. Otherwise, the raw value is converted into a physical
+    quantity using a linear transformation (factor * raw_value + offset).
+
+    Features:
+     - Dual interpretation:
+       * Label mapping for discrete or enumerated values
+       * Linear transformation for continuous or numeric values
+     - Bidirectional conversion: raw <-> label or physical value
+     - Unit support for transformed values
+     - Occurrence constraints (minimum and maximum number of records)
+
+    Common Use Cases:
+     - Mixed parameter fields where some values represent discrete states (e.g. 0="Off", 1="On"),
+       and others represent scaled measurements
+     - Diagnostic fields that combine enumerations with numeric ranges
+     - Complex protocol parameters that can be expressed both categorically and numerically
+    """
+
+    def __init__(self,
+                 name: str,
+                 length: int,
+                 values_mapping: Dict[int, str],
+                 factor: Union[float, int],
+                 offset: Union[float, int],
+                 unit: Optional[str] = None,
+                 min_occurrences: int = 1,
+                 max_occurrences: Optional[int] = 1) -> None:
+        """
+        Create Mapping and Linear Formula Data Record.
+
+        :param name: A name for this Data Record.
+        :param length: Number of bits that are used to store a single occurrence of this Data Record.
+        :param values_mapping: Mapping of raw values to labels with their meaning.
+            Dict keys are raw_values. Dict values are corresponding labels.
+        :param factor: Multiplication factor for the linear transformation.
+        :param offset: Additive offset for the linear transformation.
+        :param unit: Unit in which values without mapping are represented.
+        :param min_occurrences: Minimal number of this Data Record occurrences.
+        :param max_occurrences: Maximal number of this Data Record occurrences.
+            Leave None if there is no limit (infinite number of occurrences).
+        """
+        LinearFormulaDataRecord.__init__(self,
+                                         name=name,
+                                         length=length,
+                                         factor=factor,
+                                         offset=offset,
+                                         unit=unit,
+                                         min_occurrences=min_occurrences,
+                                         max_occurrences=max_occurrences)
+        AbstractMappingDataRecord.__init__(self,
+                                           values_mapping=values_mapping)
+
+    def get_physical_value(self, raw_value: int) -> Union[str, int, float]:  # type: ignore
+        """
+        Get physical value representing provided raw value.
+
+        :param raw_value: Raw (bit) value of this Data Record single occurrence.
+
+        :return: A label (0from mapping) or a physical (linear transformation) value for this occurrence.
+        """
+        if raw_value in self.values_mapping:
+            return self.values_mapping[raw_value]
+        return super().get_physical_value(raw_value)
+
+    def get_raw_value(self, physical_value: Union[str, int, float]) -> int:
         """
         Get raw value that represents provided physical value.
 

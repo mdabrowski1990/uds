@@ -69,7 +69,7 @@ class TestRawDataRecord:
 
 @pytest.mark.integration
 class TestRawDataRecordIntegration:
-    """Integration tests for the RawDataRecord class."""
+    """Integration tests for `RawDataRecord` class."""
 
     def setup_class(self):
         self.dtc = RawDataRecord(name="DTC",

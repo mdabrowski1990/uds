@@ -23,6 +23,6 @@ from .conditional_data_record import (
     ConditionalMappingDataRecord,
 )
 from .formula_data_record import CustomFormulaDataRecord, LinearFormulaDataRecord
-from .mapping_data_record import MappingDataRecord
+from .mapping_data_record import MappingAndLinearFormulaDataRecord, MappingDataRecord
 from .raw_data_record import RawDataRecord
 from .text_data_record import TextDataRecord, TextEncoding

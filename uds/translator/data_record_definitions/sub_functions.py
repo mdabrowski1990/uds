@@ -2,8 +2,9 @@
 
 __all__ = [
     "SPRMIB",
-    "DIAGNOSTIC_SESSION_TYPE", "DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION",
-    "ZERO_SUB_FUNCTION", "TESTER_PRESENT_SUB_FUNCTION",
+    "DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION", "DIAGNOSTIC_SESSION_TYPE",
+    "ECU_RESET_SUB_FUNCTION", "RESET_TYPE",
+    "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION",
 ]
 
 from uds.translator.data_record.mapping_data_record import MappingDataRecord
@@ -28,6 +29,19 @@ DIAGNOSTIC_SESSION_TYPE = MappingDataRecord(name="diagnosticSessionType",
 DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                         length=8,
                                                         children=[SPRMIB, DIAGNOSTIC_SESSION_TYPE])
+# SID 0x11
+RESET_TYPE = MappingDataRecord(name="resetType",
+                               length=7,
+                               values_mapping={
+                                   0x01: "hardReset",
+                                   0x02: "keyOffOnReset",
+                                   0x03: "softReset",
+                                   0x04: "enableRapidPowerShutDown",
+                                   0x05: "disableRapidPowerShutDown",
+                               })
+ECU_RESET_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                       length=8,
+                                       children=[SPRMIB, RESET_TYPE])
 # SID 0x3E
 ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",
                                   length=7)
