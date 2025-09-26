@@ -8,7 +8,9 @@ from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Un
 from warnings import warn
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.translator.data_record import (
+from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
+
+from .data_record import (
     AbstractConditionalDataRecord,
     AbstractDataRecord,
     AliasMessageStructure,
@@ -16,7 +18,6 @@ from uds.translator.data_record import (
     DataRecordInfoAlias,
     SingleOccurrenceInfo,
 )
-from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
 SingleDataRecordValueAlias = Optional[Union[int, ChildrenValuesAlias]]
 """Alias for a single occurrence Data Record. Either:
