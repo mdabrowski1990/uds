@@ -2,7 +2,7 @@
 
 __all__ = [
     # SID 0x10
-    "P2_SERVER_MAX", "P2EXT_SERVER_MAX", "SESSION_PARAMETER_RECORD"
+    "P2_SERVER_MAX", "P2_EXT_SERVER_MAX", "SESSION_PARAMETER_RECORD"
 ]
 
 from uds.translator.data_record.formula_data_record import LinearFormulaDataRecord
@@ -14,11 +14,11 @@ P2_SERVER_MAX = LinearFormulaDataRecord(name="P2Server_max",
                                         factor=1,
                                         offset=0,
                                         unit="ms")
-P2EXT_SERVER_MAX = LinearFormulaDataRecord(name="P2*Server_max",
-                                           length=16,
-                                           factor=10,
-                                           offset=0,
-                                           unit="ms")
+P2_EXT_SERVER_MAX = LinearFormulaDataRecord(name="P2*Server_max",
+                                            length=16,
+                                            factor=10,
+                                            offset=0,
+                                            unit="ms")
 SESSION_PARAMETER_RECORD = RawDataRecord(name="sessionParameterRecord",
                                          length=32,
-                                         children=(P2_SERVER_MAX, P2EXT_SERVER_MAX))
+                                         children=(P2_SERVER_MAX, P2_EXT_SERVER_MAX))
