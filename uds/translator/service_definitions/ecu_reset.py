@@ -7,13 +7,13 @@ from uds.translator.data_record_definitions import CONDITIONAL_POWER_DOWN_TIME, 
 from uds.translator.service import Service
 
 ECU_RESET_2013 = Service(request_sid=RequestSID.ECUReset,
-                    request_structure=[ECU_RESET_SUB_FUNCTION],
-                    response_structure=[ECU_RESET_SUB_FUNCTION])
+                         request_structure=[ECU_RESET_SUB_FUNCTION],
+                         response_structure=[ECU_RESET_SUB_FUNCTION])
 """Translator for :ref:`ECUReset <knowledge-base-service-ecu-reset>` service compatible with ISO 14229-1:2013."""
 ECU_RESET_2020 = Service(request_sid=RequestSID.ECUReset,
-                    request_structure=[ECU_RESET_SUB_FUNCTION],
-                    response_structure=[ECU_RESET_SUB_FUNCTION,
-                                        CONDITIONAL_POWER_DOWN_TIME])
+                         request_structure=[ECU_RESET_SUB_FUNCTION],
+                         response_structure=[ECU_RESET_SUB_FUNCTION,
+                                             CONDITIONAL_POWER_DOWN_TIME])
 """Translator for :ref:`ECUReset <knowledge-base-service-ecu-reset>` service compatible with ISO 14229-1:2020."""
 
 ECU_RESET = ECU_RESET_2020

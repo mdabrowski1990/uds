@@ -771,7 +771,7 @@ class TestMappingDataRecordIntegration:
 
 
 @pytest.mark.integration
-class TestMappingAndLinearFormulaDataRecord:
+class TestMappingAndLinearFormulaDataRecordIntegration:
     """Integration tests for `MappingAndLinearFormulaDataRecord` class."""
 
     def setup_class(self):

@@ -10,5 +10,5 @@ DIAGNOSTIC_SESSION_CONTROL = Service(request_sid=RequestSID.DiagnosticSessionCon
                                      request_structure=[DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION],
                                      response_structure=[DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION,
                                                          SESSION_PARAMETER_RECORD])
-"""Default translator for :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` 
+"""Default translator for :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>`
 service."""
