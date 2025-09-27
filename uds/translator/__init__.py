@@ -17,5 +17,5 @@ from .data_record import (
     TextEncoding,
 )
 from .service import DecodedMessageAlias, Service
-from .service_definitions import DIAGNOSTIC_SESSION_CONTROL, TESTER_PRESENT, ECU_RESET
+from .service_definitions import DIAGNOSTIC_SESSION_CONTROL, ECU_RESET, TESTER_PRESENT
 from .translator import Translator
