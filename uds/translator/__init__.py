@@ -10,11 +10,12 @@ from .data_record import (
     ConditionalMappingDataRecord,
     CustomFormulaDataRecord,
     LinearFormulaDataRecord,
+    MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
     TextDataRecord,
     TextEncoding,
 )
 from .service import DecodedMessageAlias, Service
-from .service_definitions import DIAGNOSTIC_SESSION_CONTROL, TESTER_PRESENT
+from .service_definitions import DIAGNOSTIC_SESSION_CONTROL, ECU_RESET, TESTER_PRESENT
 from .translator import Translator

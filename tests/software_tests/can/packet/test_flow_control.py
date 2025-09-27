@@ -149,7 +149,7 @@ class TestCanSTmin:
 
 @pytest.mark.integration
 class TestCanSTminIntegration:
-    """Integration tests for CanSTmin class."""
+    """Integration tests for `CanSTmin` class."""
 
     @pytest.mark.parametrize("raw_value", [0x00, 0x12, 0x7F, 0xF1, 0xF4, 0xF9])
     def test_decode_and_encode(self, raw_value):
@@ -872,7 +872,7 @@ class TestDefaultFlowControlParametersGenerator:
 
 @pytest.mark.integration
 class TestDefaultFlowControlParametersGeneratorIntegration:
-    """Integration tests for DefaultFlowControlParametersGenerator"""
+    """Integration tests for `DefaultFlowControlParametersGenerator` class"""
 
     @pytest.mark.parametrize("init_params, following_fc_params", [
         (

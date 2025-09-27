@@ -165,7 +165,7 @@ class TestAbstractAddressingInformation:
 
 @pytest.mark.integration
 class TestAbstractCanAddressingInformationIntegration:
-    """Integration tests for AbstractCanAddressingInformation."""
+    """Integration tests for `AbstractCanAddressingInformation` class."""
 
     def test_get_other_end(self, example_can_addressing_information):
         other = example_can_addressing_information.get_other_end()

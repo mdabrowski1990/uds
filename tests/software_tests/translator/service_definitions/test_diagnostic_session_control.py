@@ -3,8 +3,6 @@ import pytest
 from uds.message import RequestSID, ResponseSID
 from uds.translator.service_definitions.diagnostic_session_control import DIAGNOSTIC_SESSION_CONTROL
 
-SCRIPT_LOCATION = "uds.translator.service_definitions.diagnostic_session_control"
-
 
 class TestDiagnosticSessionControl:
     """Unit tests for `DiagnosticSessionControl` service."""
@@ -93,7 +91,8 @@ class TestDiagnosticSessionControlIntegration:
                     'name': 'SubFunction',
                     'physical_value': 3,
                     'raw_value': 3,
-                    'unit': None},
+                    'unit': None
+                },
                 {
                     'children': (
                         {
