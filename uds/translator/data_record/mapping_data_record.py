@@ -15,7 +15,7 @@ from .raw_data_record import RawDataRecord
 
 
 class AbstractMappingDataRecord(ABC):
-    """Mapping storing functionality for Data Records."""
+    """Mapping functionality for Data Records."""
 
     def __init__(self, values_mapping: Dict[int, str]) -> None:
         """
