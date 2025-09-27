@@ -225,4 +225,10 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
         """
         if physical_value in self.labels_mapping:
             return self.labels_mapping[physical_value]  # type: ignore
-        return super().get_raw_value(physical_value)  # type: ignore
+        raw_value = super().get_raw_value(physical_value)  # type: ignore
+        if raw_value in self.values_mapping:
+            warn(message="Numeric physical value was provide for a value with a label: "
+                         f"{raw_value} ({self.values_mapping[raw_value]}).",
+                 category=UserWarning,
+                 stacklevel=2)
+        return raw_value

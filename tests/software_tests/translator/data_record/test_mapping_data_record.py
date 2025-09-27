@@ -181,6 +181,11 @@ class TestMappingAndLinearFormulaDataRecord:
 
     def setup_method(self):
         self.mock_data_record = Mock(spec=MappingAndLinearFormulaDataRecord)
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
+
+    def teardown_method(self):
+        self._patcher_warn.stop()
 
     # inheritance
 
@@ -264,6 +269,7 @@ class TestMappingAndLinearFormulaDataRecord:
         assert (MappingAndLinearFormulaDataRecord.get_physical_value(self.mock_data_record, raw_value)
                 == mock_get_physical_value.return_value)
         mock_get_physical_value.assert_called_once_with(raw_value)
+        self.mock_warn.assert_not_called()
 
     # get_raw_value
 
@@ -275,6 +281,21 @@ class TestMappingAndLinearFormulaDataRecord:
         self.mock_data_record.labels_mapping = labels_mapping
         assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
                 == labels_mapping[physical_value])
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("physical_value, labels_mapping", [
+        (2, {"foo": 0, "bar": 1}),
+        (Mock(), {f"ECU#{i}": i for i in range(7)})
+    ])
+    @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.get_raw_value")
+    def test_get_raw_value__physical_value_with_label(self, mock_get_raw_value, physical_value, labels_mapping):
+        self.mock_data_record.labels_mapping = labels_mapping
+        self.mock_data_record.values_mapping = {value: key for key, value in labels_mapping.items()}
+        mock_get_raw_value.return_value = tuple(labels_mapping.values())[0]
+        assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
+                == mock_get_raw_value.return_value)
+        mock_get_raw_value.assert_called_once_with(physical_value)
+        self.mock_warn.assert_called_once()
 
     @pytest.mark.parametrize("physical_value, labels_mapping", [
         (2, {"foo": 0, "bar": 1}),
@@ -283,9 +304,11 @@ class TestMappingAndLinearFormulaDataRecord:
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.get_raw_value")
     def test_get_raw_value__not_in_labels_mapping(self, mock_get_raw_value, physical_value, labels_mapping):
         self.mock_data_record.labels_mapping = labels_mapping
+        self.mock_data_record.values_mapping = {value: key for key, value in labels_mapping.items()}
         assert (MappingAndLinearFormulaDataRecord.get_raw_value(self.mock_data_record, physical_value)
                 == mock_get_raw_value.return_value)
         mock_get_raw_value.assert_called_once_with(physical_value)
+        self.mock_warn.assert_not_called()
 
 
 @pytest.mark.integration
