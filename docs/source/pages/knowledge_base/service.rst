@@ -185,7 +185,7 @@ Positive Response Format
 
 ECUReset
 --------
-The ECUReset service is used by the client to request a reset of the server.
+The ECUReset service is used by the client to request that the server perform a reset.
 The server, after receiving this request, performs the specified type of reset.
 
 ISO 14229-1 defines the following reset types (values of the *resetType* parameter):
@@ -214,6 +214,10 @@ Request Format
 
 Positive Response Format
 ````````````````````````
+
+
+ISO 14229-1:2020
+''''''''''''''''
 +----------------------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
 | Name                                         | Bit Length  | Value       | Description                                     | Present                    |
 +==============================================+=============+=============+=================================================+============================+
@@ -234,6 +238,21 @@ Positive Response Format
   :code:`resetType = 0x04` (*enableRapidPowerShutDown*).
   It defines the minimum time (in seconds) that the server requires to remain powered down before it can be safely
   restarted. A value of :code:`0xFF` indicates that either the time requirement is not available or a failure occurred.
+
+
+ISO 14229-1:2013
+''''''''''''''''
++----------------------------------------------+-------------+-------------+------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                        | Present |
++==============================================+=============+=============+====================================+=========+
+| RSID                                         | 8           | 0x51        | Positive Response: ECUReset (0x11) | Always  |
++-------------+--------------------------------+-------------+-------------+------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required              | Always  |
+|             |                                |             |             |                                    |         |
+|             |                                |             |             | 1 = suppress positive response     |         |
+|             +--------------------------------+-------------+-------------+------------------------------------+---------+
+|             | resetType                      | 7 (b6 - b0) | 0x00 - 0x7F | Specifies the reset type           | Always  |
++-------------+--------------------------------+-------------+-------------+------------------------------------+---------+
 
 
 ClearDiagnosticInformation
