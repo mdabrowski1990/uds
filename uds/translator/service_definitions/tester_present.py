@@ -9,4 +9,4 @@ from uds.translator.service import Service
 TESTER_PRESENT = Service(request_sid=RequestSID.TesterPresent,
                          request_structure=[TESTER_PRESENT_SUB_FUNCTION],
                          response_structure=[TESTER_PRESENT_SUB_FUNCTION])
-"""Translator for :ref:`TesterPresent <knowledge-base-service-tester-present>` service."""
+"""Default translator for :ref:`TesterPresent <knowledge-base-service-tester-present>` service."""
