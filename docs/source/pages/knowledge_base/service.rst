@@ -135,7 +135,7 @@ DiagnosticSessionControl service is used to change diagnostic sessions in the se
 In each diagnostic session a different set of diagnostic services (and/or functionalities) is enabled in the server.
 Server shall always be in exactly one diagnostic session.
 
-ISO 14229-1 defines following sessions (values of diagnosticSessionType parameter):
+ISO 14229-1 defines the following sessions (values of the *diagnosticSessionType* parameter):
 
 - 0x01 - defaultSession
 - 0x02 - programmingSession
@@ -154,36 +154,86 @@ Request Format
 |             |                                |             |             |                                |         |
 |             |                                |             |             | 1 = suppress positive response |         |
 |             +--------------------------------+-------------+-------------+--------------------------------+---------+
-|             | diagnosticSessionType          | 7 (b6 - b0) | 0x00 - 0x7F | Identifies Diagnostic Session  | Always  |
+|             | diagnosticSessionType          | 7 (b6 - b0) | 0x00 - 0x7F | Identifies diagnostic session  | Always  |
 +-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
 
 
-Response Format
-```````````````
+Positive Response Format
+````````````````````````
 +---------------------------------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
 | Name                                                    | Bit Length  | Value           | Description                                           | Present |
 +=========================================================+=============+=================+=======================================================+=========+
-| RSID                                                    | 8           | 0x50            | DiagnosticSessionControl                              | Always  |
+| RSID                                                    | 8           | 0x50            | Positive Response: DiagnosticSessionControl (0x10)    | Always  |
 +------------------------+--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
 |       subFunction      | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1       | 0 = response required                                 | Always  |
 |                        |                                |             |                 |                                                       |         |
 |                        |                                |             |                 | 1 = suppress positive response                        |         |
 |                        +--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
-|                        | diagnosticSessionType          | 7 (b6 - b0) | 0x00 - 0x7F     | Identifies Diagnostic Session                         | Always  |
+|                        | diagnosticSessionType          | 7 (b6 - b0) | 0x00 - 0x7F     | Identifies diagnostic session                         | Always  |
 +------------------------+--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
 | sessionParameterRecord | P2Server_max                   | 16          | 0x0000 - 0xFFFF | Maximum P2 timing used by server in this session      | Always  |
 |                        +--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
 |                        | ``P2*Server_max``              | 16          | 0x0000 - 0xFFFF | Maximum ``P2*`` timing used by server in this session | Always  |
 +------------------------+--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
 
-.. note:: :ref:`P2Server_max <knowledge-base-p2-server>` is provided directly in milliseconds.
-  :ref:`P2*Server_max <knowledge-base-p2*-server>` is encoded in units of 10 ms, so it must be multiplied by 10
+.. note:: :ref:`P2Server_max <knowledge-base-p2-server>` field is provided directly in milliseconds.
+  :ref:`P2*Server_max <knowledge-base-p2*-server>` field is encoded in units of 10 ms, so it must be multiplied by 10
   to obtain the value in milliseconds.
 
 
+.. _knowledge-base-service-ecu-reset:
+
 ECUReset
 --------
-ECUReset service is used by the client to request a server reset.
+The ECUReset service is used by the client to request a reset of the server.
+The server, after receiving this request, performs the specified type of reset.
+
+ISO 14229-1 defines the following reset types (values of the *resetType* parameter):
+
+- 0x01 - hardReset
+- 0x02 - keyOffOnReset
+- 0x03 - softReset
+- 0x04 - enableRapidPowerShutDown
+- 0x05 - disableRapidPowerShutDown
+
+
+Request Format
+``````````````
++----------------------------------------------+-------------+-------------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                    | Present |
++==============================================+=============+=============+================================+=========+
+| SID                                          | 8           | 0x11        | ECUReset                       | Always  |
++-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required          | Always  |
+|             |                                |             |             |                                |         |
+|             |                                |             |             | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-------------+--------------------------------+---------+
+|             | resetType                      | 7 (b6 - b0) | 0x00 - 0x7F | Specifies the reset type       | Always  |
++-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
+
+
+Positive Response Format
+````````````````````````
++----------------------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
+| Name                                         | Bit Length  | Value       | Description                                     | Present                    |
++==============================================+=============+=============+=================================================+============================+
+| RSID                                         | 8           | 0x51        | Positive Response: ECUReset (0x11)              | Always                     |
++-------------+--------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                           | Always                     |
+|             |                                |             |             |                                                 |                            |
+|             |                                |             |             | 1 = suppress positive response                  |                            |
+|             +--------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
+|             | resetType                      | 7 (b6 - b0) | 0x00 - 0x7F | Specifies the reset type                        | Always                     |
++-------------+--------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
+| powerDownTime                                | 8           | 0x00 - 0xFF | 0x00-0xFE: minimum down time required by server | Only when resetType = 0x04 |
+|                                              |             |             |                                                 |                            |
+|                                              |             |             | 0xFF: failure or time not available             |                            |
++----------------------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
+
+.. note:: The :code:`powerDownTime` field is only included in the positive response when
+  :code:`resetType = 0x04` (*enableRapidPowerShutDown*).
+  It defines the minimum time (in seconds) that the server requires to remain powered down before it can be safely
+  restarted. A value of :code:`0xFF` indicates that either the time requirement is not available or a failure occurred.
 
 
 ClearDiagnosticInformation
