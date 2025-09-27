@@ -1,7 +1,11 @@
 import pytest
 
 from uds.message import RequestSID, ResponseSID
-from uds.translator.service_definitions.clear_diagnostic_information import CLEAR_DIAGNOSTIC_INFORMATION, CLEAR_DIAGNOSTIC_INFORMATION_2020, CLEAR_DIAGNOSTIC_INFORMATION_2013
+from uds.translator.service_definitions.clear_diagnostic_information import (
+    CLEAR_DIAGNOSTIC_INFORMATION,
+    CLEAR_DIAGNOSTIC_INFORMATION_2013,
+    CLEAR_DIAGNOSTIC_INFORMATION_2020,
+)
 
 
 class TestClearDiagnosticInformation:
