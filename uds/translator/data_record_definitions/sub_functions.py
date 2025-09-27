@@ -53,11 +53,11 @@ RESET_TYPE_2020 = MappingDataRecord(name="resetType",
                                     length=7,
                                     values_mapping=RESET_TYPES_MAPPING_2020)
 ECU_RESET_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
-                                       length=8,
-                                       children=[SPRMIB, RESET_TYPE_2013])
+                                            length=8,
+                                            children=[SPRMIB, RESET_TYPE_2013])
 ECU_RESET_SUB_FUNCTION_2020 = RawDataRecord(name="SubFunction",
-                                       length=8,
-                                       children=[SPRMIB, RESET_TYPES_MAPPING_2020])
+                                            length=8,
+                                            children=[SPRMIB, RESET_TYPE_2020])
 # SID 0x3E
 ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",
                                   length=7)
