@@ -87,14 +87,14 @@ class TestECUReset2013Integration:
                             'children': (),
                             'length': 7,
                             'name': 'resetType',
-                            'physical_value': 'enableRapidPowerShutDown',
+                            'physical_value': 0x04,
                             'raw_value': 0x04,
                             'unit': None
                         },
                     ),
                     'length': 8,
                     'name': 'SubFunction',
-                    'physical_value': 4,
+                    'physical_value': 0x04,
                     'raw_value': 0x04,
                     'unit': None
                 },
