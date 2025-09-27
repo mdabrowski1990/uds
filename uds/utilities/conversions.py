@@ -58,11 +58,13 @@ def int_to_bytes(int_value: int,
     if size is not None:
         if not isinstance(size, int):
             raise TypeError(f"Provided `size` is not int type. Actual type: {type(size)}")
-        if size <= 0:
-            raise ValueError(f"Provided `size` is not greater than zero. Actual value: {size}")
+        if size < 0:
+            raise ValueError(f"Provided `size` is smaller than zero. Actual value: {size}")
     endianness = Endianness.validate_member(endianness)
+    if size == 0 and int_value == 0:
+        return bytes()
     bytes_number = max(1, (int_value.bit_length() + 7) // 8)
-    size = size or bytes_number
+    size = bytes_number if size is None else size
     if size < bytes_number:
         raise InconsistencyError("Provided value of `size` is too small to contain all bytes of int_value. "
                                  f"Actual values: int_value={int_value}, size={size}")

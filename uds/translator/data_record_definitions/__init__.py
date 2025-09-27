@@ -2,6 +2,8 @@
 
 from .other import (
     CONDITIONAL_POWER_DOWN_TIME,
+    GROUP_OF_DTC,
+    MEMORY_SELECTION,
     P2_EXT_SERVER_MAX,
     P2_SERVER_MAX,
     POWER_DOWN_TIME,
