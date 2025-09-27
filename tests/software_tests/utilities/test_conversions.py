@@ -71,10 +71,10 @@ class TestFunctions:
             int_to_bytes(int_value=int_value, size=size)
 
     @pytest.mark.parametrize("endianness, int_value, size", [
+        (Endianness.LITTLE_ENDIAN, 1, 0),
         (Endianness.BIG_ENDIAN, 0xF0E1, 1),
         (Endianness.LITTLE_ENDIAN, 0xE1F0, 1),
         (Endianness.BIG_ENDIAN, 0x987654321F, 4),
-        (Endianness.LITTLE_ENDIAN, 0x1F32547698, 2),
     ])
     def test_int_to_bytes__size_too_small(self, int_value, endianness, size):
         with pytest.raises(InconsistencyError):
@@ -96,6 +96,7 @@ class TestFunctions:
         self.mock_validate_endianness.assert_called_once_with(endianness)
 
     @pytest.mark.parametrize("expected_output, endianness, int_value, size", [
+        (bytes(), Endianness.LITTLE_ENDIAN, 0, 0),
         (bytes([0]), Endianness.BIG_ENDIAN, 0, 1),
         (bytes([0, 0]), Endianness.LITTLE_ENDIAN, 0, 2),
         (bytes([0, 0, 0xF0]), Endianness.BIG_ENDIAN, 0xF0, 3),

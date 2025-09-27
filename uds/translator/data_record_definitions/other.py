@@ -5,6 +5,8 @@ __all__ = [
     "P2_SERVER_MAX", "P2_EXT_SERVER_MAX", "SESSION_PARAMETER_RECORD",
     # SID 0x11
     "POWER_DOWN_TIME", "CONDITIONAL_POWER_DOWN_TIME",
+    # SID 0x14
+    "GROUP_OF_DTC", "MEMORY_SELECTION",
 ]
 
 from ..data_record import (
@@ -37,3 +39,10 @@ POWER_DOWN_TIME = MappingAndLinearFormulaDataRecord(name="powerDownTime",
                                                     unit="s")
 CONDITIONAL_POWER_DOWN_TIME = ConditionalMappingDataRecord(mapping={0x4: [POWER_DOWN_TIME]},
                                                            default_message_continuation=[])
+# SID 0x14
+GROUP_OF_DTC = RawDataRecord(name="groupOfDTC",
+                             length=24)
+MEMORY_SELECTION = RawDataRecord(name="MemorySelection",
+                                 length=8,
+                                 min_occurrences=0,
+                                 max_occurrences=1)

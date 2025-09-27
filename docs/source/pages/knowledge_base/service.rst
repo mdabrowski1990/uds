@@ -185,7 +185,7 @@ Positive Response Format
 
 ECUReset
 --------
-The ECUReset service is used by the client to request that the server perform a reset.
+ECUReset service is used by the client to request that the server perform a reset.
 The server, after receiving this request, performs the specified type of reset.
 
 ISO 14229-1 defines the following reset types (values of the *resetType* parameter):
@@ -255,10 +255,52 @@ ISO 14229-1:2013
 +-------------+--------------------------------+-------------+-------------+------------------------------------+---------+
 
 
+.. _knowledge-base-service-clear-diagnostic-information:
+
 ClearDiagnosticInformation
 --------------------------
-ClearDiagnosticInformation service is used by the client to clear all diagnostic information (DTC and related data)
-in one or multiple servers' memory.
+ClearDiagnosticInformation service is used by the client to clear Diagnostic Trouble Codes (DTCs) and related data
+stored in one or more server memories.
+
+
+Request Format
+``````````````
+
+
+ISO 14229-1:2020
+''''''''''''''''
++-----------------+------------+---------------------+----------------------------+----------+
+| Name            | Bit Length | Value               | Description                | Present  |
++=================+============+=====================+============================+==========+
+| SID             | 8          | 0x14                | ClearDiagnosticInformation | Always   |
++-----------------+------------+---------------------+----------------------------+----------+
+| groupOfDTC      | 24         | 0x000000 - 0xFFFFFF | DTCs to be cleared         | Always   |
++-----------------+------------+---------------------+----------------------------+----------+
+| MemorySelection | 8          | 0x00 - 0xFF         | Identifies DTC memory      | Optional |
++-----------------+------------+---------------------+----------------------------+----------+
+
+.. note:: In ISO 14229-1:2020 the optional :code:`MemorySelection` field was introduced to allow clearing diagnostic
+  information from a specific DTC memory (e.g. one of the sub-systems).
+
+
+ISO 14229-1:2013
+''''''''''''''''
++------------+------------+---------------------+----------------------------+---------+
+| Name       | Bit Length | Value               | Description                | Present |
++============+============+=====================+============================+=========+
+| SID        | 8          | 0x14                | ClearDiagnosticInformation | Always  |
++------------+------------+---------------------+----------------------------+---------+
+| groupOfDTC | 24         | 0x000000 - 0xFFFFFF | DTCs to be cleared         | Always  |
++------------+------------+---------------------+----------------------------+---------+
+
+
+Positive Response Format
+````````````````````````
++------+------------+-------+------------------------------------------------------+---------+
+| Name | Bit Length | Value | Description                                          | Present |
++======+============+=======+======================================================+=========+
+| RSID | 8          | 0x54  | Positive Response: ClearDiagnosticInformation (0x14) | Always  |
++------+------------+-------+------------------------------------------------------+---------+
 
 
 ReadDTCInformation

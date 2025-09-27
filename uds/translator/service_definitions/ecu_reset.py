@@ -14,6 +14,7 @@ ECU_RESET_2013 = Service(request_sid=RequestSID.ECUReset,
                          request_structure=[ECU_RESET_SUB_FUNCTION_2013],
                          response_structure=[ECU_RESET_SUB_FUNCTION_2013])
 """Translator for :ref:`ECUReset <knowledge-base-service-ecu-reset>` service compatible with ISO 14229-1:2013."""
+
 ECU_RESET_2020 = Service(request_sid=RequestSID.ECUReset,
                          request_structure=[ECU_RESET_SUB_FUNCTION_2020],
                          response_structure=[ECU_RESET_SUB_FUNCTION_2020,
