@@ -335,10 +335,10 @@ ISO 14229-1 defines the following DTC report types (values of the *reportType* p
 - 0x17 - reportUserDefMemoryDTCByStatusMask
 - 0x18 - reportUserDefMemoryDTCSnapshotRecordByDTCNumber
 - 0x19 - reportUserDefMemoryDTCExtDataRecordByDTCNumber
-- 0x1A - reportSupportedDTCExtDataRecord
+- 0x1A - reportSupportedDTCExtDataRecord (introduced in ISO 14229-1:2020)
 - 0x42 - reportWWHOBDDTCByMaskRecord
 - 0x55 - reportWWHOBDDTCWithPermanentStatus
-- 0x56 - reportDTCInformationByDTCReadinessGroupIdentifier
+- 0x56 - reportDTCInformationByDTCReadinessGroupIdentifier (introduced in ISO 14229-1:2020)
 
 
 Request Format
@@ -349,7 +349,8 @@ each sub-function value.
 
 reportNumberOfDTCByStatusMask (0x01)
 ''''''''''''''''''''''''''''''''''''
-The client can request the number of DTCs that match a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request the number of DTCs that match
+a given status mask (*DTCStatusMask*).
 
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
@@ -368,7 +369,7 @@ The client can request the number of DTCs that match a given status mask (*DTCSt
 
 reportDTCByStatusMask (0x02)
 ''''''''''''''''''''''''''''
-The client can request all DTCs matching a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request all DTCs that match a given status mask (*DTCStatusMask*).
 
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
@@ -379,7 +380,7 @@ The client can request all DTCs matching a given status mask (*DTCStatusMask*).
 |             |                                |             |             |                                         |         |
 |             |                                |             |             | 1 = suppress positive response          |         |
 |             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
-|             | reportType                     | 7 (b6 - b0) | 0x02        | reportNumberOfDTCByStatusMask           | Always  |
+|             | reportType                     | 7 (b6 - b0) | 0x02        | reportDTCByStatusMask                   | Always  |
 +-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
 | DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
@@ -387,7 +388,7 @@ The client can request all DTCs matching a given status mask (*DTCStatusMask*).
 
 reportDTCSnapshotIdentification (0x03)
 ''''''''''''''''''''''''''''''''''''''
-This sub-function allows the client to request identification of all stored DTCSnapshot records.
+This sub-function can be used by the client to request identification of all stored DTC snapshot records.
 
 +----------------------------------------------+-------------+-----------+---------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                     | Present |
@@ -404,8 +405,8 @@ This sub-function allows the client to request identification of all stored DTCS
 
 reportDTCSnapshotRecordByDTCNumber (0x04)
 '''''''''''''''''''''''''''''''''''''''''
-The reportDTCSnapshotRecordByDTCNumber (0x04) sub-function lets a client request snapshot data for
-a specific DTC (*DTCMaskRecord*) and record number (*DTCSnapshotRecordNumber*).
+This sub-function can be used by the client to request snapshot data for a specific DTC (*DTCMaskRecord*)
+and snapshot record number (*DTCSnapshotRecordNumber*).
 
 +----------------------------------------------+-------------+---------------------+--------------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                          | Present |
@@ -427,13 +428,13 @@ a specific DTC (*DTCMaskRecord*) and record number (*DTCSnapshotRecordNumber*).
 |                                              |             |                     | 0xFF: all snapshot records           |         |
 +----------------------------------------------+-------------+---------------------+--------------------------------------+---------+
 
-.. note:: A client can request a single concrete snapshot record (*DTCSnapshotRecordNumber* = 0x01–0xFE).
-  If *DTCSnapshotRecordNumber* = 0xFF, all available snapshot records for that DTC are returned in ascending order.
+.. note:: *DTCSnapshotRecordNumber* (0x01–0xFE) selects a single snapshot record.
+  If equal to 0xFF, all available snapshot records for the DTC are returned.
 
 
 reportDTCStoredDataByRecordNumber (0x05)
 ''''''''''''''''''''''''''''''''''''''''
-This sub-function lets a client request DTCStoredData for a given DTCStoredDataRecordNumber.
+This sub-function can be used by the client to request stored data for a specific record (*DTCStoredDataRecordNumber*).
 
 +----------------------------------------------+-------------+-------------+--------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                          | Present |
@@ -453,13 +454,13 @@ This sub-function lets a client request DTCStoredData for a given DTCStoredDataR
 |                                              |             |             | 0xFF: all records                    |         |
 +----------------------------------------------+-------------+-------------+--------------------------------------+---------+
 
-.. note:: A client can request a single stored data record (*DTCStoredDataRecordNumber* = 0x01–0xFE).
-  If *DTCStoredDataRecordNumber* = 0xFF, all available stored data records.
+.. note:: *DTCStoredDataRecordNumber* (0x01–0xFE) selects a single stored data record.
+  If equal to 0xFF, all available stored data records for the DTC are returned.
 
 
 reportDTCExtDataRecordByDTCNumber (0x06)
 ''''''''''''''''''''''''''''''''''''''''
-This sub-function lets a client request DTCExtendedDataRecords for a specific DTC (*DTCMaskRecord*)
+This sub-function can be used by the client to request extended data records for a specific DTC (*DTCMaskRecord*)
 and record number (*DTCExtDataRecordNumber*).
 
 +----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
@@ -490,16 +491,15 @@ and record number (*DTCExtDataRecordNumber*).
 |                                              |             |                     | 0xFF: all extended data records                          |         |
 +----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
 
-.. note:: A client can request a single concrete extended data record (*DTCExtDataRecordNumber* = 0x01–0xEF).
-  If *DTCExtDataRecordNumber* = 0xFF, all available extended data records for that DTC are returned in ascending order.
-  If *DTCExtDataRecordNumber* = 0xFE, all available extended data records related to regulated emissions OBD records
-  (records numbers: 0x90-0x9F) are turned in ascending order.
+.. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
+  0xFE requests all regulated emissions OBD records.
+  0xFF requests all extended data records for the DTC.
 
 
 reportNumberOfDTCBySeverityMaskRecord (0x07)
 ''''''''''''''''''''''''''''''''''''''''''''
-The client can request the number of DTCs that match a given severity mask (*DTCSeverityMask*)
-and status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request the number of DTCs that match a given
+severity mask (*DTCSeverityMask*) and status mask (*DTCStatusMask*).
 
 +--------------------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                                   | Bit Length  | Value       | Description                             | Present |
@@ -520,7 +520,8 @@ and status mask (*DTCStatusMask*).
 
 reportDTCBySeverityMaskRecord (0x08)
 ''''''''''''''''''''''''''''''''''''
-The client can request all DTCs matching a given severity mask (*DTCSeverityMask*) and status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request all DTCs that match a given severity mask (*DTCSeverityMask*)
+and status mask (*DTCStatusMask*).
 
 +--------------------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                                   | Bit Length  | Value       | Description                             | Present |
@@ -541,7 +542,8 @@ The client can request all DTCs matching a given severity mask (*DTCSeverityMask
 
 reportSeverityInformationOfDTC (0x09)
 '''''''''''''''''''''''''''''''''''''
-The client can request severity and functional unit information for a specific DTC.
+This sub-function can be used by the client to request severity and functional unit information for
+a specific DTC (*DTCMaskRecord*).
 
 +----------------------------------------------+-------------+---------------------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                    | Present |
@@ -560,7 +562,7 @@ The client can request severity and functional unit information for a specific D
 
 reportSupportedDTC (0x0A)
 '''''''''''''''''''''''''
-The client can request for a list of all DTCs supported by the server.
+This sub-function can be used by the client to request a list of all DTCs supported by the server.
 
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
@@ -577,7 +579,7 @@ The client can request for a list of all DTCs supported by the server.
 
 reportFirstTestFailedDTC (0x0B)
 '''''''''''''''''''''''''''''''
-The client can request for a first reported DTC since the last
+This sub-function can be used by the client to request the first DTC that failed a test since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
@@ -592,12 +594,13 @@ The client can request for a first reported DTC since the last
 |             | reportType                     | 7 (b6 - b0) | 0x0B      | reportFirstTestFailedDTC       | Always  |
 +-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
 
-.. note:: The exact trigger condition is setting testFailed DTC status bit (b0).
+.. note:: The returned DTC is the first one detected with testFailed status bit (b0) set since the last
+  :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
 reportFirstConfirmedDTC (0x0C)
 ''''''''''''''''''''''''''''''
-The client can request for a first confirmed DTC since the last
+This sub-function can be used by the client to request the first confirmed DTC since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
@@ -612,12 +615,13 @@ The client can request for a first confirmed DTC since the last
 |             | reportType                     | 7 (b6 - b0) | 0x0C      | reportFirstConfirmedDTC        | Always  |
 +-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
 
-.. note:: The exact trigger condition is setting confirmedDTC DTC status bit (b3).
+.. note:: The returned DTC is the first one detected with confirmedDTC status bit (b3) set since the last
+  :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
 reportMostRecentTestFailedDTC (0x0D)
 ''''''''''''''''''''''''''''''''''''
-The client can request for a last reported DTC since the last
+This sub-function can be used by the client to request the most recent DTC that failed a test since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
@@ -632,12 +636,13 @@ The client can request for a last reported DTC since the last
 |             | reportType                     | 7 (b6 - b0) | 0x0D      | reportMostRecentTestFailedDTC  | Always  |
 +-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
 
-.. note:: The exact trigger condition is setting testFailed DTC status bit (b0).
+.. note:: The returned DTC is the most recent one detected with testFailed status bit (b0) set since the last
+  :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
 reportMostRecentConfirmedDTC (0x0E)
 '''''''''''''''''''''''''''''''''''
-The client can request for a last confirmed DTC since the last
+This sub-function can be used by the client to request the most recent confirmed DTC since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
@@ -652,12 +657,14 @@ The client can request for a last confirmed DTC since the last
 |             | reportType                     | 7 (b6 - b0) | 0x0E      | reportMostRecentConfirmedDTC   | Always  |
 +-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
 
-.. note:: The exact trigger condition is setting confirmedDTC DTC status bit (b3).
+.. note:: The returned DTC is the most recent one detected with confirmedDTC status bit (b3) set since the last
+    :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
 reportMirrorMemoryDTCByStatusMask (0x0F)
 ''''''''''''''''''''''''''''''''''''''''
-The client can request all DTCs matching a given status mask (*DTCStatusMask*) in DTC mirror memory.
+This sub-function can be used by the client to request all DTCs in the DTC mirror memory that match
+a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -675,14 +682,14 @@ The client can request all DTCs matching a given status mask (*DTCStatusMask*) i
 | DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
-.. note:: The DTC mirror memory is an additional optional error memory in the server that cannot be erased by
-  the ClearDiagnosticInformation (0x14) service.
+.. note:: The DTC mirror memory is an optional error memory that is not affected by
+  :ref:`ClearDiagnosticInformation (0x14) <knowledge-base-service-clear-diagnostic-information>` service.
 
 
 reportMirrorMemoryDTCExtDataRecordByDTCNumber (0x10)
 ''''''''''''''''''''''''''''''''''''''''''''''''''''
-This sub-function lets a client request DTCExtendedDataRecords from DTC mirror memory for a specific DTC (*DTCMaskRecord*)
-and record number (*DTCExtDataRecordNumber*).
+This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*) for
+a specific DTC (*DTCMaskRecord*) from the DTC mirror memory.
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -714,18 +721,18 @@ and record number (*DTCExtDataRecordNumber*).
 |                                              |             |                     | 0xFF: all extended data records                          |         |
 +----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
 
-.. note:: The DTC mirror memory is an additional optional error memory in the server that cannot be erased by
-  the ClearDiagnosticInformation (0x14) service.
+.. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
+  0xFE requests all regulated emissions OBD records.
+  0xFF requests all extended data records for the DTC.
 
-.. note:: A client can request a single concrete extended data record (*DTCExtDataRecordNumber* = 0x01–0xEF).
-  If *DTCExtDataRecordNumber* = 0xFF, all available extended data records for that DTC are returned in ascending order.
-  If *DTCExtDataRecordNumber* = 0xFE, all available extended data records related to regulated emissions OBD records
-  (records numbers: 0x90-0x9F) are turned in ascending order.
+.. note:: The DTC mirror memory is an optional error memory that is not affected by
+  :ref:`ClearDiagnosticInformation (0x14) <knowledge-base-service-clear-diagnostic-information>` service.
 
 
 reportNumberOfMirrorMemoryDTCByStatusMask (0x11)
 ''''''''''''''''''''''''''''''''''''''''''''''''
-The client can request the number of DTCs that match a given status mask (*DTCStatusMask*) in DTC mirror memory.
+This sub-function can be used by the client to request the number of DTCs in the DTC mirror memory that match
+a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -743,13 +750,14 @@ The client can request the number of DTCs that match a given status mask (*DTCSt
 | DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching   | Always  |
 +----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
 
-.. note:: The DTC mirror memory is an additional optional error memory in the server that cannot be erased by
-  the ClearDiagnosticInformation (0x14) service.
+.. note:: The DTC mirror memory is an optional error memory that is not affected by
+  :ref:`ClearDiagnosticInformation (0x14) <knowledge-base-service-clear-diagnostic-information>` service.
 
 
 reportNumberOfEmissionsOBDDTCByStatusMask (0x12)
 ''''''''''''''''''''''''''''''''''''''''''''''''
-The client can request the number of emissions-related OBD DTCs matching a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request the number of emissions-related OBD DTCs that match
+a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -770,7 +778,8 @@ The client can request the number of emissions-related OBD DTCs matching a given
 
 reportEmissionsOBDDTCByStatusMask (0x13)
 '''''''''''''''''''''''''''''''''''''''''
-The client can request a list of emissions-related OBD DTCs that match a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request a list of emissions-related OBD DTCs that match
+a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -791,7 +800,8 @@ The client can request a list of emissions-related OBD DTCs that match a given s
 
 reportDTCFaultDetectionCounter (0x14)
 '''''''''''''''''''''''''''''''''''''
-The client can request a list of fault counters for DTCs that has not been reported or confirmed.
+This sub-function can be used by the client to request fault detection counters for DTCs that have not been reported
+or confirmed.
 
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
@@ -808,7 +818,8 @@ The client can request a list of fault counters for DTCs that has not been repor
 
 reportDTCWithPermanentStatus (0x15)
 '''''''''''''''''''''''''''''''''''''
-The client can request a list of DTCs with permanent status (once reported, never heal).
+This sub-function can be used by the client to request a list of DTCs with permanent status (once reported,
+never cleared by healing).
 
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
@@ -825,7 +836,8 @@ The client can request a list of DTCs with permanent status (once reported, neve
 
 reportDTCExtDataRecordByRecordNumber (0x16)
 '''''''''''''''''''''''''''''''''''''''''''
-This sub-function lets a client request DTCExtendedDataRecords for a  record number (*DTCExtDataRecordNumber*).
+This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*)
+regardless of the DTC number.
 
 +----------------------------------------------+-------------+-------------+----------------------------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                                              | Present |
@@ -853,16 +865,15 @@ This sub-function lets a client request DTCExtendedDataRecords for a  record num
 |                                              |             |             | 0xFF: all extended data records                          |         |
 +----------------------------------------------+-------------+-------------+----------------------------------------------------------+---------+
 
-.. note:: A client can request a single concrete extended data record (*DTCExtDataRecordNumber* = 0x01–0xEF).
-  If *DTCExtDataRecordNumber* = 0xFF, all available extended data records for that DTC are returned in ascending order.
-  If *DTCExtDataRecordNumber* = 0xFE, all available extended data records related to regulated emissions OBD records
-  (records numbers: 0x90-0x9F) are turned in ascending order.
+.. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
+  0xFE requests all regulated emissions OBD records.
+  0xFF requests all extended data records for the DTC.
 
 
 reportUserDefMemoryDTCByStatusMask (0x17)
 '''''''''''''''''''''''''''''''''''''''''
-The client can request the number of DTCs that match a given status mask (*DTCStatusMask*)
-in selected memory (*MemorySelection*).
+This sub-function can be used by the client to request the number of DTCs that match a given
+status mask (*DTCStatusMask*) in a selected memory (*MemorySelection*).
 
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
@@ -877,11 +888,221 @@ in selected memory (*MemorySelection*).
 +-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
 | DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
-| MemorySelection                              | 8           | 0x00 - 0xFF | Identifies DTC memory                   |         |
+| MemorySelection                              | 8           | 0x00 - 0xFF | Identifies DTC memory                   | Always  |
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 .. note:: :code:`MemorySelection` allows reading DTC related information from a specific DTC memory (e.g. one of
   the sub-systems).
+
+
+reportUserDefMemoryDTCSnapshotRecordByDTCNumber (0x18)
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
+This sub-function can be used by the client to request snapshot records (*DTCSnapshotRecordNumber*) for
+a specific DTC (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
+
++----------------------------------------------+-------------+---------------------+-------------------------------------------------+---------+
+| Name                                         | Bit Length  | Value               | Description                                     | Present |
++==============================================+=============+=====================+=================================================+=========+
+| SID                                          | 8           | 0x19                | ReadDTCInformation                              | Always  |
++-------------+--------------------------------+-------------+---------------------+-------------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                           | Always  |
+|             |                                |             |                     |                                                 |         |
+|             |                                |             |                     | 1 = suppress positive response                  |         |
+|             +--------------------------------+-------------+---------------------+-------------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x18                | reportUserDefMemoryDTCSnapshotRecordByDTCNumber | Always  |
++-------------+--------------------------------+-------------+---------------------+-------------------------------------------------+---------+
+| DTCMaskRecord                                | 24          | 0x000000 - 0xFFFFFF | DTC number                                      | Always  |
++----------------------------------------------+-------------+---------------------+-------------------------------------------------+---------+
+| DTCSnapshotRecordNumber                      | 8           | 0x00 - 0xFF         | 0x00: reserved (legislated purposes)            | Always  |
+|                                              |             |                     |                                                 |         |
+|                                              |             |                     | 0x01 - 0xFE: select snapshot record             |         |
+|                                              |             |                     |                                                 |         |
+|                                              |             |                     | 0xFF: all snapshot records                      |         |
++----------------------------------------------+-------------+---------------------+-------------------------------------------------+---------+
+| MemorySelection                              | 8           | 0x00 - 0xFF         | Identifies DTC memory                           | Always  |
++----------------------------------------------+-------------+---------------------+-------------------------------------------------+---------+
+
+.. note:: :code:`MemorySelection` allows reading DTC related information from a specific DTC memory (e.g. one of
+  the sub-systems).
+
+
+reportUserDefMemoryDTCExtDataRecordByDTCNumber (0x19)
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
+This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*) for
+a specific DTC (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
+
++----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| Name                                         | Bit Length  | Value               | Description                                              | Present |
++==============================================+=============+=====================+==========================================================+=========+
+| SID                                          | 8           | 0x19                | ReadDTCInformation                                       | Always  |
++-------------+--------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                                    | Always  |
+|             |                                |             |                     |                                                          |         |
+|             |                                |             |                     | 1 = suppress positive response                           |         |
+|             +--------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x19                | reportUserDefMemoryDTCExtDataRecordByDTCNumber           | Always  |
++-------------+--------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| DTCMaskRecord                                | 24          | 0x000000 - 0xFFFFFF | DTC number                                               | Always  |
++----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| DTCExtDataRecordNumber                       | 8           | 0x00 - 0xFF         | 0x00: reserved                                           | Always  |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0x01 - 0x8F: select vehicle manufacturer specific record |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0x90 - 0x9F: select regulated emissions OBD record       |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xA0 - 0xEF: select regulated record                     |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xF0 - 0xFD: reserved                                    |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xFE: all regulated emissions OBD records                |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xFF: all extended data records                          |         |
++----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| MemorySelection                              | 8           | 0x00 - 0xFF         | Specifies DTC memory                                     | Always  |
++----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+
+.. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
+  0xFE requests all regulated emissions OBD records.
+  0xFF requests all extended data records for the DTC.
+
+.. note:: :code:`MemorySelection` allows reading DTC related information from a specific DTC memory (e.g. one of
+  the sub-systems).
+
+
+reportSupportedDTCExtDataRecord (0x1A)
+''''''''''''''''''''''''''''''''''''''
+This sub-function can be used by the client to request the list of DTCs that support a given
+extended data record number (*DTCExtDataRecordNumber*).
+
+.. warning:: Introduced in ISO 14229-1:2020
+
++----------------------------------------------+-------------+-------------+---------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                     | Present |
++==============================================+=============+=============+=================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation              | Always  |
++-------------+--------------------------------+-------------+-------------+---------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required           | Always  |
+|             |                                |             |             |                                 |         |
+|             |                                |             |             | 1 = suppress positive response  |         |
+|             +--------------------------------+-------------+-------------+---------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x1A        | reportSupportedDTCExtDataRecord | Always  |
++-------------+--------------------------------+-------------+-------------+---------------------------------+---------+
+| DTCExtDataRecordNumber                       | 8           | 0x00 - 0xFF | Extended data record number     | Always  |
++----------------------------------------------+-------------+-------------+---------------------------------+---------+
+
+.. note:: *DTCExtDataRecordNumber* shall be within 0x01–0xEF range.
+
+
+reportWWHOBDDTCByMaskRecord (0x42)
+''''''''''''''''''''''''''''''''''
+This sub-function can be used by the client to request WWH-OBD DTCs and their associated status and
+severity information, filtered by a status mask (*DTCStatusMask*) and a severity mask (*DTCSeverityMaskRecord*).
+
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                             | Present |
++==============================================+=============+=============+=========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|             |                                |             |             |                                         |         |
+|             |                                |             |             | 1 = suppress positive response          |         |
+|             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x42        | reportWWHOBDDTCByMaskRecord             | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| FunctionalGroupIdentifier                    | 8           | 0x00 - 0xFF | 0x00 - 0x32: reserved                   | Always  |
+|                                              |             |             |                                         |         |
+|                                              |             |             | 0x33: emissions-system group            |         |
+|                                              |             |             |                                         |         |
+|                                              |             |             | 0x34 - 0xCF: reserved                   |         |
+|                                              |             |             |                                         |         |
+|                                              |             |             | 0xD0: safety-system group               |         |
+|                                              |             |             |                                         |         |
+|                                              |             |             | 0xD1 - 0xDF: legislative system group   |         |
+|                                              |             |             |                                         |         |
+|                                              |             |             | 0xE0 - 0xFD: reserved                   |         |
+|                                              |             |             |                                         |         |
+|                                              |             |             | 0xFE: VOBD system                       |         |
+|                                              |             |             |                                         |         |
+|                                              |             |             | 0xFF: reserved                          |         |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCSeverityMaskRecord                        | 8           | 0x00 - 0xFF | Severity mask to use for DTC matching   | Always  |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+
+
+reportWWHOBDDTCWithPermanentStatus (0x55)
+'''''''''''''''''''''''''''''''''''''''''
+This sub-function can be used by the client to request WWH-OBD DTCs with permanent status.
+
++----------------------------------------------+-------------+-------------+---------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                           | Present |
++==============================================+=============+=============+=======================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                    | Always  |
++-------------+--------------------------------+-------------+-------------+---------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                 | Always  |
+|             |                                |             |             |                                       |         |
+|             |                                |             |             | 1 = suppress positive response        |         |
+|             +--------------------------------+-------------+-------------+---------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x55        | reportWWHOBDDTCWithPermanentStatus    | Always  |
++-------------+--------------------------------+-------------+-------------+---------------------------------------+---------+
+| FunctionalGroupIdentifier                    | 8           | 0x00 - 0xFF | 0x00 - 0x32: reserved                 | Always  |
+|                                              |             |             |                                       |         |
+|                                              |             |             | 0x33: emissions-system group          |         |
+|                                              |             |             |                                       |         |
+|                                              |             |             | 0x34 - 0xCF: reserved                 |         |
+|                                              |             |             |                                       |         |
+|                                              |             |             | 0xD0: safety-system group             |         |
+|                                              |             |             |                                       |         |
+|                                              |             |             | 0xD1 - 0xDF: legislative system group |         |
+|                                              |             |             |                                       |         |
+|                                              |             |             | 0xE0 - 0xFD: reserved                 |         |
+|                                              |             |             |                                       |         |
+|                                              |             |             | 0xFE: VOBD system                     |         |
+|                                              |             |             |                                       |         |
+|                                              |             |             | 0xFF: reserved                        |         |
++----------------------------------------------+-------------+-------------+---------------------------------------+---------+
+
+
+reportDTCInformationByDTCReadinessGroupIdentifier (0x56)
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+This sub-function can be used by the client to request OBD DTCs that belong to a given
+readiness group (*DTCReadinessGroupIdentifier*).
+
+.. warning:: Introduced in ISO 14229-1:2020
+
++----------------------------------------------+-------------+-------------+---------------------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                                       | Present |
++==============================================+=============+=============+===================================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                                | Always  |
++-------------+--------------------------------+-------------+-------------+---------------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                             | Always  |
+|             |                                |             |             |                                                   |         |
+|             |                                |             |             | 1 = suppress positive response                    |         |
+|             +--------------------------------+-------------+-------------+---------------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x56        | reportDTCInformationByDTCReadinessGroupIdentifier | Always  |
++-------------+--------------------------------+-------------+-------------+---------------------------------------------------+---------+
+| FunctionalGroupIdentifier                    | 8           | 0x00 - 0xFF | 0x00 - 0x32: reserved                             | Always  |
+|                                              |             |             |                                                   |         |
+|                                              |             |             | 0x33: emissions-system group                      |         |
+|                                              |             |             |                                                   |         |
+|                                              |             |             | 0x34 - 0xCF: reserved                             |         |
+|                                              |             |             |                                                   |         |
+|                                              |             |             | 0xD0: safety-system group                         |         |
+|                                              |             |             |                                                   |         |
+|                                              |             |             | 0xD1 - 0xDF: legislative system group             |         |
+|                                              |             |             |                                                   |         |
+|                                              |             |             | 0xE0 - 0xFD: reserved                             |         |
+|                                              |             |             |                                                   |         |
+|                                              |             |             | 0xFE: VOBD system                                 |         |
+|                                              |             |             |                                                   |         |
+|                                              |             |             | 0xFF: reserved                                    |         |
++----------------------------------------------+-------------+-------------+---------------------------------------------------+---------+
+| DTCReadinessGroupIdentifier                  | 8           | 0x00 - 0xFF | Specifies DTC readiness group                     | Always  |
++----------------------------------------------+-------------+-------------+---------------------------------------------------+---------+
+
+.. note:: :ref:`SAE J1979-DA <https://www.sae.org/standards/j1979da_202203-j1979-da-digital-annex-e-e-diagnostic-test-modes>`
+  defines values mapping for *DTCReadinessGroupIdentifier* parameters.
 
 
 Positive Response Format
