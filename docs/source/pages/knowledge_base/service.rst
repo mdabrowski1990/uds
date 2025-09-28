@@ -324,11 +324,11 @@ ISO 14229-1 defines the following DTC report types (values of the *reportType* p
 - 0x0A - reportSupportedDTC
 - 0x0D - reportMostRecentTestFailedDTC
 - 0x0E - reportMostRecentConfirmedDTC
-- 0x0F - reportMirrorMemoryDTCByStatusMask
-- 0x10 - reportMirrorMemoryDTCExtDataRecordByDTCNumber
-- 0x11 - reportNumberOfMirrorMemoryDTCByStatusMask
-- 0x12 - reportNumberOfEmissionsOBDDTCByStatusMask
-- 0x13 - reportEmissionsOBDDTCByStatusMask
+- 0x0F - reportMirrorMemoryDTCByStatusMask (withdrawn in ISO 14229-1:2020)
+- 0x10 - reportMirrorMemoryDTCExtDataRecordByDTCNumber (withdrawn in ISO 14229-1:2020)
+- 0x11 - reportNumberOfMirrorMemoryDTCByStatusMask (withdrawn in ISO 14229-1:2020)
+- 0x12 - reportNumberOfEmissionsOBDDTCByStatusMask (withdrawn in ISO 14229-1:2020)
+- 0x13 - reportEmissionsOBDDTCByStatusMask (withdrawn in ISO 14229-1:2020)
 - 0x14 - reportDTCFaultDetectionCounter
 - 0x15 - reportDTCWithPermanentStatus
 - 0x16 - reportDTCExtDataRecordByRecordNumber
@@ -351,38 +351,38 @@ reportNumberOfDTCByStatusMask (0x01)
 ''''''''''''''''''''''''''''''''''''
 The client can request the number of DTCs that match a given status mask (*DTCStatusMask*).
 
-+----------------------------------------------+-------------+-------------+--------------------------------+---------+
-| Name                                         | Bit Length  | Value       | Description                    | Present |
-+==============================================+=============+=============+================================+=========+
-| SID                                          | 8           | 0x19        | ReadDTCInformation             | Always  |
-+-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required          | Always  |
-|             |                                |             |             |                                |         |
-|             |                                |             |             | 1 = suppress positive response |         |
-|             +--------------------------------+-------------+-------------+--------------------------------+---------+
-|             | reportType                     | 7 (b6 - b0) | 0x01        | reportNumberOfDTCByStatusMask  | Always  |
-+-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
-| DTCStatusMask                                | 8           | 0x00 - 0xFF | Mask used for DTC matching     | Always  |
-+----------------------------------------------+-------------+-------------+--------------------------------+---------+
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                             | Present |
++==============================================+=============+=============+=========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|             |                                |             |             |                                         |         |
+|             |                                |             |             | 1 = suppress positive response          |         |
+|             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x01        | reportNumberOfDTCByStatusMask           | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
 reportDTCByStatusMask (0x02)
 ''''''''''''''''''''''''''''
 The client can request all DTCs matching a given status mask (*DTCStatusMask*).
 
-+----------------------------------------------+-------------+-------------+--------------------------------+---------+
-| Name                                         | Bit Length  | Value       | Description                    | Present |
-+==============================================+=============+=============+================================+=========+
-| SID                                          | 8           | 0x19        | ReadDTCInformation             | Always  |
-+-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required          | Always  |
-|             |                                |             |             |                                |         |
-|             |                                |             |             | 1 = suppress positive response |         |
-|             +--------------------------------+-------------+-------------+--------------------------------+---------+
-|             | reportType                     | 7 (b6 - b0) | 0x02        | reportDTCByStatusMask          | Always  |
-+-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
-| DTCStatusMask                                | 8           | 0x00 - 0xFF | Mask to use for DTC matching   | Always  |
-+----------------------------------------------+-------------+-------------+--------------------------------+---------+
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                             | Present |
++==============================================+=============+=============+=========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|             |                                |             |             |                                         |         |
+|             |                                |             |             | 1 = suppress positive response          |         |
+|             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x02        | reportNumberOfDTCByStatusMask           | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
 reportDTCSnapshotIdentification (0x03)
@@ -494,6 +494,299 @@ and record number (*DTCExtDataRecordNumber*).
   If *DTCExtDataRecordNumber* = 0xFF, all available extended data records for that DTC are returned in ascending order.
   If *DTCExtDataRecordNumber* = 0xFE, all available extended data records related to regulated emissions OBD records
   (records numbers: 0x90-0x9F) are turned in ascending order.
+
+
+reportNumberOfDTCBySeverityMaskRecord (0x07)
+''''''''''''''''''''''''''''''''''''''''''''
+The client can request the number of DTCs that match a given severity mask (*DTCSeverityMask*)
+and status mask (*DTCStatusMask*).
+
++--------------------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                                   | Bit Length  | Value       | Description                             | Present |
++========================================================+=============+=============+=========================================+=========+
+| SID                                                    | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction           | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|                       |                                |             |             |                                         |         |
+|                       |                                |             |             | 1 = suppress positive response          |         |
+|                       +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|                       | reportType                     | 7 (b6 - b0) | 0x07        | reportNumberOfDTCBySeverityMaskRecord   | Always  |
++-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCSeverityMaskRecord | DTCSeverityMask                | 8           | 0x00 - 0xFF | Severity mask to use for DTC matching   | Always  |
+|                       +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|                       | DTCStatusMask                  | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+
+
+reportDTCBySeverityMaskRecord (0x08)
+''''''''''''''''''''''''''''''''''''
+The client can request all DTCs matching a given severity mask (*DTCSeverityMask*) and status mask (*DTCStatusMask*).
+
++--------------------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                                   | Bit Length  | Value       | Description                             | Present |
++========================================================+=============+=============+=========================================+=========+
+| SID                                                    | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction           | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|                       |                                |             |             |                                         |         |
+|                       |                                |             |             | 1 = suppress positive response          |         |
+|                       +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|                       | reportType                     | 7 (b6 - b0) | 0x08        | reportDTCBySeverityMaskRecord           | Always  |
++-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCSeverityMaskRecord | DTCSeverityMask                | 8           | 0x00 - 0xFF | Severity mask to use for DTC matching   | Always  |
+|                       +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|                       | DTCStatusMask                  | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+
+
+reportSeverityInformationOfDTC (0x09)
+'''''''''''''''''''''''''''''''''''''
+The client can request severity and functional unit information for a specific DTC.
+
++----------------------------------------------+-------------+---------------------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value               | Description                    | Present |
++==============================================+=============+=====================+================================+=========+
+| SID                                          | 8           | 0x19                | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+---------------------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required          | Always  |
+|             |                                |             |                     |                                |         |
+|             |                                |             |                     | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+---------------------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x09                | reportSeverityInformationOfDTC | Always  |
++-------------+--------------------------------+-------------+---------------------+--------------------------------+---------+
+| DTCMaskRecord                                | 24          | 0x000000 - 0xFFFFFF | DTC number                     | Always  |
++----------------------------------------------+-------------+---------------------+--------------------------------+---------+
+
+
+reportSupportedDTC (0x0A)
+'''''''''''''''''''''''''
+The client can request for a list of all DTCs supported by the server.
+
++----------------------------------------------+-------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value     | Description                    | Present |
++==============================================+=============+===========+================================+=========+
+| SID                                          | 8           | 0x19      | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1 | 0 = response required          | Always  |
+|             |                                |             |           |                                |         |
+|             |                                |             |           | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-----------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x0A      | reportSupportedDTC             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+
+
+reportFirstTestFailedDTC (0x0B)
+'''''''''''''''''''''''''''''''
+The client can request for a first reported DTC since the last
+:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+
++----------------------------------------------+-------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value     | Description                    | Present |
++==============================================+=============+===========+================================+=========+
+| SID                                          | 8           | 0x19      | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1 | 0 = response required          | Always  |
+|             |                                |             |           |                                |         |
+|             |                                |             |           | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-----------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x0B      | reportFirstTestFailedDTC       | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+
+.. note:: The exact trigger condition is setting testFailed DTC status bit (b0).
+
+
+reportFirstConfirmedDTC (0x0C)
+''''''''''''''''''''''''''''''
+The client can request for a first confirmed DTC since the last
+:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+
++----------------------------------------------+-------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value     | Description                    | Present |
++==============================================+=============+===========+================================+=========+
+| SID                                          | 8           | 0x19      | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1 | 0 = response required          | Always  |
+|             |                                |             |           |                                |         |
+|             |                                |             |           | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-----------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x0C      | reportFirstConfirmedDTC        | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+
+.. note:: The exact trigger condition is setting confirmedDTC DTC status bit (b3).
+
+
+reportMostRecentTestFailedDTC (0x0D)
+''''''''''''''''''''''''''''''''''''
+The client can request for a last reported DTC since the last
+:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+
++----------------------------------------------+-------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value     | Description                    | Present |
++==============================================+=============+===========+================================+=========+
+| SID                                          | 8           | 0x19      | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1 | 0 = response required          | Always  |
+|             |                                |             |           |                                |         |
+|             |                                |             |           | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-----------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x0D      | reportMostRecentTestFailedDTC  | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+
+.. note:: The exact trigger condition is setting testFailed DTC status bit (b0).
+
+
+reportMostRecentConfirmedDTC (0x0E)
+'''''''''''''''''''''''''''''''''''
+The client can request for a last confirmed DTC since the last
+:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+
++----------------------------------------------+-------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value     | Description                    | Present |
++==============================================+=============+===========+================================+=========+
+| SID                                          | 8           | 0x19      | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1 | 0 = response required          | Always  |
+|             |                                |             |           |                                |         |
+|             |                                |             |           | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-----------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x0E      | reportMostRecentConfirmedDTC   | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+
+.. note:: The exact trigger condition is setting confirmedDTC DTC status bit (b3).
+
+
+reportMirrorMemoryDTCByStatusMask (0x0F)
+''''''''''''''''''''''''''''''''''''''''
+The client can request all DTCs matching a given status mask (*DTCStatusMask*) in DTC mirror memory.
+
+.. warning:: Withdrawn in ISO 14229-1:2020
+
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                             | Present |
++==============================================+=============+=============+=========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|             |                                |             |             |                                         |         |
+|             |                                |             |             | 1 = suppress positive response          |         |
+|             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x0F        | reportMirrorMemoryDTCByStatusMask       | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+
+.. note:: The DTC mirror memory is an additional optional error memory in the server that cannot be erased by
+  the ClearDiagnosticInformation (0x14) service.
+
+
+reportMirrorMemoryDTCExtDataRecordByDTCNumber (0x10)
+''''''''''''''''''''''''''''''''''''''''''''''''''''
+This sub-function lets a client request DTCExtendedDataRecords from DTC mirror memory for a specific DTC (*DTCMaskRecord*)
+and record number (*DTCExtDataRecordNumber*).
+
+.. warning:: Withdrawn in ISO 14229-1:2020
+
++----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| Name                                         | Bit Length  | Value               | Description                                              | Present |
++==============================================+=============+=====================+==========================================================+=========+
+| SID                                          | 8           | 0x19                | ReadDTCInformation                                       | Always  |
++-------------+--------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                                    | Always  |
+|             |                                |             |                     |                                                          |         |
+|             |                                |             |                     | 1 = suppress positive response                           |         |
+|             +--------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x10                | reportMirrorMemoryDTCExtDataRecordByDTCNumber            | Always  |
++-------------+--------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| DTCMaskRecord                                | 24          | 0x000000 - 0xFFFFFF | DTC number                                               | Always  |
++----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+| DTCExtDataRecordNumber                       | 8           | 0x00 - 0xFF         | 0x00: reserved                                           | Always  |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0x01 - 0x8F: select vehicle manufacturer specific record |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0x90 - 0x9F: select regulated emissions OBD record       |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xA0 - 0xEF: select regulated record                     |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xF0 - 0xFD: reserved                                    |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xFE: all regulated emissions OBD records                |         |
+|                                              |             |                     |                                                          |         |
+|                                              |             |                     | 0xFF: all extended data records                          |         |
++----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
+
+.. note:: The DTC mirror memory is an additional optional error memory in the server that cannot be erased by
+  the ClearDiagnosticInformation (0x14) service.
+
+.. note:: A client can request a single concrete extended data record (*DTCExtDataRecordNumber* = 0x01–0xEF).
+  If *DTCExtDataRecordNumber* = 0xFF, all available extended data records for that DTC are returned in ascending order.
+  If *DTCExtDataRecordNumber* = 0xFE, all available extended data records related to regulated emissions OBD records
+  (records numbers: 0x90-0x9F) are turned in ascending order.
+
+
+reportNumberOfMirrorMemoryDTCByStatusMask (0x11)
+''''''''''''''''''''''''''''''''''''''''''''''''
+The client can request the number of DTCs that match a given status mask (*DTCStatusMask*) in DTC mirror memory.
+
+.. warning:: Withdrawn in ISO 14229-1:2020
+
++----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                               | Present |
++==============================================+=============+=============+===========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                        | Always  |
++-------------+--------------------------------+-------------+-------------+-------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                     | Always  |
+|             |                                |             |             |                                           |         |
+|             |                                |             |             | 1 = suppress positive response            |         |
+|             +--------------------------------+-------------+-------------+-------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x11        | reportNumberOfMirrorMemoryDTCByStatusMask | Always  |
++-------------+--------------------------------+-------------+-------------+-------------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching   | Always  |
++----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
+
+.. note:: The DTC mirror memory is an additional optional error memory in the server that cannot be erased by
+  the ClearDiagnosticInformation (0x14) service.
+
+
+reportNumberOfEmissionsOBDDTCByStatusMask (0x12)
+''''''''''''''''''''''''''''''''''''''''''''''''
+The client can request the number of emissions-related OBD DTCs matching a given status mask (*DTCStatusMask*).
+
+.. warning:: Withdrawn in ISO 14229-1:2020
+
++----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                               | Present |
++==============================================+=============+=============+===========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                        | Always  |
++-------------+--------------------------------+-------------+-------------+-------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                     | Always  |
+|             |                                |             |             |                                           |         |
+|             |                                |             |             | 1 = suppress positive response            |         |
+|             +--------------------------------+-------------+-------------+-------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x12        | reportNumberOfEmissionsOBDDTCByStatusMask | Always  |
++-------------+--------------------------------+-------------+-------------+-------------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching   | Always  |
++----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
+
+
+reportEmissionsOBDDTCByStatusMask) (0x13)
+'''''''''''''''''''''''''''''''''''''''''
+The client can request the list of emissions-related OBD DTCs that match a given status mask (*DTCStatusMask*).
+
+.. warning:: Withdrawn in ISO 14229-1:2020
+
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                             | Present |
++==============================================+=============+=============+=========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|             |                                |             |             |                                         |         |
+|             |                                |             |             | 1 = suppress positive response          |         |
+|             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x13        | reportEmissionsOBDDTCByStatusMask       | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
 Positive Response Format
