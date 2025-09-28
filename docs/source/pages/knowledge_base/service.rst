@@ -768,9 +768,9 @@ The client can request the number of emissions-related OBD DTCs matching a given
 +----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
 
 
-reportEmissionsOBDDTCByStatusMask) (0x13)
+reportEmissionsOBDDTCByStatusMask (0x13)
 '''''''''''''''''''''''''''''''''''''''''
-The client can request the list of emissions-related OBD DTCs that match a given status mask (*DTCStatusMask*).
+The client can request a list of emissions-related OBD DTCs that match a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -787,6 +787,101 @@ The client can request the list of emissions-related OBD DTCs that match a given
 +-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
 | DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+
+
+reportDTCFaultDetectionCounter (0x14)
+'''''''''''''''''''''''''''''''''''''
+The client can request a list of fault counters for DTCs that has not been reported or confirmed.
+
++----------------------------------------------+-------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value     | Description                    | Present |
++==============================================+=============+===========+================================+=========+
+| SID                                          | 8           | 0x19      | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1 | 0 = response required          | Always  |
+|             |                                |             |           |                                |         |
+|             |                                |             |           | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-----------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x14      | reportDTCFaultDetectionCounter | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+
+
+reportDTCWithPermanentStatus (0x15)
+'''''''''''''''''''''''''''''''''''''
+The client can request a list of DTCs with permanent status (once reported, never heal).
+
++----------------------------------------------+-------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length  | Value     | Description                    | Present |
++==============================================+=============+===========+================================+=========+
+| SID                                          | 8           | 0x19      | ReadDTCInformation             | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1 | 0 = response required          | Always  |
+|             |                                |             |           |                                |         |
+|             |                                |             |           | 1 = suppress positive response |         |
+|             +--------------------------------+-------------+-----------+--------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x15      | reportDTCWithPermanentStatus   | Always  |
++-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
+
+
+reportDTCExtDataRecordByRecordNumber (0x16)
+'''''''''''''''''''''''''''''''''''''''''''
+This sub-function lets a client request DTCExtendedDataRecords for a  record number (*DTCExtDataRecordNumber*).
+
++----------------------------------------------+-------------+-------------+----------------------------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                                              | Present |
++==============================================+=============+=============+==========================================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                                       | Always  |
++-------------+--------------------------------+-------------+-------------+----------------------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                                    | Always  |
+|             |                                |             |             |                                                          |         |
+|             |                                |             |             | 1 = suppress positive response                           |         |
+|             +--------------------------------+-------------+-------------+----------------------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x16        | reportDTCExtDataRecordByRecordNumber                     | Always  |
++-------------+--------------------------------+-------------+-------------+----------------------------------------------------------+---------+
+| DTCExtDataRecordNumber                       | 8           | 0x00 - 0xFF | 0x00: reserved                                           | Always  |
+|                                              |             |             |                                                          |         |
+|                                              |             |             | 0x01 - 0x8F: select vehicle manufacturer specific record |         |
+|                                              |             |             |                                                          |         |
+|                                              |             |             | 0x90 - 0x9F: select regulated emissions OBD record       |         |
+|                                              |             |             |                                                          |         |
+|                                              |             |             | 0xA0 - 0xEF: select regulated record                     |         |
+|                                              |             |             |                                                          |         |
+|                                              |             |             | 0xF0 - 0xFD: reserved                                    |         |
+|                                              |             |             |                                                          |         |
+|                                              |             |             | 0xFE: all regulated emissions OBD records                |         |
+|                                              |             |             |                                                          |         |
+|                                              |             |             | 0xFF: all extended data records                          |         |
++----------------------------------------------+-------------+-------------+----------------------------------------------------------+---------+
+
+.. note:: A client can request a single concrete extended data record (*DTCExtDataRecordNumber* = 0x01–0xEF).
+  If *DTCExtDataRecordNumber* = 0xFF, all available extended data records for that DTC are returned in ascending order.
+  If *DTCExtDataRecordNumber* = 0xFE, all available extended data records related to regulated emissions OBD records
+  (records numbers: 0x90-0x9F) are turned in ascending order.
+
+
+reportUserDefMemoryDTCByStatusMask (0x17)
+'''''''''''''''''''''''''''''''''''''''''
+The client can request the number of DTCs that match a given status mask (*DTCStatusMask*)
+in selected memory (*MemorySelection*).
+
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| Name                                         | Bit Length  | Value       | Description                             | Present |
++==============================================+=============+=============+=========================================+=========+
+| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
+|             |                                |             |             |                                         |         |
+|             |                                |             |             | 1 = suppress positive response          |         |
+|             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x17        | reportUserDefMemoryDTCByStatusMask      | Always  |
++-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
+| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+| MemorySelection                              | 8           | 0x00 - 0xFF | Identifies DTC memory                   |         |
++----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
+
+.. note:: :code:`MemorySelection` allows reading DTC related information from a specific DTC memory (e.g. one of
+  the sub-systems).
 
 
 Positive Response Format
