@@ -160,21 +160,21 @@ Request Format
 
 Positive Response Format
 ````````````````````````
-+---------------------------------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
-| Name                                                    | Bit Length  | Value           | Description                                           | Present |
-+=========================================================+=============+=================+=======================================================+=========+
-| RSID                                                    | 8           | 0x50            | Positive Response: DiagnosticSessionControl (0x10)    | Always  |
-+------------------------+--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
-|       subFunction      | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1       | 0 = response required                                 | Always  |
-|                        |                                |             |                 |                                                       |         |
-|                        |                                |             |                 | 1 = suppress positive response                        |         |
-|                        +--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
-|                        | diagnosticSessionType          | 7 (b6 - b0) | 0x00 - 0x7F     | Identifies diagnostic session                         | Always  |
-+------------------------+--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
-| sessionParameterRecord | P2Server_max                   | 16          | 0x0000 - 0xFFFF | Maximum P2 timing used by server in this session      | Always  |
-|                        +--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
-|                        | ``P2*Server_max``              | 16          | 0x0000 - 0xFFFF | Maximum ``P2*`` timing used by server in this session | Always  |
-+------------------------+--------------------------------+-------------+-----------------+-------------------------------------------------------+---------+
++---------------------------------------------------------+-------------+-----------------+----------------------------------------------------+---------+
+| Name                                                    | Bit Length  | Value           | Description                                        | Present |
++=========================================================+=============+=================+====================================================+=========+
+| RSID                                                    | 8           | 0x50            | Positive Response: DiagnosticSessionControl (0x10) | Always  |
++------------------------+--------------------------------+-------------+-----------------+----------------------------------------------------+---------+
+|       subFunction      | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1       | 0 = response required                              | Always  |
+|                        |                                |             |                 |                                                    |         |
+|                        |                                |             |                 | 1 = suppress positive response                     |         |
+|                        +--------------------------------+-------------+-----------------+----------------------------------------------------+---------+
+|                        | diagnosticSessionType          | 7 (b6 - b0) | 0x00 - 0x7F     | Identifies diagnostic session                      | Always  |
++------------------------+--------------------------------+-------------+-----------------+----------------------------------------------------+---------+
+| sessionParameterRecord | P2Server_max                   | 16          | 0x0000 - 0xFFFF | Maximum P2 timing used by server in this session   | Always  |
+|                        +--------------------------------+-------------+-----------------+----------------------------------------------------+---------+
+|                        | P2\*Server_max                 | 16          | 0x0000 - 0xFFFF | Maximum P2* timing used by server in this session  | Always  |
++------------------------+--------------------------------+-------------+-----------------+----------------------------------------------------+---------+
 
 .. note:: :ref:`P2Server_max <knowledge-base-p2-server>` field is provided directly in milliseconds.
   :ref:`P2*Server_max <knowledge-base-p2*-server>` field is encoded in units of 10 ms, so it must be multiplied by 10
@@ -341,16 +341,20 @@ ISO 14229-1 defines the following DTC report types (values of the *reportType* p
 - 0x56 - reportDTCInformationByDTCReadinessGroupIdentifier (introduced in ISO 14229-1:2020)
 
 
-Request Format
-``````````````
-Due to various formats being used depending on a sub-function value, each format is presented separately for
-each sub-function value.
-
+.. _knowledge-base-service-read-dtc-information-01:
 
 reportNumberOfDTCByStatusMask (0x01)
-''''''''''''''''''''''''''''''''''''
-This sub-function can be used by the client to request the number of DTCs that match
-a given status mask (*DTCStatusMask*).
+````````````````````````````````````
+This sub-function can be used by the client to request the number of stored DTCs that match
+a specific status mask (*DTCStatusMask*).
+It is typically used as a lightweight way to determine how many DTCs fulfill a given diagnostic condition without
+retrieving the DTC values themselves.
+
+Request Format
+''''''''''''''
+The *DTCStatusMask* parameter defines which status bits should be used as a filter when matching DTCs.
+A value of 0x00 means that no status bits are selected. Since no DTC can match this, the result will always be
+a count of 0.
 
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
@@ -367,10 +371,47 @@ a given status mask (*DTCStatusMask*).
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
-reportDTCByStatusMask (0x02)
-''''''''''''''''''''''''''''
-This sub-function can be used by the client to request all DTCs that match a given status mask (*DTCStatusMask*).
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| Name                                         | Bit Length  | Value           | Description                                  | Present |
++==============================================+=============+=================+==============================================+=========+
+| RSID                                         | 8           | 0x59            | Positive Response: ReadDTCInformation (0x19) | Always  |
++-------------+--------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1       | 0 = response required                        | Always  |
+|             |                                |             |                 |                                              |         |
+|             |                                |             |                 | 1 = suppress positive response               |         |
+|             +--------------------------------+-------------+-----------------+----------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x01            | reportNumberOfDTCByStatusMask                | Always  |
++-------------+--------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| DTCStatusAvailabilityMask                    | 8           | 0x00 - 0xFF     | DTC Status bits supported by the ECU         | Always  |
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| DTCFormatIdentifier                          | 8           | 0x00 - 0xFF     | 0x00: SAE J2012-DA DTC Format 00             | Always  |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x01: ISO 14229-1 DTC Format                 |         |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x02: SAE J1939-73 DTC Format                |         |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x03: ISO 11992-4 DTC Format                 |         |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x04: SAE J2012-DA DTC Format 04             |         |
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| DTCCount                                     | 16          | 0x0000 - 0xFFFF | Number of DTCs that match criteria           | Always  |
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
 
+
+.. _knowledge-base-service-read-dtc-information-02:
+
+reportDTCByStatusMask (0x02)
+````````````````````````````
+This sub-function can be used by the client to request a list of all DTCs stored in the server’s memory that match
+a specific status mask (*DTCStatusMask*). A DTC is included in the response if :code:`DTC Status & DTCStatusMask) != 0`.
+This sub-function provides the client with both the DTC values and their corresponding status information for
+all DTCs that satisfy the given mask.
+
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
 +==============================================+=============+=============+=========================================+=========+
@@ -386,10 +427,42 @@ This sub-function can be used by the client to request all DTCs that match a giv
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
++-------------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| Name                                            | Bit Length  | Value               | Description                                  | Present                                  |
++=================================================+=============+=====================+==============================================+==========================================+
+| RSID                                            | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|   subFunction  | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
+|                |                                |             |                     |                                              |                                          |
+|                |                                |             |                     | 1 = suppress positive response               |                                          |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|                | reportType                     | 7 (b6 - b0) | 0x02                | reportDTCByStatusMask                        | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                       | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#1 | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#1                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| ...                                             |             |                     |                                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#n | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#n                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+
+
+.. _knowledge-base-service-read-dtc-information-03:
+
 reportDTCSnapshotIdentification (0x03)
-''''''''''''''''''''''''''''''''''''''
+``````````````````````````````````````
 This sub-function can be used by the client to request identification of all stored DTC snapshot records.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+---------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                     | Present |
 +==============================================+=============+===========+=================================+=========+
@@ -403,11 +476,19 @@ This sub-function can be used by the client to request identification of all sto
 +-------------+--------------------------------+-------------+-----------+---------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-04:
+
 reportDTCSnapshotRecordByDTCNumber (0x04)
-'''''''''''''''''''''''''''''''''''''''''
+`````````````````````````````````````````
 This sub-function can be used by the client to request snapshot data for a specific DTC (*DTCMaskRecord*)
 and snapshot record number (*DTCSnapshotRecordNumber*).
 
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+---------------------+--------------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                          | Present |
 +==============================================+=============+=====================+======================================+=========+
@@ -432,10 +513,19 @@ and snapshot record number (*DTCSnapshotRecordNumber*).
   If equal to 0xFF, all available snapshot records for the DTC are returned.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-05:
+
 reportDTCStoredDataByRecordNumber (0x05)
-''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````
 This sub-function can be used by the client to request stored data for a specific record (*DTCStoredDataRecordNumber*).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+--------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                          | Present |
 +==============================================+=============+=============+======================================+=========+
@@ -458,11 +548,20 @@ This sub-function can be used by the client to request stored data for a specifi
   If equal to 0xFF, all available stored data records for the DTC are returned.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-06:
+
 reportDTCExtDataRecordByDTCNumber (0x06)
-''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````
 This sub-function can be used by the client to request extended data records for a specific DTC (*DTCMaskRecord*)
 and record number (*DTCExtDataRecordNumber*).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                                              | Present |
 +==============================================+=============+=====================+==========================================================+=========+
@@ -496,11 +595,20 @@ and record number (*DTCExtDataRecordNumber*).
   0xFF requests all extended data records for the DTC.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-07:
+
 reportNumberOfDTCBySeverityMaskRecord (0x07)
-''''''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````````
 This sub-function can be used by the client to request the number of DTCs that match a given
 severity mask (*DTCSeverityMask*) and status mask (*DTCStatusMask*).
 
+
+Request Format
+''''''''''''''
 +--------------------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                                   | Bit Length  | Value       | Description                             | Present |
 +========================================================+=============+=============+=========================================+=========+
@@ -518,11 +626,45 @@ severity mask (*DTCSeverityMask*) and status mask (*DTCStatusMask*).
 +-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| Name                                         | Bit Length  | Value           | Description                                  | Present |
++==============================================+=============+=================+==============================================+=========+
+| RSID                                         | 8           | 0x59            | Positive Response: ReadDTCInformation (0x19) | Always  |
++-------------+--------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1       | 0 = response required                        | Always  |
+|             |                                |             |                 |                                              |         |
+|             |                                |             |                 | 1 = suppress positive response               |         |
+|             +--------------------------------+-------------+-----------------+----------------------------------------------+---------+
+|             | reportType                     | 7 (b6 - b0) | 0x07            | reportNumberOfDTCBySeverityMaskRecord        | Always  |
++-------------+--------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| DTCStatusAvailabilityMask                    | 8           | 0x00 - 0xFF     | DTC Status bits supported by the ECU         | Always  |
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| DTCFormatIdentifier                          | 8           | 0x00 - 0xFF     | 0x00: SAE J2012-DA DTC Format 00             | Always  |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x01: ISO 14229-1 DTC Format                 |         |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x02: SAE J1939-73 DTC Format                |         |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x03: ISO 11992-4 DTC Format                 |         |
+|                                              |             |                 |                                              |         |
+|                                              |             |                 | 0x04: SAE J2012-DA DTC Format 04             |         |
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
+| DTCCount                                     | 16          | 0x0000 - 0xFFFF | Number of DTCs that match criteria           | Always  |
++----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
+
+
+.. _knowledge-base-service-read-dtc-information-08:
+
 reportDTCBySeverityMaskRecord (0x08)
-''''''''''''''''''''''''''''''''''''
+````````````````````````````````````
 This sub-function can be used by the client to request all DTCs that match a given severity mask (*DTCSeverityMask*)
 and status mask (*DTCStatusMask*).
 
+
+Request Format
+''''''''''''''
 +--------------------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                                   | Bit Length  | Value       | Description                             | Present |
 +========================================================+=============+=============+=========================================+=========+
@@ -540,11 +682,20 @@ and status mask (*DTCStatusMask*).
 +-----------------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-09:
+
 reportSeverityInformationOfDTC (0x09)
-'''''''''''''''''''''''''''''''''''''
+`````````````````````````````````````
 This sub-function can be used by the client to request severity and functional unit information for
 a specific DTC (*DTCMaskRecord*).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+---------------------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                    | Present |
 +==============================================+=============+=====================+================================+=========+
@@ -560,10 +711,19 @@ a specific DTC (*DTCMaskRecord*).
 +----------------------------------------------+-------------+---------------------+--------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-0A:
+
 reportSupportedDTC (0x0A)
-'''''''''''''''''''''''''
+`````````````````````````
 This sub-function can be used by the client to request a list of all DTCs supported by the server.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
 +==============================================+=============+===========+================================+=========+
@@ -577,11 +737,43 @@ This sub-function can be used by the client to request a list of all DTCs suppor
 +-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
++-------------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| Name                                            | Bit Length  | Value               | Description                                  | Present                                  |
++=================================================+=============+=====================+==============================================+==========================================+
+| RSID                                            | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|   subFunction  | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
+|                |                                |             |                     |                                              |                                          |
+|                |                                |             |                     | 1 = suppress positive response               |                                          |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|                | reportType                     | 7 (b6 - b0) | 0x0A                | reportSupportedDTCs                          | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                       | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#1 | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#1                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| ...                                             |             |                     |                                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#n | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#n                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+
+
+.. _knowledge-base-service-read-dtc-information-0B:
+
 reportFirstTestFailedDTC (0x0B)
-'''''''''''''''''''''''''''''''
+```````````````````````````````
 This sub-function can be used by the client to request the first DTC that failed a test since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
 +==============================================+=============+===========+================================+=========+
@@ -598,11 +790,37 @@ This sub-function can be used by the client to request the first DTC that failed
   :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
+Positive Response Format
+''''''''''''''''''''''''
++-----------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| Name                                          | Bit Length  | Value               | Description                                  | Present                                  |
++===============================================+=============+=====================+==============================================+==========================================+
+| RSID                                          | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|  subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
+|              |                                |             |                     |                                              |                                          |
+|              |                                |             |                     | 1 = suppress positive response               |                                          |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|              | reportType                     | 7 (b6 - b0) | 0x0B                | reportFirstTestFailedDTC                     | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                     | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC                                          | If at least one DTC matches the criteria |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|              | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC                                |                                          |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+
+
+.. _knowledge-base-service-read-dtc-information-0C:
+
 reportFirstConfirmedDTC (0x0C)
-''''''''''''''''''''''''''''''
+``````````````````````````````
 This sub-function can be used by the client to request the first confirmed DTC since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
 +==============================================+=============+===========+================================+=========+
@@ -619,11 +837,37 @@ This sub-function can be used by the client to request the first confirmed DTC s
   :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
+Positive Response Format
+''''''''''''''''''''''''
++-----------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| Name                                          | Bit Length  | Value               | Description                                  | Present                                  |
++===============================================+=============+=====================+==============================================+==========================================+
+| RSID                                          | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|  subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
+|              |                                |             |                     |                                              |                                          |
+|              |                                |             |                     | 1 = suppress positive response               |                                          |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|              | reportType                     | 7 (b6 - b0) | 0x0C                | reportFirstConfirmedDTC                      | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                     | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC                                          | If at least one DTC matches the criteria |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|              | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC                                |                                          |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+
+
+.. _knowledge-base-service-read-dtc-information-0D:
+
 reportMostRecentTestFailedDTC (0x0D)
-''''''''''''''''''''''''''''''''''''
+````````````````````````````````````
 This sub-function can be used by the client to request the most recent DTC that failed a test since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
 +==============================================+=============+===========+================================+=========+
@@ -640,11 +884,37 @@ This sub-function can be used by the client to request the most recent DTC that 
   :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
+Positive Response Format
+''''''''''''''''''''''''
++-----------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| Name                                          | Bit Length  | Value               | Description                                  | Present                                  |
++===============================================+=============+=====================+==============================================+==========================================+
+| RSID                                          | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|  subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
+|              |                                |             |                     |                                              |                                          |
+|              |                                |             |                     | 1 = suppress positive response               |                                          |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|              | reportType                     | 7 (b6 - b0) | 0x0D                | reportMostRecentTestFailedDTC                | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                     | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC                                          | If at least one DTC matches the criteria |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|              | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC                                |                                          |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+
+
+.. _knowledge-base-service-read-dtc-information-0E:
+
 reportMostRecentConfirmedDTC (0x0E)
-'''''''''''''''''''''''''''''''''''
+```````````````````````````````````
 This sub-function can be used by the client to request the most recent confirmed DTC since the last
 :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
 +==============================================+=============+===========+================================+=========+
@@ -661,13 +931,39 @@ This sub-function can be used by the client to request the most recent confirmed
     :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
 
 
+Positive Response Format
+''''''''''''''''''''''''
++-----------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| Name                                          | Bit Length  | Value               | Description                                  | Present                                  |
++===============================================+=============+=====================+==============================================+==========================================+
+| RSID                                          | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|  subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
+|              |                                |             |                     |                                              |                                          |
+|              |                                |             |                     | 1 = suppress positive response               |                                          |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|              | reportType                     | 7 (b6 - b0) | 0x0E                | reportMostRecentConfirmedDTC                 | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                     | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC                                          | If at least one DTC matches the criteria |
+|              +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|              | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC                                |                                          |
++--------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+
+
+.. _knowledge-base-service-read-dtc-information-0F:
+
 reportMirrorMemoryDTCByStatusMask (0x0F)
-''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````
 This sub-function can be used by the client to request all DTCs in the DTC mirror memory that match
 a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
 +==============================================+=============+=============+=========================================+=========+
@@ -686,13 +982,22 @@ a given status mask (*DTCStatusMask*).
   :ref:`ClearDiagnosticInformation (0x14) <knowledge-base-service-clear-diagnostic-information>` service.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-10:
+
 reportMirrorMemoryDTCExtDataRecordByDTCNumber (0x10)
-''''''''''''''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````````````````
 This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*) for
 a specific DTC (*DTCMaskRecord*) from the DTC mirror memory.
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                                              | Present |
 +==============================================+=============+=====================+==========================================================+=========+
@@ -729,13 +1034,22 @@ a specific DTC (*DTCMaskRecord*) from the DTC mirror memory.
   :ref:`ClearDiagnosticInformation (0x14) <knowledge-base-service-clear-diagnostic-information>` service.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-11:
+
 reportNumberOfMirrorMemoryDTCByStatusMask (0x11)
-''''''''''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````````````
 This sub-function can be used by the client to request the number of DTCs in the DTC mirror memory that match
 a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                               | Present |
 +==============================================+=============+=============+===========================================+=========+
@@ -754,13 +1068,22 @@ a given status mask (*DTCStatusMask*).
   :ref:`ClearDiagnosticInformation (0x14) <knowledge-base-service-clear-diagnostic-information>` service.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-12:
+
 reportNumberOfEmissionsOBDDTCByStatusMask (0x12)
-''''''''''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````````````
 This sub-function can be used by the client to request the number of emissions-related OBD DTCs that match
 a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                               | Present |
 +==============================================+=============+=============+===========================================+=========+
@@ -776,13 +1099,22 @@ a given status mask (*DTCStatusMask*).
 +----------------------------------------------+-------------+-------------+-------------------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-13:
+
 reportEmissionsOBDDTCByStatusMask (0x13)
-'''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````
 This sub-function can be used by the client to request a list of emissions-related OBD DTCs that match
 a given status mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
 +==============================================+=============+=============+=========================================+=========+
@@ -798,11 +1130,20 @@ a given status mask (*DTCStatusMask*).
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-14:
+
 reportDTCFaultDetectionCounter (0x14)
-'''''''''''''''''''''''''''''''''''''
+`````````````````````````````````````
 This sub-function can be used by the client to request fault detection counters for DTCs that have not been reported
 or confirmed.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
 +==============================================+=============+===========+================================+=========+
@@ -816,11 +1157,20 @@ or confirmed.
 +-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-15:
+
 reportDTCWithPermanentStatus (0x15)
-'''''''''''''''''''''''''''''''''''''
+```````````````````````````````````
 This sub-function can be used by the client to request a list of DTCs with permanent status (once reported,
 never cleared by healing).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-----------+--------------------------------+---------+
 | Name                                         | Bit Length  | Value     | Description                    | Present |
 +==============================================+=============+===========+================================+=========+
@@ -833,12 +1183,43 @@ never cleared by healing).
 |             | reportType                     | 7 (b6 - b0) | 0x15      | reportDTCWithPermanentStatus   | Always  |
 +-------------+--------------------------------+-------------+-----------+--------------------------------+---------+
 
+Positive Response Format
+''''''''''''''''''''''''
++-------------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| Name                                            | Bit Length  | Value               | Description                                  | Present                                  |
++=================================================+=============+=====================+==============================================+==========================================+
+| RSID                                            | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|   subFunction  | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
+|                |                                |             |                     |                                              |                                          |
+|                |                                |             |                     | 1 = suppress positive response               |                                          |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+|                | reportType                     | 7 (b6 - b0) | 0x15                | reportDTCWithPermanentStatus                 | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                       | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#1 | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#1                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| ...                                             |             |                     |                                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#n | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
+|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#n                              |                                          |
++----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
+
+
+.. _knowledge-base-service-read-dtc-information-16:
 
 reportDTCExtDataRecordByRecordNumber (0x16)
-'''''''''''''''''''''''''''''''''''''''''''
+```````````````````````````````````````````
 This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*)
 regardless of the DTC number.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+----------------------------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                                              | Present |
 +==============================================+=============+=============+==========================================================+=========+
@@ -870,11 +1251,20 @@ regardless of the DTC number.
   0xFF requests all extended data records for the DTC.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-17:
+
 reportUserDefMemoryDTCByStatusMask (0x17)
-'''''''''''''''''''''''''''''''''''''''''
+`````````````````````````````````````````
 This sub-function can be used by the client to request the number of DTCs that match a given
 status mask (*DTCStatusMask*) in a selected memory (*MemorySelection*).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
 +==============================================+=============+=============+=========================================+=========+
@@ -895,11 +1285,20 @@ status mask (*DTCStatusMask*) in a selected memory (*MemorySelection*).
   the sub-systems).
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-18:
+
 reportUserDefMemoryDTCSnapshotRecordByDTCNumber (0x18)
-''''''''''''''''''''''''''''''''''''''''''''''''''''''
+``````````````````````````````````````````````````````
 This sub-function can be used by the client to request snapshot records (*DTCSnapshotRecordNumber*) for
 a specific DTC (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+---------------------+-------------------------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                                     | Present |
 +==============================================+=============+=====================+=================================================+=========+
@@ -926,11 +1325,20 @@ a specific DTC (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
   the sub-systems).
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-19:
+
 reportUserDefMemoryDTCExtDataRecordByDTCNumber (0x19)
-'''''''''''''''''''''''''''''''''''''''''''''''''''''
+`````````````````````````````````````````````````````
 This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*) for
 a specific DTC (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+---------------------+----------------------------------------------------------+---------+
 | Name                                         | Bit Length  | Value               | Description                                              | Present |
 +==============================================+=============+=====================+==========================================================+=========+
@@ -969,13 +1377,22 @@ a specific DTC (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
   the sub-systems).
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-1A:
+
 reportSupportedDTCExtDataRecord (0x1A)
-''''''''''''''''''''''''''''''''''''''
+``````````````````````````````````````
 This sub-function can be used by the client to request the list of DTCs that support a given
 extended data record number (*DTCExtDataRecordNumber*).
 
 .. warning:: Introduced in ISO 14229-1:2020
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+---------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                     | Present |
 +==============================================+=============+=============+=================================+=========+
@@ -993,11 +1410,20 @@ extended data record number (*DTCExtDataRecordNumber*).
 .. note:: *DTCExtDataRecordNumber* shall be within 0x01–0xEF range.
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-42:
+
 reportWWHOBDDTCByMaskRecord (0x42)
-''''''''''''''''''''''''''''''''''
+``````````````````````````````````
 This sub-function can be used by the client to request WWH-OBD DTCs and their associated status and
 severity information, filtered by a status mask (*DTCStatusMask*) and a severity mask (*DTCSeverityMaskRecord*).
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                             | Present |
 +==============================================+=============+=============+=========================================+=========+
@@ -1031,10 +1457,19 @@ severity information, filtered by a status mask (*DTCStatusMask*) and a severity
 +----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-55:
+
 reportWWHOBDDTCWithPermanentStatus (0x55)
-'''''''''''''''''''''''''''''''''''''''''
+`````````````````````````````````````````
 This sub-function can be used by the client to request WWH-OBD DTCs with permanent status.
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+---------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                           | Present |
 +==============================================+=============+=============+=======================================+=========+
@@ -1064,13 +1499,22 @@ This sub-function can be used by the client to request WWH-OBD DTCs with permane
 +----------------------------------------------+-------------+-------------+---------------------------------------+---------+
 
 
+Positive Response Format
+''''''''''''''''''''''''
+
+
+.. _knowledge-base-service-read-dtc-information-56:
+
 reportDTCInformationByDTCReadinessGroupIdentifier (0x56)
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````````````````````
 This sub-function can be used by the client to request OBD DTCs that belong to a given
 readiness group (*DTCReadinessGroupIdentifier*).
 
 .. warning:: Introduced in ISO 14229-1:2020
 
+
+Request Format
+''''''''''''''
 +----------------------------------------------+-------------+-------------+---------------------------------------------------+---------+
 | Name                                         | Bit Length  | Value       | Description                                       | Present |
 +==============================================+=============+=============+===================================================+=========+
@@ -1101,13 +1545,12 @@ readiness group (*DTCReadinessGroupIdentifier*).
 | DTCReadinessGroupIdentifier                  | 8           | 0x00 - 0xFF | Specifies DTC readiness group                     | Always  |
 +----------------------------------------------+-------------+-------------+---------------------------------------------------+---------+
 
-.. note:: :ref:`SAE J1979-DA <https://www.sae.org/standards/j1979da_202203-j1979-da-digital-annex-e-e-diagnostic-test-modes>`
-  defines values mapping for *DTCReadinessGroupIdentifier* parameters.
+.. note:: `SAE J1979-DA <https://www.sae.org/standards/j1979da_202203-j1979-da-digital-annex-e-e-diagnostic-test-modes>`_
+  defines values mapping for *DTCReadinessGroupIdentifier* parameter.
 
 
 Positive Response Format
-````````````````````````
-
+''''''''''''''''''''''''
 
 
 ReadDataByIdentifier
