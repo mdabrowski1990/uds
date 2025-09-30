@@ -213,71 +213,80 @@ ECUReset
 ECUReset service is used by the client to request that the server perform a reset.
 The server, after receiving this request, performs the specified type of reset.
 
-ISO 14229-1 defines the following reset types (values of the *resetType* parameter):
-
-- 0x01 - hardReset
-- 0x02 - keyOffOnReset
-- 0x03 - softReset
-- 0x04 - enableRapidPowerShutDown
-- 0x05 - disableRapidPowerShutDown
-
 
 Request Format
 ``````````````
-+----------------------------------------------+-------------+-------------+--------------------------------+---------+
-| Name                                         | Bit Length  | Value       | Description                    | Present |
-+==============================================+=============+=============+================================+=========+
-| SID                                          | 8           | 0x11        | ECUReset                       | Always  |
-+-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required          | Always  |
-|             |                                |             |             |                                |         |
-|             |                                |             |             | 1 = suppress positive response |         |
-|             +--------------------------------+-------------+-------------+--------------------------------+---------+
-|             | resetType                      | 7 (b6 - b0) | 0x00 - 0x7F | Specifies the reset type       | Always  |
-+-------------+--------------------------------+-------------+-------------+--------------------------------+---------+
++----------------------------------------------+------------+-----------+-----------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                   | Present |
++==============================================+============+===========+===============================================+=========+
+| SID                                          | 8          | 0x11      | ECUReset                                      | Always  |
++-------------+--------------------------------+------------+-----------+-----------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)     | 0x0-0x1   | 0 = response required                         | Always  |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 1 = suppress positive response                |         |
+|             +--------------------------------+------------+-----------+-----------------------------------------------+         |
+|             | resetType                      | 7 (b6-b0)  | 0x00-0x7F | 0x01: reserved                                |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x01: hardReset                               |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x02: keyOffOnReset                           |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x03: softReset                               |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x04: enableRapidPowerShutDown                |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x05: disableRapidPowerShutDown               |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x06-0x3F: reserved                           |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x40-0x5F: available for vehicle manufacturer |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x60-0x7E: available for system supplier      |         |
+|             |                                |            |           |                                               |         |
+|             |                                |            |           | 0x7F: reserved                                |         |
++-------------+--------------------------------+------------+-----------+-----------------------------------------------+---------+
 
 
 Positive Response Format
 ````````````````````````
-
-
-ISO 14229-1:2020
-''''''''''''''''
-+----------------------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
-| Name                                         | Bit Length  | Value       | Description                                     | Present                    |
-+==============================================+=============+=============+=================================================+============================+
-| RSID                                         | 8           | 0x51        | Positive Response: ECUReset (0x11)              | Always                     |
-+-------------+--------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                           | Always                     |
-|             |                                |             |             |                                                 |                            |
-|             |                                |             |             | 1 = suppress positive response                  |                            |
-|             +--------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
-|             | resetType                      | 7 (b6 - b0) | 0x00 - 0x7F | Specifies the reset type                        | Always                     |
-+-------------+--------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
-| powerDownTime                                | 8           | 0x00 - 0xFF | 0x00-0xFE: minimum down time required by server | Only when resetType = 0x04 |
-|                                              |             |             |                                                 |                            |
-|                                              |             |             | 0xFF: failure or time not available             |                            |
-+----------------------------------------------+-------------+-------------+-------------------------------------------------+----------------------------+
++----------------------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
+| Name                                         | Bit Length | Value     | Description                                   | Present                    |
++==============================================+============+===========+===============================================+============================+
+| RSID                                         | 8          | 0x51      | Positive Response: ECUReset (0x11)            | Always                     |
++-------------+--------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)     | 0x0-0x1   | 0 = response required                         | Always                     |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 1 = suppress positive response                |                            |
+|             +--------------------------------+------------+-----------+-----------------------------------------------+                            |
+|             | resetType                      | 7 (b6-b0)  | 0x00-0x7F | 0x01: reserved                                |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x01: hardReset                               |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x02: keyOffOnReset                           |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x03: softReset                               |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x04: enableRapidPowerShutDown                |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x05: disableRapidPowerShutDown               |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x06-0x3F: reserved                           |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x40-0x5F: available for vehicle manufacturer |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x60-0x7E: available for system supplier      |                            |
+|             |                                |            |           |                                               |                            |
+|             |                                |            |           | 0x7F: reserved                                |                            |
++-------------+--------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
+| powerDownTime                                | 8          | 0x00-0xFF | 0x00-0xFE: down time in seconds               | Only when resetType = 0x04 |
+|                                              |            |           |                                               |                            |
+|                                              |            |           | 0xFF: failure or time unavailable             |                            |
++----------------------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
 
 .. note:: The :code:`powerDownTime` field is only included in the positive response when
   :code:`resetType = 0x04` (*enableRapidPowerShutDown*).
   It defines the minimum time (in seconds) that the server requires to remain powered down before it can be safely
   restarted. A value of :code:`0xFF` indicates that either the time requirement is not available or a failure occurred.
-
-
-ISO 14229-1:2013
-''''''''''''''''
-+----------------------------------------------+-------------+-------------+------------------------------------+---------+
-| Name                                         | Bit Length  | Value       | Description                        | Present |
-+==============================================+=============+=============+====================================+=========+
-| RSID                                         | 8           | 0x51        | Positive Response: ECUReset (0x11) | Always  |
-+-------------+--------------------------------+-------------+-------------+------------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required              | Always  |
-|             |                                |             |             |                                    |         |
-|             |                                |             |             | 1 = suppress positive response     |         |
-|             +--------------------------------+-------------+-------------+------------------------------------+---------+
-|             | resetType                      | 7 (b6 - b0) | 0x00 - 0x7F | Specifies the reset type           | Always  |
-+-------------+--------------------------------+-------------+-------------+------------------------------------+---------+
 
 
 .. _knowledge-base-service-clear-diagnostic-information:
@@ -294,15 +303,15 @@ Request Format
 
 ISO 14229-1:2020
 ''''''''''''''''
-+-----------------+------------+---------------------+----------------------------+----------+
-| Name            | Bit Length | Value               | Description                | Present  |
-+=================+============+=====================+============================+==========+
-| SID             | 8          | 0x14                | ClearDiagnosticInformation | Always   |
-+-----------------+------------+---------------------+----------------------------+----------+
-| groupOfDTC      | 24         | 0x000000 - 0xFFFFFF | DTCs to be cleared         | Always   |
-+-----------------+------------+---------------------+----------------------------+----------+
-| MemorySelection | 8          | 0x00 - 0xFF         | Identifies DTC memory      | Optional |
-+-----------------+------------+---------------------+----------------------------+----------+
++-----------------+------------+-------------------+-------------------------------+----------+
+| Name            | Bit Length | Value             | Description                   | Present  |
++=================+============+===================+===============================+==========+
+| SID             | 8          | 0x14              | ClearDiagnosticInformation    | Always   |
++-----------------+------------+-------------------+-------------------------------+----------+
+| groupOfDTC      | 24         | 0x000000-0xFFFFFF | Group of DTCs to be cleared   | Always   |
++-----------------+------------+-------------------+-------------------------------+----------+
+| MemorySelection | 8          | 0x00-0xFF         | Specifies DTC memory to clear | Optional |
++-----------------+------------+-------------------+-------------------------------+----------+
 
 .. note:: In ISO 14229-1:2020 the optional :code:`MemorySelection` field was introduced to allow clearing diagnostic
   information from a specific DTC memory (e.g. one of the sub-systems).
@@ -310,13 +319,13 @@ ISO 14229-1:2020
 
 ISO 14229-1:2013
 ''''''''''''''''
-+------------+------------+---------------------+----------------------------+---------+
-| Name       | Bit Length | Value               | Description                | Present |
-+============+============+=====================+============================+=========+
-| SID        | 8          | 0x14                | ClearDiagnosticInformation | Always  |
-+------------+------------+---------------------+----------------------------+---------+
-| groupOfDTC | 24         | 0x000000 - 0xFFFFFF | DTCs to be cleared         | Always  |
-+------------+------------+---------------------+----------------------------+---------+
++------------+------------+-------------------+-----------------------------+---------+
+| Name       | Bit Length | Value             | Description                 | Present |
++============+============+===================+=============================+=========+
+| SID        | 8          | 0x14              | ClearDiagnosticInformation  | Always  |
++------------+------------+-------------------+-----------------------------+---------+
+| groupOfDTC | 24         | 0x000000-0xFFFFFF | Group of DTCs to be cleared | Always  |
++------------+------------+-------------------+-----------------------------+---------+
 
 
 Positive Response Format
