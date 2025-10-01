@@ -138,33 +138,33 @@ Server shall always be in exactly one diagnostic session.
 
 Request Format
 ``````````````
-+----------------------------------------------+------------+-----------+-----------------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                                   | Present |
-+==============================================+============+===========+===============================================+=========+
-| SID                                          | 8          | 0x10      | DiagnosticSessionControl                      | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)     | 0x0-0x1   | 0 = response required                         | Always  |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 1 = suppress positive response                |         |
-|             +--------------------------------+------------+-----------+-----------------------------------------------+         |
-|             | diagnosticSessionType          | 7 (b6-b0)  | 0x00-0x7F | 0x00: reserved                                |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x01: defaultSession                          |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x02: programmingSession                      |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x03: extendedDiagnosticSession               |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x04: safetySystemDiagnosticSession           |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x05–0x3F: reserved                           |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x40–0x5F: available for vehicle manufacturer |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x60–0x7E: available for system supplier      |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0xFF: reserved                                |         |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------------+---------+
++----------------------------------------------+------------+-----------+------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                              | Present |
++==============================================+============+===========+==========================================+=========+
+| SID                                          | 8          | 0x10      | DiagnosticSessionControl                 | Always  |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                    | Always  |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 1 = suppress positive response           |         |
+|             +--------------------------------+------------+-----------+------------------------------------------+         |
+|             | diagnosticSessionType          | 7 (b[6-0]) | 0x00-0x7F | 0x00: reserved                           |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x01: defaultSession                     |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x02: programmingSession                 |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x03: extendedDiagnosticSession          |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x04: safetySystemDiagnosticSession      |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x05–0x3F: reserved                      |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x40–0x5F: vehicle manufacturer specific |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x60–0x7E: system supplier specific      |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x7F: reserved                           |         |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
 
 
 Positive Response Format
@@ -174,11 +174,11 @@ Positive Response Format
 +=========================================================+============+===============+====================================================+=========+
 | RSID                                                    | 8          | 0x50          | Positive Response: DiagnosticSessionControl (0x10) | Always  |
 +------------------------+--------------------------------+------------+---------------+----------------------------------------------------+---------+
-| subFunction            | suppressPosRspMsgIndicationBit | 1 (b7)     | 0x0-0x1       | 0 = response required                              | Always  |
+| subFunction            | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                              | Always  |
 |                        |                                |            |               |                                                    |         |
 |                        |                                |            |               | 1 = suppress positive response                     |         |
 |                        +--------------------------------+------------+---------------+----------------------------------------------------+         |
-|                        | diagnosticSessionType          | 7 (b6-b0)  | 0x00-0x7F     | 0x00: reserved                                     |         |
+|                        | diagnosticSessionType          | 7 (b[6-0]) | 0x00-0x7F     | 0x00: reserved                                     |         |
 |                        |                                |            |               |                                                    |         |
 |                        |                                |            |               | 0x01: defaultSession                               |         |
 |                        |                                |            |               |                                                    |         |
@@ -190,9 +190,9 @@ Positive Response Format
 |                        |                                |            |               |                                                    |         |
 |                        |                                |            |               | 0x05–0x3F: reserved                                |         |
 |                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x40–0x5F: available for vehicle manufacturer      |         |
+|                        |                                |            |               | 0x40–0x5F: vehicle manufacturer specific           |         |
 |                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x60–0x7E: available for system supplier           |         |
+|                        |                                |            |               | 0x60–0x7E: system supplier specific                |         |
 |                        |                                |            |               |                                                    |         |
 |                        |                                |            |               | 0x7F: reserved                                     |         |
 +------------------------+--------------------------------+------------+---------------+----------------------------------------------------+---------+
@@ -211,77 +211,78 @@ Positive Response Format
 ECUReset
 --------
 ECUReset service is used by the client to request that the server perform a reset.
-The server, after receiving this request, performs the specified type of reset.
+The server, after receiving this request, performs the specified type of reset (either before or after transmitting
+the positive response).
 
 
 Request Format
 ``````````````
-+----------------------------------------------+------------+-----------+-----------------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                                   | Present |
-+==============================================+============+===========+===============================================+=========+
-| SID                                          | 8          | 0x11      | ECUReset                                      | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)     | 0x0-0x1   | 0 = response required                         | Always  |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 1 = suppress positive response                |         |
-|             +--------------------------------+------------+-----------+-----------------------------------------------+         |
-|             | resetType                      | 7 (b6-b0)  | 0x00-0x7F | 0x01: reserved                                |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x01: hardReset                               |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x02: keyOffOnReset                           |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x03: softReset                               |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x04: enableRapidPowerShutDown                |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x05: disableRapidPowerShutDown               |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x06-0x3F: reserved                           |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x40-0x5F: available for vehicle manufacturer |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x60-0x7E: available for system supplier      |         |
-|             |                                |            |           |                                               |         |
-|             |                                |            |           | 0x7F: reserved                                |         |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------------+---------+
++----------------------------------------------+------------+-----------+------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                              | Present |
++==============================================+============+===========+==========================================+=========+
+| SID                                          | 8          | 0x11      | ECUReset                                 | Always  |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                    | Always  |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 1 = suppress positive response           |         |
+|             +--------------------------------+------------+-----------+------------------------------------------+         |
+|             | resetType                      | 7 (b[6-0]) | 0x00-0x7F | 0x00: reserved                           |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x01: hardReset                          |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x02: keyOffOnReset                      |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x03: softReset                          |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x04: enableRapidPowerShutDown           |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x05: disableRapidPowerShutDown          |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x06-0x3F: reserved                      |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x40-0x5F: vehicle manufacturer specific |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x60-0x7E: system supplier specific      |         |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 0x7F: reserved                           |         |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
 
 
 Positive Response Format
 ````````````````````````
-+----------------------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
-| Name                                         | Bit Length | Value     | Description                                   | Present                    |
-+==============================================+============+===========+===============================================+============================+
-| RSID                                         | 8          | 0x51      | Positive Response: ECUReset (0x11)            | Always                     |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)     | 0x0-0x1   | 0 = response required                         | Always                     |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 1 = suppress positive response                |                            |
-|             +--------------------------------+------------+-----------+-----------------------------------------------+                            |
-|             | resetType                      | 7 (b6-b0)  | 0x00-0x7F | 0x01: reserved                                |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x01: hardReset                               |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x02: keyOffOnReset                           |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x03: softReset                               |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x04: enableRapidPowerShutDown                |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x05: disableRapidPowerShutDown               |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x06-0x3F: reserved                           |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x40-0x5F: available for vehicle manufacturer |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x60-0x7E: available for system supplier      |                            |
-|             |                                |            |           |                                               |                            |
-|             |                                |            |           | 0x7F: reserved                                |                            |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
-| powerDownTime                                | 8          | 0x00-0xFF | 0x00-0xFE: down time in seconds               | Only when resetType = 0x04 |
-|                                              |            |           |                                               |                            |
-|                                              |            |           | 0xFF: failure or time unavailable             |                            |
-+----------------------------------------------+------------+-----------+-----------------------------------------------+----------------------------+
++----------------------------------------------+------------+-----------+------------------------------------------+---------------------+
+| Name                                         | Bit Length | Value     | Description                              | Present             |
++==============================================+============+===========+==========================================+=====================+
+| RSID                                         | 8          | 0x51      | Positive Response: ECUReset (0x11)       | Always              |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------------------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                    | Always              |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 1 = suppress positive response           |                     |
+|             +--------------------------------+------------+-----------+------------------------------------------+                     |
+|             | resetType                      | 7 (b[6-0]) | 0x00-0x7F | 0x00: reserved                           |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x01: hardReset                          |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x02: keyOffOnReset                      |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x03: softReset                          |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x04: enableRapidPowerShutDown           |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x05: disableRapidPowerShutDown          |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x06-0x3F: reserved                      |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x40-0x5F: vehicle manufacturer specific |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x60-0x7E: system supplier specific      |                     |
+|             |                                |            |           |                                          |                     |
+|             |                                |            |           | 0x7F: reserved                           |                     |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------------------+
+| powerDownTime                                | 8          | 0x00-0xFF | 0x00-0xFE: down time in seconds          | If resetType = 0x04 |
+|                                              |            |           |                                          |                     |
+|                                              |            |           | 0xFF: failure or time unavailable        |                     |
++----------------------------------------------+------------+-----------+------------------------------------------+---------------------+
 
 .. note:: The :code:`powerDownTime` field is only included in the positive response when
   :code:`resetType = 0x04` (*enableRapidPowerShutDown*).
@@ -346,33 +347,42 @@ one or more servers within the vehicle.
 
 ISO 14229-1 defines the following DTC report types (values of the *reportType* parameter):
 
-- 0x01 - reportNumberOfDTCByStatusMask
-- 0x02 - reportDTCByStatusMask
-- 0x03 - reportDTCSnapshotIdentification
-- 0x04 - reportDTCSnapshotRecordByDTCNumber
-- 0x05 - reportDTCStoredDataByRecordNumber
-- 0x06 - reportDTCExtDataRecordByDTCNumber
-- 0x07 - reportNumberOfDTCBySeverityMaskRecord
-- 0x08 - reportDTCBySeverityMaskRecord
-- 0x09 - reportSeverityInformationOfDTC
-- 0x0A - reportSupportedDTC
-- 0x0D - reportMostRecentTestFailedDTC
-- 0x0E - reportMostRecentConfirmedDTC
-- 0x0F - reportMirrorMemoryDTCByStatusMask (withdrawn in ISO 14229-1:2020)
-- 0x10 - reportMirrorMemoryDTCExtDataRecordByDTCNumber (withdrawn in ISO 14229-1:2020)
-- 0x11 - reportNumberOfMirrorMemoryDTCByStatusMask (withdrawn in ISO 14229-1:2020)
-- 0x12 - reportNumberOfEmissionsOBDDTCByStatusMask (withdrawn in ISO 14229-1:2020)
-- 0x13 - reportEmissionsOBDDTCByStatusMask (withdrawn in ISO 14229-1:2020)
-- 0x14 - reportDTCFaultDetectionCounter
-- 0x15 - reportDTCWithPermanentStatus
-- 0x16 - reportDTCExtDataRecordByRecordNumber
-- 0x17 - reportUserDefMemoryDTCByStatusMask
-- 0x18 - reportUserDefMemoryDTCSnapshotRecordByDTCNumber
-- 0x19 - reportUserDefMemoryDTCExtDataRecordByDTCNumber
-- 0x1A - reportSupportedDTCExtDataRecord (introduced in ISO 14229-1:2020)
-- 0x42 - reportWWHOBDDTCByMaskRecord
-- 0x55 - reportWWHOBDDTCWithPermanentStatus
-- 0x56 - reportDTCInformationByDTCReadinessGroupIdentifier (introduced in ISO 14229-1:2020)
+- 0x01: :ref:`reportNumberOfDTCByStatusMask <knowledge-base-service-read-dtc-information-01>`
+- 0x02: :ref:`reportDTCByStatusMask <knowledge-base-service-read-dtc-information-02>`
+- 0x03: :ref:`reportDTCSnapshotIdentification <knowledge-base-service-read-dtc-information-03>`
+- 0x04: :ref:`reportDTCSnapshotRecordByDTCNumber <knowledge-base-service-read-dtc-information-04>`
+- 0x05: :ref:`reportDTCStoredDataByRecordNumber <knowledge-base-service-read-dtc-information-05>`
+- 0x06: :ref:`reportDTCExtDataRecordByDTCNumber <knowledge-base-service-read-dtc-information-06>`
+- 0x07: :ref:`reportNumberOfDTCBySeverityMaskRecord <knowledge-base-service-read-dtc-information-07>`
+- 0x08: :ref:`reportDTCBySeverityMaskRecord <knowledge-base-service-read-dtc-information-08>`
+- 0x09: :ref:`reportSeverityInformationOfDTC <knowledge-base-service-read-dtc-information-09>`
+- 0x0A: :ref:`reportSupportedDTC <knowledge-base-service-read-dtc-information-0A>`
+- 0x0B: :ref:`reportFirstTestFailedDTC <knowledge-base-service-read-dtc-information-0B>`
+- 0x0C: :ref:`reportFirstConfirmedDTC <knowledge-base-service-read-dtc-information-0C>`
+- 0x0D: :ref:`reportMostRecentTestFailedDTC <knowledge-base-service-read-dtc-information-0D>`
+- 0x0E: :ref:`reportMostRecentConfirmedDTC <knowledge-base-service-read-dtc-information-0E>`
+- 0x0F: :ref:`reportMirrorMemoryDTCByStatusMask <knowledge-base-service-read-dtc-information-0F>`
+  (withdrawn in ISO 14229-1:2020)
+- 0x10: :ref:`reportMirrorMemoryDTCExtDataRecordByDTCNumber <knowledge-base-service-read-dtc-information-10>`
+  (withdrawn in ISO 14229-1:2020)
+- 0x11: :ref:`reportNumberOfMirrorMemoryDTCByStatusMask <knowledge-base-service-read-dtc-information-11>`
+  (withdrawn in ISO 14229-1:2020)
+- 0x12: :ref:`reportNumberOfEmissionsOBDDTCByStatusMask <knowledge-base-service-read-dtc-information-12>`
+  (withdrawn in ISO 14229-1:2020)
+- 0x13: :ref:`reportEmissionsOBDDTCByStatusMask <knowledge-base-service-read-dtc-information-13>`
+  (withdrawn in ISO 14229-1:2020)
+- 0x14: :ref:`reportDTCFaultDetectionCounter <knowledge-base-service-read-dtc-information-14>`
+- 0x15: :ref:`reportDTCWithPermanentStatus <knowledge-base-service-read-dtc-information-15>`
+- 0x16: :ref:`reportDTCExtDataRecordByRecordNumber <knowledge-base-service-read-dtc-information-16>`
+- 0x17: :ref:`reportUserDefMemoryDTCByStatusMask <knowledge-base-service-read-dtc-information-17>`
+- 0x18: :ref:`reportUserDefMemoryDTCSnapshotRecordByDTCNumber <knowledge-base-service-read-dtc-information-18>`
+- 0x19: :ref:`reportUserDefMemoryDTCExtDataRecordByDTCNumber <knowledge-base-service-read-dtc-information-19>`
+- 0x1A: :ref:`reportSupportedDTCExtDataRecord <knowledge-base-service-read-dtc-information-1A>`
+  (introduced in ISO 14229-1:2020)
+- 0x42: :ref:`reportWWHOBDDTCByMaskRecord <knowledge-base-service-read-dtc-information-42>`
+- 0x55: :ref:`reportWWHOBDDTCWithPermanentStatus <knowledge-base-service-read-dtc-information-55>`
+- 0x56: :ref:`reportDTCInformationByDTCReadinessGroupIdentifier <knowledge-base-service-read-dtc-information-56>`
+  (introduced in ISO 14229-1:2020)
 
 
 .. _knowledge-base-service-read-dtc-information-01:
@@ -386,52 +396,52 @@ retrieving the DTC values themselves.
 
 Request Format
 ''''''''''''''
-The *DTCStatusMask* parameter defines which status bits should be used as a filter when matching DTCs.
+The *DTCStatusMask* parameter specifies which status bits should be used as a filter when matching DTCs.
 A value of 0x00 means that no status bits are selected. Since no DTC can match this, the result will always be
 a count of 0.
 
-+----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
-| Name                                         | Bit Length  | Value       | Description                             | Present |
-+==============================================+=============+=============+=========================================+=========+
-| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
-+-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
-|             |                                |             |             |                                         |         |
-|             |                                |             |             | 1 = suppress positive response          |         |
-|             +--------------------------------+-------------+-------------+-----------------------------------------+         |
-|             | reportType                     | 7 (b6 - b0) | 0x01        | reportNumberOfDTCByStatusMask           |         |
-+-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
-| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
-+----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
++----------------------------------------------+------------+-----------+------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                              | Present |
++==============================================+============+===========+==========================================+=========+
+| SID                                          | 8          | 0x19      | ReadDTCInformation                       | Always  |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                    | Always  |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 1 = suppress positive response           |         |
+|             +--------------------------------+------------+-----------+------------------------------------------+         |
+|             | reportType                     | 7 (b[6-0]) | 0x01      | reportNumberOfDTCByStatusMask            |         |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
+| DTCStatusMask                                | 8          | 0x00-0xFF | DTC status mask to use for DTCs matching | Always  |
++----------------------------------------------+------------+-----------+------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
-| Name                                         | Bit Length  | Value           | Description                                  | Present |
-+==============================================+=============+=================+==============================================+=========+
-| RSID                                         | 8           | 0x59            | Positive Response: ReadDTCInformation (0x19) | Always  |
-+-------------+--------------------------------+-------------+-----------------+----------------------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1       | 0 = response required                        | Always  |
-|             |                                |             |                 |                                              |         |
-|             |                                |             |                 | 1 = suppress positive response               |         |
-|             +--------------------------------+-------------+-----------------+----------------------------------------------+---------+
-|             | reportType                     | 7 (b6 - b0) | 0x01            | reportNumberOfDTCByStatusMask                | Always  |
-+-------------+--------------------------------+-------------+-----------------+----------------------------------------------+---------+
-| DTCStatusAvailabilityMask                    | 8           | 0x00 - 0xFF     | DTC Status bits supported by the ECU         | Always  |
-+----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
-| DTCFormatIdentifier                          | 8           | 0x00 - 0xFF     | 0x00: SAE J2012-DA DTC Format 00             | Always  |
-|                                              |             |                 |                                              |         |
-|                                              |             |                 | 0x01: ISO 14229-1 DTC Format                 |         |
-|                                              |             |                 |                                              |         |
-|                                              |             |                 | 0x02: SAE J1939-73 DTC Format                |         |
-|                                              |             |                 |                                              |         |
-|                                              |             |                 | 0x03: ISO 11992-4 DTC Format                 |         |
-|                                              |             |                 |                                              |         |
-|                                              |             |                 | 0x04: SAE J2012-DA DTC Format 04             |         |
-+----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
-| DTCCount                                     | 16          | 0x0000 - 0xFFFF | Number of DTCs that match criteria           | Always  |
-+----------------------------------------------+-------------+-----------------+----------------------------------------------+---------+
++----------------------------------------------+------------+---------------+----------------------------------------------+---------+
+| Name                                         | Bit Length | Value         | Description                                  | Present |
++==============================================+============+===============+==============================================+=========+
+| RSID                                         | 8          | 0x59          | Positive Response: ReadDTCInformation (0x19) | Always  |
++-------------+--------------------------------+------------+---------------+----------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                        | Always  |
+|             |                                |            |               |                                              |         |
+|             |                                |            |               | 1 = suppress positive response               |         |
+|             +--------------------------------+------------+---------------+----------------------------------------------+---------+
+|             | reportType                     | 7 (b[6-0]) | 0x01          | reportNumberOfDTCByStatusMask                | Always  |
++-------------+--------------------------------+------------+---------------+----------------------------------------------+---------+
+| DTCStatusAvailabilityMask                    | 8          | 0x00-0xFF     | DTC status bits supported by the server      | Always  |
++----------------------------------------------+------------+---------------+----------------------------------------------+---------+
+| DTCFormatIdentifier                          | 8          | 0x00-0xFF     | 0x00: SAE J2012-DA DTC Format 00             | Always  |
+|                                              |            |               |                                              |         |
+|                                              |            |               | 0x01: ISO 14229-1 DTC Format                 |         |
+|                                              |            |               |                                              |         |
+|                                              |            |               | 0x02: SAE J1939-73 DTC Format                |         |
+|                                              |            |               |                                              |         |
+|                                              |            |               | 0x03: ISO 11992-4 DTC Format                 |         |
+|                                              |            |               |                                              |         |
+|                                              |            |               | 0x04: SAE J2012-DA DTC Format 04             |         |
++----------------------------------------------+------------+---------------+----------------------------------------------+---------+
+| DTCCount                                     | 16         | 0x0000-0xFFFF | Number of DTCs that match the criteria       | Always  |
++----------------------------------------------+------------+---------------+----------------------------------------------+---------+
 
 
 .. _knowledge-base-service-read-dtc-information-02:
@@ -446,46 +456,46 @@ all DTCs that satisfy the given mask.
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
-| Name                                         | Bit Length  | Value       | Description                             | Present |
-+==============================================+=============+=============+=========================================+=========+
-| SID                                          | 8           | 0x19        | ReadDTCInformation                      | Always  |
-+-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
-| subFunction | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1   | 0 = response required                   | Always  |
-|             |                                |             |             |                                         |         |
-|             |                                |             |             | 1 = suppress positive response          |         |
-|             +--------------------------------+-------------+-------------+-----------------------------------------+---------+
-|             | reportType                     | 7 (b6 - b0) | 0x02        | reportDTCByStatusMask                   | Always  |
-+-------------+--------------------------------+-------------+-------------+-----------------------------------------+---------+
-| DTCStatusMask                                | 8           | 0x00 - 0xFF | DTC status mask to use for DTC matching | Always  |
-+----------------------------------------------+-------------+-------------+-----------------------------------------+---------+
++----------------------------------------------+------------+-----------+------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                              | Present |
++==============================================+============+===========+==========================================+=========+
+| SID                                          | 8          | 0x19      | ReadDTCInformation                       | Always  |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
+| subFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                    | Always  |
+|             |                                |            |           |                                          |         |
+|             |                                |            |           | 1 = suppress positive response           |         |
+|             +--------------------------------+------------+-----------+------------------------------------------+         |
+|             | reportType                     | 7 (b[6-0]) | 0x02      | reportDTCByStatusMask                    |         |
++-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
+| DTCStatusMask                                | 8          | 0x00-0xFF | DTC status mask to use for DTCs matching | Always  |
++----------------------------------------------+------------+-----------+------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
-| Name                                            | Bit Length  | Value               | Description                                  | Present                                  |
-+=================================================+=============+=====================+==============================================+==========================================+
-| RSID                                            | 8           | 0x59                | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
-|   subFunction  | suppressPosRspMsgIndicationBit | 1 (b7)      | 0x0 - 0x1           | 0 = response required                        | Always                                   |
-|                |                                |             |                     |                                              |                                          |
-|                |                                |             |                     | 1 = suppress positive response               |                                          |
-|                +--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
-|                | reportType                     | 7 (b6 - b0) | 0x02                | reportDTCByStatusMask                        | Always                                   |
-+----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                       | 8           | 0x00 - 0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
-| DTCAndStatus#1 | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
-|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#1                              |                                          |
-+----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
-| ...                                                                                                                                                                           |
-+----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
-| DTCAndStatus#n | DTC                            | 24          | 0x000000 - 0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                +--------------------------------+-------------+---------------------+----------------------------------------------+                                          |
-|                | DTC Status                     | 8           | 0x00 - 0xFF         | Status of DTC#n                              |                                          |
-+----------------+--------------------------------+-------------+---------------------+----------------------------------------------+------------------------------------------+
++-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+| Name                                            | Bit Length | Value             | Description                                  | Present                                  |
++=================================================+============+===================+==============================================+==========================================+
+| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
++----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+| subFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
+|                |                                |            |                   |                                              |                                          |
+|                |                                |            |                   | 1 = suppress positive response               |                                          |
+|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+|                | reportType                     | 7 (b[6-0]) | 0x02              | reportDTCByStatusMask                        | Always                                   |
++----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+| DTCStatusAvailabilityMask                       | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
++----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#1 | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
+|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
++----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+| ...                                                                                                                                                                        |
++----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+| DTCAndStatus#n | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
+|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
+|                | DTC Status                     | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
++----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-03:
