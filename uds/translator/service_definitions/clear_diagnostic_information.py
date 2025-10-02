@@ -4,7 +4,7 @@ __all__ = ["CLEAR_DIAGNOSTIC_INFORMATION", "CLEAR_DIAGNOSTIC_INFORMATION_2020", 
 
 from uds.message import RequestSID
 
-from ..data_record_definitions import GROUP_OF_DTC, MEMORY_SELECTION
+from ..data_record_definitions import GROUP_OF_DTC, OPTIONAL_MEMORY_SELECTION
 from ..service import Service
 
 CLEAR_DIAGNOSTIC_INFORMATION_2013 = Service(request_sid=RequestSID.ClearDiagnosticInformation,
@@ -14,7 +14,7 @@ CLEAR_DIAGNOSTIC_INFORMATION_2013 = Service(request_sid=RequestSID.ClearDiagnost
 compatible with ISO 14229-1:2013."""
 
 CLEAR_DIAGNOSTIC_INFORMATION_2020 = Service(request_sid=RequestSID.ClearDiagnosticInformation,
-                                            request_structure=(GROUP_OF_DTC, MEMORY_SELECTION),
+                                            request_structure=(GROUP_OF_DTC, OPTIONAL_MEMORY_SELECTION),
                                             response_structure=())
 """Translator for :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>` service
 compatible with ISO 14229-1:2020."""
