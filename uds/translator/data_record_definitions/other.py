@@ -183,8 +183,9 @@ OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER = RawDataRecord(name="DTCExtDataRecordN
                                                          length=8,
                                                          min_occurrences=0,
                                                          max_occurrences=1)
-NUMBER_OF_DIDS = RawDataRecord(name="Number of DIDs",
-                               length=8)
+DID_COUNT = RawDataRecord(name="DIDCount",
+                          length=8,
+                          unit="DIDs")
 OPTIONAL_DTC_AND_STATUS_RECORD = RawDataRecord(name="DTC and Status",
                                                length=32,
                                                children=(DTC, DTC_STATUS),
