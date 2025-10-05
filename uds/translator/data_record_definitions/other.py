@@ -8,7 +8,7 @@ __all__ = [
     # SID 0x14
     "GROUP_OF_DTC", "OPTIONAL_MEMORY_SELECTION",
     # SID 0x19
-    "DTC_STATUS_MASK", "DTC_STATUS_AVAILABILITY_MASK",
+    "DTC_STATUS_MASK", "DTC_STATUS_AVAILABILITY_MASK", "DTC_STATUS",
     "DTC_SEVERITY_MASK", "DTC_SEVERITY_AVAILABILITY_MASK",
     "DTC_FUNCTIONAL_GROUP_IDENTIFIER", "DTC_FORMAT_IDENTIFIER", "DTC_READINESS_GROUP_IDENTIFIER",
     "DTC", "DTC_COUNT", "MEMORY_SELECTION",
@@ -183,9 +183,22 @@ OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER = RawDataRecord(name="DTCExtDataRecordN
                                                          length=8,
                                                          min_occurrences=0,
                                                          max_occurrences=1)
-DID_COUNT = RawDataRecord(name="DIDCount",
-                          length=8,
-                          unit="DIDs")
+DTC_EXTENDED_DATA_RECORD_NUMBERS = {
+    record_number:  RawDataRecord(name=f"DTCExtDataRecordNumber#{record_number}",
+                                  length=8,
+                                  min_occurrences=1 if record_number == 1 else 0,
+                                  max_occurrences=1)
+    for record_number in range(1, 256)
+}
+DTC_EXTENDED_DATA_RECORDS = {
+    record_number: RawDataRecord(name=f"DTCExtDataRecord#{record_number}",
+                                 length=8,
+                                 min_occurrences=1,
+                                 max_occurrences=None)
+    for record_number in range(1, 256)
+}
+# TODO: add conditional extended data records
+
 OPTIONAL_DTC_AND_STATUS_RECORD = RawDataRecord(name="DTC and Status",
                                                length=32,
                                                children=(DTC, DTC_STATUS),

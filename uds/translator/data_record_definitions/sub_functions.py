@@ -14,8 +14,7 @@ __all__ = [
     "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION",
 ]
 
-from uds.translator.data_record.mapping_data_record import MappingDataRecord
-from uds.translator.data_record.raw_data_record import RawDataRecord
+from ..data_record import MappingDataRecord, RawDataRecord
 
 # shared
 SPRMIB = MappingDataRecord(name="suppressPosRspMsgIndicationBit",

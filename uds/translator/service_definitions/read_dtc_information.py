@@ -28,6 +28,7 @@ from ..data_record_definitions import (
     OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER,
     READ_DTC_INFORMATION_SUB_FUNCTION_2013,
     READ_DTC_INFORMATION_SUB_FUNCTION_2020,
+    DTC_STATUS,
 )
 from ..service import Service
 
@@ -94,6 +95,7 @@ RESPONSE_CONTINUATION_MAPPING_2013 = {
     # TODO: reportDTCSnapshotRecordByDTCNumber (0x04) - DIDs management
     # TODO: reportDTCSnapshotRecordByDTCNumber (0x05) - DIDs management
     # TODO: reportDTCExtDataRecordByDTCNumber (0x06) - DTCExtDataRecords management
+    0x06: (DTC, DTC_STATUS, ),  #TODO: add extended data records
     0x07: (DTC_STATUS_AVAILABILITY_MASK, DTC_FORMAT_IDENTIFIER, DTC_COUNT),
     0x08: (MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS,),
     0x09: (OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS,),
