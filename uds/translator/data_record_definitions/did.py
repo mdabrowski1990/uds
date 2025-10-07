@@ -3,7 +3,7 @@ __all__ = [
     "DID_DATA_MAPPING_2020", "DID_DATA_MAPPING_2013", "DEFAULT_DID_DATA",
 ]
 
-from ..data_record import MappingDataRecord, RawDataRecord, ConditionalMappingDataRecord
+from ..data_record import ConditionalMappingDataRecord, MappingDataRecord, RawDataRecord
 
 DID_MAPPING_2013 = {
     0xF180: "BootSoftwareIdentificationDataIdentifier",
