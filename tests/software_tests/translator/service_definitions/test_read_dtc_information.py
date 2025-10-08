@@ -3576,512 +3576,327 @@ class TestReadDTCInformation2020Integration:
                        0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC,  # DTC Severity, DTC Functional Unit, DTC and DTC Status # 2
                        0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF])  # DTC Severity, DTC Functional Unit, DTC and DTC Status # 3
         ),
-        # # reportSeverityInformationOfDTC (0x09)
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 0,
-        #             "reportType": 0x09,
-        #         },
-        #         "DTC": 0xFEDCBA,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x09, 0xFE, 0xDC, 0xBA])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x09,
-        #         },
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 0,
-        #             "testNotCompletedThisOperationCycle": 0,
-        #             "testFailedSinceLastClear": 1,
-        #             "testNotCompletedSinceLastClear": 1,
-        #             "confirmedDTC": 0,
-        #             "pendingDTC": 0,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #         "DTC Severity, DTC Functional Unit, DTC and DTC Status": {
-        #                 "DTC Severity": 0xF0,
-        #                 "FunctionalGroupIdentifier": 0xE1,
-        #                 "DTC": 0xD2C3B4,
-        #                 "DTC Status": 0xA5
-        #         },
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x89, 0x33, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5])
-        # ),
-        # # reportSupportedDTC (0x0A)
-        # (
-        #     {
-        #         "SubFunction": 0x0A,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x0A])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x0A,
-        #         },
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 1,
-        #             "testNotCompletedThisOperationCycle": 1,
-        #             "testFailedSinceLastClear": 1,
-        #             "testNotCompletedSinceLastClear": 1,
-        #             "confirmedDTC": 1,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #         "DTC and Status": [
-        #             {
-        #                 "DTC": 0x012345,
-        #                 "DTC Status": 0x67,
-        #             },
-        #             0x89ABCDEF,
-        #             {
-        #                 "DTC": 0xF1E2D3,
-        #                 "DTC Status": 0xFF,
-        #             },
-        #             {
-        #                 "DTC": 0xC4B5A6,
-        #                 "DTC Status": 0x00,
-        #             },
-        #             0x9788796A,
-        #             0x5B4C3D2E,
-        #         ]
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x8A, 0xFF,
-        #                0x01, 0x23, 0x45, 0x67,
-        #                0x89, 0xAB, 0xCD, 0xEF,
-        #                0xF1, 0xE2, 0xD3, 0xFF,
-        #                0xC4, 0xB5, 0xA6, 0x00,
-        #                0x97, 0x88, 0x79, 0x6A,
-        #                0x5B, 0x4C, 0x3D, 0x2E])
-        # ),
-        # # reportFirstTestFailedDTC (0x0B)
-        # (
-        #         {
-        #             "SubFunction": 0x0B,
-        #         },
-        #         RequestSID.ReadDTCInformation,
-        #         None,
-        #         bytearray([0x19, 0x0B])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x0B,
-        #         },
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 1,
-        #             "testNotCompletedThisOperationCycle": 1,
-        #             "testFailedSinceLastClear": 1,
-        #             "testNotCompletedSinceLastClear": 1,
-        #             "confirmedDTC": 1,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #         "DTC and Status": {
-        #                 "DTC": 0xF1E2D3,
-        #                 "DTC Status": 0x89,
-        #         },
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x8B, 0xFF,
-        #                0xF1, 0xE2, 0xD3, 0x89])
-        # ),
-        # # reportFirstConfirmedDTC (0x0C)
-        # (
-        #         {
-        #             "SubFunction": 0x0C,
-        #         },
-        #         RequestSID.ReadDTCInformation,
-        #         None,
-        #         bytearray([0x19, 0x0C])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x0C,
-        #         },
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 0,
-        #             "testNotCompletedThisOperationCycle": 0,
-        #             "testFailedSinceLastClear": 0,
-        #             "testNotCompletedSinceLastClear": 0,
-        #             "confirmedDTC": 1,
-        #             "pendingDTC": 0,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #         "DTC and Status": None
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x8C, 0x0B])
-        # ),
-        # # reportMostRecentTestFailedDTC (0x0D)
-        # (
-        #         {
-        #             "SubFunction": 0x0D,
-        #         },
-        #         RequestSID.ReadDTCInformation,
-        #         None,
-        #         bytearray([0x19, 0x0D])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x0D,
-        #         },
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 1,
-        #             "testNotCompletedThisOperationCycle": 0,
-        #             "testFailedSinceLastClear": 1,
-        #             "testNotCompletedSinceLastClear": 0,
-        #             "confirmedDTC": 1,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #         "DTC and Status": {
-        #                 "DTC": 0x5A6B7C,
-        #                 "DTC Status": 0x2B,
-        #         },
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x8D, 0xAF,
-        #                0x5A, 0x6B, 0x7C, 0x2B])
-        # ),
-        # # reportMostRecentConfirmedDTC (0x0E)
-        # (
-        #         {
-        #             "SubFunction": 0x0E,
-        #         },
-        #         RequestSID.ReadDTCInformation,
-        #         None,
-        #         bytearray([0x19, 0x0E])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x0E,
-        #         },
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 0,
-        #             "testNotCompletedThisOperationCycle": 0,
-        #             "testFailedSinceLastClear": 1,
-        #             "testNotCompletedSinceLastClear": 0,
-        #             "confirmedDTC": 1,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x8E, 0x2F])
-        # ),
-        # # reportMirrorMemoryDTCByStatusMask (0x0F)
-        # (
-        #         {
-        #             "SubFunction": 0x0F,
-        #             "DTCStatusMask": 0x85
-        #         },
-        #         RequestSID.ReadDTCInformation,
-        #         None,
-        #         bytearray([0x19, 0x0F, 0x85])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x0F,
-        #         },
-        #         "DTCStatusAvailabilityMask": 0xFF,
-        #         "DTC and Status": [
-        #             {
-        #                 "DTC": 0x012345,
-        #                 "DTC Status": 0x67,
-        #             },
-        #             0x89ABCDEF,
-        #         ]
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x8F, 0xFF,
-        #                0x01, 0x23, 0x45, 0x67,
-        #                0x89, 0xAB, 0xCD, 0xEF])
-        # ),
-        # # reportMirrorMemoryDTCExtDataRecordByDTCNumber (0x10)
-        # (
-        #     {
-        #         "SubFunction": 0x10,
-        #         "DTC": 0x0F1E2D,
-        #         "DTCExtDataRecordNumber": 0x20
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x10, 0x0F, 0x1E, 0x2D, 0x20])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x10,
-        #         },
-        #         "DTC": 0x123456,
-        #         "DTC Status": 0xAB,
-        #         "DTCExtDataRecordNumber#1": 0x50,
-        #         "DTCExtDataRecord#1": [0xF6],
-        #         "DTCExtDataRecordNumber#2": 0x6D,
-        #         "DTCExtDataRecord#2": [0xBE, 0xEF],
-        #         "DTCExtDataRecordNumber#3": 0xC2,
-        #         "DTCExtDataRecord#3": [0x73, 0x84, 0x95, 0xA6, 0xB7, 0xC8, 0xD9, 0xEA, 0xFB],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x90,
-        #                0x12, 0x34, 0x56, 0xAB,  # DTC and Status
-        #                0x50, 0xF6,  # DTCExtendedDataRecord#1
-        #                0x6D, 0xBE, 0xEF,  # DTCExtendedDataRecord#2
-        #                0xC2, 0x73, 0x84, 0x95, 0xA6, 0xB7, 0xC8, 0xD9, 0xEA, 0xFB])  # DTCExtendedDataRecord#3
-        # ),
-        # # reportNumberOfMirrorMemoryDTCByStatusMask (0x11)
-        # (
-        #     {
-        #         "SubFunction": 0x11,
-        #         "DTCStatusMask": 0xB4,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x11, 0xB4])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 0,
-        #             "reportType": 0x12,
-        #         },
-        #         "DTCStatusAvailabilityMask": 0x00,
-        #         "DTCFormatIdentifier": 0xFF,
-        #         "DTCCount": 0xFFFF,
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x12, 0x00, 0xFF, 0xFF, 0xFF])
-        # ),
-        # # reportNumberOfEmissionsOBDDTCByStatusMask (0x12)
-        # (
-        #     {
-        #         "SubFunction": 0x12,
-        #         "DTCStatusMask": 0xFB,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x12, 0xFB])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x12,
-        #         },
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 1,
-        #             "testNotCompletedThisOperationCycle": 1,
-        #             "testFailedSinceLastClear": 1,
-        #             "testNotCompletedSinceLastClear": 0,
-        #             "confirmedDTC": 1,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #         "DTCFormatIdentifier": 0xA3,
-        #         "DTCCount": 0x0000,
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x92, 0xEF, 0xA3, 0x00, 0x00])
-        # ),
-        # # reportEmissionsOBDDTCByStatusMask (0x13)
-        # (
-        #     {
-        #         "SubFunction": 0x13,
-        #         "DTCStatusMask": 0xEA,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x13, 0xEA])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": 0x93,
-        #         "DTCStatusAvailabilityMask": 0xFF,
-        #         "DTC and Status": [
-        #             {
-        #                 "DTC": 0x102030,
-        #                 "DTC Status": {
-        #                     "warningIndicatorRequested": 0,
-        #                     "testNotCompletedThisOperationCycle": 0,
-        #                     "testFailedSinceLastClear": 0,
-        #                     "testNotCompletedSinceLastClear": 0,
-        #                     "confirmedDTC": 0,
-        #                     "pendingDTC": 0,
-        #                     "testFailedThisOperationCycle": 0,
-        #                     "testFailed": 0,
-        #                 },
-        #             },
-        #             {
-        #                 "DTC": 0x000001,
-        #                 "DTC Status": 0xFF,
-        #             },
-        #             0xF21D0CBF
-        #         ],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x93, 0xFF,
-        #                0x10, 0x20, 0x30, 0x00,  # DTC and Status #1
-        #                0x00, 0x00, 0x01, 0xFF,  # DTC and Status #2
-        #                0xF2, 0x1D, 0x0C, 0xBF])  # DTC and Status #3
-        # ),
-        # # reportDTCFaultDetectionCounter (0x14)
-        # (
-        #     {
-        #         "SubFunction": 0x94,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x94])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 0,
-        #             "reportType": 0x14,
-        #         },
-        #         "DTC and Fault Detection Counter": [
-        #             {
-        #                 "DTC": 0x000000,
-        #                 "FaultDetectionCounter": 0x00,
-        #             },
-        #             {
-        #                 "DTC": 0x896745,
-        #                 "FaultDetectionCounter": 0x23,
-        #             },
-        #             0xFFFFFFFF
-        #         ],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x14,
-        #                0x00, 0x00, 0x00, 0x00,  # DTC and Fault Detection Counter #1
-        #                0x89, 0x67, 0x45, 0x23,  # DTC and Fault Detection Counter #2
-        #                0xFF, 0xFF, 0xFF, 0xFF])  # DTC and Fault Detection Counter #3
-        # ),
-        # # reportDTCWithPermanentStatus (0x15)
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x15,
-        #         },
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x95])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": 0x15,
-        #         "DTCStatusAvailabilityMask": 0xED,
-        #         "DTC and Status": [
-        #             {
-        #                 "DTC": 0x000000,
-        #                 "DTC Status": {
-        #                     "warningIndicatorRequested": 0,
-        #                     "testNotCompletedThisOperationCycle": 0,
-        #                     "testFailedSinceLastClear": 0,
-        #                     "testNotCompletedSinceLastClear": 0,
-        #                     "confirmedDTC": 0,
-        #                     "pendingDTC": 0,
-        #                     "testFailedThisOperationCycle": 0,
-        #                     "testFailed": 0,
-        #                 },
-        #             },
-        #             {
-        #                 "DTC": 0x5A5A5A,
-        #                 "DTC Status": 0x6B,
-        #             },
-        #             0xFFFFFFFF
-        #         ],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x15, 0xED,
-        #                0x00, 0x00, 0x00, 0x00,  # DTC and Status #1
-        #                0x5A, 0x5A, 0x5A, 0x6B,  # DTC and Status #2
-        #                0xFF, 0xFF, 0xFF, 0xFF])  # DTC and Status #3
-        # ),
-        # # reportDTCExtDataRecordByRecordNumber (0x16)
-        # (
-        #     {
-        #         "SubFunction": 0x16,
-        #         "DTCExtDataRecordNumber": 0xFE,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x16, 0xFE])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": 0x96,
-        #         "DTCExtDataRecordNumber": 0xE2,
-        #         "DTC#1": 0x3B896C,
-        #         "DTC Status#1": 0xA5,
-        #         "DTCExtDataRecord#1": [0x21, 0x43, 0x68],
-        #         "DTC#2": 0xFECB98,
-        #         "DTC Status#2": 0x64,
-        #         "DTCExtDataRecord#2": [0xCA, 0xFF, 0xEE],
-        #         "DTC#3": 0x765432,
-        #         "DTC Status#3": {
-        #             "warningIndicatorRequested": 0,
-        #             "testNotCompletedThisOperationCycle": 1,
-        #             "testFailedSinceLastClear": 0,
-        #             "testNotCompletedSinceLastClear": 1,
-        #             "confirmedDTC": 0,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 0,
-        #             "testFailed": 0,
-        #         },
-        #         "DTCExtDataRecord#3": [0xDA, 0xD0, 0x03],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x96, 0xE2,
-        #                0x3B, 0x89, 0x6C, 0xA5, 0x21, 0x43, 0x68,  # DTC, Status and ExtendedDataRecord #1
-        #                0xFE, 0xCB, 0x98, 0x64, 0xCA, 0xFF, 0xEE,  # DTC, Status and ExtendedDataRecord #2
-        #                0x76, 0x54, 0x32, 0x54, 0xDA, 0xD0, 0x03])  # DTC, Status and ExtendedDataRecord #3
-        # ),
+        # reportSeverityInformationOfDTC (0x09)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x09,
+                },
+                "DTC": 0xFEDCBA,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x09, 0xFE, 0xDC, 0xBA])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 1,
+                    "reportType": 0x09,
+                },
+                "DTCStatusAvailabilityMask": {
+                    "warningIndicatorRequested": 1,
+                    "testNotCompletedThisOperationCycle": 1,
+                    "testFailedSinceLastClear": 0,
+                    "testNotCompletedSinceLastClear": 0,
+                    "confirmedDTC": 0,
+                    "pendingDTC": 0,
+                    "testFailedThisOperationCycle": 1,
+                    "testFailed": 1,
+                },
+                "DTC Severity, DTC Functional Unit, DTC and DTC Status": {
+                        "DTC Severity": 0xD9,
+                        "FunctionalGroupIdentifier": 0xE2,
+                        "DTC": 0x00FF00,
+                        "DTC Status": 0x01
+                },
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x89, 0xC3, 0xD9, 0xE2, 0x00, 0xFF, 0x00, 0x01])
+        ),
+        # reportSupportedDTC (0x0A)
+        (
+            {
+                "SubFunction": 0x8A,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x8A])
+        ),
+        (
+            {
+                "SubFunction": 0x0A,
+                "DTCStatusAvailabilityMask": 0xB7,
+                "DTC and Status": [
+                    {
+                        "DTC": 0x012345,
+                        "DTC Status": 0x67,
+                    },
+                    {
+                        "DTC": 0xC4B5A6,
+                        "DTC Status": {
+                            "warningIndicatorRequested": 0,
+                            "testNotCompletedThisOperationCycle": 0,
+                            "testFailedSinceLastClear": 0,
+                            "testNotCompletedSinceLastClear": 0,
+                            "confirmedDTC": 0,
+                            "pendingDTC": 1,
+                            "testFailedThisOperationCycle": 0,
+                            "testFailed": 0,
+                        },
+                    },
+                    0x9788796A,
+                ]
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x0A, 0xB7,
+                       0x01, 0x23, 0x45, 0x67,
+                       0xC4, 0xB5, 0xA6, 0x04,
+                       0x97, 0x88, 0x79, 0x6A])
+        ),
+        # reportFirstTestFailedDTC (0x0B)
+        (
+                {
+                    "SubFunction": {
+                        "suppressPosRspMsgIndicationBit": 0,
+                        "reportType": 0x0B,
+                    },
+                },
+                RequestSID.ReadDTCInformation,
+                None,
+                bytearray([0x19, 0x0B])
+        ),
+        (
+            {
+                "SubFunction": 0x8B,
+                "DTCStatusAvailabilityMask": {
+                    "warningIndicatorRequested": 1,
+                    "testNotCompletedThisOperationCycle": 1,
+                    "testFailedSinceLastClear": 1,
+                    "testNotCompletedSinceLastClear": 1,
+                    "confirmedDTC": 1,
+                    "pendingDTC": 1,
+                    "testFailedThisOperationCycle": 1,
+                    "testFailed": 0,
+                },
+                "DTC and Status": {
+                        "DTC": 0xF1E2D3,
+                        "DTC Status": 0x88,
+                },
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x8B, 0xFE,
+                       0xF1, 0xE2, 0xD3, 0x88])
+        ),
+        # reportFirstConfirmedDTC (0x0C)
+        (
+                {
+                    "SubFunction": {
+                        "suppressPosRspMsgIndicationBit": 1,
+                        "reportType": 0x0C,
+                    },
+                },
+                RequestSID.ReadDTCInformation,
+                None,
+                bytearray([0x19, 0x8C])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x0C,
+                },
+                "DTCStatusAvailabilityMask": 0x25,
+                "DTC and Status": None
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x0C, 0x25])
+        ),
+        # reportMostRecentTestFailedDTC (0x0D)
+        (
+                {
+                    "SubFunction": 0x0D,
+                },
+                RequestSID.ReadDTCInformation,
+                None,
+                bytearray([0x19, 0x0D])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 1,
+                    "reportType": 0x0D,
+                },
+                "DTCStatusAvailabilityMask": {
+                    "warningIndicatorRequested": 1,
+                    "testNotCompletedThisOperationCycle": 0,
+                    "testFailedSinceLastClear": 1,
+                    "testNotCompletedSinceLastClear": 1,
+                    "confirmedDTC": 1,
+                    "pendingDTC": 0,
+                    "testFailedThisOperationCycle": 1,
+                    "testFailed": 1,
+                },
+                "DTC and Status": {
+                        "DTC": 0x5A6B7C,
+                        "DTC Status": 0x8F,
+                },
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x8D, 0xBB,
+                       0x5A, 0x6B, 0x7C, 0x8F])
+        ),
+        # reportMostRecentConfirmedDTC (0x0E)
+        (
+                {
+                    "SubFunction": 0x8E,
+                },
+                RequestSID.ReadDTCInformation,
+                None,
+                bytearray([0x19, 0x8E])
+        ),
+        (
+            {
+                "SubFunction": 0x0E,
+                "DTCStatusAvailabilityMask": 0xFF,
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x0E, 0xFF])
+        ),
+        # reportDTCFaultDetectionCounter (0x14)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x14,
+                },
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x14])
+        ),
+        (
+            {
+                "SubFunction": 0x94,
+                "DTC and Fault Detection Counter": [
+                    {
+                        "DTC": 0x000000,
+                        "FaultDetectionCounter": 0x00,
+                    },
+                    {
+                        "DTC": 0xFFFFFF,
+                        "FaultDetectionCounter": 0xFF,
+                    },
+                    0x12345678
+                ],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x94,
+                       0x00, 0x00, 0x00, 0x00,  # DTC and Fault Detection Counter #1
+                       0xFF, 0xFF, 0xFF, 0xFF,  # DTC and Fault Detection Counter #2
+                       0x12, 0x34, 0x56, 0x78])  # DTC and Fault Detection Counter #3
+        ),
+        # reportDTCWithPermanentStatus (0x15)
+        (
+            {
+                "SubFunction": 0x95,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x95])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x15,
+                },
+                "DTCStatusAvailabilityMask": 0xEF,
+                "DTC and Status": [
+                    {
+                        "DTC": 0x000000,
+                        "DTC Status": {
+                            "warningIndicatorRequested": 0,
+                            "testNotCompletedThisOperationCycle": 0,
+                            "testFailedSinceLastClear": 0,
+                            "testNotCompletedSinceLastClear": 0,
+                            "confirmedDTC": 0,
+                            "pendingDTC": 0,
+                            "testFailedThisOperationCycle": 0,
+                            "testFailed": 0,
+                        },
+                    },
+                    {
+                        "DTC": 0x1AB630,
+                        "DTC Status": 0x96,
+                    },
+                    0xFFFFFFFF
+                ],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x15, 0xEF,
+                       0x00, 0x00, 0x00, 0x00,  # DTC and Status #1
+                       0x1A, 0xB6, 0x30, 0x96,  # DTC and Status #2
+                       0xFF, 0xFF, 0xFF, 0xFF])  # DTC and Status #3
+        ),
+        # reportDTCExtDataRecordByRecordNumber (0x16)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x16,
+                },
+                "DTCExtDataRecordNumber": 0xFF,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x16, 0xFF])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 1,
+                    "reportType": 0x16,
+                },
+                "DTCExtDataRecordNumber": 0xFF,
+                "DTC and Status#1": {
+                    "DTC": 0x3B896C,
+                    "DTC Status": 0xA5,
+                },
+                "DTCExtDataRecord#1": [0x21, 0x43, 0x68],
+                "DTC and Status#2": 0xFECB98064,
+                "DTCExtDataRecord#2": [0xCA, 0xFF, 0xEE],
+                "DTC and Status#3": {
+                    "DTC": 0x765432,
+                    "DTC Status": {
+                        "warningIndicatorRequested": 0,
+                        "testNotCompletedThisOperationCycle": 1,
+                        "testFailedSinceLastClear": 0,
+                        "testNotCompletedSinceLastClear": 1,
+                        "confirmedDTC": 0,
+                        "pendingDTC": 1,
+                        "testFailedThisOperationCycle": 0,
+                        "testFailed": 0,
+                    },
+                },
+                "DTCExtDataRecord#3": [0xDA],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x96, 0xE2, 0xFF,
+                       0x3B, 0x89, 0x6C, 0xA5, 0x21, 0x43, 0x68,  # DTC, Status and ExtendedDataRecord #1
+                       0xFE, 0xCB, 0x98, 0x64, 0xCA, 0xFF, 0xEE,  # DTC, Status and ExtendedDataRecord #2
+                       0x76, 0x54, 0x32, 0x54, 0xDA])  # DTC, Status and ExtendedDataRecord #3
+        ),
         # # reportUserDefMemoryDTCByStatusMask (0x17)
         # (
         #     {
