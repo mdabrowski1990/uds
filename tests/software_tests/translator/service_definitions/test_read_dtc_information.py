@@ -1741,6 +1741,1115 @@ class TestReadDTCInformation2013Integration:
 
             ),
         ),
+        # reportDTCBySeverityMaskRecord (0x08)
+        (
+            [0x19, 0x08, 0x0F, 0xF0],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ReadDTCInformation',
+                    'raw_value': 0x19,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': "reportType",
+                            'physical_value': 'reportDTCBySeverityMaskRecord',
+                            'raw_value': 0x08,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x08,
+                    'raw_value': 0x08,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'checkImmediately',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'checkAtNextHalt',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'maintenanceOnly',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_4',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_3',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_2',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_1',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_0',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'DTCSeverityMask',
+                    'physical_value': 0x0F,
+                    'raw_value': 0x0F,
+                    'unit': None
+                },
+{
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'warningIndicatorRequested',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedThisOperationCycle',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'confirmedDTC',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'pendingDTC',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedThisOperationCycle',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailed',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'DTCStatusMask',
+                    'physical_value': 0xF0,
+                    'raw_value': 0xF0,
+                    'unit': None
+                }
+            )
+        ),
+        (
+            [0x59, 0x88, 0x1B, 0x00, 0x01, 0x23, 0x34, 0x56, 0x1B, 0xFF, 0x33, 0x78, 0x9A, 0xBC, 0x01, 0xC0, 0xFF, 0xFF, 0xFF, 0xFF, 0x00],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ReadDTCInformation',
+                    'raw_value': 0x59,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'suppressPosRspMsgIndicationBit',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'reportType',
+                            'physical_value': 'reportDTCBySeverityMaskRecord',
+                            'raw_value': 0x08,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x88,
+                    'raw_value': 0x88,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'warningIndicatorRequested',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedThisOperationCycle',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedSinceLastClear',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'confirmedDTC',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'pendingDTC',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedThisOperationCycle',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailed',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'DTCStatusAvailabilityMask',
+                    'physical_value': 0x1B,
+                    'raw_value': 0x1B,
+                    'unit': None
+                },
+                {
+                    'children': [
+                        (
+                            {
+                                'children': (
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'checkImmediately',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'checkAtNextHalt',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'maintenanceOnly',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_4',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_3',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_2',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_1',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_0',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    }
+                                ),
+                                'length': 8,
+                                'name': 'DTC Severity',
+                                'physical_value': 0x00,
+                                'raw_value': 0x00,
+                                'unit': None
+                            },
+                            {
+                                'children': (),
+                                'length': 8,
+                                'name': 'FunctionalGroupIdentifier',
+                                'physical_value': 0x01,
+                                'raw_value': 0x01,
+                                'unit': None
+                            },
+                            {
+                                'children': (),
+                                'length': 24,
+                                'name': 'DTC',
+                                'physical_value': 0x233456,
+                                'raw_value': 0x233456,
+                                'unit': None
+                            },
+                            {
+                                'children': (
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'warningIndicatorRequested',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testNotCompletedThisOperationCycle',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailedSinceLastClear',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testNotCompletedSinceLastClear',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'confirmedDTC',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'pendingDTC',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailedThisOperationCycle',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailed',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    }
+                                ),
+                                'length': 8,
+                                'name': 'DTC Status',
+                                'physical_value': 0x1B,
+                                'raw_value': 0x1B,
+                                'unit': None
+                            }
+                        ),
+                        (
+                            {
+                                'children': (
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'checkImmediately',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'checkAtNextHalt',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'maintenanceOnly',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_4',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_3',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_2',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_1',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_0',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                ),
+                                'length': 8,
+                                'name': 'DTC Severity',
+                                'physical_value': 0xFF,
+                                'raw_value': 0xFF,
+                                'unit': None
+                            },
+                            {
+                                'children': (),
+                                'length': 8,
+                                'name': 'FunctionalGroupIdentifier',
+                                'physical_value': 'Emissions-system group',
+                                'raw_value': 0x33,
+                                'unit': None
+                            },
+                            {
+                                'children': (),
+                                'length': 24,
+                                'name': 'DTC',
+                                'physical_value': 0x789ABC,
+                                'raw_value': 0x789ABC,
+                                'unit': None
+                            },
+                            {
+                                'children': (
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'warningIndicatorRequested',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testNotCompletedThisOperationCycle',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None},
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailedSinceLastClear',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testNotCompletedSinceLastClear',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'confirmedDTC',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'pendingDTC',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailedThisOperationCycle',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailed',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    }
+                                ),
+                                'length': 8,
+                                'name': 'DTC Status',
+                                'physical_value': 0x01,
+                                'raw_value': 0x01,
+                                'unit': None
+                            }
+                        ),
+                        (
+                            {
+                                'children': (
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'checkImmediately',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'checkAtNextHalt',
+                                        'physical_value': 'yes',
+                                        'raw_value': 1,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'maintenanceOnly',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_4',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_3',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_2',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_1',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'DTCClass_0',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    }
+                                ),
+                                'length': 8,
+                                'name': 'DTC Severity',
+                                'physical_value': 0xC0,
+                                'raw_value': 0xC0,
+                                'unit': None
+                            },
+                            {
+                                'children': (),
+                                'length': 8,
+                                'name': 'FunctionalGroupIdentifier',
+                                'physical_value': 'all',
+                                'raw_value': 0xFF,
+                                'unit': None
+                            },
+                            {
+                                'children': (),
+                                'length': 24,
+                                'name': 'DTC',
+                                'physical_value': 0xFFFFFF,
+                                'raw_value': 0xFFFFFF,
+                                'unit': None
+                            },
+                            {
+                                'children': (
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'warningIndicatorRequested',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testNotCompletedThisOperationCycle',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailedSinceLastClear',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testNotCompletedSinceLastClear',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'confirmedDTC',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'pendingDTC',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailedThisOperationCycle',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    },
+                                    {
+                                        'children': (),
+                                        'length': 1,
+                                        'name': 'testFailed',
+                                        'physical_value': 'no',
+                                        'raw_value': 0,
+                                        'unit': None
+                                    }
+                                ),
+                                'length': 8,
+                                'name': 'DTC Status',
+                                'physical_value': 0x00,
+                                'raw_value': 0x00,
+                                'unit': None
+                            }
+                        )
+                    ],
+                    'length': 48,
+                    'name': 'Severity, Functional Unit, DTC and Status',
+                    'physical_value': (0x00012334561B, 0xFF33789ABC01, 0xC0FFFFFFFF00),
+                    'raw_value': [0x00012334561B, 0xFF33789ABC01, 0xC0FFFFFFFF00],
+                    'unit': None
+                }
+            ),
+        ),
+        # reportSeverityInformationOfDTC (0x09)
+        (
+            [0x19, 0x89, 0x82, 0x3B, 0x95],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ReadDTCInformation',
+                    'raw_value': 0x19,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': "reportType",
+                            'physical_value': 'reportNumberOfDTCBySeverityMaskRecord',
+                            'raw_value': 0x07,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x87,
+                    'raw_value': 0x87,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'checkImmediately',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'checkAtNextHalt',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'maintenanceOnly',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_4',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_3',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_2',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_1',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'DTCClass_0',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'DTCSeverityMask',
+                    'physical_value': 0xD2,
+                    'raw_value': 0xD2,
+                    'unit': None
+                },
+{
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'warningIndicatorRequested',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedThisOperationCycle',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'confirmedDTC',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'pendingDTC',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedThisOperationCycle',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailed',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'DTCStatusMask',
+                    'physical_value': 0x3C,
+                    'raw_value': 0x3C,
+                    'unit': None
+                }
+            )
+        ),
+        (
+            [0x59, 0x07, 0xBE, 0x00, 0x00, 0x00],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ReadDTCInformation',
+                    'raw_value': 0x59,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'suppressPosRspMsgIndicationBit',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'reportType',
+                            'physical_value': 'reportNumberOfDTCBySeverityMaskRecord',
+                            'raw_value': 0x07,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x07,
+                    'raw_value': 0x07,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'warningIndicatorRequested',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedThisOperationCycle',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testNotCompletedSinceLastClear',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'confirmedDTC',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'pendingDTC',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailedThisOperationCycle',
+                            'physical_value': 'yes',
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'testFailed',
+                            'physical_value': 'no',
+                            'raw_value': 0x0,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'DTCStatusAvailabilityMask',
+                    'physical_value': 0xBE,
+                    'raw_value': 0xBE,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'DTCFormatIdentifier',
+                    'physical_value': 'SAE J2012-DA DTC Format 00',
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 16,
+                    'name': 'DTCCount',
+                    'physical_value': 0x0000,
+                    'raw_value': 0x0000,
+                    'unit': 'DTCs'
+                },
+
+            ),
+        ),
     ])
     def test_decode(self, payload, decoded_message):
         print(f"payload = {bytes_to_hex(payload)}")

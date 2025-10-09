@@ -3,10 +3,25 @@
 __all__ = ["TextDataRecord", "TextEncoding"]
 
 from typing import Callable, Dict, Optional, TypedDict
+from string import hexdigits
 
 from uds.utilities import ValidatedEnum
 
 from .abstract_data_record import AbstractDataRecord
+
+
+MIN_DTC_VALUE = 0x000000
+MAX_DTC_VALUE = 0xFFFFFF
+
+DTC_CHARACTERS_MAPPING: Dict[str, int] = {
+    "P": 0b00,  # Powertrain
+    "C": 0b01,  # Chassis
+    "B": 0b10,  # Body
+    "U": 0b11,  # Network Communication
+}
+BITS_TO_DTC_CHARACTER_MAPPING: Dict[int, str] = {
+    value: key for key, value in DTC_CHARACTERS_MAPPING.items()
+}
 
 
 class TextEncoding(ValidatedEnum):
@@ -26,6 +41,8 @@ class TextEncoding(ValidatedEnum):
 
     .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding)
         <https://en.wikipedia.org/wiki/BCD_(character_encoding)>`_"""
+    DTC_OBD_FORMAT: "TextEncoding" = "DTC in OBD format"
+    """DTC to OBD format encoding."""  # TODO: refer to knowledge base
 
 
 def decode_ascii(character: str) -> int:
@@ -35,7 +52,7 @@ def decode_ascii(character: str) -> int:
     :param character: ASCII character.
 
     :raise TypeError: Provided value is not str type.
-    :raise ValueError: Provided value is not an ascii character.
+    :raise ValueError: Provided value is not an ASCII character.
 
     :return: Raw value representation of this character in ASCII format.
     """
@@ -44,6 +61,69 @@ def decode_ascii(character: str) -> int:
     if not character.isascii() or len(character) != 1:
         raise ValueError("Provided value is non-ASCII character.")
     return ord(character)
+
+
+def decode_bcd(character: str) -> int:
+    """
+    Decode BCD character into nibble value.
+
+    :param character: BCD character.
+
+    :raise TypeError: Provided value is not str type.
+    :raise ValueError: Provided value is not a BCD character.
+
+    :return: Raw value representation of this character in BCD format.
+    """
+    if not isinstance(character, str):
+        raise TypeError("Provided value is not str type.")
+    if not character.isdecimal() or len(character) != 1:
+        raise ValueError("Provided value is non-ASCII character.")
+    return int(character)
+
+
+def decode_dtc(obd_dtc: str) -> int:
+    """
+    Decode text with DTC in OBD format into integer value with DTC in UDS format.
+
+    :param obd_dtc: Text with DTC in OBD format.
+
+    :raise TypeError: Provided value is not str type.
+    :raise ValueError: Provided value is not DTC in OBD format.
+
+    :return: Integer value representation of this DTC in UDS format.
+    """
+    if not isinstance(obd_dtc, str):
+        raise TypeError("Provided value is not str type.")
+    obd_dtc = obd_dtc.upper()
+    if (len(obd_dtc) != 8
+            or obd_dtc[0] not in DTC_CHARACTERS_MAPPING
+            or obd_dtc[1] not in {"0", "1", "2", "3"}
+            or obd_dtc[2] not in hexdigits
+            or obd_dtc[3] not in hexdigits
+            or obd_dtc[4] not in hexdigits
+            or obd_dtc[5] != "-"
+            or obd_dtc[6] not in hexdigits
+            or obd_dtc[7] not in hexdigits):
+        raise ValueError(f"Provided value is a DTC in OBD format. Example: 'U0F1E-2D'. Actual value: {obd_dtc!r}")
+    return (DTC_CHARACTERS_MAPPING[obd_dtc[0]] << 22) + (int(obd_dtc[1:5], 16) << 8) + int(obd_dtc[6:], 16)
+
+
+def encode_dtc(dtc: int) -> str:
+    """
+    Encode integer value with DTC in UDS format into text with DTC in OBD format.
+
+    :param dtc: Integer with DTC in UDS format.
+
+    :raise TypeError: Provided value is not int type.
+    :raise ValueError: Provided value is not DTC in OBD format.
+
+    :return: Text value representation of this DTC in OBD format.
+    """
+    if not isinstance(dtc, int):
+        raise TypeError("Provided value is not int type.")
+    if not MIN_DTC_VALUE <= dtc <= MAX_DTC_VALUE:
+        raise ValueError("Provided value is not a DTC in UDS format.")
+    return f"{BITS_TO_DTC_CHARACTER_MAPPING[dtc >> 22]}{(dtc & 0x3FFF00) >> 8:04X}-{dtc & 0xFF:02X}"
 
 
 class TextDataRecord(AbstractDataRecord):
@@ -73,7 +153,8 @@ class TextDataRecord(AbstractDataRecord):
 
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
         TextEncoding.ASCII: _EncodingInfo(length=8, encode=chr, decode=decode_ascii),
-        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=int),
+        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=decode_bcd),  # TODO: add length check for decode int
+        TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24, encode=encode_dtc, decode=decode_dtc)
     }
 
     def __init__(self,
@@ -114,6 +195,8 @@ class TextDataRecord(AbstractDataRecord):
             return 0x7F
         if self.encoding == TextEncoding.BCD:
             return 9
+        if self.encoding == TextEncoding.DTC_OBD_FORMAT:
+            return MAX_DTC_VALUE
         raise NotImplementedError(f"Missing implementation for {self.encoding!r}.")
 
     def get_physical_values(self, *raw_values: int) -> str:
@@ -148,12 +231,9 @@ class TextDataRecord(AbstractDataRecord):
         :param physical_value: A single character.
 
         :raise TypeError: Provided value is not str type.
-        :raise ValueError: Provided value is not a single character.
 
         :return: Raw value decoded from provided character.
         """
         if not isinstance(physical_value, str):
             raise TypeError(f"Provided value is not str type. Actual type: {type(physical_value)}.")
-        if len(physical_value) != 1:
-            raise ValueError(f"Provided value is not a single character. Actual value: {physical_value!r}.")
         return self.__ENCODINGS[self.encoding]["decode"](physical_value)

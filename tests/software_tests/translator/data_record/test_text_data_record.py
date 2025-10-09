@@ -1,7 +1,7 @@
 import pytest
-from mock import MagicMock, Mock, call, patch
+from mock import MagicMock, Mock, patch
 
-from uds.translator.data_record.text_data_record import TextDataRecord, TextEncoding, decode_ascii
+from uds.translator.data_record.text_data_record import TextDataRecord, TextEncoding, decode_ascii, decode_bcd, MAX_DTC_VALUE, decode_dtc, encode_dtc, MIN_DTC_VALUE
 
 SCRIPT_LOCATION = "uds.translator.data_record.text_data_record"
 
@@ -54,6 +54,100 @@ class TestEncodingAndDecodingFunctions:
         mock_value.isascii.assert_called_once_with()
         mock_ord.assert_called_once_with(mock_value)
         mock_len.assert_called_once_with()
+
+    # decode_bcd
+
+    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_bcd__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            decode_bcd(value)
+        mock_isinstance.assert_called_once_with(value, str)
+
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_bcd__value_error__non_bcd(self, mock_isinstance):
+        mock_isinstance.return_value = True
+        mock_len = Mock(return_value=1)
+        mock_value = MagicMock(spec=str, __len__=mock_len)
+        mock_value.isdecimal.return_value = False
+        with pytest.raises(ValueError):
+            decode_bcd(mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_value.isdecimal.assert_called_once_with()
+
+    @pytest.mark.parametrize("length_value", [0, 2])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_bcd__value_error__wrong_length(self, mock_isinstance, length_value):
+        mock_isinstance.return_value = True
+        mock_len = Mock(return_value=length_value)
+        mock_value = MagicMock(spec=str, __len__=mock_len)
+        mock_value.isdecimal.return_value = True
+        with pytest.raises(ValueError):
+            decode_bcd(mock_value)
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_len.assert_called_once_with()
+
+    @patch(f"{SCRIPT_LOCATION}.int")
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_bcd__valid(self, mock_isinstance, mock_int):
+        mock_isinstance.return_value = True
+        mock_len = Mock(return_value=1)
+        mock_value = MagicMock(spec=str, __len__=mock_len)
+        mock_value.isdecimal.return_value = True
+        assert decode_bcd(mock_value) == mock_int.return_value
+        mock_isinstance.assert_called_once_with(mock_value, str)
+        mock_value.isdecimal.assert_called_once_with()
+        mock_int.assert_called_once_with(mock_value)
+        mock_len.assert_called_once_with()
+
+    # decode_dtc
+
+    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_decode_dtc__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            decode_dtc(value)
+        mock_isinstance.assert_called_once_with(value, str)
+
+    @pytest.mark.parametrize("value", ["P0FFF00", "A0123-00", "0x123456", "U012-300"])
+    def test_decode_dtc__value_error(self, value):
+        with pytest.raises(ValueError):
+            decode_dtc(value)
+
+    @pytest.mark.parametrize("obd_dtc, uds_dtc", [
+        ("P0000-00", 0x000000),
+        ("C1FED-CB", 0x5FEDCB),
+        ("B3F4E-5D", 0xBF4E5D),
+        ("U3FFF-FF", 0xFFFFFF),
+    ])
+    def test_decode_dtc__valid(self, obd_dtc, uds_dtc):
+        assert decode_dtc(obd_dtc) == uds_dtc
+
+    # encode_dtc
+
+    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_encode_dtc__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            encode_dtc(value)
+        mock_isinstance.assert_called_once_with(value, int)
+
+    @pytest.mark.parametrize("value", [MIN_DTC_VALUE - 1, MAX_DTC_VALUE + 1])
+    def test_decode_dtc__value_error(self, value):
+        with pytest.raises(ValueError):
+            encode_dtc(value)
+
+    @pytest.mark.parametrize("obd_dtc, uds_dtc", [
+        ("P0000-00", 0x000000),
+        ("C1FED-CB", 0x5FEDCB),
+        ("B0123-45", 0x812345),
+        ("U3FFF-FF", 0xFFFFFF),
+    ])
+    def test_decode_dtc__valid(self, obd_dtc, uds_dtc):
+        assert encode_dtc(uds_dtc) == obd_dtc
 
 
 class TestTextDataRecord:
@@ -124,6 +218,10 @@ class TestTextDataRecord:
         self.mock_data_record.encoding = TextEncoding.BCD
         assert TextDataRecord.max_raw_value.fget(self.mock_data_record) == 9
 
+    def test_max_raw_value__dtc(self):
+        self.mock_data_record.encoding = TextEncoding.DTC_OBD_FORMAT
+        assert TextDataRecord.max_raw_value.fget(self.mock_data_record) == MAX_DTC_VALUE
+
     def test_max_raw_value__not_implemented(self):
         self.mock_data_record.encoding = Mock()
         with pytest.raises(NotImplementedError):
@@ -163,11 +261,6 @@ class TestTextDataRecord:
             TextDataRecord.get_raw_value(self.mock_data_record, physical_value=physical_value)
         mock_isinstance.assert_called_once_with(physical_value, str)
 
-    @pytest.mark.parametrize("physical_value", ["", "21"])
-    def test_get_raw_value__value_error(self, physical_value):
-        with pytest.raises(ValueError):
-            TextDataRecord.get_raw_value(self.mock_data_record, physical_value=physical_value)
-
     @pytest.mark.parametrize("physical_value", ["a", "1"])
     def test_get_raw_value(self, physical_value):
         mock_decode = Mock()
@@ -189,6 +282,10 @@ class TestTextDataRecordIntegration:
                                   encoding=TextEncoding.BCD)
         self.ascii = TextDataRecord(name="ASCII",
                                     encoding=TextEncoding.ASCII)
+        self.dtc = TextDataRecord(name="DTC",
+                                  min_occurrences=1,
+                                  max_occurrences=1,
+                                  encoding=TextEncoding.DTC_OBD_FORMAT)
 
     # get_physical_values
 
@@ -218,6 +315,15 @@ class TestTextDataRecordIntegration:
         with pytest.raises(ValueError):
             self.ascii.get_physical_value(raw_value)
 
+    @pytest.mark.parametrize("raw_value, text", [
+        (0x012345, "P0123-45"),
+        (0x634567, "C2345-67"),
+        (0x812345, "B0123-45"),
+        (0xDFEDCB, "U1FED-CB"),
+    ])
+    def test_get_physical_value__dtc(self, raw_value, text):
+        assert self.dtc.get_physical_value(raw_value) == text
+
     # get_raw_value
 
     @pytest.mark.parametrize("character", ["A", "12"])
@@ -241,3 +347,8 @@ class TestTextDataRecordIntegration:
     def test_get_physical_value_get_raw_value__ascii(self, raw_value):
         character = self.ascii.get_physical_value(raw_value)
         assert self.ascii.get_raw_value(character) == raw_value
+
+    @pytest.mark.parametrize("uds_dtc", [0x000000, 0x9F0E35, 0xFFFFFF])
+    def test_get_physical_value_get_raw_value__dtc(self, uds_dtc):
+        obd_dtc = self.dtc.get_physical_value(uds_dtc)
+        assert self.dtc.get_raw_value(obd_dtc) == uds_dtc
