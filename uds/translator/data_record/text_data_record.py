@@ -153,7 +153,7 @@ class TextDataRecord(AbstractDataRecord):
 
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
         TextEncoding.ASCII: _EncodingInfo(length=8, encode=chr, decode=decode_ascii),
-        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=decode_bcd),  # TODO: add length check for decode int
+        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=decode_bcd),
         TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24, encode=encode_dtc, decode=decode_dtc)
     }
 
