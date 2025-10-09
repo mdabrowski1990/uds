@@ -28,6 +28,8 @@ from ..data_record import (
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
+    TextDataRecord,
+    TextEncoding,
 )
 
 # shared
@@ -145,8 +147,10 @@ DTC_STATUS_AVAILABILITY_MASK = RawDataRecord(name="DTCStatusAvailabilityMask",
 DTC_SEVERITY_AVAILABILITY_MASK = RawDataRecord(name="DTCSeverityAvailabilityMask",
                                                children=DTC_SEVERITY_BITS,
                                                length=8)
-DTC = RawDataRecord(name="DTC",
-                    length=24)
+DTC = TextDataRecord(name="DTC",
+                     encoding=TextEncoding.DTC_OBD_FORMAT,
+                     min_occurrences=1,
+                     max_occurrences=1)
 DTC_COUNT = RawDataRecord(name="DTCCount",
                           length=16,
                           unit="DTCs")

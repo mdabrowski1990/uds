@@ -1,7 +1,16 @@
 import pytest
 from mock import MagicMock, Mock, patch
 
-from uds.translator.data_record.text_data_record import TextDataRecord, TextEncoding, decode_ascii, decode_bcd, MAX_DTC_VALUE, decode_dtc, encode_dtc, MIN_DTC_VALUE
+from uds.translator.data_record.text_data_record import (
+    MAX_DTC_VALUE,
+    MIN_DTC_VALUE,
+    TextDataRecord,
+    TextEncoding,
+    decode_ascii,
+    decode_bcd,
+    decode_dtc,
+    encode_dtc,
+)
 
 SCRIPT_LOCATION = "uds.translator.data_record.text_data_record"
 

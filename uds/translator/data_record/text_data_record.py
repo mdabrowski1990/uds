@@ -2,13 +2,12 @@
 
 __all__ = ["TextDataRecord", "TextEncoding"]
 
-from typing import Callable, Dict, Optional, TypedDict
 from string import hexdigits
+from typing import Callable, Dict, Optional, TypedDict
 
 from uds.utilities import ValidatedEnum
 
 from .abstract_data_record import AbstractDataRecord
-
 
 MIN_DTC_VALUE = 0x000000
 MAX_DTC_VALUE = 0xFFFFFF
