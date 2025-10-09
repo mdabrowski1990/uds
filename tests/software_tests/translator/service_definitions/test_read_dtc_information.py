@@ -1386,7 +1386,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 0,
                     "testFailed": 0,
                 },
-                "DTC Severity, DTC Functional Unit, DTC and DTC Status": [
+                "Severity, Functional Unit, DTC and Status": [
                     {
                         "DTC Severity": 0xF0,
                         "FunctionalGroupIdentifier": 0xE1,
@@ -1438,7 +1438,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "DTC Severity, DTC Functional Unit, DTC and DTC Status": {
+                "Severity, Functional Unit, DTC and Status": {
                         "DTC Severity": 0xF0,
                         "FunctionalGroupIdentifier": 0xE1,
                         "DTC": 0xD2C3B4,
@@ -1981,16 +1981,18 @@ class TestReadDTCInformation2013Integration:
                     "reportType": 0x18,
                 },
                 "MemorySelection": 0x7D,
-                "DTC": 0xDEEDEE,
-                "DTC Status": {
-                    "warningIndicatorRequested": 0,
-                    "testNotCompletedThisOperationCycle": 0,
-                    "testFailedSinceLastClear": 0,
-                    "testNotCompletedSinceLastClear": 0,
-                    "confirmedDTC": 0,
-                    "pendingDTC": 1,
-                    "testFailedThisOperationCycle": 0,
-                    "testFailed": 0,
+                "DTC and Status": {
+                    "DTC": 0xDEEDEE,
+                    "DTC Status": {
+                        "warningIndicatorRequested": 0,
+                        "testNotCompletedThisOperationCycle": 0,
+                        "testFailedSinceLastClear": 0,
+                        "testNotCompletedSinceLastClear": 0,
+                        "confirmedDTC": 0,
+                        "pendingDTC": 1,
+                        "testFailedThisOperationCycle": 0,
+                        "testFailed": 0,
+                    },
                 },
                 "DTCSnapshotRecordNumber#1": 0x12,
                 "DIDCount#1": 2,
@@ -2029,8 +2031,10 @@ class TestReadDTCInformation2013Integration:
                     "reportType": 0x19,
                 },
                 "MemorySelection": 0x6E,
-                "DTC": 0x3B896C,
-                "DTC Status": 0xA5,
+                "DTC and Status": {
+                    "DTC": 0x3B896C,
+                    "DTC Status": 0xA5,
+                },
                 "DTCExtDataRecordNumber#1": 0x41,
                 "DTCExtDataRecord#1": [0x21, 0x43],
                 "DTCExtDataRecordNumber#2": 0x52,
@@ -2040,7 +2044,7 @@ class TestReadDTCInformation2013Integration:
             },
             None,
             ResponseSID.ReadDTCInformation,
-            bytearray([0x59, 0x99,
+            bytearray([0x59, 0x99, 0x6E,
                        0x3B, 0x89, 0x6C, 0xA5,  # DTC and Status
                        0x41, 0x21, 0x43,  # DTCExtendedDataRecord#1
                        0x52, 0xF0, 0x0F,  # DTCExtendedDataRecord#2
@@ -2083,7 +2087,7 @@ class TestReadDTCInformation2013Integration:
                     "DTCClass_0": 1,
                 },
                 "DTCFormatIdentifier": 0x54,
-                "DTC Severity, DTC and DTC Status": [
+                "Severity, DTC and DTC Status": [
                     {
                         "DTC Severity": {
                             "checkImmediately": 1,
@@ -3535,7 +3539,7 @@ class TestReadDTCInformation2020Integration:
                     "testFailedThisOperationCycle": 0,
                     "testFailed": 0,
                 },
-                "DTC Severity, DTC Functional Unit, DTC and DTC Status": [
+                "Severity, Functional Unit, DTC and Status": [
                     {
                         "DTC Severity": {
                             "checkImmediately": 1,
@@ -3605,7 +3609,7 @@ class TestReadDTCInformation2020Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "DTC Severity, DTC Functional Unit, DTC and DTC Status": {
+                "Severity, Functional Unit, DTC and Status": {
                         "DTC Severity": 0xD9,
                         "FunctionalGroupIdentifier": 0xE2,
                         "DTC": 0x00FF00,
@@ -3897,257 +3901,360 @@ class TestReadDTCInformation2020Integration:
                        0xFE, 0xCB, 0x98, 0x64, 0xCA, 0xFF, 0xEE,  # DTC, Status and ExtendedDataRecord #2
                        0x76, 0x54, 0x32, 0x54, 0xDA])  # DTC, Status and ExtendedDataRecord #3
         ),
-        # # reportUserDefMemoryDTCByStatusMask (0x17)
-        # (
-        #     {
-        #         "SubFunction": 0x17,
-        #         "DTCStatusMask": 0x7D,
-        #         "MemorySelection": 0x2D,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x17, 0x7D, 0x2D])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 0,
-        #             "reportType": 0x17,
-        #         },
-        #         "MemorySelection": 0x01,
-        #         "DTCStatusAvailabilityMask": 0xEF,
-        #         "DTC and Status": [
-        #             {
-        #                 "DTC": 0xDADDEE,
-        #                 "DTC Status": {
-        #                     "warningIndicatorRequested": 0,
-        #                     "testNotCompletedThisOperationCycle": 1,
-        #                     "testFailedSinceLastClear": 0,
-        #                     "testNotCompletedSinceLastClear": 1,
-        #                     "confirmedDTC": 0,
-        #                     "pendingDTC": 1,
-        #                     "testFailedThisOperationCycle": 0,
-        #                     "testFailed": 0,
-        #                 }
-        #             },
-        #             {
-        #                 "DTC": 0xFBBEEF,
-        #                 "DTC Status": 0xC6,
-        #             },
-        #             0x9E8D7C6B,
-        #         ],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x17, 0x01, 0xEF,
-        #                0xDA, 0xDD, 0xEE, 0x54,  # DTC and Status #1
-        #                0xFB, 0xBE, 0xEF, 0xC6, # DTC and Status #2
-        #                0x9E, 0x8D, 0x7C, 0x6B])  # DTC and Status #3
-        # ),
-        # # reportUserDefMemoryDTCSnapshotRecordByDTCNumber (0x18)
-        # (
-        #     {
-        #         "SubFunction": 0x18,
-        #         "DTC": 0x103254,
-        #         "DTCSnapshotRecordNumber": 0xE6,
-        #         "MemorySelection": 0x1B,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x18, 0x10, 0x32, 0x54, 0xE6, 0x1B])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x18,
-        #         },
-        #         "MemorySelection": 0x7D,
-        #         "DTC": 0xDEEDEE,
-        #         "DTC Status": {
-        #             "warningIndicatorRequested": 0,
-        #             "testNotCompletedThisOperationCycle": 0,
-        #             "testFailedSinceLastClear": 0,
-        #             "testNotCompletedSinceLastClear": 0,
-        #             "confirmedDTC": 0,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 0,
-        #             "testFailed": 0,
-        #         },
-        #         "DTCSnapshotRecordNumber#1": 0x12,
-        #         "DIDCount#1": 2,
-        #         "DID#1_1": 0x210F,
-        #         "DID#1_1 data": [0x00],
-        #         "DID#1_2": 0x12E1,
-        #         "DID#1_2 data": [0x51, 0x52, 0x53, 0x54],
-        #         "DTCSnapshotRecordNumber#2": 0x00,
-        #         "DIDCount#2": 1,
-        #         "DID#2_1": 0x0123,
-        #         "DID#2_1 data": [0x33, 0x44, 0x55],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x98, 0x7D,
-        #                0xDE, 0xED, 0xEE, 0x04,  # DTC and Status
-        #                0x12, 0x02, 0x21, 0x0F, 0x00, 0x12, 0xE1, 0x51, 0x52, 0x53, 0x54,  # DTCSnapshotRecord#1
-        #                0x00, 0x01, 0x01, 0x23, 0x33, 0x44, 0x55]), # DTCSnapshotRecord#2
-        # ),
-        # # reportUserDefMemoryDTCExtDataRecordByDTCNumber (0x19)
-        # (
-        #     {
-        #         "SubFunction": 0x19,
-        #         "DTC": 0x65789A,
-        #         "DTCExtDataRecordNumber": 0xFF,
-        #         "MemorySelection": 0x01,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x19, 0x65, 0x78, 0x9A, 0xFF, 0x01])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": {
-        #             "suppressPosRspMsgIndicationBit": 1,
-        #             "reportType": 0x19,
-        #         },
-        #         "MemorySelection": 0x6E,
-        #         "DTC": 0x3B896C,
-        #         "DTC Status": 0xA5,
-        #         "DTCExtDataRecordNumber#1": 0x41,
-        #         "DTCExtDataRecord#1": [0x21, 0x43],
-        #         "DTCExtDataRecordNumber#2": 0x52,
-        #         "DTCExtDataRecord#2": [0xF0, 0x0F],
-        #         "DTCExtDataRecordNumber#3": 0xB0,
-        #         "DTCExtDataRecord#3": [0x78, 0x9A, 0xBC, 0xDE, 0xF0],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x99,
-        #                0x3B, 0x89, 0x6C, 0xA5,  # DTC and Status
-        #                0x41, 0x21, 0x43,  # DTCExtendedDataRecord#1
-        #                0x52, 0xF0, 0x0F,  # DTCExtendedDataRecord#2
-        #                0xB0, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#3
-        # ),
-        # # reportWWHOBDDTCByMaskRecord (0x42)
-        # (
-        #     {
-        #         "SubFunction": 0x42,
-        #         "FunctionalGroupIdentifier": 0x25,
-        #         "DTCStatusMask": 0xA3,
-        #         "DTCSeverityMask": 0xBE,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x42, 0x25, 0xA3, 0xBE])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": 0xC2,
-        #         "FunctionalGroupIdentifier": 0xD0,
-        #         "DTCStatusAvailabilityMask": {
-        #             "warningIndicatorRequested": 1,
-        #             "testNotCompletedThisOperationCycle": 0,
-        #             "testFailedSinceLastClear": 0,
-        #             "testNotCompletedSinceLastClear": 1,
-        #             "confirmedDTC": 1,
-        #             "pendingDTC": 1,
-        #             "testFailedThisOperationCycle": 1,
-        #             "testFailed": 1,
-        #         },
-        #         "DTCSeverityAvailabilityMask": {
-        #             "checkImmediately": 1,
-        #             "checkAtNextHalt": 1,
-        #             "maintenanceOnly": 1,
-        #             "DTCClass_4": 0,
-        #             "DTCClass_3": 0,
-        #             "DTCClass_2": 0,
-        #             "DTCClass_1": 1,
-        #             "DTCClass_0": 1,
-        #         },
-        #         "DTCFormatIdentifier": 0x54,
-        #         "DTC Severity, DTC and DTC Status": [
-        #             {
-        #                 "DTC Severity": {
-        #                     "checkImmediately": 1,
-        #                     "checkAtNextHalt": 0,
-        #                     "maintenanceOnly": 0,
-        #                     "DTCClass_4": 0,
-        #                     "DTCClass_3": 0,
-        #                     "DTCClass_2": 0,
-        #                     "DTCClass_1": 1,
-        #                     "DTCClass_0": 0,
-        #                 },
-        #                 "DTC": 0xCAFFEE,
-        #                 "DTC Status": {
-        #                     "warningIndicatorRequested": 1,
-        #                     "testNotCompletedThisOperationCycle": 0,
-        #                     "testFailedSinceLastClear": 1,
-        #                     "testNotCompletedSinceLastClear": 0,
-        #                     "confirmedDTC": 1,
-        #                     "pendingDTC": 0,
-        #                     "testFailedThisOperationCycle": 1,
-        #                     "testFailed": 1,
-        #                 },
-        #             },
-        #             {
-        #                 "DTC Severity": 0x01,
-        #                 "DTC": 0xBADDAD,
-        #                 "DTC Status": 0x03,
-        #             },
-        #             0x0FE12DC34B,
-        #         ]
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0xC2, 0xD0, 0x9F, 0xE3, 0x54,
-        #                0x82, 0xCA, 0xFF, 0xEE, 0xAB,  # Severity, DTC and Status #1
-        #                0x01, 0xBA, 0xDD, 0xAD, 0x03,  # Severity, DTC and Status #2
-        #                0x0F, 0xE1, 0x2D, 0xC3, 0x4B])  # Severity, DTC and Status #3
-        # ),
-        # # reportWWHOBDDTCWithPermanentStatus (0x55)
-        # (
-        #     {
-        #         "SubFunction": 0x55,
-        #         "FunctionalGroupIdentifier": 0xE0,
-        #     },
-        #     RequestSID.ReadDTCInformation,
-        #     None,
-        #     bytearray([0x19, 0x55, 0xE0])
-        # ),
-        # (
-        #     {
-        #         "SubFunction": 0x55,
-        #         "FunctionalGroupIdentifier": 0x33,
-        #         "DTCStatusAvailabilityMask": 0xAB,
-        #         "DTCFormatIdentifier": 0x02,
-        #         "DTC and Status": [
-        #             {
-        #                 "DTC": 0x214365,
-        #                 "DTC Status": 0x87,
-        #             },
-        #             0xEFCDAB89,
-        #             {
-        #                 "DTC": 0x0F1E2D,
-        #                 "DTC Status": {
-        #                     "warningIndicatorRequested": 0,
-        #                     "testNotCompletedThisOperationCycle": 0,
-        #                     "testFailedSinceLastClear": 1,
-        #                     "testNotCompletedSinceLastClear": 1,
-        #                     "confirmedDTC": 0,
-        #                     "pendingDTC": 1,
-        #                     "testFailedThisOperationCycle": 0,
-        #                     "testFailed": 1,
-        #                 },
-        #             },
-        #         ],
-        #     },
-        #     None,
-        #     ResponseSID.ReadDTCInformation,
-        #     bytearray([0x59, 0x55, 0x33, 0xAB, 0x02,
-        #                0x21, 0x43, 0x65, 0x87,  # DTC and Status #1
-        #                0xEF, 0xCD, 0xAB, 0x89,  # DTC and Status #2
-        #                0x0F, 0x1E, 0x2D, 0x35])  # DTC and Status #3
-        # ),
+        # reportUserDefMemoryDTCByStatusMask (0x17)
+        (
+            {
+                "SubFunction": 0x97,
+                "DTCStatusMask": 0x01,
+                "MemorySelection": 0xB0,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x97, 0x01, 0xB0])
+        ),
+        (
+            {
+                "SubFunction": 0x17,
+                "MemorySelection": 0x0B,
+                "DTCStatusAvailabilityMask": 0xFC,
+                "DTC and Status": [
+                    {
+                        "DTC": 0xDADDEE,
+                        "DTC Status": {
+                            "warningIndicatorRequested": 0,
+                            "testNotCompletedThisOperationCycle": 1,
+                            "testFailedSinceLastClear": 0,
+                            "testNotCompletedSinceLastClear": 1,
+                            "confirmedDTC": 0,
+                            "pendingDTC": 1,
+                            "testFailedThisOperationCycle": 0,
+                            "testFailed": 0,
+                        }
+                    },
+                    {
+                        "DTC": 0xFBBEEF,
+                        "DTC Status": 0x58,
+                    },
+                    0x9E8D7C6B,
+                ],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x17, 0x0B, 0xFC,
+                       0xDA, 0xDD, 0xEE, 0x54,  # DTC and Status #1
+                       0xFB, 0xBE, 0xEF, 0x58,  # DTC and Status #2
+                       0x9E, 0x8D, 0x7C, 0x6B])  # DTC and Status #3
+        ),
+        # reportUserDefMemoryDTCSnapshotRecordByDTCNumber (0x18)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x18,
+                },
+                "DTC": 0x325410,
+                "DTCSnapshotRecordNumber": 0x4F,
+                "MemorySelection": 0x1C,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x18, 0x32, 0x54, 0x10, 0x4F, 0x1C])
+        ),
+        (
+            {
+                "SubFunction": 0x98,
+                "MemorySelection": 0x80,
+                "DTC and Status": {
+                    "DTC": 0xDEEDEE,
+                    "DTC Status": {
+                        "warningIndicatorRequested": 0,
+                        "testNotCompletedThisOperationCycle": 0,
+                        "testFailedSinceLastClear": 0,
+                        "testNotCompletedSinceLastClear": 0,
+                        "confirmedDTC": 0,
+                        "pendingDTC": 1,
+                        "testFailedThisOperationCycle": 0,
+                        "testFailed": 0,
+                    },
+                },
+                "DTCSnapshotRecordNumber#1": 0xE1,
+                "DIDCount#1": 2,
+                "DID#1_1": 0x210F,
+                "DID#1_1 data": [0x00],
+                "DID#1_2": 0x12E1,
+                "DID#1_2 data": [0x51, 0x52, 0x53, 0x54],
+                "DTCSnapshotRecordNumber#2": 0x00,
+                "DIDCount#2": 1,
+                "DID#2_1": 0x0123,
+                "DID#2_1 data": [0x33, 0x44, 0x55],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x98, 0x80,
+                       0xDE, 0xED, 0xEE, 0x04,  # DTC and Status
+                       0xE1, 0x02, 0x21, 0x0F, 0x00, 0x12, 0xE1, 0x51, 0x52, 0x53, 0x54,  # DTCSnapshotRecord#1
+                       0x00, 0x01, 0x01, 0x23, 0x33, 0x44, 0x55]), # DTCSnapshotRecord#2
+        ),
+        # reportUserDefMemoryDTCExtDataRecordByDTCNumber (0x19)
+        (
+            {
+                "SubFunction": 0x99,
+                "DTC": 0x65789A,
+                "DTCExtDataRecordNumber": 0xFE,
+                "MemorySelection": 0xFF,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x99, 0x65, 0x78, 0x9A, 0xFE, 0xFF])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x19,
+                },
+                "MemorySelection": 0x0F,
+                "DTC and Status": {
+                    "DTC": 0xB398C6,
+                    "DTC Status": 0x5A,
+                },
+                "DTCExtDataRecordNumber#1": 0x41,
+                "DTCExtDataRecord#1": [0x21, 0x43],
+                "DTCExtDataRecordNumber#2": 0x52,
+                "DTCExtDataRecord#2": [0x78, 0x9A, 0xBC, 0xDE, 0xF0],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x19, 0x0F,
+                       0xB3, 0x98, 0xC6, 0x5A,  # DTC and Status
+                       0x41, 0x21, 0x43,  # DTCExtendedDataRecord#1
+                       0x52, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#2
+        ),
+        # reportSupportedDTCExtDataRecord
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 1,
+                    "reportType": 0x1A,
+                },
+                "DTCExtDataRecordNumber": 0x01,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x9A, 0x01])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 0,
+                    "reportType": 0x1A,
+                },
+                "DTCStatusAvailabilityMask": 0xFF,
+                "DTCExtDataRecordNumber": 0xFD,
+                "DTC and Status": [
+                    {
+                        "DTC": 0xBADDAD,
+                        "DTC Status": {
+                            "warningIndicatorRequested": 0,
+                            "testNotCompletedThisOperationCycle": 0,
+                            "testFailedSinceLastClear": 0,
+                            "testNotCompletedSinceLastClear": 0,
+                            "confirmedDTC": 0,
+                            "pendingDTC": 0,
+                            "testFailedThisOperationCycle": 0,
+                            "testFailed": 0,
+                        },
+                    },
+                    {
+                        "DTC": 0xDADDEE,
+                        "DTC Status": 0xFF,
+                    },
+                    0xFEDCBA98,
+                ],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x1A, 0xFF, 0xFD,
+                       0xBA, 0xDD, 0xAD, 0x00,  # DTC and Status #1
+                       0xDA, 0xDD, 0xEE, 0xFF,  # DTC and Status #2
+                       0xFE, 0xDC, 0xBA, 0x98])  # DTC and Status #3
+        ),
+        # reportWWHOBDDTCByMaskRecord (0x42)
+        (
+            {
+                "SubFunction": 0xC2,
+                "FunctionalGroupIdentifier": 0xFE,
+                "DTCStatusMask": {
+                    "warningIndicatorRequested": 0,
+                    "testNotCompletedThisOperationCycle": 0,
+                    "testFailedSinceLastClear": 0,
+                    "testNotCompletedSinceLastClear": 0,
+                    "confirmedDTC": 0,
+                    "pendingDTC": 0,
+                    "testFailedThisOperationCycle": 0,
+                    "testFailed": 1,
+                },
+                "DTCSeverityMask": {
+                    "checkImmediately": 1,
+                    "checkAtNextHalt": 0,
+                    "maintenanceOnly": 0,
+                    "DTCClass_4": 0,
+                    "DTCClass_3": 0,
+                    "DTCClass_2": 0,
+                    "DTCClass_1": 0,
+                    "DTCClass_0": 0,
+                },
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0xC2, 0xFE, 0x01, 0x80])
+        ),
+        (
+            {
+                "SubFunction": 0x42,
+                "FunctionalGroupIdentifier": 0xD0,
+                "DTCStatusAvailabilityMask": {
+                    "warningIndicatorRequested": 1,
+                    "testNotCompletedThisOperationCycle": 0,
+                    "testFailedSinceLastClear": 0,
+                    "testNotCompletedSinceLastClear": 1,
+                    "confirmedDTC": 1,
+                    "pendingDTC": 1,
+                    "testFailedThisOperationCycle": 1,
+                    "testFailed": 1,
+                },
+                "DTCSeverityAvailabilityMask": {
+                    "checkImmediately": 0,
+                    "checkAtNextHalt": 1,
+                    "maintenanceOnly": 1,
+                    "DTCClass_4": 1,
+                    "DTCClass_3": 1,
+                    "DTCClass_2": 1,
+                    "DTCClass_1": 1,
+                    "DTCClass_0": 1,
+                },
+                "DTCFormatIdentifier": 0x02,
+                "Severity, DTC and DTC Status": [
+                    {
+                        "DTC Severity": {
+                            "checkImmediately": 1,
+                            "checkAtNextHalt": 0,
+                            "maintenanceOnly": 0,
+                            "DTCClass_4": 1,
+                            "DTCClass_3": 0,
+                            "DTCClass_2": 0,
+                            "DTCClass_1": 0,
+                            "DTCClass_0": 0,
+                        },
+                        "DTC": 0xCAFFEE,
+                        "DTC Status": {
+                            "warningIndicatorRequested": 1,
+                            "testNotCompletedThisOperationCycle": 0,
+                            "testFailedSinceLastClear": 1,
+                            "testNotCompletedSinceLastClear": 0,
+                            "confirmedDTC": 1,
+                            "pendingDTC": 0,
+                            "testFailedThisOperationCycle": 1,
+                            "testFailed": 1,
+                        },
+                    },
+                    {
+                        "DTC Severity": 0x2D,
+                        "DTC": 0xF01ED2,
+                        "DTC Status": 0x3C,
+                    },
+                    0xB45A967878,
+                ]
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x42, 0xD0, 0x9F, 0x7F, 0x02,
+                       0x90, 0xCA, 0xFF, 0xEE, 0xAB,  # Severity, DTC and Status #1
+                       0x2D, 0xF0, 0x1E, 0xD2, 0x3C,  # Severity, DTC and Status #2
+                       0xB4, 0x5A, 0x96, 0x78, 0x78])  # Severity, DTC and Status #3
+        ),
+        # reportWWHOBDDTCWithPermanentStatus (0x55)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 1,
+                    "reportType": 0x55,
+                },
+                "FunctionalGroupIdentifier": 0xFE,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0xD5, 0xFE])
+        ),
+        (
+            {
+                "SubFunction": 0x55,
+                "FunctionalGroupIdentifier": 0x33,
+                "DTCStatusAvailabilityMask": 0x7E,
+                "DTCFormatIdentifier": 0x04,
+                "DTC and Status": [
+                    {
+                        "DTC": 0x214365,
+                        "DTC Status": 0x87,
+                    },
+                    0xEFCDAB89,
+                    {
+                        "DTC": 0x0F1E2D,
+                        "DTC Status": {
+                            "warningIndicatorRequested": 0,
+                            "testNotCompletedThisOperationCycle": 0,
+                            "testFailedSinceLastClear": 1,
+                            "testNotCompletedSinceLastClear": 1,
+                            "confirmedDTC": 0,
+                            "pendingDTC": 1,
+                            "testFailedThisOperationCycle": 0,
+                            "testFailed": 1,
+                        },
+                    },
+                ],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0x55, 0x33, 0x7E, 0x04,
+                       0x21, 0x43, 0x65, 0x87,  # DTC and Status #1
+                       0xEF, 0xCD, 0xAB, 0x89,  # DTC and Status #2
+                       0x0F, 0x1E, 0x2D, 0x35])  # DTC and Status #3
+        ),
+        # reportDTCInformationByDTCReadinessGroupIdentifier (0x56)
+        (
+            {
+                "SubFunction": 0x56,
+                "FunctionalGroupIdentifier": 0x00,
+                "DTCReadinessGroupIdentifier": 0xD7,
+            },
+            RequestSID.ReadDTCInformation,
+            None,
+            bytearray([0x19, 0x56, 0x00, 0xD7])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": 1,
+                    "reportType": 0x56,
+                },
+                "FunctionalGroupIdentifier": 0x00,
+                "DTCStatusAvailabilityMask":0xFF,
+                "DTCFormatIdentifier": 0x2D,
+                "DTCReadinessGroupIdentifier": 0x16,
+                "DTC and Status": [
+                    0x192A3B4D,
+                    {
+                        "DTC": 0x0ECFE0,
+                        "DTC Status": 0x58,
+                    }
+                ],
+            },
+            None,
+            ResponseSID.ReadDTCInformation,
+            bytearray([0x59, 0xD6, 0x00, 0xFF, 0x2D, 0x16,
+                       0x19, 0x2A, 0x3B, 0x4D,  # DTC and Status #1
+                       0x0E, 0xCF, 0xE0, 0x58])  # DTC and Status #2
+        ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
         assert READ_DTC_INFORMATION_2020.encode(data_records_values=data_records_values,

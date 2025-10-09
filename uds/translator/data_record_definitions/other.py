@@ -217,7 +217,7 @@ MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER_RECORDS = RawDataRecord(name="DTC and Sn
                                                                 min_occurrences=0,
                                                                 max_occurrences=None)
 OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="DTC Severity, DTC Functional Unit, DTC and DTC Status",
+    name="Severity, Functional Unit, DTC and Status",
     length=48,
     children=(DTC_SEVERITY,
               DTC_FUNCTIONAL_GROUP_IDENTIFIER,
@@ -226,7 +226,7 @@ OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
     min_occurrences=0,
     max_occurrences=1)
 MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="DTC Severity, DTC Functional Unit, DTC and DTC Status",
+    name="Severity, Functional Unit, DTC and Status",
     length=48,
     children=(DTC_SEVERITY,
               DTC_FUNCTIONAL_GROUP_IDENTIFIER,
@@ -234,7 +234,7 @@ MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
               DTC_STATUS),
     min_occurrences=0,
     max_occurrences=None)
-MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS = RawDataRecord(name="DTC Severity, DTC and DTC Status",
+MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS = RawDataRecord(name="Severity, DTC and DTC Status",
                                                          length=40,
                                                          children=(DTC_SEVERITY,
                                                                    DTC,
