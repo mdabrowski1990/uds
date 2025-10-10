@@ -126,9 +126,9 @@ class TestEncodingAndDecodingFunctions:
             decode_dtc(value)
 
     @pytest.mark.parametrize("obd_dtc, uds_dtc", [
-        ("P0000-00", 0x000000),
+        ("p0000-00", 0x000000),
         ("C1FED-CB", 0x5FEDCB),
-        ("B3F4E-5D", 0xBF4E5D),
+        ("b3F4E-5D", 0xBF4E5D),
         ("U3FFF-FF", 0xFFFFFF),
     ])
     def test_decode_dtc__valid(self, obd_dtc, uds_dtc):
