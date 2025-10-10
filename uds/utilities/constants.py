@@ -1,0 +1,22 @@
+"""Constants used within the project."""
+
+__all__ = [
+    "DTC_CHARACTERS_MAPPING", "BITS_TO_DTC_CHARACTER_MAPPING", "MIN_DTC_VALUE", "MAX_DTC_VALUE"
+]
+
+from typing import Dict
+
+DTC_CHARACTERS_MAPPING: Dict[str, int] = {
+    "P": 0b00,  # Powertrain
+    "C": 0b01,  # Chassis
+    "B": 0b10,  # Body
+    "U": 0b11,  # Network Communication
+}
+"""Mapping of the first DTC character in OBD format to bits."""
+BITS_TO_DTC_CHARACTER_MAPPING: Dict[int, str] = {
+    value: key for key, value in DTC_CHARACTERS_MAPPING.items()
+}
+"""Mapping of the first two DTC bits to OBD format character."""
+
+MIN_DTC_VALUE = 0x000000
+MAX_DTC_VALUE = 0xFFFFFF

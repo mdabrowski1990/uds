@@ -1,7 +1,17 @@
 import pytest
-from mock import patch
+from mock import Mock, patch
 
-from uds.utilities.conversions import Endianness, InconsistencyError, bytes_to_hex, bytes_to_int, int_to_bytes
+from uds.utilities.conversions import (
+    MAX_DTC_VALUE,
+    MIN_DTC_VALUE,
+    Endianness,
+    InconsistencyError,
+    bytes_to_hex,
+    bytes_to_int,
+    int_to_bytes,
+    int_to_obd_dtc,
+    obd_dtc_to_int,
+)
 
 SCRIPT_LOCATION = "uds.utilities.conversions"
 
@@ -110,6 +120,54 @@ class TestFunctions:
         self.mock_validate_endianness.return_value = endianness
         assert int_to_bytes(int_value=int_value, endianness=endianness, size=size) == expected_output
         self.mock_validate_endianness.assert_called_once_with(endianness)
+
+    # obd_dtc_to_int
+
+    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_obd_dtc_to_int__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            obd_dtc_to_int(value)
+        mock_isinstance.assert_called_once_with(value, str)
+
+    @pytest.mark.parametrize("value", ["P0FFF00", "A0123-00", "0x123456", "U012-300"])
+    def test_obd_dtc_to_int__value_error(self, value):
+        with pytest.raises(ValueError):
+            obd_dtc_to_int(value)
+
+    @pytest.mark.parametrize("obd_dtc, uds_dtc", [
+        ("p0000-00", 0x000000),
+        ("C1FED-CB", 0x5FEDCB),
+        ("b3F4E-5D", 0xBF4E5D),
+        ("U3FFF-FF", 0xFFFFFF),
+    ])
+    def test_obd_dtc_to_int__valid(self, obd_dtc, uds_dtc):
+        assert obd_dtc_to_int(obd_dtc) == uds_dtc
+
+    # int_to_obd_dtc
+
+    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_int_to_obd_dtc__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            int_to_obd_dtc(value)
+        mock_isinstance.assert_called_once_with(value, int)
+
+    @pytest.mark.parametrize("value", [MIN_DTC_VALUE - 1, MAX_DTC_VALUE + 1])
+    def test_obd_dtc_to_int__value_error(self, value):
+        with pytest.raises(ValueError):
+            int_to_obd_dtc(value)
+
+    @pytest.mark.parametrize("obd_dtc, uds_dtc", [
+        ("P0000-00", 0x000000),
+        ("C1FED-CB", 0x5FEDCB),
+        ("B0123-45", 0x812345),
+        ("U3FFF-FF", 0xFFFFFF),
+    ])
+    def test_obd_dtc_to_int__valid(self, obd_dtc, uds_dtc):
+        assert int_to_obd_dtc(uds_dtc) == obd_dtc
 
 
 @pytest.mark.integration

@@ -2,25 +2,11 @@
 
 __all__ = ["TextDataRecord", "TextEncoding"]
 
-from string import hexdigits
 from typing import Callable, Dict, Optional, TypedDict
 
-from uds.utilities import ValidatedEnum
+from uds.utilities import MAX_DTC_VALUE, ValidatedEnum, int_to_obd_dtc, obd_dtc_to_int
 
 from .abstract_data_record import AbstractDataRecord
-
-MIN_DTC_VALUE = 0x000000
-MAX_DTC_VALUE = 0xFFFFFF
-
-DTC_CHARACTERS_MAPPING: Dict[str, int] = {
-    "P": 0b00,  # Powertrain
-    "C": 0b01,  # Chassis
-    "B": 0b10,  # Body
-    "U": 0b11,  # Network Communication
-}
-BITS_TO_DTC_CHARACTER_MAPPING: Dict[int, str] = {
-    value: key for key, value in DTC_CHARACTERS_MAPPING.items()
-}
 
 
 class TextEncoding(ValidatedEnum):
@@ -40,7 +26,7 @@ class TextEncoding(ValidatedEnum):
 
     .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding)
         <https://en.wikipedia.org/wiki/BCD_(character_encoding)>`_"""
-    DTC_OBD_FORMAT: "TextEncoding" = "DTC in OBD format"
+    DTC_OBD_FORMAT: "TextEncoding" = "DTC in OBD format"  # type: ignore
     """DTC to OBD format encoding."""  # TODO: refer to knowledge base
 
 
@@ -80,51 +66,6 @@ def decode_bcd(character: str) -> int:
     return int(character)
 
 
-def decode_dtc(obd_dtc: str) -> int:
-    """
-    Decode text with DTC in OBD format into integer value with DTC in UDS format.
-
-    :param obd_dtc: Text with DTC in OBD format.
-
-    :raise TypeError: Provided value is not str type.
-    :raise ValueError: Provided value is not DTC in OBD format.
-
-    :return: Integer value representation of this DTC in UDS format.
-    """
-    if not isinstance(obd_dtc, str):
-        raise TypeError("Provided value is not str type.")
-    obd_dtc = obd_dtc.upper()
-    if (len(obd_dtc) != 8
-            or obd_dtc[0] not in DTC_CHARACTERS_MAPPING
-            or obd_dtc[1] not in {"0", "1", "2", "3"}
-            or obd_dtc[2] not in hexdigits
-            or obd_dtc[3] not in hexdigits
-            or obd_dtc[4] not in hexdigits
-            or obd_dtc[5] != "-"
-            or obd_dtc[6] not in hexdigits
-            or obd_dtc[7] not in hexdigits):
-        raise ValueError(f"Provided value is a DTC in OBD format. Example: 'U0F1E-2D'. Actual value: {obd_dtc!r}")
-    return (DTC_CHARACTERS_MAPPING[obd_dtc[0]] << 22) + (int(obd_dtc[1:5], 16) << 8) + int(obd_dtc[6:], 16)
-
-
-def encode_dtc(dtc: int) -> str:
-    """
-    Encode integer value with DTC in UDS format into text with DTC in OBD format.
-
-    :param dtc: Integer with DTC in UDS format.
-
-    :raise TypeError: Provided value is not int type.
-    :raise ValueError: Provided value is not DTC in OBD format.
-
-    :return: Text value representation of this DTC in OBD format.
-    """
-    if not isinstance(dtc, int):
-        raise TypeError("Provided value is not int type.")
-    if not MIN_DTC_VALUE <= dtc <= MAX_DTC_VALUE:
-        raise ValueError("Provided value is not a DTC in UDS format.")
-    return f"{BITS_TO_DTC_CHARACTER_MAPPING[dtc >> 22]}{(dtc & 0x3FFF00) >> 8:04X}-{dtc & 0xFF:02X}"
-
-
 class TextDataRecord(AbstractDataRecord):
     """
     Data Record for encoding and decoding text characters with configurable encoding schemes.
@@ -153,7 +94,7 @@ class TextDataRecord(AbstractDataRecord):
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
         TextEncoding.ASCII: _EncodingInfo(length=8, encode=chr, decode=decode_ascii),
         TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=decode_bcd),
-        TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24, encode=encode_dtc, decode=decode_dtc)
+        TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24, encode=int_to_obd_dtc, decode=obd_dtc_to_int)
     }
 
     def __init__(self,

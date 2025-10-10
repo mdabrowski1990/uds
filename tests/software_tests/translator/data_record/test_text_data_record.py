@@ -3,13 +3,10 @@ from mock import MagicMock, Mock, patch
 
 from uds.translator.data_record.text_data_record import (
     MAX_DTC_VALUE,
-    MIN_DTC_VALUE,
     TextDataRecord,
     TextEncoding,
     decode_ascii,
     decode_bcd,
-    decode_dtc,
-    encode_dtc,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record.text_data_record"
@@ -109,54 +106,6 @@ class TestEncodingAndDecodingFunctions:
         mock_value.isdecimal.assert_called_once_with()
         mock_int.assert_called_once_with(mock_value)
         mock_len.assert_called_once_with()
-
-    # decode_dtc
-
-    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_decode_dtc__type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            decode_dtc(value)
-        mock_isinstance.assert_called_once_with(value, str)
-
-    @pytest.mark.parametrize("value", ["P0FFF00", "A0123-00", "0x123456", "U012-300"])
-    def test_decode_dtc__value_error(self, value):
-        with pytest.raises(ValueError):
-            decode_dtc(value)
-
-    @pytest.mark.parametrize("obd_dtc, uds_dtc", [
-        ("p0000-00", 0x000000),
-        ("C1FED-CB", 0x5FEDCB),
-        ("b3F4E-5D", 0xBF4E5D),
-        ("U3FFF-FF", 0xFFFFFF),
-    ])
-    def test_decode_dtc__valid(self, obd_dtc, uds_dtc):
-        assert decode_dtc(obd_dtc) == uds_dtc
-
-    # encode_dtc
-
-    @pytest.mark.parametrize("value", [Mock(), "Some Value"])
-    @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_encode_dtc__type_error(self, mock_isinstance, value):
-        mock_isinstance.return_value = False
-        with pytest.raises(TypeError):
-            encode_dtc(value)
-        mock_isinstance.assert_called_once_with(value, int)
-
-    @pytest.mark.parametrize("value", [MIN_DTC_VALUE - 1, MAX_DTC_VALUE + 1])
-    def test_decode_dtc__value_error(self, value):
-        with pytest.raises(ValueError):
-            encode_dtc(value)
-
-    @pytest.mark.parametrize("obd_dtc, uds_dtc", [
-        ("P0000-00", 0x000000),
-        ("C1FED-CB", 0x5FEDCB),
-        ("B0123-45", 0x812345),
-        ("U3FFF-FF", 0xFFFFFF),
-    ])
-    def test_decode_dtc__valid(self, obd_dtc, uds_dtc):
-        assert encode_dtc(uds_dtc) == obd_dtc
 
 
 class TestTextDataRecord:
