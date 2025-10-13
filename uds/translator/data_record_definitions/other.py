@@ -177,31 +177,45 @@ DTC_FUNCTIONAL_GROUP_IDENTIFIER = MappingDataRecord(name="FunctionalGroupIdentif
                                                     length=8)
 DTC_READINESS_GROUP_IDENTIFIER = RawDataRecord(name="DTCReadinessGroupIdentifier",
                                                length=8)
-DTC_SNAPSHOT_RECORD_NUMBER = RawDataRecord(name="DTCSnapshotRecordNumber",
-                                           length=8)
-DTC_STORED_DATA_RECORD_NUMBER = RawDataRecord(name="DTCStoredDataRecordNumber",
+DTC_SNAPSHOT_RECORD_NUMBER = MappingDataRecord(name="DTCSnapshotRecordNumber",
+                                               values_mapping={
+                                                   0xFF: "all"
+                                               },
+                                               length=8)
+DTC_STORED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCStoredDataRecordNumber",
+                                              values_mapping={
+                                                  0xFF: "all"
+                                              },
                                               length=8)
-DTC_EXTENDED_DATA_RECORD_NUMBER = RawDataRecord(name="DTCExtDataRecordNumber",
-                                                length=8)
-OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER = RawDataRecord(name="DTCExtDataRecordNumber",
-                                                         length=8,
-                                                         min_occurrences=0,
-                                                         max_occurrences=1)
+DTC_EXTENDED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCExtDataRecordNumber",
+                                                    values_mapping={
+                                                        0xFE: "all regulated emissions data",
+                                                        0xFF: "all",
+                                                    },
+                                                    length=8)
+OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCExtDataRecordNumber",
+                                                             values_mapping={
+                                                                 0xFE: "all regulated emissions data",
+                                                                 0xFF: "all",
+                                                             },
+                                                             length=8,
+                                                             min_occurrences=0,
+                                                             max_occurrences=1)
 DTC_EXTENDED_DATA_RECORD_NUMBERS = {
     record_number:  RawDataRecord(name=f"DTCExtDataRecordNumber#{record_number}",
                                   length=8,
                                   min_occurrences=0,
                                   max_occurrences=1)
-    for record_number in range(1, 256)
+    for record_number in range(1, 254)
 }
 DTC_EXTENDED_DATA_RECORDS_DATA = {
     record_number: RawDataRecord(name=f"DTCExtDataRecord#{record_number}",
                                  length=8,
                                  min_occurrences=1,
                                  max_occurrences=None)
-    for record_number in range(1, 256)
+    for record_number in range(1, 254)
 }
-DTC_EXTENDED_DATA_RECORDS = [item for record_number in range(1, 256)
+DTC_EXTENDED_DATA_RECORDS = [item for record_number in range(1, 254)
                              for item in (DTC_EXTENDED_DATA_RECORD_NUMBERS[record_number],
                                           DTC_EXTENDED_DATA_RECORDS_DATA[record_number])]
 
