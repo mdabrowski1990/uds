@@ -4,11 +4,11 @@ __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
            "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]
 
 from copy import deepcopy
-from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Union, Dict
 from warnings import warn
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
+from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes, InconsistencyError
 
 from .data_record import (
     AbstractConditionalDataRecord,
@@ -339,7 +339,7 @@ class Service:
 
     @classmethod
     def _encode_message(cls,
-                        data_records_values: DataRecordsValuesAlias,
+                        data_records_values: Dict[str, DataRecordValueAlias],
                         message_structure: AliasMessageStructure) -> bytearray:
         """
         Encode payload of a diagnostic message.
@@ -351,12 +351,12 @@ class Service:
         :param message_structure: Data Records that form the remaining structure of the diagnostic message.
 
         :raise RuntimeError: An error occurred which was caused by incorrect message structure.
+        :raise ValueError: Value for at least one Data Record that is no part of the message, was provided.
         :raise NotImplementedError: There is missing implementation for at least one Data Record in the provided
             message structure.
 
         :return: Payload of a diagnostic message created from provided data records values.
         """
-        data_records_values = dict(deepcopy(data_records_values))
         payload_continuation = bytearray()
         total_raw_value = 0
         total_length = 0
@@ -380,6 +380,8 @@ class Service:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if total_length % 8 != 0:
             raise RuntimeError("Incorrect message structure was provided.")
+        if data_records_values:
+            raise ValueError(f"Unused Data Record values were provided: {data_records_values}.")
         return bytearray(int_to_bytes(int_value=total_raw_value,
                                       size=total_length // 8,
                                       endianness=Endianness.BIG_ENDIAN)) + payload_continuation
@@ -482,7 +484,7 @@ class Service:
         :return: Payload of a request message.
         """
         return (bytearray([self.request_sid])
-                + self._encode_message(data_records_values=data_records_values,
+                + self._encode_message(data_records_values=deepcopy(dict(data_records_values)),
                                        message_structure=self.request_structure))
 
     def encode_positive_response(self, data_records_values: DataRecordsValuesAlias) -> bytearray:
@@ -497,7 +499,7 @@ class Service:
         :return: Payload of a positive response message.
         """
         return (bytearray([self.response_sid])
-                + self._encode_message(data_records_values=data_records_values,
+                + self._encode_message(data_records_values=deepcopy(dict(data_records_values)),
                                        message_structure=self.response_structure))
 
     def encode_negative_response(self, nrc: NRC) -> bytearray:
@@ -531,10 +533,15 @@ class Service:
             Used by response messages only (first byte).
 
         :raise ValueError: Missing or provided SID/RSID value cannot be handled by this service.
+        :raise InconsistencyError: Value only for `NRC`
 
         :return: Payload of a diagnostic message created from provided data records values.
         """
         if rsid == ResponseSID.NegativeResponse and sid in {None, self.request_sid}:
+            if set(data_records_values.keys()) != {"NRC"}:
+                raise InconsistencyError("Value only for `NRC` Data Record shall be provided in case of "
+                                         "negative response message. "
+                                         f"Actual values: {data_records_values}")
             return self.encode_negative_response(nrc=data_records_values["NRC"])  # type: ignore
         if rsid == self.response_sid and sid is None:
             return self.encode_positive_response(data_records_values=data_records_values)
