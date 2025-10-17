@@ -4,11 +4,11 @@ __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
            "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]
 
 from copy import deepcopy
-from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Union, Dict
+from typing import Collection, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from warnings import warn
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes, InconsistencyError
+from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
 from .data_record import (
     AbstractConditionalDataRecord,
@@ -363,21 +363,26 @@ class Service:
         occurrences = []
         for data_record in message_structure:
             if isinstance(data_record, AbstractDataRecord):
-                data_record_value = data_records_values.pop(data_record.name)
-                occurrences = cls._get_data_record_occurrences(data_record=data_record,
-                                                               value=data_record_value)
+                if data_record.name in data_records_values:
+                    data_record_value = data_records_values.pop(data_record.name)
+                    occurrences = cls._get_data_record_occurrences(data_record=data_record,
+                                                                   value=data_record_value)
+                elif data_record.min_occurrences == 0:
+                    occurrences = []
+                else:
+                    raise InconsistencyError(f"Value for Data Record {data_record.name!r} was no provided.")
                 for raw_value in occurrences:
                     total_raw_value = (total_raw_value << data_record.length) + raw_value
                     total_length += data_record.length
             elif isinstance(data_record, AbstractConditionalDataRecord):
-                if not occurrences:
-                    # stop processing if the proceeding Data Record was empty (that means message is over)
-                    break
                 message_continuation = data_record.get_message_continuation(raw_value=raw_value)
                 payload_continuation = cls._encode_message(data_records_values=data_records_values,
                                                            message_structure=message_continuation)
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
+            # stop processing if the proceeding Data Record was empty (that means message is over)
+            if occurrences == []:
+                break
         if total_length % 8 != 0:
             raise RuntimeError("Incorrect message structure was provided.")
         if data_records_values:

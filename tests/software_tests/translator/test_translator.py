@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock, Mock, patch
 
 from uds.addressing import AddressingType
-from uds.message import NRC, UdsMessage
+from uds.message import NRC
 from uds.translator.data_record import (
     DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     ConditionalFormulaDataRecord,
@@ -374,6 +374,15 @@ class TestTranslatorIntegration:
             bytearray(b"\x62\xF1\x86\x01\xF1\x88\x90\x81\x72")
         ),
         (
+            None,
+            ResponseSID.ReadDataByIdentifier,
+            {
+                "DID #1": 0xF186,
+                "diagnosticSessionType": 0x03,
+            },
+            bytearray(b"\x62\xF1\x86\x03")
+        ),
+        (
             RequestSID.ReadDataByIdentifier,
             ResponseSID.NegativeResponse,
             {
@@ -396,7 +405,6 @@ class TestTranslatorIntegration:
             None,
             ResponseSID.ReadMemoryByAddress,
             {
-                "addressAndLengthFormatIdentifier": 0x24,
                 "data": [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
             },
             bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F")
@@ -414,6 +422,71 @@ class TestTranslatorIntegration:
         assert self.translator.encode(sid=sid,
                                       rsid=rsid,
                                       data_records_values=data_records_values) == payload
+
+    @pytest.mark.parametrize("sid, rsid, data_records_values", [
+        (
+            None,
+            None,
+            {"subFunction": 0x03},
+        ),
+        (
+            RequestSID.DiagnosticSessionControl,
+            None,
+            {"subFunction": 0x03, "non-existing-param": None},
+        ),
+        (
+            0x10,
+            0x50,
+            {
+                "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
+                "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678}
+            },
+        ),
+        (
+            None,
+            0x7F,
+            {"NRC": 0x84},
+        ),
+        (
+            RequestSID.ReadDataByIdentifier,
+            None,
+            {
+                "DID": [0x1234, 0xF186, 0xF191],
+                "subFunction": 0x01,
+            },
+        ),
+        (
+            None,
+            ResponseSID.ReadDataByIdentifier,
+            {
+                "DID #1": 0xF186,
+                "diagnosticSessionType": 0x01,
+                "DID #2": 0xF188,
+                "ECU Software Number": [9, 0, 8, 1, 7, 2],
+                "not a parameter": None
+            },
+        ),
+        (
+            RequestSID.ReadMemoryByAddress,
+            None,
+            {
+                "addressAndLengthFormatIdentifier": 0x24,
+                "memorySize": 0x0103
+            },
+        ),
+        (
+            None,
+            ResponseSID.ReadMemoryByAddress,
+            {
+                "data": [],
+            },
+        ),
+    ])
+    def test_encode__error(self, sid, rsid, data_records_values):
+        with pytest.raises(Exception):
+            self.translator.encode(sid=sid,
+                                   rsid=rsid,
+                                   data_records_values=data_records_values)
 
     # decode
 

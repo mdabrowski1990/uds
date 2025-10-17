@@ -156,7 +156,7 @@ class TestFunctions:
         mock_isinstance.assert_called_once_with(value, int)
 
     @pytest.mark.parametrize("value", [MIN_DTC_VALUE - 1, MAX_DTC_VALUE + 1])
-    def test_obd_dtc_to_int__value_error(self, value):
+    def test_int_to_obd_dtc__value_error(self, value):
         with pytest.raises(ValueError):
             int_to_obd_dtc(value)
 
@@ -166,7 +166,7 @@ class TestFunctions:
         ("B0123-45", 0x812345),
         ("U3FFF-FF", 0xFFFFFF),
     ])
-    def test_obd_dtc_to_int__valid(self, obd_dtc, uds_dtc):
+    def test_int_to_obd_dtc__valid(self, obd_dtc, uds_dtc):
         assert int_to_obd_dtc(uds_dtc) == obd_dtc
 
 

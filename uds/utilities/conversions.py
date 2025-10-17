@@ -89,11 +89,14 @@ def obd_dtc_to_int(obd_dtc: str) -> int:
     """
     if not isinstance(obd_dtc, str):
         raise TypeError("Provided value is not str type.")
-    match = re.compile(r"^([PCBU])[0-3]([0-9A-F]{3})-([0-9A-F]{2})$", re.IGNORECASE).fullmatch(obd_dtc.upper())
+    match = re.compile(r"^([PCBU])([0-3])([0-9A-F]{3})-([0-9A-F]{2})$", re.IGNORECASE).fullmatch(obd_dtc.upper())
     if not match:
         raise ValueError(f"Provided value is a DTC in OBD format. Example: 'U0F1E-2D'. Actual value: {obd_dtc!r}")
-    group_char, fault_specification, fault_symptom = match.groups()
-    return (DTC_CHARACTERS_MAPPING[group_char] << 22) + (int(fault_specification, 16) << 8) + int(fault_symptom, 16)
+    group_char, specification_number, fault_specification, fault_symptom = match.groups()
+    return ((DTC_CHARACTERS_MAPPING[group_char] << 22)
+            + (int(specification_number, 16) << 20)
+            + (int(fault_specification, 16) << 8)
+            + int(fault_symptom, 16))
 
 
 def int_to_obd_dtc(dtc: int) -> str:
