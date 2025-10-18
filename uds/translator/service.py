@@ -389,10 +389,11 @@ class Service:
                 payload_continuation = cls._encode_message(data_records_values=data_records_values,
                                                            message_structure=message_continuation,
                                                            check_unused_data_record_values=False)
-                _length = 8 * len(payload_continuation)
-                total_length += _length
-                total_raw_value = ((total_raw_value << _length)
-                                   + bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN))
+                if payload_continuation:
+                    _length = 8 * len(payload_continuation)
+                    total_length += _length
+                    total_raw_value = ((total_raw_value << _length)
+                                       + bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN))
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
             # stop processing if the proceeding Data Record was empty (that means message is over)

@@ -3,6 +3,8 @@ __all__ = [
     "DID_DATA_MAPPING_2020", "DID_DATA_MAPPING_2013", "DEFAULT_DID_DATA",
 ]
 
+from typing import Tuple
+
 from ..data_record import ConditionalMappingDataRecord, MappingDataRecord, RawDataRecord
 
 DID_MAPPING_2013 = {
@@ -111,3 +113,11 @@ DID_DATA_2013 = ConditionalMappingDataRecord(mapping=DID_DATA_MAPPING_2013,
                                              default_message_continuation=[DEFAULT_DID_DATA])
 DID_DATA_2020 = ConditionalMappingDataRecord(mapping=DID_DATA_MAPPING_2020,
                                              default_message_continuation=[DEFAULT_DID_DATA])
+
+# def generate_did_data_records_2013(name: str,
+#                                    optional: bool) -> Tuple[MappingDataRecord, ConditionalMappingDataRecord]:
+#     return (MappingDataRecord(name=name,
+#                               length=16,
+#                               values_mapping=DID_MAPPING_2013,
+#                               min_occurrences=0 if optional else 1, ),
+#             ConditionalMappingDataRecord(mapping=DID_DATA_MAPPING_2013))

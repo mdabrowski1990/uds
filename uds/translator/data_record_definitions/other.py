@@ -13,7 +13,9 @@ __all__ = [
     "DTC_FUNCTIONAL_GROUP_IDENTIFIER", "DTC_FORMAT_IDENTIFIER", "DTC_READINESS_GROUP_IDENTIFIER",
     "DTC", "DTC_COUNT", "MEMORY_SELECTION",
     "DTC_SNAPSHOT_RECORD_NUMBER", "DTC_STORED_DATA_RECORD_NUMBER",
-    "OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER", "DTC_EXTENDED_DATA_RECORD_NUMBER", "DTC_EXTENDED_DATA_RECORDS",
+    "OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER", "DTC_EXTENDED_DATA_RECORD_NUMBER",
+    "OPTIONAL_DTC_EXTENDED_DATA_RECORDS", "DTC_EXTENDED_DATA_NUMBERS_AND_RECORDS",
+    "DTC_EXTENDED_DATA_RECORD_WITH_DTC_AND_STATUS",
     "MULTIPLE_DTC_AND_STATUS_RECORDS", "OPTIONAL_DTC_AND_STATUS_RECORD",
     "MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS",
     "OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS",
@@ -201,23 +203,48 @@ OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCExtDataRec
                                                              length=8,
                                                              min_occurrences=0,
                                                              max_occurrences=1)
+DTCS = {
+    record_number: TextDataRecord(name=f"DTC#{record_number}",
+                                  encoding=TextEncoding.DTC_OBD_FORMAT,
+                                  min_occurrences=0,
+                                  max_occurrences=1)
+    for record_number in range(1, 100)
+}
+DTCS_STATUSES = {
+    record_number: RawDataRecord(name=f"DTC Status#{record_number}",
+                                 children=DTC_STATUS_BITS,
+                                 length=8)
+    for record_number in range(1, 100)
+}
 DTC_EXTENDED_DATA_RECORD_NUMBERS = {
     record_number:  RawDataRecord(name=f"DTCExtDataRecordNumber#{record_number}",
                                   length=8,
                                   min_occurrences=0,
                                   max_occurrences=1)
-    for record_number in range(1, 254)
+    for record_number in range(1, 100)
 }
 DTC_EXTENDED_DATA_RECORDS_DATA = {
     record_number: RawDataRecord(name=f"DTCExtDataRecord#{record_number}",
                                  length=8,
                                  min_occurrences=1,
                                  max_occurrences=None)
-    for record_number in range(1, 254)
+    for record_number in range(1, 100)
 }
-DTC_EXTENDED_DATA_RECORDS = [item for record_number in range(1, 254)
-                             for item in (DTC_EXTENDED_DATA_RECORD_NUMBERS[record_number],
+OPTIONAL_DTC_EXTENDED_DATA_RECORDS = [
+    RawDataRecord(name=f"DTCExtDataRecord#{record_number}",
+                  length=8,
+                  min_occurrences=1 if record_number == 1 else 0,
+                  max_occurrences=None)
+    for record_number in range(1, 100)
+]
+DTC_EXTENDED_DATA_NUMBERS_AND_RECORDS = [item for record_number in range(1, 100)
+                                         for item in (DTC_EXTENDED_DATA_RECORD_NUMBERS[record_number],
                                           DTC_EXTENDED_DATA_RECORDS_DATA[record_number])]
+DTC_EXTENDED_DATA_RECORD_WITH_DTC_AND_STATUS = [
+    item for record_number in range(1, 100)
+    for item in (DTCS[record_number],
+                 DTCS_STATUSES[record_number],
+                 DTC_EXTENDED_DATA_RECORDS_DATA[record_number])]
 
 OPTIONAL_DTC_AND_STATUS_RECORD = RawDataRecord(name="DTC and Status",
                                                length=32,
