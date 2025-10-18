@@ -93,7 +93,7 @@ class AbstractConditionalDataRecord(ABC):
         :param value: Value to check
 
         :raise TypeError: Provided value is not a sequence.
-        :raise ValueError: Provided sequence does not contain Data Records, or they are incorrectly ordered.
+        :raise ValueError: Provided sequence does not contain Data Records.
         :raise InconsistencyError: Contained Data Records cannot be used together.
         """
         if not isinstance(value, Sequence):
@@ -107,18 +107,12 @@ class AbstractConditionalDataRecord(ABC):
                     raise InconsistencyError("Data Records within one message have to have unique names. "
                                              f"Multiple {data_record.name!r} found.")
                 names.add(data_record.name)
-                if not data_record.fixed_total_length:
-                    if data_record.max_occurrences != 1 and i != len(value) - 1:
-                        raise ValueError("Data record with varying length can only be placed at the end of "
-                                         "the message structure.")
                 min_total_length += data_record.length * data_record.min_occurrences
-                if data_record.max_occurrences is not None:
-                    max_total_length += data_record.length * data_record.max_occurrences
+                # handle data_record.max_occurrences == None
+                max_total_length += data_record.length * (data_record.max_occurrences or data_record.min_occurrences)
             elif isinstance(data_record, AbstractConditionalDataRecord):
-                if i != len(value) - 1:
-                    raise ValueError("Conditional Data Record can only be placed at the end of the message structure.")
                 if i == 0:
-                    raise ValueError("Conditional Data Record cannot be the only part of the message structure.")
+                    raise ValueError("Conditional Data Record cannot be the first part of the message structure.")
             else:
                 raise ValueError("Provided sequence contains an element which is not a Data Record.")
         if min_total_length % 8 != 0 or max_total_length % 8:

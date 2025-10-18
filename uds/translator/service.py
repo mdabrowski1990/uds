@@ -287,12 +287,14 @@ class Service:
     @classmethod
     def _decode_payload(cls,
                         payload: RawBytesAlias,
-                        message_structure: AliasMessageStructure) -> DecodedMessageAlias:
+                        message_structure: AliasMessageStructure,
+                        check_remaining_length: bool = True) -> DecodedMessageAlias:
         """
         Decode information for given message structure and payload.
 
         :param payload: Payload to decode.
         :param message_structure: Defined structure of a diagnostic message.
+        :param check_remaining_length: Whether to raise an exception when only part of the message was decoded.
 
         :raise ValueError: Provided message payload was too short.
         :raise RuntimeError: An error occurred which was caused by incorrect message structure.
@@ -329,18 +331,26 @@ class Service:
                 remaining_payload = int_to_bytes(int_value=payload_int & ((1 << remaining_length) - 1),
                                                  endianness=Endianness.BIG_ENDIAN,
                                                  size=bytes_number)
-                return tuple(decoded_message_continuation) + cls._decode_payload(
-                    payload=remaining_payload, message_structure=conditional_message_continuation)
+                decoded_conditional_message_continuation = cls._decode_payload(
+                    payload=remaining_payload,
+                    message_structure=conditional_message_continuation,
+                    check_remaining_length=False)
+                for data_record_info in decoded_conditional_message_continuation:
+                    occurrences_number = 1 if isinstance(data_record_info["raw_value"], int) \
+                        else len(data_record_info["raw_value"])
+                    remaining_length -= occurrences_number * data_record_info["length"]
+                    decoded_message_continuation.append(data_record_info)
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
-        if remaining_length != 0:
+        if check_remaining_length and remaining_length != 0:
             raise RuntimeError("Incorrect message structure was defined.")
         return tuple(decoded_message_continuation)
 
     @classmethod
     def _encode_message(cls,
                         data_records_values: Dict[str, DataRecordValueAlias],
-                        message_structure: AliasMessageStructure) -> bytearray:
+                        message_structure: AliasMessageStructure,
+                        check_unused_data_record_values: bool = True) -> bytearray:
         """
         Encode payload of a diagnostic message.
 
@@ -349,6 +359,7 @@ class Service:
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
             a raw value or a mapping with children names and its corresponding values.
         :param message_structure: Data Records that form the remaining structure of the diagnostic message.
+        :param check_unused_data_record_values: Whether to raise an exception when unused Data Record value found.
 
         :raise RuntimeError: An error occurred which was caused by incorrect message structure.
         :raise ValueError: Value for at least one Data Record that is no part of the message, was provided.
@@ -357,7 +368,6 @@ class Service:
 
         :return: Payload of a diagnostic message created from provided data records values.
         """
-        payload_continuation = bytearray()
         total_raw_value = 0
         total_length = 0
         occurrences = []
@@ -377,7 +387,12 @@ class Service:
             elif isinstance(data_record, AbstractConditionalDataRecord):
                 message_continuation = data_record.get_message_continuation(raw_value=raw_value)
                 payload_continuation = cls._encode_message(data_records_values=data_records_values,
-                                                           message_structure=message_continuation)
+                                                           message_structure=message_continuation,
+                                                           check_unused_data_record_values=False)
+                _length = 8 * len(payload_continuation)
+                total_length += _length
+                total_raw_value = ((total_raw_value << _length)
+                                   + bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN))
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
             # stop processing if the proceeding Data Record was empty (that means message is over)
@@ -385,11 +400,11 @@ class Service:
                 break
         if total_length % 8 != 0:
             raise RuntimeError("Incorrect message structure was provided.")
-        if data_records_values:
+        if check_unused_data_record_values and data_records_values:
             raise ValueError(f"Unused Data Record values were provided: {data_records_values}.")
         return bytearray(int_to_bytes(int_value=total_raw_value,
                                       size=total_length // 8,
-                                      endianness=Endianness.BIG_ENDIAN)) + payload_continuation
+                                      endianness=Endianness.BIG_ENDIAN))
 
     @staticmethod
     def validate_message_structure(value: AliasMessageStructure) -> None:

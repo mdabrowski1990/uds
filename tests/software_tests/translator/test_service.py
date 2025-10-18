@@ -474,16 +474,21 @@ class TestService:
         ((0xCA, 0xFE),
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1),
           Mock(spec=AbstractConditionalDataRecord)],
-         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8)]),
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1)]),
         (list(range(100)),
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=10, max_occurrences=10),
           Mock(spec=AbstractConditionalDataRecord)],
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None)]),
     ])
     def test_decode_payload__valid__condition(self, payload, message_structure, message_continuation):
-        self.mock_int_to_bytes.return_value = b"\x00"
+        self.mock_int_to_bytes.side_effect = [tuple(payload[:message_structure[0].max_occurrences]),
+                                              tuple(payload[message_structure[0].max_occurrences:])]
         mock_get_message_continuation = Mock(return_value=message_continuation)
         message_structure[-1].get_message_continuation = mock_get_message_continuation
+        message_continuation[0].get_occurrence_info.return_value = {
+            "length": message_continuation[0].length,
+            "raw_value": range(int(len(payload[message_structure[0].max_occurrences:]) * 8 // message_continuation[0].length))
+        }
         assert (Service._decode_payload(payload=payload,
                                         message_structure=message_structure)
                 == tuple(dr.get_occurrence_info.return_value
@@ -650,7 +655,7 @@ class TestService:
         mock_get_message_continuation = Mock(return_value=message_continuation)
         message_structure[-1].get_message_continuation = mock_get_message_continuation
         assert Service._encode_message(data_records_values=data_records_values,
-                                       message_structure=message_structure) == bytearray(payload + payload)
+                                       message_structure=message_structure) == bytearray(payload)
         mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=values_copy[dr.name])
                                                            for dr in message_structure + message_continuation
                                                            if isinstance(dr, AbstractDataRecord)],
