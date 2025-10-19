@@ -1,9 +1,9 @@
+"""Data Records definitions for Data Identifiers."""
+
 __all__ = [
     "DID", "DID_2020", "DID_2013",
     "DID_DATA_MAPPING_2020", "DID_DATA_MAPPING_2013", "DEFAULT_DID_DATA",
 ]
-
-from typing import Tuple
 
 from ..data_record import ConditionalMappingDataRecord, MappingDataRecord, RawDataRecord
 

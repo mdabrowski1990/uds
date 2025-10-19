@@ -8013,8 +8013,6 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 0,
                     "testFailed": 1,
                 },
-                "DTCFormatIdentifier": 0x04,
-                "DTC and Status": [],
             },
             None,
             ResponseSID.ReadDTCInformation,

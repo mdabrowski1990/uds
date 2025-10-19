@@ -11,7 +11,13 @@ from .common_types import (
     validate_raw_byte,
     validate_raw_bytes,
 )
-from .constants import BITS_TO_DTC_CHARACTER_MAPPING, DTC_CHARACTERS_MAPPING, MAX_DTC_VALUE, MIN_DTC_VALUE
+from .constants import (
+    BITS_TO_DTC_CHARACTER_MAPPING,
+    DTC_CHARACTERS_MAPPING,
+    MAX_DTC_VALUE,
+    MIN_DTC_VALUE,
+    REPEATED_DATA_RECORDS_NUMBER,
+)
 from .conversions import bytes_to_hex, bytes_to_int, int_to_bytes, int_to_obd_dtc, obd_dtc_to_int
 from .custom_exceptions import (
     AmbiguityError,
