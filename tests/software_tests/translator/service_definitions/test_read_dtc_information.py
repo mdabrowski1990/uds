@@ -8568,8 +8568,7 @@ class TestReadDTCInformation2013Integration:
                     "suppressPosRspMsgIndicationBit": 1,
                     "reportType": 0x10,
                 },
-                "DTC": 0x123456,
-                "DTCStatus": 0xAB,
+                "DTC and Status": 0x123456AB,
                 "DTCExtDataRecordNumber#1": 0x50,
                 "DTCExtDataRecord#1": [0xF6],
                 "DTCExtDataRecordNumber#2": 0x6D,
@@ -8777,13 +8776,13 @@ class TestReadDTCInformation2013Integration:
                 "SubFunction": 0x96,
                 "DTCExtDataRecordNumber": 0xE2,
                 "DTC#1": 0x3B896C,
-                "DTC Status#1": 0xA5,
+                "DTCStatus#1": 0xA5,
                 "DTCExtDataRecord#1": [0x21, 0x43, 0x68],
                 "DTC#2": 0xFECB98,
-                "DTC Status#2": 0x64,
+                "DTCStatus#2": 0x64,
                 "DTCExtDataRecord#2": [0xCA, 0xFF, 0xEE],
                 "DTC#3": 0x765432,
-                "DTC Status#3": {
+                "DTCStatus#3": {
                     "warningIndicatorRequested": 0,
                     "testNotCompletedThisOperationCycle": 1,
                     "testFailedSinceLastClear": 0,
@@ -8922,20 +8921,19 @@ class TestReadDTCInformation2013Integration:
                     "DTC": 0x3B896C,
                     "DTCStatus": 0xA5,
                 },
-                "DTCExtDataRecordNumber#1": 0x41,
+                "DTCExtDataRecordNumber": 0x41,
                 "DTCExtDataRecord#1": [0x21, 0x43],
-                "DTCExtDataRecordNumber#2": 0x52,
                 "DTCExtDataRecord#2": [0xF0, 0x0F],
-                "DTCExtDataRecordNumber#3": 0xB0,
                 "DTCExtDataRecord#3": [0x78, 0x9A, 0xBC, 0xDE, 0xF0],
             },
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x99, 0x6E,
                        0x3B, 0x89, 0x6C, 0xA5,  # DTC and Status
-                       0x41, 0x21, 0x43,  # DTCExtendedDataRecord#1
-                       0x52, 0xF0, 0x0F,  # DTCExtendedDataRecord#2
-                       0xB0, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#3
+                       0x41,  # DTCExtDataRecordNumber
+                       0x21, 0x43,  # DTCExtendedDataRecord#1
+                       0xF0, 0x0F,  # DTCExtendedDataRecord#2
+                       0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#3
         ),
         # reportWWHOBDDTCByMaskRecord (0x42)
         (
@@ -15713,31 +15711,28 @@ class TestReadDTCInformation2020Integration:
                     "reportType": 0x16,
                 },
                 "DTCExtDataRecordNumber": 0xFF,
-                "DTC and Status#1": {
-                    "DTC": 0x3B896C,
-                    "DTCStatus": 0xA5,
-                },
+                "DTC#1": 0x3B896C,
+                "DTCStatus#1": 0xA5,
                 "DTCExtDataRecord#1": [0x21, 0x43, 0x68],
-                "DTC and Status#2": 0xFECB98064,
+                "DTC#2": 0xFECB98,
+                "DTCStatus#2": 0x64,
                 "DTCExtDataRecord#2": [0xCA, 0xFF, 0xEE],
-                "DTC and Status#3": {
-                    "DTC": 0x765432,
-                    "DTCStatus": {
-                        "warningIndicatorRequested": 0,
-                        "testNotCompletedThisOperationCycle": 1,
-                        "testFailedSinceLastClear": 0,
-                        "testNotCompletedSinceLastClear": 1,
-                        "confirmedDTC": 0,
-                        "pendingDTC": 1,
-                        "testFailedThisOperationCycle": 0,
-                        "testFailed": 0,
-                    },
+                "DTC#3": 0x765432,
+                "DTCStatus#3": {
+                    "warningIndicatorRequested": 0,
+                    "testNotCompletedThisOperationCycle": 1,
+                    "testFailedSinceLastClear": 0,
+                    "testNotCompletedSinceLastClear": 1,
+                    "confirmedDTC": 0,
+                    "pendingDTC": 1,
+                    "testFailedThisOperationCycle": 0,
+                    "testFailed": 0,
                 },
                 "DTCExtDataRecord#3": [0xDA],
             },
             None,
             ResponseSID.ReadDTCInformation,
-            bytearray([0x59, 0x96, 0xE2, 0xFF,
+            bytearray([0x59, 0x96, 0xFF,
                        0x3B, 0x89, 0x6C, 0xA5, 0x21, 0x43, 0x68,  # DTC, Status and ExtendedDataRecord #1
                        0xFE, 0xCB, 0x98, 0x64, 0xCA, 0xFF, 0xEE,  # DTC, Status and ExtendedDataRecord #2
                        0x76, 0x54, 0x32, 0x54, 0xDA])  # DTC, Status and ExtendedDataRecord #3
@@ -15859,17 +15854,17 @@ class TestReadDTCInformation2020Integration:
                     "DTC": 0xB398C6,
                     "DTCStatus": 0x5A,
                 },
-                "DTCExtDataRecordNumber#1": 0x41,
+                "DTCExtDataRecordNumber": 0x41,
                 "DTCExtDataRecord#1": [0x21, 0x43],
-                "DTCExtDataRecordNumber#2": 0x52,
                 "DTCExtDataRecord#2": [0x78, 0x9A, 0xBC, 0xDE, 0xF0],
             },
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x19, 0x0F,
                        0xB3, 0x98, 0xC6, 0x5A,  # DTC and Status
-                       0x41, 0x21, 0x43,  # DTCExtendedDataRecord#1
-                       0x52, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#2
+                       0x41,
+                       0x21, 0x43,  # DTCExtendedDataRecord#1
+                       0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#2
         ),
         # reportSupportedDTCExtDataRecord
         (
