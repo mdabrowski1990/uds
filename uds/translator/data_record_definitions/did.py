@@ -6,9 +6,15 @@ __all__ = [
     "get_did_records_formula_2013", "get_did_records_formula_2020",
 ]
 
-from typing import Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union
 
-from ..data_record import AbstractDataRecord, ConditionalFormulaDataRecord, MappingDataRecord, RawDataRecord
+from ..data_record import (
+    AbstractDataRecord,
+    AliasMessageStructure,
+    ConditionalFormulaDataRecord,
+    MappingDataRecord,
+    RawDataRecord,
+)
 from .other import ACTIVE_DIAGNOSTIC_SESSION, RESERVED_BIT
 
 DID_MAPPING_2013 = {
@@ -95,6 +101,7 @@ DID_DATA_MAPPING_2020 = {
     0xF186: DID_DATA_MAPPING_2013[0xF186],
 }
 
+
 def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:
     """
     Get DID Data Record compatible with ISO 14229-1:2013 version.
@@ -109,6 +116,7 @@ def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord
                              values_mapping=DID_MAPPING_2013,
                              min_occurrences=0 if optional else 1,
                              max_occurrences=1)
+
 
 def get_did_2020(name: str = "DID", optional: bool = False) -> MappingDataRecord:
     """
@@ -125,6 +133,7 @@ def get_did_2020(name: str = "DID", optional: bool = False) -> MappingDataRecord
                              min_occurrences=0 if optional else 1,
                              max_occurrences=1)
 
+
 def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
     """
     Get Conditional Data Record for DID data that is compatible with ISO 14229-1:2013 version.
@@ -137,6 +146,7 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
                                      length=8,
                                      min_occurrences=1,
                                      max_occurrences=None)
+
     def _get_did_data(did: int) -> Tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2013.get(did, None)
         if data_records is None:
@@ -146,14 +156,15 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
             if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
                 raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
                                  f"Only fixed length data records are supported right now.")
-            total_length += dr.max_occurrences * dr.length
-        return RawDataRecord(name=name,
-                             children=data_records,
-                             length=total_length,
-                             min_occurrences=1,
-                             max_occurrences=1),
+            total_length += dr.min_occurrences * dr.length
+        return (RawDataRecord(name=name,
+                              children=data_records,
+                              length=total_length,
+                              min_occurrences=1,
+                              max_occurrences=1),)
     return ConditionalFormulaDataRecord(formula=_get_did_data,
                                         default_message_continuation=[default_did_data])
+
 
 def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
     """
@@ -167,6 +178,7 @@ def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
                                      length=8,
                                      min_occurrences=1,
                                      max_occurrences=None)
+
     def _get_did_data(did: int) -> Tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2020.get(did, None)
         if data_records is None:
@@ -176,14 +188,15 @@ def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
             if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
                 raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
                                  f"Only fixed length data records are supported right now.")
-            total_length += dr.max_occurrences * dr.length
-        return RawDataRecord(name=name,
-                             children=data_records,
-                             length=total_length,
-                             min_occurrences=1,
-                             max_occurrences=1),
+            total_length += dr.min_occurrences * dr.length
+        return (RawDataRecord(name=name,
+                              children=data_records,
+                              length=total_length,
+                              min_occurrences=1,
+                              max_occurrences=1),)
     return ConditionalFormulaDataRecord(formula=_get_did_data,
                                         default_message_continuation=[default_did_data])
+
 
 def get_dids_2013(did_count: int,
                   record_number: Optional[int]) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
@@ -198,12 +211,13 @@ def get_dids_2013(did_count: int,
 
     :return: DIDs related Data Records that are part of the record.
     """
-    snapshot_data_records = []
+    snapshot_data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
     for did_number in range(did_count):
         name = f"DID#{record_number}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
         snapshot_data_records.append(get_did_2013(name))
         snapshot_data_records.append(get_did_data_2013(name=f"{name} data"))
     return tuple(snapshot_data_records)
+
 
 def get_dids_2020(did_count: int,
                   record_number: int) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
@@ -218,14 +232,15 @@ def get_dids_2020(did_count: int,
 
     :return: DIDs related Data Records that are part of the record.
     """
-    snapshot_data_records = []
+    snapshot_data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
     for did_number in range(did_count):
         name = f"DID#{record_number}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
         snapshot_data_records.append(get_did_2020(name))
         snapshot_data_records.append(get_did_data_2020(name=f"{name} data"))
     return tuple(snapshot_data_records)
 
-def get_did_records_formula_2013(record_number: Optional[int]):
+
+def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int], AliasMessageStructure]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
@@ -239,7 +254,8 @@ def get_did_records_formula_2013(record_number: Optional[int]):
     return lambda did_count: get_dids_2013(did_count=did_count,
                                            record_number=record_number)
 
-def get_did_records_formula_2020(record_number: int):
+
+def get_did_records_formula_2020(record_number: int) -> Callable[[int], AliasMessageStructure]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 

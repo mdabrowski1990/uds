@@ -161,25 +161,25 @@ RESPONSE_CONTINUATION_MAPPING_2020 = {
 }
 
 CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING_2013
-            | {key+0x80: value for key, value in REQUEST_CONTINUATION_MAPPING_2013.items()})
+    mapping=REQUEST_CONTINUATION_MAPPING_2013 | {key + 0x80: value
+                                                 for key, value in REQUEST_CONTINUATION_MAPPING_2013.items()})
 CONDITIONAL_REQUEST_CONTINUATION_2020 = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING_2020
-            | {key+0x80: value for key, value in REQUEST_CONTINUATION_MAPPING_2020.items()})
+    mapping=REQUEST_CONTINUATION_MAPPING_2020 | {key + 0x80: value
+                                                 for key, value in REQUEST_CONTINUATION_MAPPING_2020.items()})
 
 CONDITIONAL_RESPONSE_CONTINUATION_2013 = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING_2013
-            | {key+0x80: value for key, value in RESPONSE_CONTINUATION_MAPPING_2013.items()})
+    mapping=RESPONSE_CONTINUATION_MAPPING_2013 | {key + 0x80: value
+                                                  for key, value in RESPONSE_CONTINUATION_MAPPING_2013.items()})
 CONDITIONAL_RESPONSE_CONTINUATION_2020 = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING_2020
-            | {key+0x80: value for key, value in RESPONSE_CONTINUATION_MAPPING_2020.items()})
+    mapping=RESPONSE_CONTINUATION_MAPPING_2020 | {key + 0x80: value
+                                                  for key, value in RESPONSE_CONTINUATION_MAPPING_2020.items()})
 
 READ_DTC_INFORMATION_2013 = Service(request_sid=RequestSID.ReadDTCInformation,
                                     request_structure=(READ_DTC_INFORMATION_SUB_FUNCTION_2013,
                                                        CONDITIONAL_REQUEST_CONTINUATION_2013),
                                     response_structure=[READ_DTC_INFORMATION_SUB_FUNCTION_2013,
                                                         CONDITIONAL_RESPONSE_CONTINUATION_2013])
-"""Translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service compatible with 
+"""Translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service compatible with
 ISO 14229-1:2013."""
 
 READ_DTC_INFORMATION_2020 = Service(request_sid=RequestSID.ReadDTCInformation,
@@ -187,7 +187,7 @@ READ_DTC_INFORMATION_2020 = Service(request_sid=RequestSID.ReadDTCInformation,
                                                        CONDITIONAL_REQUEST_CONTINUATION_2020),
                                     response_structure=[READ_DTC_INFORMATION_SUB_FUNCTION_2020,
                                                         CONDITIONAL_RESPONSE_CONTINUATION_2020])
-"""Translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service compatible with 
+"""Translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service compatible with
 ISO 14229-1:2020."""
 
 READ_DTC_INFORMATION = READ_DTC_INFORMATION_2020

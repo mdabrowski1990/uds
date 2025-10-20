@@ -397,7 +397,7 @@ class Service:
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
             # stop processing if the proceeding Data Record was empty (that means message is over)
-            if occurrences == []:
+            if not occurrences:
                 break
         if total_length % 8 != 0:
             raise RuntimeError("Incorrect message structure was provided.")

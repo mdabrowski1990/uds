@@ -215,7 +215,7 @@ OPTIONAL_DTC_EXTENDED_DATA_RECORDS_DATA_LIST = [RawDataRecord(name=f"DTCExtDataR
                                                 for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 DTC_EXTENDED_DATA_RECORDS_NUMBERS_AND_DATA_LIST = [
     item for extended_data_record in zip(DTC_EXTENDED_DATA_RECORDS_NUMBERS_LIST,
-                                          DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
+                                         DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
     for item in extended_data_record]
 
 # DTC Stored Data
@@ -223,8 +223,8 @@ DTC_STORED_DATA_RECORD_NUMBER_MAPPING = {
     0xFF: "all",
 }
 DTC_STORED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCStoredDataRecordNumber",
-                                              values_mapping=DTC_STORED_DATA_RECORD_NUMBER_MAPPING,
-                                              length=8)
+                                                  values_mapping=DTC_STORED_DATA_RECORD_NUMBER_MAPPING,
+                                                  length=8)
 DTC_STORED_DATA_RECORD_NUMBERS_LIST = [MappingDataRecord(name=f"DTCStoredDataRecordNumber#{record_number + 1}",
                                                          values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
                                                          length=8,
