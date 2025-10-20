@@ -1,11 +1,20 @@
 """Data Records definitions for Data Identifiers."""
 
 __all__ = [
-    "DID", "DID_2020", "DID_2013",
-    "DID_DATA_MAPPING_2020", "DID_DATA_MAPPING_2013", "DEFAULT_DID_DATA",
+    "get_did_2013", "get_did_2020",
+    "get_did_data_2013",
 ]
 
-from ..data_record import ConditionalMappingDataRecord, MappingDataRecord, RawDataRecord
+from typing import Tuple
+
+from ..data_record import (
+    AbstractDataRecord,
+    ConditionalFormulaDataRecord,
+    ConditionalMappingDataRecord,
+    MappingDataRecord,
+    RawDataRecord,
+)
+from .other import ACTIVE_DIAGNOSTIC_SESSION, RESERVED_BIT
 
 DID_MAPPING_2013 = {
     0xF180: "BootSoftwareIdentificationDataIdentifier",
@@ -84,40 +93,61 @@ DID_MAPPING_2020 = {
     0xFF01: "ReservedForISO15765-5",
 }
 
-DID_DATA_MAPPING_2013 = {}  # TODO: define
-DID_DATA_MAPPING_2020 = {}  # TODO: define
+DID_DATA_MAPPING_2013 = {
+    0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
+}
+DID_DATA_MAPPING_2020 = {
+    0xF186: DID_DATA_MAPPING_2013[0xF186],
+}
 
-DID_2013 = MappingDataRecord(name="DID",
+def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:
+    """
+    Get DID Data Record compatible with ISO 14229-1:2013 version.
+
+    :param name: Name to assign to the Data Record.
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+    :return: Created DID Data Record.
+    """
+    return MappingDataRecord(name=name,
                              length=16,
-                             values_mapping=DID_MAPPING_2013)
-OPTIONAL_DID_2013 = MappingDataRecord(name="DID",
-                                      length=16,
-                                      values_mapping=DID_MAPPING_2013,
-                                      min_occurrences=0,
-                                      max_occurrences=1)
-DID_2020 = MappingDataRecord(name="DID",
+                             values_mapping=DID_MAPPING_2013,
+                             min_occurrences=0 if optional else 1,
+                             max_occurrences=1)
+
+def get_did_2020(name: str = "DID", optional: bool = False) -> MappingDataRecord:
+    """
+    Get DID Data Record compatible with ISO 14229-1:2020 version.
+
+    :param name: Name to assign to the Data Record.
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+    :return: Created DID Data Record.
+    """
+    return MappingDataRecord(name=name,
                              length=16,
-                             values_mapping=DID_MAPPING_2020)
-OPTIONAL_DID_2020 = MappingDataRecord(name="DID",
-                                      length=16,
-                                      values_mapping=DID_MAPPING_2020,
-                                      min_occurrences=0,
-                                      max_occurrences=1)
-DID = DID_2020
+                             values_mapping=DID_MAPPING_2020,
+                             min_occurrences=0 if optional else 1,
+                             max_occurrences=1)
 
-DEFAULT_DID_DATA = RawDataRecord(name="DID data",
-                                 length=8,
-                                 min_occurrences=1,
-                                 max_occurrences=None)
-DID_DATA_2013 = ConditionalMappingDataRecord(mapping=DID_DATA_MAPPING_2013,
-                                             default_message_continuation=[DEFAULT_DID_DATA])
-DID_DATA_2020 = ConditionalMappingDataRecord(mapping=DID_DATA_MAPPING_2020,
-                                             default_message_continuation=[DEFAULT_DID_DATA])
-
-# def generate_did_data_records_2013(name: str,
-#                                    optional: bool) -> Tuple[MappingDataRecord, ConditionalMappingDataRecord]:
-#     return (MappingDataRecord(name=name,
-#                               length=16,
-#                               values_mapping=DID_MAPPING_2013,
-#                               min_occurrences=0 if optional else 1, ),
-#             ConditionalMappingDataRecord(mapping=DID_DATA_MAPPING_2013))
+def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
+    default_did_data = RawDataRecord(name=name,
+                                     length=8,
+                                     min_occurrences=1,
+                                     max_occurrences=None)
+    def _get_did_data(did: int) -> Tuple[RawDataRecord]:
+        data_records = DID_DATA_MAPPING_2013.get(did, None)
+        if data_records is None:
+            return None
+        total_length = 0
+        for dr in data_records:
+            if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                raise ValueError("Only fixed length DID data structures are supported right now.")
+            total_length += dr.max_occurrences * dr.length
+        return RawDataRecord(name=name,
+                             children=data_records,
+                             length=total_length,
+                             min_occurrences=1,
+                             max_occurrences=1),
+    return ConditionalFormulaDataRecord(formula=_get_did_data,
+                                        default_message_continuation=[default_did_data])

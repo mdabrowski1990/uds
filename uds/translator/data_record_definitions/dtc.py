@@ -8,7 +8,7 @@ __all__ = [
     # DTC Severity
     "DTC_SEVERITY", "DTC_SEVERITY_MASK", "DTC_SEVERITY_AVAILABILITY_MASK",
     # DTC Snapshot Data
-    "DTC_SNAPSHOT_RECORD_NUMBER",
+    "DTC_SNAPSHOT_RECORD_NUMBER", "DTC_SNAPSHOT_RECORDS_LIST_2013",
     # DTC Extended Data
     "DTC_EXTENDED_DATA_RECORD_NUMBER", "OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER",
     "DTC_EXTENDED_DATA_RECORDS_DATA_LIST", "OPTIONAL_DTC_EXTENDED_DATA_RECORDS_DATA_LIST",
@@ -33,9 +33,12 @@ __all__ = [
     "DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST",
 ]
 
+from typing import Tuple, Union
+
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
-from ..data_record import MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding
+from ..data_record import ConditionalFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding
+from .did import get_did_2013, get_did_2020, get_did_data_2013
 
 # Common
 NO_YES_MAPPING = {0: "no", 1: "yes"}
@@ -150,9 +153,38 @@ DTC_SEVERITY_AVAILABILITY_MASK = RawDataRecord(name="DTCSeverityAvailabilityMask
 DTC_SNAPSHOT_RECORD_NUMBER_MAPPING = {
     0xFF: "all"
 }
+
+def get_snapshot_dids_2013(did_count: int,
+                           snapshot_number: int) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
+    snapshot_data_records = []
+    for did_number in range(did_count):
+        snapshot_data_records.append(get_did_2013(f"DID#{snapshot_number}_{did_number+1}"))
+        snapshot_data_records.append(get_did_data_2013(name=f"DID#{snapshot_number}_{did_number+1} data"))
+    return tuple(snapshot_data_records)
+
 DTC_SNAPSHOT_RECORD_NUMBER = MappingDataRecord(name="DTCSnapshotRecordNumber",
                                                values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
                                                length=8)
+OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST = [MappingDataRecord(name=f"DTCSnapshotRecordNumber#{record_number + 1}",
+                                                                values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
+                                                                length=8,
+                                                                min_occurrences=0,
+                                                                max_occurrences=1)
+                                              for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+DTC_SNAPSHOT_RECORDS_DID_COUNTS_LIST = [RawDataRecord(name=f"DIDCount#{record_number + 1}",
+                                                      length=8,
+                                                      min_occurrences=1,
+                                                      max_occurrences=1)
+                                        for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+DTC_SNAPSHOT_RECORDS_DIDS_LIST_2013 = [
+    ConditionalFormulaDataRecord(formula=lambda did_count: get_snapshot_dids_2013(did_count=did_count,
+                                                                                  snapshot_number=record_number + 1))
+    for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+DTC_SNAPSHOT_RECORDS_LIST_2013 = [
+    item for snapshot_records in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                     DTC_SNAPSHOT_RECORDS_DID_COUNTS_LIST,
+                                     DTC_SNAPSHOT_RECORDS_DIDS_LIST_2013)
+    for item in snapshot_records]
 
 # DTC Extended Data
 DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING = {
