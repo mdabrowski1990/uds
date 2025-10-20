@@ -887,7 +887,7 @@ class TestReadDTCInformation2013Integration:
                             'children': (),
                             'length': 7,
                             'name': 'reportType',
-                            'physical_value': 'reportDTCSnapshotIdentification',
+                            'physical_value': 'reportDTCSnapshotRecordByDTCNumber',
                             'raw_value': 0x04,
                             'unit': None
                         }
@@ -1013,7 +1013,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': (),
+                    'children': [(), (), (), (), (), (), (), ()],
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x7E, 0x8F, 0x90, 0xA1, 0xB2, 0xC3, 0xD4, 0xE5),
@@ -1220,7 +1220,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': (),
+                    'children': [(), (), (), (), (), (), ()],
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96),
@@ -6612,7 +6612,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': (),
+                    'children': [(), (), ()],
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x23, 0x24, 0x8A),
@@ -9763,7 +9763,7 @@ class TestReadDTCInformation2020Integration:
             )
         ),
         (
-            [0x59, 0x04, 0x73, 0xF7, 0xCF, 0x1F, 0x29, 0xDA, 0x90, 0x11, 0xCF],
+            [0x59, 0x04, 0x73, 0xF7, 0xCF, 0x1F, 0x29, 0x01, 0x90, 0x11, 0xCF],
             (
                 {
                     'children': (),
@@ -9787,7 +9787,7 @@ class TestReadDTCInformation2020Integration:
                             'children': (),
                             'length': 7,
                             'name': 'reportType',
-                            'physical_value': 'reportDTCSnapshotIdentification',
+                            'physical_value': 'reportDTCSnapshotRecordByDTCNumber',
                             'raw_value': 0x04,
                             'unit': None
                         }
@@ -9900,8 +9900,8 @@ class TestReadDTCInformation2020Integration:
                     'children': (),
                     'length': 8,
                     'name': 'DIDCount#1',
-                    'physical_value': 0xDA,
-                    'raw_value': 0xDA,
+                    'physical_value': 0x01,
+                    'raw_value': 0x01,
                     'unit': 'DIDs',
                 },
                 {
@@ -9913,7 +9913,7 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': (),
+                    'children': [()],
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0xCF,),
@@ -10120,7 +10120,7 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': (),
+                    'children': [(), (), (), (), (), (), ()],
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x1A, 0xE9, 0xBD, 0x63, 0xED, 0x42, 0x90),
@@ -13415,7 +13415,7 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': (),
+                    'children': [(), (), (), (), ()],
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x4B, 0xEB, 0xDB, 0x8E, 0x35),
@@ -15187,16 +15187,18 @@ class TestReadDTCInformation2020Integration:
                     "suppressPosRspMsgIndicationBit": 1,
                     "reportType": 0x04,
                 },
-                "DTC": 0xBEEF02,
-                "DTCStatus": {
-                    "warningIndicatorRequested": 1,
-                    "testNotCompletedThisOperationCycle": 0,
-                    "testFailedSinceLastClear": 1,
-                    "testNotCompletedSinceLastClear": 0,
-                    "confirmedDTC": 1,
-                    "pendingDTC": 0,
-                    "testFailedThisOperationCycle": 1,
-                    "testFailed": 1,
+                "DTC and Status": {
+                    "DTC": 0xBEEF02,
+                    "DTCStatus": {
+                        "warningIndicatorRequested": 1,
+                        "testNotCompletedThisOperationCycle": 0,
+                        "testFailedSinceLastClear": 1,
+                        "testNotCompletedSinceLastClear": 0,
+                        "confirmedDTC": 1,
+                        "pendingDTC": 0,
+                        "testFailedThisOperationCycle": 1,
+                        "testFailed": 1,
+                    },
                 },
                 "DTCSnapshotRecordNumber#1": 0x3C,
                 "DIDCount#1": 2,

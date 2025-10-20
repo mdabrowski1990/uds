@@ -8,13 +8,14 @@ __all__ = [
     # DTC Severity
     "DTC_SEVERITY", "DTC_SEVERITY_MASK", "DTC_SEVERITY_AVAILABILITY_MASK",
     # DTC Snapshot Data
-    "DTC_SNAPSHOT_RECORD_NUMBER", "DTC_SNAPSHOT_RECORDS_LIST_2013",
+    "DTC_SNAPSHOT_RECORD_NUMBER", "DTC_SNAPSHOT_RECORDS_LIST_2013", "DTC_SNAPSHOT_RECORDS_LIST_2020",
     # DTC Extended Data
     "DTC_EXTENDED_DATA_RECORD_NUMBER", "OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER",
     "DTC_EXTENDED_DATA_RECORDS_DATA_LIST", "OPTIONAL_DTC_EXTENDED_DATA_RECORDS_DATA_LIST",
     "DTC_EXTENDED_DATA_RECORDS_NUMBERS_AND_DATA_LIST",
     # DTC Stored Data
     "DTC_STORED_DATA_RECORD_NUMBER",
+    "DTC_STORED_DATA_RECORDS_LIST_2013", "DTC_STORED_DATA_RECORDS_LIST_2020",
     # DTC Format Identifier
     "DTC_FORMAT_IDENTIFIER",
     # DTC Functional Group Identifier
@@ -33,15 +34,25 @@ __all__ = [
     "DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST",
 ]
 
-from typing import Tuple, Union
-
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
 from ..data_record import ConditionalFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding
-from .did import get_did_2013, get_did_2020, get_did_data_2013
+from .did import get_did_records_formula_2013, get_did_records_formula_2020
 
 # Common
 NO_YES_MAPPING = {0: "no", 1: "yes"}
+DTC_DIDS_RECORDS_LIST_2013 = [
+    ConditionalFormulaDataRecord(formula=get_did_records_formula_2013(record_number + 1))
+    for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+DTC_DIDS_RECORDS_LIST_2020 = [
+    ConditionalFormulaDataRecord(formula=get_did_records_formula_2020(record_number + 1))
+    for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+RECORDS_DID_COUNTS_LIST = [RawDataRecord(name=f"DIDCount#{record_number + 1}",
+                                         length=8,
+                                         min_occurrences=1,
+                                         max_occurrences=1,
+                                         unit="DIDs")
+                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 # DTC
 GROUP_OF_DTC = RawDataRecord(name="groupOfDTC",
@@ -154,14 +165,6 @@ DTC_SNAPSHOT_RECORD_NUMBER_MAPPING = {
     0xFF: "all"
 }
 
-def get_snapshot_dids_2013(did_count: int,
-                           snapshot_number: int) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
-    snapshot_data_records = []
-    for did_number in range(did_count):
-        snapshot_data_records.append(get_did_2013(f"DID#{snapshot_number}_{did_number+1}"))
-        snapshot_data_records.append(get_did_data_2013(name=f"DID#{snapshot_number}_{did_number+1} data"))
-    return tuple(snapshot_data_records)
-
 DTC_SNAPSHOT_RECORD_NUMBER = MappingDataRecord(name="DTCSnapshotRecordNumber",
                                                values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
                                                length=8)
@@ -171,20 +174,16 @@ OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST = [MappingDataRecord(name=f"DTCSnapsh
                                                                 min_occurrences=0,
                                                                 max_occurrences=1)
                                               for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
-DTC_SNAPSHOT_RECORDS_DID_COUNTS_LIST = [RawDataRecord(name=f"DIDCount#{record_number + 1}",
-                                                      length=8,
-                                                      min_occurrences=1,
-                                                      max_occurrences=1)
-                                        for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
-DTC_SNAPSHOT_RECORDS_DIDS_LIST_2013 = [
-    ConditionalFormulaDataRecord(formula=lambda did_count: get_snapshot_dids_2013(did_count=did_count,
-                                                                                  snapshot_number=record_number + 1))
-    for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 DTC_SNAPSHOT_RECORDS_LIST_2013 = [
-    item for snapshot_records in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                     DTC_SNAPSHOT_RECORDS_DID_COUNTS_LIST,
-                                     DTC_SNAPSHOT_RECORDS_DIDS_LIST_2013)
-    for item in snapshot_records]
+    item for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                    RECORDS_DID_COUNTS_LIST,
+                                    DTC_DIDS_RECORDS_LIST_2013)
+    for item in snapshot_record]
+DTC_SNAPSHOT_RECORDS_LIST_2020 = [
+    item for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                    RECORDS_DID_COUNTS_LIST,
+                                    DTC_DIDS_RECORDS_LIST_2020)
+    for item in snapshot_record]
 
 # DTC Extended Data
 DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING = {
@@ -215,9 +214,9 @@ OPTIONAL_DTC_EXTENDED_DATA_RECORDS_DATA_LIST = [RawDataRecord(name=f"DTCExtDataR
                                                               max_occurrences=None)
                                                 for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 DTC_EXTENDED_DATA_RECORDS_NUMBERS_AND_DATA_LIST = [
-    item for extended_data_records in zip(DTC_EXTENDED_DATA_RECORDS_NUMBERS_LIST,
+    item for extended_data_record in zip(DTC_EXTENDED_DATA_RECORDS_NUMBERS_LIST,
                                           DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
-    for item in extended_data_records]
+    for item in extended_data_record]
 
 # DTC Stored Data
 DTC_STORED_DATA_RECORD_NUMBER_MAPPING = {
@@ -226,6 +225,12 @@ DTC_STORED_DATA_RECORD_NUMBER_MAPPING = {
 DTC_STORED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCStoredDataRecordNumber",
                                               values_mapping=DTC_STORED_DATA_RECORD_NUMBER_MAPPING,
                                               length=8)
+DTC_STORED_DATA_RECORD_NUMBERS_LIST = [MappingDataRecord(name=f"DTCStoredDataRecordNumber#{record_number + 1}",
+                                                         values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
+                                                         length=8,
+                                                         min_occurrences=1 if record_number == 0 else 0,
+                                                         max_occurrences=1)
+                                       for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 # DTC Format Identifier
 DTC_FORMAT_IDENTIFIER_MAPPING = {
@@ -261,9 +266,7 @@ FAULT_DETECTION_COUNTER = RawDataRecord(name="FaultDetectionCounter",
 # Mixed
 DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
                                length=32,
-                               children=(DTC, DTC_STATUS),
-                               min_occurrences=1,
-                               max_occurrences=1)
+                               children=(DTC, DTC_STATUS))
 OPTIONAL_DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
                                         length=32,
                                         children=(DTC, DTC_STATUS),
@@ -274,6 +277,10 @@ MULTIPLE_DTC_AND_STATUS_RECORDS = RawDataRecord(name="DTC and Status",
                                                 children=(DTC, DTC_STATUS),
                                                 min_occurrences=0,
                                                 max_occurrences=None)
+DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_number + 1}",
+                                        length=32,
+                                        children=(DTC, DTC_STATUS))
+                          for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS = RawDataRecord(name="Severity, DTC and DTC Status",
                                                          length=40,
@@ -317,3 +324,16 @@ DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST = [
                                  DTCS_STATUSES_LIST,
                                  DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
     for item in data_records]
+
+DTC_STORED_DATA_RECORDS_LIST_2013 = [
+    item for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                       DTCS_AND_STATUSES_LIST,
+                                       RECORDS_DID_COUNTS_LIST,
+                                       DTC_DIDS_RECORDS_LIST_2013)
+    for item in stored_data_record]
+DTC_STORED_DATA_RECORDS_LIST_2020 = [
+    item for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                       DTCS_AND_STATUSES_LIST,
+                                       RECORDS_DID_COUNTS_LIST,
+                                       DTC_DIDS_RECORDS_LIST_2020)
+    for item in stored_data_record]
