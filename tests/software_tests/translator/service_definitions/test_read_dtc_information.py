@@ -491,7 +491,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -658,11 +658,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x12455655, 0xF0E1D2AA),
-                    'raw_value': [0x12455655, 0xF0E1D2AA],
+                    'raw_value': (0x12455655, 0xF0E1D2AA),
                     'unit': None
                 },
             ),
@@ -743,7 +743,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -798,11 +798,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Snapshot Record Number',
                     'physical_value': (0x12345601, 0x123456BD, 0xF1E2D3CC),
-                    'raw_value': [0x12345601, 0x123456BD, 0xF1E2D3CC],
+                    'raw_value': (0x12345601, 0x123456BD, 0xF1E2D3CC),
                     'unit': None
                 },
             ),
@@ -1013,11 +1013,11 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), (), (), (), (), (), ()],
+                    'children': ((), (), (), (), (), (), (), ()),
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x7E, 0x8F, 0x90, 0xA1, 0xB2, 0xC3, 0xD4, 0xE5),
-                    'raw_value': [0x7E, 0x8F, 0x90, 0xA1, 0xB2, 0xC3, 0xD4, 0xE5],
+                    'raw_value': (0x7E, 0x8F, 0x90, 0xA1, 0xB2, 0xC3, 0xD4, 0xE5),
                     'unit': None,
                 },
             ),
@@ -1220,11 +1220,11 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), (), (), (), (), ()],
+                    'children': ((), (), (), (), (), (), ()),
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96),
-                    'raw_value': [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96],
+                    'raw_value': (0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96),
                     'unit': None,
                 },
             ),
@@ -1419,11 +1419,11 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), (), (), (), (), ()],
+                    'children': ((), (), (), (), (), (), ()),
                     'length': 8,
                     'name': 'DTCExtDataRecord#1',
                     'physical_value': (0x01, 0x01, 0xA1, 0xB2, 0xC3, 0xD4, 0xE5),
-                    'raw_value': [0x01, 0x01, 0xA1, 0xB2, 0xC3, 0xD4, 0xE5],
+                    'raw_value': (0x01, 0x01, 0xA1, 0xB2, 0xC3, 0xD4, 0xE5),
                     'unit': None,
                 },
             ),
@@ -2036,7 +2036,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (
@@ -2528,11 +2528,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None
                             }
                         )
-                    ],
+            ),
                     'length': 48,
                     'name': 'Severity, Functional Unit, DTC and Status',
                     'physical_value': (0x00012334561B, 0xFF33789ABC01, 0xC0FFFFFFFF00),
-                    'raw_value': [0x00012334561B, 0xFF33789ABC01, 0xC0FFFFFFFF00],
+                    'raw_value': (0x00012334561B, 0xFF33789ABC01, 0xC0FFFFFFFF00),
                     'unit': None
                 }
             ),
@@ -2844,7 +2844,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -3177,11 +3177,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+            ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x6587A9CB, 0xF0E1D2AA, 0x4A5B6C7D, 0xBFAE9D8C),
-                    'raw_value': [0x6587A9CB, 0xF0E1D2AA, 0x4A5B6C7D, 0xBFAE9D8C],
+                    'raw_value': (0x6587A9CB, 0xF0E1D2AA, 0x4A5B6C7D, 0xBFAE9D8C),
                     'unit': None
                 },
             ),
@@ -4278,7 +4278,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -4445,11 +4445,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+            ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x6285A802, 0xAF816220),
-                    'raw_value': [0x6285A802, 0xAF816220],
+                    'raw_value': (0x6285A802, 0xAF816220),
                     'unit': None
                 },
             ),
@@ -4644,11 +4644,11 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), (), (), (), (), (), ()],
+                    'children': ((), (), (), (), (), (), (), ()),
                     'length': 8,
                     'name': 'DTCExtDataRecord#1',
                     'physical_value': (0xE2, 0x0D, 0x6A, 0x02, 0x50, 0xF4, 0xFE, 0x33),
-                    'raw_value': [0xE2, 0x0D, 0x6A, 0x02, 0x50, 0xF4, 0xFE, 0x33],
+                    'raw_value': (0xE2, 0x0D, 0x6A, 0x02, 0x50, 0xF4, 0xFE, 0x33),
                     'unit': None,
                 },
             ),
@@ -5355,7 +5355,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -5688,11 +5688,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+            ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x2D687F2B, 0x26E6C0CB, 0x33A61E05, 0xD92A02B5),
-                    'raw_value': [0x2D687F2B, 0x26E6C0CB, 0x33A61E05, 0xD92A02B5],
+                    'raw_value': (0x2D687F2B, 0x26E6C0CB, 0x33A61E05, 0xD92A02B5),
                     'unit': None
                 },
             ),
@@ -5773,7 +5773,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -5810,11 +5810,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+            ),
                     'length': 32,
                     'name': 'DTC and Fault Detection Counter',
                     'physical_value': (0x7B2B5773, 0x70EDC4BC),
-                    'raw_value': [0x7B2B5773, 0x70EDC4BC],
+                    'raw_value': (0x7B2B5773, 0x70EDC4BC),
                     'unit': None
                 },
             ),
@@ -6142,11 +6142,11 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': [()],
+                    'children': ((),),
                     'length': 8,
                     'name': 'DTCExtDataRecord#1',
                     'physical_value': (0xBD,),
-                    'raw_value': [0xBD],
+                    'raw_value': (0xBD,),
                     'unit': None,
                 },
             ),
@@ -6612,11 +6612,11 @@ class TestReadDTCInformation2013Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), ()],
+                    'children': ((), (), ()),
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x23, 0x24, 0x8A),
-                    'raw_value': [0x23, 0x24, 0x8A],
+                    'raw_value': (0x23, 0x24, 0x8A),
                     'unit': None,
                 },
             ),
@@ -6827,11 +6827,11 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [(), (), (), ()],
+                    'children': ((), (), (), ()),
                     'length': 8,
                     'name': 'DTCExtDataRecord#1',
                     'physical_value': (0x6F, 0x14, 0x92, 0x01),
-                    'raw_value': [0x6F, 0x14, 0x92, 0x01],
+                    'raw_value': (0x6F, 0x14, 0x92, 0x01),
                     'unit': None,
                 },
             ),
@@ -7228,7 +7228,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (
@@ -7697,11 +7697,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             },
                         ),
-                    ],
+                    ),
                     'length': 40,
                     'name': 'Severity, DTC and DTC Status',
                     'physical_value': (0x05119459C6, 0xC02C17D66F, 0xD7B8B79FC0),
-                    'raw_value': [0x05119459C6, 0xC02C17D66F, 0xD7B8B79FC0],
+                    'raw_value': (0x05119459C6, 0xC02C17D66F, 0xD7B8B79FC0),
                     'unit': None
                 },
             ),
@@ -7879,7 +7879,7 @@ class TestReadDTCInformation2013Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -7963,11 +7963,11 @@ class TestReadDTCInformation2013Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x692E89B9,),
-                    'raw_value': [0x692E89B9],
+                    'raw_value': (0x692E89B9,),
                     'unit': None
                 },
             ),
@@ -9607,7 +9607,7 @@ class TestReadDTCInformation2020Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -9698,11 +9698,11 @@ class TestReadDTCInformation2020Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Snapshot Record Number',
                     'physical_value': (0x5DBBC96A, 0xA6331E84, 0x38115F57, 0x669DC4EA, 0x0ABA0445),
-                    'raw_value': [0x5DBBC96A, 0xA6331E84, 0x38115F57, 0x669DC4EA, 0x0ABA0445],
+                    'raw_value': (0x5DBBC96A, 0xA6331E84, 0x38115F57, 0x669DC4EA, 0x0ABA0445),
                     'unit': None
                 },
             ),
@@ -9913,11 +9913,11 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': [()],
+                    'children': ((),),
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0xCF,),
-                    'raw_value': [0xCF],
+                    'raw_value': (0xCF,),
                     'unit': None,
                 },
             ),
@@ -10120,11 +10120,11 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), (), (), (), (), ()],
+                    'children': ((), (), (), (), (), (), ()),
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x1A, 0xE9, 0xBD, 0x63, 0xED, 0x42, 0x90),
-                    'raw_value': [0x1A, 0xE9, 0xBD, 0x63, 0xED, 0x42, 0x90],
+                    'raw_value': (0x1A, 0xE9, 0xBD, 0x63, 0xED, 0x42, 0x90),
                     'unit': None,
                 },
             ),
@@ -10319,11 +10319,11 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': [()],
+                    'children': ((),),
                     'length': 8,
                     'name': 'DTCExtDataRecord#1',
                     'physical_value': (0xA1,),
-                    'raw_value': [0xA1],
+                    'raw_value': (0xA1,),
                     'unit': None,
                 },
             ),
@@ -11414,7 +11414,7 @@ class TestReadDTCInformation2020Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -11498,11 +11498,11 @@ class TestReadDTCInformation2020Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x0F546006,),
-                    'raw_value': [0x0F546006],
+                    'raw_value': (0x0F546006,),
                     'unit': None
                 },
             ),
@@ -12513,7 +12513,7 @@ class TestReadDTCInformation2020Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -12763,11 +12763,11 @@ class TestReadDTCInformation2020Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0xA7B51C53, 0x029CA49C, 0xB28B82AB),
-                    'raw_value': [0xA7B51C53, 0x029CA49C, 0xB28B82AB],
+                    'raw_value': (0xA7B51C53, 0x029CA49C, 0xB28B82AB),
                     'unit': None
                 },
             ),
@@ -12945,11 +12945,11 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), (), (), (), (), (), (), (), (), ()],
+                    'children': ((), (), (), (), (), (), (), (), (), (), ()),
                     'length': 8,
                     'name': 'DTCExtDataRecord#1',
                     'physical_value': (0x35, 0x03, 0xAB, 0x14, 0x91, 0xF7, 0xA1, 0x09, 0x88, 0x70, 0xA1),
-                    'raw_value': [0x35, 0x03, 0xAB, 0x14, 0x91, 0xF7, 0xA1, 0x09, 0x88, 0x70, 0xA1],
+                    'raw_value': (0x35, 0x03, 0xAB, 0x14, 0x91, 0xF7, 0xA1, 0x09, 0x88, 0x70, 0xA1),
                     'unit': None,
                 },
             ),
@@ -13415,11 +13415,11 @@ class TestReadDTCInformation2020Integration:
                     'unit': None,
                 },
                 {
-                    'children': [(), (), (), (), ()],
+                    'children': ((), (), (), (), ()),
                     'length': 8,
                     'name': 'DID#1_1 data',
                     'physical_value': (0x4B, 0xEB, 0xDB, 0x8E, 0x35),
-                    'raw_value': [0x4B, 0xEB, 0xDB, 0x8E, 0x35],
+                    'raw_value': (0x4B, 0xEB, 0xDB, 0x8E, 0x35),
                     'unit': None,
                 },
             ),
@@ -13630,11 +13630,11 @@ class TestReadDTCInformation2020Integration:
                     'unit': None
                 },
                 {
-                    'children': [(), (), (), (), (), (), (), (), (), ()],
+                    'children': ((), (), (), (), (), (), (), (), (), ()),
                     'length': 8,
                     'name': 'DTCExtDataRecord#1',
                     'physical_value': (0x7F, 0x81, 0xB6, 0x94, 0x27, 0x8E, 0x57, 0x1A, 0xE1, 0xB8),
-                    'raw_value': [0x7F, 0x81, 0xB6, 0x94, 0x27, 0x8E, 0x57, 0x1A, 0xE1, 0xB8],
+                    'raw_value': (0x7F, 0x81, 0xB6, 0x94, 0x27, 0x8E, 0x57, 0x1A, 0xE1, 0xB8),
                     'unit': None,
                 },
             ),
@@ -13803,8 +13803,8 @@ class TestReadDTCInformation2020Integration:
                     'raw_value': 0xF1,
                     'unit': None
                 },
-{
-                    'children': [
+                {
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -14054,11 +14054,11 @@ class TestReadDTCInformation2020Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x8F46D685, 0xE40D69C5, 0x4114DBBB),
-                    'raw_value': [0x8F46D685, 0xE40D69C5, 0x4114DBBB],
+                    'raw_value': (0x8F46D685, 0xE40D69C5, 0x4114DBBB),
                     'unit': None
                 },
             ),
@@ -14819,7 +14819,7 @@ class TestReadDTCInformation2020Integration:
                     'unit': None
                 },
                 {
-                    'children': [
+                    'children': (
                         (
                             {
                                 'children': (),
@@ -15069,11 +15069,11 @@ class TestReadDTCInformation2020Integration:
                                 'unit': None,
                             }
                         ),
-                    ],
+                    ),
                     'length': 32,
                     'name': 'DTC and Status',
                     'physical_value': (0x8979BA85, 0xEBC9EEC1, 0xF9D8EA86),
-                    'raw_value': [0x8979BA85, 0xEBC9EEC1, 0xF9D8EA86],
+                    'raw_value': (0x8979BA85, 0xEBC9EEC1, 0xF9D8EA86),
                     'unit': None
                 },
             ),

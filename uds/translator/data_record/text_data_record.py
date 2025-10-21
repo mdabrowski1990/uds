@@ -62,7 +62,7 @@ def decode_bcd(character: str) -> int:
     if not isinstance(character, str):
         raise TypeError("Provided value is not str type.")
     if not character.isdecimal() or len(character) != 1:
-        raise ValueError("Provided value is non-ASCII character.")
+        raise ValueError("Provided value is not a BCD character.")
     return int(character)
 
 

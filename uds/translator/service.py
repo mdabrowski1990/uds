@@ -108,7 +108,7 @@ class Service:
     @request_structure.setter
     def request_structure(self, request_structure: AliasMessageStructure) -> None:
         """
-        Set Data Records to yse for translating request messages for this diagnostic service.
+        Set Data Records to use for translating request messages for this diagnostic service.
 
         :param request_structure: Data Records sequence to set.
         """
@@ -218,7 +218,7 @@ class Service:
                 raise ValueError("Provided occurrence value is out of range. "
                                  f"Data Record name = {data_record.name!r}. "
                                  f"Data Record min raw value = {data_record.min_raw_value}. "
-                                 f"Data Record max raw value = {data_record.max_occurrences}. "
+                                 f"Data Record max raw value = {data_record.max_raw_value}. "
                                  f"Provided sequence = {value}. Occurrence value = {value}.")
             return [value]
         if isinstance(value, Mapping):
@@ -380,7 +380,7 @@ class Service:
                 elif data_record.min_occurrences == 0:
                     occurrences = []
                 else:
-                    raise InconsistencyError(f"Value for Data Record {data_record.name!r} was no provided.")
+                    raise InconsistencyError(f"Value for Data Record {data_record.name!r} was not provided.")
                 for raw_value in occurrences:
                     total_raw_value = (total_raw_value << data_record.length) + raw_value
                     total_length += data_record.length
