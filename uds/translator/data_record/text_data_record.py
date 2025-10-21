@@ -27,7 +27,7 @@ class TextEncoding(ValidatedEnum):
     .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding)
         <https://en.wikipedia.org/wiki/BCD_(character_encoding)>`_"""
     DTC_OBD_FORMAT: "TextEncoding" = "DTC in OBD format"  # type: ignore
-    """DTC to OBD format encoding."""  # TODO: refer to knowledge base
+    """:ref:`OBD DTC format <knowledge-base-dtc-obd-format>` encoding."""
 
 
 def decode_ascii(character: str) -> int:

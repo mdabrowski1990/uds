@@ -13,12 +13,12 @@ DTC_CHARACTERS_MAPPING: Dict[str, int] = {
     "B": 0b10,  # Body
     "U": 0b11,  # Network Communication
 }
-"""Mapping of the first DTC character in OBD format to bits."""
+"""Mapping of the first DTC character in :ref:`OBD format <knowledge-base-dtc-obd-format>` to bits."""
 
 BITS_TO_DTC_CHARACTER_MAPPING: Dict[int, str] = {
     value: key for key, value in DTC_CHARACTERS_MAPPING.items()
 }
-"""Mapping of the first two DTC bits to OBD format character."""
+"""Mapping of the first two DTC bits to :ref:`OBD format <knowledge-base-dtc-obd-format>` character."""
 
 MIN_DTC_VALUE = 0x000000
 MAX_DTC_VALUE = 0xFFFFFF

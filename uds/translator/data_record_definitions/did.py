@@ -213,7 +213,7 @@ def get_dids_2013(did_count: int,
     """
     snapshot_data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
     for did_number in range(did_count):
-        name = f"DID#{record_number}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
+        name = f"DID#{did_number + 1}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
         snapshot_data_records.append(get_did_2013(name))
         snapshot_data_records.append(get_did_data_2013(name=f"{name} data"))
     return tuple(snapshot_data_records)
@@ -234,7 +234,7 @@ def get_dids_2020(did_count: int,
     """
     snapshot_data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
     for did_number in range(did_count):
-        name = f"DID#{record_number}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
+        name = f"DID#{did_number + 1}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
         snapshot_data_records.append(get_did_2020(name))
         snapshot_data_records.append(get_did_data_2020(name=f"{name} data"))
     return tuple(snapshot_data_records)
