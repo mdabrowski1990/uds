@@ -13,6 +13,9 @@ from .constants import BITS_TO_DTC_CHARACTER_MAPPING, DTC_CHARACTERS_MAPPING, MA
 from .custom_exceptions import InconsistencyError
 from .enums import Endianness
 
+OBD_DTC_RE = re.compile(r"^([PCBU])([0-3])([0-9A-F]{3})-([0-9A-F]{2})$", re.IGNORECASE)
+"""Regular expression for DTC in OBD format."""
+
 
 def bytes_to_hex(bytes_list: RawBytesAlias) -> str:
     """
@@ -89,7 +92,7 @@ def obd_dtc_to_int(obd_dtc: str) -> int:
     """
     if not isinstance(obd_dtc, str):
         raise TypeError("Provided value is not str type.")
-    match = re.compile(r"^([PCBU])([0-3])([0-9A-F]{3})-([0-9A-F]{2})$", re.IGNORECASE).fullmatch(obd_dtc.upper())
+    match = OBD_DTC_RE.fullmatch(obd_dtc.upper())
     if not match:
         raise ValueError(f"Provided value is not a DTC in OBD format. Example: 'U0F1E-2D'. Actual value: {obd_dtc!r}")
     group_char, specification_number, fault_specification, fault_symptom = match.groups()
