@@ -386,10 +386,10 @@ class Service:
                     total_length += data_record.length
             elif isinstance(data_record, AbstractConditionalDataRecord):
                 message_continuation = data_record.get_message_continuation(raw_value=raw_value)
-                payload_continuation = cls._encode_message(data_records_values=data_records_values,
-                                                           message_structure=message_continuation,
-                                                           check_unused_data_record_values=False)
-                if payload_continuation:
+                if message_continuation:
+                    payload_continuation = cls._encode_message(data_records_values=data_records_values,
+                                                               message_structure=message_continuation,
+                                                               check_unused_data_record_values=False)
                     _length = 8 * len(payload_continuation)
                     total_length += _length
                     total_raw_value = ((total_raw_value << _length)

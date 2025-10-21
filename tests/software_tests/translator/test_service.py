@@ -629,12 +629,18 @@ class TestService:
         self.mock_int_to_bytes.assert_called_once()
 
     @pytest.mark.parametrize("message_structure, data_records_values, message_continuation, payload", [
+        ([Mock(spec=AbstractDataRecord, name="PAram", length=8),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {"PAram": 0xD0},
+         [],
+         b"\xD0"),
         ([Mock(spec=AbstractDataRecord, name="A #1", length=2),
           Mock(spec=AbstractConditionalDataRecord)],
          {"A #1": [0, 1, 0, 1], "A #2": [0x3, 0x0]},
          [Mock(spec=AbstractDataRecord, name="A #2", length=4)],
          b"\xBE\xEF"),
         ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=8),
+          Mock(spec=AbstractConditionalDataRecord, get_message_continuation=Mock(return_value=[])),
           Mock(spec=AbstractConditionalDataRecord)],
          {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
                               0,
