@@ -394,6 +394,7 @@ a specific status mask (*DTCStatusMask*).
 It is typically used as a lightweight way to determine how many DTCs fulfill a given diagnostic condition without
 retrieving the DTC values themselves.
 
+
 Request Format
 ''''''''''''''
 The *DTCStatusMask* parameter specifies which status bits should be used as a filter when matching DTCs.
@@ -502,7 +503,7 @@ Positive Response Format
 
 reportDTCSnapshotIdentification (0x03)
 ``````````````````````````````````````
-This sub-function can be used by the client to request identification of all stored DTC snapshot records.
+This sub-function can be used by the client to request identification numbers of all stored DTC snapshot records.
 
 
 Request Format
@@ -552,6 +553,7 @@ reportDTCSnapshotRecordByDTCNumber (0x04)
 This sub-function can be used by the client to request snapshot data for a specific DTC (*DTC*)
 and snapshot record number (*DTCSnapshotRecordNumber*).
 
+
 Request Format
 ''''''''''''''
 +----------------------------------------------+------------+-------------------+--------------------------------------+---------+
@@ -569,7 +571,7 @@ Request Format
 +----------------------------------------------+------------+-------------------+--------------------------------------+---------+
 | DTCSnapshotRecordNumber                      | 8          | 0x00-0xFF         | 0x00: reserved (legislated purposes) | Always  |
 |                                              |            |                   |                                      |         |
-|                                              |            |                   | 0x01 - 0xFE: single snapshot record  |         |
+|                                              |            |                   | 0x01-0xFE: specific snapshot record  |         |
 |                                              |            |                   |                                      |         |
 |                                              |            |                   | 0xFF: all snapshot records           |         |
 +----------------------------------------------+------------+-------------------+--------------------------------------+---------+
@@ -638,23 +640,23 @@ This sub-function can be used by the client to request stored data for a specifi
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+--------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                          | Present |
-+==============================================+============+===========+======================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                   | Always  |
-+-------------+--------------------------------+------------+-----------+--------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                | Always  |
-|             |                                |            |           |                                      |         |
-|             |                                |            |           | 1 = suppress positive response       |         |
-|             +--------------------------------+------------+-----------+--------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x05      | reportDTCStoredDataByRecordNumber    | Always  |
-+-------------+--------------------------------+------------+-----------+--------------------------------------+---------+
-| DTCStoredDataRecordNumber                    | 8          | 0x00-0xFF | 0x00: reserved (legislated purposes) | Always  |
-|                                              |            |           |                                      |         |
-|                                              |            |           | 0x01 – 0xFE: specific record         |         |
-|                                              |            |           |                                      |         |
-|                                              |            |           | 0xFF: all records                    |         |
-+----------------------------------------------+------------+-----------+--------------------------------------+---------+
++----------------------------------------------+------------+-----------+----------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                            | Present |
++==============================================+============+===========+========================================+=========+
+| SID                                          | 8          | 0x19      | ReadDTCInformation                     | Always  |
++-------------+--------------------------------+------------+-----------+----------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                  | Always  |
+|             |                                |            |           |                                        |         |
+|             |                                |            |           | 1 = suppress positive response         |         |
+|             +--------------------------------+------------+-----------+----------------------------------------+---------+
+|             | reportType                     | 7 (b[6-0]) | 0x05      | reportDTCStoredDataByRecordNumber      | Always  |
++-------------+--------------------------------+------------+-----------+----------------------------------------+---------+
+| DTCStoredDataRecordNumber                    | 8          | 0x00-0xFF | 0x00: reserved (legislated purposes)   | Always  |
+|                                              |            |           |                                        |         |
+|                                              |            |           | 0x01–0xFE: specific stored data record |         |
+|                                              |            |           |                                        |         |
+|                                              |            |           | 0xFF: all records                      |         |
++----------------------------------------------+------------+-----------+----------------------------------------+---------+
 
 .. note:: *DTCStoredDataRecordNumber* (0x01–0xFE) selects a single stored data record.
   If equal to 0xFF, all available stored data records for the DTC are returned.
@@ -725,33 +727,33 @@ and record number (*DTCExtDataRecordNumber*).
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| Name                                         | Bit Length | Value             | Description                                       | Present |
-+==============================================+============+===================+===================================================+=========+
-| SID                                          | 8          | 0x19              | ReadDTCInformation                                | Always  |
-+-------------+--------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                             | Always  |
-|             |                                |            |                   |                                                   |         |
-|             |                                |            |                   | 1 = suppress positive response                    |         |
-|             +--------------------------------+------------+-------------------+---------------------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x06              | reportDTCExtDataRecordByDTCNumber                 | Always  |
-+-------------+--------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| DTC                                          | 24         | 0x000000-0xFFFFFF | DTC number                                        | Always  |
-+----------------------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| DTCExtDataRecordNumber                       | 8          | 0x00-0xFF         | 0x00: reserved                                    | Always  |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0x01 - 0x8F: vehicle manufacturer specific record |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0x90 - 0x9F: regulated emissions OBD record       |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xA0 - 0xEF: regulated record                     |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xF0 - 0xFD: reserved                             |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xFE: all regulated emissions OBD records         |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xFF: all extended data records                   |         |
-+----------------------------------------------+------------+-------------------+---------------------------------------------------+---------+
++----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| Name                                         | Bit Length | Value             | Description                                     | Present |
++==============================================+============+===================+=================================================+=========+
+| SID                                          | 8          | 0x19              | ReadDTCInformation                              | Always  |
++-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                           | Always  |
+|             |                                |            |                   |                                                 |         |
+|             |                                |            |                   | 1 = suppress positive response                  |         |
+|             +--------------------------------+------------+-------------------+-------------------------------------------------+---------+
+|             | reportType                     | 7 (b[6-0]) | 0x06              | reportDTCExtDataRecordByDTCNumber               | Always  |
++-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| DTC                                          | 24         | 0x000000-0xFFFFFF | DTC number                                      | Always  |
++----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| DTCExtDataRecordNumber                       | 8          | 0x00-0xFF         | 0x00: reserved                                  | Always  |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0x01-0x8F: vehicle manufacturer specific record |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0x90-0x9F: regulated emissions OBD record       |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xA0-0xEF: regulated record                     |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xF0-0xFD: reserved                             |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xFE: all regulated emissions OBD records       |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xFF: all extended data records                 |         |
++----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
 
 .. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
   0xFE requests all regulated emissions OBD records.
@@ -1263,33 +1265,33 @@ a specific DTC (*DTC*) from the DTC mirror memory.
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| Name                                         | Bit Length | Value             | Description                                       | Present |
-+==============================================+============+===================+===================================================+=========+
-| SID                                          | 8          | 0x19              | ReadDTCInformation                                | Always  |
-+-------------+--------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                             | Always  |
-|             |                                |            |                   |                                                   |         |
-|             |                                |            |                   | 1 = suppress positive response                    |         |
-|             +--------------------------------+------------+-------------------+---------------------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x10              | reportMirrorMemoryDTCExtDataRecordByDTCNumber     | Always  |
-+-------------+--------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| DTC                                          | 24         | 0x000000-0xFFFFFF | DTC number                                        | Always  |
-+----------------------------------------------+------------+-------------------+---------------------------------------------------+---------+
-| DTCExtDataRecordNumber                       | 8          | 0x00-0xFF         | 0x00: reserved                                    | Always  |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0x01 - 0x8F: vehicle manufacturer specific record |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0x90 - 0x9F: regulated emissions OBD record       |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xA0 - 0xEF: regulated record                     |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xF0 - 0xFD: reserved                             |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xFE: all regulated emissions OBD records         |         |
-|                                              |            |                   |                                                   |         |
-|                                              |            |                   | 0xFF: all extended data records                   |         |
-+----------------------------------------------+------------+-------------------+---------------------------------------------------+---------+
++----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| Name                                         | Bit Length | Value             | Description                                     | Present |
++==============================================+============+===================+=================================================+=========+
+| SID                                          | 8          | 0x19              | ReadDTCInformation                              | Always  |
++-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                           | Always  |
+|             |                                |            |                   |                                                 |         |
+|             |                                |            |                   | 1 = suppress positive response                  |         |
+|             +--------------------------------+------------+-------------------+-------------------------------------------------+---------+
+|             | reportType                     | 7 (b[6-0]) | 0x10              | reportMirrorMemoryDTCExtDataRecordByDTCNumber   | Always  |
++-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| DTC                                          | 24         | 0x000000-0xFFFFFF | DTC number                                      | Always  |
++----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
+| DTCExtDataRecordNumber                       | 8          | 0x00-0xFF         | 0x00: reserved                                  | Always  |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0x01-0x8F: vehicle manufacturer specific record |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0x90-0x9F: regulated emissions OBD record       |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xA0-0xEF: regulated record                     |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xF0-0xFD: reserved                             |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xFE: all regulated emissions OBD records       |         |
+|                                              |            |                   |                                                 |         |
+|                                              |            |                   | 0xFF: all extended data records                 |         |
++----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
 
 .. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
   0xFE requests all regulated emissions OBD records.
@@ -1754,7 +1756,7 @@ Request Format
 +----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
 | DTCSnapshotRecordNumber                      | 8          | 0x00-0xFF         | 0x00: reserved (legislated purposes)            | Always  |
 |                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0x01-0xFE: single snapshot record               |         |
+|                                              |            |                   | 0x01-0xFE: specific snapshot record             |         |
 |                                              |            |                   |                                                 |         |
 |                                              |            |                   | 0xFF: all snapshot records                      |         |
 +----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
@@ -1833,7 +1835,7 @@ Request Format
 +==============================================+============+===================+=================================================+=========+
 | SID                                          | 8          | 0x19              | ReadDTCInformation                              | Always  |
 +-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b7)     | 0x0-0x1           | 0 = response required                           | Always  |
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                           | Always  |
 |             |                                |            |                   |                                                 |         |
 |             |                                |            |                   | 1 = suppress positive response                  |         |
 |             +--------------------------------+------------+-------------------+-------------------------------------------------+---------+
@@ -2007,7 +2009,7 @@ Positive Response Format
 |                              +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
 |                              | reportType                     | 7 (b[6-0]) | 0x42              | reportWWHOBDDTCByMaskRecord                  | Always                                   |
 +------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| FunctionalGroupIdentifier                                     | 8          | 0x00-0xFF         | 0x00 - 0x32: reserved                        | Always                                   |
+| FunctionalGroupIdentifier                                     | 8          | 0x00-0xFF         | 0x00-0x32: reserved                          | Always                                   |
 |                                                               |            |                   |                                              |                                          |
 |                                                               |            |                   | 0x33: emissions-system group                 |                                          |
 |                                                               |            |                   |                                              |                                          |
