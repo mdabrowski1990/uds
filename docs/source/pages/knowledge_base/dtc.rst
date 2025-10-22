@@ -39,17 +39,21 @@ The OBD-II format for DTCs is defined in
 `SAE J2012 <https://www.sae.org/standards/j2012_202509-diagnostic-trouble-code-definitions>`_.
 
 Example DTC values:
+
 - P0123-45
 - U0100-00
 - B3FED-CB
 - C10F0-FF
 
 In consists of eight characters:
+
 - one letter (system):
+
   - `P` - Powertrain (bit pattern: 00)
   - `C` - Chassis (bit pattern: 01)
   - `B` - Body (bit pattern: 10)
   - `U` - Network/Communication (bit pattern: 11)
+
 - one numeric digit: `0-3`
 - three hexadecimal digits: `0-F`
 - dash: `-`
@@ -63,6 +67,7 @@ UDS
 The UDS representation (defined by ISO 14229-1) encodes the DTC as a 24-bit hexadecimal number.
 
 Example DTC values:
+
 - 0x012345
 - 0xDCBA98
 - 0xFFFFFF
