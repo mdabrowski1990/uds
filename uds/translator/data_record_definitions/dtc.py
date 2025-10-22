@@ -277,7 +277,7 @@ OPTIONAL_DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_n
                                                  children=(DTC, DTC_STATUS),
                                                  min_occurrences=0,
                                                  max_occurrences=1)
-                          for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+                                   for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS = RawDataRecord(name="Severity, DTC and DTC Status",
                                                          length=40,
