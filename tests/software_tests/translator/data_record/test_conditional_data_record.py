@@ -78,19 +78,11 @@ class TestAbstractConditionalDataRecord:
             AbstractConditionalDataRecord.validate_message_continuation(value)
 
     @pytest.mark.parametrize("value", [
-        (Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractConditionalDataRecord),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True)),
         (Mock(spec=AbstractConditionalDataRecord),
          Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
          Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True),
          Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False)),
         (Mock(spec=AbstractConditionalDataRecord),),
-        (Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1, fixed_total_length=True),
-         Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False),
-         Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8, fixed_total_length=True)),
-        (Mock(spec=AbstractDataRecord, length=2, min_occurrences=4, max_occurrences=None, fixed_total_length=False),
-         Mock(spec=AbstractConditionalDataRecord),)
     ])
     def test_validate_message_continuation__value_error__conditional_and_vary_length_data_record_position(self, value):
         with pytest.raises(ValueError):

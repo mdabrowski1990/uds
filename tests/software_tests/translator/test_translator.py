@@ -2,9 +2,8 @@ import pytest
 from mock import MagicMock, Mock, patch
 
 from uds.addressing import AddressingType
-from uds.message import NRC, UdsMessage
+from uds.message import NRC
 from uds.translator.data_record import (
-    DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     LinearFormulaDataRecord,
@@ -197,13 +196,21 @@ class TestTranslatorIntegration:
                                     max_occurrences=None)],
             0xF188: [TextDataRecord(name="ECU Software Number",
                                     encoding=TextEncoding.BCD,
-                                    min_occurrences=2,
-                                    max_occurrences=None)],
+                                    min_occurrences=4,
+                                    max_occurrences=4)],
             0xF191: [TextDataRecord(name="ECU Hardware Number",
                                     encoding=TextEncoding.BCD,
-                                    min_occurrences=2,
-                                    max_occurrences=None)],
+                                    min_occurrences=4,
+                                    max_occurrences=4)],
         }
+        did_1 = MappingDataRecord(name="DID #1",
+                                  length=16,
+                                  values_mapping={
+                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+                                  })
         did_2 = MappingDataRecord(name="DID #2",
                                   length=16,
                                   values_mapping={
@@ -214,9 +221,17 @@ class TestTranslatorIntegration:
                                   },
                                   min_occurrences=0,
                                   max_occurrences=1)
-        conditional_mapping = ConditionalMappingDataRecord(
-            default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
-            mapping=did_mapping)
+        did_3 = MappingDataRecord(name="DID #3",
+                                  length=16,
+                                  values_mapping={
+                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
+                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
+                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
+                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
+                                  },
+                                  min_occurrences=0,
+                                  max_occurrences=1)
+        did_3_data = did_2_data = did_1_data = ConditionalMappingDataRecord(mapping=did_mapping)
         diagnostic_session_control = Service(
             request_sid=RequestSID.DiagnosticSessionControl,
             request_structure=[
@@ -301,21 +316,7 @@ class TestTranslatorIntegration:
                                   min_occurrences=1,
                                   max_occurrences=None)
             ],
-            response_structure=[  # Simplified
-                MappingDataRecord(name="DID #1",
-                                  length=16,
-                                  values_mapping={
-                                      0xF186: "ActiveDiagnosticSessionDataIdentifier",
-                                      0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-                                      0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-                                      0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-                                  }),
-                ConditionalMappingDataRecord(default_message_continuation=DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION,
-                                             mapping={
-                                                 did: did_structure + [did_2, conditional_mapping] if did == 0xF186 else did_structure
-                                                 for did, did_structure in did_mapping.items()
-                                             })
-            ],
+            response_structure=[did_1, did_1_data, did_2, did_2_data, did_3, did_3_data],
         )
         self.translator = Translator(services={diagnostic_session_control,
                                                read_memory_by_address,
@@ -367,11 +368,25 @@ class TestTranslatorIntegration:
             ResponseSID.ReadDataByIdentifier,
             {
                 "DID #1": 0xF186,
-                "diagnosticSessionType": 0x01,
+                "diagnosticSessionType": 0x02,
                 "DID #2": 0xF188,
-                "ECU Software Number": [9, 0, 8, 1, 7, 2]
+                "ECU Software Number": [9, 0, 8, 1],
+                # "DID #3": 0xF187,
+                # "Spare Part Number": [0x31, 0x32, 0x33, 0x34, 0x35]
             },
-            bytearray(b"\x62\xF1\x86\x01\xF1\x88\x90\x81\x72")
+            bytearray(b"\x62"
+                      b"\xF1\x86\x02"
+                      b"\xF1\x88\x90\x81")
+                      # b"\xF1\x87\x31\x32\x33\x34\x35")
+        ),
+        (
+            None,
+            ResponseSID.ReadDataByIdentifier,
+            {
+                "DID #1": 0xF186,
+                "diagnosticSessionType": 0x03,
+            },
+            bytearray(b"\x62\xF1\x86\x03")
         ),
         (
             RequestSID.ReadDataByIdentifier,
@@ -396,7 +411,6 @@ class TestTranslatorIntegration:
             None,
             ResponseSID.ReadMemoryByAddress,
             {
-                "addressAndLengthFormatIdentifier": 0x24,
                 "data": [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69, 0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
             },
             bytearray(b"\x63\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87\x78\x69\x5A\x4B\x3C\x2D\x1E\x0F")
@@ -414,6 +428,82 @@ class TestTranslatorIntegration:
         assert self.translator.encode(sid=sid,
                                       rsid=rsid,
                                       data_records_values=data_records_values) == payload
+
+    @pytest.mark.parametrize("sid, rsid, data_records_values", [
+        (
+            None,
+            None,
+            {"subFunction": 0x03},
+        ),
+        (
+            RequestSID.DiagnosticSessionControl,
+            None,
+            {"subFunction": 0x03, "non-existing-param": None},
+        ),
+        (
+            0x10,
+            0x50,
+            {
+                "subFunction": {"SPRMIB": 1, "diagnosticSessionType": 3},
+                "sessionParameterRecord": {"P2Server_max": 0x1234, "P2*Server_max": 0x5678}
+            },
+        ),
+        (
+            None,
+            0x7F,
+            {"NRC": 0x84},
+        ),
+        (
+            RequestSID.ReadDataByIdentifier,
+            None,
+            {
+                "DID": [0x1234, 0xF186, 0xF191],
+                "subFunction": 0x01,
+            },
+        ),
+        (
+            None,
+            ResponseSID.ReadDataByIdentifier,
+            {
+                "DID #1": 0xF186,
+                "diagnosticSessionType": 0x01,
+                "DID #2": 0xF188,
+                "ECU Software Number": [9, 0, 8, 1],
+                "not a parameter": None
+            },
+        ),
+        (
+                None,
+                ResponseSID.ReadDataByIdentifier,
+                {
+                    "DID #1": 0xF186,
+                    "diagnosticSessionType": 0x01,
+                    "DID #2": 0xF188,
+                    "ECU Software Number": [9, 0, 8, 1],
+                    "DID #3": 0xF187,
+                },
+        ),
+        (
+            RequestSID.ReadMemoryByAddress,
+            None,
+            {
+                "addressAndLengthFormatIdentifier": 0x24,
+                "memorySize": 0x0103
+            },
+        ),
+        (
+            None,
+            ResponseSID.ReadMemoryByAddress,
+            {
+                "data": [],
+            },
+        ),
+    ])
+    def test_encode__error(self, sid, rsid, data_records_values):
+        with pytest.raises(Exception):
+            self.translator.encode(sid=sid,
+                                   rsid=rsid,
+                                   data_records_values=data_records_values)
 
     # decode
 
@@ -533,16 +623,16 @@ class TestTranslatorIntegration:
                                      unit=None),
                 MultipleOccurrencesInfo(name="DID",
                                         length=16,
-                                        raw_value=[0x1234, 0xF186, 0xF191],
+                                        raw_value=(0x1234, 0xF186, 0xF191),
                                         physical_value=(0x1234,
                                                         "ActiveDiagnosticSessionDataIdentifier",
                                                         "vehicleManufacturerECUHardwareNumberDataIdentifier"),
-                                        children=[(), (), ()],
+                                        children=((), (), ()),
                                         unit=None),
             )
         ),
         (
-            UdsMessage(payload=b"\x62\xF1\x86\x01\xF1\x88\x90\x81\x72", addressing_type=AddressingType.FUNCTIONAL),
+            UdsMessage(payload=b"\x62\xF1\x86\x01\xF1\x88\x52\x49\xF1\x87\x49\x30\x41\x31\x42\x39", addressing_type=AddressingType.FUNCTIONAL),
             (
                 SingleOccurrenceInfo(name="RSID",
                                      length=8,
@@ -570,9 +660,21 @@ class TestTranslatorIntegration:
                                      unit=None),
                 MultipleOccurrencesInfo(name="ECU Software Number",
                                         length=4,
-                                        raw_value=[9, 0, 8, 1, 7, 2],
-                                        physical_value="908172",
-                                        children=[tuple()] * 6,
+                                        raw_value=(5, 2, 4, 9),
+                                        physical_value="5249",
+                                        children=(tuple(),) * 4,
+                                        unit=None),
+                SingleOccurrenceInfo(name="DID #3",
+                                     length=16,
+                                     raw_value=0xF187,
+                                     physical_value="vehicleManufacturerSparePartNumberDataIdentifier",
+                                     children=tuple(),
+                                     unit=None),
+                MultipleOccurrencesInfo(name="Spare Part Number",
+                                        length=8,
+                                        raw_value=(0x49, 0x30, 0x41, 0x31, 0x42, 0x39),
+                                        physical_value="I0A1B9",
+                                        children=(tuple(),) * 6,
                                         unit=None),
             )
         ),
@@ -655,11 +757,11 @@ class TestTranslatorIntegration:
                                      unit=None),
                 MultipleOccurrencesInfo(name="data",
                                         length=8,
-                                        raw_value=[0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69,
-                                                   0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F],
+                                        raw_value=(0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69,
+                                                   0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F),
                                         physical_value=(0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87, 0x78, 0x69,
                                                         0x5A, 0x4B, 0x3C, 0x2D, 0x1E, 0x0F),
-                                        children=[tuple()] * 16,
+                                        children=(tuple(),) * 16,
                                         unit=None),
             )
         ),

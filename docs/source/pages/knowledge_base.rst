@@ -15,6 +15,7 @@ understanding of the UDS protocol itself.
   knowledge_base/time_parameters.rst
   knowledge_base/packet.rst
   knowledge_base/segmentation.rst
+  knowledge_base/dtc.rst
   knowledge_base/can.rst
 
 

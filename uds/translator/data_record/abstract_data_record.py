@@ -72,9 +72,9 @@ class MultipleOccurrencesInfo(TypedDict, total=True):
 
     name: str
     length: int
-    raw_value: List[int]
+    raw_value: Tuple[int, ...]
     physical_value: MultiplePhysicalValuesAlias
-    children: List[Tuple["SingleOccurrenceInfo", ...]]
+    children: Tuple[Tuple["SingleOccurrenceInfo", ...], ...]
     unit: Optional[str]
 
 
@@ -375,9 +375,9 @@ class AbstractDataRecord(ABC):
                 children_values.append(self.get_children_occurrence_info(raw_value))
             return MultipleOccurrencesInfo(name=self.name,
                                            length=self.length,
-                                           raw_value=list(raw_values),
+                                           raw_value=tuple(raw_values),
                                            physical_value=self.get_physical_values(*raw_values),
-                                           children=children_values,
+                                           children=tuple(children_values),
                                            unit=self.unit)
         if len(raw_values) == 1:
             raw_value = raw_values[0]

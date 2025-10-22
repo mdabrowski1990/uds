@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 from mock import MagicMock, Mock, call, patch
 
@@ -6,6 +8,7 @@ from uds.translator.service import (
     RESPONSE_REQUEST_SID_DIFF,
     AbstractConditionalDataRecord,
     AbstractDataRecord,
+    InconsistencyError,
     RequestSID,
     ResponseSID,
     Sequence,
@@ -471,16 +474,21 @@ class TestService:
         ((0xCA, 0xFE),
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1),
           Mock(spec=AbstractConditionalDataRecord)],
-         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=8)]),
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1)]),
         (list(range(100)),
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=10, max_occurrences=10),
           Mock(spec=AbstractConditionalDataRecord)],
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None)]),
     ])
     def test_decode_payload__valid__condition(self, payload, message_structure, message_continuation):
-        self.mock_int_to_bytes.return_value = b"\x00"
+        self.mock_int_to_bytes.side_effect = [tuple(payload[:message_structure[0].max_occurrences]),
+                                              tuple(payload[message_structure[0].max_occurrences:])]
         mock_get_message_continuation = Mock(return_value=message_continuation)
         message_structure[-1].get_message_continuation = mock_get_message_continuation
+        message_continuation[0].get_occurrence_info.return_value = {
+            "length": message_continuation[0].length,
+            "raw_value": range(int(len(payload[message_structure[0].max_occurrences:]) * 8 // message_continuation[0].length))
+        }
         assert (Service._decode_payload(payload=payload,
                                         message_structure=message_structure)
                 == tuple(dr.get_occurrence_info.return_value
@@ -533,15 +541,57 @@ class TestService:
     ])
     @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
     def test_encode_message__runtime_error(self, mock_get_data_record_occurrences,
-                                                 message_structure, data_records_values):
+                                           message_structure, data_records_values):
+        values_copy = deepcopy(data_records_values)
         mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
         for data_record in message_structure:
             data_record.name = data_record._extract_mock_name()
         with pytest.raises(RuntimeError):
             Service._encode_message(data_records_values=data_records_values,
                                     message_structure=message_structure)
-        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=values_copy[dr.name])
                                                            for dr in message_structure], any_order=False)
+        self.mock_int_to_bytes.assert_not_called()
+
+    @pytest.mark.parametrize("message_structure, data_records_values", [
+        ([Mock(spec=AbstractDataRecord, name="Param 1", length=8)],
+         {"Param 1": 0, "Param 2": 1}),
+        ([Mock(spec=AbstractDataRecord, name="XYZ", length=24)],
+         {"XYZ": {"Child 1": 1, "Child 2": 2, "Child 3": 0}, "ABC": None}),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__value_error(self, mock_get_data_record_occurrences,
+                                         message_structure, data_records_values):
+        values_copy = deepcopy(data_records_values)
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
+        for data_record in message_structure:
+            data_record.name = data_record._extract_mock_name()
+        with pytest.raises(ValueError):
+            Service._encode_message(data_records_values=data_records_values,
+                                    message_structure=message_structure)
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=values_copy[dr.name])
+                                                           for dr in message_structure], any_order=False)
+        self.mock_int_to_bytes.assert_not_called()
+
+    @pytest.mark.parametrize("message_structure, data_records_values", [
+        ([Mock(spec=AbstractDataRecord, name="Param 1", length=8)],
+         {}),
+        ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=7),
+          Mock(spec=AbstractDataRecord, name="Data Record - 2", length=3)],
+         {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
+                              0,
+                              {"Data Record - 1.1": 9, "Data Record - 1.2": {"A": 1, "B": 2}}],
+          "Data Record - 3": [{"Data Record - 3.1": 0, "Data Record - 3.2": 2}]}),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__inconsistency_error(self, mock_get_data_record_occurrences,
+                                         message_structure, data_records_values):
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
+        for data_record in message_structure:
+            data_record.name = data_record._extract_mock_name()
+        with pytest.raises(InconsistencyError):
+            Service._encode_message(data_records_values=data_records_values,
+                                    message_structure=message_structure)
         self.mock_int_to_bytes.assert_not_called()
 
     @pytest.mark.parametrize("message_structure, data_records_values, payload", [
@@ -567,23 +617,30 @@ class TestService:
     def test_encode_message__valid__no_condition(self, mock_get_data_record_occurrences,
                                                  message_structure, data_records_values,
                                                  payload):
+        values_copy = deepcopy(data_records_values)
         self.mock_int_to_bytes.return_value = payload
         mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
         for data_record in message_structure:
             data_record.name = data_record._extract_mock_name()
         assert Service._encode_message(data_records_values=data_records_values,
                                        message_structure=message_structure) == bytearray(payload)
-        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=values_copy[dr.name])
                                                            for dr in message_structure], any_order=False)
         self.mock_int_to_bytes.assert_called_once()
 
     @pytest.mark.parametrize("message_structure, data_records_values, message_continuation, payload", [
+        ([Mock(spec=AbstractDataRecord, name="PAram", length=8),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {"PAram": 0xD0},
+         [],
+         b"\xD0"),
         ([Mock(spec=AbstractDataRecord, name="A #1", length=2),
           Mock(spec=AbstractConditionalDataRecord)],
          {"A #1": [0, 1, 0, 1], "A #2": [0x3, 0x0]},
          [Mock(spec=AbstractDataRecord, name="A #2", length=4)],
          b"\xBE\xEF"),
         ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=8),
+          Mock(spec=AbstractConditionalDataRecord, get_message_continuation=Mock(return_value=[])),
           Mock(spec=AbstractConditionalDataRecord)],
          {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
                               0,
@@ -594,8 +651,9 @@ class TestService:
     ])
     @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
     def test_encode_message__valid__condition(self, mock_get_data_record_occurrences,
-                                                   message_structure, data_records_values,
-                                                   message_continuation, payload):
+                                              message_structure, data_records_values,
+                                              message_continuation, payload):
+        values_copy = deepcopy(data_records_values)
         self.mock_int_to_bytes.return_value = payload
         mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
         for data_record in message_structure + message_continuation:
@@ -603,8 +661,8 @@ class TestService:
         mock_get_message_continuation = Mock(return_value=message_continuation)
         message_structure[-1].get_message_continuation = mock_get_message_continuation
         assert Service._encode_message(data_records_values=data_records_values,
-                                       message_structure=message_structure) == bytearray(payload + payload)
-        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
+                                       message_structure=message_structure) == bytearray(payload)
+        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=values_copy[dr.name])
                                                            for dr in message_structure + message_continuation
                                                            if isinstance(dr, AbstractDataRecord)],
                                                           any_order=False)
@@ -615,6 +673,10 @@ class TestService:
         ([Mock(spec=AbstractDataRecord, name="Param 1", length=8),
           Mock(spec=AbstractConditionalDataRecord)],
          {"Param 1": []},
+         b""),
+        ([Mock(spec=AbstractDataRecord, name="Param 1", length=8, min_occurrences=0, max_occurrences=1),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {},
          b""),
     ])
     @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
@@ -627,10 +689,6 @@ class TestService:
             data_record.name = data_record._extract_mock_name()
         assert Service._encode_message(data_records_values=data_records_values,
                                        message_structure=message_structure) == bytearray(payload + payload)
-        mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=data_records_values[dr.name])
-                                                           for dr in message_structure
-                                                           if isinstance(dr, AbstractDataRecord)],
-                                                          any_order=False)
         self.mock_int_to_bytes.assert_called()
 
     # validate_message_structure
@@ -725,6 +783,11 @@ class TestService:
     # decode
 
     @pytest.mark.parametrize("payload", [[*range(100, 232)], b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87"])
+    def test_decode__value_error(self, payload):
+        with pytest.raises(ValueError):
+            Service.decode(self.mock_service, payload=payload)
+
+    @pytest.mark.parametrize("payload", [[*range(100, 232)], b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87"])
     def test_decode__request(self, payload):
         self.mock_service.request_sid = payload[0]
         assert Service.decode(self.mock_service,
@@ -742,11 +805,6 @@ class TestService:
         assert Service.decode(self.mock_service,
                               payload=payload) == self.mock_service.decode_negative_response.return_value
 
-    @pytest.mark.parametrize("payload", [[*range(100, 232)], b"\xF0\xE1\xD2\xC3\xB4\xA5\x96\x87"])
-    def test_decode__value_error(self, payload):
-        with pytest.raises(ValueError):
-            Service.decode(self.mock_service, payload=payload)
-
     # encode_request
 
     @pytest.mark.parametrize("data_records_values, request_sid, payload_continuation", [
@@ -759,9 +817,6 @@ class TestService:
         self.mock_service._encode_message.return_value = payload_continuation
         assert (Service.encode_request(self.mock_service, data_records_values=data_records_values)
                 == bytearray([request_sid]) + payload_continuation)
-        self.mock_service._encode_message.assert_called_once_with(
-            message_structure=self.mock_service.request_structure,
-            data_records_values=data_records_values)
 
     # encode_positive_response
 
@@ -775,9 +830,6 @@ class TestService:
         self.mock_service._encode_message.return_value = payload_continuation
         assert (Service.encode_positive_response(self.mock_service, data_records_values=data_records_values)
                 == bytearray([response_sid]) + payload_continuation)
-        self.mock_service._encode_message.assert_called_once_with(
-            message_structure=self.mock_service.response_structure,
-            data_records_values=data_records_values)
 
     # encode_negative_response
 
@@ -805,6 +857,25 @@ class TestService:
 
     # encode
 
+    @pytest.mark.parametrize("sid, rsid, data_records_values", [
+        (None, None, {}),
+        (Mock(), Mock(), Mock()),
+    ])
+    def test_encode__value_error(self, sid, rsid, data_records_values):
+        with pytest.raises(ValueError):
+            Service.encode(self.mock_service, sid=sid, rsid=rsid, data_records_values=data_records_values)
+
+    @pytest.mark.parametrize("data_records_values", [
+        {"NRC": 0x10, "unindentifeid": 0},
+        {},
+    ])
+    def test_encode__inconsistency_error(self, data_records_values):
+        with pytest.raises(InconsistencyError):
+            Service.encode(self.mock_service,
+                           sid=None,
+                           rsid=ResponseSID.NegativeResponse,
+                           data_records_values=data_records_values)
+
     @pytest.mark.parametrize("data_records_values", [Mock(), {"a": 1, "b": [{"zyx a": 94}, 0xFF]}])
     def test_encode__request(self, data_records_values):
         assert (Service.encode(self.mock_service,
@@ -829,11 +900,3 @@ class TestService:
                                data_records_values=data_records_values)
                 == self.mock_service.encode_negative_response.return_value)
         self.mock_service.encode_negative_response.assert_called_once_with(nrc=data_records_values["NRC"])
-
-    @pytest.mark.parametrize("sid, rsid, data_records_values", [
-        (None, None, {}),
-        (Mock(), Mock(), Mock()),
-    ])
-    def test_encode__value_error(self, sid, rsid, data_records_values):
-        with pytest.raises(ValueError):
-            Service.encode(self.mock_service, sid=sid, rsid=rsid, data_records_values=data_records_values)

@@ -193,7 +193,6 @@ class TestClearDiagnosticInformation2020Integration:
         (
             {
                 "groupOfDTC": 0xF0E1D2,
-                "MemorySelection": None,
             },
             RequestSID.ClearDiagnosticInformation,
             None,

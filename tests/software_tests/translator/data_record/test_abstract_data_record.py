@@ -435,9 +435,9 @@ class TestAbstractDataRecord:
         output = AbstractDataRecord.get_occurrence_info(self.mock_data_record, *raw_values)
         assert isinstance(output, dict)
         assert output["name"] == self.mock_data_record.name
-        assert output["raw_value"] == list(raw_values)
+        assert output["raw_value"] == tuple(raw_values)
         assert output["physical_value"] == self.mock_data_record.get_physical_values.return_value
-        assert output["children"] == [self.mock_data_record.get_children_occurrence_info.return_value]*len(raw_values)
+        assert output["children"] == (self.mock_data_record.get_children_occurrence_info.return_value,)*len(raw_values)
         self.mock_data_record.get_physical_values.assert_called_once_with(*raw_values)
         self.mock_data_record.get_children_occurrence_info.assert_has_calls([call(raw_value) for raw_value in raw_values])
 

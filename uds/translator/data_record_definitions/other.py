@@ -1,20 +1,34 @@
 """Remaining Data Records definitions."""
 
 __all__ = [
+    # Common
+    "RESERVED_BIT",
     # SID 0x10
     "P2_SERVER_MAX", "P2_EXT_SERVER_MAX", "SESSION_PARAMETER_RECORD",
     # SID 0x11
     "POWER_DOWN_TIME", "CONDITIONAL_POWER_DOWN_TIME",
     # SID 0x14
-    "GROUP_OF_DTC", "MEMORY_SELECTION",
+    "OPTIONAL_MEMORY_SELECTION",
+    # SID 0x19
+    "MEMORY_SELECTION",
+    # SID 0x22
+    "ACTIVE_DIAGNOSTIC_SESSION",
 ]
 
 from ..data_record import (
     ConditionalMappingDataRecord,
     LinearFormulaDataRecord,
     MappingAndLinearFormulaDataRecord,
+    MappingDataRecord,
     RawDataRecord,
 )
+from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING
+
+# Common
+RESERVED_BIT = RawDataRecord(name="Reserved",
+                             length=1,
+                             min_occurrences=1,
+                             max_occurrences=1)
 
 # SID 0x10
 P2_SERVER_MAX = LinearFormulaDataRecord(name="P2Server_max",
@@ -30,6 +44,7 @@ P2_EXT_SERVER_MAX = LinearFormulaDataRecord(name="P2*Server_max",
 SESSION_PARAMETER_RECORD = RawDataRecord(name="sessionParameterRecord",
                                          length=32,
                                          children=(P2_SERVER_MAX, P2_EXT_SERVER_MAX))
+
 # SID 0x11
 POWER_DOWN_TIME = MappingAndLinearFormulaDataRecord(name="powerDownTime",
                                                     length=8,
@@ -39,10 +54,20 @@ POWER_DOWN_TIME = MappingAndLinearFormulaDataRecord(name="powerDownTime",
                                                     unit="s")
 CONDITIONAL_POWER_DOWN_TIME = ConditionalMappingDataRecord(mapping={0x4: [POWER_DOWN_TIME]},
                                                            default_message_continuation=[])
+
 # SID 0x14
-GROUP_OF_DTC = RawDataRecord(name="groupOfDTC",
-                             length=24)
+OPTIONAL_MEMORY_SELECTION = RawDataRecord(name="MemorySelection",
+                                          length=8,
+                                          min_occurrences=0,
+                                          max_occurrences=1)
+
+# SID 0x19
 MEMORY_SELECTION = RawDataRecord(name="MemorySelection",
-                                 length=8,
-                                 min_occurrences=0,
-                                 max_occurrences=1)
+                                 length=8)
+
+# SID 0x22
+ACTIVE_DIAGNOSTIC_SESSION = MappingDataRecord(name="ActiveDiagnosticSession",
+                                              values_mapping=DIAGNOSTIC_SESSIONS_MAPPING,
+                                              length=7,
+                                              min_occurrences=1,
+                                              max_occurrences=1)

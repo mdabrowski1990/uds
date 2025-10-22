@@ -1,12 +1,20 @@
 """Module with various conversion functions."""
 
-__all__ = ["bytes_to_hex", "bytes_to_int", "int_to_bytes", ]
+__all__ = [
+    "int_to_obd_dtc", "obd_dtc_to_int",
+    "bytes_to_hex", "bytes_to_int", "int_to_bytes",
+]
 
+import re
 from typing import Optional
 
 from .common_types import RawBytesAlias, validate_raw_bytes
+from .constants import BITS_TO_DTC_CHARACTER_MAPPING, DTC_CHARACTERS_MAPPING, MAX_DTC_VALUE, MIN_DTC_VALUE
 from .custom_exceptions import InconsistencyError
 from .enums import Endianness
+
+OBD_DTC_RE = re.compile(r"^([PCBU])([0-3])([0-9A-F]{3})-([0-9A-F]{2})$", re.IGNORECASE)
+"""Regular expression for DTC in OBD format."""
 
 
 def bytes_to_hex(bytes_list: RawBytesAlias) -> str:
@@ -69,3 +77,44 @@ def int_to_bytes(int_value: int,
         raise InconsistencyError("Provided value of `size` is too small to contain all bytes of int_value. "
                                  f"Actual values: int_value={int_value}, size={size}")
     return int_value.to_bytes(length=size, byteorder=endianness.value)
+
+
+def obd_dtc_to_int(obd_dtc: str) -> int:
+    """
+    Convert text with DTC in OBD format into integer value (DTC in UDS format).
+
+    :param obd_dtc: Text with DTC in OBD format.
+
+    :raise TypeError: Provided value is not str type.
+    :raise ValueError: Provided value is not DTC in OBD format.
+
+    :return: Integer value representation of this DTC in UDS format.
+    """
+    if not isinstance(obd_dtc, str):
+        raise TypeError("Provided value is not str type.")
+    match = OBD_DTC_RE.fullmatch(obd_dtc.upper())
+    if not match:
+        raise ValueError(f"Provided value is not a DTC in OBD format. Example: 'U0F1E-2D'. Actual value: {obd_dtc!r}")
+    group_char, specification_number, fault_specification, fault_symptom = match.groups()
+    return ((DTC_CHARACTERS_MAPPING[group_char] << 22)
+            + (int(specification_number, 16) << 20)
+            + (int(fault_specification, 16) << 8)
+            + int(fault_symptom, 16))
+
+
+def int_to_obd_dtc(dtc: int) -> str:
+    """
+    Encode integer value (DTC in UDS format) into text with DTC in OBD format.
+
+    :param dtc: Integer with DTC in UDS format.
+
+    :raise TypeError: Provided value is not int type.
+    :raise ValueError: Provided value is not DTC in OBD format.
+
+    :return: Text value representation of this DTC in OBD format.
+    """
+    if not isinstance(dtc, int):
+        raise TypeError("Provided value is not int type.")
+    if not MIN_DTC_VALUE <= dtc <= MAX_DTC_VALUE:
+        raise ValueError("Provided value is not a DTC in UDS format.")
+    return f"{BITS_TO_DTC_CHARACTER_MAPPING[dtc >> 22]}{(dtc & 0x3FFF00) >> 8:04X}-{dtc & 0xFF:02X}"

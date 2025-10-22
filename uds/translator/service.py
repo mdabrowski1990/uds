@@ -4,11 +4,11 @@ __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
            "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]
 
 from copy import deepcopy
-from typing import Collection, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Collection, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from warnings import warn
 
 from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID
-from uds.utilities import Endianness, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
+from uds.utilities import Endianness, InconsistencyError, RawBytesAlias, bytes_to_int, int_to_bytes, validate_raw_bytes
 
 from .data_record import (
     AbstractConditionalDataRecord,
@@ -108,7 +108,7 @@ class Service:
     @request_structure.setter
     def request_structure(self, request_structure: AliasMessageStructure) -> None:
         """
-        Set Data Records to yse for translating request messages for this diagnostic service.
+        Set Data Records to use for translating request messages for this diagnostic service.
 
         :param request_structure: Data Records sequence to set.
         """
@@ -218,7 +218,7 @@ class Service:
                 raise ValueError("Provided occurrence value is out of range. "
                                  f"Data Record name = {data_record.name!r}. "
                                  f"Data Record min raw value = {data_record.min_raw_value}. "
-                                 f"Data Record max raw value = {data_record.max_occurrences}. "
+                                 f"Data Record max raw value = {data_record.max_raw_value}. "
                                  f"Provided sequence = {value}. Occurrence value = {value}.")
             return [value]
         if isinstance(value, Mapping):
@@ -287,12 +287,14 @@ class Service:
     @classmethod
     def _decode_payload(cls,
                         payload: RawBytesAlias,
-                        message_structure: AliasMessageStructure) -> DecodedMessageAlias:
+                        message_structure: AliasMessageStructure,
+                        check_remaining_length: bool = True) -> DecodedMessageAlias:
         """
         Decode information for given message structure and payload.
 
         :param payload: Payload to decode.
         :param message_structure: Defined structure of a diagnostic message.
+        :param check_remaining_length: Whether to raise an exception when only part of the message was decoded.
 
         :raise ValueError: Provided message payload was too short.
         :raise RuntimeError: An error occurred which was caused by incorrect message structure.
@@ -329,18 +331,26 @@ class Service:
                 remaining_payload = int_to_bytes(int_value=payload_int & ((1 << remaining_length) - 1),
                                                  endianness=Endianness.BIG_ENDIAN,
                                                  size=bytes_number)
-                return tuple(decoded_message_continuation) + cls._decode_payload(
-                    payload=remaining_payload, message_structure=conditional_message_continuation)
+                decoded_conditional_message_continuation = cls._decode_payload(
+                    payload=remaining_payload,
+                    message_structure=conditional_message_continuation,
+                    check_remaining_length=False)
+                for data_record_info in decoded_conditional_message_continuation:
+                    occurrences_number = 1 if isinstance(data_record_info["raw_value"], int) \
+                        else len(data_record_info["raw_value"])
+                    remaining_length -= occurrences_number * data_record_info["length"]
+                    decoded_message_continuation.append(data_record_info)
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
-        if remaining_length != 0:
+        if check_remaining_length and remaining_length != 0:
             raise RuntimeError("Incorrect message structure was defined.")
         return tuple(decoded_message_continuation)
 
     @classmethod
     def _encode_message(cls,
-                        data_records_values: DataRecordsValuesAlias,
-                        message_structure: AliasMessageStructure) -> bytearray:
+                        data_records_values: Dict[str, DataRecordValueAlias],
+                        message_structure: AliasMessageStructure,
+                        check_unused_data_record_values: bool = True) -> bytearray:
         """
         Encode payload of a diagnostic message.
 
@@ -349,40 +359,53 @@ class Service:
             Mapping values are either a single occurrence or multiple occurrences values. Each occurrence can be
             a raw value or a mapping with children names and its corresponding values.
         :param message_structure: Data Records that form the remaining structure of the diagnostic message.
+        :param check_unused_data_record_values: Whether to raise an exception when unused Data Record value found.
 
         :raise RuntimeError: An error occurred which was caused by incorrect message structure.
+        :raise ValueError: Value for at least one Data Record that is no part of the message, was provided.
         :raise NotImplementedError: There is missing implementation for at least one Data Record in the provided
             message structure.
 
         :return: Payload of a diagnostic message created from provided data records values.
         """
-        data_records_values = dict(deepcopy(data_records_values))
-        payload_continuation = bytearray()
         total_raw_value = 0
         total_length = 0
         occurrences = []
         for data_record in message_structure:
             if isinstance(data_record, AbstractDataRecord):
-                data_record_value = data_records_values.pop(data_record.name)
-                occurrences = cls._get_data_record_occurrences(data_record=data_record,
-                                                               value=data_record_value)
+                if data_record.name in data_records_values:
+                    data_record_value = data_records_values.pop(data_record.name)
+                    occurrences = cls._get_data_record_occurrences(data_record=data_record,
+                                                                   value=data_record_value)
+                elif data_record.min_occurrences == 0:
+                    occurrences = []
+                else:
+                    raise InconsistencyError(f"Value for Data Record {data_record.name!r} was not provided.")
                 for raw_value in occurrences:
                     total_raw_value = (total_raw_value << data_record.length) + raw_value
                     total_length += data_record.length
             elif isinstance(data_record, AbstractConditionalDataRecord):
-                if not occurrences:
-                    # stop processing if the proceeding Data Record was empty (that means message is over)
-                    break
                 message_continuation = data_record.get_message_continuation(raw_value=raw_value)
-                payload_continuation = cls._encode_message(data_records_values=data_records_values,
-                                                           message_structure=message_continuation)
+                if message_continuation:
+                    payload_continuation = cls._encode_message(data_records_values=data_records_values,
+                                                               message_structure=message_continuation,
+                                                               check_unused_data_record_values=False)
+                    _length = 8 * len(payload_continuation)
+                    total_length += _length
+                    total_raw_value = ((total_raw_value << _length)
+                                       + bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN))
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
+            # stop processing if the proceeding Data Record was empty (that means message is over)
+            if not occurrences:
+                break
         if total_length % 8 != 0:
             raise RuntimeError("Incorrect message structure was provided.")
+        if check_unused_data_record_values and data_records_values:
+            raise ValueError(f"Unused Data Record values were provided: {data_records_values}.")
         return bytearray(int_to_bytes(int_value=total_raw_value,
                                       size=total_length // 8,
-                                      endianness=Endianness.BIG_ENDIAN)) + payload_continuation
+                                      endianness=Endianness.BIG_ENDIAN))
 
     @staticmethod
     def validate_message_structure(value: AliasMessageStructure) -> None:
@@ -482,7 +505,7 @@ class Service:
         :return: Payload of a request message.
         """
         return (bytearray([self.request_sid])
-                + self._encode_message(data_records_values=data_records_values,
+                + self._encode_message(data_records_values=deepcopy(dict(data_records_values)),
                                        message_structure=self.request_structure))
 
     def encode_positive_response(self, data_records_values: DataRecordsValuesAlias) -> bytearray:
@@ -497,7 +520,7 @@ class Service:
         :return: Payload of a positive response message.
         """
         return (bytearray([self.response_sid])
-                + self._encode_message(data_records_values=data_records_values,
+                + self._encode_message(data_records_values=deepcopy(dict(data_records_values)),
                                        message_structure=self.response_structure))
 
     def encode_negative_response(self, nrc: NRC) -> bytearray:
@@ -531,10 +554,15 @@ class Service:
             Used by response messages only (first byte).
 
         :raise ValueError: Missing or provided SID/RSID value cannot be handled by this service.
+        :raise InconsistencyError: Value only for `NRC`
 
         :return: Payload of a diagnostic message created from provided data records values.
         """
         if rsid == ResponseSID.NegativeResponse and sid in {None, self.request_sid}:
+            if set(data_records_values.keys()) != {"NRC"}:
+                raise InconsistencyError("Value only for `NRC` Data Record shall be provided in case of "
+                                         "negative response message. "
+                                         f"Actual values: {data_records_values}")
             return self.encode_negative_response(nrc=data_records_values["NRC"])  # type: ignore
         if rsid == self.response_sid and sid is None:
             return self.encode_positive_response(data_records_values=data_records_values)
