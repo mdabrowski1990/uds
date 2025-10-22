@@ -64,11 +64,6 @@ DTC = TextDataRecord(name="DTC",
                      encoding=TextEncoding.DTC_OBD_FORMAT,
                      min_occurrences=1,
                      max_occurrences=1)
-DTCS_LIST = [TextDataRecord(name=f"DTC#{record_number + 1}",
-                            encoding=TextEncoding.DTC_OBD_FORMAT,
-                            min_occurrences=0,
-                            max_occurrences=1)
-             for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 # DTC Status
 DTC_STATUS_BIT0 = MappingDataRecord(name="testFailed",
@@ -112,10 +107,6 @@ DTC_STATUS_AVAILABILITY_MASK = RawDataRecord(name="DTCStatusAvailabilityMask",
 DTC_STATUS = RawDataRecord(name="DTCStatus",
                            children=DTC_STATUS_BITS,
                            length=8)
-DTCS_STATUSES_LIST = [RawDataRecord(name=f"DTCStatus#{record_number + 1}",
-                                    children=DTC_STATUS_BITS,
-                                    length=8)
-                      for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 # DTC Severity
 DTC_SEVERITY_BIT0 = MappingDataRecord(name="DTCClass_0",
@@ -281,6 +272,12 @@ DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_number + 1
                                         length=32,
                                         children=(DTC, DTC_STATUS))
                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+OPTIONAL_DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_number + 1}",
+                                                 length=32,
+                                                 children=(DTC, DTC_STATUS),
+                                                 min_occurrences=0,
+                                                 max_occurrences=1)
+                          for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS = RawDataRecord(name="Severity, DTC and DTC Status",
                                                          length=40,
@@ -320,8 +317,7 @@ MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER_RECORDS = RawDataRecord(name="DTC and Sn
                                                                 max_occurrences=None)
 
 DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST = [
-    item for data_records in zip(DTCS_LIST,
-                                 DTCS_STATUSES_LIST,
+    item for data_records in zip(OPTIONAL_DTCS_AND_STATUSES_LIST,
                                  DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
     for item in data_records]
 
