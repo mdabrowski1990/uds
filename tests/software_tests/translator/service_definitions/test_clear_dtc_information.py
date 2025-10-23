@@ -6,6 +6,7 @@ from uds.translator.service_definitions.clear_diagnostic_information import (
     CLEAR_DIAGNOSTIC_INFORMATION_2013,
     CLEAR_DIAGNOSTIC_INFORMATION_2020,
 )
+from uds.utilities import bytes_to_hex
 
 
 class TestClearDiagnosticInformation:
@@ -85,6 +86,7 @@ class TestClearDiagnosticInformation2013Integration:
         ),
     ])
     def test_decode(self, payload, decoded_message):
+        print(f"payload = {bytes_to_hex(payload)}")
         assert CLEAR_DIAGNOSTIC_INFORMATION_2013.decode(payload) == decoded_message
 
     @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
@@ -112,6 +114,7 @@ class TestClearDiagnosticInformation2013Integration:
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
+        print(f"SID = {sid}\nRSID = {rsid}\npayload = {bytes_to_hex(payload)}")
         assert CLEAR_DIAGNOSTIC_INFORMATION_2013.encode(data_records_values=data_records_values,
                                                         sid=sid,
                                                         rsid=rsid) == payload
@@ -187,6 +190,7 @@ class TestClearDiagnosticInformation2020Integration:
         ),
     ])
     def test_decode(self, payload, decoded_message):
+        print(f"payload = {bytes_to_hex(payload)}")
         assert CLEAR_DIAGNOSTIC_INFORMATION_2020.decode(payload) == decoded_message
 
     @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
@@ -215,6 +219,7 @@ class TestClearDiagnosticInformation2020Integration:
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
+        print(f"SID = {sid}\nRSID = {rsid}\npayload = {bytes_to_hex(payload)}")
         assert CLEAR_DIAGNOSTIC_INFORMATION_2020.encode(data_records_values=data_records_values,
                                                         sid=sid,
                                                         rsid=rsid) == payload

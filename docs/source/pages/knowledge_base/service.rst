@@ -2291,6 +2291,8 @@ Positive Response Format
 +------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
 
 
+.. _knowledge-base-service-read-memory-by-address:
+
 ReadMemoryByAddress
 -------------------
 ReadMemoryByAddress service allows the client to request server's memory data stored under provided memory address.
