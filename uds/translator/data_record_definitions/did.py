@@ -1,7 +1,8 @@
 """Data Records definitions for Data Identifiers."""
 
 __all__ = [
-    "get_did_2013", "get_did_2020",
+    "MULTIPLE_DID_2013", "MULTIPLE_DID_2020",
+    "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
     "get_did_data_2013", "get_did_data_2020",
     "get_did_records_formula_2013", "get_did_records_formula_2020",
 ]
@@ -54,6 +55,8 @@ DID_MAPPING_2013 = {
     0xFA12: "EDRDeviceAddressInformation",
     0xFF00: "UDSVersionDataIdentifier",
 }
+""":ref:`Data Identifiers mapping according to ISO 14229-1:2013 <knowledge-base-did-2013>`."""
+
 DID_MAPPING_2020 = {
     0xF180: "BootSoftwareIdentificationDataIdentifier",
     0xF181: "applicationSoftwareIdentificationDataIdentifier",
@@ -93,6 +96,7 @@ DID_MAPPING_2020 = {
     0xFF00: "UDSVersionDataIdentifier",
     0xFF01: "ReservedForISO15765-5",
 }
+""":ref:`Data Identifiers mapping according to ISO 14229-1:2020 <knowledge-base-did-2020>`."""
 
 DID_DATA_MAPPING_2013 = {
     0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
@@ -100,6 +104,17 @@ DID_DATA_MAPPING_2013 = {
 DID_DATA_MAPPING_2020 = {
     0xF186: DID_DATA_MAPPING_2013[0xF186],
 }
+
+MULTIPLE_DID_2013 = MappingDataRecord(name="DID",
+                                      length=16,
+                                      values_mapping=DID_MAPPING_2013,
+                                      min_occurrences=1,
+                                      max_occurrences=None)
+MULTIPLE_DID_2020 = MappingDataRecord(name="DID",
+                                      length=16,
+                                      values_mapping=DID_MAPPING_2020,
+                                      min_occurrences=1,
+                                      max_occurrences=None)
 
 
 def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:
@@ -199,7 +214,8 @@ def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
 
 
 def get_dids_2013(did_count: int,
-                  record_number: Optional[int]) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
+                  record_number: Optional[int],
+                  optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
     """
     Get DIDs related Data Records for given record (e.g. Snapshot or Stored Data).
 
@@ -208,19 +224,21 @@ def get_dids_2013(did_count: int,
     :param did_count: Number of DIDs that are part of the record that contains DIDs.
     :param record_number: Order number of the record that contains DIDs.
         None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
 
     :return: DIDs related Data Records that are part of the record.
     """
-    snapshot_data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
+    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
     for did_number in range(did_count):
         name = f"DID#{did_number + 1}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
-        snapshot_data_records.append(get_did_2013(name))
-        snapshot_data_records.append(get_did_data_2013(name=f"{name} data"))
-    return tuple(snapshot_data_records)
+        data_records.append(get_did_2013(name, optional=optional))
+        data_records.append(get_did_data_2013(name=f"{name} data"))
+    return tuple(data_records)
 
 
 def get_dids_2020(did_count: int,
-                  record_number: int) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
+                  record_number: Optional[int],
+                  optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
     """
     Get DIDs related Data Records for given record (e.g. Snapshot or Stored Data).
 
@@ -229,15 +247,16 @@ def get_dids_2020(did_count: int,
     :param did_count: Number of DIDs that are part of the record that contains DIDs.
     :param record_number: Order number of the record that contains DIDs.
         None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
 
     :return: DIDs related Data Records that are part of the record.
     """
-    snapshot_data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
+    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
     for did_number in range(did_count):
         name = f"DID#{did_number + 1}" if record_number is None else f"DID#{record_number}_{did_number + 1}"
-        snapshot_data_records.append(get_did_2020(name))
-        snapshot_data_records.append(get_did_data_2020(name=f"{name} data"))
-    return tuple(snapshot_data_records)
+        data_records.append(get_did_2020(name, optional=optional))
+        data_records.append(get_did_data_2020(name=f"{name} data"))
+    return tuple(data_records)
 
 
 def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int], AliasMessageStructure]:
@@ -255,7 +274,7 @@ def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int]
                                            record_number=record_number)
 
 
-def get_did_records_formula_2020(record_number: int) -> Callable[[int], AliasMessageStructure]:
+def get_did_records_formula_2020(record_number: Optional[int]) -> Callable[[int], AliasMessageStructure]:
     """
     Get formula that can be used by Conditional Data Record for getting DID related Data Records.
 
