@@ -2256,7 +2256,7 @@ ReadDataByIdentifier service allows the client to request data record values fro
 
 
 Request Format
-''''''''''''''
+``````````````
 Request contains at least one DataIdentifier (*DID*).
 
 +------+------------+---------------+----------------------+----------+
@@ -2273,7 +2273,7 @@ Request contains at least one DataIdentifier (*DID*).
 
 
 Positive Response Format
-''''''''''''''''''''''''
+````````````````````````
 +------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
 | Name       | Bit Length | Value         | Description                                    | Present                                          |
 +============+============+===============+================================================+==================================================+
