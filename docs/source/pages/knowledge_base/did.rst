@@ -277,7 +277,7 @@ Defined by ISO 14229-1:2013
 
 - **0xF18E** *[VehicleManufacturerKitAssemblyPartNumberDataIdentifier]*
 
-- **0xF18F** *[RegulationXSoftwareIdentificationNumbers]*
+- **0xF18F** *[ISOSAEReservedStandardized]*
 
 - **0xF190** *[VINDataIdentifier]*
 

@@ -96,7 +96,7 @@ DID_MAPPING_2020 = {
     0xFF00: "UDSVersionDataIdentifier",
     0xFF01: "ReservedForISO15765-5",
 }
-""":ref:`Data Identifiers mapping according to ISO 14229-1:2020 <knowledge-base-did-2013>`."""
+""":ref:`Data Identifiers mapping according to ISO 14229-1:2020 <knowledge-base-did-2020>`."""
 
 DID_DATA_MAPPING_2013 = {
     0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
