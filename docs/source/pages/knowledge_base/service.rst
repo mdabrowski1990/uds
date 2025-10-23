@@ -342,8 +342,8 @@ Positive Response Format
 
 ReadDTCInformation
 ------------------
-ReadDTCInformation service allows the client to request current Diagnostic Trouble Code (DTC) information from
-one or more servers within the vehicle.
+ReadDTCInformation service allows the client to request current
+:ref:`Diagnostic Trouble Code (DTC) <knowledge-base-dtc>` information from one or more servers within the vehicle.
 
 ISO 14229-1 defines the following DTC report types (values of the *reportType* parameter):
 
@@ -2247,10 +2247,48 @@ Positive Response Format
 +----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
 
 
+.. _knowledge-base-service-read-data-by-identifier:
+
 ReadDataByIdentifier
 --------------------
 ReadDataByIdentifier service allows the client to request data record values from the server identifier by one or more
-DataIdentifiers (DIDs).
+:ref:`DataIdentifiers (DIDs) <knowledge-base-did>`.
+
+
+Request Format
+''''''''''''''
+Request contains at least one DataIdentifier (*DID*).
+
++------+------------+---------------+----------------------+----------+
+| Name | Bit Length | Value         | Description          | Present  |
++======+============+===============+======================+==========+
+| SID  | 8          | 0x22          | ReadDataByIdentifier | Always   |
++------+------------+---------------+----------------------+----------+
+|  DID | 16         | 0x0000-0xFFFF | DID#1                | Always   |
+|      +------------+---------------+----------------------+----------+
+|      | ...                                                          |
+|      +------------+---------------+----------------------+----------+
+|      | 16         | 0x0000-0xFFFF | DID#n                | Optional |
++------+------------+---------------+----------------------+----------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
+| Name       | Bit Length | Value         | Description                                    | Present                                          |
++============+============+===============+================================================+==================================================+
+| RSID       | 8          | 0x62          | Positive Response: ReadDataByIdentifier (0x22) | Always                                           |
++------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
+| DID#1      | 16         | 0x0000-0xFFFF | DID#1                                          | Always                                           |
++------------+------------+---------------+------------------------------------------------+                                                  |
+| DID#1 data | at least 8 |               | Data stored under DID#1                        |                                                  |
++------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
+| ...                                                                                                                                         |
++------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
+| DID#n      | 16         | 0x0000-0xFFFF | DID#n                                          | If at least n DIDs were requested by the client. |
++------------+------------+---------------+------------------------------------------------+                                                  |
+| DID#n data | at least 8 |               | Data stored under DID#n                        |                                                  |
++------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
 
 
 ReadMemoryByAddress
@@ -2290,17 +2328,23 @@ ReadDataByPeriodicIdentifier service allows the client to request the periodic t
 from the server identified by one or more periodicDataIdentifiers.
 
 
+.. _knowledge-base-service-dynamically-define-data-identifier:
+
 DynamicallyDefineDataIdentifier
 -------------------------------
 DynamicallyDefineDataIdentifier service allows the client to dynamically define in a server a DataIdentifier (DID)
 that can be read via the ReadDataByIdentifier_ service at a later time.
 
 
+.. _knowledge-base-service-write-data-by-identifier:
+
 WriteDataByIdentifier
 ---------------------
 WriteDataByIdentifier service allows the client to write information into the server at an internal location
 specified by the provided DataIdentifier (DID).
 
+
+.. _knowledge-base-service-input-output-control-by-identifier:
 
 InputOutputControlByIdentifier
 ------------------------------

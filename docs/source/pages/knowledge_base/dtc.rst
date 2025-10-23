@@ -1,7 +1,7 @@
 .. _knowledge-base-dtc:
 
-DTC
-===
+Diagnostic Trouble Code (DTC)
+=============================
 A Diagnostic Trouble Code (DTC) is a standardized identifier representing a specific fault detected by a vehicle’s
 electronic control system.
 Each DTC corresponds to one distinct diagnostic condition (for example, *“Battery voltage too low”*).
