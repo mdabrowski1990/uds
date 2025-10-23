@@ -7,5 +7,6 @@ from .clear_diagnostic_information import (
 )
 from .diagnostic_session_control import DIAGNOSTIC_SESSION_CONTROL
 from .ecu_reset import ECU_RESET
+from .read_data_by_identifier import READ_DATA_BY_IDENTIFIER, READ_DATA_BY_IDENTIFIER_2013, READ_DATA_BY_IDENTIFIER_2020
 from .read_dtc_information import READ_DTC_INFORMATION, READ_DTC_INFORMATION_2013, READ_DTC_INFORMATION_2020
 from .tester_present import TESTER_PRESENT
