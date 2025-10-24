@@ -29,8 +29,8 @@ from ..data_record import (
 )
 from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING
 
-# Formulas
 
+# Formulas
 def get_memory_size_and_memory_address(address_and_length_format_identifier: int
                                        ) -> Tuple[RawDataRecord, RawDataRecord]:
     """
@@ -42,13 +42,16 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
     """
     memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
     memory_address_length = address_and_length_format_identifier & 0x0F
-    if memory_address_length == 0 or memory_size_length == 0:
+    if (not 0x00 <= address_and_length_format_identifier <= 0xFF
+            or memory_address_length == 0
+            or memory_size_length == 0):
         raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
                          f"(0x{address_and_length_format_identifier:02X}) is incorrect as both "
                          f"memoryAddressLength ({memory_address_length}) and memorySizeLength ({memory_size_length}) "
                          "must be greater than 0.")
-    return (RawDataRecord(name="memoryAddress", length=8*memory_address_length),
-            RawDataRecord(name="memorySize", length=8*memory_size_length))
+    return (RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
+            RawDataRecord(name="memorySize", length=8 * memory_size_length))
+
 
 # Shared
 RESERVED_BIT = RawDataRecord(name="Reserved",
