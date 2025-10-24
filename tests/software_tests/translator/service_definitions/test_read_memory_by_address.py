@@ -2,7 +2,6 @@ import pytest
 
 from uds.message import RequestSID, ResponseSID
 from uds.translator.service_definitions.read_memory_by_address import READ_MEMORY_BY_ADDRESS
-from uds.utilities import bytes_to_hex
 
 
 class TestReadMemoryByAddress:
@@ -153,7 +152,6 @@ class TestReadMemoryByAddressIntegration:
         ),
     ])
     def test_decode(self, payload, decoded_message):
-        print(f"payload = {bytes_to_hex(payload)}")
         assert READ_MEMORY_BY_ADDRESS.decode(payload) == decoded_message
 
     @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
@@ -180,7 +178,6 @@ class TestReadMemoryByAddressIntegration:
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
-        print(f"SID = {sid}\nRSID = {rsid}\npayload = {bytes_to_hex(payload)}")
         assert READ_MEMORY_BY_ADDRESS.encode(data_records_values=data_records_values,
                                                  sid=sid,
                                                  rsid=rsid) == payload

@@ -2,7 +2,6 @@ import pytest
 
 from uds.message import RequestSID, ResponseSID
 from uds.translator.service_definitions.diagnostic_session_control import DIAGNOSTIC_SESSION_CONTROL
-from uds.utilities import bytes_to_hex
 
 
 class TestDiagnosticSessionControl:
@@ -123,7 +122,6 @@ class TestDiagnosticSessionControlIntegration:
         ),
     ])
     def test_decode(self, payload, decoded_message):
-        print(f"payload = {bytes_to_hex(payload)}")
         assert DIAGNOSTIC_SESSION_CONTROL.decode(payload) == decoded_message
 
     @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
@@ -152,7 +150,6 @@ class TestDiagnosticSessionControlIntegration:
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
-        print(f"SID = {sid}\nRSID = {rsid}\npayload = {bytes_to_hex(payload)}")
         assert DIAGNOSTIC_SESSION_CONTROL.encode(data_records_values=data_records_values,
                                                  sid=sid,
                                                  rsid=rsid) == payload

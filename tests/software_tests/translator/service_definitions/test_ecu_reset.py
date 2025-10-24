@@ -2,7 +2,6 @@ import pytest
 
 from uds.message import RequestSID, ResponseSID
 from uds.translator.service_definitions.ecu_reset import ECU_RESET
-from uds.utilities import bytes_to_hex
 
 
 class TestECUReset:
@@ -106,7 +105,6 @@ class TestECUResetIntegration:
         ),
     ])
     def test_decode(self, payload, decoded_message):
-        print(f"payload = {bytes_to_hex(payload)}")
         assert ECU_RESET.decode(payload) == decoded_message
 
     @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
@@ -132,7 +130,6 @@ class TestECUResetIntegration:
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
-        print(f"SID = {sid}\nRSID = {rsid}\npayload = {bytes_to_hex(payload)}")
         assert ECU_RESET.encode(data_records_values=data_records_values,
                                 sid=sid,
                                 rsid=rsid) == payload
