@@ -1,5 +1,5 @@
 import pytest
-from mock import patch, call
+from mock import call, patch
 
 from uds.translator.data_record_definitions.other import get_memory_size_and_memory_address
 
