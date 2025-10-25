@@ -1,0 +1,25 @@
+"""Translation for ReadScalingDataByIdentifier (SID 0x24) service."""
+
+__all__ = ["READ_SCALING_DATA_BY_IDENTIFIER",
+           "READ_SCALING_DATA_BY_IDENTIFIER_2020", "READ_SCALING_DATA_BY_IDENTIFIER_2013"]
+
+from uds.message import RequestSID
+
+from ..data_record_definitions import DID_2013, DID_2020
+from ..service import Service
+
+READ_SCALING_DATA_BY_IDENTIFIER_2013 = Service(request_sid=RequestSID.ReadScalingDataByIdentifier,
+                                               request_structure=(DID_2013,),
+                                               response_structure=())
+"""Translator for :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service
+compatible with ISO 14229-1:2013."""
+
+READ_SCALING_DATA_BY_IDENTIFIER_2020 = Service(request_sid=RequestSID.ReadScalingDataByIdentifier,
+                                               request_structure=(DID_2020,),
+                                               response_structure=())
+"""Translator for :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service
+compatible with ISO 14229-1:2020."""
+
+READ_SCALING_DATA_BY_IDENTIFIER = READ_SCALING_DATA_BY_IDENTIFIER_2020
+"""Default translator for :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>`
+service."""

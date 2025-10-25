@@ -1,7 +1,7 @@
 """Data Records definitions for Data Identifiers."""
 
 __all__ = [
-    "MULTIPLE_DID_2013", "MULTIPLE_DID_2020",
+    "DID_2013", "DID_2020", "MULTIPLE_DID_2013", "MULTIPLE_DID_2020",
     "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
     "get_did_data_2013", "get_did_data_2020",
     "get_did_records_formula_2013", "get_did_records_formula_2020",
@@ -105,6 +105,12 @@ DID_DATA_MAPPING_2020 = {
     0xF186: DID_DATA_MAPPING_2013[0xF186],
 }
 
+DID_2013 = MappingDataRecord(name="DID",
+                             length=16,
+                             values_mapping=DID_MAPPING_2013)
+DID_2020 = MappingDataRecord(name="DID",
+                             length=16,
+                             values_mapping=DID_MAPPING_2020)
 MULTIPLE_DID_2013 = MappingDataRecord(name="DID",
                                       length=16,
                                       values_mapping=DID_MAPPING_2013,
