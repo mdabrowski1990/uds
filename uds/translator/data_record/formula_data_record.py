@@ -2,7 +2,7 @@
 
 __all__ = ["CustomFormulaDataRecord", "LinearFormulaDataRecord"]
 
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, Sequence
 
 from .abstract_data_record import AbstractDataRecord
 
@@ -177,6 +177,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
                  length: int,
                  encoding_formula: AliasPhysicalValueEncodingFormula,
                  decoding_formula: AliasPhysicalValueDecodingFormula,
+                 children: Sequence[AbstractDataRecord] = tuple(),
                  unit: Optional[str] = None,
                  min_occurrences: int = 1,
                  max_occurrences: Optional[int] = 1) -> None:
@@ -194,7 +195,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         """
         super().__init__(name=name,
                          length=length,
-                         children=tuple(),
+                         children=children,
                          unit=unit,
                          min_occurrences=min_occurrences,
                          max_occurrences=max_occurrences)

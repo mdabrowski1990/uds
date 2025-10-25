@@ -18,14 +18,16 @@ __all__ = [
     # SID 0x24
 ]
 
-from typing import Tuple, Callable
-from uds.utilities import REPEATED_DATA_RECORDS_NUMBER, InconsistencyError
+from decimal import Decimal
+from typing import Callable, Tuple
+
+from uds.utilities import REPEATED_DATA_RECORDS_NUMBER, InconsistencyError, MANTISSA_BIT_LENGTH, EXPONENT_BIT_LENGTH
 
 from ..data_record import (
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
-    LinearFormulaDataRecord,
     CustomFormulaDataRecord,
+    LinearFormulaDataRecord,
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
@@ -68,45 +70,134 @@ def get_scaling_byte_extension(scaling_byte: int) -> Tuple:
                               length=8*number_of_bytes),)
     if parameter_type == 0x9:  # formula
         return (FORMULA_IDENTIFIER,
-                ConditionalFormulaDataRecord(formula=get_formula_parameters))
+                ConditionalFormulaDataRecord(formula=get_data_records_for_formula_parameters))
+    # TODO: more cases
     return ()
 
 
-def get_formula_parameters(formula_identifier: int) -> Tuple[CustomFormulaDataRecord, ...]:
+def get_data_records_for_formula_parameters(formula_identifier: int) -> Tuple[CustomFormulaDataRecord, ...]:
+    """
+    Get Data Records for formula type parameter.
+
+    :param formula_identifier: Formula Identifier used by the parameter.
+
+    :return: Tuple with Data Records for given formula type parameter.
+    """
     physical_value = FORMULA_IDENTIFIER.get_physical_value(formula_identifier)
     if isinstance(physical_value, str) and "C0" in physical_value:
         data_records = []
         constant_index = 0
+        encoding_formula = get_encode_float_value_formula(exponent_bit_length=EXPONENT_BIT_LENGTH,
+                                                          mantissa_bit_length=MANTISSA_BIT_LENGTH)
+        decoding_formula = get_decode_float_value_formula(exponent_bit_length=EXPONENT_BIT_LENGTH,
+                                                          mantissa_bit_length=MANTISSA_BIT_LENGTH)
+        length = EXPONENT_BIT_LENGTH + MANTISSA_BIT_LENGTH
         while f"C{constant_index}" in physical_value:
-            ...  # TODO: create custom formula data records using float formulas
+            data_records.append(CustomFormulaDataRecord(name=f"C{constant_index}",
+                                                        length=length,
+                                                        children=(EXPONENT, MANTISSA),
+                                                        encoding_formula=encoding_formula,
+                                                        decoding_formula=decoding_formula))
+            constant_index += 1
+        return tuple(data_records)
     raise ValueError(f"Unknown formula identifier was provided: 0x{formula_identifier:02X}.")
 
 
-def get_encode_signed_value_formula(bits: int) -> Callable[[int], int]:
-    def encode_signed_value(value: int) -> int:
-        max_value = (1 << bits) - 1
-        msb = 1 << (bits - 1)
+def get_decode_signed_value_formula(bit_length: int) -> Callable[[int], int]:
+    """
+    Get formula for decoding signed integer value.
+
+    :param bit_length: Number of bits used for signed integer value.
+
+    :raise TypeError: Provided value is not int type.
+    :raise ValueError: Provided value is out of range.
+
+    :return: Formula for decoding singed integer value from unsinged integer value.
+    """
+    if not isinstance(bit_length, int):
+        raise TypeError("Provided `bit_length` value is not int type.")
+    if bit_length < 2:
+        raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
+
+    def decode_signed_value(value: int) -> int:
+        max_value = (1 << bit_length) - 1
+        msb_value = 1 << (bit_length - 1)
         if not 0 <= value <= max_value:
             raise ValueError(f"Provided value is out of range (0 <= value <= {max_value}): {value}.")
-        return (- (value & msb)) + (value & (max_value ^ msb))
-    return encode_signed_value
+        return (- (value & msb_value)) + (value & (max_value ^ msb_value))
+    return decode_signed_value
 
 
-def get_decode_signed_value_formula(bits: int) -> Callable[[int], int]:
-    def decode_signed_value(value: int) -> int:
-        msb = 1 << (bits - 1)
-        min_value = - msb
-        max_value = msb - 1
+def get_encode_signed_value_formula(bit_length: int) -> Callable[[int], int]:
+    """
+    Get formula for encoding signed integer value.
+
+    :param bit_length: Number of bits used for signed integer value.
+
+    :raise TypeError: Provided value is not int type.
+    :raise ValueError: Provided value is out of range.
+
+    :return: Formula for encoding singed integer value into unsinged integer value.
+    """
+    if not isinstance(bit_length, int):
+        raise TypeError("Provided `bit_length` value is not int type.")
+    if bit_length < 2:
+        raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
+
+    def encode_signed_value(value: int) -> int:
+        msb_value = 1 << (bit_length - 1)
+        min_value = - msb_value
+        max_value = msb_value - 1
         if not min_value <= value <= max_value:
             raise ValueError(f"Provided value is out of range ({min_value} <= value <= {max_value}): {value}.")
         if value >= 0:
             return value
-        return 2*msb + value
-    return decode_signed_value
+        return 2 * msb_value + value
+    return encode_signed_value
 
 
-# TODO: formulas (encode and decode) for float with various length (current use case 4 bit exponent, 12 bit mantissa)
+def get_decode_float_value_formula(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[int], float]:
+    """
+    Get formula for decoding float value.
 
+    :param exponent_bit_length: Number of bits used for exponent's signed integer value.
+    :param mantissa_bit_length: Number of bits used for mantissa's signed integer value.
+
+    :return: Formula for decoding float value from unsigned integer value.
+    """
+    exponent_encode_formula = get_encode_signed_value_formula(exponent_bit_length)
+    mantissa_encode_formula = get_encode_signed_value_formula(mantissa_bit_length)
+    exponent_mask = ((1 << exponent_bit_length) - 1) << mantissa_bit_length
+    mantissa_mask = (1 << mantissa_bit_length) - 1
+
+    def get_float_value(value: int) -> float:
+        exponent_signed_value = (value & exponent_mask) >> mantissa_bit_length
+        mantissa_signed_value = value & mantissa_mask
+        exponent_value = exponent_encode_formula(exponent_signed_value)
+        mantissa_value = mantissa_encode_formula(mantissa_signed_value)
+        return (10 ** exponent_value) * mantissa_value
+    return get_float_value
+
+
+def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[float], int]:
+    """
+    Get formula for encoding float value.
+
+    :param exponent_bit_length: Number of bits used for exponent's signed integer value.
+    :param mantissa_bit_length: Number of bits used for mantissa's signed integer value.
+
+    :return: Formula for encoding float value into unsigned integer value.
+    """
+    exponent_decode_formula = get_decode_signed_value_formula(exponent_bit_length)
+    mantissa_decode_formula = get_decode_signed_value_formula(mantissa_bit_length)
+
+    def get_unsinged_value(value: float) -> int:
+        sign, digits, exponent_signed_value = Decimal(str(value)).normalize().as_tuple()
+        mantissa_signed_value = int(f"{'-' if sign else ''}{''.join((str(digit) for digit in digits))}")
+        exponent_unsigned_value = exponent_decode_formula(exponent_signed_value)
+        mantissa_unsigned_value = mantissa_decode_formula(mantissa_signed_value)
+        return (exponent_unsigned_value << mantissa_bit_length) + mantissa_unsigned_value
+    return get_unsinged_value
 
 # Shared
 RESERVED_BIT = RawDataRecord(name="Reserved",
@@ -183,13 +274,13 @@ FORMULA_IDENTIFIER = MappingDataRecord(name="FormulaIdentifier",
                                            0x09: "y = x * C0 / C1",
                                        })
 EXPONENT = CustomFormulaDataRecord(name="Exponent",
-                                   length=4,
-                                   encoding_formula=get_encode_signed_value_formula(4),
-                                   decoding_formula=get_decode_signed_value_formula(4))
+                                   length=EXPONENT_BIT_LENGTH,
+                                   encoding_formula=get_encode_signed_value_formula(EXPONENT_BIT_LENGTH),
+                                   decoding_formula=get_decode_signed_value_formula(EXPONENT_BIT_LENGTH))
 MANTISSA = CustomFormulaDataRecord(name="Mantissa",
-                                   length=12,
-                                   encoding_formula=get_encode_signed_value_formula(12),
-                                   decoding_formula=get_decode_signed_value_formula(12))
+                                   length=MANTISSA_BIT_LENGTH,
+                                   encoding_formula=get_encode_signed_value_formula(MANTISSA_BIT_LENGTH),
+                                   decoding_formula=get_decode_signed_value_formula(MANTISSA_BIT_LENGTH))
 SCALING_BYTE_TYPE = MappingDataRecord(name="Type",
                                       length=4,
                                       values_mapping={

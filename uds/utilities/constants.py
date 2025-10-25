@@ -2,6 +2,7 @@
 
 __all__ = [
     "DTC_CHARACTERS_MAPPING", "BITS_TO_DTC_CHARACTER_MAPPING", "MIN_DTC_VALUE", "MAX_DTC_VALUE",
+    "EXPONENT_BIT_LENGTH", "MANTISSA_BIT_LENGTH",
     "REPEATED_DATA_RECORDS_NUMBER",
 ]
 
@@ -22,5 +23,12 @@ BITS_TO_DTC_CHARACTER_MAPPING: Dict[int, str] = {
 
 MIN_DTC_VALUE = 0x000000
 MAX_DTC_VALUE = 0xFFFFFF
+
+EXPONENT_BIT_LENGTH: int = 4
+"""Number of bits used for constant's exponent value by
+:ref:`ReadScalingDataByIdentifier service <knowledge-base-service-read-scaling-data-by-identifier>`"""
+MANTISSA_BIT_LENGTH: int = 12
+"""Number of bits used for constant's mantissa value by
+:ref:`ReadScalingDataByIdentifier service <knowledge-base-service-read-scaling-data-by-identifier>`"""
 
 REPEATED_DATA_RECORDS_NUMBER: int = 100

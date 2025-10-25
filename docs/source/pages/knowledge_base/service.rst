@@ -2326,6 +2326,8 @@ Positive Response Format
 +------+--------------+-------+-----------------------------------------------+---------+
 
 
+.. _knowledge-base-service-read-scaling-data-by-identifier:
+
 ReadScalingDataByIdentifier
 ---------------------------
 ReadScalingDataByIdentifier service allows the client to request from the server a scaling data record identified
