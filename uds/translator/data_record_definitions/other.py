@@ -16,6 +16,7 @@ __all__ = [
     # SID 0x22
     "ACTIVE_DIAGNOSTIC_SESSION",
     # SID 0x24
+    "SCALING_DATA_RECORDS",
 ]
 
 from decimal import Decimal
@@ -31,6 +32,7 @@ from ..data_record import (
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
+AliasMessageStructure
 )
 from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING
 
@@ -58,39 +60,67 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
             RawDataRecord(name="memorySize", length=8 * memory_size_length))
 
 
-def get_scaling_byte_extension(scaling_byte: int) -> Tuple:
+def get_scaling_byte_extension(scaling_byte: int,
+                               scaling_byte_number: int) -> Tuple:
     """
     Get scalingByteExtension Data Records for given scalingByte value.
 
     :param scaling_byte: Proceeding `scalingByte` value.
+    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
 
     :return: Data Records for scalingByteExtension.
     """
     parameter_type = (scaling_byte & 0xF0) >> 4
     number_of_bytes = scaling_byte & 0x0F
     if not 0x00 <= scaling_byte <= 0xFF:
-        raise ValueError(f"Provided `scalingByte` value is out of range: 0x{scaling_byte:02X}.")
+        raise ValueError(f"Provided `scalingByte#{scaling_byte_number}` value is out of range: "
+                         f"0x{scaling_byte:02X}.")
     if parameter_type == 0x2:  # bitMappedReportedWithOutMask
         if number_of_bytes == 0:
             raise InconsistencyError("Provided `scalingByte` value is incorrect (0x20) - byte length equals 0.")
-        return (RawDataRecord(name="ValidityMask",
-                              length=8*number_of_bytes),)
-    if parameter_type == 0x9:  # formula
-        return (FORMULA_IDENTIFIER,
-                ConditionalFormulaDataRecord(formula=get_data_records_for_formula_parameters))
-    if parameter_type == 0xA:
-        # TODO: it is not explained how to combine units (e.g. Volt [V]), prefixes (e.g. milli [m]) and formulas
-        return (UNIT_OR_FORMAT,)
+        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
+                              length=8 * number_of_bytes,
+                              children=(RawDataRecord(name="ValidityMask",
+                                                      length=8 * number_of_bytes),)),)
+    if parameter_type == 0x9:  # Formula
+        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
+                              length=FORMULA_IDENTIFIER.length,
+                              children=(FORMULA_IDENTIFIER,)),
+                ConditionalFormulaDataRecord(
+                    formula=get_data_records_for_formula_parameters_formula(scaling_byte_number)),)
+    if parameter_type == 0xA:  # Unit/Format
+        # TODO: ISO 14229-1 does not explain how to combine units (e.g. Volt [V]) and prefixes (e.g. milli [m])/formulas
+        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
+                              length=UNIT_OR_FORMAT.length,
+                              children=(UNIT_OR_FORMAT,)),)
+    if parameter_type == 0xB:  # StateAndConnectionType
+        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
+                              length=STATE_AND_CONNECTION_TYPE.length,
+                              children=(STATE_AND_CONNECTION_TYPE,)),)
     return ()
 
 
-def get_data_records_for_formula_parameters(formula_identifier: int) -> Tuple[CustomFormulaDataRecord, ...]:
+def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], AliasMessageStructure]:
     """
-    Get Data Records for formula type parameter.
+    Get formula that can be used by Conditional Data Record for getting scalingByteExtension Data Records.
 
-    :param formula_identifier: Formula Identifier used by the parameter.
+    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
 
-    :return: Tuple with Data Records for given formula type parameter.
+    :return: Formula for given scaling byte number.
+    """
+    return lambda scaling_byte: get_scaling_byte_extension(scaling_byte=scaling_byte,
+                                                           scaling_byte_number=scaling_byte_number)
+
+
+def get_data_records_for_formula_parameters(formula_identifier: int,
+                                            scaling_byte_number: int) -> Tuple[CustomFormulaDataRecord, ...]:
+    """
+    Get coefficients' Data Records for formula type parameter.
+
+    :param formula_identifier: Formula Identifier used.
+    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
+
+    :return: Tuple with coefficients' Data Records for given formula type parameter.
     """
     physical_value = FORMULA_IDENTIFIER.get_physical_value(formula_identifier)
     if isinstance(physical_value, str) and "C0" in physical_value:
@@ -102,7 +132,7 @@ def get_data_records_for_formula_parameters(formula_identifier: int) -> Tuple[Cu
                                                           mantissa_bit_length=MANTISSA_BIT_LENGTH)
         length = EXPONENT_BIT_LENGTH + MANTISSA_BIT_LENGTH
         while f"C{constant_index}" in physical_value:
-            data_records.append(CustomFormulaDataRecord(name=f"C{constant_index}",
+            data_records.append(CustomFormulaDataRecord(name=f"C{constant_index}#{scaling_byte_number}",
                                                         length=length,
                                                         children=(EXPONENT, MANTISSA),
                                                         encoding_formula=encoding_formula,
@@ -110,6 +140,19 @@ def get_data_records_for_formula_parameters(formula_identifier: int) -> Tuple[Cu
             constant_index += 1
         return tuple(data_records)
     raise ValueError(f"Unknown formula identifier was provided: 0x{formula_identifier:02X}.")
+
+
+def get_data_records_for_formula_parameters_formula(scaling_byte_number: int
+                                                    ) -> Callable[[int], Tuple[CustomFormulaDataRecord, ...]]:
+    """
+    Get formula that can be used by Conditional Data Record for getting formula coefficients.
+
+    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
+
+    :return: Formula for given scaling byte number.
+    """
+    return lambda formula_identifier: get_data_records_for_formula_parameters(formula_identifier=formula_identifier,
+                                                                              scaling_byte_number=scaling_byte_number)
 
 
 def get_decode_signed_value_formula(bit_length: int) -> Callable[[int], int]:
@@ -271,28 +314,33 @@ ACTIVE_DIAGNOSTIC_SESSION = MappingDataRecord(name="ActiveDiagnosticSession",
 SCALING_BYTE_TYPE = MappingDataRecord(name="Type",
                                       length=4,
                                       values_mapping={
-                                          0x0: "unSignedNumeric",
-                                          0x1: "signedNumeric",
-                                          0x2: "bitMappedReportedWithOutMask",
-                                          0x3: "bitMappedReportedWithMask",
+                                          0x0: "UnSignedNumeric",
+                                          0x1: "SignedNumeric",
+                                          0x2: "BitMappedReportedWithOutMask",
+                                          0x3: "BitMappedReportedWithMask",
                                           0x4: "BinaryCodedDecimal",
-                                          0x5: "stateEncodedVariable",
+                                          0x5: "StateEncodedVariable",
                                           0x6: "ASCII",
-                                          0x7: "signedFloatingPoint",
-                                          0x8: "packet",
-                                          0x9: "formula",
-                                          0xA: "unit/format",
-                                          0xB: "stateAndConnectionType",
+                                          0x7: "SignedFloatingPoint",
+                                          0x8: "Packet",
+                                          0x9: "Formula",
+                                          0xA: "Unit/Format",
+                                          0xB: "StateAndConnectionType",
                                       })
 SCALING_BYTE_LENGTH = RawDataRecord(name="NumberOfBytes",
                                     length=4,
                                     unit="bytes")
-SCALING_BYTES_LIST = [RawDataRecord(name=f"scalingByte#{record_number + 1}",
+SCALING_BYTES_LIST = [RawDataRecord(name=f"scalingByte#{index + 1}",
                                     children=(SCALING_BYTE_TYPE, SCALING_BYTE_LENGTH),
                                     length=8,
-                                    min_occurrences=1 if record_number == 0 else 0,
+                                    min_occurrences=1 if index == 0 else 0,
                                     max_occurrences=1)
-                      for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+                      for index in range(REPEATED_DATA_RECORDS_NUMBER)]
+SCALING_BYTES_EXTENSIONS_LIST = [ConditionalFormulaDataRecord(formula=get_scaling_byte_extension_formula(index+1))
+                                 for index in range(REPEATED_DATA_RECORDS_NUMBER)]
+SCALING_DATA_RECORDS = [item for scaling_data_records in zip(SCALING_BYTES_LIST,
+                                                             SCALING_BYTES_EXTENSIONS_LIST)
+                        for item in scaling_data_records]
 
 FORMULA_IDENTIFIER = MappingDataRecord(name="FormulaIdentifier",
                                        length=8,
@@ -412,3 +460,38 @@ UNIT_OR_FORMAT = MappingDataRecord(name="Unit/Format",
                                        0x59: "Second/Minute/Hour/Month/Day/Year/Local minute offset/Local hour offset "
                                              "- date and time",
                                    })
+
+SIGNAL_ACCESS = MappingDataRecord(
+    name="SignalAccess",
+    length=2,
+    values_mapping={
+        0x0: "Internal signal",  # not available in ECU connector
+        0x1: "Low side switch (2 states)",  # Pull-down resistor input type
+        0x2: "High side switch (2 states)",  # Pull-up resistor input type
+        0x3: "Low side and high side switch (2 states)",  # Pull-up and pull-down resistor input type
+    })
+SIGNAL_TYPE = MappingDataRecord(name="SignalType",
+                                length=1,
+                                values_mapping={
+                                    0x0: "Input signal",
+                                    0x1: "Output signal",
+                                })
+SIGNAL = MappingDataRecord(name="Signal",
+                           length=2,
+                           values_mapping={
+                               0x0: "Signal at low level (ground)",
+                               0x1: "Signal at middle level (between ground and +)",
+                               0x2: "Signal at high level (+)",
+                           })
+STATE = MappingDataRecord(name="State",
+                          length=3,
+                          values_mapping={
+                              0x0: "Not Active",
+                              0x1: "Active, function 1",
+                              0x2: "Error detected",
+                              0x3: "Not available",
+                              0x4: "Active, function 2",
+                          })
+STATE_AND_CONNECTION_TYPE = RawDataRecord(name="StateAndConnectionType",
+                                          length=8,
+                                          children=(SIGNAL_ACCESS, SIGNAL_TYPE, SIGNAL, STATE))

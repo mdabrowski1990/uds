@@ -89,4 +89,5 @@ html_theme_options = {
     "navigation_depth": 8,
 }
 
-html_static_path = []
+html_static_path = ['static']
+html_css_files = ['custom.css']

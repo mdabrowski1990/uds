@@ -47,6 +47,7 @@ from .other import (
     P2_SERVER_MAX,
     POWER_DOWN_TIME,
     SESSION_PARAMETER_RECORD,
+SCALING_DATA_RECORDS
 )
 from .sub_functions import (
     DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION,
