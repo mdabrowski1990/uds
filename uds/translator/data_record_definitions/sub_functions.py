@@ -10,6 +10,8 @@ __all__ = [
     # SID 0x19
     "READ_DTC_INFORMATION_SUB_FUNCTION_2020", "READ_DTC_INFORMATION_SUB_FUNCTION_2013",
     "REPORT_TYPE_2020", "REPORT_TYPE_2013", "REPORT_TYPES_MAPPING_2020", "REPORT_TYPES_MAPPING_2013",
+    # SID 0x27
+    "SECURITY_ACCESS_SUB_FUNCTION", "SECURITY_ACCESS_TYPE", "SECURITY_ACCESS_TYPES_MAPPING",
     # SID 0x3E
     "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION",
 ]
@@ -23,6 +25,7 @@ SPRMIB = MappingDataRecord(name="suppressPosRspMsgIndicationBit",
                                1: "yes",
                                0: "no",
                            })
+
 # SID 0x10
 DIAGNOSTIC_SESSIONS_MAPPING = {
     0x01: "defaultSession",
@@ -36,6 +39,7 @@ DIAGNOSTIC_SESSION_TYPE = MappingDataRecord(name="diagnosticSessionType",
 DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                         length=8,
                                                         children=[SPRMIB, DIAGNOSTIC_SESSION_TYPE])
+
 # SID 0x11
 RESET_TYPES_MAPPING = {
     0x01: "hardReset",
@@ -50,6 +54,7 @@ RESET_TYPE = MappingDataRecord(name="resetType",
 ECU_RESET_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                        length=8,
                                        children=[SPRMIB, RESET_TYPE])
+
 # SID 0x19
 REPORT_TYPES_MAPPING_2013 = {
     0x01: "reportNumberOfDTCByStatusMask",
@@ -118,6 +123,33 @@ READ_DTC_INFORMATION_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
 READ_DTC_INFORMATION_SUB_FUNCTION_2020 = RawDataRecord(name="SubFunction",
                                                        length=8,
                                                        children=[SPRMIB, REPORT_TYPE_2020])
+
+# SID 0x27
+SECURITY_ACCESS_TYPES_MAPPING = {
+    sub_function_value: sub_function_description
+    for i in range(1, 0x42, 2)
+    for sub_function_value, sub_function_description in {
+        i: f"Request Seed - level {i} (vehicle manufacturer specific)",
+        i + 1: f"Send Key - level {i} (vehicle manufacturer specific)",
+    }.items()
+} | {
+    sub_function_value: sub_function_description
+    for i in range(0x61, 0x7E, 2)
+    for sub_function_value, sub_function_description in {
+        i: f"Request Seed - level {i} (system supplier specific)",
+        i + 1: f"Send Key - level {i} (system supplier specific)"
+    }.items()
+} | {
+    0x5F: "Request Seed - level 95, end of life (ISO 26021-2)",
+    0x60: "Send Key - level 95, end of life (ISO 26021-2)",
+}
+SECURITY_ACCESS_TYPE = MappingDataRecord(name="securityAccessType",
+                                         length=7,
+                                         values_mapping=SECURITY_ACCESS_TYPES_MAPPING)
+SECURITY_ACCESS_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                             length=8,
+                                             children=[SPRMIB, SECURITY_ACCESS_TYPE])
+
 # SID 0x3E
 ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",
                                   length=7)

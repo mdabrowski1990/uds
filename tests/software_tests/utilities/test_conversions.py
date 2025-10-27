@@ -43,7 +43,7 @@ class TestFunctions:
     # bytes_to_int
 
     @pytest.mark.parametrize("bytes_list, endianness, expected_output", [
-        ([0xF0], Endianness.BIG_ENDIAN, 0xF0),
+        ([], Endianness.BIG_ENDIAN, 0),
         ([0xF0], Endianness.LITTLE_ENDIAN, 0xF0),
         ((0xF0, 0xE1), Endianness.BIG_ENDIAN, 0xF0E1),
         (bytearray([0xF0, 0xE1]), Endianness.LITTLE_ENDIAN, 0xE1F0),
@@ -53,8 +53,9 @@ class TestFunctions:
     def test_bytes_to_int(self, bytes_list, endianness, expected_output):
         self.mock_validate_endianness.side_effect = lambda arg: arg
         assert bytes_to_int(bytes_list=bytes_list, endianness=endianness) == expected_output
-        self.mock_validate_raw_bytes.assert_called_once_with(bytes_list)
-        self.mock_validate_endianness.assert_called_once_with(endianness)
+        self.mock_validate_raw_bytes.assert_called_once_with(bytes_list, allow_empty=True)
+        if bytes_list:
+            self.mock_validate_endianness.assert_called_once_with(endianness)
 
     # int_to_bytes
 

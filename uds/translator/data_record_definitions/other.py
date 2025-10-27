@@ -17,6 +17,8 @@ __all__ = [
     "ACTIVE_DIAGNOSTIC_SESSION",
     # SID 0x24
     "SCALING_DATA_RECORDS",
+    # SID 0x27
+    "CONDITIONAL_SECURITY_ACCESS_REQUEST", "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
 ]
 
 from decimal import Decimal
@@ -499,3 +501,21 @@ STATE = MappingDataRecord(name="State",
 STATE_AND_CONNECTION_TYPE = RawDataRecord(name="StateAndConnectionType",
                                           length=8,
                                           children=(SIGNAL_ACCESS, SIGNAL_TYPE, SIGNAL, STATE))
+
+# SID 0x27
+SECURITY_ACCESS_DATA = RawDataRecord(name="SecurityAccessData",
+                                     length=8,
+                                     min_occurrences=0,
+                                     max_occurrences=None)
+SECURITY_SEED = RawDataRecord(name="SecuritySeed",
+                              length=8,
+                              min_occurrences=1,
+                              max_occurrences=None)
+SECURITY_KEY = RawDataRecord(name="SecurityKey",
+                             length=8,
+                             min_occurrences=1,
+                             max_occurrences=None)
+CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(
+    formula=lambda security_access_type: (SECURITY_ACCESS_DATA, ) if security_access_type % 2 else (SECURITY_KEY, ))
+CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(
+    formula=lambda security_access_type: (SECURITY_SEED, ) if security_access_type % 2 else ())
