@@ -1,0 +1,5 @@
+/* adjust page body to screen resolution */
+.wy-nav-content {
+    max-width: none !important;
+    width: auto !important;
+}

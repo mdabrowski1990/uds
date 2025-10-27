@@ -224,16 +224,19 @@ class TestCustomFormulaDataRecord:
                                                                     min_occurrences=1,
                                                                     max_occurrences=1)
 
-    @pytest.mark.parametrize("name, length, encoding_formula, decoding_formula, unit, min_occurrences, max_occurrences", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-        ("Some name", 8, MagicMock(), MagicMock(), "m/s^2", 1, 8),
+    @pytest.mark.parametrize("name, length, encoding_formula, decoding_formula, children, unit, "
+                             "min_occurrences, max_occurrences", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+        ("Some name", 8, MagicMock(), MagicMock(), [Mock(), Mock()], "m/s^2", 1, 8),
     ])
-    def test_init__all_args(self, name, length, encoding_formula, decoding_formula, unit, min_occurrences, max_occurrences):
+    def test_init__all_args(self, name, length, encoding_formula, decoding_formula, children, unit,
+                            min_occurrences, max_occurrences):
         assert CustomFormulaDataRecord.__init__(self.mock_formula_data_record,
                                                 name=name,
                                                 length=length,
                                                 encoding_formula=encoding_formula,
                                                 decoding_formula=decoding_formula,
+                                                children=children,
                                                 unit=unit,
                                                 min_occurrences=min_occurrences,
                                                 max_occurrences=max_occurrences) is None
@@ -241,7 +244,7 @@ class TestCustomFormulaDataRecord:
         assert self.mock_formula_data_record.decoding_formula == decoding_formula
         self.mock_abstract_data_record_init.assert_called_once_with(name=name,
                                                                     length=length,
-                                                                    children=tuple(),
+                                                                    children=children,
                                                                     unit=unit,
                                                                     min_occurrences=min_occurrences,
                                                                     max_occurrences=max_occurrences)

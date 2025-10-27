@@ -1,6 +1,6 @@
 """Data Records definitions for basic Translator."""
 
-from .did import MULTIPLE_DID_2013, MULTIPLE_DID_2020
+from .did import DID_2013, DID_2020, MULTIPLE_DID_2013, MULTIPLE_DID_2020
 from .dtc import (
     DTC,
     DTC_AND_STATUS,
@@ -46,6 +46,7 @@ from .other import (
     P2_EXT_SERVER_MAX,
     P2_SERVER_MAX,
     POWER_DOWN_TIME,
+    SCALING_DATA_RECORDS,
     SESSION_PARAMETER_RECORD,
 )
 from .sub_functions import (

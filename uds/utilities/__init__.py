@@ -14,6 +14,8 @@ from .common_types import (
 from .constants import (
     BITS_TO_DTC_CHARACTER_MAPPING,
     DTC_CHARACTERS_MAPPING,
+    EXPONENT_BIT_LENGTH,
+    MANTISSA_BIT_LENGTH,
     MAX_DTC_VALUE,
     MIN_DTC_VALUE,
     REPEATED_DATA_RECORDS_NUMBER,
