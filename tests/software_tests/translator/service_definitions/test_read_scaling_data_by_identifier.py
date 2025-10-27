@@ -581,7 +581,7 @@ class TestReadScalingDataByIdentifier2013Integration:
 
 @pytest.mark.integration
 class TestReadScalingDataByIdentifier2020Integration:
-    """Integration tests for `ClearDiagnosticInformation` service version 2020."""
+    """Integration tests for `ReadScalingDataByIdentifier` service version 2020."""
 
     @pytest.mark.parametrize("payload, decoded_message", [
         (
