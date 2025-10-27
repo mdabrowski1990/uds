@@ -2932,9 +2932,110 @@ Only the format applicable to the returned scalingByte value will be included in
 +------------------------+------------------------+--------------+--------------------------------+---------------+-----------------------------------------------------------------------------------------------+-------------------------------------------------------------------------+
 
 
+.. _knowledge-base-service-security-access:
+
 SecurityAccess
 --------------
 SecurityAccess service allows the client to unlock functions/services with restricted access.
+
+Unlocking sequence:
+
+1) The client requests a seed from the server.
+2) The server responds with a positive response that includes a randomly generated seed value.
+3) Both the client and server compute a key value based on the seed (using a secret algorithm).
+4) The client sends the computed key to the server.
+5) The server validates the client by comparing the received key with its own calculated key.
+   If they match, the client is granted access to the protected functionality for the corresponding security level.
+
+
+RequestSeed
+```````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+----------+
+| Name                                         | Bit Length | Value     | Description                                                                                            | Present  |
++==============================================+============+===========+========================================================================================================+==========+
+| SID                                          | 8          | 0x27      | SecurityAccess                                                                                         | Always   |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+----------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                                                                  | Always   |
+|             |                                |            |           |                                                                                                        |          |
+|             |                                |            |           | 1 = suppress positive response                                                                         |          |
+|             +--------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+          |
+|             | securityAccessType             | 7 (b[6-0]) | 0x01-0x7D | 0x01, 0x03, ..., 0x41: request seed for security level defined by the vehicle manufacturer             |          |
+|             |                                |            |           |                                                                                                        |          |
+|             |                                |            |           | 0x5F: request seed for end of life activation of on-board pyrotechnic devices (defined by ISO 26021-2) |          |
+|             |                                |            |           |                                                                                                        |          |
+|             |                                |            |           | 0x61, 0x63, ..., 0x7D: request seed for security level defined by the system supplier                  |          |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+----------+
+| SecurityAccessData                           | 8 or more  |           | Additional vehicle manufacturer specific information about the client (e.g. type of device).           | Optional |
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+----------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                                                                            | Present |
++==============================================+============+===========+========================================================================================================+=========+
+| RSID                                         | 8          | 0x67      | Positive Response: SecurityAccess (0x27)                                                               | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                                                                  | Always  |
+|             |                                |            |           |                                                                                                        |         |
+|             |                                |            |           | 1 = suppress positive response                                                                         |         |
+|             +--------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+         |
+|             | securityAccessType             | 7 (b[6-0]) | 0x01-0x7D | 0x01, 0x03, ..., 0x41: request seed for security level defined by the vehicle manufacturer             |         |
+|             |                                |            |           |                                                                                                        |         |
+|             |                                |            |           | 0x5F: request seed for end of life activation of on-board pyrotechnic devices (defined by ISO 26021-2) |         |
+|             |                                |            |           |                                                                                                        |         |
+|             |                                |            |           | 0x61, 0x63, ..., 0x7D: request seed for security level defined by the system supplier                  |         |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+---------+
+| SecuritySeed                                 | 8 or more  |           | Random seed value generated by the server.                                                             | Always  |
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------------------------------------------+---------+
+
+
+SendKey
+```````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                                                                        | Present |
++==============================================+============+===========+====================================================================================================+=========+
+| SID                                          | 8          | 0x27      | SecurityAccess                                                                                     | Always  |
++-------------+--------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                                                              | Always  |
+|             |                                |            |           |                                                                                                    |         |
+|             |                                |            |           | 1 = suppress positive response                                                                     |         |
+|             +--------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+         |
+|             | securityAccessType             | 7 (b[6-0]) | 0x02-0x7E | 0x02, 0x04, ..., 0x42: send key for security level defined by the vehicle manufacturer             |         |
+|             |                                |            |           |                                                                                                    |         |
+|             |                                |            |           | 0x60: send key for end of life activation of on-board pyrotechnic devices (defined by ISO 26021-2) |         |
+|             |                                |            |           |                                                                                                    |         |
+|             |                                |            |           | 0x62, 0x64, ..., 0x7E: send key for security level defined by the system supplier                  |         |
++-------------+--------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
+| SecurityKey                                  | 8 or more  |           | Security key calculated for the seed value provided earlier by the server.                         | Always  |
++----------------------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                                                                        | Present |
++==============================================+============+===========+====================================================================================================+=========+
+| RSID                                         | 8          | 0x67      | Positive Response: SecurityAccess (0x27)                                                           | Always  |
++-------------+--------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                                                              | Always  |
+|             |                                |            |           |                                                                                                    |         |
+|             |                                |            |           | 1 = suppress positive response                                                                     |         |
+|             +--------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+         |
+|             | securityAccessType             | 7 (b[6-0]) | 0x02-0x7E | 0x02, 0x04, ..., 0x42: send key for security level defined by the vehicle manufacturer             |         |
+|             |                                |            |           |                                                                                                    |         |
+|             |                                |            |           | 0x60: send key for end of life activation of on-board pyrotechnic devices (defined by ISO 26021-2) |         |
+|             |                                |            |           |                                                                                                    |         |
+|             |                                |            |           | 0x62, 0x64, ..., 0x7E: send key for security level defined by the system supplier                  |         |
++-------------+--------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
 
 
 CommunicationControl
