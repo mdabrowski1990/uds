@@ -415,7 +415,6 @@ class TestMappingDataRecordIntegration:
 
     @pytest.mark.parametrize("dtc_status_value", [-1, 0x100, "Active with Lamp ON"])
     def test_get_physical_value__invalid(self, dtc_status_value):
-
         with pytest.raises((TypeError, ValueError)):
             self.dtc_status.get_physical_value(dtc_status_value)
 
