@@ -20,11 +20,12 @@ __all__ = [
 ]
 
 from decimal import Decimal
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Union
 
-from uds.utilities import REPEATED_DATA_RECORDS_NUMBER, InconsistencyError, MANTISSA_BIT_LENGTH, EXPONENT_BIT_LENGTH
+from uds.utilities import EXPONENT_BIT_LENGTH, MANTISSA_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, InconsistencyError
 
 from ..data_record import (
+    AliasMessageStructure,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     CustomFormulaDataRecord,
@@ -32,7 +33,6 @@ from ..data_record import (
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
-AliasMessageStructure
 )
 from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING
 
@@ -61,7 +61,8 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
 
 
 def get_scaling_byte_extension(scaling_byte: int,
-                               scaling_byte_number: int) -> Tuple:
+                               scaling_byte_number: int
+                               ) -> Tuple[Union[RawDataRecord, ConditionalFormulaDataRecord], ...]:
     """
     Get scalingByteExtension Data Records for given scalingByte value.
 
@@ -87,7 +88,7 @@ def get_scaling_byte_extension(scaling_byte: int,
                               length=FORMULA_IDENTIFIER.length,
                               children=(FORMULA_IDENTIFIER,)),
                 ConditionalFormulaDataRecord(
-                    formula=get_data_records_for_formula_parameters_formula(scaling_byte_number)),)
+                    formula=get_formula_data_records_for_formula_parameters(scaling_byte_number)),)
     if parameter_type == 0xA:  # Unit/Format
         # TODO: ISO 14229-1 does not explain how to combine units (e.g. Volt [V]) and prefixes (e.g. milli [m])/formulas
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
@@ -142,7 +143,7 @@ def get_data_records_for_formula_parameters(formula_identifier: int,
     raise ValueError(f"Unknown formula identifier was provided: 0x{formula_identifier:02X}.")
 
 
-def get_data_records_for_formula_parameters_formula(scaling_byte_number: int
+def get_formula_data_records_for_formula_parameters(scaling_byte_number: int
                                                     ) -> Callable[[int], Tuple[CustomFormulaDataRecord, ...]]:
     """
     Get formula that can be used by Conditional Data Record for getting formula coefficients.
@@ -223,11 +224,11 @@ def get_decode_float_value_formula(exponent_bit_length: int, mantissa_bit_length
     mantissa_mask = (1 << mantissa_bit_length) - 1
 
     def get_float_value(value: int) -> float:
-        exponent_signed_value = (value & exponent_mask) >> mantissa_bit_length
-        mantissa_signed_value = value & mantissa_mask
-        exponent_value = exponent_encode_formula(exponent_signed_value)
-        mantissa_value = mantissa_encode_formula(mantissa_signed_value)
-        return (10 ** exponent_value) * mantissa_value
+        exponent_unsigned_value = (value & exponent_mask) >> mantissa_bit_length
+        mantissa_unsigned_value = value & mantissa_mask
+        exponent_value: int = exponent_encode_formula(exponent_unsigned_value)
+        mantissa_value: int = mantissa_encode_formula(mantissa_unsigned_value)
+        return float(10 ** exponent_value) * mantissa_value
     return get_float_value
 
 
@@ -245,11 +246,14 @@ def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length
 
     def get_unsinged_value(value: float) -> int:
         sign, digits, exponent_signed_value = Decimal(str(value)).normalize().as_tuple()
+        if not isinstance(exponent_signed_value, int):
+            raise ValueError("No handling for literal values.")
         mantissa_signed_value = int(f"{'-' if sign else ''}{''.join((str(digit) for digit in digits))}")
         exponent_unsigned_value = exponent_decode_formula(exponent_signed_value)
         mantissa_unsigned_value = mantissa_decode_formula(mantissa_signed_value)
         return (exponent_unsigned_value << mantissa_bit_length) + mantissa_unsigned_value
     return get_unsinged_value
+
 
 # Shared
 RESERVED_BIT = RawDataRecord(name="Reserved",
@@ -336,7 +340,7 @@ SCALING_BYTES_LIST = [RawDataRecord(name=f"scalingByte#{index + 1}",
                                     min_occurrences=1 if index == 0 else 0,
                                     max_occurrences=1)
                       for index in range(REPEATED_DATA_RECORDS_NUMBER)]
-SCALING_BYTES_EXTENSIONS_LIST = [ConditionalFormulaDataRecord(formula=get_scaling_byte_extension_formula(index+1))
+SCALING_BYTES_EXTENSIONS_LIST = [ConditionalFormulaDataRecord(formula=get_scaling_byte_extension_formula(index + 1))
                                  for index in range(REPEATED_DATA_RECORDS_NUMBER)]
 SCALING_DATA_RECORDS = [item for scaling_data_records in zip(SCALING_BYTES_LIST,
                                                              SCALING_BYTES_EXTENSIONS_LIST)

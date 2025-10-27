@@ -2,13 +2,21 @@
 
 __all__ = ["CustomFormulaDataRecord", "LinearFormulaDataRecord"]
 
-from typing import Callable, Optional, Union, Sequence
+from typing import Callable, Optional, Sequence, Union
 
 from .abstract_data_record import AbstractDataRecord
 
-AliasPhysicalValueEncodingFormula = Callable[[Union[int, float]], int]
+AliasPhysicalValueEncodingFormula = Union[
+    Callable[[int], int],
+    Callable[[float], int],
+    Callable[[Union[int, float]], int],
+]
 """Type alias for encoding formulas that convert physical values to raw values."""
-AliasPhysicalValueDecodingFormula = Callable[[int], Union[int, float]]
+AliasPhysicalValueDecodingFormula = Union[
+    Callable[[int], int],
+    Callable[[int], float],
+    Callable[[int], Union[int, float]],
+]
 """Type alias for decoding formulas that convert raw values to physical values."""
 
 
@@ -257,4 +265,4 @@ class CustomFormulaDataRecord(AbstractDataRecord):
 
         :return: Raw Value for this occurrence that was assessed using encoding formula.
         """
-        return self.encoding_formula(physical_value)
+        return self.encoding_formula(physical_value)  # type: ignore

@@ -1,7 +1,11 @@
 import pytest
 
 from uds.message import RequestSID, ResponseSID
-from uds.translator.service_definitions.read_scaling_data_by_identifier import READ_SCALING_DATA_BY_IDENTIFIER, READ_SCALING_DATA_BY_IDENTIFIER_2013, READ_SCALING_DATA_BY_IDENTIFIER_2020
+from uds.translator.service_definitions.read_scaling_data_by_identifier import (
+    READ_SCALING_DATA_BY_IDENTIFIER,
+    READ_SCALING_DATA_BY_IDENTIFIER_2013,
+    READ_SCALING_DATA_BY_IDENTIFIER_2020,
+)
 
 
 class TestReadScalingDataByIdentifier:
