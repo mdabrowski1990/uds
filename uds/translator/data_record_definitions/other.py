@@ -509,11 +509,11 @@ SECURITY_ACCESS_DATA = RawDataRecord(name="SecurityAccessData",
                                      max_occurrences=None)
 SECURITY_SEED = RawDataRecord(name="SecuritySeed",
                               length=8,
-                              min_occurrences=0,
+                              min_occurrences=1,
                               max_occurrences=None)
 SECURITY_KEY = RawDataRecord(name="SecurityKey",
                              length=8,
-                             min_occurrences=0,
+                             min_occurrences=1,
                              max_occurrences=None)
 CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(
     formula=lambda security_access_type: (SECURITY_ACCESS_DATA, ) if security_access_type % 2 else (SECURITY_KEY, ))
