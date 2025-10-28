@@ -3038,10 +3038,96 @@ Positive Response Format
 +-------------+--------------------------------+------------+-----------+----------------------------------------------------------------------------------------------------+---------+
 
 
+.. _knowledge-base-service-communication-control:
+
 CommunicationControl
 --------------------
 CommunicationControl service allows the client to switch on/off the transmission and/or the reception of certain
-messages on a server(s).
+messages on the server(s).
+
+
+Request Format
+``````````````
++----------------------------------------------------+------------+---------------+-----------------------------------------------------------------------------+------------------------------+
+| Name                                               | Bit Length | Value         | Description                                                                 | Present                      |
++====================================================+============+===============+=============================================================================+==============================+
+| SID                                                | 8          | 0x28          | CommunicationControl                                                        | Always                       |
++-------------------+--------------------------------+------------+---------------+-----------------------------------------------------------------------------+------------------------------+
+| SubFunction       | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                                                       | Always                       |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 1 = suppress positive response                                              |                              |
+|                   +--------------------------------+------------+---------------+-----------------------------------------------------------------------------+                              |
+|                   | controlType                    | 7 (b[6-0]) | 0x00-0x7F     | 0x00: enableRxAndTx                                                         |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x01: enableRxAndDisableTx                                                  |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x02: disableRxAndEnableTx                                                  |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x03: disableRxAndTx                                                        |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x04: enableRxAndDisableTxWithEnhancedAddressInformation                    |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x05: enableRxAndTxWithEnhancedAddressInformation                           |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x06-0x3F: reserved                                                         |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x40–0x5F: vehicle manufacturer specific                                    |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x60–0x7E: system supplier specific                                         |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x7F: reserved                                                              |                              |
++-------------------+--------------------------------+------------+---------------+-----------------------------------------------------------------------------+------------------------------+
+| CommunicationType | MessagesType                   | 2          | 0x1-0x3       | 0x0: reserved                                                               | Always                       |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x1: normalCommunicationMessages                                            |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x2: networkManagementCommunicationMessages                                 |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x3: networkManagementCommunicationMessages and normalCommunicationMessages |                              |
+|                   +--------------------------------+------------+---------------+-----------------------------------------------------------------------------+                              |
+|                   | Reserved                       | 2          | 0x0-0x3       | Unused                                                                      |                              |
+|                   +--------------------------------+------------+---------------+-----------------------------------------------------------------------------+                              |
+|                   | Networks                       | 4          | 0x0-0xF       | 0x0: all connected networks                                                 |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0x1-0xE: subnet defined by this subnet number                               |                              |
+|                   |                                |            |               |                                                                             |                              |
+|                   |                                |            |               | 0xF: network on which this request is received                              |                              |
++-------------------+--------------------------------+------------+---------------+-----------------------------------------------------------------------------+------------------------------+
+| NodeIdentificationNumber                           | 16         | 0x0000-0xFFFF | 0x0000: reserved                                                            | If controlType equals 4 or 5 |
++----------------------------------------------------+------------+---------------+-----------------------------------------------------------------------------+------------------------------+
+
+
+Positive Response Format
+````````````````````````
++----------------------------------------------+------------+-----------+----------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                              | Present |
++==============================================+============+===========+==========================================================+=========+
+| RSID                                         | 8          | 0x68      | Positive Response: CommunicationControl (0x28)           | Always  |
++-------------+--------------------------------+------------+-----------+----------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                    | Always  |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 1 = suppress positive response                           |         |
+|             +--------------------------------+------------+-----------+----------------------------------------------------------+         |
+|             | controlType                    | 7 (b[6-0]) | 0x00-0x7F | 0x00: enableRxAndTx                                      |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x01: enableRxAndDisableTx                               |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x02: disableRxAndEnableTx                               |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x03: disableRxAndTx                                     |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x04: enableRxAndDisableTxWithEnhancedAddressInformation |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x05: enableRxAndTxWithEnhancedAddressInformation        |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x06-0x3F: reserved                                      |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x40–0x5F: vehicle manufacturer specific                 |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x60–0x7E: system supplier specific                      |         |
+|             |                                |            |           |                                                          |         |
+|             |                                |            |           | 0x7F: reserved                                           |         |
++-------------+--------------------------------+------------+-----------+----------------------------------------------------------+---------+
 
 
 Authentication
