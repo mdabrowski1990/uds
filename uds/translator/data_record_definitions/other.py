@@ -19,6 +19,8 @@ __all__ = [
     "SCALING_DATA_RECORDS",
     # SID 0x27
     "CONDITIONAL_SECURITY_ACCESS_REQUEST", "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
+    # SID 28
+    "CONDITIONAL_COMMUNICATION_CONTROL_REQUEST"
 ]
 
 from decimal import Decimal
@@ -260,6 +262,8 @@ def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length
 # Shared
 RESERVED_BIT = RawDataRecord(name="Reserved",
                              length=1)
+RESERVED_2BITS = RawDataRecord(name="Reserved",
+                               length=2)
 
 DATA = RawDataRecord(name="Data",
                      length=8,
@@ -519,3 +523,30 @@ CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(
     formula=lambda security_access_type: (SECURITY_ACCESS_DATA, ) if security_access_type % 2 else (SECURITY_KEY, ))
 CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(
     formula=lambda security_access_type: (SECURITY_SEED, ) if security_access_type % 2 else ())
+
+# SID 0x28
+MESSAGES_TYPE = MappingDataRecord(name="MessagesType",
+                                  length=2,
+                                  values_mapping={
+                                      0: "Reserved",
+                                      1: "normalCommunicationMessages",
+                                      2: "networkManagementCommunicationMessages",
+                                      3: "networkManagementCommunicationMessages and normalCommunicationMessages",
+                                  })
+NETWORKS = MappingDataRecord(name="Networks",
+                                  length=4,
+                                  values_mapping={
+                                      0x0: "all connected networks",
+                                      0xF: "network on which this request is received",
+                                  } | {
+                                      raw_value: "subnet {raw_value}" for raw_value in range(1, 0xF)
+                                  })
+COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
+                                   length=8,
+                                   children=(MESSAGES_TYPE, RESERVED_2BITS, NETWORKS))
+NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
+                                               length=16,
+                                               values_mapping={0: "Reserved"})
+CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(
+    formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER) if control_type in {4, 5}
+    else (COMMUNICATION_TYPE,))
