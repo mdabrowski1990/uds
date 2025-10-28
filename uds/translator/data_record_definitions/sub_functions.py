@@ -12,6 +12,8 @@ __all__ = [
     "REPORT_TYPE_2020", "REPORT_TYPE_2013", "REPORT_TYPES_MAPPING_2020", "REPORT_TYPES_MAPPING_2013",
     # SID 0x27
     "SECURITY_ACCESS_SUB_FUNCTION", "SECURITY_ACCESS_TYPE", "SECURITY_ACCESS_TYPES_MAPPING",
+    # SID 0x28
+    "COMMUNICATION_CONTROL_SUB_FUNCTION", "CONTROL_TYPE", "CONTROL_TYPE_MAPPING",
     # SID 0x3E
     "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION",
 ]
@@ -149,6 +151,22 @@ SECURITY_ACCESS_TYPE = MappingDataRecord(name="securityAccessType",
 SECURITY_ACCESS_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                              length=8,
                                              children=[SPRMIB, SECURITY_ACCESS_TYPE])
+
+# SID 0x28
+CONTROL_TYPE_MAPPING = {
+    0x00: "enableRxAndTx",
+    0x01: "enableRxAndDisableTx",
+    0x02: "disableRxAndEnableTx",
+    0x03: "disableRxAndTx",
+    0x04: "enableRxAndDisableTxWithEnhancedAddressInformation",
+    0x05: "enableRxAndTxWithEnhancedAddressInformation",
+}
+CONTROL_TYPE = MappingDataRecord(name="controlType",
+                                 length=7,
+                                 values_mapping=CONTROL_TYPE_MAPPING)
+COMMUNICATION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                                   length=8,
+                                                   children=[SPRMIB, CONTROL_TYPE])
 
 # SID 0x3E
 ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",

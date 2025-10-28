@@ -85,15 +85,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'UnSignedNumeric',
+                            'name': 'type',
+                            'physical_value': 'unSignedNumeric',
                             'raw_value': 0x0,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 4,
                             'raw_value': 0x4,
                             'unit': "bytes",
@@ -110,15 +110,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'SignedNumeric',
+                            'name': 'type',
+                            'physical_value': 'signedNumeric',
                             'raw_value': 0x1,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 1,
                             'raw_value': 0x1,
                             'unit': "bytes",
@@ -135,15 +135,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'BitMappedReportedWithOutMask',
+                            'name': 'type',
+                            'physical_value': 'bitMappedReportedWithOutMask',
                             'raw_value': 0x2,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 3,
                             'raw_value': 0x3,
                             'unit': "bytes",
@@ -160,7 +160,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 24,
-                            'name': 'ValidityMask',
+                            'name': 'validityMask',
                             'physical_value': 0xA5FEFF,
                             'raw_value': 0xA5FEFF,
                             'unit': None
@@ -177,15 +177,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'BitMappedReportedWithMask',
+                            'name': 'type',
+                            'physical_value': 'bitMappedReportedWithMask',
                             'raw_value': 0x3,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 15,
                             'raw_value': 0xF,
                             'unit': "bytes",
@@ -202,7 +202,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
+                            'name': 'type',
                             'physical_value': 'BinaryCodedDecimal',
                             'raw_value': 0x4,
                             'unit': None
@@ -210,7 +210,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 2,
                             'raw_value': 0x2,
                             'unit': "bytes",
@@ -227,15 +227,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'StateEncodedVariable',
+                            'name': 'type',
+                            'physical_value': 'stateEncodedVariable',
                             'raw_value': 0x5,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 1,
                             'raw_value': 0x1,
                             'unit': "bytes",
@@ -252,7 +252,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
+                            'name': 'type',
                             'physical_value': 'ASCII',
                             'raw_value': 0x6,
                             'unit': None
@@ -260,7 +260,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 10,
                             'raw_value': 0xA,
                             'unit': "bytes",
@@ -277,15 +277,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'SignedFloatingPoint',
+                            'name': 'type',
+                            'physical_value': 'signedFloatingPoint',
                             'raw_value': 0x7,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 4,
                             'raw_value': 0x4,
                             'unit': "bytes",
@@ -302,15 +302,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'Packet',
+                            'name': 'type',
+                            'physical_value': 'packet',
                             'raw_value': 0x8,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 12,
                             'raw_value': 0xC,
                             'unit': "bytes",
@@ -327,15 +327,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'Formula',
+                            'name': 'type',
+                            'physical_value': 'formula',
                             'raw_value': 0x9,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 1,
                             'raw_value': 0x1,
                             'unit': "bytes",
@@ -352,7 +352,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 8,
-                            'name': 'FormulaIdentifier',
+                            'name': 'formulaIdentifier',
                             'physical_value': "y = x + C0",
                             'raw_value': 0x08,
                             'unit': None
@@ -394,15 +394,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'Unit/Format',
+                            'name': 'type',
+                            'physical_value': 'unit/format',
                             'raw_value': 0xA,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 0,
                             'raw_value': 0x0,
                             'unit': "bytes",
@@ -419,7 +419,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 8,
-                            'name': 'Unit/Format',
+                            'name': 'unit/format',
                             'physical_value': "Giga (prefix) [G] - 10^9",
                             'raw_value': 0x43,
                             'unit': None
@@ -436,15 +436,15 @@ class TestReadScalingDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'StateAndConnectionType',
+                            'name': 'type',
+                            'physical_value': 'stateAndConnectionType',
                             'raw_value': 0xB,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 1,
                             'raw_value': 0x1,
                             'unit': "bytes",
@@ -463,7 +463,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                                 {
                                     'children': (),
                                     'length': 2,
-                                    'name': 'SignalAccess',
+                                    'name': 'signalAccess',
                                     'physical_value': "Internal signal",
                                     'raw_value': 0x0,
                                     'unit': None
@@ -471,7 +471,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                                 {
                                     'children': (),
                                     'length': 1,
-                                    'name': 'SignalType',
+                                    'name': 'signalType',
                                     'physical_value': "Output signal",
                                     'raw_value': 0x1,
                                     'unit': None
@@ -479,7 +479,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                                 {
                                     'children': (),
                                     'length': 2,
-                                    'name': 'Signal',
+                                    'name': 'signal',
                                     'physical_value': "Signal at low level (ground)",
                                     'raw_value': 0x0,
                                     'unit': None
@@ -487,14 +487,14 @@ class TestReadScalingDataByIdentifier2013Integration:
                                 {
                                     'children': (),
                                     'length': 3,
-                                    'name': 'State',
+                                    'name': 'state',
                                     'physical_value': "Not available",
                                     'raw_value': 0x3,
                                     'unit': None
                                 },
                             ),
                             'length': 8,
-                            'name': 'StateAndConnectionType',
+                            'name': 'stateAndConnectionType',
                             'physical_value': 0x23,
                             'raw_value': 0x23,
                             'unit': None
@@ -526,20 +526,20 @@ class TestReadScalingDataByIdentifier2013Integration:
                 "DID": 0xB9D3,
                 "scalingByte#1": 0xB1,
                 "scalingByteExtension#1": {
-                    "StateAndConnectionType": {
-                        "SignalAccess": 0x3,
-                        "SignalType": 0x0,
-                        "Signal": 0x1,
-                        "State": 0x4,
+                    "stateAndConnectionType": {
+                        "signalAccess": 0x3,
+                        "signalType": 0x0,
+                        "signal": 0x1,
+                        "state": 0x4,
                     },
                 },
                 "scalingByte#2": 0xA1,
                 "scalingByteExtension#2": {
-                    "Unit/Format": 0x02,
+                    "unit/format": 0x02,
                 },
                 "scalingByte#3": 0x92,
                 "scalingByteExtension#3": {
-                    "FormulaIdentifier": 0x03
+                    "formulaIdentifier": 0x03
                 },
                 "C0#3": 0x2345,
                 "C1#3": 0xFEDC,
@@ -551,7 +551,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                 "scalingByte#9": 0x31,
                 "scalingByte#10": 0x21,
                 "scalingByteExtension#10": {
-                    "ValidityMask": 0x2F,
+                    "validityMask": 0x2F,
                 },
                 "scalingByte#11": 0x12,
                 "scalingByte#12": 0x03,
@@ -632,15 +632,15 @@ class TestReadScalingDataByIdentifier2020Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'Unit/Format',
+                            'name': 'type',
+                            'physical_value': 'unit/format',
                             'raw_value': 0xA,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 0,
                             'raw_value': 0x0,
                             'unit': "bytes",
@@ -657,7 +657,7 @@ class TestReadScalingDataByIdentifier2020Integration:
                         {
                             'children': (),
                             'length': 8,
-                            'name': 'Unit/Format',
+                            'name': 'unit/format',
                             'physical_value': "Milli (prefix) [m] - 10^-3",
                             'raw_value': 0x4A,
                             'unit': None
@@ -674,15 +674,15 @@ class TestReadScalingDataByIdentifier2020Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'Unit/Format',
+                            'name': 'type',
+                            'physical_value': 'unit/format',
                             'raw_value': 0xA,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 0,
                             'raw_value': 0x0,
                             'unit': "bytes",
@@ -699,7 +699,7 @@ class TestReadScalingDataByIdentifier2020Integration:
                         {
                             'children': (),
                             'length': 8,
-                            'name': 'Unit/Format',
+                            'name': 'unit/format',
                             'physical_value': "Volt [V] - voltage",
                             'raw_value': 0x0E,
                             'unit': None
@@ -716,15 +716,15 @@ class TestReadScalingDataByIdentifier2020Integration:
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'Type',
-                            'physical_value': 'Formula',
+                            'name': 'type',
+                            'physical_value': 'formula',
                             'raw_value': 0x9,
                             'unit': None
                         },
                         {
                             'children': (),
                             'length': 4,
-                            'name': 'NumberOfBytes',
+                            'name': 'numberOfBytesOfParameter',
                             'physical_value': 2,
                             'raw_value': 0x2,
                             'unit': "bytes",
@@ -741,7 +741,7 @@ class TestReadScalingDataByIdentifier2020Integration:
                         {
                             'children': (),
                             'length': 8,
-                            'name': 'FormulaIdentifier',
+                            'name': 'formulaIdentifier',
                             'physical_value': "y = C0 * x + C1",
                             'raw_value': 0x00,
                             'unit': None
@@ -823,20 +823,20 @@ class TestReadScalingDataByIdentifier2020Integration:
                 "DID": 0x306F,
                 "scalingByte#1": 0xB1,
                 "scalingByteExtension#1": {
-                    "StateAndConnectionType": {
-                        "SignalAccess": 0x1,
-                        "SignalType": 0x1,
-                        "Signal": 0x2,
-                        "State": 0x0,
+                    "stateAndConnectionType": {
+                        "signalAccess": 0x1,
+                        "signalType": 0x1,
+                        "signal": 0x2,
+                        "state": 0x0,
                     },
                 },
                 "scalingByte#2": 0xA3,
                 "scalingByteExtension#2": {
-                    "Unit/Format": 0x55,
+                    "unit/format": 0x55,
                 },
                 "scalingByte#3": 0x91,
                 "scalingByteExtension#3": {
-                    "FormulaIdentifier": 0x06,
+                    "formulaIdentifier": 0x06,
                 },
                 "C0#3": 0xF1E3,
                 "scalingByte#4": 0x8B,
@@ -847,7 +847,7 @@ class TestReadScalingDataByIdentifier2020Integration:
                 "scalingByte#9": 0x31,
                 "scalingByte#10": 0x22,
                 "scalingByteExtension#10": {
-                    "ValidityMask": 0x2FFF,
+                    "validityMask": 0x2FFF,
                 },
                 "scalingByte#11": 0x11,
                 "scalingByte#12": 0x02,

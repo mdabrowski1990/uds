@@ -97,7 +97,7 @@ class TestECUResetIntegration:
                     'children': (),
                     'length': 8,
                     'name': 'powerDownTime',
-                    'physical_value': 'ERROR',
+                    'physical_value': 'failure or time unavailable',
                     'raw_value': 0xFF,
                     'unit': 's'
                 },

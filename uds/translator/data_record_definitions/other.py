@@ -19,6 +19,8 @@ __all__ = [
     "SCALING_DATA_RECORDS",
     # SID 0x27
     "CONDITIONAL_SECURITY_ACCESS_REQUEST", "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
+    # SID 28
+    "CONDITIONAL_COMMUNICATION_CONTROL_REQUEST"
 ]
 
 from decimal import Decimal
@@ -83,20 +85,20 @@ def get_scaling_byte_extension(scaling_byte: int,
             raise InconsistencyError("Provided `scalingByte` value is incorrect (0x20) - byte length equals 0.")
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
                               length=8 * number_of_bytes,
-                              children=(RawDataRecord(name="ValidityMask",
+                              children=(RawDataRecord(name="validityMask",
                                                       length=8 * number_of_bytes),)),)
-    if parameter_type == 0x9:  # Formula
+    if parameter_type == 0x9:  # formula
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
                               length=FORMULA_IDENTIFIER.length,
                               children=(FORMULA_IDENTIFIER,)),
                 ConditionalFormulaDataRecord(
                     formula=get_formula_data_records_for_formula_parameters(scaling_byte_number)),)
-    if parameter_type == 0xA:  # Unit/Format
+    if parameter_type == 0xA:  # unit/format
         # TODO: ISO 14229-1 does not explain how to combine units (e.g. Volt [V]) and prefixes (e.g. milli [m])/formulas
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
                               length=UNIT_OR_FORMAT.length,
                               children=(UNIT_OR_FORMAT,)),)
-    if parameter_type == 0xB:  # StateAndConnectionType
+    if parameter_type == 0xB:  # stateAndConnectionType
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
                               length=STATE_AND_CONNECTION_TYPE.length,
                               children=(STATE_AND_CONNECTION_TYPE,)),)
@@ -258,10 +260,12 @@ def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length
 
 
 # Shared
-RESERVED_BIT = RawDataRecord(name="Reserved",
+RESERVED_BIT = RawDataRecord(name="reserved",
                              length=1)
+RESERVED_2BITS = RawDataRecord(name="reserved",
+                               length=2)
 
-DATA = RawDataRecord(name="Data",
+DATA = RawDataRecord(name="data",
                      length=8,
                      min_occurrences=1,
                      max_occurrences=None)
@@ -294,7 +298,7 @@ SESSION_PARAMETER_RECORD = RawDataRecord(name="sessionParameterRecord",
 # SID 0x11
 POWER_DOWN_TIME = MappingAndLinearFormulaDataRecord(name="powerDownTime",
                                                     length=8,
-                                                    values_mapping={0xFF: "ERROR"},
+                                                    values_mapping={0xFF: "failure or time unavailable"},
                                                     factor=1,
                                                     offset=0,
                                                     unit="s")
@@ -317,23 +321,23 @@ ACTIVE_DIAGNOSTIC_SESSION = MappingDataRecord(name="ActiveDiagnosticSession",
                                               length=7)
 
 # SID 0x24
-SCALING_BYTE_TYPE = MappingDataRecord(name="Type",
+SCALING_BYTE_TYPE = MappingDataRecord(name="type",
                                       length=4,
                                       values_mapping={
-                                          0x0: "UnSignedNumeric",
-                                          0x1: "SignedNumeric",
-                                          0x2: "BitMappedReportedWithOutMask",
-                                          0x3: "BitMappedReportedWithMask",
+                                          0x0: "unSignedNumeric",
+                                          0x1: "signedNumeric",
+                                          0x2: "bitMappedReportedWithOutMask",
+                                          0x3: "bitMappedReportedWithMask",
                                           0x4: "BinaryCodedDecimal",
-                                          0x5: "StateEncodedVariable",
+                                          0x5: "stateEncodedVariable",
                                           0x6: "ASCII",
-                                          0x7: "SignedFloatingPoint",
-                                          0x8: "Packet",
-                                          0x9: "Formula",
-                                          0xA: "Unit/Format",
-                                          0xB: "StateAndConnectionType",
+                                          0x7: "signedFloatingPoint",
+                                          0x8: "packet",
+                                          0x9: "formula",
+                                          0xA: "unit/format",
+                                          0xB: "stateAndConnectionType",
                                       })
-SCALING_BYTE_LENGTH = RawDataRecord(name="NumberOfBytes",
+SCALING_BYTE_LENGTH = RawDataRecord(name="numberOfBytesOfParameter",
                                     length=4,
                                     unit="bytes")
 SCALING_BYTES_LIST = [RawDataRecord(name=f"scalingByte#{index + 1}",
@@ -348,7 +352,7 @@ SCALING_DATA_RECORDS = [item for scaling_data_records in zip(SCALING_BYTES_LIST,
                                                              SCALING_BYTES_EXTENSIONS_LIST)
                         for item in scaling_data_records]
 
-FORMULA_IDENTIFIER = MappingDataRecord(name="FormulaIdentifier",
+FORMULA_IDENTIFIER = MappingDataRecord(name="formulaIdentifier",
                                        length=8,
                                        values_mapping={
                                            0x00: "y = C0 * x + C1",
@@ -371,7 +375,7 @@ MANTISSA = CustomFormulaDataRecord(name="Mantissa",
                                    encoding_formula=get_encode_signed_value_formula(MANTISSA_BIT_LENGTH),
                                    decoding_formula=get_decode_signed_value_formula(MANTISSA_BIT_LENGTH))
 
-UNIT_OR_FORMAT = MappingDataRecord(name="Unit/Format",
+UNIT_OR_FORMAT = MappingDataRecord(name="unit/format",
                                    length=8,
                                    values_mapping={
                                        0x00: "No unit, no prefix",
@@ -468,7 +472,7 @@ UNIT_OR_FORMAT = MappingDataRecord(name="Unit/Format",
                                    })
 
 SIGNAL_ACCESS = MappingDataRecord(
-    name="SignalAccess",
+    name="signalAccess",
     length=2,
     values_mapping={
         0x0: "Internal signal",  # not available in ECU connector
@@ -476,20 +480,20 @@ SIGNAL_ACCESS = MappingDataRecord(
         0x2: "High side switch (2 states)",  # Pull-up resistor input type
         0x3: "Low side and high side switch (2 states)",  # Pull-up and pull-down resistor input type
     })
-SIGNAL_TYPE = MappingDataRecord(name="SignalType",
+SIGNAL_TYPE = MappingDataRecord(name="signalType",
                                 length=1,
                                 values_mapping={
                                     0x0: "Input signal",
                                     0x1: "Output signal",
                                 })
-SIGNAL = MappingDataRecord(name="Signal",
+SIGNAL = MappingDataRecord(name="signal",
                            length=2,
                            values_mapping={
                                0x0: "Signal at low level (ground)",
                                0x1: "Signal at middle level (between ground and +)",
                                0x2: "Signal at high level (+)",
                            })
-STATE = MappingDataRecord(name="State",
+STATE = MappingDataRecord(name="state",
                           length=3,
                           values_mapping={
                               0x0: "Not Active",
@@ -498,20 +502,20 @@ STATE = MappingDataRecord(name="State",
                               0x3: "Not available",
                               0x4: "Active, function 2",
                           })
-STATE_AND_CONNECTION_TYPE = RawDataRecord(name="StateAndConnectionType",
+STATE_AND_CONNECTION_TYPE = RawDataRecord(name="stateAndConnectionType",
                                           length=8,
                                           children=(SIGNAL_ACCESS, SIGNAL_TYPE, SIGNAL, STATE))
 
 # SID 0x27
-SECURITY_ACCESS_DATA = RawDataRecord(name="SecurityAccessData",
+SECURITY_ACCESS_DATA = RawDataRecord(name="securityAccessData",
                                      length=8,
                                      min_occurrences=0,
                                      max_occurrences=None)
-SECURITY_SEED = RawDataRecord(name="SecuritySeed",
+SECURITY_SEED = RawDataRecord(name="securitySeed",
                               length=8,
                               min_occurrences=1,
                               max_occurrences=None)
-SECURITY_KEY = RawDataRecord(name="SecurityKey",
+SECURITY_KEY = RawDataRecord(name="securityKey",
                              length=8,
                              min_occurrences=1,
                              max_occurrences=None)
@@ -519,3 +523,30 @@ CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(
     formula=lambda security_access_type: (SECURITY_ACCESS_DATA, ) if security_access_type % 2 else (SECURITY_KEY, ))
 CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(
     formula=lambda security_access_type: (SECURITY_SEED, ) if security_access_type % 2 else ())
+
+# SID 0x28
+MESSAGES_TYPE = MappingDataRecord(name="messagesType",
+                                  length=2,
+                                  values_mapping={
+                                      0: "reserved",
+                                      1: "normalCommunicationMessages",
+                                      2: "networkManagementCommunicationMessages",
+                                      3: "networkManagementCommunicationMessages and normalCommunicationMessages",
+                                  })
+NETWORKS = MappingDataRecord(name="networks",
+                                  length=4,
+                                  values_mapping={
+                                      0x0: "all connected networks",
+                                      0xF: "network on which this request is received",
+                                  } | {
+                                      raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)
+                                  })
+COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
+                                   length=8,
+                                   children=(MESSAGES_TYPE, RESERVED_2BITS, NETWORKS))
+NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
+                                               length=16,
+                                               values_mapping={0: "reserved"})
+CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(
+    formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER) if control_type & 0x7F in {0x04, 0x05}
+    else (COMMUNICATION_TYPE,))

@@ -96,7 +96,7 @@ class TestSecurityAccessIntegration:
                 {
                     'children': ((), (), ()),
                     'length': 8,
-                    'name': 'SecurityAccessData',
+                    'name': 'securityAccessData',
                     'physical_value': (0xFB, 0x85, 0xA1),
                     'raw_value': (0xFB, 0x85, 0xA1),
                     'unit': None
@@ -142,7 +142,7 @@ class TestSecurityAccessIntegration:
                 {
                     'children': ((), (), (), (), (), (), (), (), ()),
                     'length': 8,
-                    'name': 'SecurityKey',
+                    'name': 'securityKey',
                     'physical_value': (0xAE, 0xDB, 0xD6, 0x6F, 0x19, 0x3F, 0xAB, 0xBC, 0x54),
                     'raw_value': (0xAE, 0xDB, 0xD6, 0x6F, 0x19, 0x3F, 0xAB, 0xBC, 0x54),
                     'unit': None
@@ -188,7 +188,7 @@ class TestSecurityAccessIntegration:
                 {
                     'children': ((),),
                     'length': 8,
-                    'name': 'SecuritySeed',
+                    'name': 'securitySeed',
                     'physical_value': (0x2D, ),
                     'raw_value': (0x2D, ),
                     'unit': None
@@ -252,7 +252,7 @@ class TestSecurityAccessIntegration:
         (
             {
                 "SubFunction": 0x41,
-                "SecurityAccessData": (0x90, 0x50, 0x68, 0xDE, 0x6B, 0xA1, 0x47),
+                "securityAccessData": (0x90, 0x50, 0x68, 0xDE, 0x6B, 0xA1, 0x47),
             },
             RequestSID.SecurityAccess,
             None,
@@ -261,7 +261,7 @@ class TestSecurityAccessIntegration:
         (
             {
                 "SubFunction": 0x7E,
-                "SecurityKey": (0xA8, 0xEF),
+                "securityKey": (0xA8, 0xEF),
             },
             RequestSID.SecurityAccess,
             None,
@@ -270,7 +270,7 @@ class TestSecurityAccessIntegration:
         (
             {
                 "SubFunction": 0xF1,
-                "SecuritySeed": (0x01, 0x7D),
+                "securitySeed": (0x01, 0x7D),
             },
             None,
             ResponseSID.SecurityAccess,

@@ -143,7 +143,7 @@ class TestReadMemoryByAddressIntegration:
                 {
                     'children': ((), (), (), (), (), (), (), (), (), (), (), (), ()),
                     'length': 8,
-                    'name': 'Data',
+                    'name': 'data',
                     'physical_value': (0xFB, 0x3E, 0xA7, 0x47, 0x67, 0x82, 0xAF, 0x2C, 0xB4, 0x7A, 0xA5, 0xC4, 0x32),
                     'raw_value': (0xFB, 0x3E, 0xA7, 0x47, 0x67, 0x82, 0xAF, 0x2C, 0xB4, 0x7A, 0xA5, 0xC4, 0x32),
                     'unit': None
@@ -170,7 +170,7 @@ class TestReadMemoryByAddressIntegration:
         ),
         (
             {
-                "Data": (0x29, 0x88, 0xDA, 0xB0),
+                "data": (0x29, 0x88, 0xDA, 0xB0),
             },
             None,
             ResponseSID.ReadMemoryByAddress,
