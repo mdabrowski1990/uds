@@ -548,5 +548,5 @@ NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
                                                values_mapping={0: "reserved"})
 CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(
-    formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER)
-    if control_type in {0x04, 0x05, 0x84, 0x85} else (COMMUNICATION_TYPE,))
+    formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER) if control_type & 0x7F in {0x04, 0x05}
+    else (COMMUNICATION_TYPE,))
