@@ -3087,13 +3087,13 @@ Request Format
 |                   |                                |            |               |                                                                             |                                                                               |
 |                   |                                |            |               | 0x06-0x3F: reserved                                                         |                                                                               |
 |                   |                                |            |               |                                                                             |                                                                               |
-|                   |                                |            |               | 0x40–0x5F: vehicle manufacturer specific                                    |                                                                               |
+|                   |                                |            |               | 0x40-0x5F: vehicle manufacturer specific                                    |                                                                               |
 |                   |                                |            |               |                                                                             |                                                                               |
-|                   |                                |            |               | 0x60–0x7E: system supplier specific                                         |                                                                               |
+|                   |                                |            |               | 0x60-0x7E: system supplier specific                                         |                                                                               |
 |                   |                                |            |               |                                                                             |                                                                               |
 |                   |                                |            |               | 0x7F: reserved                                                              |                                                                               |
 +-------------------+--------------------------------+------------+---------------+-----------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| communicationType | messagesType                   | 2          | 0x1-0x3       | 0x0: reserved                                                               | Always                                                                        |
+| communicationType | messagesType                   | 2          | 0x0-0x3       | 0x0: reserved                                                               | Always                                                                        |
 |                   |                                |            |               |                                                                             |                                                                               |
 |                   |                                |            |               | 0x1: normalCommunicationMessages                                            |                                                                               |
 |                   |                                |            |               |                                                                             |                                                                               |
@@ -3139,9 +3139,9 @@ Positive Response Format
 |             |                                |            |           |                                                          |         |
 |             |                                |            |           | 0x06-0x3F: reserved                                      |         |
 |             |                                |            |           |                                                          |         |
-|             |                                |            |           | 0x40–0x5F: vehicle manufacturer specific                 |         |
+|             |                                |            |           | 0x40-0x5F: vehicle manufacturer specific                 |         |
 |             |                                |            |           |                                                          |         |
-|             |                                |            |           | 0x60–0x7E: system supplier specific                      |         |
+|             |                                |            |           | 0x60-0x7E: system supplier specific                      |         |
 |             |                                |            |           |                                                          |         |
 |             |                                |            |           | 0x7F: reserved                                           |         |
 +-------------+--------------------------------+------------+-----------+----------------------------------------------------------+---------+

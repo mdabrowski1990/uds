@@ -539,7 +539,7 @@ NETWORKS = MappingDataRecord(name="networks",
                                       0x0: "all connected networks",
                                       0xF: "network on which this request is received",
                                   } | {
-                                      raw_value: "subnet {raw_value}" for raw_value in range(1, 0xF)
+                                      raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)
                                   })
 COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
                                    length=8,
