@@ -260,9 +260,9 @@ def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length
 
 
 # Shared
-RESERVED_BIT = RawDataRecord(name="Reserved",
+RESERVED_BIT = RawDataRecord(name="reserved",
                              length=1)
-RESERVED_2BITS = RawDataRecord(name="Reserved",
+RESERVED_2BITS = RawDataRecord(name="reserved",
                                length=2)
 
 DATA = RawDataRecord(name="data",
@@ -525,15 +525,15 @@ CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(
     formula=lambda security_access_type: (SECURITY_SEED, ) if security_access_type % 2 else ())
 
 # SID 0x28
-MESSAGES_TYPE = MappingDataRecord(name="MessagesType",
+MESSAGES_TYPE = MappingDataRecord(name="messagesType",
                                   length=2,
                                   values_mapping={
-                                      0: "Reserved",
+                                      0: "reserved",
                                       1: "normalCommunicationMessages",
                                       2: "networkManagementCommunicationMessages",
                                       3: "networkManagementCommunicationMessages and normalCommunicationMessages",
                                   })
-NETWORKS = MappingDataRecord(name="Networks",
+NETWORKS = MappingDataRecord(name="networks",
                                   length=4,
                                   values_mapping={
                                       0x0: "all connected networks",
@@ -546,7 +546,7 @@ COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
                                    children=(MESSAGES_TYPE, RESERVED_2BITS, NETWORKS))
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
-                                               values_mapping={0: "Reserved"})
+                                               values_mapping={0: "reserved"})
 CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(
     formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER) if control_type in {4, 5}
     else (COMMUNICATION_TYPE,))

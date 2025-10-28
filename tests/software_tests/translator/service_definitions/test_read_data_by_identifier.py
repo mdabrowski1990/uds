@@ -100,7 +100,7 @@ class TestReadDataByIdentifier2013Integration:
                         {
                             'children': (),
                             'length': 1,
-                            'name': 'Reserved',
+                            'name': 'reserved',
                             'physical_value': 0,
                             'raw_value': 0,
                             'unit': None
@@ -257,7 +257,7 @@ class TestReadDataByIdentifier2020Integration:
                         {
                             'children': (),
                             'length': 1,
-                            'name': 'Reserved',
+                            'name': 'reserved',
                             'physical_value': 0,
                             'raw_value': 0,
                             'unit': None
