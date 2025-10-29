@@ -3147,10 +3147,752 @@ Positive Response Format
 +-------------+--------------------------------+------------+-----------+----------------------------------------------------------+---------+
 
 
+.. _knowledge-base-service-authentication:
+
 Authentication
 --------------
 Authentication service provides a means for the client to prove its identity, allowing it to access data and/or
 diagnostic services, which have restricted access for, for example security, emissions, or safety reasons.
+
+.. note:: Service Authentication (SID 0x29) was introduced in version ISO 14229-1:2020.
+
+ISO 14229-1 defines the following DTC report types (values of the *authenticationTask* parameter):
+
+- 0x00: :ref`deAuthenticate <knowledge-base-service-authentication-00>`
+- 0x01: :ref`verifyCertificateUnidirectional <knowledge-base-service-authentication-01>`
+- 0x02: :ref`verifyCertificateBidirectional <knowledge-base-service-authentication-02>`
+- 0x03: :ref`proofOfOwnership <knowledge-base-service-authentication-03>`
+- 0x04: :ref`transmitCertificate <knowledge-base-service-authentication-04>`
+- 0x05: :ref`requestChallengeForAuthentication <knowledge-base-service-authentication-05>`
+- 0x06: :ref`verifyProofOfOwnershipUnidirectional <knowledge-base-service-authentication-06>`
+- 0x07: :ref`verifyProofOfOwnershipBidirectional <knowledge-base-service-authentication-07>`
+- 0x08: :ref`authenticationConfiguration <knowledge-base-service-authentication-08>`
+
+
+.. _knowledge-base-service-authentication-00:
+
+deAuthenticate (0x00)
+`````````````````````
+This sub-function can be used by the client to inform the server about closing the communication session and
+to exit authenticated state.
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+------------+---------+--------------------------------+---------+
+| Name                                         | Bit Length | Value   | Description                    | Present |
++==============================================+============+=========+================================+=========+
+| SID                                          | 8          | 0x29    | Authentication                 | Always  |
++-------------+--------------------------------+------------+---------+--------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1 | 0 = response required          | Always  |
+|             |                                |            |         |                                |         |
+|             |                                |            |         | 1 = suppress positive response |         |
+|             +--------------------------------+------------+---------+--------------------------------+         |
+|             | authenticationTask             | 7 (b[6-0]) | 0x00    | deAuthenticate                 |         |
++-------------+--------------------------------+------------+---------+--------------------------------+---------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                                        | Present |
++==============================================+============+===========+====================================================================+=========+
+| RSID                                         | 8          | 0x69      | Positive Response: Authentication (0x29)                           | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                              | Always  |
+|             |                                |            |           |                                                                    |         |
+|             |                                |            |           | 1 = suppress positive response                                     |         |
+|             +--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+|             | authenticationTask             | 7 (b[6-0]) | 0x00      | deAuthenticate                                                     | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| authenticationReturnParameter                | 8          | 0x00-0xFF | 0x00: RequestAccepted                                              | Always  |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x01: GeneralReject                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x02: AuthenticationConfiguration                                  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x04: AuthenticationConfiguration ACR with symmetric cryptography  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x05-0x0F: reserved                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x10: DeAuthentication successful                                  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x11: CertificateVerified, OwnershipVerificationNecessary          |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x12: OwnershipVerified, AuthenticationComplete                    |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x13: CertificateVerified                                          |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x14-0x9F: reserved                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xA0-0x9F: vehicle manufacturer specific                           |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xD0-0xFE: system supplier specific                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xFF: reserved                                                     |         |
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+
+
+.. _knowledge-base-service-authentication-01:
+
+verifyCertificateUnidirectional (0x01)
+``````````````````````````````````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+| Name                                         | Bit Length                  | Value         | Description                                                | Present                               |
++==============================================+=============================+===============+============================================================+=======================================+
+| SID                                          | 8                           | 0x29          | Authentication                                             | Always                                |
++-------------+--------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                    | 0x0-0x1       | 0 = response required                                      | Always                                |
+|             |                                |                             |               |                                                            |                                       |
+|             |                                |                             |               | 1 = suppress positive response                             |                                       |
+|             +--------------------------------+-----------------------------+---------------+------------------------------------------------------------+                                       |
+|             | authenticationTask             | 7 (b[6-0])                  | 0x01          | verifyCertificateUnidirectional                            |                                       |
++-------------+--------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+| communicationConfiguration                   | 8                           | 0x00-0xFF     | Information about how to proceed with security in further  | Always                                |
+|                                              |                             |               | diagnostic communication after the Authentication.         |                                       |
+|                                              |                             |               |                                                            |                                       |
+|                                              |                             |               | Values meaning is vehicle manufacturer specific.           |                                       |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+| lengthOfCertificateClient                    | 16                          | 0x0001-0xFFFF | Byte length of certificateClient Data Record.              | Always                                |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+| certificateClient                            | 8*lengthOfCertificateClient |               | The Certificate to verify.                                 | Always                                |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+| lengthOfChallengeClient                      | 16                          | 0x0000-0xFFFF | Byte length of challengeClient Data Record.                | Always                                |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+| challengeClient                              | 8*lengthOfChallengeClient   |               | Challenge generated by the client for the server.          | If lengthOfChallengeClient unequals 0 |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------------------------------------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| Name                                         | Bit Length                         | Value         | Description                                                                    | Present                                        |
++==============================================+====================================+===============+================================================================================+================================================+
+| RSID                                         | 8                                  | 0x69          | Positive Response: Authentication (0x29)                                       | Always                                         |
++-------------+--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                           | 0x0-0x1       | 0 = response required                                                          | Always                                         |
+|             |                                |                                    |               |                                                                                |                                                |
+|             |                                |                                    |               | 1 = suppress positive response                                                 |                                                |
+|             +--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+|             | authenticationTask             | 7 (b[6-0])                         | 0x01          | verifyCertificateUnidirectional                                                | Always                                         |
++-------------+--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| authenticationReturnParameter                | 8                                  | 0x00-0xFF     | 0x00: RequestAccepted                                                          | Always                                         |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x01: GeneralReject                                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x02: AuthenticationConfiguration                                              |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography             |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x04: AuthenticationConfiguration ACR with symmetric cryptography              |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x05-0x0F: reserved                                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x10: DeAuthentication successful                                              |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x11: CertificateVerified, OwnershipVerificationNecessary                      |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x12: OwnershipVerified, AuthenticationComplete                                |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x13: CertificateVerified                                                      |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x14-0x9F: reserved                                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0xA0-0x9F: vehicle manufacturer specific                                       |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0xD0-0xFE: system supplier specific                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0xFF: reserved                                                                 |                                                |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfChallengeServer                      | 16                                 | 0x0001-0xFFFF | Byte length of challengeServer Data Record.                                    | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| challengeServer                              | 8*lengthOfChallengeServer          |               | Challenge generated by the server for the client.                              | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfEphemeralPublicKeyServer             | 16                                 | 0x0000-0xFFFF | Byte length of ephemeralPublicKeyServer Data Record.                           | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| ephemeralPublicKeyServer                     | 8*lengthOfEphemeralPublicKeyServer |               | Ephemeral public key generated by the server for Diffie-Hellman key agreement. | If lengthOfEphemeralPublicKeyServer unequals 0 |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+
+
+.. _knowledge-base-service-authentication-02:
+
+verifyCertificateBidirectional (0x02)
+`````````````````````````````````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+| Name                                         | Bit Length                  | Value         | Description                                                | Present |
++==============================================+=============================+===============+============================================================+=========+
+| SID                                          | 8                           | 0x29          | Authentication                                             | Always  |
++-------------+--------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                    | 0x0-0x1       | 0 = response required                                      | Always  |
+|             |                                |                             |               |                                                            |         |
+|             |                                |                             |               | 1 = suppress positive response                             |         |
+|             +--------------------------------+-----------------------------+---------------+------------------------------------------------------------+         |
+|             | authenticationTask             | 7 (b[6-0])                  | 0x02          | verifyCertificateBidirectional                             |         |
++-------------+--------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+| communicationConfiguration                   | 8                           | 0x00-0xFF     | Information about how to proceed with security in further  | Always  |
+|                                              |                             |               | diagnostic communication after the Authentication.         |         |
+|                                              |                             |               |                                                            |         |
+|                                              |                             |               | Values meaning is vehicle manufacturer specific.           |         |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+| lengthOfCertificateClient                    | 16                          | 0x0001-0xFFFF | Byte length of certificateClient Data Record.              | Always  |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+| certificateClient                            | 8*lengthOfCertificateClient |               | The Certificate to verify.                                 | Always  |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+| lengthOfChallengeClient                      | 16                          | 0x0001-0xFFFF | Byte length of challengeClient Data Record.                | Always  |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+| challengeClient                              | 8*lengthOfChallengeClient   |               | Challenge generated by the client for the server.          | Always  |
++----------------------------------------------+-----------------------------+---------------+------------------------------------------------------------+---------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| Name                                         | Bit Length                         | Value         | Description                                                                    | Present                                        |
++==============================================+====================================+===============+================================================================================+================================================+
+| RSID                                         | 8                                  | 0x69          | Positive Response: Authentication (0x29)                                       | Always                                         |
++-------------+--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                           | 0x0-0x1       | 0 = response required                                                          | Always                                         |
+|             |                                |                                    |               |                                                                                |                                                |
+|             |                                |                                    |               | 1 = suppress positive response                                                 |                                                |
+|             +--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+|             | authenticationTask             | 7 (b[6-0])                         | 0x02          | verifyCertificateBidirectional                                                 | Always                                         |
++-------------+--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| authenticationReturnParameter                | 8                                  | 0x00-0xFF     | 0x00: RequestAccepted                                                          | Always                                         |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x01: GeneralReject                                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x02: AuthenticationConfiguration                                              |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography             |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x04: AuthenticationConfiguration ACR with symmetric cryptography              |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x05-0x0F: reserved                                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x10: DeAuthentication successful                                              |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x11: CertificateVerified, OwnershipVerificationNecessary                      |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x12: OwnershipVerified, AuthenticationComplete                                |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x13: CertificateVerified                                                      |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0x14-0x9F: reserved                                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0xA0-0x9F: vehicle manufacturer specific                                       |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0xD0-0xFE: system supplier specific                                            |                                                |
+|                                              |                                    |               |                                                                                |                                                |
+|                                              |                                    |               | 0xFF: reserved                                                                 |                                                |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfChallengeServer                      | 16                                 | 0x0001-0xFFFF | Byte length of challengeServer Data Record.                                    | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| challengeServer                              | 8*lengthOfChallengeServer          |               | Challenge generated by the server for the client.                              | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfCertificateServer                    | 16                                 | 0x0001-0xFFFF | Byte length of certificateServer Data Record.                                  | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| certificateServer                            | 8*lengthOfCertificateServer        |               | The Certificate to verify.                                                     | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfProofOfOwnershipServer               | 16                                 | 0x0001-0xFFFF | Byte length of proofOfOwnershipServer Data Record.                             | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| proofOfOwnershipServer                       | 8*lengthOfProofOfOwnershipServer   |               | Proof of Ownership to be verified by the client.                               | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfEphemeralPublicKeyServer             | 16                                 | 0x0000-0xFFFF | Byte length of ephemeralPublicKeyServer Data Record.                           | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| ephemeralPublicKeyServer                     | 8*lengthOfEphemeralPublicKeyServer |               | Ephemeral public key generated by the server for Diffie-Hellman key agreement. | If lengthOfEphemeralPublicKeyServer unequals 0 |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+
+
+.. _knowledge-base-service-authentication-03:
+
+proofOfOwnership (0x03)
+```````````````````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| Name                                         | Bit Length                         | Value         | Description                                                                    | Present                                        |
++==============================================+====================================+===============+================================================================================+================================================+
+| SID                                          | 8                                  | 0x29          | Authentication                                                                 | Always                                         |
++-------------+--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                           | 0x0-0x1       | 0 = response required                                                          | Always                                         |
+|             |                                |                                    |               |                                                                                |                                                |
+|             |                                |                                    |               | 1 = suppress positive response                                                 |                                                |
+|             +--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+                                                |
+|             | authenticationTask             | 7 (b[6-0])                         | 0x03          | proofOfOwnership                                                               |                                                |
++-------------+--------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfProofOfOwnershipClient               | 16                                 | 0x0001-0xFFFF | Byte length of proofOfOwnershipClient Data Record.                             | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| proofOfOwnershipClient                       | 8*lengthOfProofOfOwnershipClient   |               | Client's Proof of Ownership for the challenge value given by the server.       | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| lengthOfEphemeralPublicKeyClient             | 16                                 | 0x0000-0xFFFF | Byte length of ephemeralPublicKeyClient Data Record.                           | Always                                         |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+| ephemeralPublicKeyClient                     | 8*lengthOfEphemeralPublicKeyClient |               | Ephemeral public key generated by the client for Diffie-Hellman key agreement. | If lengthOfEphemeralPublicKeyClient unequals 0 |
++----------------------------------------------+------------------------------------+---------------+--------------------------------------------------------------------------------+------------------------------------------------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+--------------------------+---------------+--------------------------------------------------------------------+--------------------------------------+
+| Name                                         | Bit Length               | Value         | Description                                                        | Present                              |
++==============================================+==========================+===============+====================================================================+======================================+
+| RSID                                         | 8                        | 0x69          | Positive Response: Authentication (0x29)                           | Always                               |
++-------------+--------------------------------+--------------------------+---------------+--------------------------------------------------------------------+--------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                 | 0x0-0x1       | 0 = response required                                              | Always                               |
+|             |                                |                          |               |                                                                    |                                      |
+|             |                                |                          |               | 1 = suppress positive response                                     |                                      |
+|             +--------------------------------+--------------------------+---------------+--------------------------------------------------------------------+--------------------------------------+
+|             | authenticationTask             | 7 (b[6-0])               | 0x03          | proofOfOwnership                                                   | Always                               |
++-------------+--------------------------------+--------------------------+---------------+--------------------------------------------------------------------+--------------------------------------+
+| authenticationReturnParameter                | 8                        | 0x00-0xFF     | 0x00: RequestAccepted                                              | Always                               |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x01: GeneralReject                                                |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x02: AuthenticationConfiguration                                  |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x04: AuthenticationConfiguration ACR with symmetric cryptography  |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x05-0x0F: reserved                                                |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x10: DeAuthentication successful                                  |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x11: CertificateVerified, OwnershipVerificationNecessary          |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x12: OwnershipVerified, AuthenticationComplete                    |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x13: CertificateVerified                                          |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0x14-0x9F: reserved                                                |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0xA0-0x9F: vehicle manufacturer specific                           |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0xD0-0xFE: system supplier specific                                |                                      |
+|                                              |                          |               |                                                                    |                                      |
+|                                              |                          |               | 0xFF: reserved                                                     |                                      |
++----------------------------------------------+--------------------------+---------------+--------------------------------------------------------------------+--------------------------------------+
+| lengthOfSessionKeyInfo                       | 16                       | 0x0000-0xFFFF | Byte length of sessionKeyInfo Data Record.                         | Always                               |
++----------------------------------------------+--------------------------+---------------+--------------------------------------------------------------------+--------------------------------------+
+| sessionKeyInfo                               | 8*lengthOfSessionKeyInfo |               | Session key information (e.g. encrypted session keys).             | If lengthOfSessionKeyInfo unequals 0 |
++----------------------------------------------+--------------------------+---------------+--------------------------------------------------------------------+--------------------------------------+
+
+
+.. _knowledge-base-service-authentication-04:
+
+transmitCertificate (0x04)
+``````````````````````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+---------------------------+---------------+---------------------------------------------------------------+---------+
+| Name                                         | Bit Length                | Value         | Description                                                   | Present |
++==============================================+===========================+===============+===============================================================+=========+
+| SID                                          | 8                         | 0x29          | Authentication                                                | Always  |
++-------------+--------------------------------+---------------------------+---------------+---------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                  | 0x0-0x1       | 0 = response required                                         | Always  |
+|             |                                |                           |               |                                                               |         |
+|             |                                |                           |               | 1 = suppress positive response                                |         |
+|             +--------------------------------+---------------------------+---------------+---------------------------------------------------------------+         |
+|             | authenticationTask             | 7 (b[6-0])                | 0x04          | transmitCertificate                                           |         |
++-------------+--------------------------------+---------------------------+---------------+---------------------------------------------------------------+---------+
+| certificateEvaluationId                      | 16                        | 0x0000-0xFFFF | Identifier of evaluation type of the transmitted certificate. | Always  |
++----------------------------------------------+---------------------------+---------------+---------------------------------------------------------------+---------+
+| lengthOfCertificateData                      | 16                        | 0x0001-0xFFFF | Byte length of certificateData Data Record.                   | Always  |
++----------------------------------------------+---------------------------+---------------+---------------------------------------------------------------+---------+
+| certificateData                              | 8*lengthOfCertificateData |               | The Certificate to verify.                                    | Always  |
++----------------------------------------------+---------------------------+---------------+---------------------------------------------------------------+---------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                                        | Present |
++==============================================+============+===========+====================================================================+=========+
+| RSID                                         | 8          | 0x69      | Positive Response: Authentication (0x29)                           | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                              | Always  |
+|             |                                |            |           |                                                                    |         |
+|             |                                |            |           | 1 = suppress positive response                                     |         |
+|             +--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+|             | authenticationTask             | 7 (b[6-0]) | 0x04      | transmitCertificate                                                | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| authenticationReturnParameter                | 8          | 0x00-0xFF | 0x00: RequestAccepted                                              | Always  |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x01: GeneralReject                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x02: AuthenticationConfiguration                                  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x04: AuthenticationConfiguration ACR with symmetric cryptography  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x05-0x0F: reserved                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x10: DeAuthentication successful                                  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x11: CertificateVerified, OwnershipVerificationNecessary          |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x12: OwnershipVerified, AuthenticationComplete                    |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x13: CertificateVerified                                          |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x14-0x9F: reserved                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xA0-0x9F: vehicle manufacturer specific                           |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xD0-0xFE: system supplier specific                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xFF: reserved                                                     |         |
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+
+
+.. _knowledge-base-service-authentication-05:
+
+requestChallengeForAuthentication (0x05)
+````````````````````````````````````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+------------+-----------+-------------------------------------------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                                                               | Present |
++==============================================+============+===========+===========================================================================================+=========+
+| SID                                          | 8          | 0x29      | Authentication                                                                            | Always  |
++-------------+--------------------------------+------------+-----------+-------------------------------------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                                                     | Always  |
+|             |                                |            |           |                                                                                           |         |
+|             |                                |            |           | 1 = suppress positive response                                                            |         |
+|             +--------------------------------+------------+-----------+-------------------------------------------------------------------------------------------+         |
+|             | authenticationTask             | 7 (b[6-0]) | 0x05      | requestChallengeForAuthentication                                                         |         |
++-------------+--------------------------------+------------+-----------+-------------------------------------------------------------------------------------------+---------+
+| communicationConfiguration                   | 8          | 0x00-0xFF | Information about how to proceed with security in further                                 | Always  |
+|                                              |            |           | diagnostic communication after the Authentication.                                        |         |
+|                                              |            |           |                                                                                           |         |
+|                                              |            |           | Values meanings are vehicle manufacturer specific.                                        |         |
++----------------------------------------------+------------+-----------+-------------------------------------------------------------------------------------------+---------+
+| algorithmIndicator                           | 96         |           | Indicates the algorithm used in the generating and verifying Proof of Ownership.          | Always  |
+|                                              |            |           |                                                                                           |         |
+|                                              |            |           | This field is a 16 byte value containing the BER encoded OID value of the algorithm used. |         |
+|                                              |            |           | The value is left aligned and right padded with zero up to 16 bytes.                      |         |
++----------------------------------------------+------------+-----------+-------------------------------------------------------------------------------------------+---------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| Name                                         | Bit Length                          | Value         | Description                                                                               | Present                                         |
++==============================================+=====================================+===============+===========================================================================================+=================================================+
+| RSID                                         | 8                                   | 0x69          | Positive Response: Authentication (0x29)                                                  | Always                                          |
++-------------+--------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                            | 0x0-0x1       | 0 = response required                                                                     | Always                                          |
+|             |                                |                                     |               |                                                                                           |                                                 |
+|             |                                |                                     |               | 1 = suppress positive response                                                            |                                                 |
+|             +--------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+|             | authenticationTask             | 7 (b[6-0])                          | 0x05          | requestChallengeForAuthentication                                                         | Always                                          |
++-------------+--------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| authenticationReturnParameter                | 8                                   | 0x00-0xFF     | 0x00: RequestAccepted                                                                     | Always                                          |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x01: GeneralReject                                                                       |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x02: AuthenticationConfiguration                                                         |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography                        |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x04: AuthenticationConfiguration ACR with symmetric cryptography                         |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x05-0x0F: reserved                                                                       |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x10: DeAuthentication successful                                                         |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x11: CertificateVerified, OwnershipVerificationNecessary                                 |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x12: OwnershipVerified, AuthenticationComplete                                           |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x13: CertificateVerified                                                                 |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0x14-0x9F: reserved                                                                       |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0xA0-0x9F: vehicle manufacturer specific                                                  |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0xD0-0xFE: system supplier specific                                                       |                                                 |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | 0xFF: reserved                                                                            |                                                 |
++----------------------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| algorithmIndicator                           | 96                                  |               | Indicates the algorithm used in the generating and verifying Proof of Ownership.          | Always                                          |
+|                                              |                                     |               |                                                                                           |                                                 |
+|                                              |                                     |               | This field is a 16 byte value containing the BER encoded OID value of the algorithm used. |                                                 |
+|                                              |                                     |               | The value is left aligned and right padded with zero up to 16 bytes.                      |                                                 |
++----------------------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| lengthOfChallengeServer                      | 16                                  | 0x0001-0xFFFF | Byte length of challengeServer Data Record.                                               | Always                                          |
++----------------------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| challengeServer                              | 8*lengthOfChallengeServer           |               | Challenge generated by the server for the client.                                         | Always                                          |
++----------------------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| lengthOfNeededAdditionalParameter            | 16                                  | 0x0000-0xFFFF | Byte length of neededAdditionalParameter Data Record.                                     | Always                                          |
++----------------------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+| neededAdditionalParameter                    | 8*lengthOfNeededAdditionalParameter |               | Indicate what additional parameters, if needed, are expected by the server.               | If lengthOfNeededAdditionalParameter unequals 0 |
++----------------------------------------------+-------------------------------------+---------------+-------------------------------------------------------------------------------------------+-------------------------------------------------+
+
+
+.. _knowledge-base-service-authentication-06:
+
+verifyProofOfOwnershipUnidirectional (0x06)
+```````````````````````````````````````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| Name                                         | Bit Length                       | Value         | Description                                                                                       | Present                                   |
++==============================================+==================================+===============+===================================================================================================+===========================================+
+| SID                                          | 8                                | 0x29          | Authentication                                                                                    | Always                                    |
++-------------+--------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                         | 0x0-0x1       | 0 = response required                                                                             | Always                                    |
+|             |                                |                                  |               |                                                                                                   |                                           |
+|             |                                |                                  |               | 1 = suppress positive response                                                                    |                                           |
+|             +--------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+                                           |
+|             | authenticationTask             | 7 (b[6-0])                       | 0x06          | verifyProofOfOwnershipUnidirectional                                                              |                                           |
++-------------+--------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| algorithmIndicator                           | 96                               |               | Indicates the algorithm used in the generating and verifying Proof of Ownership.                  | Always                                    |
+|                                              |                                  |               |                                                                                                   |                                           |
+|                                              |                                  |               | This field is a 16 byte value containing the BER encoded OID value of the algorithm used.         |                                           |
+|                                              |                                  |               | The value is left aligned and right padded with zero up to 16 bytes.                              |                                           |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| lengthOfProofOfOwnershipClient               | 16                               | 0x0001-0xFFFF | Byte length of proofOfOwnershipClient Data Record.                                                | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| proofOfOwnershipClient                       | 8*lengthOfProofOfOwnershipClient |               | Client's Proof of Ownership for the challenge value given by the server.                          | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| lengthOfChallengeClient                      | 16                               | 0x0000-0xFFFF | Byte length of challengeClient Data Record.                                                       | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| challengeClient                              | 8*lengthOfChallengeClient        |               | Challenge generated by the client for the server.                                                 | If lengthOfChallengeClient unequals 0     |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| lengthOfAdditionalParameter                  | 16                               | 0x0000-0xFFFF | Byte length of additionalParameter Data Record.                                                   | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| additionalParameter                          | 8*lengthOfAdditionalParameter    |               | The value of additional parameter that was indicated by the server via neededAdditionalParameter. | If lengthOfAdditionalParameter unequals 0 |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| Name                                         | Bit Length               | Value         | Description                                                                               | Present                              |
++==============================================+==========================+===============+===========================================================================================+======================================+
+| RSID                                         | 8                        | 0x69          | Positive Response: Authentication (0x29)                                                  | Always                               |
++-------------+--------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                 | 0x0-0x1       | 0 = response required                                                                     | Always                               |
+|             |                                |                          |               |                                                                                           |                                      |
+|             |                                |                          |               | 1 = suppress positive response                                                            |                                      |
+|             +--------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+|             | authenticationTask             | 7 (b[6-0])               | 0x06          | verifyProofOfOwnershipUnidirectional                                                      | Always                               |
++-------------+--------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| authenticationReturnParameter                | 8                        | 0x00-0xFF     | 0x00: RequestAccepted                                                                     | Always                               |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x01: GeneralReject                                                                       |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x02: AuthenticationConfiguration                                                         |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography                        |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x04: AuthenticationConfiguration ACR with symmetric cryptography                         |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x05-0x0F: reserved                                                                       |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x10: DeAuthentication successful                                                         |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x11: CertificateVerified, OwnershipVerificationNecessary                                 |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x12: OwnershipVerified, AuthenticationComplete                                           |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x13: CertificateVerified                                                                 |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0x14-0x9F: reserved                                                                       |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0xA0-0x9F: vehicle manufacturer specific                                                  |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0xD0-0xFE: system supplier specific                                                       |                                      |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | 0xFF: reserved                                                                            |                                      |
++----------------------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| algorithmIndicator                           | 96                       |               | Indicates the algorithm used in the generating and verifying Proof of Ownership.          | Always                               |
+|                                              |                          |               |                                                                                           |                                      |
+|                                              |                          |               | This field is a 16 byte value containing the BER encoded OID value of the algorithm used. |                                      |
+|                                              |                          |               | The value is left aligned and right padded with zero up to 16 bytes.                      |                                      |
++----------------------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| lengthOfSessionKeyInfo                       | 16                       | 0x0000-0xFFFF | Byte length of sessionKeyInfo Data Record.                                                | Always                               |
++----------------------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| sessionKeyInfo                               | 8*lengthOfSessionKeyInfo |               | Session key information (e.g. encrypted session keys).                                    | If lengthOfSessionKeyInfo unequals 1 |
++----------------------------------------------+--------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+
+
+.. _knowledge-base-service-authentication-07:
+
+verifyProofOfOwnershipBidirectional (0x07)
+``````````````````````````````````````````
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| Name                                         | Bit Length                       | Value         | Description                                                                                       | Present                                   |
++==============================================+==================================+===============+===================================================================================================+===========================================+
+| SID                                          | 8                                | 0x29          | Authentication                                                                                    | Always                                    |
++-------------+--------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                         | 0x0-0x1       | 0 = response required                                                                             | Always                                    |
+|             |                                |                                  |               |                                                                                                   |                                           |
+|             |                                |                                  |               | 1 = suppress positive response                                                                    |                                           |
+|             +--------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+                                           |
+|             | authenticationTask             | 7 (b[6-0])                       | 0x07          | verifyProofOfOwnershipBidirectional                                                               |                                           |
++-------------+--------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| algorithmIndicator                           | 96                               |               | Indicates the algorithm used in the generating and verifying Proof of Ownership.                  | Always                                    |
+|                                              |                                  |               |                                                                                                   |                                           |
+|                                              |                                  |               | This field is a 16 byte value containing the BER encoded OID value of the algorithm used.         |                                           |
+|                                              |                                  |               | The value is left aligned and right padded with zero up to 16 bytes.                              |                                           |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| lengthOfProofOfOwnershipClient               | 16                               | 0x0001-0xFFFF | Byte length of proofOfOwnershipClient Data Record.                                                | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| proofOfOwnershipClient                       | 8*lengthOfProofOfOwnershipClient |               | Client's Proof of Ownership for the challenge value given by the server.                          | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| lengthOfChallengeClient                      | 16                               | 0x0001-0xFFFF | Byte length of challengeClient Data Record.                                                       | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| challengeClient                              | 8*lengthOfChallengeClient        |               | Challenge generated by the client for the server.                                                 | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| lengthOfAdditionalParameter                  | 16                               | 0x0000-0xFFFF | Byte length of additionalParameter Data Record.                                                   | Always                                    |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+| additionalParameter                          | 8*lengthOfAdditionalParameter    |               | The value of additional parameter that was indicated by the server via neededAdditionalParameter. | If lengthOfAdditionalParameter unequals 0 |
++----------------------------------------------+----------------------------------+---------------+---------------------------------------------------------------------------------------------------+-------------------------------------------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| Name                                         | Bit Length                       | Value         | Description                                                                               | Present                              |
++==============================================+==================================+===============+===========================================================================================+======================================+
+| RSID                                         | 8                                | 0x69          | Positive Response: Authentication (0x29)                                                  | Always                               |
++-------------+--------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])                         | 0x0-0x1       | 0 = response required                                                                     | Always                               |
+|             |                                |                                  |               |                                                                                           |                                      |
+|             |                                |                                  |               | 1 = suppress positive response                                                            |                                      |
+|             +--------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+|             | authenticationTask             | 7 (b[6-0])                       | 0x07          | verifyProofOfOwnershipBidirectional                                                       | Always                               |
++-------------+--------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| authenticationReturnParameter                | 8                                | 0x00-0xFF     | 0x00: RequestAccepted                                                                     | Always                               |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x01: GeneralReject                                                                       |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x02: AuthenticationConfiguration                                                         |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography                        |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x04: AuthenticationConfiguration ACR with symmetric cryptography                         |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x05-0x0F: reserved                                                                       |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x10: DeAuthentication successful                                                         |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x11: CertificateVerified, OwnershipVerificationNecessary                                 |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x12: OwnershipVerified, AuthenticationComplete                                           |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x13: CertificateVerified                                                                 |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0x14-0x9F: reserved                                                                       |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0xA0-0x9F: vehicle manufacturer specific                                                  |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0xD0-0xFE: system supplier specific                                                       |                                      |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | 0xFF: reserved                                                                            |                                      |
++----------------------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| algorithmIndicator                           | 96                               |               | Indicates the algorithm used in the generating and verifying Proof of Ownership.          | Always                               |
+|                                              |                                  |               |                                                                                           |                                      |
+|                                              |                                  |               | This field is a 16 byte value containing the BER encoded OID value of the algorithm used. |                                      |
+|                                              |                                  |               | The value is left aligned and right padded with zero up to 16 bytes.                      |                                      |
++----------------------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| lengthOfProofOfOwnershipServer               | 16                               | 0x0001-0xFFFF | Byte length of proofOfOwnershipServer Data Record.                                        | Always                               |
++----------------------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| proofOfOwnershipServer                       | 8*lengthOfProofOfOwnershipServer |               | Proof of Ownership to be verified by the client.                                          | Always                               |
++----------------------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| lengthOfSessionKeyInfo                       | 16                               | 0x0000-0xFFFF | Byte length of sessionKeyInfo Data Record.                                                | Always                               |
++----------------------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+| sessionKeyInfo                               | 8*lengthOfSessionKeyInfo         |               | Session key information (e.g. encrypted session keys).                                    | If lengthOfSessionKeyInfo unequals 1 |
++----------------------------------------------+----------------------------------+---------------+-------------------------------------------------------------------------------------------+--------------------------------------+
+
+
+.. _knowledge-base-service-authentication-08:
+
+authenticationConfiguration (0x08)
+``````````````````````````````````
+This sub-function can be used by the client to get the information about the current authentication status.
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+------------+---------+--------------------------------+---------+
+| Name                                         | Bit Length | Value   | Description                    | Present |
++==============================================+============+=========+================================+=========+
+| SID                                          | 8          | 0x29    | Authentication                 | Always  |
++-------------+--------------------------------+------------+---------+--------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1 | 0 = response required          | Always  |
+|             |                                |            |         |                                |         |
+|             |                                |            |         | 1 = suppress positive response |         |
+|             +--------------------------------+------------+---------+--------------------------------+         |
+|             | authenticationTask             | 7 (b[6-0]) | 0x08    | authenticationConfiguration    |         |
++-------------+--------------------------------+------------+---------+--------------------------------+---------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                                                        | Present |
++==============================================+============+===========+====================================================================+=========+
+| RSID                                         | 8          | 0x69      | Positive Response: Authentication (0x29)                           | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                                              | Always  |
+|             |                                |            |           |                                                                    |         |
+|             |                                |            |           | 1 = suppress positive response                                     |         |
+|             +--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+|             | authenticationTask             | 7 (b[6-0]) | 0x08      | authenticationConfiguration                                        | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
+| authenticationReturnParameter                | 8          | 0x00-0xFF | 0x00: RequestAccepted                                              | Always  |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x01: GeneralReject                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x02: AuthenticationConfiguration                                  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x03: AuthenticationConfiguration ACR with asymmetric cryptography |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x04: AuthenticationConfiguration ACR with symmetric cryptography  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x05-0x0F: reserved                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x10: DeAuthentication successful                                  |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x11: CertificateVerified, OwnershipVerificationNecessary          |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x12: OwnershipVerified, AuthenticationComplete                    |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x13: CertificateVerified                                          |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0x14-0x9F: reserved                                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xA0-0x9F: vehicle manufacturer specific                           |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xD0-0xFE: system supplier specific                                |         |
+|                                              |            |           |                                                                    |         |
+|                                              |            |           | 0xFF: reserved                                                     |         |
++----------------------------------------------+------------+-----------+--------------------------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-read-data-by-periodic-identifier:
