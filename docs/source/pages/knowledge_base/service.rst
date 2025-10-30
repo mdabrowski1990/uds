@@ -1,7 +1,7 @@
 .. _knowledge-base-service:
 
-Diagnostic Service
-==================
+Diagnostic Services
+===================
 Diagnostic services are functions offered by :ref:`Servers (ECUs) <knowledge-base-server>` to
 a :ref:`Client <knowledge-base-client>` via the UDS protocol.
 Each service is identified by a Service Identifier (SID) value.
@@ -22,87 +22,87 @@ List of all Service Identifier (SID) values and their application:
 
 - 0x00 - not applicable, reserved by ISO 14229-1
 - 0x01-0x0F - ISO 15031-5/SAE J1979 specific services
-- 0x10 - `DiagnosticSessionControl`_ service request
-- 0x11 - `ECUReset`_ service request
+- 0x10 - :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service request
+- 0x11 - :ref:`ECUReset <knowledge-base-service-ecu-reset>` service request
 - 0x12-0x13 - reserved by ISO 14229-1
-- 0x14 - `ClearDiagnosticInformation`_ service request
+- 0x14 - :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>` service request
 - 0x15-0x18 - reserved by ISO 14229-1
-- 0x19 - `ReadDTCInformation`_ service request
+- 0x19 - :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service request
 - 0x1A-0x21 - reserved by ISO 14229-1
-- 0x22 - `ReadDataByIdentifier`_ service request
-- 0x23 - `ReadMemoryByAddress`_ service request
-- 0x24 - `ReadScalingDataByIdentifier`_ service request
+- 0x22 - :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service request
+- 0x23 - :ref:`ReadMemoryByAddress <knowledge-base-service-read-memory-by-address>` service request
+- 0x24 - :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service request
 - 0x25-0x26 - reserved by ISO 14229-1
-- 0x27 - `SecurityAccess`_ service request
-- 0x28 - `CommunicationControl`_ service request
-- 0x29 - `Authentication`_ service request
-- 0x2A - `ReadDataByPeriodicIdentifier`_ service request
+- 0x27 - :ref:`SecurityAccess <knowledge-base-service-security-access>` service request
+- 0x28 - :ref:`CommunicationControl <knowledge-base-service-communication-control>` service request
+- 0x29 - :ref:`Authentication <knowledge-base-service-authentication>` service request
+- 0x2A - :ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` service request
 - 0x2B - reserved by ISO 14229-1
-- 0x2C - `DynamicallyDefineDataIdentifier`_ service request
+- 0x2C - :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service request
 - 0x2D - reserved by ISO 14229-1
-- 0x2E - `WriteDataByIdentifier`_ service request
-- 0x2F - `InputOutputControlByIdentifier`_ service request
+- 0x2E - :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service request
+- 0x2F - :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service request
 - 0x30 - reserved by ISO 14229-1
-- 0x31 - `RoutineControl`_ service request
+- 0x31 - :ref:`RoutineControl <knowledge-base-service-routine-control>` service request
 - 0x32-0x33 - reserved by ISO 14229-1
-- 0x34 - `RequestDownload`_ service request
-- 0x35 - `RequestUpload`_ service request
-- 0x36 - `TransferData`_ service request
-- 0x37 - `RequestTransferExit`_ service request
-- 0x38 - `RequestFileTransfer`_ service request
+- 0x34 - :ref:`RequestDownload <knowledge-base-service-request-download>` service request
+- 0x35 - :ref:`RequestUpload <knowledge-base-service-request-upload>` service request
+- 0x36 - :ref:`TransferData <knowledge-base-service-transfer-data>` service request
+- 0x37 - :ref:`RequestTransferExit <knowledge-base-service-request-transfer-exit>` service request
+- 0x38 - :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service request
 - 0x39-0x3C - reserved by ISO 14229-1
-- 0x3D - `WriteMemoryByAddress`_ service request
-- 0x3E - `TesterPresent`_ service request
+- 0x3D - :ref:`WriteMemoryByAddress <knowledge-base-service-write-memory-by-address>` service request
+- 0x3E - :ref:`TesterPresent <knowledge-base-service-tester-present>` service request
 - 0x3F - not applicable, reserved by ISO 14229-1
 - 0x40 - not applicable, reserved by ISO 14229-1
 - 0x41-0x4F - ISO 15031-5/SAE J1979 specific services
-- 0x50 - positive response to `DiagnosticSessionControl`_ service
-- 0x51 - positive response to `ECUReset`_ service
+- 0x50 - positive response to :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service
+- 0x51 - positive response to :ref:`ECUReset <knowledge-base-service-ecu-reset>` service
 - 0x52-0x53 - reserved by ISO 14229-1
-- 0x54 - positive response to `ClearDiagnosticInformation`_ service
+- 0x54 - positive response to :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>` service
 - 0x55-0x58 - reserved by ISO 14229-1
-- 0x59 - positive response to `ReadDTCInformation`_ service
+- 0x59 - positive response to :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service
 - 0x5A-0x61 - reserved by ISO 14229-1
-- 0x62 - positive response to `ReadDataByIdentifier`_ service
-- 0x63 - positive response to `ReadMemoryByAddress`_ service
-- 0x64 - positive response to `ReadScalingDataByIdentifier`_ service
+- 0x62 - positive response to :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service
+- 0x63 - positive response to :ref:`ReadMemoryByAddress <knowledge-base-service-read-memory-by-address>` service
+- 0x64 - positive response to :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service
 - 0x65-0x66 - reserved by ISO 14229-1
-- 0x67 - positive response to `SecurityAccess`_ service
-- 0x68 - positive response to `CommunicationControl`_ service
-- 0x69 - positive response to `Authentication`_ service
-- 0x6A - positive response to `ReadDataByPeriodicIdentifier`_ service
+- 0x67 - positive response to :ref:`SecurityAccess <knowledge-base-service-security-access>` service
+- 0x68 - positive response to :ref:`CommunicationControl <knowledge-base-service-communication-control>` service
+- 0x69 - positive response to :ref:`Authentication <knowledge-base-service-authentication>` service
+- 0x6A - positive response to :ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` service
 - 0x6B - reserved by ISO 14229-1
-- 0x6C - positive response to `DynamicallyDefineDataIdentifier`_ service
+- 0x6C - positive response to :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service
 - 0x6D - reserved by ISO 14229-1
-- 0x6E - positive response to `WriteDataByIdentifier`_ service
-- 0x6F - positive response to `InputOutputControlByIdentifier`_ service
+- 0x6E - positive response to :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service
+- 0x6F - positive response to :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service
 - 0x70 - reserved by ISO 14229-1
-- 0x71 - positive response to `RoutineControl`_ service
+- 0x71 - positive response to :ref:`RoutineControl <knowledge-base-service-routine-control>` service
 - 0x72-0x73 - reserved by ISO 14229-1
-- 0x74 - positive response to `RequestDownload`_ service
-- 0x75 - positive response to `RequestUpload`_ service
-- 0x76 - positive response to `TransferData`_ service
-- 0x77 - positive response to `RequestTransferExit`_ service
-- 0x78 - positive response to `RequestFileTransfer`_ service
+- 0x74 - positive response to :ref:`RequestDownload <knowledge-base-service-request-download>` service
+- 0x75 - positive response to :ref:`RequestUpload <knowledge-base-service-request-upload>` service
+- 0x76 - positive response to :ref:`TransferData <knowledge-base-service-transfer-data>` service
+- 0x77 - positive response to :ref:`RequestTransferExit <knowledge-base-service-request-transfer-exit>` service
+- 0x78 - positive response to :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service
 - 0x79-0x7C - reserved by ISO 14229-1
-- 0x7D - positive response to `WriteMemoryByAddress`_ service
-- 0x7E - positive response to `TesterPresent`_ service
+- 0x7D - positive response to :ref:`WriteMemoryByAddress <knowledge-base-service-write-memory-by-address>` service
+- 0x7E - positive response to :ref:`TesterPresent <knowledge-base-service-tester-present>` service
 - 0x7F - negative response service identifier
 - 0x80-0x82 - not applicable, reserved by ISO 14229-1
 - 0x83 - reserved by ISO 14229-1
-- 0x84 - `SecuredDataTransmission`_ service request
-- 0x85 - `ControlDTCSetting`_ service request
-- 0x86 - `ResponseOnEvent`_ service request
-- 0x87 - `LinkControl`_ service request
+- 0x84 - :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service request
+- 0x85 - :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service request
+- 0x86 - :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service request
+- 0x87 - :ref:`LinkControl <knowledge-base-service-link-control>` service request
 - 0x88 - reserved by ISO 14229-1
 - 0x89-0xB9 - not applicable, reserved by ISO 14229-1
 - 0xBA-0xBE - system supplier specific service requests
 - 0xBF-0xC2 - not applicable, reserved by ISO 14229-1
 - 0xC3 - reserved by ISO 14229-1
-- 0xC4 - positive response to `SecuredDataTransmission`_ service
-- 0xC5 - positive response to `ControlDTCSetting`_ service
-- 0xC6 - positive response to `ResponseOnEvent`_ service
-- 0xC7 - positive response to `LinkControl`_ service
+- 0xC4 - positive response to :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
+- 0xC5 - positive response to :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service
+- 0xC6 - positive response to :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service
+- 0xC7 - positive response to :ref:`LinkControl <knowledge-base-service-link-control>` service
 - 0xC8 - reserved by ISO 14229-1
 - 0xC9-0xF9 - not applicable, reserved by ISO 14229-1
 - 0xFA-0xFE - positive responses to system supplier specific requests
@@ -129,8 +129,8 @@ the diagnostic service for which the message is relevant.
 
 .. _knowledge-base-service-diagnostic-session-control:
 
-DiagnosticSessionControl
-------------------------
+DiagnosticSessionControl (0x10)
+-------------------------------
 DiagnosticSessionControl service is used to change diagnostic sessions in the server(s).
 In each diagnostic session a different set of diagnostic services (and/or functionalities) is enabled in the server.
 Server shall always be in exactly one diagnostic session.
@@ -208,8 +208,8 @@ Positive Response Format
 
 .. _knowledge-base-service-ecu-reset:
 
-ECUReset
---------
+ECUReset (0x11)
+---------------
 ECUReset service is used by the client to request that the server perform a reset.
 The server, after receiving this request, performs the specified type of reset (either before or after transmitting
 the positive response).
@@ -292,8 +292,8 @@ Positive Response Format
 
 .. _knowledge-base-service-clear-diagnostic-information:
 
-ClearDiagnosticInformation
---------------------------
+ClearDiagnosticInformation (0x14)
+---------------------------------
 ClearDiagnosticInformation service is used by the client to clear Diagnostic Trouble Codes (DTCs) and related data
 stored in one or more server memories.
 
@@ -340,8 +340,8 @@ Positive Response Format
 
 .. _knowledge-base-service-read-dtc-information:
 
-ReadDTCInformation
-------------------
+ReadDTCInformation (0x19)
+-------------------------
 ReadDTCInformation service allows the client to request current
 :ref:`Diagnostic Trouble Code (DTC) <knowledge-base-dtc>` information from one or more servers within the vehicle.
 
@@ -2249,8 +2249,8 @@ Positive Response Format
 
 .. _knowledge-base-service-read-data-by-identifier:
 
-ReadDataByIdentifier
---------------------
+ReadDataByIdentifier (0x22)
+---------------------------
 ReadDataByIdentifier service allows the client to request data record values from the server identifier by one or more
 :ref:`DataIdentifiers (DIDs) <knowledge-base-did>`.
 
@@ -2293,8 +2293,8 @@ Positive Response Format
 
 .. _knowledge-base-service-read-memory-by-address:
 
-ReadMemoryByAddress
--------------------
+ReadMemoryByAddress (0x23)
+--------------------------
 ReadMemoryByAddress service allows the client to request server's memory data stored under provided memory address.
 
 
@@ -2328,8 +2328,8 @@ Positive Response Format
 
 .. _knowledge-base-service-read-scaling-data-by-identifier:
 
-ReadScalingDataByIdentifier
----------------------------
+ReadScalingDataByIdentifier (0x24)
+----------------------------------
 ReadScalingDataByIdentifier service allows the client to request the scaling information associated
 with a Data Identifier (DID).
 Scaling data provides information required to correctly interpret the actual data value, such as:
@@ -2934,8 +2934,8 @@ Only the format applicable to the returned scalingByte value will be included in
 
 .. _knowledge-base-service-security-access:
 
-SecurityAccess
---------------
+SecurityAccess (0x27)
+---------------------
 SecurityAccess service allows the client to unlock functions/services with restricted access.
 
 Unlocking sequence:
@@ -3056,8 +3056,8 @@ Positive Response Format
 
 .. _knowledge-base-service-communication-control:
 
-CommunicationControl
---------------------
+CommunicationControl (0x28)
+---------------------------
 CommunicationControl service allows the client to switch on/off the transmission and/or the reception of certain
 messages on the server(s).
 
@@ -3149,32 +3149,32 @@ Positive Response Format
 
 .. _knowledge-base-service-authentication:
 
-Authentication
---------------
-Authentication service provides a means for the client to prove its identity, allowing it to access data and/or
-diagnostic services, which have restricted access for, for example security, emissions, or safety reasons.
+Authentication (0x29)
+---------------------
+Authentication service provides a mechanism for the client to prove its identity, allowing access to data and/or
+diagnostic services that have restricted access due to security, emissions, or safety requirements.
 
-.. note:: Service Authentication (SID 0x29) was introduced in version ISO 14229-1:2020.
+.. note:: Service Authentication was introduced in version ISO 14229-1:2020.
 
-ISO 14229-1 defines the following DTC report types (values of the *authenticationTask* parameter):
+ISO 14229-1 defines the following *authenticationTask* sub-function values:
 
-- 0x00: :ref`deAuthenticate <knowledge-base-service-authentication-00>`
-- 0x01: :ref`verifyCertificateUnidirectional <knowledge-base-service-authentication-01>`
-- 0x02: :ref`verifyCertificateBidirectional <knowledge-base-service-authentication-02>`
-- 0x03: :ref`proofOfOwnership <knowledge-base-service-authentication-03>`
-- 0x04: :ref`transmitCertificate <knowledge-base-service-authentication-04>`
-- 0x05: :ref`requestChallengeForAuthentication <knowledge-base-service-authentication-05>`
-- 0x06: :ref`verifyProofOfOwnershipUnidirectional <knowledge-base-service-authentication-06>`
-- 0x07: :ref`verifyProofOfOwnershipBidirectional <knowledge-base-service-authentication-07>`
-- 0x08: :ref`authenticationConfiguration <knowledge-base-service-authentication-08>`
+- 0x00: :ref:`deAuthenticate <knowledge-base-service-authentication-00>`
+- 0x01: :ref:`verifyCertificateUnidirectional <knowledge-base-service-authentication-01>`
+- 0x02: :ref:`verifyCertificateBidirectional <knowledge-base-service-authentication-02>`
+- 0x03: :ref:`proofOfOwnership <knowledge-base-service-authentication-03>`
+- 0x04: :ref:`transmitCertificate <knowledge-base-service-authentication-04>`
+- 0x05: :ref:`requestChallengeForAuthentication <knowledge-base-service-authentication-05>`
+- 0x06: :ref:`verifyProofOfOwnershipUnidirectional <knowledge-base-service-authentication-06>`
+- 0x07: :ref:`verifyProofOfOwnershipBidirectional <knowledge-base-service-authentication-07>`
+- 0x08: :ref:`authenticationConfiguration <knowledge-base-service-authentication-08>`
 
 
 .. _knowledge-base-service-authentication-00:
 
 deAuthenticate (0x00)
 `````````````````````
-This sub-function can be used by the client to inform the server about closing the communication session and
-to exit authenticated state.
+This sub-function can be used by the client to inform the server that the communication session is being closed and
+to exit the authenticated state.
 
 
 Request Format
@@ -3239,6 +3239,7 @@ Positive Response Format
 
 verifyCertificateUnidirectional (0x01)
 ``````````````````````````````````````
+This sub-function can be used by the client to initiate its own authentication process using Certificate.
 
 
 Request Format
@@ -3324,6 +3325,8 @@ Positive Response Format
 
 verifyCertificateBidirectional (0x02)
 `````````````````````````````````````
+This sub-function can be used by the client to initiate a mutual (bidirectional) authentication process between
+the client and the server using Certificates.
 
 
 Request Format
@@ -3417,6 +3420,7 @@ Positive Response Format
 
 proofOfOwnership (0x03)
 ```````````````````````
+This sub-function can be used by the client to verify Proof of Ownership on the client side.
 
 
 Request Format
@@ -3493,6 +3497,7 @@ Positive Response Format
 
 transmitCertificate (0x04)
 ``````````````````````````
+This sub-function can be used by the client to transmit its Certificate to the server.
 
 
 Request Format
@@ -3563,6 +3568,8 @@ Positive Response Format
 
 requestChallengeForAuthentication (0x05)
 ````````````````````````````````````````
+This sub-function can be used by the client to initiate own authentication process by requesting Challenge
+from the server.
 
 
 Request Format
@@ -3650,6 +3657,7 @@ Positive Response Format
 
 verifyProofOfOwnershipUnidirectional (0x06)
 ```````````````````````````````````````````
+This sub-function can be used by the client to verify Proof of Ownership on the client side.
 
 
 Request Format
@@ -3740,6 +3748,7 @@ Positive Response Format
 
 verifyProofOfOwnershipBidirectional (0x07)
 ``````````````````````````````````````````
+This sub-function can be used by the client to verify Proof of Ownership on both client's and server's side.
 
 
 Request Format
@@ -3834,7 +3843,8 @@ Positive Response Format
 
 authenticationConfiguration (0x08)
 ``````````````````````````````````
-This sub-function can be used by the client to get the information about the current authentication status.
+This sub-function can be used by the client to retrieve information about the current authentication configuration
+and status.
 
 
 Request Format
@@ -3897,106 +3907,127 @@ Positive Response Format
 
 .. _knowledge-base-service-read-data-by-periodic-identifier:
 
-ReadDataByPeriodicIdentifier
-----------------------------
+ReadDataByPeriodicIdentifier (0x2A)
+-----------------------------------
 ReadDataByPeriodicIdentifier service allows the client to request the periodic transmission of data record values
 from the server identified by one or more periodicDataIdentifiers.
 
 
 .. _knowledge-base-service-dynamically-define-data-identifier:
 
-DynamicallyDefineDataIdentifier
--------------------------------
+DynamicallyDefineDataIdentifier (0x2C)
+--------------------------------------
 DynamicallyDefineDataIdentifier service allows the client to dynamically define in a server a DataIdentifier (DID)
-that can be read via the ReadDataByIdentifier_ service at a later time.
+that can be read via the :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service
+at a later time.
 
 
 .. _knowledge-base-service-write-data-by-identifier:
 
-WriteDataByIdentifier
----------------------
+WriteDataByIdentifier (0x2E)
+----------------------------
 WriteDataByIdentifier service allows the client to write information into the server at an internal location
 specified by the provided DataIdentifier (DID).
 
 
 .. _knowledge-base-service-input-output-control-by-identifier:
 
-InputOutputControlByIdentifier
-------------------------------
+InputOutputControlByIdentifier (0x2F)
+-------------------------------------
 InputOutputControlByIdentifier service allows the client to substitute a value for an input signal, internal server
 function and/or force control to a value for an output (actuator) of an electronic system.
 
 
-RoutineControl
---------------
+.. _knowledge-base-service-routine-control:
+
+RoutineControl (0x31)
+---------------------
 RoutineControl service allows the client to execute a defined sequence of steps to obtain any relevant result.
 There is a lot of flexibility with this service, but typical usage may include functionality such as erasing memory,
 resetting or learning adaptive data, running a self-test, overriding the normal server control strategy.
 
 
-RequestDownload
----------------
+.. _knowledge-base-service-request-download:
+
+RequestDownload (0x34)
+----------------------
 RequestDownload service allows the client to initiate a data transfer from the client to the server (download).
 
 
-RequestUpload
--------------
+.. _knowledge-base-service-request-upload:
+
+RequestUpload (0x35)
+--------------------
 RequestUpload service allows the client to initiate a data transfer from the server to the client (upload).
 
 
-TransferData
-------------
+.. _knowledge-base-service-transfer-data:
+
+TransferData (0x36)
+-------------------
 TransferData service is used by the client to transfer data either from the client to the server (download) or
 from the server to the client (upload).
 
 
-RequestTransferExit
--------------------
+.. _knowledge-base-service-request-transfer-exit:
+
+RequestTransferExit (0x37)
+--------------------------
 RequestTransferExit service is used by the client to terminate a data transfer between the client and server.
 
 
-RequestFileTransfer
--------------------
+.. _knowledge-base-service-request-file-transfer:
+
+RequestFileTransfer (0x38)
+--------------------------
 RequestFileTransfer service allows the client to initiate a file data transfer either from the server to
 the client (download) or from the server to the client (upload).
 
 
-WriteMemoryByAddress
---------------------
+.. _knowledge-base-service-write-memory-by-address:
+
+WriteMemoryByAddress (0x3D)
+---------------------------
 WriteMemoryByAddress service allows the client to write information into server's memory data under provided
 memory address.
 
 
 .. _knowledge-base-service-tester-present:
 
-TesterPresent
--------------
+TesterPresent (0x3E)
+--------------------
 TesterPresent service is used by the client to indicate to a server(s) that the client is still connected to a vehicle
 and certain diagnostic services and/or communication that have been previously activated are to remain active.
 
 
-SecuredDataTransmission
------------------------
+.. _knowledge-base-service-secured-data-transmission:
+
+SecuredDataTransmission (0x84)
+------------------------------
 SecuredDataTransmission service is applicable if a client intends to use diagnostic services defined
 in this document in a secured mode. It may also be used to transmit external data, which conform to
 some other application protocol, in a secured mode between a client and a server. A secured mode in
 this context means that the data transmitted is protected by cryptographic methods.
 
 
-ControlDTCSetting
------------------
+.. _knowledge-base-service-control-dtc-setting:
+
+ControlDTCSetting (0x85)
+------------------------
 ControlDTCSetting service allows the client to stop or resume the updating of DTC status bits in the server(s) memory.
 
 
 .. _knowledge-base-service-response-on-event:
 
-ResponseOnEvent
----------------
+ResponseOnEvent (0x86)
+----------------------
 ResponseOnEvent service allows the client to request from the server to start or stop transmission of responses on
 a specified event.
 
 
-LinkControl
------------
+.. _knowledge-base-service-link-control:
+
+LinkControl (0x87)
+------------------
 LinkControl service allows the client to control the communication between the client and the server(s) to
 gain bus bandwidth for diagnostic purposes (e.g. programming).
