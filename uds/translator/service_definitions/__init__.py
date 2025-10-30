@@ -1,5 +1,6 @@
 """Base definitions of translators for diagnostic services."""
 
+from .authentication import AUTHENTICATION
 from .clear_diagnostic_information import (
     CLEAR_DIAGNOSTIC_INFORMATION,
     CLEAR_DIAGNOSTIC_INFORMATION_2013,

@@ -550,3 +550,6 @@ NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
 CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(
     formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER) if control_type & 0x7F in {0x04, 0x05}
     else (COMMUNICATION_TYPE,))
+
+# SID 0x29
+# TODO
