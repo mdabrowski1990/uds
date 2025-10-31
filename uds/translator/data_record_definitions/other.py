@@ -72,7 +72,9 @@ def get_formula_for_raw_data_record_with_length(data_record_name: str,
             return ()
         if length > 0:
             return (RawDataRecord(name=data_record_name,
-                                  length=8 * length),)
+                                  length=8,
+                                  min_occurrences=length,
+                                  max_occurrences=length),)
         raise ValueError("Unexpected length value provided. "
                          f"Expected: {0 if accept_zero_length else 1} <= length (int type). "
                          f"Actual value: {length!r}.")
