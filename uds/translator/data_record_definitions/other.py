@@ -685,7 +685,9 @@ COMMUNICATION_CONFIGURATION = RawDataRecord(name="communicationConfiguration",
 CERTIFICATE_EVALUATION = RawDataRecord(name="certificateEvaluationId",
                                        length=8)
 ALGORITHM_INDICATOR = RawDataRecord(name="algorithmIndicator",
-                                    length=96)
+                                    length=8,
+                                    min_occurrences=16,
+                                    max_occurrences=16)
 AUTHENTICATION_RETURN_PARAMETER = MappingDataRecord(
     name="authenticationReturnParameter",
     length=8,
