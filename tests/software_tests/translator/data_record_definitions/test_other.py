@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 from mock import Mock, call, patch
 
@@ -15,6 +17,7 @@ from uds.translator.data_record_definitions.other import (
     get_encode_float_value_formula,
     get_encode_signed_value_formula,
     get_formula_data_records_for_formula_parameters,
+    get_formula_for_raw_data_record_with_length,
     get_memory_size_and_memory_address,
     get_scaling_byte_extension,
 )
@@ -34,6 +37,36 @@ class TestFormulas:
     def teardown_method(self):
         self._patcher_raw_data_record.stop()
         self._patcher_custom_formula_data_record.stop()
+
+    # get_formula_for_raw_data_record_with_length
+
+    @pytest.mark.parametrize("accept_zero_length, length", [
+        (True, -1),
+        (False, 0),
+    ])
+    def test_get_formula_for_raw_data_record_with_length__formula_value_error(self, accept_zero_length, length):
+        formula = get_formula_for_raw_data_record_with_length(data_record_name=MagicMock(),
+                                                              accept_zero_length=accept_zero_length)
+        with pytest.raises(ValueError):
+            formula(-1)
+
+    def test_get_formula_for_raw_data_record_with_length__empty(self):
+        formula = get_formula_for_raw_data_record_with_length(data_record_name=MagicMock(),
+                                                              accept_zero_length=True)
+        assert formula(0) == ()
+
+    @pytest.mark.parametrize("data_record_name, accept_zero_length, length", [
+        ("Some Name", True, 54),
+        ("XYZ - abc", False, 1),
+    ])
+    def test_get_formula_for_raw_data_record_with_length__value(self, data_record_name, accept_zero_length, length):
+        formula = get_formula_for_raw_data_record_with_length(data_record_name=data_record_name,
+                                                              accept_zero_length=accept_zero_length)
+        assert formula(length) == (self.mock_raw_data_record.return_value, )
+        self.mock_raw_data_record.assert_called_once_with(name=data_record_name,
+                                                          length=8,
+                                                          min_occurrences=length,
+                                                          max_occurrences=length)
 
     # get_memory_size_and_memory_address
 

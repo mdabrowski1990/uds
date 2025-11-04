@@ -40,7 +40,7 @@ class TestReadMemoryByAddressIntegration:
                             'name': 'memorySizeLength',
                             'physical_value': 0xF,
                             'raw_value': 0xF,
-                            'unit': None
+                            'unit': 'bytes',
                         },
                         {
                             'children': (),
@@ -48,7 +48,7 @@ class TestReadMemoryByAddressIntegration:
                             'name': 'memoryAddressLength',
                             'physical_value': 0xF,
                             'raw_value': 0xF,
-                            'unit': None
+                            'unit': 'bytes',
                         },
                     ),
                     'length': 8,
@@ -94,7 +94,7 @@ class TestReadMemoryByAddressIntegration:
                             'name': 'memorySizeLength',
                             'physical_value': 0x1,
                             'raw_value': 0x1,
-                            'unit': None
+                            'unit': 'bytes',
                         },
                         {
                             'children': (),
@@ -102,7 +102,7 @@ class TestReadMemoryByAddressIntegration:
                             'name': 'memoryAddressLength',
                             'physical_value': 0x4,
                             'raw_value': 0x4,
-                            'unit': None
+                            'unit': 'bytes',
                         },
                     ),
                     'length': 8,

@@ -14,6 +14,8 @@ __all__ = [
     "SECURITY_ACCESS_SUB_FUNCTION", "SECURITY_ACCESS_TYPE", "SECURITY_ACCESS_TYPES_MAPPING",
     # SID 0x28
     "COMMUNICATION_CONTROL_SUB_FUNCTION", "CONTROL_TYPE", "CONTROL_TYPE_MAPPING",
+    # SID 0x29
+    "AUTHENTICATION_SUB_FUNCTION", "AUTHENTICATION_TASK", "AUTHENTICATION_TASK_MAPPING",
     # SID 0x3E
     "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION",
 ]
@@ -167,6 +169,25 @@ CONTROL_TYPE = MappingDataRecord(name="controlType",
 COMMUNICATION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                    length=8,
                                                    children=[SPRMIB, CONTROL_TYPE])
+
+# SID 0x29
+AUTHENTICATION_TASK_MAPPING = {
+    0x00: "deAuthenticate",
+    0x01: "verifyCertificateUnidirectional",
+    0x02: "verifyCertificateBidirectional",
+    0x03: "proofOfOwnership",
+    0x04: "transmitCertificate",
+    0x05: "requestChallengeForAuthentication",
+    0x06: "verifyProofOfOwnershipUnidirectional",
+    0x07: "verifyProofOfOwnershipBidirectional",
+    0x08: "authenticationConfiguration",
+}
+AUTHENTICATION_TASK = MappingDataRecord(name="authenticationTask",
+                                        length=7,
+                                        values_mapping=AUTHENTICATION_TASK_MAPPING)
+AUTHENTICATION_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                            length=8,
+                                            children=[SPRMIB, AUTHENTICATION_TASK])
 
 # SID 0x3E
 ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",
