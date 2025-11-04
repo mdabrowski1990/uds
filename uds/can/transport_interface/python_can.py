@@ -25,7 +25,7 @@ from uds.utilities import (
 )
 
 from ..addressing import AbstractCanAddressingInformation
-from ..frame import CanDlcHandler, CanIdHandler
+from ..frame import CanDlcHandler, CanIdHandler, CanVersion
 from ..packet import CanFlowStatus, CanPacket, CanPacketRecord, CanPacketType, CanSTminTranslator
 from .common import AbstractCanTransportInterface
 
@@ -67,6 +67,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             - :parameter filler_byte: Filler byte value to use for
                 :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
             - :parameter flow_control_parameters_generator: Generator with Flow Control parameters to use.
+            - :parameter can_version: Version of CAN protocol to be used for packets sending.
         """
         super().__init__(network_manager=network_manager,
                          addressing_information=addressing_information,
@@ -651,10 +652,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             raise TypeError(f"Provided value is not an instance of CanPacket class. Actual type: {type(packet)}.")
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
+        fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
         can_frame = PythonCanMessage(arbitration_id=packet.can_id,
                                      is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
                                      data=packet.raw_frame_data,
-                                     is_fd=CanDlcHandler.is_can_fd_specific_dlc(packet.dlc),
+                                     is_fd=fd,
                                      is_rx=False,
                                      is_error_frame=False,
                                      is_remote_frame=False)
