@@ -9,8 +9,9 @@ from uds.can.transport_interface.common import (
     AbstractCanTransportInterface,
     AbstractFlowControlParametersGenerator,
     CanPacketType,
+    CanVersion,
     TransmissionDirection,
-    UdsMessageRecord, CanVersion
+    UdsMessageRecord,
 )
 
 SCRIPT_LOCATION = "uds.can.transport_interface.common"
