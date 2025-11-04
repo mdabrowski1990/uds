@@ -3227,7 +3227,7 @@ Positive Response Format
 |                                              |            |           |                                                                    |         |
 |                                              |            |           | 0x14-0x9F: reserved                                                |         |
 |                                              |            |           |                                                                    |         |
-|                                              |            |           | 0xA0-0x9F: vehicle manufacturer specific                           |         |
+|                                              |            |           | 0xA0-0xCF: vehicle manufacturer specific                           |         |
 |                                              |            |           |                                                                    |         |
 |                                              |            |           | 0xD0-0xFE: system supplier specific                                |         |
 |                                              |            |           |                                                                    |         |
@@ -3305,7 +3305,7 @@ Positive Response Format
 |                                              |                                    |               |                                                                                |                                                |
 |                                              |                                    |               | 0x14-0x9F: reserved                                                            |                                                |
 |                                              |                                    |               |                                                                                |                                                |
-|                                              |                                    |               | 0xA0-0x9F: vehicle manufacturer specific                                       |                                                |
+|                                              |                                    |               | 0xA0-0xCF: vehicle manufacturer specific                                       |                                                |
 |                                              |                                    |               |                                                                                |                                                |
 |                                              |                                    |               | 0xD0-0xFE: system supplier specific                                            |                                                |
 |                                              |                                    |               |                                                                                |                                                |
@@ -3392,7 +3392,7 @@ Positive Response Format
 |                                              |                                    |               |                                                                                |                                                |
 |                                              |                                    |               | 0x14-0x9F: reserved                                                            |                                                |
 |                                              |                                    |               |                                                                                |                                                |
-|                                              |                                    |               | 0xA0-0x9F: vehicle manufacturer specific                                       |                                                |
+|                                              |                                    |               | 0xA0-0xCF: vehicle manufacturer specific                                       |                                                |
 |                                              |                                    |               |                                                                                |                                                |
 |                                              |                                    |               | 0xD0-0xFE: system supplier specific                                            |                                                |
 |                                              |                                    |               |                                                                                |                                                |
@@ -3481,7 +3481,7 @@ Positive Response Format
 |                                              |                          |               |                                                                    |                                      |
 |                                              |                          |               | 0x14-0x9F: reserved                                                |                                      |
 |                                              |                          |               |                                                                    |                                      |
-|                                              |                          |               | 0xA0-0x9F: vehicle manufacturer specific                           |                                      |
+|                                              |                          |               | 0xA0-0xCF: vehicle manufacturer specific                           |                                      |
 |                                              |                          |               |                                                                    |                                      |
 |                                              |                          |               | 0xD0-0xFE: system supplier specific                                |                                      |
 |                                              |                          |               |                                                                    |                                      |
@@ -3556,7 +3556,7 @@ Positive Response Format
 |                                              |            |           |                                                                    |         |
 |                                              |            |           | 0x14-0x9F: reserved                                                |         |
 |                                              |            |           |                                                                    |         |
-|                                              |            |           | 0xA0-0x9F: vehicle manufacturer specific                           |         |
+|                                              |            |           | 0xA0-0xCF: vehicle manufacturer specific                           |         |
 |                                              |            |           |                                                                    |         |
 |                                              |            |           | 0xD0-0xFE: system supplier specific                                |         |
 |                                              |            |           |                                                                    |         |
@@ -3632,7 +3632,7 @@ Positive Response Format
 |                                              |                                     |               |                                                                                           |                                                 |
 |                                              |                                     |               | 0x14-0x9F: reserved                                                                       |                                                 |
 |                                              |                                     |               |                                                                                           |                                                 |
-|                                              |                                     |               | 0xA0-0x9F: vehicle manufacturer specific                                                  |                                                 |
+|                                              |                                     |               | 0xA0-0xCF: vehicle manufacturer specific                                                  |                                                 |
 |                                              |                                     |               |                                                                                           |                                                 |
 |                                              |                                     |               | 0xD0-0xFE: system supplier specific                                                       |                                                 |
 |                                              |                                     |               |                                                                                           |                                                 |
@@ -3727,7 +3727,7 @@ Positive Response Format
 |                                              |                          |               |                                                                                           |                                      |
 |                                              |                          |               | 0x14-0x9F: reserved                                                                       |                                      |
 |                                              |                          |               |                                                                                           |                                      |
-|                                              |                          |               | 0xA0-0x9F: vehicle manufacturer specific                                                  |                                      |
+|                                              |                          |               | 0xA0-0xCF: vehicle manufacturer specific                                                  |                                      |
 |                                              |                          |               |                                                                                           |                                      |
 |                                              |                          |               | 0xD0-0xFE: system supplier specific                                                       |                                      |
 |                                              |                          |               |                                                                                           |                                      |
@@ -3818,7 +3818,7 @@ Positive Response Format
 |                                              |                                  |               |                                                                                           |                                      |
 |                                              |                                  |               | 0x14-0x9F: reserved                                                                       |                                      |
 |                                              |                                  |               |                                                                                           |                                      |
-|                                              |                                  |               | 0xA0-0x9F: vehicle manufacturer specific                                                  |                                      |
+|                                              |                                  |               | 0xA0-0xCF: vehicle manufacturer specific                                                  |                                      |
 |                                              |                                  |               |                                                                                           |                                      |
 |                                              |                                  |               | 0xD0-0xFE: system supplier specific                                                       |                                      |
 |                                              |                                  |               |                                                                                           |                                      |
@@ -3897,7 +3897,7 @@ Positive Response Format
 |                                              |            |           |                                                                    |         |
 |                                              |            |           | 0x14-0x9F: reserved                                                |         |
 |                                              |            |           |                                                                    |         |
-|                                              |            |           | 0xA0-0x9F: vehicle manufacturer specific                           |         |
+|                                              |            |           | 0xA0-0xCF: vehicle manufacturer specific                           |         |
 |                                              |            |           |                                                                    |         |
 |                                              |            |           | 0xD0-0xFE: system supplier specific                                |         |
 |                                              |            |           |                                                                    |         |
