@@ -12,9 +12,9 @@ from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import TimeMillisecondsAlias, ValueWarning
 
 from ..addressing import AbstractCanAddressingInformation
+from ..frame import CanVersion
 from ..packet import AbstractFlowControlParametersGenerator, CanPacketType, DefaultFlowControlParametersGenerator
 from ..segmenter import CanSegmenter
-from ..frame import CanVersion
 
 
 class AbstractCanTransportInterface(AbstractTransportInterface, ABC):

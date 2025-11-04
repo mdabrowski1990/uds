@@ -11,6 +11,7 @@ __all__ = ["CanVersion", "CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
 from bisect import bisect_left
 from typing import Dict, Optional, Set, Tuple
+
 from uds.utilities import ValidatedEnum
 
 DEFAULT_FILLER_BYTE: int = 0xCC
@@ -22,9 +23,9 @@ Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame
 class CanVersion(ValidatedEnum):
     """Versions of :ref:`CAN bus <https://en.wikipedia.org/wiki/CAN_bus>`."""
 
-    CLASSIC_CAN: "CanVersion" = "Classic CAN"
+    CLASSIC_CAN: "CanVersion" = "Classic CAN"  # type: ignore
     """Classic CAN 2.0"""
-    CAN_FD: "CanVersion" = "CAN FD"
+    CAN_FD: "CanVersion" = "CAN FD"  # type: ignore
     """https://en.wikipedia.org/wiki/CAN_FD"""
 
 
