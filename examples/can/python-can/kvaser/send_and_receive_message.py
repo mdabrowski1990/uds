@@ -5,7 +5,7 @@ from time import sleep
 
 from can import Bus
 from uds.addressing import AddressingType
-from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface, CanVersion
+from uds.can import CanAddressingFormat, CanAddressingInformation, CanVersion, PyCanTransportInterface
 from uds.message import UdsMessage
 
 
