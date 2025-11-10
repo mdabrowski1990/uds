@@ -12,6 +12,7 @@ from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import TimeMillisecondsAlias, ValueWarning
 
 from ..addressing import AbstractCanAddressingInformation
+from ..frame import CanVersion
 from ..packet import AbstractFlowControlParametersGenerator, CanPacketType, DefaultFlowControlParametersGenerator
 from ..segmenter import CanSegmenter
 
@@ -52,6 +53,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
                  n_cs: Optional[TimeMillisecondsAlias] = DEFAULT_N_CS,
                  flow_control_parameters_generator: AbstractFlowControlParametersGenerator
                  = DEFAULT_FLOW_CONTROL_PARAMETERS,
+                 can_version: CanVersion = CanVersion.CLASSIC_CAN,
                  **segmenter_configuration: Any) -> None:
         """
         Create Transport Interface (an object for handling UDS Transport and Network layers).
@@ -66,6 +68,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param n_br: Value of :ref:`N_Br <knowledge-base-can-n-br>` time parameter to use in communication.
         :param n_cs: Value of :ref:`N_Cs <knowledge-base-can-n-cs>` time parameter to use in communication.
         :param flow_control_parameters_generator: Generator with Flow Control parameters to use.
+        :param can_version: Version of CAN protocol to be used for packets sending.
         :param segmenter_configuration: Configuration parameters for CAN Segmenter.
 
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
@@ -87,6 +90,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.n_cs = n_cs
         self.flow_control_parameters_generator = flow_control_parameters_generator
         self.segmenter = CanSegmenter(addressing_information=addressing_information, **segmenter_configuration)
+        self.can_version = can_version
 
     # General
 
@@ -109,6 +113,25 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.__segmenter = value
 
     # Communication parameters
+
+    @property
+    def can_version(self) -> CanVersion:
+        """Get version of CAN protocol to be used for packets sending."""
+        return self.__can_version
+
+    @can_version.setter
+    def can_version(self, value: CanVersion) -> None:
+        """
+        Set version of CAN protocol to be used for packets sending.
+
+        .. warning:: Value cross-check with other attributes (e.g. DLC) is not performed.
+
+        .. note:: Frames with DLC > 8 will always be sent as CAN FD, regardless of this value,
+            as Classic CAN cannot support DLC values greater than 8.
+
+        :param value: Value to set.
+        """
+        self.__can_version = CanVersion.validate_member(value)
 
     @property
     def dlc(self) -> int:

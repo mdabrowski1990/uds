@@ -26,8 +26,9 @@ def main():
                                                       tx_functional_params={"can_id": 0x6FE})
 
     # create Transport Interface object for Diagnostics on CAN communication
-    can_ti = PyCanTransportInterface(network_manager=can_interface,
-                                     addressing_information=addressing_information)
+    can_ti = PyCanTransportInterface(
+        network_manager=can_interface,
+        addressing_information=addressing_information)
 
     # receive CAN packet
     received_packet_record = can_ti.receive_packet(timeout=1000)  # timeout=1000 [ms]
