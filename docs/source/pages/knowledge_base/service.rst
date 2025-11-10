@@ -3916,7 +3916,7 @@ Each periodic data record is identified by a periodicDataIdentifier
 
 
 Request Format
-''''''''''''''
+``````````````
 +------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
 | Name             | Bit Length | Value     | Description                                   | Present                                  |
 +==================+============+===========+===============================================+==========================================+
@@ -3943,7 +3943,7 @@ Request Format
 
 
 Positive Response Format
-''''''''''''''''''''''''
+````````````````````````
 This service behaves differently from most diagnostic services because it produces two types of positive responses:
 
 1) Initial confirmation response — sent immediately after the request
@@ -3951,7 +3951,7 @@ This service behaves differently from most diagnostic services because it produc
 
 
 Initial
-```````
+'''''''
 The first response (sent directly after the request):
 +------+------------+-------+--------------------------------------------------------+---------+
 | Name | Bit Length | Value | Description                                            | Present |
@@ -3961,7 +3961,7 @@ The first response (sent directly after the request):
 
 
 Following
-`````````
+'''''''''
 The following responses with data for Periodic Data Identifiers. Format according to ISO 14229:
 +--------------+------------+-----------+---------------------------------------------+---------+
 | Name         | Bit Length | Value     | Description                                 | Present |
