@@ -3994,8 +3994,138 @@ This package uses an **extended, unambiguous** periodic message format that **al
 DynamicallyDefineDataIdentifier (0x2C)
 --------------------------------------
 DynamicallyDefineDataIdentifier service allows the client to dynamically define in a server a DataIdentifier (DID)
-that can be read via the :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service
-at a later time.
+that can be read via the :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` or
+:ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` service at a later time.
+
+ISO 14229-1 defines the following DID definition types (values of the *definitionType* parameter):
+
+- 0x01: :ref:`defineByIdentifier <knowledge-base-service-dynamically-define-data-identifier-01>`
+- 0x02: :ref:`defineByMemoryAddress <knowledge-base-service-dynamically-define-data-identifier-02>`
+- 0x03: :ref:`clearDynamicallyDefinedDataIdentifier <knowledge-base-service-dynamically-define-data-identifier-03>`
+
+
+.. _knowledge-base-service-dynamically-define-data-identifier-01:
+
+defineByIdentifier (0x01)
+`````````````````````````
+This sub-function can be used by the client to define a new DID based on other (existing) DIDs definitions.
+
+Parameter *sourceDataIdentifier* identifies DID that contains data to use,
+*positionInSourceDataRecord* points to position of data in the DID's structure (numbered from 1)
+and *memorySize* provides number of bytes to use.
+
+There might be multiple triplets of *sourceDataIdentifier*, *positionInSourceDataRecord*, *memorySize* parameters,
+each might point to data in another DID.
+
+
+Request Format
+''''''''''''''
++------------------------------------------------+------------+---------------+---------------------------------+----------+
+| Name                                           | Bit Length | Value         | Description                     | Present  |
++================================================+============+===============+=================================+==========+
+| SID                                            | 8          | 0x2C          | DynamicallyDefineDataIdentifier | Always   |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+| SubFunction   | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required           | Always   |
+|               |                                |            |               |                                 |          |
+|               |                                |            |               | 1 = suppress positive response  |          |
+|               +--------------------------------+------------+---------------+---------------------------------+----------+
+|               | definitionType                 | 7 (b[6-0]) | 0x01          | defineByIdentifier              | Always   |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+| dynamicallyDefinedDataIdentifier               | 16         | 0xF200-0xF3FF | DID to define                   | Always   |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+| Data from DID | sourceDataIdentifier           | 16         | 0x0000-0xFFFF | Source DID#1                    | Always   |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | positionInSourceDataRecord     | 8          | 0x01-0xFF     | Data position in DID#1          |          |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | memorySize                     | 8          | 0x01-0xFF     | Number of bytes from DID#1      |          |
+|               +--------------------------------+------------+---------------+---------------------------------+----------+
+|               | ...                                                                                                      |
+|               +--------------------------------+------------+---------------+---------------------------------+----------+
+|               | sourceDataIdentifier           | 16         | 0x0000-0xFFFF | Source DID#n                    | Optional |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | positionInSourceDataRecord     | 8          | 0x01-0xFF     | Data position in DID#n          |          |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | memorySize                     | 8          | 0x01-0xFF     | Number of bytes from DID#n      |          |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
+
+
+defineByMemoryAddress (0x02)
+````````````````````````````
+This sub-function can be used by the client to define a new DID that points to data in server's memory.
+
+Parameter *addressAndLengthFormatIdentifier* defines length of following *memoryAddress* and *memorySize* size
+data records.
+Then, there might be multiple pairs of *memoryAddress*, *memorySize* parameters, each pointing to other data in
+the server's memory.
+
+
+Request Format
+''''''''''''''
++-------------------------------------------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| Name                                                              | Bit Length            | Value         | Description                               | Present  |
++===================================================================+=======================+===============+===========================================+==========+
+| SID                                                               | 8                     | 0x2C          | DynamicallyDefineDataIdentifier           | Always   |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| SubFunction                      | suppressPosRspMsgIndicationBit | 1 (b[7])              | 0x0-0x1       | 0 = response required                     | Always   |
+|                                  |                                |                       |               |                                           |          |
+|                                  |                                |                       |               | 1 = suppress positive response            |          |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+|                                  | definitionType                 | 7 (b[6-0])            | 0x02          | defineByMemoryAddress                     | Always   |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| dynamicallyDefinedDataIdentifier                                  | 16                    | 0xF200-0xF3FF | DID to define                             | Always   |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| addressAndLengthFormatIdentifier | memorySizeLength               | 4                     | 0x1-0xF       | Number of bytes to use for memorySize     | Always   |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+          |
+|                                  | memoryAddressLength            | 4                     | 0x1-0xF       | Number of bytes to use for memoryAddress  |          |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| Data from Memory                 | memoryAddress                  | 8*memoryAddressLength |               | Starting address#1 in the server's memory | Always   |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+          |
+|                                  | memorySize                     | 8*memorySizeLength    |               | Number of bytes from address#1            |          |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+|                                  | ...                                                                                                                           |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+|                                  | memoryAddress                  | 8*memoryAddressLength |               | Starting address#n in the server's memory | Optional |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+          |
+|                                  | memorySize                     | 8*memorySizeLength    |               | Number of bytes from address#n            |          |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
+
+
+clearDynamicallyDefinedDataIdentifier (0x03)
+````````````````````````````````````````````
+This sub-function can be used by the client to clear previously defined DIDs using this server.
+
+Parameter *dynamicallyDefinedDataIdentifier* is optional and identifies DID to clear.
+If not provided all definitions of dynamicallyDefinedDataIdentifiers would be forgotten.
+
+
+Request Format
+''''''''''''''
++----------------------------------------------+------------+---------------+---------------------------------------+----------+
+| Name                                         | Bit Length | Value         | Description                           | Present  |
++==============================================+============+===============+=======================================+==========+
+| SID                                          | 8          | 0x2C          | DynamicallyDefineDataIdentifier       | Always   |
++-------------+--------------------------------+------------+---------------+---------------------------------------+----------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                 | Always   |
+|             |                                |            |               |                                       |          |
+|             |                                |            |               | 1 = suppress positive response        |          |
+|             +--------------------------------+------------+---------------+---------------------------------------+----------+
+|             | definitionType                 | 7 (b[6-0]) | 0x03          | clearDynamicallyDefinedDataIdentifier | Always   |
++-------------+--------------------------------+------------+---------------+---------------------------------------+----------+
+| dynamicallyDefinedDataIdentifier             | 16         | 0xF200-0xF3FF | DID to clear                          | Optional |
++----------------------------------------------+------------+---------------+---------------------------------------+----------+
+
+
+Positive Response Format
+''''''''''''''''''''''''
+
 
 
 .. _knowledge-base-service-write-data-by-identifier:
