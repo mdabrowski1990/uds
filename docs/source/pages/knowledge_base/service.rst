@@ -3911,8 +3911,7 @@ ReadDataByPeriodicIdentifier (0x2A)
 -----------------------------------
 ReadDataByPeriodicIdentifier service allows the client to request periodic transmission of data record values from
 the server.
-Each periodic data record is identified by a periodicDataIdentifier
-(the second byte of a DID with a fixed first byte 0xF2).
+Each periodic data record is identified by *Periodic DID* (the second byte of a DID with a fixed first byte 0xF2).
 
 
 Request Format
@@ -3934,11 +3933,13 @@ Request Format
 |                  |            |           |                                               |                                          |
 |                  |            |           | 0x05-0xFF: reserved                           |                                          |
 +------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
-| Periodic DID     | 8          | 0x00-0xFF | Second byte of DID#1 (first byte equals 0xF2) | If transmissionMode unequals 4           |
+| Periodic DID     | 8          | 0x00-0xFF | Second byte of DID#1 (first byte equals 0xF2) | Mandatory if transmissionMode unequals 4 |
+|                  |            |           |                                               |                                          |
+|                  |            |           |                                               | Optional if transmissionMode equals 4    |
 |                  +------------+-----------+-----------------------------------------------+------------------------------------------+
 |                  | ...                                                                                                               |
 |                  +------------+-----------+-----------------------------------------------+------------------------------------------+
-|                  | 8          | 0x00-0xFF | Second byte of DID#n (first byte equals 0xF2) | Optional, if transmissionMode unequals 4 |
+|                  | 8          | 0x00-0xFF | Second byte of DID#n (first byte equals 0xF2) | Optional                                 |
 +------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
 
 
