@@ -3917,29 +3917,29 @@ Each periodic data record is identified by a periodicDataIdentifier
 
 Request Format
 ''''''''''''''
-+------------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
-| Name                   | Bit Length | Value     | Description                                   | Present                                  |
-+========================+============+===========+===============================================+==========================================+
-| SID                    | 8          | 0x2A      | ReadDataByPeriodicIdentifier                  | Always                                   |
-+------------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
-| transmissionMode       | 8          | 0x00-0xFF | 0x00: reserved                                | Always                                   |
-|                        |            |           |                                               |                                          |
-|                        |            |           | 0x01: sendAtSlowRate                          |                                          |
-|                        |            |           |                                               |                                          |
-|                        |            |           | 0x02: sendAtMediumRate                        |                                          |
-|                        |            |           |                                               |                                          |
-|                        |            |           | 0x03: sendAtFastRate                          |                                          |
-|                        |            |           |                                               |                                          |
-|                        |            |           | 0x04: stopSending                             |                                          |
-|                        |            |           |                                               |                                          |
-|                        |            |           | 0x05-0xFF: reserved                           |                                          |
-+------------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
-| periodicDataIdentifier | 8          | 0x00-0xFF | Second byte of DID#1 (first byte equals 0xF2) | If transmissionMode unequals 4           |
-|                        +------------+-----------+-----------------------------------------------+------------------------------------------+
-|                        | ...                                                                                                               |
-|                        +------------+-----------+-----------------------------------------------+------------------------------------------+
-|                        | 8          | 0x00-0xFF | Second byte of DID#n (first byte equals 0xF2) | Optional, if transmissionMode unequals 4 |
-+------------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
+| Name             | Bit Length | Value     | Description                                   | Present                                  |
++==================+============+===========+===============================================+==========================================+
+| SID              | 8          | 0x2A      | ReadDataByPeriodicIdentifier                  | Always                                   |
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
+| transmissionMode | 8          | 0x00-0xFF | 0x00: reserved                                | Always                                   |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x01: sendAtSlowRate                          |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x02: sendAtMediumRate                        |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x03: sendAtFastRate                          |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x04: stopSending                             |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x05-0xFF: reserved                           |                                          |
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
+| Periodic DID     | 8          | 0x00-0xFF | Second byte of DID#1 (first byte equals 0xF2) | If transmissionMode unequals 4           |
+|                  +------------+-----------+-----------------------------------------------+------------------------------------------+
+|                  | ...                                                                                                               |
+|                  +------------+-----------+-----------------------------------------------+------------------------------------------+
+|                  | 8          | 0x00-0xFF | Second byte of DID#n (first byte equals 0xF2) | Optional, if transmissionMode unequals 4 |
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
 
 
 Positive Response Format
@@ -3963,13 +3963,13 @@ The first response (sent directly after the request):
 Following
 `````````
 The following responses with data for Periodic Data Identifiers. Format according to ISO 14229:
-+------------------------+------------+-----------+---------------------------------------------+---------+
-| Name                   | Bit Length | Value     | Description                                 | Present |
-+========================+============+===========+=============================================+=========+
-| periodicDataIdentifier | 8          | 0x00-0xFF | Second byte of DID (first byte equals 0xF2) | Always  |
-+------------------------+------------+-----------+---------------------------------------------+---------+
-| data                   | at least 8 |           | Data stored under periodic DID              | Always  |
-+------------------------+------------+-----------+---------------------------------------------+---------+
++--------------+------------+-----------+---------------------------------------------+---------+
+| Name         | Bit Length | Value     | Description                                 | Present |
++==============+============+===========+=============================================+=========+
+| Periodic DID | 8          | 0x00-0xFF | Second byte of DID (first byte equals 0xF2) | Always  |
++--------------+------------+-----------+---------------------------------------------+---------+
+| data         | at least 8 |           | Data stored under periodic DID              | Always  |
++--------------+------------+-----------+---------------------------------------------+---------+
 
 .. warning:: The ISO-defined data message format introduces ambiguity because it does not begin with an RSID.
   This makes it impossible to reliably distinguish periodic data messages from other diagnostic messages.
@@ -3977,15 +3977,15 @@ The following responses with data for Periodic Data Identifiers. Format accordin
   that future revisions add an RSID at the start of each periodic data message.
 
 This package uses an **extended, unambiguous** periodic message format that **always includes RSID 0x6A**:
-+------------------------+------------+-----------+--------------------------------------------------------+---------+
-| Name                   | Bit Length | Value     | Description                                            | Present |
-+========================+============+===========+========================================================+=========+
-| RSID                   | 8          | 0x6A      | Positive Response: ReadDataByPeriodicIdentifier (0x2A) | Always  |
-+------------------------+------------+-----------+--------------------------------------------------------+---------+
-| periodicDataIdentifier | 8          | 0x00-0xFF | Second byte of DID (first byte equals 0xF2)            | Always  |
-+------------------------+------------+-----------+--------------------------------------------------------+---------+
-| data                   | at least 8 |           | Data stored under periodic DID                         | Always  |
-+------------------------+------------+-----------+--------------------------------------------------------+---------+
++--------------+------------+-----------+--------------------------------------------------------+---------+
+| Name         | Bit Length | Value     | Description                                            | Present |
++==============+============+===========+========================================================+=========+
+| RSID         | 8          | 0x6A      | Positive Response: ReadDataByPeriodicIdentifier (0x2A) | Always  |
++--------------+------------+-----------+--------------------------------------------------------+---------+
+| Periodic DID | 8          | 0x00-0xFF | Second byte of DID (first byte equals 0xF2)            | Always  |
++--------------+------------+-----------+--------------------------------------------------------+---------+
+| data         | at least 8 |           | Data stored under periodic DID                         | Always  |
++--------------+------------+-----------+--------------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-dynamically-define-data-identifier:
