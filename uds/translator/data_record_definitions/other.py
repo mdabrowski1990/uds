@@ -35,6 +35,8 @@ __all__ = [
     "SESSION_KEY_INFO_LENGTH", "CONDITIONAL_OPTIONAL_SESSION_KEY_INFO",
     "ADDITIONAL_PARAMETER_LENGTH", "CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER",
     "NEEDED_ADDITIONAL_PARAMETER_LENGTH", "CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER",
+    # SID 0x2A
+    "TRANSMISSION_MODE",
 ]
 
 from decimal import Decimal
@@ -702,3 +704,13 @@ AUTHENTICATION_RETURN_PARAMETER = MappingDataRecord(
         0x12: "OwnershipVerified, AuthenticationComplete",
         0x13: "CertificateVerified",
     })
+
+# SID 0x2A
+TRANSMISSION_MODE = MappingDataRecord(name="transmissionMode",
+                                      length=8,
+                                      values_mapping={
+                                          0x01: "sendAtSlowRate",
+                                          0x02: "sendAtMediumRate",
+                                          0x03: "sendAtFastRate",
+                                          0x04: "stopSending",
+                                      })

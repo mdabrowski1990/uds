@@ -3909,8 +3909,84 @@ Positive Response Format
 
 ReadDataByPeriodicIdentifier (0x2A)
 -----------------------------------
-ReadDataByPeriodicIdentifier service allows the client to request the periodic transmission of data record values
-from the server identified by one or more periodicDataIdentifiers.
+ReadDataByPeriodicIdentifier service allows the client to request periodic transmission of data record values from
+the server.
+Each periodic data record is identified by *Periodic DID* (the second byte of a DID with a fixed first byte 0xF2).
+
+
+Request Format
+``````````````
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
+| Name             | Bit Length | Value     | Description                                   | Present                                  |
++==================+============+===========+===============================================+==========================================+
+| SID              | 8          | 0x2A      | ReadDataByPeriodicIdentifier                  | Always                                   |
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
+| transmissionMode | 8          | 0x00-0xFF | 0x00: reserved                                | Always                                   |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x01: sendAtSlowRate                          |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x02: sendAtMediumRate                        |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x03: sendAtFastRate                          |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x04: stopSending                             |                                          |
+|                  |            |           |                                               |                                          |
+|                  |            |           | 0x05-0xFF: reserved                           |                                          |
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
+| Periodic DID     | 8          | 0x00-0xFF | Second byte of DID#1 (first byte equals 0xF2) | Mandatory if transmissionMode unequals 4 |
+|                  |            |           |                                               |                                          |
+|                  |            |           |                                               | Optional if transmissionMode equals 4    |
+|                  +------------+-----------+-----------------------------------------------+------------------------------------------+
+|                  | ...                                                                                                               |
+|                  +------------+-----------+-----------------------------------------------+------------------------------------------+
+|                  | 8          | 0x00-0xFF | Second byte of DID#n (first byte equals 0xF2) | Optional                                 |
++------------------+------------+-----------+-----------------------------------------------+------------------------------------------+
+
+
+Positive Response Format
+````````````````````````
+This service behaves differently from most diagnostic services because it produces two types of positive responses:
+
+1) Initial confirmation response — sent immediately after the request
+2) Ongoing periodic data messages — sent repeatedly according to the requested rate
+
+
+Initial
+'''''''
+The first response (sent directly after the request):
++------+------------+-------+--------------------------------------------------------+---------+
+| Name | Bit Length | Value | Description                                            | Present |
++======+============+=======+========================================================+=========+
+| RSID | 8          | 0x6A  | Positive Response: ReadDataByPeriodicIdentifier (0x2A) | Always  |
++------+------------+-------+--------------------------------------------------------+---------+
+
+
+Following
+'''''''''
+The following responses with data for Periodic Data Identifiers. Format according to ISO 14229:
++--------------+------------+-----------+---------------------------------------------+---------+
+| Name         | Bit Length | Value     | Description                                 | Present |
++==============+============+===========+=============================================+=========+
+| Periodic DID | 8          | 0x00-0xFF | Second byte of DID (first byte equals 0xF2) | Always  |
++--------------+------------+-----------+---------------------------------------------+---------+
+| data         | at least 8 |           | Data stored under periodic DID              | Always  |
++--------------+------------+-----------+---------------------------------------------+---------+
+
+.. warning:: The ISO-defined data message format introduces ambiguity because it does not begin with an RSID.
+  This makes it impossible to reliably distinguish periodic data messages from other diagnostic messages.
+  In my opinion this is a design flaw, and I have submitted feedback to the ISO committee in my country recommending
+  that future revisions add an RSID at the start of each periodic data message.
+
+This package uses an **extended, unambiguous** periodic message format that **always includes RSID 0x6A**:
++--------------+------------+-----------+--------------------------------------------------------+---------+
+| Name         | Bit Length | Value     | Description                                            | Present |
++==============+============+===========+========================================================+=========+
+| RSID         | 8          | 0x6A      | Positive Response: ReadDataByPeriodicIdentifier (0x2A) | Always  |
++--------------+------------+-----------+--------------------------------------------------------+---------+
+| Periodic DID | 8          | 0x00-0xFF | Second byte of DID (first byte equals 0xF2)            | Always  |
++--------------+------------+-----------+--------------------------------------------------------+---------+
+| data         | at least 8 |           | Data stored under periodic DID                         | Always  |
++--------------+------------+-----------+--------------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-dynamically-define-data-identifier:

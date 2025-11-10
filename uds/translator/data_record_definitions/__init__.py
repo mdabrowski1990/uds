@@ -1,6 +1,14 @@
 """Data Records definitions for basic Translator."""
 
-from .did import DID_2013, DID_2020, MULTIPLE_DID_2013, MULTIPLE_DID_2020
+from .did import (
+    DID_2013,
+    DID_2020,
+    MULTIPLE_DID_2013,
+    MULTIPLE_DID_2020,
+    MULTIPLE_PERIODIC_DID,
+    OPTIONAL_MULTIPLE_PERIODIC_DID,
+    OPTIONAL_PERIODIC_DID,
+)
 from .dtc import (
     DTC,
     DTC_AND_STATUS,
@@ -78,6 +86,7 @@ from .other import (
     SCALING_DATA_RECORDS,
     SESSION_KEY_INFO_LENGTH,
     SESSION_PARAMETER_RECORD,
+    TRANSMISSION_MODE,
 )
 from .sub_functions import (
     AUTHENTICATION_SUB_FUNCTION,
