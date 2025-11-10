@@ -1,7 +1,8 @@
 """Data Records definitions for Data Identifiers."""
 
 __all__ = [
-    "DID_2013", "DID_2020", "OPTIONAL_PERIODIC_DID", "MULTIPLE_DID_2013", "MULTIPLE_DID_2020", "MULTIPLE_PERIODIC_DID",
+    "DID_2013", "DID_2020", "OPTIONAL_PERIODIC_DID", "MULTIPLE_DID_2013",
+    "MULTIPLE_DID_2020", "MULTIPLE_PERIODIC_DID", "OPTIONAL_MULTIPLE_PERIODIC_DID",
     "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
     "get_did_data_2013", "get_did_data_2020",
     "get_did_records_formula_2013", "get_did_records_formula_2020",
@@ -134,6 +135,12 @@ MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                 factor=1,
                                                 min_occurrences=1,
                                                 max_occurrences=None)
+OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
+                                                         length=8,
+                                                         offset=0xF200,
+                                                         factor=1,
+                                                         min_occurrences=0,
+                                                         max_occurrences=None)
 
 
 def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:

@@ -1,6 +1,14 @@
 """Data Records definitions for basic Translator."""
 
-from .did import DID_2013, DID_2020, MULTIPLE_DID_2013, MULTIPLE_DID_2020, MULTIPLE_PERIODIC_DID, OPTIONAL_PERIODIC_DID
+from .did import (
+    DID_2013,
+    DID_2020,
+    MULTIPLE_DID_2013,
+    MULTIPLE_DID_2020,
+    MULTIPLE_PERIODIC_DID,
+    OPTIONAL_MULTIPLE_PERIODIC_DID,
+    OPTIONAL_PERIODIC_DID,
+)
 from .dtc import (
     DTC,
     DTC_AND_STATUS,
