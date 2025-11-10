@@ -2,7 +2,7 @@
 
 from can import Bus
 from uds.addressing import AddressingType
-from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
+from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface, CanVersion
 from uds.message import UdsMessage
 
 
@@ -40,7 +40,8 @@ def main():
 
     # create Transport Interface object for Diagnostics on CAN communication
     can_ti_1 = PyCanTransportInterface(network_manager=can_interface_1,
-                                       addressing_information=ai_send)
+                                       addressing_information=ai_send,
+                                       can_version=CanVersion.CAN_FD)
     can_ti_2 = PyCanTransportInterface(network_manager=can_interface_2,
                                        addressing_information=ai_receive)
 

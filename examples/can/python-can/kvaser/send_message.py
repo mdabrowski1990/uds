@@ -2,7 +2,7 @@
 
 from can import Bus
 from uds.addressing import AddressingType
-from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
+from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface, CanVersion
 from uds.message import UdsMessage
 
 
@@ -15,8 +15,7 @@ def main():
         receive_own_messages=True,  # mandatory setting if you use Kvaser
         # configure your CAN bus
         bitrate=500_000,
-        fd=True,
-        data_bitrate=4_000_000)
+        fd=False)
 
     # configure addresses for Diagnostics on CAN communication
     # CAN Addressing Formats explanation:
@@ -29,7 +28,8 @@ def main():
 
     # create Transport Interface object for Diagnostics on CAN communication
     can_ti = PyCanTransportInterface(network_manager=can_interface,
-                                     addressing_information=addressing_information)
+                                     addressing_information=addressing_information,
+                                     can_version=CanVersion.CLASSIC_CAN)
 
     # define UDS Messages to send
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])
