@@ -7,15 +7,26 @@ Handlers for :ref:`CAN Frame <knowledge-base-can-frame>` fields:
  - Data
 """
 
-__all__ = ["CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
+__all__ = ["CanVersion", "CanIdHandler", "CanDlcHandler", "DEFAULT_FILLER_BYTE"]
 
 from bisect import bisect_left
 from typing import Dict, Optional, Set, Tuple
+
+from uds.utilities import ValidatedEnum
 
 DEFAULT_FILLER_BYTE: int = 0xCC
 """Default value of Filler Byte.
 Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame-data-padding>`.
 .. note:: The value is specified by ISO 15765-2:2016 (chapter 10.4.2.1)."""
+
+
+class CanVersion(ValidatedEnum):
+    """:ref:`Versions of CAN bus <knowledge-base-can-versions>`."""
+
+    CLASSIC_CAN: "CanVersion" = "Classic CAN"  # type: ignore
+    """Classic CAN 2.0"""
+    CAN_FD: "CanVersion" = "CAN FD"  # type: ignore
+    """`CAN FD <https://en.wikipedia.org/wiki/CAN_FD>`_"""
 
 
 class CanIdHandler:

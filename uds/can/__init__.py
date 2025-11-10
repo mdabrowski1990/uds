@@ -21,7 +21,7 @@ It provides tools for:
     - Flow Status
 """
 from .addressing import CanAddressingFormat, CanAddressingInformation
-from .frame import DEFAULT_FILLER_BYTE, CanDlcHandler, CanIdHandler
+from .frame import DEFAULT_FILLER_BYTE, CanDlcHandler, CanIdHandler, CanVersion
 from .packet import (
     AbstractFlowControlParametersGenerator,
     CanFlowStatus,
