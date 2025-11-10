@@ -9,6 +9,7 @@ from uds.can.transport_interface.common import (
     AbstractCanTransportInterface,
     AbstractFlowControlParametersGenerator,
     CanPacketType,
+    CanVersion,
     TransmissionDirection,
     UdsMessageRecord,
 )
@@ -25,6 +26,8 @@ class TestAbstractCanTransportInterface:
         self._patcher_abstract_transport_interface_init \
             = patch(f"{SCRIPT_LOCATION}.AbstractTransportInterface.__init__")
         self.mock_abstract_transport_interface_init = self._patcher_abstract_transport_interface_init.start()
+        self._patcher_validate_can_version = patch(f"{SCRIPT_LOCATION}.CanVersion.validate_member")
+        self.mock_validate_can_version = self._patcher_validate_can_version.start()
         self._patcher_can_segmenter = patch(f"{SCRIPT_LOCATION}.CanSegmenter")
         self.mock_can_segmenter = self._patcher_can_segmenter.start()
         self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
@@ -32,6 +35,7 @@ class TestAbstractCanTransportInterface:
 
     def teardown_method(self):
         self._patcher_abstract_transport_interface_init.stop()
+        self._patcher_validate_can_version.stop()
         self._patcher_can_segmenter.stop()
         self._patcher_warn.stop()
 
@@ -57,18 +61,20 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface.n_cr_timeout == AbstractCanTransportInterface.N_CR_TIMEOUT
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == AbstractCanTransportInterface.DEFAULT_FLOW_CONTROL_PARAMETERS)
+        assert self.mock_can_transport_interface.can_version == CanVersion.CLASSIC_CAN
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
         self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information)
 
     @pytest.mark.parametrize("network_manager, addressing_information, "
                              "n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout, "
-                             "flow_control_parameters_generator, segmenter_configuration", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), {"a": 1, "bc": 2, "def_xyz": Mock()})
+                             "flow_control_parameters_generator, can_version, segmenter_configuration", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(),
+         {"a": 1, "bc": 2, "def_xyz": Mock()})
     ])
     def test_init__all_args(self, network_manager, addressing_information,
                             n_as_timeout, n_ar_timeout, n_bs_timeout, n_br, n_cs, n_cr_timeout,
-                            flow_control_parameters_generator, segmenter_configuration):
+                            flow_control_parameters_generator, can_version, segmenter_configuration):
         assert AbstractCanTransportInterface.__init__(
             self.mock_can_transport_interface,
             network_manager=network_manager,
@@ -80,6 +86,7 @@ class TestAbstractCanTransportInterface:
             n_cs=n_cs,
             n_cr_timeout=n_cr_timeout,
             flow_control_parameters_generator=flow_control_parameters_generator,
+            can_version=can_version,
             **segmenter_configuration) is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_ar_measured is None
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__n_as_measured is None
@@ -93,6 +100,7 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface.n_cr_timeout == n_cr_timeout
         assert (self.mock_can_transport_interface.flow_control_parameters_generator
                 == flow_control_parameters_generator)
+        assert self.mock_can_transport_interface.can_version == can_version
         self.mock_can_transport_interface.segmenter = self.mock_can_segmenter.return_value
         self.mock_abstract_transport_interface_init.assert_called_once_with(network_manager=network_manager)
         self.mock_can_segmenter.assert_called_once_with(addressing_information=addressing_information,
@@ -121,7 +129,21 @@ class TestAbstractCanTransportInterface:
         assert self.mock_can_transport_interface._AbstractCanTransportInterface__segmenter == value
         mock_isinstance.assert_called_once_with(value, self.mock_can_segmenter)
 
-        # dlc
+    # can_version
+
+    def test_can_version__get(self):
+        self.mock_can_transport_interface._AbstractCanTransportInterface__can_version = Mock()
+        assert AbstractCanTransportInterface.can_version.fget(self.mock_can_transport_interface) \
+               == self.mock_can_transport_interface._AbstractCanTransportInterface__can_version
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_can_version__set(self, value):
+        AbstractCanTransportInterface.can_version.fset(self.mock_can_transport_interface, value)
+        assert (self.mock_can_transport_interface._AbstractCanTransportInterface__can_version
+                == self.mock_validate_can_version.return_value)
+        self.mock_validate_can_version.assert_called_once_with(value)
+
+    # dlc
 
     def test_dlc__get(self):
         assert AbstractCanTransportInterface.dlc.fget(self.mock_can_transport_interface) \

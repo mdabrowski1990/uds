@@ -4,7 +4,7 @@ import asyncio
 
 from can import Bus
 from uds.addressing import AddressingType
-from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
+from uds.can import CanAddressingFormat, CanAddressingInformation, CanVersion, PyCanTransportInterface
 from uds.message import UdsMessage
 
 
@@ -17,8 +17,7 @@ async def main():
         receive_own_messages=True,  # mandatory setting if you use Kvaser
         # configure your CAN bus
         bitrate=500_000,
-        fd=True,
-        data_bitrate=4_000_000)
+        fd=False)
 
     # configure addresses for Diagnostics on CAN communication
     # CAN Addressing Formats explanation:
@@ -30,8 +29,10 @@ async def main():
                                                       tx_functional_params={"can_id": 0x6FE})
 
     # create Transport Interface object for Diagnostics on CAN communication
-    can_ti = PyCanTransportInterface(network_manager=can_interface,
-                                     addressing_information=addressing_information)
+    can_ti = PyCanTransportInterface(
+        network_manager=can_interface,
+        addressing_information=addressing_information,
+        can_version=CanVersion.CLASSIC_CAN)  # send all diagnostic packets as Classic CAN frames
 
     # define UDS Messages to send
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])

@@ -4,7 +4,7 @@ import asyncio
 
 from can import Bus
 from uds.addressing import AddressingType
-from uds.can import CanAddressingFormat, CanAddressingInformation, PyCanTransportInterface
+from uds.can import CanAddressingFormat, CanAddressingInformation, CanVersion, PyCanTransportInterface
 from uds.message import UdsMessage
 
 
@@ -30,8 +30,10 @@ async def main():
                                                       tx_functional_params={"can_id": 0x6FE})
 
     # create Transport Interface object for Diagnostics on CAN communication
-    can_ti = PyCanTransportInterface(network_manager=can_interface,
-                                     addressing_information=addressing_information)
+    can_ti = PyCanTransportInterface(
+        network_manager=can_interface,
+        addressing_information=addressing_information,
+        can_version=CanVersion.CLASSIC_CAN)  # send all diagnostic packets as Classic CAN frames
 
     # define UDS Message
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])

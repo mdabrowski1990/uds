@@ -28,8 +28,9 @@ async def main():
                                                       tx_functional_params={"can_id": 0x6FE})
 
     # create Transport Interface object for Diagnostics on CAN communication
-    can_ti = PyCanTransportInterface(network_manager=can_interface,
-                                     addressing_information=addressing_information)
+    can_ti = PyCanTransportInterface(
+        network_manager=can_interface,
+        addressing_information=addressing_information)
 
     # receive UDS message
     received_message_record = await can_ti.async_receive_message(start_timeout=1000)  # timeout=1000 [ms]
