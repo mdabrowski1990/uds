@@ -21,7 +21,7 @@ Filler Bytes are used for :ref:`CAN Frame Data Padding <knowledge-base-can-frame
 
 
 class CanVersion(ValidatedEnum):
-    """Versions of `CAN bus <https://en.wikipedia.org/wiki/CAN_bus>`_."""
+    """:ref:`Versions of CAN bus <knowledge-base-can-versions>`."""
 
     CLASSIC_CAN: "CanVersion" = "Classic CAN"  # type: ignore
     """Classic CAN 2.0"""

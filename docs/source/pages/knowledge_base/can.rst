@@ -10,6 +10,37 @@ In other words, DoCAN provides the adaptation that allows UDS to operate on CAN.
 It is illustrated in the :ref:`UDS OSI Model <knowledge-base-osi-model>`.
 
 
+.. _knowledge-base-can-versions:
+
+CAN Bus Versions
+----------------
+`CAN Bus <https://en.wikipedia.org/wiki/CAN_bus>`_ was released in multiple version over the years.
+
+
+Classic CAN
+```````````
+Classic CAN, also called CAN 2.0.
+
+- supports DLC values 0-8
+
+
+CAN FD
+``````
+CAN version with Flexible Data-Rate.
+
+- supports DLC values 0-15 (0-8 linear, 9-15 discrete: 12, 16, 20, 24, 32, 48, 64 bytes)
+- faster transmission of data field
+- backward compatible with Classic CAN
+
+
+CAN XL
+``````
+To be released in the near future.
+
+- supports up to 2048-bytes payload
+- backward compatible with Classic CAN and CAN FD
+
+
 .. _knowledge-base-can-frame:
 
 CAN Frame

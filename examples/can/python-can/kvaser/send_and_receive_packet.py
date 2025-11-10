@@ -39,11 +39,13 @@ def main():
     ai_receive = ai_send.get_other_end()
 
     # create Transport Interface object for Diagnostics on CAN communication
-    can_ti_1 = PyCanTransportInterface(network_manager=can_interface_1,
-                                       addressing_information=ai_send,
-                                       can_version=CanVersion.CAN_FD)
-    can_ti_2 = PyCanTransportInterface(network_manager=can_interface_2,
-                                       addressing_information=ai_receive)
+    can_ti_1 = PyCanTransportInterface(
+        network_manager=can_interface_1,
+        addressing_information=ai_send,
+        can_version=CanVersion.CAN_FD)  # send all diagnostic packets as CAN FD frames
+    can_ti_2 = PyCanTransportInterface(
+        network_manager=can_interface_2,
+        addressing_information=ai_receive)
 
     # define UDS Message
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])

@@ -28,9 +28,10 @@ def main():
                                                       tx_functional_params={"can_id": 0x6FE})
 
     # create Transport Interface object for Diagnostics on CAN communication
-    can_ti = PyCanTransportInterface(network_manager=can_interface,
-                                     addressing_information=addressing_information,
-                                     can_version=CanVersion.CLASSIC_CAN)  # even though CAN FD is used, classic CAN frames will be sent
+    can_ti = PyCanTransportInterface(
+        network_manager=can_interface,
+        addressing_information=addressing_information,
+        can_version=CanVersion.CLASSIC_CAN)  # send all diagnostic packets as Classic CAN frames
 
     # define UDS Message
     message = UdsMessage(addressing_type=AddressingType.PHYSICAL, payload=[0x10, 0x03])

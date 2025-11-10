@@ -126,6 +126,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
 
         .. warning:: Value cross-check with other attributes (e.g. DLC) is not performed.
 
+        .. note:: Frames with DLC > 8 will always be sent as CAN FD, regardless of this value,
+            as Classic CAN cannot support DLC values greater than 8.
+
         :param value: Value to set.
         """
         self.__can_version = CanVersion.validate_member(value)
