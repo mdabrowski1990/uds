@@ -4109,6 +4109,7 @@ This sub-function clears previously defined dynamic DIDs.
 
 If *dynamicallyDefinedDataIdentifier* parameter is present, only the specified dynamic DID is cleared.
 If not provided, **all** dynamically defined DIDs stored in the server are cleared.
+
 +----------------------------------------------+------------+---------------+---------------------------------------+----------+
 | Name                                         | Bit Length | Value         | Description                           | Present  |
 +==============================================+============+===============+=======================================+==========+
