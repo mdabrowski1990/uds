@@ -3954,6 +3954,7 @@ This service behaves differently from most diagnostic services because it produc
 Initial
 '''''''
 The first response (sent directly after the request):
+
 +------+------------+-------+--------------------------------------------------------+---------+
 | Name | Bit Length | Value | Description                                            | Present |
 +======+============+=======+========================================================+=========+
@@ -3964,6 +3965,7 @@ The first response (sent directly after the request):
 Following
 '''''''''
 The following responses with data for Periodic Data Identifiers. Format according to ISO 14229:
+
 +--------------+------------+-----------+---------------------------------------------+---------+
 | Name         | Bit Length | Value     | Description                                 | Present |
 +==============+============+===========+=============================================+=========+
@@ -3978,6 +3980,7 @@ The following responses with data for Periodic Data Identifiers. Format accordin
   that future revisions add an RSID at the start of each periodic data message.
 
 This package uses an **extended, unambiguous** periodic message format that **always includes RSID 0x6A**:
+
 +--------------+------------+-----------+--------------------------------------------------------+---------+
 | Name         | Bit Length | Value     | Description                                            | Present |
 +==============+============+===========+========================================================+=========+
@@ -4009,19 +4012,21 @@ ISO 14229-1 defines the following DID definition types (definitionType parameter
 Request Format
 ``````````````
 
-
 .. _knowledge-base-service-dynamically-define-data-identifier-01:
 
 defineByIdentifier (0x01)
 '''''''''''''''''''''''''
-This sub-function allows the client to define a new DID using data taken from existing DIDs.
+This sub-function allows the client to define a new DID by concatenating data slices taken from existing DIDs.
 
-- *sourceDataIdentifier* selects the DID whose data is used.
-- *positionInSourceDataRecord* specifies the start position within that DID’s data record (index of the first byte = 1).
-- *memorySize* defines the number of bytes to include.
+The request may contain one or more *Data from DID* segments, each consisting of
+(*sourceDataIdentifier*, *positionInSourceDataRecord*, *memorySize*).
+Each segment selects a portion of an existing DID’s data record:
 
-Multiple triplets (*sourceDataIdentifier*, *positionInSourceDataRecord*, *memorySize*) may be provided,
-each referencing a different DID segment.
+- *sourceDataIdentifier* identifies the DID whose data is referenced
+- *positionInSourceDataRecord* specifies the starting byte position within that DID’s data record
+  (index of the first byte = 1)
+- *memorySize* defines the number of bytes to extract from that position
+
 +------------------------------------------------+------------+---------------+---------------------------------+----------+
 | Name                                           | Bit Length | Value         | Description                     | Present  |
 +================================================+============+===============+=================================+==========+
@@ -4055,10 +4060,18 @@ each referencing a different DID segment.
 
 defineByMemoryAddress (0x02)
 ''''''''''''''''''''''''''''
-This sub-function allows the client to define a new DID referencing data directly from the server’s memory.
+This sub-function allows the client to define a new DID by referencing data directly from the server’s memory.
 
-- *addressAndLengthFormatIdentifier* specifies the sizes (in bytes) of the *memoryAddress* and *memorySize* data records
-- multiple pairs (*memoryAddress*, *memorySize*) may follow, each selecting a different memory region.
+The *addressAndLengthFormatIdentifier* parameter specifies the number of bytes used to encode both
+*memoryAddress* and *memorySize* within each memory segment.
+
+The request may include one or more `Data from Memory` segments, with each segments consisting of
+(*memoryAddress*, *memorySize*) and selecting a continuous region of memory to be included in the dynamically defined
+DID:
+
+- *memoryAddress* specifies the starting address of the memory block
+- *memorySize* specifies the number of bytes to include from that address
+
 +-------------------------------------------------------------------+-----------------------+---------------+-------------------------------------------+----------+
 | Name                                                              | Bit Length            | Value         | Description                               | Present  |
 +===================================================================+=======================+===============+===========================================+==========+
@@ -4094,8 +4107,8 @@ clearDynamicallyDefinedDataIdentifier (0x03)
 ''''''''''''''''''''''''''''''''''''''''''''
 This sub-function clears previously defined dynamic DIDs.
 
-If *dynamicallyDefinedDataIdentifier* parameter is present, only the specified DID is removed.
-If omitted, **all** dynamically defined DIDs created in the current server are cleared.
+If *dynamicallyDefinedDataIdentifier* parameter is present, only the specified dynamic DID is cleared.
+If not provided, **all** dynamically defined DIDs stored in the server are cleared.
 +----------------------------------------------+------------+---------------+---------------------------------------+----------+
 | Name                                         | Bit Length | Value         | Description                           | Present  |
 +==============================================+============+===============+=======================================+==========+
@@ -4116,7 +4129,7 @@ Positive Response Format
 +----------------------------------------------+------------+---------------+-----------------------------------------------------------------+----------------------------------------------------------------+
 | Name                                         | Bit Length | Value         | Description                                                     | Present                                                        |
 +==============================================+============+===============+=================================================================+================================================================+
-| RSID                                         | 8          | 0x6C          | Positive Response: DiagnosticSessionControl (0x2C)              | Always                                                         |
+| RSID                                         | 8          | 0x6C          | Positive Response: DynamicallyDefineDataIdentifier(0x2C)        | Always                                                         |
 +-------------+--------------------------------+------------+---------------+-----------------------------------------------------------------+----------------------------------------------------------------+
 | SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                                           | Always                                                         |
 |             |                                |            |               |                                                                 |                                                                |
