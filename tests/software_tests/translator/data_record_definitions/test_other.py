@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from dill.pointers import children
 from mock import Mock, call, patch
 
 from uds.translator.data_record_definitions.other import (
