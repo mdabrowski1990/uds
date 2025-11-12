@@ -16,6 +16,8 @@ __all__ = [
     "COMMUNICATION_CONTROL_SUB_FUNCTION", "CONTROL_TYPE", "CONTROL_TYPE_MAPPING",
     # SID 0x29
     "AUTHENTICATION_SUB_FUNCTION", "AUTHENTICATION_TASK", "AUTHENTICATION_TASK_MAPPING",
+    # SID 0x2C
+    "DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION", "DEFINITION_TYPE", "DEFINITION_TYPE_MAPPING",
     # SID 0x3E
     "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION",
 ]
@@ -188,6 +190,19 @@ AUTHENTICATION_TASK = MappingDataRecord(name="authenticationTask",
 AUTHENTICATION_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                             length=8,
                                             children=[SPRMIB, AUTHENTICATION_TASK])
+
+# SID 0x2C
+DEFINITION_TYPE_MAPPING = {
+    0x01: "defineByIdentifier",
+    0x02: "defineByMemoryAddress",
+    0x03: "clearDynamicallyDefinedDataIdentifier",
+}
+DEFINITION_TYPE = MappingDataRecord(name="definitionType",
+                                        length=7,
+                                        values_mapping=DEFINITION_TYPE_MAPPING)
+DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                                                length=8,
+                                                                children=[SPRMIB, DEFINITION_TYPE])
 
 # SID 0x3E
 ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",

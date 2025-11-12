@@ -1,8 +1,11 @@
 """Data Records definitions for Data Identifiers."""
 
 __all__ = [
-    "DID_2013", "DID_2020", "OPTIONAL_PERIODIC_DID", "MULTIPLE_DID_2013",
-    "MULTIPLE_DID_2020", "MULTIPLE_PERIODIC_DID", "OPTIONAL_MULTIPLE_PERIODIC_DID",
+    "DID_2013", "DID_2020",
+    "DYNAMICALLY_DEFINED_DID", "OPTIONAL_DYNAMICALLY_DEFINED_DID", "OPTIONAL_PERIODIC_DID",
+    "MULTIPLE_DID_2013", "MULTIPLE_DID_2020",
+    "MULTIPLE_PERIODIC_DID", "OPTIONAL_MULTIPLE_PERIODIC_DID",
+    "DATA_FROM_DID_2013", "DATA_FROM_DID_2020",
     "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
     "get_did_data_2013", "get_did_data_2020",
     "get_did_records_formula_2013", "get_did_records_formula_2020",
@@ -113,6 +116,18 @@ DID_2013 = MappingDataRecord(name="DID",
 DID_2020 = MappingDataRecord(name="DID",
                              length=16,
                              values_mapping=DID_MAPPING_2020)
+SOURCE_DID_2013 = MappingDataRecord(name="sourceDataIdentifier",
+                                    length=16,
+                                    values_mapping=DID_MAPPING_2013)
+SOURCE_DID_2020 = MappingDataRecord(name="sourceDataIdentifier",
+                                    length=16,
+                                    values_mapping=DID_MAPPING_2020)
+DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
+                                        length=16)
+OPTIONAL_DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
+                                                 length=16,
+                                                 min_occurrences=0,
+                                                 max_occurrences=1)
 OPTIONAL_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                 length=8,
                                                 offset=0xF200,
@@ -142,6 +157,29 @@ OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                          min_occurrences=0,
                                                          max_occurrences=None)
 
+POSITION_IN_DID = RawDataRecord(name="positionInSourceDataRecord",
+                                length=8)
+DID_MEMORY_SIZE = RawDataRecord(name="memorySize",
+                                length=8)
+
+DATA_FROM_DID_2013 = RawDataRecord(name="Data from DID",
+                                   length=32,
+                                   children=(
+                                       SOURCE_DID_2013,
+                                       POSITION_IN_DID,
+                                       DID_MEMORY_SIZE
+                                   ),
+                                   min_occurrences=1,
+                                   max_occurrences=None)
+DATA_FROM_DID_2020 = RawDataRecord(name="Data from DID",
+                                   length=32,
+                                   children=(
+                                       SOURCE_DID_2020,
+                                       POSITION_IN_DID,
+                                       DID_MEMORY_SIZE
+                                   ),
+                                   min_occurrences=1,
+                                   max_occurrences=None)
 
 def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:
     """

@@ -343,6 +343,9 @@ class Service:
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if check_remaining_length and remaining_length != 0:
+            print(f"remaining_length = {remaining_length}")
+            print(f"payload = {payload}")
+            print(f"message_structure = {message_structure}")
             raise RuntimeError("Incorrect message structure was defined.")
         return tuple(decoded_message_continuation)
 
