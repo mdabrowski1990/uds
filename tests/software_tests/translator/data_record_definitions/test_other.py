@@ -11,6 +11,7 @@ from uds.translator.data_record_definitions.other import (
     MANTISSA_BIT_LENGTH,
     STATE_AND_CONNECTION_TYPE,
     UNIT_OR_FORMAT,
+    get_data_from_memory,
     get_data_records_for_formula_parameters,
     get_decode_float_value_formula,
     get_decode_signed_value_formula,
@@ -89,6 +90,33 @@ class TestFormulas:
                                                          length=8 * memory_size_length)],
                                                    any_order=False)
 
+    # get_data_from_memory
+
+    @pytest.mark.parametrize("address_and_length_format_identifier", [-1, 0x01, 0xF0, 0x111])
+    def test_get_data_from_memory__value_error(self, address_and_length_format_identifier):
+        with pytest.raises(ValueError):
+            get_data_from_memory(address_and_length_format_identifier)
+
+    @pytest.mark.parametrize("memory_address_length, memory_size_length", [
+        (0x1, 0x1),
+        (0xD, 0x3),
+        (0xF, 0xF),
+    ])
+    def test_get_data_from_memory(self, memory_address_length, memory_size_length):
+        assert (get_data_from_memory((memory_size_length << 4) + memory_address_length)
+                == (self.mock_raw_data_record.return_value,))
+        self.mock_raw_data_record.assert_has_calls([call(name="memoryAddress",
+                                                         length=8 * memory_address_length),
+                                                    call(name="memorySize",
+                                                         length=8 * memory_size_length),
+                                                    call(name="Data from Memory",
+                                                         children=(self.mock_raw_data_record.return_value,
+                                                                   self.mock_raw_data_record.return_value),
+                                                         length=8 * (memory_address_length + memory_size_length),
+                                                         min_occurrences=1,
+                                                         max_occurrences=None)],
+                                                   any_order=True)
+    
     # get_scaling_byte_extension
 
     @pytest.mark.parametrize("scaling_byte", [-1, 0x100])

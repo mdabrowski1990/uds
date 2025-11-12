@@ -3954,6 +3954,7 @@ This service behaves differently from most diagnostic services because it produc
 Initial
 '''''''
 The first response (sent directly after the request):
+
 +------+------------+-------+--------------------------------------------------------+---------+
 | Name | Bit Length | Value | Description                                            | Present |
 +======+============+=======+========================================================+=========+
@@ -3964,6 +3965,7 @@ The first response (sent directly after the request):
 Following
 '''''''''
 The following responses with data for Periodic Data Identifiers. Format according to ISO 14229:
+
 +--------------+------------+-----------+---------------------------------------------+---------+
 | Name         | Bit Length | Value     | Description                                 | Present |
 +==============+============+===========+=============================================+=========+
@@ -3978,6 +3980,7 @@ The following responses with data for Periodic Data Identifiers. Format accordin
   that future revisions add an RSID at the start of each periodic data message.
 
 This package uses an **extended, unambiguous** periodic message format that **always includes RSID 0x6A**:
+
 +--------------+------------+-----------+--------------------------------------------------------+---------+
 | Name         | Bit Length | Value     | Description                                            | Present |
 +==============+============+===========+========================================================+=========+
@@ -3993,9 +3996,158 @@ This package uses an **extended, unambiguous** periodic message format that **al
 
 DynamicallyDefineDataIdentifier (0x2C)
 --------------------------------------
-DynamicallyDefineDataIdentifier service allows the client to dynamically define in a server a DataIdentifier (DID)
-that can be read via the :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service
-at a later time.
+DynamicallyDefineDataIdentifier service allows the client to define a Data Identifier (DID) dynamically within
+the server.
+Once defined, the newly created DID can later be read using
+:ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` or
+:ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` services.
+
+ISO 14229-1 defines the following DID definition types (definitionType parameter values):
+
+- 0x01 – :ref:`defineByIdentifier <knowledge-base-service-dynamically-define-data-identifier-01>`
+- 0x02 – :ref:`defineByMemoryAddress <knowledge-base-service-dynamically-define-data-identifier-02>`
+- 0x03 – :ref:`clearDynamicallyDefinedDataIdentifier <knowledge-base-service-dynamically-define-data-identifier-03>`
+
+
+Request Format
+``````````````
+
+.. _knowledge-base-service-dynamically-define-data-identifier-01:
+
+defineByIdentifier (0x01)
+'''''''''''''''''''''''''
+This sub-function allows the client to define a new DID by concatenating data slices taken from existing DIDs.
+
+The request may contain one or more *Data from DID* segments, each consisting of
+(*sourceDataIdentifier*, *positionInSourceDataRecord*, *memorySize*).
+Each segment selects a portion of an existing DID’s data record:
+
+- *sourceDataIdentifier* identifies the DID whose data is referenced
+- *positionInSourceDataRecord* specifies the starting byte position within that DID’s data record
+  (index of the first byte = 1)
+- *memorySize* defines the number of bytes to extract from that position
+
++------------------------------------------------+------------+---------------+---------------------------------+----------+
+| Name                                           | Bit Length | Value         | Description                     | Present  |
++================================================+============+===============+=================================+==========+
+| SID                                            | 8          | 0x2C          | DynamicallyDefineDataIdentifier | Always   |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+| SubFunction   | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required           | Always   |
+|               |                                |            |               |                                 |          |
+|               |                                |            |               | 1 = suppress positive response  |          |
+|               +--------------------------------+------------+---------------+---------------------------------+----------+
+|               | definitionType                 | 7 (b[6-0]) | 0x01          | defineByIdentifier              | Always   |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+| dynamicallyDefinedDataIdentifier               | 16         | 0xF200-0xF3FF | DID to define                   | Always   |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+| Data from DID | sourceDataIdentifier           | 16         | 0x0000-0xFFFF | Source DID#1                    | Always   |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | positionInSourceDataRecord     | 8          | 0x01-0xFF     | Data position in DID#1          |          |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | memorySize                     | 8          | 0x01-0xFF     | Number of bytes from DID#1      |          |
+|               +--------------------------------+------------+---------------+---------------------------------+----------+
+|               | ...                                                                                                      |
+|               +--------------------------------+------------+---------------+---------------------------------+----------+
+|               | sourceDataIdentifier           | 16         | 0x0000-0xFFFF | Source DID#n                    | Optional |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | positionInSourceDataRecord     | 8          | 0x01-0xFF     | Data position in DID#n          |          |
+|               +--------------------------------+------------+---------------+---------------------------------+          |
+|               | memorySize                     | 8          | 0x01-0xFF     | Number of bytes from DID#n      |          |
++---------------+--------------------------------+------------+---------------+---------------------------------+----------+
+
+
+.. _knowledge-base-service-dynamically-define-data-identifier-02:
+
+defineByMemoryAddress (0x02)
+''''''''''''''''''''''''''''
+This sub-function allows the client to define a new DID by referencing data directly from the server’s memory.
+
+The *addressAndLengthFormatIdentifier* parameter specifies the number of bytes used to encode both
+*memoryAddress* and *memorySize* within each memory segment.
+
+The request may include one or more `Data from Memory` segments, with each segments consisting of
+(*memoryAddress*, *memorySize*) and selecting a continuous region of memory to be included in the dynamically defined
+DID:
+
+- *memoryAddress* specifies the starting address of the memory block
+- *memorySize* specifies the number of bytes to include from that address
+
++-------------------------------------------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| Name                                                              | Bit Length            | Value         | Description                               | Present  |
++===================================================================+=======================+===============+===========================================+==========+
+| SID                                                               | 8                     | 0x2C          | DynamicallyDefineDataIdentifier           | Always   |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| SubFunction                      | suppressPosRspMsgIndicationBit | 1 (b[7])              | 0x0-0x1       | 0 = response required                     | Always   |
+|                                  |                                |                       |               |                                           |          |
+|                                  |                                |                       |               | 1 = suppress positive response            |          |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+|                                  | definitionType                 | 7 (b[6-0])            | 0x02          | defineByMemoryAddress                     | Always   |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| dynamicallyDefinedDataIdentifier                                  | 16                    | 0xF200-0xF3FF | DID to define                             | Always   |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| addressAndLengthFormatIdentifier | memorySizeLength               | 4                     | 0x1-0xF       | Number of bytes to use for memorySize     | Always   |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+          |
+|                                  | memoryAddressLength            | 4                     | 0x1-0xF       | Number of bytes to use for memoryAddress  |          |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+| Data from Memory                 | memoryAddress                  | 8*memoryAddressLength |               | Starting address#1 in the server's memory | Always   |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+          |
+|                                  | memorySize                     | 8*memorySizeLength    |               | Number of bytes from address#1            |          |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+|                                  | ...                                                                                                                           |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+|                                  | memoryAddress                  | 8*memoryAddressLength |               | Starting address#n in the server's memory | Optional |
+|                                  +--------------------------------+-----------------------+---------------+-------------------------------------------+          |
+|                                  | memorySize                     | 8*memorySizeLength    |               | Number of bytes from address#n            |          |
++----------------------------------+--------------------------------+-----------------------+---------------+-------------------------------------------+----------+
+
+
+.. _knowledge-base-service-dynamically-define-data-identifier-03:
+
+clearDynamicallyDefinedDataIdentifier (0x03)
+''''''''''''''''''''''''''''''''''''''''''''
+This sub-function clears previously defined dynamic DIDs.
+
+If *dynamicallyDefinedDataIdentifier* parameter is present, only the specified dynamic DID is cleared.
+If not provided, **all** dynamically defined DIDs stored in the server are cleared.
+
++----------------------------------------------+------------+---------------+---------------------------------------+----------+
+| Name                                         | Bit Length | Value         | Description                           | Present  |
++==============================================+============+===============+=======================================+==========+
+| SID                                          | 8          | 0x2C          | DynamicallyDefineDataIdentifier       | Always   |
++-------------+--------------------------------+------------+---------------+---------------------------------------+----------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                 | Always   |
+|             |                                |            |               |                                       |          |
+|             |                                |            |               | 1 = suppress positive response        |          |
+|             +--------------------------------+------------+---------------+---------------------------------------+----------+
+|             | definitionType                 | 7 (b[6-0]) | 0x03          | clearDynamicallyDefinedDataIdentifier | Always   |
++-------------+--------------------------------+------------+---------------+---------------------------------------+----------+
+| dynamicallyDefinedDataIdentifier             | 16         | 0xF200-0xF3FF | DID to clear                          | Optional |
++----------------------------------------------+------------+---------------+---------------------------------------+----------+
+
+
+Positive Response Format
+````````````````````````
++----------------------------------------------+------------+---------------+-----------------------------------------------------------------+----------------------------------------------------------------+
+| Name                                         | Bit Length | Value         | Description                                                     | Present                                                        |
++==============================================+============+===============+=================================================================+================================================================+
+| RSID                                         | 8          | 0x6C          | Positive Response: DynamicallyDefineDataIdentifier(0x2C)        | Always                                                         |
++-------------+--------------------------------+------------+---------------+-----------------------------------------------------------------+----------------------------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                                           | Always                                                         |
+|             |                                |            |               |                                                                 |                                                                |
+|             |                                |            |               | 1 = suppress positive response                                  |                                                                |
+|             +--------------------------------+------------+---------------+-----------------------------------------------------------------+                                                                |
+|             | definitionType                 | 7 (b[6-0]) | 0x00-0x7F     | 0x00: reserved                                                  |                                                                |
+|             |                                |            |               |                                                                 |                                                                |
+|             |                                |            |               | 0x01: defineByIdentifier                                        |                                                                |
+|             |                                |            |               |                                                                 |                                                                |
+|             |                                |            |               | 0x02: defineByMemoryAddress                                     |                                                                |
+|             |                                |            |               |                                                                 |                                                                |
+|             |                                |            |               | 0x03: clearDynamicallyDefinedDataIdentifier                     |                                                                |
+|             |                                |            |               |                                                                 |                                                                |
+|             |                                |            |               | 0x04-0x7F: safetySystemDiagnosticSession                        |                                                                |
++-------------+--------------------------------+------------+---------------+-----------------------------------------------------------------+----------------------------------------------------------------+
+| dynamicallyDefinedDataIdentifier             | 16         | 0xF200-0xF3FF | Echo of dynamicallyDefinedDataIdentifier value from the request | If dynamicallyDefinedDataIdentifier was present in the request |
++----------------------------------------------+------------+---------------+-----------------------------------------------------------------+----------------------------------------------------------------+
 
 
 .. _knowledge-base-service-write-data-by-identifier:

@@ -37,6 +37,8 @@ __all__ = [
     "NEEDED_ADDITIONAL_PARAMETER_LENGTH", "CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER",
     # SID 0x2A
     "TRANSMISSION_MODE",
+    # SID 0x2C
+    "CONDITIONAL_DATA_FROM_MEMORY",
 ]
 
 from decimal import Decimal
@@ -103,6 +105,31 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
                          "must be greater than 0.")
     return (RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
             RawDataRecord(name="memorySize", length=8 * memory_size_length))
+
+
+def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
+    """
+    Get `Data from Memory` Data Record for given addressAndLengthFormatIdentifier value.
+
+    :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
+
+    :return: Tuple with Data Record.
+    """
+    memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
+    memory_address_length = address_and_length_format_identifier & 0x0F
+    if (not 0x00 <= address_and_length_format_identifier <= 0xFF
+            or memory_address_length == 0
+            or memory_size_length == 0):
+        raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
+                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both "
+                         f"memoryAddressLength ({memory_address_length}) and memorySizeLength ({memory_size_length}) "
+                         "must be greater than 0.")
+    return (RawDataRecord(name="Data from Memory",
+                          length=8 * (memory_address_length + memory_size_length),
+                          children=(RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
+                                    RawDataRecord(name="memorySize", length=8 * memory_size_length)),
+                          min_occurrences=1,
+                          max_occurrences=None),)
 
 
 def get_scaling_byte_extension(scaling_byte: int,
@@ -714,3 +741,6 @@ TRANSMISSION_MODE = MappingDataRecord(name="transmissionMode",
                                           0x03: "sendAtFastRate",
                                           0x04: "stopSending",
                                       })
+
+# SID 0x2C
+CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
