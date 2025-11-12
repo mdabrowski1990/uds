@@ -181,6 +181,7 @@ DATA_FROM_DID_2020 = RawDataRecord(name="Data from DID",
                                    min_occurrences=1,
                                    max_occurrences=None)
 
+
 def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:
     """
     Get DID Data Record compatible with ISO 14229-1:2013 version.

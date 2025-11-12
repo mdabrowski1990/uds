@@ -990,7 +990,7 @@ class TestDynamicallyDefineDataIdentifier2020Integration:
     def test_decode(self, payload, decoded_message):
         assert DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2020.decode(payload) == decoded_message
 
-    @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [  # TODO
+    @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
         # defineByMemoryAddress (0x01)
         (
             {

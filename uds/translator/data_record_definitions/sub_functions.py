@@ -198,8 +198,8 @@ DEFINITION_TYPE_MAPPING = {
     0x03: "clearDynamicallyDefinedDataIdentifier",
 }
 DEFINITION_TYPE = MappingDataRecord(name="definitionType",
-                                        length=7,
-                                        values_mapping=DEFINITION_TYPE_MAPPING)
+                                    length=7,
+                                    values_mapping=DEFINITION_TYPE_MAPPING)
 DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                                 length=8,
                                                                 children=[SPRMIB, DEFINITION_TYPE])
