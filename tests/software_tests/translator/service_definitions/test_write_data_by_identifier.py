@@ -49,22 +49,22 @@ class TestWriteDataByIdentifier2013Integration:
                 },
                 {
                     'children': (
-                            {
-                                'children': (),
-                                'length': 1,
-                                'name': 'reserved',
-                                'physical_value': 0,
-                                'raw_value': 0,
-                                'unit': None
-                            },
-                            {
-                                'children': (),
-                                'length': 7,
-                                'name': 'ActiveDiagnosticSession',
-                                'physical_value': "extendedDiagnosticSession",
-                                'raw_value': 0x03,
-                                'unit': None
-                            }
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'reserved',
+                            'physical_value': 0,
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'ActiveDiagnosticSession',
+                            'physical_value': "extendedDiagnosticSession",
+                            'raw_value': 0x03,
+                            'unit': None
+                        }
                     ),
                     'length': 8,
                     'name': 'DID data',
@@ -172,22 +172,22 @@ class TestWriteDataByIdentifier2020Integration:
                 },
                 {
                     'children': (
-                            {
-                                'children': (),
-                                'length': 1,
-                                'name': 'reserved',
-                                'physical_value': 0,
-                                'raw_value': 0,
-                                'unit': None
-                            },
-                            {
-                                'children': (),
-                                'length': 7,
-                                'name': 'ActiveDiagnosticSession',
-                                'physical_value': "defaultSession",
-                                'raw_value': 0x01,
-                                'unit': None
-                            }
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'reserved',
+                            'physical_value': 0,
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'ActiveDiagnosticSession',
+                            'physical_value': "defaultSession",
+                            'raw_value': 0x01,
+                            'unit': None
+                        }
                     ),
                     'length': 8,
                     'name': 'DID data',
