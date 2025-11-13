@@ -4155,7 +4155,31 @@ Positive Response Format
 WriteDataByIdentifier (0x2E)
 ----------------------------
 WriteDataByIdentifier service allows the client to write information into the server at an internal location
-specified by the provided DataIdentifier (DID).
+specified by the provided :ref:`DataIdentifier (DID) <knowledge-base-did>`.
+
+
+Request Format
+``````````````
++----------+------------+---------------+-----------------------+---------+
+| Name     | Bit Length | Value         | Description           | Present |
++==========+============+===============+=======================+=========+
+| SID      | 8          | 0x2E          | WriteDataByIdentifier | Always  |
++----------+------------+---------------+-----------------------+---------+
+| DID      | 16         | 0x0000-0xFFFF | DID to update         | Always  |
++----------+------------+---------------+-----------------------+---------+
+| DID data | at least 8 |               | Data to write         | Always  |
++----------+------------+---------------+-----------------------+---------+
+
+
+Positive Response Format
+````````````````````````
++------+------------+---------------+------------------------------------------------+---------+
+| Name | Bit Length | Value         | Description                                    | Present |
++======+============+===============+================================================+=========+
+| RSID | 8          | 0x6E          | Positive Response: ReadDataByIdentifier (0x2E) | Always  |
++------+------------+---------------+------------------------------------------------+---------+
+| DID  | 16         | 0x0000-0xFFFF | DID that was updated                           | Always  |
++------+------------+---------------+------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-input-output-control-by-identifier:
