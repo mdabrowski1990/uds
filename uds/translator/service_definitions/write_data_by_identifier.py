@@ -8,14 +8,14 @@ from ..data_record_definitions.did import DID_2013, DID_2020, get_did_data_2013,
 from ..service import Service
 
 WRITE_DATA_BY_IDENTIFIER_2013 = Service(request_sid=RequestSID.WriteDataByIdentifier,
-                                       request_structure=(DID_2013, get_did_data_2013()),
-                                       response_structure=(DID_2013,))
+                                        request_structure=(DID_2013, get_did_data_2013()),
+                                        response_structure=(DID_2013,))
 """Translator for :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service
 compatible with ISO 14229-1:2013."""
 
 WRITE_DATA_BY_IDENTIFIER_2020 = Service(request_sid=RequestSID.WriteDataByIdentifier,
-                                       request_structure=(DID_2020, get_did_data_2020()),
-                                       response_structure=(DID_2020,))
+                                        request_structure=(DID_2020, get_did_data_2020()),
+                                        response_structure=(DID_2020,))
 """Translator for :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service
 compatible with ISO 14229-1:2020."""
 
