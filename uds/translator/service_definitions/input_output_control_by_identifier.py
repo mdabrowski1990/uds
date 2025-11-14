@@ -108,17 +108,17 @@ INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013 = Service(request_sid=RequestSID.InputOu
                                                                      CONDITIONAL_REQUEST_CONTINUATION_2013),
                                                   response_structure=(DID_2013,
                                                                       CONDITIONAL_RESPONSE_CONTINUATION_2013))
-"""Translator for :ref:`InputOutputControlByIdentifier <knowledge-base-service-write-data-by-identifier>` service
-compatible with ISO 14229-1:2013."""
+"""Translator for :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>`
+service compatible with ISO 14229-1:2013."""
 
 INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020 = Service(request_sid=RequestSID.InputOutputControlByIdentifier,
                                                   request_structure=(DID_2020,
                                                                      CONDITIONAL_REQUEST_CONTINUATION_2020),
                                                   response_structure=(DID_2020,
                                                                       CONDITIONAL_RESPONSE_CONTINUATION_2020))
-"""Translator for :ref:`InputOutputControlByIdentifier <knowledge-base-service-write-data-by-identifier>` service
-compatible with ISO 14229-1:2020."""
+"""Translator for :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>`
+service compatible with ISO 14229-1:2020."""
 
 INPUT_OUTPUT_CONTROL_BY_IDENTIFIER = INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020
-"""Default translator for :ref:`InputOutputControlByIdentifier <knowledge-base-service-write-data-by-identifier>`
-service."""
+"""Default translator for 
+:ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service."""
