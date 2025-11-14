@@ -242,6 +242,7 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
                               length=total_length,
                               min_occurrences=1,
                               max_occurrences=1),)
+
     return ConditionalFormulaDataRecord(formula=_get_did_data,
                                         default_message_continuation=[default_did_data])
 
@@ -274,6 +275,7 @@ def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
                               length=total_length,
                               min_occurrences=1,
                               max_occurrences=1),)
+
     return ConditionalFormulaDataRecord(formula=_get_did_data,
                                         default_message_continuation=[default_did_data])
 
