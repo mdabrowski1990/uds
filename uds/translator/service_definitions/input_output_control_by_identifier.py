@@ -120,5 +120,5 @@ INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020 = Service(request_sid=RequestSID.InputOu
 service compatible with ISO 14229-1:2020."""
 
 INPUT_OUTPUT_CONTROL_BY_IDENTIFIER = INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020
-"""Default translator for 
+"""Default translator for
 :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service."""
