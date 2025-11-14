@@ -1,4 +1,4 @@
-"""Translation for InputOutputControlByIdentifier (SID 0x2E) service."""
+"""Translation for InputOutputControlByIdentifier (SID 0x2F) service."""
 
 __all__ = ["INPUT_OUTPUT_CONTROL_BY_IDENTIFIER",
            "INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020",
@@ -26,6 +26,13 @@ CONDITIONAL_CONTROL_ENABLE_MASK_2020 = get_did_data_mask_2020(name="controlEnabl
 
 
 def get_request_continuation_2013(did: int) -> AliasMessageStructure:
+    """
+    Get message continuation (after DID Data Record) for InputOutputControlByIdentifier request.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2013.
+    """
     return (INPUT_OUTPUT_CONTROL_PARAMETER,
             ConditionalMappingDataRecord(mapping={
                 0x00: (),
@@ -37,6 +44,13 @@ def get_request_continuation_2013(did: int) -> AliasMessageStructure:
 
 
 def get_request_continuation_2020(did: int) -> AliasMessageStructure:
+    """
+    Get message continuation (after DID Data Record) for InputOutputControlByIdentifier request.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2020.
+    """
     return (INPUT_OUTPUT_CONTROL_PARAMETER,
             ConditionalMappingDataRecord(mapping={
                 0x00: (),
@@ -48,22 +62,38 @@ def get_request_continuation_2020(did: int) -> AliasMessageStructure:
 
 
 def get_response_continuation_2013(did: int) -> AliasMessageStructure:
+    """
+    Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2013.
+    """
+    control_state_data_records_2013 = CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did)
     return (INPUT_OUTPUT_CONTROL_PARAMETER,
             ConditionalMappingDataRecord(mapping={
-                0x00: CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did),
-                0x01: CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did),
-                0x02: CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did),
-                0x03: CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did),
+                0x00: control_state_data_records_2013,
+                0x01: control_state_data_records_2013,
+                0x02: control_state_data_records_2013,
+                0x03: control_state_data_records_2013,
             }))
 
 
 def get_response_continuation_2020(did: int) -> AliasMessageStructure:
+    """
+    Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2020.
+    """
+    control_state_data_records_2020 = CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did)
     return (INPUT_OUTPUT_CONTROL_PARAMETER,
             ConditionalMappingDataRecord(mapping={
-                0x00: CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did),
-                0x01: CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did),
-                0x02: CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did),
-                0x03: CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did),
+                0x00: control_state_data_records_2020,
+                0x01: control_state_data_records_2020,
+                0x02: control_state_data_records_2020,
+                0x03: control_state_data_records_2020,
             }))
 
 
