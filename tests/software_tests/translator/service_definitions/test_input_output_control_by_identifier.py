@@ -1,14 +1,17 @@
 import pytest
-from mock import patch, Mock
+from mock import Mock, patch
 
 from uds.message import RequestSID, ResponseSID
 from uds.translator.service_definitions.input_output_control_by_identifier import (
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER,
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013,
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020,
-    INPUT_OUTPUT_CONTROL_PARAMETER, get_request_continuation_2013, get_request_continuation_2020, get_response_continuation_2013, get_response_continuation_2020
+    INPUT_OUTPUT_CONTROL_PARAMETER,
+    get_request_continuation_2013,
+    get_request_continuation_2020,
+    get_response_continuation_2013,
+    get_response_continuation_2020,
 )
-
 
 SCRIPT_LOCATION = "uds.translator.service_definitions.input_output_control_by_identifier"
 
