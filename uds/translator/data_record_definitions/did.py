@@ -297,10 +297,8 @@ def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataR
     def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
         return MappingDataRecord(name=f"{data_record.name} (mask)",
                                  length=data_record.length,
-                                 values_mapping={
-                                     0: "no",
-                                     data_record.max_raw_value: "yes",
-                                 },
+                                 values_mapping={0: "no",
+                                                 data_record.max_raw_value: "yes"},
                                  children=[_get_mask_data_record(child) for child in data_record.children],
                                  min_occurrences=data_record.min_occurrences,
                                  max_occurrences=data_record.max_occurrences)
@@ -344,10 +342,8 @@ def get_did_data_mask_2020(name: str, optional: bool) -> ConditionalFormulaDataR
     def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
         return MappingDataRecord(name=f"{data_record.name} (mask)",
                                  length=data_record.length,
-                                 values_mapping={
-                                     0: "no",
-                                     data_record.max_raw_value: "yes",
-                                 },
+                                 values_mapping={0: "no",
+                                                 data_record.max_raw_value: "yes"},
                                  children=[_get_mask_data_record(child) for child in data_record.children],
                                  min_occurrences=data_record.min_occurrences,
                                  max_occurrences=data_record.max_occurrences)
