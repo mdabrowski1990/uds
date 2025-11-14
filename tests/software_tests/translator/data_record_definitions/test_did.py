@@ -10,6 +10,8 @@ from uds.translator.data_record_definitions.did import (
     get_did_2020,
     get_did_data_2013,
     get_did_data_2020,
+    get_did_data_mask_2013,
+    get_did_data_mask_2020,
     get_did_records_formula_2013,
     get_did_records_formula_2020,
     get_dids_2013,
@@ -67,13 +69,16 @@ class TestFunctions:
     # get_did_data_2013
 
     def test_get_did_data_2013(self):
+        assert get_did_data_2013() == self.mock_conditional_formula_data_record.return_value
+
+    def test_get_did_data_2013__formula(self):
         undefined_did = -1
         some_defined_did = tuple(DID_DATA_MAPPING_2013.keys())[0]
         incorrect_did = 0x10000
         DID_DATA_MAPPING_2013[incorrect_did] = [Mock(fixed_total_length=False)]
         input_kwargs = {}
         self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
-        get_did_data_2013(Mock())
+        get_did_data_2013()
         with pytest.raises(ValueError):
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):
@@ -83,13 +88,72 @@ class TestFunctions:
     # get_did_data_2020
 
     def test_get_did_data_2020(self):
+        assert get_did_data_2020() == self.mock_conditional_formula_data_record.return_value
+
+    def test_get_did_data_2020__formula(self):
         undefined_did = -1
         some_defined_did = tuple(DID_DATA_MAPPING_2020.keys())[0]
         incorrect_did = 0x10000
         DID_DATA_MAPPING_2020[incorrect_did] = [Mock(fixed_total_length=False)]
         input_kwargs = {}
         self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
-        get_did_data_2020(Mock())
+        get_did_data_2020()
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](undefined_did)
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](incorrect_did)
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value, )
+
+    # get_did_data_mask_2013
+
+    @pytest.mark.parametrize("name, optional", [
+        (Mock(), False),
+        ("SomeName", True),
+    ])
+    def test_get_did_data_mask_2013(self, name, optional):
+        assert (get_did_data_mask_2013(name=name, optional=optional)
+                == self.mock_conditional_formula_data_record.return_value)
+
+    @pytest.mark.parametrize("name, optional", [
+        (Mock(), False),
+        ("SomeName", True),
+    ])
+    def test_get_did_data_mask_2013__formula(self, name, optional):
+        undefined_did = -1
+        some_defined_did = tuple(DID_DATA_MAPPING_2013.keys())[0]
+        incorrect_did = 0x10000
+        DID_DATA_MAPPING_2013[incorrect_did] = [Mock(fixed_total_length=False)]
+        input_kwargs = {}
+        self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
+        get_did_data_mask_2013(name=name, optional=optional)
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](undefined_did)
+        with pytest.raises(ValueError):
+            input_kwargs["formula"](incorrect_did)
+        assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value, )
+
+    # get_did_data_mask_2020
+
+    @pytest.mark.parametrize("name, optional", [
+        (Mock(), False),
+        ("SomeName", True),
+    ])
+    def test_get_did_data_mask_2020(self, name, optional):
+        assert (get_did_data_mask_2020(name=name, optional=optional)
+                == self.mock_conditional_formula_data_record.return_value)
+
+    @pytest.mark.parametrize("name, optional", [
+        (Mock(), False),
+        ("SomeName", True),
+    ])
+    def test_get_did_data_mask_2020__formula(self, name, optional):
+        undefined_did = -1
+        some_defined_did = tuple(DID_DATA_MAPPING_2020.keys())[0]
+        incorrect_did = 0x10000
+        DID_DATA_MAPPING_2020[incorrect_did] = [Mock(fixed_total_length=False)]
+        input_kwargs = {}
+        self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
+        get_did_data_mask_2020(name=name, optional=optional)
         with pytest.raises(ValueError):
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):

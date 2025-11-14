@@ -39,6 +39,8 @@ __all__ = [
     "TRANSMISSION_MODE",
     # SID 0x2C
     "CONDITIONAL_DATA_FROM_MEMORY",
+    # SID 0x2F
+    "INPUT_OUTPUT_CONTROL_PARAMETER",
 ]
 
 from decimal import Decimal
@@ -744,3 +746,14 @@ TRANSMISSION_MODE = MappingDataRecord(name="transmissionMode",
 
 # SID 0x2C
 CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
+
+# SID 0x2F
+INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(
+    name="inputOutputControlParameter",
+    length=8,
+    values_mapping={
+        0x00: "returnControlToECU",
+        0x01: "resetToDefault",
+        0x02: "freezeCurrentState",
+        0x03: "shortTermAdjustment",
+    })

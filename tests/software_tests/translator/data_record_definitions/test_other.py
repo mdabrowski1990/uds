@@ -38,6 +38,7 @@ class TestFormulas:
     def teardown_method(self):
         self._patcher_raw_data_record.stop()
         self._patcher_custom_formula_data_record.stop()
+        self._patcher_conditional_formula_data_record.stop()
 
     # get_formula_for_raw_data_record_with_length
 

@@ -4186,8 +4186,85 @@ Positive Response Format
 
 InputOutputControlByIdentifier (0x2F)
 -------------------------------------
-InputOutputControlByIdentifier service allows the client to substitute a value for an input signal, internal server
-function and/or force control to a value for an output (actuator) of an electronic system.
+InputOutputControlByIdentifier service allows the client to override an input value, internal server function value,
+or force a specific output (actuator) value within the server.
+
+
+Request Format
+``````````````
+The *inputOutputControlParameter* determines the type of control to apply:
+
+- **0x00 – returnControlToECU**
+  The server restores normal control of all values associated with the DID.
+
+- **0x01 – resetToDefault**
+  The server resets the controlled values to their default state.
+
+- **0x02 – freezeCurrentState**
+  The server freezes the current values (prevents them from changing).
+
+- **0x03 – shortTermAdjustment**
+  The server temporarily applies the value(s) provided by the client.
+
+If the *controlEnableMask* Data Record is present, it specifies which parts of the DID's data are subject to control.
+Each bit corresponds to the respective field in the DID structure:
+
+- **1** – take control of this value
+- **0** – leave this value under server control
+
+If the *controlState* Data Record is present, it contains the value(s) to be set to the corresponding fields of the DID.
+
+.. note:: The structure and length of *controlState* and *controlEnableMask* follow the structure of the DID’s data.
+
++-----------------------------+-----------------------------+---------------+--------------------------------------+-----------------------------------------+
+| Name                        | Bit Length                  | Value         | Description                          | Present                                 |
++=============================+=============================+===============+======================================+=========================================+
+| SID                         | 8                           | 0x2F          | InputOutputControlByIdentifier       | Always                                  |
++-----------------------------+-----------------------------+---------------+--------------------------------------+-----------------------------------------+
+| DID                         | 16                          | 0x0000-0xFFFF | DID to control                       | Always                                  |
++-----------------------------+-----------------------------+---------------+--------------------------------------+-----------------------------------------+
+| inputOutputControlParameter | 8                           | 0x00-0xFF     | 0x00: returnControlToECU             | Always                                  |
+|                             |                             |               |                                      |                                         |
+|                             |                             |               | 0x01: resetToDefault                 |                                         |
+|                             |                             |               |                                      |                                         |
+|                             |                             |               | 0x02: freezeCurrentState             |                                         |
+|                             |                             |               |                                      |                                         |
+|                             |                             |               | 0x03: shortTermAdjustment            |                                         |
+|                             |                             |               |                                      |                                         |
+|                             |                             |               | 0x04-0xFF: reserved                  |                                         |
++-----------------------------+-----------------------------+---------------+--------------------------------------+-----------------------------------------+
+| controlState                | at least 8                  |               | Values to set in the DID             | If inputOutputControlParameter equals 3 |
++-----------------------------+-----------------------------+---------------+--------------------------------------+-----------------------------------------+
+| controlEnableMask           | same as controlOptionRecord |               | Mask of values to control in the DID | Optional if controlState is present     |
++-----------------------------+-----------------------------+---------------+--------------------------------------+-----------------------------------------+
+
+
+Positive Response Format
+````````````````````````
+The server responds with the DID and the *inputOutputControlParameter* echoed,
+followed by the current values stored under the DID.
+The *controlState* in the response is identical to what would be returned by
+:ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service for the same DID.
+
++-----------------------------+------------+---------------+----------------------------------------------------------+---------+
+| Name                        | Bit Length | Value         | Description                                              | Present |
++=============================+============+===============+==========================================================+=========+
+| RSID                        | 8          | 0x6F          | Positive Response: InputOutputControlByIdentifier (0x2F) | Always  |
++-----------------------------+------------+---------------+----------------------------------------------------------+---------+
+| DID                         | 16         | 0x0000-0xFFFF | DID                                                      | Always  |
++-----------------------------+------------+---------------+----------------------------------------------------------+---------+
+| inputOutputControlParameter | 8          | 0x00-0xFF     | 0x00: returnControlToECU                                 | Always  |
+|                             |            |               |                                                          |         |
+|                             |            |               | 0x01: resetToDefault                                     |         |
+|                             |            |               |                                                          |         |
+|                             |            |               | 0x02: freezeCurrentState                                 |         |
+|                             |            |               |                                                          |         |
+|                             |            |               | 0x03: shortTermAdjustment                                |         |
+|                             |            |               |                                                          |         |
+|                             |            |               | 0x04-0xFF: reserved                                      |         |
++-----------------------------+------------+---------------+----------------------------------------------------------+---------+
+| controlState                | at least 8 |               | Currently stored data under the DID                      | Always  |
++-----------------------------+------------+---------------+----------------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-routine-control:

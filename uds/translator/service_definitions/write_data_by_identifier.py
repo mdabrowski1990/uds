@@ -4,7 +4,7 @@ __all__ = ["WRITE_DATA_BY_IDENTIFIER", "WRITE_DATA_BY_IDENTIFIER_2020", "WRITE_D
 
 from uds.message import RequestSID
 
-from ..data_record_definitions.did import DID_2013, DID_2020, get_did_data_2013, get_did_data_2020
+from ..data_record_definitions import DID_2013, DID_2020, get_did_data_2013, get_did_data_2020
 from ..service import Service
 
 WRITE_DATA_BY_IDENTIFIER_2013 = Service(request_sid=RequestSID.WriteDataByIdentifier,

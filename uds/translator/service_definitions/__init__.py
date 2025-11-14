@@ -13,6 +13,11 @@ from .dynamically_define_data_identifier import (
     DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2020,
 )
 from .ecu_reset import ECU_RESET
+from .input_output_control_by_identifier import (
+    INPUT_OUTPUT_CONTROL_BY_IDENTIFIER,
+    INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013,
+    INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020,
+)
 from .read_data_by_identifier import READ_DATA_BY_IDENTIFIER, READ_DATA_BY_IDENTIFIER_2013, READ_DATA_BY_IDENTIFIER_2020
 from .read_data_by_periodic_identifier import READ_DATA_BY_PERIODIC_IDENTIFIER
 from .read_dtc_information import READ_DTC_INFORMATION, READ_DTC_INFORMATION_2013, READ_DTC_INFORMATION_2020

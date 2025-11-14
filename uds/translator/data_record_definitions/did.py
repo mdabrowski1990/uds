@@ -7,7 +7,7 @@ __all__ = [
     "MULTIPLE_PERIODIC_DID", "OPTIONAL_MULTIPLE_PERIODIC_DID",
     "DATA_FROM_DID_2013", "DATA_FROM_DID_2020",
     "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
-    "get_did_data_2013", "get_did_data_2020",
+    "get_did_data_2013", "get_did_data_2020", "get_did_data_mask_2013", "get_did_data_mask_2020",
     "get_did_records_formula_2013", "get_did_records_formula_2020",
 ]
 
@@ -242,6 +242,7 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
                               length=total_length,
                               min_occurrences=1,
                               max_occurrences=1),)
+
     return ConditionalFormulaDataRecord(formula=_get_did_data,
                                         default_message_continuation=[default_did_data])
 
@@ -274,8 +275,99 @@ def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
                               length=total_length,
                               min_occurrences=1,
                               max_occurrences=1),)
+
     return ConditionalFormulaDataRecord(formula=_get_did_data,
                                         default_message_continuation=[default_did_data])
+
+
+def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataRecord:
+    """
+    Get Conditional Data Record for DID data mask that is compatible with ISO 14229-1:2013 version.
+
+    :param name: Name for the Data Record that contains whole DID data mask.
+    :param optional: Whether the field is optional or mandatory.
+
+    :return: Conditional Data Record for DID data.
+    """
+    default_did_data_mask = RawDataRecord(name=name,
+                                          length=8,
+                                          min_occurrences=0 if optional else 1,
+                                          max_occurrences=None)
+
+    def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
+        return MappingDataRecord(name=f"{data_record.name} (mask)",
+                                 length=data_record.length,
+                                 values_mapping={0: "no",
+                                                 data_record.max_raw_value: "yes"},
+                                 children=[_get_mask_data_record(child) for child in data_record.children],
+                                 min_occurrences=data_record.min_occurrences,
+                                 max_occurrences=data_record.max_occurrences)
+
+    def _get_did_data_mask(did: int) -> Tuple[RawDataRecord]:
+        data_records = DID_DATA_MAPPING_2013.get(did, None)
+        if data_records is None:
+            raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+        total_length = 0
+        mask_data_records = []
+        for dr in data_records:
+            if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                 f"Only fixed length data records are supported right now.")
+            total_length += dr.min_occurrences * dr.length
+            mask_data_records.append(_get_mask_data_record(dr))
+        return (RawDataRecord(name=name,
+                              children=mask_data_records,
+                              length=total_length,
+                              min_occurrences=0 if optional else 1,
+                              max_occurrences=1),)
+
+    return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
+                                        default_message_continuation=[default_did_data_mask])
+
+
+def get_did_data_mask_2020(name: str, optional: bool) -> ConditionalFormulaDataRecord:
+    """
+    Get Conditional Data Record for DID data mask that is compatible with ISO 14229-1:2020 version.
+
+    :param name: Name for the Data Record that contains whole DID data mask.
+    :param optional: Whether the field is optional or mandatory.
+
+    :return: Conditional Data Record for DID data.
+    """
+    default_did_data_mask = RawDataRecord(name=name,
+                                          length=8,
+                                          min_occurrences=0 if optional else 1,
+                                          max_occurrences=None)
+
+    def _get_mask_data_record(data_record: AbstractDataRecord) -> RawDataRecord:
+        return MappingDataRecord(name=f"{data_record.name} (mask)",
+                                 length=data_record.length,
+                                 values_mapping={0: "no",
+                                                 data_record.max_raw_value: "yes"},
+                                 children=[_get_mask_data_record(child) for child in data_record.children],
+                                 min_occurrences=data_record.min_occurrences,
+                                 max_occurrences=data_record.max_occurrences)
+
+    def _get_did_data_mask(did: int) -> Tuple[RawDataRecord]:
+        data_records = DID_DATA_MAPPING_2020.get(did, None)
+        if data_records is None:
+            raise ValueError(f"No data structure defined for DID 0x{did:04X}.")
+        total_length = 0
+        mask_data_records = []
+        for dr in data_records:
+            if not isinstance(dr, AbstractDataRecord) or not dr.fixed_total_length:
+                raise ValueError(f"Incorrectly defined data structure for DID 0x{did:04X}. "
+                                 f"Only fixed length data records are supported right now.")
+            total_length += dr.min_occurrences * dr.length
+            mask_data_records.append(_get_mask_data_record(dr))
+        return (RawDataRecord(name=name,
+                              children=mask_data_records,
+                              length=total_length,
+                              min_occurrences=0 if optional else 1,
+                              max_occurrences=1),)
+
+    return ConditionalFormulaDataRecord(formula=_get_did_data_mask,
+                                        default_message_continuation=[default_did_data_mask])
 
 
 def get_dids_2013(did_count: int,
