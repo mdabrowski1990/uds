@@ -30,9 +30,9 @@ def get_request_continuation_2013(did: int) -> AliasMessageStructure:
             ConditionalMappingDataRecord(mapping={
                 0x00: (),
                 0x01: (),
-                0x02: (*CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did),
+                0x02: (),
+                0x03: (*CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did),
                        *CONDITIONAL_CONTROL_ENABLE_MASK_2013.get_message_continuation(did)),
-                0x03: (),
             }))
 
 
@@ -41,9 +41,9 @@ def get_request_continuation_2020(did: int) -> AliasMessageStructure:
             ConditionalMappingDataRecord(mapping={
                 0x00: (),
                 0x01: (),
-                0x02: (*CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did),
+                0x02: (),
+                0x03: (*CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did),
                        *CONDITIONAL_CONTROL_ENABLE_MASK_2020.get_message_continuation(did)),
-                0x03: (),
             }))
 
 
