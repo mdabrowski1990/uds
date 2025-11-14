@@ -4241,9 +4241,9 @@ If the *controlState* Data Record is present, it contains the value(s) to be set
 
 Positive Response Format
 ````````````````````````
-The server responds with the DID and the inputOutputControlParameter echoed,
+The server responds with the DID and the *inputOutputControlParameter* echoed,
 followed by the current values stored under the DID.
-The controlState in the response is identical to what would be returned by
+The *controlState* in the response is identical to what would be returned by
 :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service for the same DID.
 
 +-----------------------------+------------+---------------+----------------------------------------------------------+---------+
