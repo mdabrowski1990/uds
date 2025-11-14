@@ -73,7 +73,7 @@ class TestFunctions:
         DID_DATA_MAPPING_2013[incorrect_did] = [Mock(fixed_total_length=False)]
         input_kwargs = {}
         self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
-        get_did_data_2013(Mock())
+        get_did_data_2013()
         with pytest.raises(ValueError):
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):
@@ -89,7 +89,7 @@ class TestFunctions:
         DID_DATA_MAPPING_2020[incorrect_did] = [Mock(fixed_total_length=False)]
         input_kwargs = {}
         self.mock_conditional_formula_data_record.side_effect = lambda **kwargs: input_kwargs.update(kwargs)
-        get_did_data_2020(Mock())
+        get_did_data_2020()
         with pytest.raises(ValueError):
             input_kwargs["formula"](undefined_did)
         with pytest.raises(ValueError):

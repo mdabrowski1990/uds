@@ -12,6 +12,12 @@ from .did import (
     OPTIONAL_DYNAMICALLY_DEFINED_DID,
     OPTIONAL_MULTIPLE_PERIODIC_DID,
     OPTIONAL_PERIODIC_DID,
+    get_did_data_2013,
+    get_did_data_2020,
+    get_did_data_mask_2013,
+    get_did_data_mask_2020,
+    get_dids_2013,
+    get_dids_2020,
 )
 from .dtc import (
     DTC,
@@ -82,6 +88,7 @@ from .other import (
     DATA,
     EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH,
     EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH,
+    INPUT_OUTPUT_CONTROL_PARAMETER,
     MEMORY_SELECTION,
     NEEDED_ADDITIONAL_PARAMETER_LENGTH,
     OPTIONAL_MEMORY_SELECTION,
