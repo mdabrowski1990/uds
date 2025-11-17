@@ -2279,13 +2279,13 @@ Positive Response Format
 +============+============+===============+================================================+==================================================+
 | RSID       | 8          | 0x62          | Positive Response: ReadDataByIdentifier (0x22) | Always                                           |
 +------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
-| DID#1      | 16         | 0x0000-0xFFFF | DID#1                                          | Always                                           |
+| DID#1      | 16         | 0x0000-0xFFFF | Data Identifier #1                             | Always                                           |
 +------------+------------+---------------+------------------------------------------------+                                                  |
 | DID#1 data | at least 8 |               | Data stored under DID#1                        |                                                  |
 +------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
 | ...                                                                                                                                         |
 +------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
-| DID#n      | 16         | 0x0000-0xFFFF | DID#n                                          | If at least n DIDs were requested by the client. |
+| DID#n      | 16         | 0x0000-0xFFFF | Data Identifier #n                             | If at least n DIDs were requested by the client. |
 +------------+------------+---------------+------------------------------------------------+                                                  |
 | DID#n data | at least 8 |               | Data stored under DID#n                        |                                                  |
 +------------+------------+---------------+------------------------------------------------+--------------------------------------------------+
@@ -4271,9 +4271,74 @@ The *controlState* in the response is identical to what would be returned by
 
 RoutineControl (0x31)
 ---------------------
-RoutineControl service allows the client to execute a defined sequence of steps to obtain any relevant result.
-There is a lot of flexibility with this service, but typical usage may include functionality such as erasing memory,
-resetting or learning adaptive data, running a self-test, overriding the normal server control strategy.
+RoutineControl service allows the client to start, stop, or request the results of a routine
+identified by a :ref:`RoutineIdentifier (RID) <knowledge-base-rid>`.
+A routine is an ECU-implemented function that performs a defined sequence of actions to achieve a specific outcome.
+
+Typical use cases include functions such as memory erasure, resetting or learning adaptive data, initiating
+self-tests, or temporarily overriding the normal control strategy of the server.
+
+
+Request Format
+``````````````
++----------------------------------------------+------------+---------------+----------------------------------------+----------------------------------------------------+
+| Name                                         | Bit Length | Value         | Description                            | Present                                            |
++==============================================+============+===============+========================================+====================================================+
+| SID                                          | 8          | 0x31          | RoutineControl                         | Always                                             |
++-------------+--------------------------------+------------+---------------+----------------------------------------+----------------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                  | Always                                             |
+|             |                                |            |               |                                        |                                                    |
+|             |                                |            |               | 1 = suppress positive response         |                                                    |
+|             +--------------------------------+------------+---------------+----------------------------------------+                                                    |
+|             | routineControlType             | 7 (b[6-0]) | 0x00-0x7F     | 0x00: reserved                         |                                                    |
+|             |                                |            |               |                                        |                                                    |
+|             |                                |            |               | 0x01: startRoutine                     |                                                    |
+|             |                                |            |               |                                        |                                                    |
+|             |                                |            |               | 0x02: stopRoutine                      |                                                    |
+|             |                                |            |               |                                        |                                                    |
+|             |                                |            |               | 0x03: requestRoutineResults            |                                                    |
+|             |                                |            |               |                                        |                                                    |
+|             |                                |            |               | 0x04-0x7F: reserved                    |                                                    |
++-------------+--------------------------------+------------+---------------+----------------------------------------+----------------------------------------------------+
+| RID                                          | 16         | 0x0000-0xFFFF | Routine Identifier                     | Always                                             |
++----------------------------------------------+------------+---------------+----------------------------------------+----------------------------------------------------+
+| routineControlOption                         | at least 8 |               | Additional routine specific parameters | Optional if routineControlType equals 0x01 or 0x02 |
++----------------------------------------------+------------+---------------+----------------------------------------+----------------------------------------------------+
+
+
+Positive Response Format
+````````````````````````
++----------------------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
+| Name                                         | Bit Length | Value         | Description                              | Present                                  |
++==============================================+============+===============+==========================================+==========================================+
+| RSID                                         | 8          | 0x71          | Positive Response: RoutineControl (0x31) | Always                                   |
++-------------+--------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                    | Always                                   |
+|             |                                |            |               |                                          |                                          |
+|             |                                |            |               | 1 = suppress positive response           |                                          |
+|             +--------------------------------+------------+---------------+------------------------------------------+                                          |
+|             | routineControlType             | 7 (b[6-0]) | 0x00-0x7F     | 0x00: reserved                           |                                          |
+|             |                                |            |               |                                          |                                          |
+|             |                                |            |               | 0x01: startRoutine                       |                                          |
+|             |                                |            |               |                                          |                                          |
+|             |                                |            |               | 0x02: stopRoutine                        |                                          |
+|             |                                |            |               |                                          |                                          |
+|             |                                |            |               | 0x03: requestRoutineResults              |                                          |
+|             |                                |            |               |                                          |                                          |
+|             |                                |            |               | 0x04-0x7F: reserved                      |                                          |
++-------------+--------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
+| RID                                          | 16         | 0x0000-0xFFFF | Routine Identifier                       | Always                                   |
++----------------------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
+| routineStatus                                | at least 8 |               | Routine specific status information      | Mandatory if routineControlType equals 3 |
+|                                              |            |               |                                          |                                          |
+|                                              |            |               |                                          | Optional otherwise                       |
++----------------------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
+
+.. warning:: ISO 14229-1 distinguishes two optional parameters in the positive response: *routineInfo* and *routineStatus*.
+  However, ISO does not define the content, format, or conditions of use for either field for any standardised RID.
+  Because both fields are entirely vehicle-manufacturer–specific, this documentation simplifies the model by combining
+  them into a single parameter named *routineStatus*.
+  This has no functional impact and avoids implying that ISO provides a fixed structure for either field.
 
 
 .. _knowledge-base-service-request-download:

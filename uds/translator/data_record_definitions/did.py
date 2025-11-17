@@ -1,4 +1,4 @@
-"""Data Records definitions for Data Identifiers."""
+"""Data Records definitions for :ref:`Data Identifiers <knowledge-base-did>`."""
 
 __all__ = [
     "DID_2013", "DID_2020",
