@@ -4385,10 +4385,12 @@ Positive Response Format
 +------------------------+-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
 | lengthFormatIdentifier | maxNumberOfBlockLengthBytesNumber | 4 (b[7-4])                          | 0x1-0xF | Number of bytes to use for maxNumberOfBlockLength                           | Always  |
 |                        +-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+         |
-|                        | reserved                          | 4 (b[3-0])                          | 0x0     | Shall equal 0                                                               |         |
+|                        | reserved                          | 4 (b[3-0])                          | 0x0     | Reserved by ISO 14229 for future definition                                 |         |
 +------------------------+-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
 | maxNumberOfBlockLength                                     | 8*maxNumberOfBlockLengthBytesNumber |         | Maximal TransferData request length that this server is capable of handling | Always  |
 +------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
+
+.. warning:: The *reserved* value shall be equal to 0.
 
 .. note:: The *maxNumberOfBlockLength* value specifies the maximum permitted size of the complete TransferData request
   that the server supports, including *SID* and *blockSequenceCounter* Data Records.
