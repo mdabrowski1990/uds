@@ -7,10 +7,10 @@ __all__ = ["RID",
 from ..data_record import MappingDataRecord, RawDataRecord
 
 RID_MAPPING = {
-    0xE200 : "Execute SPL",
-    0xE201 : "Execute DeployLoopRoutineID",
-    0xFF00 : "eraseMemory",
-    0xFF01 : "checkProgrammingDependencies",
+    0xE200: "Execute SPL",
+    0xE201: "Execute DeployLoopRoutineID",
+    0xFF00: "eraseMemory",
+    0xFF01: "checkProgrammingDependencies",
 }
 """:ref:`:Routine Identifiers mapping according to ISO 14229-1 <knowledge-base-rid>`."""
 

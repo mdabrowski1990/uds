@@ -4273,7 +4273,7 @@ RoutineControl (0x31)
 ---------------------
 RoutineControl service allows the client to start, stop, or request the results of a routine
 identified by a :ref:`RoutineIdentifier (RID) <knowledge-base-rid>`.
-A routine is an ECU-implemented function that performs a defined sequence of actions to achieve a specific result.
+A routine is an ECU-implemented function that performs a defined sequence of actions to achieve a specific outcome.
 
 Typical use cases include functions such as memory erasure, resetting or learning adaptive data, initiating
 self-tests, or temporarily overriding the normal control strategy of the server.
@@ -4329,12 +4329,16 @@ Positive Response Format
 +-------------+--------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
 | RID                                          | 16         | 0x0000-0xFFFF | Routine Identifier                       | Always                                   |
 +----------------------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
-| routineInfo                                  | 8          | 0x00-0xFF     | ISO/SAE-defined routine information      | If defined for this RID                  |
-+----------------------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
 | routineStatus                                | at least 8 |               | Routine specific status information      | Mandatory if routineControlType equals 3 |
 |                                              |            |               |                                          |                                          |
 |                                              |            |               |                                          | Optional otherwise                       |
 +----------------------------------------------+------------+---------------+------------------------------------------+------------------------------------------+
+
+.. warning:: ISO 14229-1 distinguishes two optional parameters in the positive response: *routineInfo* and *routineStatus*.
+  However, ISO does not define the content, format, or conditions of use for either field for any standardised RID.
+  Because both fields are entirely vehicle-manufacturer–specific, this documentation simplifies the model by combining
+  them into a single parameter named *routineStatus*.
+  This has no functional impact and avoids implying that ISO provides a fixed structure for either field.
 
 
 .. _knowledge-base-service-request-download:
