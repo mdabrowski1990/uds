@@ -8,16 +8,16 @@ understanding of the UDS protocol itself.
   :caption: Table of Contents
 
   knowledge_base/osi_model.rst
+  knowledge_base/client_server_model.rst
+  knowledge_base/addressing.rst
+  knowledge_base/service.rst
+  knowledge_base/diagnostic_message.rst
+  knowledge_base/packet.rst
+  knowledge_base/segmentation.rst
   knowledge_base/dtc.rst
   knowledge_base/did.rst
   knowledge_base/rid.rst
-  knowledge_base/diagnostic_message.rst
-  knowledge_base/service.rst
-  knowledge_base/addressing.rst
-  knowledge_base/client_server_model.rst
   knowledge_base/time_parameters.rst
-  knowledge_base/packet.rst
-  knowledge_base/segmentation.rst
   knowledge_base/can.rst
 
 
