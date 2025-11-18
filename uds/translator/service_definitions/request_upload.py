@@ -1,4 +1,4 @@
-"""Translation for RequestUpload (SID 0x34) service."""
+"""Translation for RequestUpload (SID 0x35) service."""
 
 __all__ = ["REQUEST_UPLOAD"]
 
