@@ -71,7 +71,7 @@ class TestReadMemoryByAddressIntegration:
                     'name': 'memorySize',
                     'physical_value': 0x2CE7433D8533EE4CB105BB079AC5A0,
                     'raw_value': 0x2CE7433D8533EE4CB105BB079AC5A0,
-                    'unit': None
+                    'unit': "bytes"
                 },
             )
         ),
@@ -125,7 +125,7 @@ class TestReadMemoryByAddressIntegration:
                     'name': 'memorySize',
                     'physical_value': 0xF1,
                     'raw_value': 0xF1,
-                    'unit': None
+                    'unit': "bytes"
                 },
             )
         ),

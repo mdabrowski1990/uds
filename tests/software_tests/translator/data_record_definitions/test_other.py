@@ -20,7 +20,7 @@ from uds.translator.data_record_definitions.other import (
     get_formula_data_records_for_formula_parameters,
     get_formula_for_raw_data_record_with_length,
     get_memory_size_and_memory_address,
-    get_scaling_byte_extension,
+    get_scaling_byte_extension, get_max_number_of_block_length
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.other"
@@ -88,7 +88,8 @@ class TestFormulas:
         self.mock_raw_data_record.assert_has_calls([call(name="memoryAddress",
                                                          length=8 * memory_address_length),
                                                     call(name="memorySize",
-                                                         length=8 * memory_size_length)],
+                                                         length=8 * memory_size_length,
+                                                         unit="bytes")],
                                                    any_order=False)
 
     # get_data_from_memory
@@ -109,7 +110,8 @@ class TestFormulas:
         self.mock_raw_data_record.assert_has_calls([call(name="memoryAddress",
                                                          length=8 * memory_address_length),
                                                     call(name="memorySize",
-                                                         length=8 * memory_size_length),
+                                                         length=8 * memory_size_length,
+                                                         unit="bytes"),
                                                     call(name="Data from Memory",
                                                          children=(self.mock_raw_data_record.return_value,
                                                                    self.mock_raw_data_record.return_value),
@@ -117,6 +119,25 @@ class TestFormulas:
                                                          min_occurrences=1,
                                                          max_occurrences=None)],
                                                    any_order=True)
+    
+    # get_max_number_of_block_length
+
+    @pytest.mark.parametrize("length_format_identifier", [-1, 0x01, 0x111])
+    def test_get_max_number_of_block_length__value_error(self, length_format_identifier):
+        with pytest.raises(ValueError):
+            get_max_number_of_block_length(length_format_identifier)
+
+    @pytest.mark.parametrize("bytes_number, reserved", [
+        (0x1, 0x0),
+        (0xD, 0x3),
+        (0xF, 0x0),
+    ])
+    def test_get_max_number_of_block_length(self, bytes_number, reserved):
+        assert (get_max_number_of_block_length((bytes_number << 4) + reserved)
+                == (self.mock_raw_data_record.return_value,))
+        self.mock_raw_data_record.assert_called_once_with(name="maxNumberOfBlockLength",
+                                                          length=8 * bytes_number,
+                                                          unit="bytes")
     
     # get_scaling_byte_extension
 

@@ -41,6 +41,8 @@ __all__ = [
     "CONDITIONAL_DATA_FROM_MEMORY",
     # SID 0x2F
     "INPUT_OUTPUT_CONTROL_PARAMETER",
+    # SID 0x34
+    "DATA_FORMAT_IDENTIFIER", "LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
 ]
 
 from decimal import Decimal
@@ -106,7 +108,7 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
                          f"memoryAddressLength ({memory_address_length}) and memorySizeLength ({memory_size_length}) "
                          "must be greater than 0.")
     return (RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
-            RawDataRecord(name="memorySize", length=8 * memory_size_length))
+            RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
 def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
@@ -123,15 +125,33 @@ def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[Raw
             or memory_address_length == 0
             or memory_size_length == 0):
         raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
-                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both "
-                         f"memoryAddressLength ({memory_address_length}) and memorySizeLength ({memory_size_length}) "
-                         "must be greater than 0.")
+                         f"(0x{address_and_length_format_identifier:02X}) is incorrect "
+                         f"(0x00 <= addressAndLengthFormatIdentifier <= 0xFF). "
+                         f"Both memoryAddressLength ({memory_address_length}) "
+                         f"and memorySizeLength ({memory_size_length}) must be greater than 0.")
     return (RawDataRecord(name="Data from Memory",
                           length=8 * (memory_address_length + memory_size_length),
                           children=(RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
-                                    RawDataRecord(name="memorySize", length=8 * memory_size_length)),
+                                    RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes")),
                           min_occurrences=1,
                           max_occurrences=None),)
+
+
+def get_max_number_of_block_length(length_format_identifier: int) -> Tuple[RawDataRecord]:
+    """
+    Get maxNumberOfBlockLength Data Record for given lengthFormatIdentifier value.
+
+    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
+
+    :return: Tuple with Data Record.
+    """
+    bytes_number = (length_format_identifier & 0xF0) >> 4
+    if not 0x00 <= length_format_identifier <= 0xFF or bytes_number == 0:
+        raise ValueError("Provided `lengthFormatIdentifier` value "
+                         f"(0x{length_format_identifier:02X}) is incorrect "
+                         f"(0x00 <= lengthFormatIdentifier <= 0xFF). "
+                         f"Value of maxNumberOfBlockLengthBytesNumber ({bytes_number}) must be greater than 0.")
+    return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * bytes_number, unit="bytes"),)
 
 
 def get_scaling_byte_extension(scaling_byte: int,
@@ -334,6 +354,8 @@ RESERVED_BIT = RawDataRecord(name="reserved",
                              length=1)
 RESERVED_2BITS = RawDataRecord(name="reserved",
                                length=2)
+RESERVED_4BITS = RawDataRecord(name="reserved",
+                               length=4)
 
 DATA = RawDataRecord(name="data",
                      length=8,
@@ -748,12 +770,37 @@ TRANSMISSION_MODE = MappingDataRecord(name="transmissionMode",
 CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
 
 # SID 0x2F
-INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(
-    name="inputOutputControlParameter",
-    length=8,
-    values_mapping={
-        0x00: "returnControlToECU",
-        0x01: "resetToDefault",
-        0x02: "freezeCurrentState",
-        0x03: "shortTermAdjustment",
-    })
+INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParameter",
+                                                   length=8,
+                                                   values_mapping={
+                                                       0x00: "returnControlToECU",
+                                                       0x01: "resetToDefault",
+                                                       0x02: "freezeCurrentState",
+                                                       0x03: "shortTermAdjustment",
+                                                   })
+
+# SID 0x34
+COMPRESSION_METHOD = MappingDataRecord(name="compressionMethod",
+                                       length=4,
+                                       values_mapping={
+                                           0: "no compression",
+                                       } | {
+                                           value: f"compression #{value}" for value in range(1, 0x10)
+                                       })
+ENCRYPTION_METHOD = MappingDataRecord(name="encryptingMethod",
+                                      length=4,
+                                      values_mapping={
+                                          0: "no encryption",
+                                      } | {
+                                          value: f"encryption #{value}" for value in range(1, 0x10)
+                                      })
+DATA_FORMAT_IDENTIFIER = RawDataRecord(name="dataFormatIdentifier",
+                                       length=8,
+                                       children=(COMPRESSION_METHOD, ENCRYPTION_METHOD))
+MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER = RawDataRecord(name="maxNumberOfBlockLengthBytesNumber",
+                                                        length=4,
+                                                        unit="bytes")
+LENGTH_FORMAT_IDENTIFIER = RawDataRecord(name="lengthFormatIdentifier",
+                                         length=8,
+                                         children=(MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER, RESERVED_4BITS))
+CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=get_max_number_of_block_length)
