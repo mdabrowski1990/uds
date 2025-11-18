@@ -160,7 +160,8 @@ OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
 POSITION_IN_DID = RawDataRecord(name="positionInSourceDataRecord",
                                 length=8)
 DID_MEMORY_SIZE = RawDataRecord(name="memorySize",
-                                length=8)
+                                length=8,
+                                unit="bytes")
 
 DATA_FROM_DID_2013 = RawDataRecord(name="Data from DID",
                                    length=32,

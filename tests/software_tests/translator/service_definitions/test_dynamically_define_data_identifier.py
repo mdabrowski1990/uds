@@ -99,7 +99,7 @@ class TestDynamicallyDefineDataIdentifier2013Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0x83,
                                 'raw_value': 0x83,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                     ),
@@ -248,7 +248,7 @@ class TestDynamicallyDefineDataIdentifier2013Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0xC2,
                                 'raw_value': 0xC2,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                         (
@@ -266,7 +266,7 @@ class TestDynamicallyDefineDataIdentifier2013Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0xDA,
                                 'raw_value': 0xDA,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                         (
@@ -284,7 +284,7 @@ class TestDynamicallyDefineDataIdentifier2013Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0xDE,
                                 'raw_value': 0xDE,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                         (
@@ -302,7 +302,7 @@ class TestDynamicallyDefineDataIdentifier2013Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0xA1,
                                 'raw_value': 0xA1,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                     ),
@@ -619,7 +619,7 @@ class TestDynamicallyDefineDataIdentifier2020Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0x19,
                                 'raw_value': 0x19,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                         (
@@ -645,7 +645,7 @@ class TestDynamicallyDefineDataIdentifier2020Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0x30,
                                 'raw_value': 0x30,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                         (
@@ -671,7 +671,7 @@ class TestDynamicallyDefineDataIdentifier2020Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0x47,
                                 'raw_value': 0x47,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                         (
@@ -697,7 +697,7 @@ class TestDynamicallyDefineDataIdentifier2020Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0xBD,
                                 'raw_value': 0xBD,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                     ),
@@ -843,7 +843,7 @@ class TestDynamicallyDefineDataIdentifier2020Integration:
                                 'name': 'memorySize',
                                 'physical_value': 0x17CF,
                                 'raw_value': 0x17CF,
-                                'unit': None
+                                'unit': "bytes"
                             },
                         ),
                     ),
