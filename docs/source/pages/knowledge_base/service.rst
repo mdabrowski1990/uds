@@ -4387,7 +4387,7 @@ Positive Response Format
 |                        +-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+         |
 |                        | reserved                          | 4 (b[3-0])                          | 0x0     | Reserved by ISO 14229 for future definition                                 |         |
 +------------------------+-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
-| maxNumberOfBlockLength                                     | 8*maxNumberOfBlockLengthBytesNumber |         | Maximal TransferData request length that this server is capable of handling | Always  |
+| maxNumberOfBlockLength                                     | 8*maxNumberOfBlockLengthBytesNumber |         | Maximal TransferData message length that this server is capable of handling | Always  |
 +------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
 
 .. warning:: The *reserved* value shall be equal to 0.
@@ -4400,7 +4400,55 @@ Positive Response Format
 
 RequestUpload (0x35)
 --------------------
-RequestUpload service allows the client to initiate a data transfer from the server to the client (upload).
+RequestUpload service allows the client to initiate an upload sequence, where data is transferred from
+the server to the client.
+
+.. note:: Upload means that the server is the sender and the client is the receiver.
+
+
+Request Format
+``````````````
++--------------------------------------------------------+-----------------------+---------+-----------------------------------------------------+---------+
+| Name                                                   | Bit Length            | Value   | Description                                         | Present |
++========================================================+=======================+=========+=====================================================+=========+
+| SID                                                    | 8                     | 0x35    | RequestUpload                                       | Always  |
++----------------------------------+---------------------+-----------------------+---------+-----------------------------------------------------+---------+
+| dataFormatIdentifier             | compressionMethod   | 4 (b[7-4])            | 0x0-0xF | 0x0 - no compression                                | Always  |
+|                                  |                     |                       |         |                                                     |         |
+|                                  |                     |                       |         | 0x1-0xF - vehicle manufacturer specific compression |         |
+|                                  +---------------------+-----------------------+---------+-----------------------------------------------------+         |
+|                                  | encryptingMethod    | 4 (b[3-0])            | 0x0-0xF | 0x0 - no encryption                                 |         |
+|                                  |                     |                       |         |                                                     |         |
+|                                  |                     |                       |         | 0x1-0xF - vehicle manufacturer specific encryption  |         |
++----------------------------------+---------------------+-----------------------+---------+-----------------------------------------------------+---------+
+| addressAndLengthFormatIdentifier | memorySizeLength    | 4                     | 0x1-0xF | Number of bytes to use for memorySize               | Always  |
+|                                  +---------------------+-----------------------+---------+-----------------------------------------------------+         |
+|                                  | memoryAddressLength | 4                     | 0x1-0xF | Number of bytes to use for memoryAddress            |         |
++----------------------------------+---------------------+-----------------------+---------+-----------------------------------------------------+---------+
+| memoryAddress                                          | 8*memoryAddressLength |         | Starting address in the server’s memory             | Always  |
++--------------------------------------------------------+-----------------------+---------+-----------------------------------------------------+---------+
+| memorySize                                             | 8*memorySizeLength    |         | Number of bytes to upload                           | Always  |
++--------------------------------------------------------+-----------------------+---------+-----------------------------------------------------+---------+
+
+
+Positive Response Format
+````````````````````````
++------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
+| Name                                                       | Bit Length                          | Value   | Description                                                                 | Present |
++============================================================+=====================================+=========+=============================================================================+=========+
+| RSID                                                       | 8                                   | 0x75    | Positive Response: RequestUpload (0x35)                                     | Always  |
++------------------------+-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
+| lengthFormatIdentifier | maxNumberOfBlockLengthBytesNumber | 4 (b[7-4])                          | 0x1-0xF | Number of bytes to use for maxNumberOfBlockLength                           | Always  |
+|                        +-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+         |
+|                        | reserved                          | 4 (b[3-0])                          | 0x0     | Reserved by ISO 14229 for future definition                                 |         |
++------------------------+-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
+| maxNumberOfBlockLength                                     | 8*maxNumberOfBlockLengthBytesNumber |         | Maximal TransferData message length that this server is capable of handling | Always  |
++------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
+
+.. warning:: The *reserved* value shall be equal to 0.
+
+.. note:: The *maxNumberOfBlockLength* value specifies the maximum permitted size of the complete TransferData response
+  that the server supports, including *RSID* and *blockSequenceCounter* Data Records.
 
 
 .. _knowledge-base-service-transfer-data:

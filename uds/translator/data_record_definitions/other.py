@@ -5,6 +5,7 @@ __all__ = [
     "RESERVED_BIT",
     "DATA",
     "ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
+    "DATA_FORMAT_IDENTIFIER", "LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
     # SID 0x10
     "P2_SERVER_MAX", "P2_EXT_SERVER_MAX", "SESSION_PARAMETER_RECORD",
     # SID 0x11
@@ -41,8 +42,6 @@ __all__ = [
     "CONDITIONAL_DATA_FROM_MEMORY",
     # SID 0x2F
     "INPUT_OUTPUT_CONTROL_PARAMETER",
-    # SID 0x34
-    "DATA_FORMAT_IDENTIFIER", "LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
 ]
 
 from decimal import Decimal
@@ -373,6 +372,33 @@ ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER = RawDataRecord(name="addressAndLengthForma
                                                      children=(MEMORY_SIZE_LENGTH, MEMORY_ADDRESS_LENGTH))
 
 CONDITIONAL_MEMORY_ADDRESS_AND_SIZE = ConditionalFormulaDataRecord(formula=get_memory_size_and_memory_address)
+
+COMPRESSION_METHOD = MappingDataRecord(name="compressionMethod",
+                                       length=4,
+                                       values_mapping={
+                                           0: "no compression",
+                                       } | {
+                                           value: f"compression #{value}" for value in range(1, 0x10)
+                                       })
+ENCRYPTION_METHOD = MappingDataRecord(name="encryptingMethod",
+                                      length=4,
+                                      values_mapping={
+                                          0: "no encryption",
+                                      } | {
+                                          value: f"encryption #{value}" for value in range(1, 0x10)
+                                      })
+DATA_FORMAT_IDENTIFIER = RawDataRecord(name="dataFormatIdentifier",
+                                       length=8,
+                                       children=(COMPRESSION_METHOD, ENCRYPTION_METHOD))
+
+MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER = RawDataRecord(name="maxNumberOfBlockLengthBytesNumber",
+                                                        length=4,
+                                                        unit="bytes")
+LENGTH_FORMAT_IDENTIFIER = RawDataRecord(name="lengthFormatIdentifier",
+                                         length=8,
+                                         children=(MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER, RESERVED_4BITS))
+
+CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=get_max_number_of_block_length)
 
 # SID 0x10
 P2_SERVER_MAX = LinearFormulaDataRecord(name="P2Server_max",
@@ -778,29 +804,3 @@ INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParam
                                                        0x02: "freezeCurrentState",
                                                        0x03: "shortTermAdjustment",
                                                    })
-
-# SID 0x34
-COMPRESSION_METHOD = MappingDataRecord(name="compressionMethod",
-                                       length=4,
-                                       values_mapping={
-                                           0: "no compression",
-                                       } | {
-                                           value: f"compression #{value}" for value in range(1, 0x10)
-                                       })
-ENCRYPTION_METHOD = MappingDataRecord(name="encryptingMethod",
-                                      length=4,
-                                      values_mapping={
-                                          0: "no encryption",
-                                      } | {
-                                          value: f"encryption #{value}" for value in range(1, 0x10)
-                                      })
-DATA_FORMAT_IDENTIFIER = RawDataRecord(name="dataFormatIdentifier",
-                                       length=8,
-                                       children=(COMPRESSION_METHOD, ENCRYPTION_METHOD))
-MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER = RawDataRecord(name="maxNumberOfBlockLengthBytesNumber",
-                                                        length=4,
-                                                        unit="bytes")
-LENGTH_FORMAT_IDENTIFIER = RawDataRecord(name="lengthFormatIdentifier",
-                                         length=8,
-                                         children=(MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER, RESERVED_4BITS))
-CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=get_max_number_of_block_length)

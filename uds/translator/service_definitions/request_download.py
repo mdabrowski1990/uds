@@ -19,4 +19,4 @@ REQUEST_DOWNLOAD = Service(request_sid=RequestSID.RequestDownload,
                                               CONDITIONAL_MEMORY_ADDRESS_AND_SIZE),
                            response_structure=(LENGTH_FORMAT_IDENTIFIER,
                                                CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH))
-"""Default translator for :ref:`RequestDownload <knowledge-base-service-routine-control>` service."""
+"""Default translator for :ref:`RequestDownload <knowledge-base-service-request-download>` service."""
