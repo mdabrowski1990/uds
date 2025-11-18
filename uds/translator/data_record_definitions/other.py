@@ -42,6 +42,8 @@ __all__ = [
     "CONDITIONAL_DATA_FROM_MEMORY",
     # SID 0x2F
     "INPUT_OUTPUT_CONTROL_PARAMETER",
+    # SID 0x36
+    "BLOCK_SEQUENCE_COUNTER", "TRANSFER_REQUEST_PARAMETER", "TRANSFER_RESPONSE_PARAMETER",
 ]
 
 from decimal import Decimal
@@ -804,3 +806,15 @@ INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParam
                                                        0x02: "freezeCurrentState",
                                                        0x03: "shortTermAdjustment",
                                                    })
+
+# SID 0x36
+BLOCK_SEQUENCE_COUNTER = RawDataRecord(name="blockSequenceCounter",
+                                       length=8)
+TRANSFER_REQUEST_PARAMETER = RawDataRecord(name="transferRequestParameter",
+                                           length=8,
+                                           min_occurrences=0,
+                                           max_occurrences=None)
+TRANSFER_RESPONSE_PARAMETER = RawDataRecord(name="transferResponseParameter",
+                                            length=8,
+                                            min_occurrences=0,
+                                            max_occurrences=None)

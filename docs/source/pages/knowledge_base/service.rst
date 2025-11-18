@@ -4460,10 +4460,6 @@ TransferData service is used during both download and upload sequences to transf
 The *blockSequenceCounter* is used by the server to detect message repetition or loss. Its initial value is 1,
 and it is incremented with each subsequent message. After reaching 0xFF, it rolls over to 0x00.
 
-The *transferRequestParameter* field carries the data. It is present either in the request message during
-a download sequence (client → server) or in the response message during an upload sequence (server → client).
-
-
 Request Format
 ``````````````
 +--------------------------+------------+-----------+-------------------------+------------------------------+
@@ -4479,15 +4475,15 @@ Request Format
 
 Positive Response Format
 ````````````````````````
-+--------------------------+------------+-----------+----------------------------------------+-----------------------------+
-| Name                     | Bit Length | Value     | Description                            | Present                     |
-+==========================+============+===========+========================================+=============================+
-| RSID                     | 8          | 0x76      | Positive Response: TransferData (0x36) | Always                      |
-+--------------------------+------------+-----------+----------------------------------------+-----------------------------+
-| blockSequenceCounter     | 8          | 0x00-0xFF | Message counter                        | Always                      |
-+--------------------------+------------+-----------+----------------------------------------+-----------------------------+
-| transferRequestParameter | at least 8 |           | Data sent by the server                | If an upload is in progress |
-+--------------------------+------------+-----------+----------------------------------------+-----------------------------+
++---------------------------+------------+-----------+----------------------------------------+-----------------------------+
+| Name                      | Bit Length | Value     | Description                            | Present                     |
++===========================+============+===========+========================================+=============================+
+| RSID                      | 8          | 0x76      | Positive Response: TransferData (0x36) | Always                      |
++---------------------------+------------+-----------+----------------------------------------+-----------------------------+
+| blockSequenceCounter      | 8          | 0x00-0xFF | Message counter                        | Always                      |
++---------------------------+------------+-----------+----------------------------------------+-----------------------------+
+| transferResponseParameter | at least 8 |           | Data sent by the server                | If an upload is in progress |
++---------------------------+------------+-----------+----------------------------------------+-----------------------------+
 
 
 .. _knowledge-base-service-request-transfer-exit:
