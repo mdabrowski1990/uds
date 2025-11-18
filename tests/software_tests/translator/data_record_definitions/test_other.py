@@ -19,8 +19,9 @@ from uds.translator.data_record_definitions.other import (
     get_encode_signed_value_formula,
     get_formula_data_records_for_formula_parameters,
     get_formula_for_raw_data_record_with_length,
+    get_max_number_of_block_length,
     get_memory_size_and_memory_address,
-    get_scaling_byte_extension, get_max_number_of_block_length
+    get_scaling_byte_extension,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.other"
