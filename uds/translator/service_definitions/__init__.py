@@ -33,3 +33,4 @@ from .write_data_by_identifier import (
     WRITE_DATA_BY_IDENTIFIER_2013,
     WRITE_DATA_BY_IDENTIFIER_2020,
 )
+from .request_transfer_exit import REQUEST_TRANSFER_EXIT
