@@ -6,6 +6,7 @@ __all__ = [
     "DATA",
     "ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
     "DATA_FORMAT_IDENTIFIER", "LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
+    "TRANSFER_REQUEST_PARAMETER", "TRANSFER_RESPONSE_PARAMETER",
     # SID 0x10
     "P2_SERVER_MAX", "P2_EXT_SERVER_MAX", "SESSION_PARAMETER_RECORD",
     # SID 0x11
@@ -43,7 +44,7 @@ __all__ = [
     # SID 0x2F
     "INPUT_OUTPUT_CONTROL_PARAMETER",
     # SID 0x36
-    "BLOCK_SEQUENCE_COUNTER", "TRANSFER_REQUEST_PARAMETER", "TRANSFER_RESPONSE_PARAMETER",
+    "BLOCK_SEQUENCE_COUNTER",
 ]
 
 from decimal import Decimal
@@ -401,6 +402,15 @@ LENGTH_FORMAT_IDENTIFIER = RawDataRecord(name="lengthFormatIdentifier",
                                          children=(MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER, RESERVED_4BITS))
 
 CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=get_max_number_of_block_length)
+
+TRANSFER_REQUEST_PARAMETER = RawDataRecord(name="transferRequestParameter",
+                                           length=8,
+                                           min_occurrences=0,
+                                           max_occurrences=None)
+TRANSFER_RESPONSE_PARAMETER = RawDataRecord(name="transferResponseParameter",
+                                            length=8,
+                                            min_occurrences=0,
+                                            max_occurrences=None)
 
 # SID 0x10
 P2_SERVER_MAX = LinearFormulaDataRecord(name="P2Server_max",
@@ -810,11 +820,3 @@ INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParam
 # SID 0x36
 BLOCK_SEQUENCE_COUNTER = RawDataRecord(name="blockSequenceCounter",
                                        length=8)
-TRANSFER_REQUEST_PARAMETER = RawDataRecord(name="transferRequestParameter",
-                                           length=8,
-                                           min_occurrences=0,
-                                           max_occurrences=None)
-TRANSFER_RESPONSE_PARAMETER = RawDataRecord(name="transferResponseParameter",
-                                            length=8,
-                                            min_occurrences=0,
-                                            max_occurrences=None)

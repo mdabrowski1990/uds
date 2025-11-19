@@ -4493,6 +4493,28 @@ RequestTransferExit (0x37)
 RequestTransferExit service is used by the client to terminate a data transfer between the client and server.
 
 
+Request Format
+``````````````
++--------------------------+------------+-------+-------------------------------------------------+----------+
+| Name                     | Bit Length | Value | Description                                     | Present  |
++==========================+============+=======+=================================================+==========+
+| SID                      | 8          | 0x37  | RequestTransferExit                             | Always   |
++--------------------------+------------+-------+-------------------------------------------------+----------+
+| transferRequestParameter | at least 8 |       | Additional vehicle manufacturer specific values | Optional |
++--------------------------+------------+-------+-------------------------------------------------+----------+
+
+
+Positive Response Format
+````````````````````````
++---------------------------+------------+-------+-------------------------------------------------+----------+
+| Name                      | Bit Length | Value | Description                                     | Present  |
++===========================+============+=======+=================================================+==========+
+| RSID                      | 8          | 0x77  | Positive Response: RequestTransferExit (0x37)   | Always   |
++---------------------------+------------+-------+-------------------------------------------------+----------+
+| transferResponseParameter | at least 8 |       | Additional vehicle manufacturer specific values | Optional |
++---------------------------+------------+-------+-------------------------------------------------+----------+
+
+
 .. _knowledge-base-service-request-file-transfer:
 
 RequestFileTransfer (0x38)
