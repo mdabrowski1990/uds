@@ -27,6 +27,7 @@ from .request_upload import REQUEST_UPLOAD
 from .routine_control import ROUTINE_CONTROL
 from .security_access import SECURITY_ACCESS
 from .tester_present import TESTER_PRESENT
+from .transfer_data import TRANSFER_DATA
 from .write_data_by_identifier import (
     WRITE_DATA_BY_IDENTIFIER,
     WRITE_DATA_BY_IDENTIFIER_2013,
