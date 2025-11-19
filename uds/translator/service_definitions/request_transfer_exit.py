@@ -1,4 +1,4 @@
-"""Translation for RequestTransferExit (SID 0x3) service."""
+"""Translation for RequestTransferExit (SID 0x37) service."""
 
 __all__ = ["REQUEST_TRANSFER_EXIT"]
 
