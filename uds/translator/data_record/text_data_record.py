@@ -17,11 +17,11 @@ class TextEncoding(ValidatedEnum):
     their text character representations.
     """
 
-    ASCII: "TextEncoding" = "ascii"  # type: ignore
+    ASCII: "TextEncoding" = "ASCII"  # type: ignore
     """Standard ASCII character encoding.
 
     .. seealso:: https://en.wikipedia.org/wiki/ASCII"""
-    BCD: "TextEncoding" = "bcd"  # type: ignore
+    BCD: "TextEncoding" = "BCD"  # type: ignore
     """Binary Coded Decimal encoding (only digits 0-9).
 
     .. seealso:: `https://en.wikipedia.org/wiki/BCD_(character_encoding)
@@ -90,11 +90,18 @@ class TextDataRecord(AbstractDataRecord):
         length: int
         encode: Callable[[int], str]  # noqa: vulture
         decode: Callable[[str], int]
+        unit: str
 
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
-        TextEncoding.ASCII: _EncodingInfo(length=8, encode=chr, decode=decode_ascii),
-        TextEncoding.BCD: _EncodingInfo(length=4, encode=str, decode=decode_bcd),
-        TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24, encode=int_to_obd_dtc, decode=obd_dtc_to_int)
+        TextEncoding.ASCII: _EncodingInfo(length=8,
+                                          encode=chr,
+                                          decode=decode_ascii),
+        TextEncoding.BCD: _EncodingInfo(length=4,
+                                        encode=str,
+                                        decode=decode_bcd),
+        TextEncoding.DTC_OBD_FORMAT: _EncodingInfo(length=24,
+                                                   encode=int_to_obd_dtc,
+                                                   decode=obd_dtc_to_int),
     }
 
     def __init__(self,

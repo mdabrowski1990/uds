@@ -968,7 +968,8 @@ CONDITIONAL_DIR_INFO = ConditionalFormulaDataRecord(formula=get_dir_info)
 CONDITIONAL_FILE_SIZES_OR_DIR_INFO = ConditionalFormulaDataRecord(formula=get_file_sizes_or_dir_info)
 
 LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER = RawDataRecord(name="lengthFormatIdentifier",
-                                                       length=8)
+                                                       length=8,
+                                                       unit="bytes")
 CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRecord(
     formula=get_max_number_of_block_length_file_transfer)
 
