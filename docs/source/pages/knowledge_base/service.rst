@@ -4613,9 +4613,11 @@ Positive Response Format
 +----------------------+-------------------+-------------------------------------+---------------+---------------------------------------------------------------------------------------+--------------------------------------------+
 | fileSizeOrDirInfoParameterLength         | 16                                  | 0x0001-0xFFFF | Number of bytes to use for fileSizeUncompressedOrDirInfoLength and fileSizeCompressed | If modeOfOperation equals 4 or 5           |
 +------------------------------------------+-------------------------------------+---------------+---------------------------------------------------------------------------------------+--------------------------------------------+
-| fileSizeUncompressedOrDirInfoLength      | 8*fileSizeOrDirInfoParameterLength  |               | The size of the uncompressed file in bytes                                            | If modeOfOperation equals 4 or 5           |
+| fileSizeUncompressedOrDirInfoLength      | 8*fileSizeOrDirInfoParameterLength  |               | The size of the uncompressed file (or directory) in bytes                             | If modeOfOperation equals 4 or 5           |
 +------------------------------------------+-------------------------------------+---------------+---------------------------------------------------------------------------------------+--------------------------------------------+
 | fileSizeCompressed                       | 8*fileSizeOrDirInfoParameterLength  |               | The size of the compressed file in bytes                                              | If modeOfOperation equals 4                |
++------------------------------------------+-------------------------------------+---------------+---------------------------------------------------------------------------------------+--------------------------------------------+
+| filePosition                             | 64                                  |               | The byte position to resume downloading after initial download was suspended          | If modeOfOperation equals 6                |
 +------------------------------------------+-------------------------------------+---------------+---------------------------------------------------------------------------------------+--------------------------------------------+
 
 .. note:: Parameter *dataFormatIdentifier* shall equal 0x00 [no compression, no encryption] if modeOfOperation equals 0x05 [ReadDir].

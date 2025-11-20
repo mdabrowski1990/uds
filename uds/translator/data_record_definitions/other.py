@@ -45,6 +45,13 @@ __all__ = [
     "INPUT_OUTPUT_CONTROL_PARAMETER",
     # SID 0x36
     "BLOCK_SEQUENCE_COUNTER",
+    # SID 0x38
+    "MODE_OF_OPERATION_2013", "MODE_OF_OPERATION_2020",
+    "FILE_AND_PATH_NAME_LENGTH", "CONDITIONAL_FILE_AND_PATH_NAME",
+    "FILE_SIZE_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES",
+    "LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER",
+    "FILE_SIZE_OR_DIR_INFO_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES_OR_DIR_INFO", "CONDITIONAL_DIR_INFO",
+    "FILE_POSITION"
 ]
 
 from decimal import Decimal
@@ -61,6 +68,8 @@ from ..data_record import (
     MappingAndLinearFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
+    TextDataRecord,
+    TextEncoding,
 )
 from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING
 
@@ -94,43 +103,44 @@ def get_formula_for_raw_data_record_with_length(data_record_name: str,
 def get_memory_size_and_memory_address(address_and_length_format_identifier: int
                                        ) -> Tuple[RawDataRecord, RawDataRecord]:
     """
-    Get memoryAddress and memorySize Data Records for given addressAndLengthFormatIdentifier value.
+    Get `memoryAddress` and `memorySize` Data Records for given `addressAndLengthFormatIdentifier` value.
 
     :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
 
-    :return: Data Records for memoryAddress and memorySize.
+    :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
+        (`memoryAddressLength` or `memorySizeLength`) equals 0.
+
+    :return: Tuple with `memoryAddress` and `memorySize` Data Records.
     """
     memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
     memory_address_length = address_and_length_format_identifier & 0x0F
-    if (not 0x00 <= address_and_length_format_identifier <= 0xFF
-            or memory_address_length == 0
-            or memory_size_length == 0):
+    if memory_address_length == 0 or memory_size_length == 0:
         raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
-                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both "
-                         f"memoryAddressLength ({memory_address_length}) and memorySizeLength ({memory_size_length}) "
-                         "must be greater than 0.")
+                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both contained values"
+                         f"`memoryAddressLength` ({memory_address_length}) and "
+                         f"`memorySizeLength` ({memory_size_length}) must be greater than 0.")
     return (RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
             RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
 def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
     """
-    Get `Data from Memory` Data Record for given addressAndLengthFormatIdentifier value.
+    Get `Data from Memory` Data Record for given `addressAndLengthFormatIdentifier` value.
 
     :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
 
-    :return: Tuple with Data Record.
+    :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
+        (`memoryAddressLength` or `memorySizeLength`) equals 0.
+
+    :return: Tuple with `Data from Memory` Data Record.
     """
     memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
     memory_address_length = address_and_length_format_identifier & 0x0F
-    if (not 0x00 <= address_and_length_format_identifier <= 0xFF
-            or memory_address_length == 0
-            or memory_size_length == 0):
+    if memory_address_length == 0 or memory_size_length == 0:
         raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
-                         f"(0x{address_and_length_format_identifier:02X}) is incorrect "
-                         f"(0x00 <= addressAndLengthFormatIdentifier <= 0xFF). "
-                         f"Both memoryAddressLength ({memory_address_length}) "
-                         f"and memorySizeLength ({memory_size_length}) must be greater than 0.")
+                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both contained values"
+                         f"`memoryAddressLength` ({memory_address_length}) and "
+                         f"`memorySizeLength` ({memory_size_length}) must be greater than 0.")
     return (RawDataRecord(name="Data from Memory",
                           length=8 * (memory_address_length + memory_size_length),
                           children=(RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
@@ -141,19 +151,42 @@ def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[Raw
 
 def get_max_number_of_block_length(length_format_identifier: int) -> Tuple[RawDataRecord]:
     """
-    Get maxNumberOfBlockLength Data Record for given lengthFormatIdentifier value.
+    Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
+
+    .. warning:: This method must not be used for
+        :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service as it contains
+        `lengthFormatIdentifier` in different format.
 
     :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
 
-    :return: Tuple with Data Record.
+    :raise ValueError: The high nibble of `lengthFormatIdentifier` (`maxNumberOfBlockLengthBytesNumber`) equals 0.
+
+    :return: Tuple with `maxNumberOfBlockLength` Data Record.
     """
     bytes_number = (length_format_identifier & 0xF0) >> 4
-    if not 0x00 <= length_format_identifier <= 0xFF or bytes_number == 0:
-        raise ValueError("Provided `lengthFormatIdentifier` value "
-                         f"(0x{length_format_identifier:02X}) is incorrect "
-                         f"(0x00 <= lengthFormatIdentifier <= 0xFF). "
-                         f"Value of maxNumberOfBlockLengthBytesNumber ({bytes_number}) must be greater than 0.")
+    if bytes_number == 0:
+        raise ValueError(f"Provided `lengthFormatIdentifier` value (0x{length_format_identifier:02X}) is incorrect "
+                         f"as contained value `maxNumberOfBlockLengthBytesNumber` ({bytes_number}) "
+                         "must be greater than 0.")
     return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * bytes_number, unit="bytes"),)
+
+
+def get_max_number_of_block_length_file_transfer(length_format_identifier: int) -> Tuple[RawDataRecord]:
+    """
+    Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
+
+    .. warning:: This method is specific for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>`
+        service as it contains `lengthFormatIdentifier` in slightly different format.
+
+    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
+
+    :raise ValueError: Provided `lengthFormatIdentifier` equals 0.
+
+    :return: Tuple with `maxNumberOfBlockLength` Data Record.
+    """
+    if length_format_identifier == 0:
+        raise ValueError("Value of `length_format_identifier` must be greater than 0.")
+    return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * length_format_identifier, unit="bytes"),)
 
 
 def get_scaling_byte_extension(scaling_byte: int,
@@ -165,13 +198,12 @@ def get_scaling_byte_extension(scaling_byte: int,
     :param scaling_byte: Proceeding `scalingByte` value.
     :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
 
+    :raise InconsistencyError: Provided `scalingByte` equals 0x20.
+
     :return: Data Records for scalingByteExtension.
     """
     parameter_type = (scaling_byte & 0xF0) >> 4
     number_of_bytes = scaling_byte & 0x0F
-    if not 0x00 <= scaling_byte <= 0xFF:
-        raise ValueError(f"Provided `scalingByte#{scaling_byte_number}` value is out of range: "
-                         f"0x{scaling_byte:02X}.")
     if parameter_type == 0x2:  # bitMappedReportedWithOutMask
         if number_of_bytes == 0:
             raise InconsistencyError("Provided `scalingByte` value is incorrect (0x20) - byte length equals 0.")
@@ -215,6 +247,8 @@ def get_data_records_for_formula_parameters(formula_identifier: int,
 
     :param formula_identifier: Formula Identifier used.
     :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
+
+    :raise ValueError: Undefined value of Formula Identifier was provided.
 
     :return: Tuple with coefficients' Data Records for given formula type parameter.
     """
@@ -260,7 +294,7 @@ def get_decode_signed_value_formula(bit_length: int) -> Callable[[int], int]:
     :raise TypeError: Provided value is not int type.
     :raise ValueError: Provided value is out of range.
 
-    :return: Formula for decoding singed integer value from unsinged integer value.
+    :return: Formula for decoding singed integer value from unsigned integer value.
     """
     if not isinstance(bit_length, int):
         raise TypeError("Provided `bit_length` value is not int type.")
@@ -348,6 +382,82 @@ def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length
         mantissa_unsigned_value = mantissa_decode_formula(mantissa_signed_value)
         return (exponent_unsigned_value << mantissa_bit_length) + mantissa_unsigned_value
     return get_unsinged_value
+
+
+def get_file_path_and_name(file_path_and_name_length: int) -> Tuple[TextDataRecord]:
+    """
+    Get `filePathAndName` Data Record of given bytes length.
+
+    :param file_path_and_name_length: Bytes length of `filePathAndName` Data Record.
+
+    :raise ValueError: Provided `filePathAndNameLength` value equals 0.
+
+    :return: Tuple with `filePathAndName` Data Record.
+    """
+    if file_path_and_name_length == 0:
+        raise ValueError("Value of `filePathAndNameLength` must be greater than 0.")
+    return (TextDataRecord(name="filePathAndName",
+                           encoding=TextEncoding.ASCII,
+                           min_occurrences=file_path_and_name_length,
+                           max_occurrences=file_path_and_name_length),)
+
+
+def get_file_sizes(file_size_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
+    """
+    Get file size Data Records of given bytes length.
+
+    :param file_size_parameter_length: Bytes length of `fileSizeUnCompressed` and `fileSizeCompressed` Data Records.
+
+    :raise ValueError: Provided `fileSizeParameterLength` value equals 0.
+
+    :return: Tuple with `fileSizeUnCompressed` and `fileSizeCompressed` Data Records.
+    """
+    if file_size_parameter_length == 0:
+        raise ValueError("Value of `fileSizeParameterLength` must be greater than 0.")
+    return (RawDataRecord(name="fileSizeUnCompressed",
+                          length=8 * file_size_parameter_length,
+                          unit="bytes"),
+            RawDataRecord(name="fileSizeCompressed",
+                          length=8 * file_size_parameter_length,
+                          unit="bytes"))
+
+
+def get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
+    """
+    Get file size Data Records of given bytes length.
+
+    :param file_size_or_dir_info_parameter_length: Bytes length of `fileSizeUncompressedOrDirInfoLength`
+        and `fileSizeCompressed` Data Records.
+
+    :raise ValueError: Provided `fileSizeOrDirInfoParameterLength` value equals 0.
+
+    :return: Tuple with `fileSizeUncompressedOrDirInfoLength` and `fileSizeCompressed` Data Records.
+    """
+    if file_size_or_dir_info_parameter_length == 0:
+        raise ValueError("Value of `fileSizeOrDirInfoParameterLength` must be greater than 0.")
+    return (RawDataRecord(name="fileSizeUncompressedOrDirInfoLength",
+                          length=8 * file_size_or_dir_info_parameter_length,
+                          unit="bytes"),
+            RawDataRecord(name="fileSizeCompressed",
+                          length=8 * file_size_or_dir_info_parameter_length,
+                          unit="bytes"))
+
+
+def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord]:
+    """
+    Get dir info Data Record of given bytes length.
+
+    :param file_size_or_dir_info_parameter_length: Bytes length of `fileSizeUncompressedOrDirInfoLength` Data Record.
+
+    :raise ValueError: Provided `fileSizeOrDirInfoParameterLength` value equals 0.
+
+    :return: Tuple with `file_size_or_dir_info_parameter_length` Data Record.
+    """
+    if file_size_or_dir_info_parameter_length == 0:
+        raise ValueError("Value of `fileSizeOrDirInfoParameterLength` must be greater than 0.")
+    return (RawDataRecord(name="fileSizeUncompressedOrDirInfoLength",
+                          length=8 * file_size_or_dir_info_parameter_length,
+                          unit="bytes"),)
 
 
 # Shared
@@ -819,3 +929,48 @@ INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParam
 # SID 0x36
 BLOCK_SEQUENCE_COUNTER = RawDataRecord(name="blockSequenceCounter",
                                        length=8)
+
+# SID 0x38
+MODE_OF_OPERATION_2013 = MappingDataRecord(name="modeOfOperation",
+                                           length=8,
+                                           values_mapping={
+                                               0x01: "AddFile",
+                                               0x02: "DeleteFile",
+                                               0x03: "ReplaceFile",
+                                               0x04: "ReadFile",
+                                               0x05: "ReadDir",
+                                           })
+MODE_OF_OPERATION_2020 = MappingDataRecord(name="modeOfOperation",
+                                           length=8,
+                                           values_mapping={
+                                               0x01: "AddFile",
+                                               0x02: "DeleteFile",
+                                               0x03: "ReplaceFile",
+                                               0x04: "ReadFile",
+                                               0x05: "ReadDir",
+                                               0x06: "ResumeFile",
+                                           })
+
+FILE_AND_PATH_NAME_LENGTH = RawDataRecord(name="filePathAndNameLength",
+                                          length=16,
+                                          unit="bytes")
+CONDITIONAL_FILE_AND_PATH_NAME = ConditionalFormulaDataRecord(formula=get_file_path_and_name)
+
+FILE_SIZE_PARAMETER_LENGTH = RawDataRecord(name="fileSizeParameterLength",
+                                           length=8,
+                                           unit="bytes")
+CONDITIONAL_FILE_SIZES = ConditionalFormulaDataRecord(formula=get_file_sizes)
+
+FILE_SIZE_OR_DIR_INFO_PARAMETER_LENGTH = RawDataRecord(name="fileSizeOrDirInfoParameterLength",
+                                                       length=16,
+                                                       unit="bytes")
+CONDITIONAL_DIR_INFO = ConditionalFormulaDataRecord(formula=get_dir_info)
+CONDITIONAL_FILE_SIZES_OR_DIR_INFO = ConditionalFormulaDataRecord(formula=get_file_sizes_or_dir_info)
+
+LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER = RawDataRecord(name="lengthFormatIdentifier",
+                                                       length=8)
+CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRecord(
+    formula=get_max_number_of_block_length_file_transfer)
+
+FILE_POSITION = RawDataRecord(name="filePosition",
+                              length=64)

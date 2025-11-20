@@ -28,6 +28,7 @@ from .read_scaling_data_by_identifier import (
     READ_SCALING_DATA_BY_IDENTIFIER_2020,
 )
 from .request_download import REQUEST_DOWNLOAD
+from .request_file_transfer import REQUEST_FILE_TRANSFER, REQUEST_FILE_TRANSFER_2013, REQUEST_FILE_TRANSFER_2020
 from .request_transfer_exit import REQUEST_TRANSFER_EXIT
 from .request_upload import REQUEST_UPLOAD
 from .routine_control import ROUTINE_CONTROL
