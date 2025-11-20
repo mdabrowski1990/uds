@@ -186,7 +186,6 @@ def get_scaling_byte_extension(scaling_byte: int,
                 ConditionalFormulaDataRecord(
                     formula=get_formula_data_records_for_formula_parameters(scaling_byte_number)),)
     if parameter_type == 0xA:  # unit/format
-        # TODO: ISO 14229-1 does not explain how to combine units (e.g. Volt [V]) and prefixes (e.g. milli [m])/formulas
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
                               length=UNIT_OR_FORMAT.length,
                               children=(UNIT_OR_FORMAT,)),)
