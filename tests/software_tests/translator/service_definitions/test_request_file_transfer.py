@@ -683,7 +683,10 @@ class TestRequestFileTransfer2013Integration:
                 "modeOfOperation": 0x01,
                 "filePathAndNameLength": 0x0001,
                 "filePathAndName": 0x54,
-                "dataFormatIdentifier": 0x39,
+                "dataFormatIdentifier": {
+                    "compressionMethod": 0x3,
+                    "encryptingMethod": 0x9,
+                },
                 "fileSizeParameterLength": 0x01,
                 "fileSizeUnCompressed": 0x01,
                 "fileSizeCompressed": 0x02,
@@ -697,7 +700,10 @@ class TestRequestFileTransfer2013Integration:
                 "modeOfOperation": 0x01,
                 "lengthFormatIdentifier": 0x02,
                 "maxNumberOfBlockLength": 0xFFFF,
-                "dataFormatIdentifier": 0x00,
+                "dataFormatIdentifier": {
+                    "compressionMethod": 0x0,
+                    "encryptingMethod": 0x0,
+                },
             },
             None,
             ResponseSID.RequestFileTransfer,
@@ -1675,7 +1681,126 @@ class TestRequestFileTransfer2020Integration:
             ResponseSID.RequestFileTransfer,
             bytearray([0x78, 0x02])
         ),
-        # TODO
+        # ReplaceFile (0x03)
+        (
+            {
+                "modeOfOperation": 0x03,
+                "filePathAndNameLength": 0x0003,
+                "filePathAndName": (0x17, 0x14, 0x4A),
+                "dataFormatIdentifier": {
+                    "compressionMethod": 0xC,
+                    "encryptingMethod": 0x3,
+                },
+                "fileSizeParameterLength": 0x02,
+                "fileSizeUnCompressed": 0x5E3A,
+                "fileSizeCompressed": 0x9E2A,
+            },
+            RequestSID.RequestFileTransfer,
+            None,
+            bytearray([0x38, 0x03, 0x00, 0x03, 0x17, 0x14, 0x4A, 0xC3, 0x02, 0x5E, 0x3A, 0x9E, 0x2A])
+        ),
+        (
+            {
+                "modeOfOperation": 0x03,
+                "lengthFormatIdentifier": 0x05,
+                "maxNumberOfBlockLength": 0x2831ED,
+                "dataFormatIdentifier": {
+                    "compressionMethod": 0x0,
+                    "encryptingMethod": 0x0,
+                },
+            },
+            None,
+            ResponseSID.RequestFileTransfer,
+            bytearray([0x78, 0x03, 0x05, 0x00, 0x00, 0x28, 0x31, 0xED, 0x00])
+        ),
+        # ReadFile (0x04)
+        (
+            {
+                "modeOfOperation": 0x04,
+                "filePathAndNameLength": 0x000C,
+                "filePathAndName": (0x16, 0x3B, 0x32, 0x52, 0x6A, 0x51, 0x5B, 0x03, 0x39, 0x09, 0x22, 0x03),
+                "dataFormatIdentifier": 0x00,
+            },
+            RequestSID.RequestFileTransfer,
+            None,
+            bytearray([0x38, 0x04, 0x00, 0x0C, 0x16, 0x3B, 0x32, 0x52, 0x6A, 0x51, 0x5B, 0x03, 0x39, 0x09, 0x22, 0x03,
+                       0x00])
+        ),
+        (
+            {
+                "modeOfOperation": 0x04,
+                "lengthFormatIdentifier": 0x01,
+                "maxNumberOfBlockLength": 0x0C,
+                "dataFormatIdentifier": {
+                    "compressionMethod": 0xF,
+                    "encryptingMethod": 0xF,
+                },
+                "fileSizeOrDirInfoParameterLength": 0x0001,
+                "fileSizeUncompressedOrDirInfoLength": 0x9D,
+                "fileSizeCompressed": 0xE5,
+            },
+            None,
+            ResponseSID.RequestFileTransfer,
+            bytearray([0x78, 0x04, 0x01, 0x0C, 0xFF, 0x00, 0x01, 0x9D, 0xE5])
+        ),
+        # ReadDir (0x05)
+        (
+            {
+                "modeOfOperation": 0x05,
+                "filePathAndNameLength": 0x0001,
+                "filePathAndName": 0x4E,
+            },
+            RequestSID.RequestFileTransfer,
+            None,
+            bytearray([0x38, 0x05, 0x00, 0x01, 0x4E])
+        ),
+        (
+            {
+                "modeOfOperation": 0x05,
+                "lengthFormatIdentifier": 0x03,
+                "maxNumberOfBlockLength": 0x000048,
+                "dataFormatIdentifier": 0x3B,
+                "fileSizeOrDirInfoParameterLength": 0x0006,
+                "fileSizeUncompressedOrDirInfoLength": 0x0000002F6EB5,
+            },
+            None,
+            ResponseSID.RequestFileTransfer,
+            bytearray([0x78, 0x05, 0x03, 0x00, 0x00, 0x48, 0x3B, 0x00, 0x06, 0x00, 0x00, 0x00, 0x2F, 0x6E, 0xB5])
+        ),
+        # ResumeFile (0x06)
+        (
+            {
+                "modeOfOperation": 0x06,
+                "filePathAndNameLength": 0x0009,
+                "filePathAndName": (0x36, 0x79, 0x0C, 0x62, 0x52, 0x3D, 0x14, 0x3A, 0x44),
+                "dataFormatIdentifier": {
+                    "compressionMethod": 0x0,
+                    "encryptingMethod": 0x5,
+                },
+                "fileSizeParameterLength": 0x02,
+                "fileSizeUnCompressed": 0x4DFF,
+                "fileSizeCompressed": 0x6B8F,
+            },
+            RequestSID.RequestFileTransfer,
+            None,
+            bytearray([0x38, 0x06, 0x00, 0x09, 0x36, 0x79, 0x0C, 0x62, 0x52, 0x3D, 0x14, 0x3A, 0x44, 0x05, 0x02, 0x4D,
+                       0xFF, 0x6B, 0x8F])
+        ),
+        (
+            {
+                "modeOfOperation": 0x06,
+                "lengthFormatIdentifier": 0x01,
+                "maxNumberOfBlockLength": 0xF0,
+                "dataFormatIdentifier": {
+                    "compressionMethod": 0xD,
+                    "encryptingMethod": 0x0,
+                },
+                "filePosition": 0x0123456789ABCDEF,
+            },
+            None,
+            ResponseSID.RequestFileTransfer,
+            bytearray([0x78, 0x06, 0x01, 0xF0, 0xD0, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF])
+        ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
         assert REQUEST_FILE_TRANSFER_2020.encode(data_records_values=data_records_values,
