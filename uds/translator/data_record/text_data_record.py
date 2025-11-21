@@ -90,7 +90,6 @@ class TextDataRecord(AbstractDataRecord):
         length: int
         encode: Callable[[int], str]  # noqa: vulture
         decode: Callable[[str], int]
-        unit: str
 
     __ENCODINGS: Dict[TextEncoding, _EncodingInfo] = {
         TextEncoding.ASCII: _EncodingInfo(length=8,

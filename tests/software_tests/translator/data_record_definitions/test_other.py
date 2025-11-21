@@ -11,17 +11,23 @@ from uds.translator.data_record_definitions.other import (
     MANTISSA_BIT_LENGTH,
     STATE_AND_CONNECTION_TYPE,
     UNIT_OR_FORMAT,
+    TextEncoding,
     get_data_from_memory,
     get_data_records_for_formula_parameters,
     get_decode_float_value_formula,
     get_decode_signed_value_formula,
+    get_dir_info,
     get_encode_float_value_formula,
     get_encode_signed_value_formula,
+    get_file_path_and_name,
+    get_file_sizes,
+    get_file_sizes_or_dir_info,
     get_formula_data_records_for_formula_parameters,
     get_formula_for_raw_data_record_with_length,
-    get_max_number_of_block_length, get_max_number_of_block_length_file_transfer,
+    get_max_number_of_block_length,
+    get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
-    get_scaling_byte_extension, get_dir_info, get_file_sizes_or_dir_info, get_file_path_and_name, TextEncoding, get_file_sizes
+    get_scaling_byte_extension,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.other"
