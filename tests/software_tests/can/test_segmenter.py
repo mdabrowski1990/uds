@@ -134,10 +134,21 @@ class TestCanSegmenter:
         self.mock_dlc_handler.validate_dlc.assert_called_once_with(value)
 
     @pytest.mark.parametrize("value, min_dlc", [
-        (CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MIN_BASE_UDS_DLC + 1),
-        (CanDlcHandler.MAX_DLC_VALUE - 1, CanDlcHandler.MAX_DLC_VALUE),
+        (CanDlcHandler.MIN_BASE_UDS_DLC, None),
+        (CanDlcHandler.MAX_DLC_VALUE, CanDlcHandler.MAX_DLC_VALUE),
+    ])
+    def test_dlc__set__without_min_dlc(self, value, min_dlc):
+        assert CanSegmenter.dlc.fset(self.mock_can_segmenter, value) is None
+        assert self.mock_can_segmenter._CanSegmenter__dlc == value
+        self.mock_dlc_handler.validate_dlc.assert_called_once_with(value)
+        self.mock_warn.assert_not_called()
+
+    @pytest.mark.parametrize("value, min_dlc", [
+        (8, 9),
+        (10, 0xF),
     ])
     def test_dlc__set__with_warning(self, value, min_dlc):
+        self.mock_can_segmenter._CanSegmenter__min_dlc = min_dlc
         self.mock_can_segmenter.min_dlc = min_dlc
         assert CanSegmenter.dlc.fset(self.mock_can_segmenter, value) is None
         assert self.mock_can_segmenter._CanSegmenter__dlc == value

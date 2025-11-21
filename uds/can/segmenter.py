@@ -102,7 +102,7 @@ class CanSegmenter(AbstractSegmenter):
             raise ValueError(f"Provided value is too small. Expected: DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. "
                              f"Actual value: {value}")
         self.__dlc: int = value
-        if self.min_dlc is not None and self.min_dlc > value:
+        if hasattr(self, "_CanSegmenter__min_dlc") and self.min_dlc is not None and self.min_dlc > value:
             warn(message="Min DLC value had to be decreased, cause it was greater than base DLC.",
                  category=ValueWarning)
             self.min_dlc = value

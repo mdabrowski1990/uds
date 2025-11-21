@@ -154,7 +154,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         self.segmenter.dlc = value
 
     @property
-    def min_dlc(self) -> int:
+    def min_dlc(self) -> Optional[int]:
         """
         Value of minimal CAN DLC to use for CAN Packets during Data Optimization.
 
