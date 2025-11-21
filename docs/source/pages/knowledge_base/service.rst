@@ -2931,8 +2931,8 @@ Only the format applicable to the returned scalingByte value will be included in
 |                        |                        |              |                                           |               | 5-7: Reserved                                                                                 |                                                                         |
 +------------------------+------------------------+--------------+-------------------------------------------+---------------+-----------------------------------------------------------------------------------------------+-------------------------------------------------------------------------+
 
-.. note:: Parameter *numberOfBytesOfParameter* shall equal 0 if *type* if the same *scalingByte* is equal to
-  0x9 [formula] or 0xA [unit/format]/
+.. note:: Parameter *numberOfBytesOfParameter* shall equal 0 when the *scalingByte* *type* equals
+  0x9 [formula] or 0xA [unit/format].
 
 
 .. _knowledge-base-service-security-access:
