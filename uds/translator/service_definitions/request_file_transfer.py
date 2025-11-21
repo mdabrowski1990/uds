@@ -1,4 +1,4 @@
-"""Translation for RequestFileTransfer (SID 0x37) service."""
+"""Translation for RequestFileTransfer (SID 0x38) service."""
 
 __all__ = ["REQUEST_FILE_TRANSFER", "REQUEST_FILE_TRANSFER_2020", "REQUEST_FILE_TRANSFER_2013"]
 
@@ -100,7 +100,7 @@ REQUEST_FILE_TRANSFER_2020 = Service(request_sid=RequestSID.RequestFileTransfer,
                                      response_structure=(MODE_OF_OPERATION_2020,
                                                          CONDITIONAL_RESPONSE_CONTINUATION_2020))
 """Translator for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service
-compatible with ISO 14229-1:2013."""
+compatible with ISO 14229-1:2020."""
 
 REQUEST_FILE_TRANSFER = REQUEST_FILE_TRANSFER_2020
 """Default translator for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service."""
