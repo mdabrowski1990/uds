@@ -11,15 +11,21 @@ from uds.translator.data_record_definitions.other import (
     MANTISSA_BIT_LENGTH,
     STATE_AND_CONNECTION_TYPE,
     UNIT_OR_FORMAT,
+    TextEncoding,
     get_data_from_memory,
     get_data_records_for_formula_parameters,
     get_decode_float_value_formula,
     get_decode_signed_value_formula,
+    get_dir_info,
     get_encode_float_value_formula,
     get_encode_signed_value_formula,
+    get_file_path_and_name,
+    get_file_sizes,
+    get_file_sizes_or_dir_info,
     get_formula_data_records_for_formula_parameters,
     get_formula_for_raw_data_record_with_length,
     get_max_number_of_block_length,
+    get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
     get_scaling_byte_extension,
 )
@@ -31,6 +37,8 @@ class TestFormulas:
     def setup_method(self):
         self._patcher_raw_data_record = patch(f"{SCRIPT_LOCATION}.RawDataRecord")
         self.mock_raw_data_record = self._patcher_raw_data_record.start()
+        self._patcher_text_data_record = patch(f"{SCRIPT_LOCATION}.TextDataRecord")
+        self.mock_text_data_record = self._patcher_text_data_record.start()
         self._patcher_custom_formula_data_record = patch(f"{SCRIPT_LOCATION}.CustomFormulaDataRecord")
         self.mock_custom_formula_data_record = self._patcher_custom_formula_data_record.start()
         self._patcher_conditional_formula_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord")
@@ -38,6 +46,7 @@ class TestFormulas:
 
     def teardown_method(self):
         self._patcher_raw_data_record.stop()
+        self._patcher_text_data_record.stop()
         self._patcher_custom_formula_data_record.stop()
         self._patcher_conditional_formula_data_record.stop()
 
@@ -73,7 +82,7 @@ class TestFormulas:
 
     # get_memory_size_and_memory_address
 
-    @pytest.mark.parametrize("address_and_length_format_identifier", [-1, 0x01, 0xF0, 0x111])
+    @pytest.mark.parametrize("address_and_length_format_identifier", [0x00, 0x01, 0xF0])
     def test_get_memory_size_and_memory_address__value_error(self, address_and_length_format_identifier):
         with pytest.raises(ValueError):
             get_memory_size_and_memory_address(address_and_length_format_identifier)
@@ -95,7 +104,7 @@ class TestFormulas:
 
     # get_data_from_memory
 
-    @pytest.mark.parametrize("address_and_length_format_identifier", [-1, 0x01, 0xF0, 0x111])
+    @pytest.mark.parametrize("address_and_length_format_identifier", [0x00, 0x01, 0xF0])
     def test_get_data_from_memory__value_error(self, address_and_length_format_identifier):
         with pytest.raises(ValueError):
             get_data_from_memory(address_and_length_format_identifier)
@@ -123,7 +132,7 @@ class TestFormulas:
     
     # get_max_number_of_block_length
 
-    @pytest.mark.parametrize("length_format_identifier", [-1, 0x01, 0x111])
+    @pytest.mark.parametrize("length_format_identifier", [0x00, 0x0F])
     def test_get_max_number_of_block_length__value_error(self, length_format_identifier):
         with pytest.raises(ValueError):
             get_max_number_of_block_length(length_format_identifier)
@@ -139,13 +148,22 @@ class TestFormulas:
         self.mock_raw_data_record.assert_called_once_with(name="maxNumberOfBlockLength",
                                                           length=8 * bytes_number,
                                                           unit="bytes")
-    
-    # get_scaling_byte_extension
 
-    @pytest.mark.parametrize("scaling_byte", [-1, 0x100])
-    def test_get_scaling_byte_extension__value_error(self, scaling_byte):
+    # get_max_number_of_block_length
+
+    def test_get_max_number_of_block_length_file_transfer__value_error(self):
         with pytest.raises(ValueError):
-            get_scaling_byte_extension(scaling_byte, Mock())
+            get_max_number_of_block_length_file_transfer(0x00)
+
+    @pytest.mark.parametrize("bytes_number", [0x01, 0xFF])
+    def test_get_max_number_of_block_length_file_transfer(self, bytes_number):
+        assert (get_max_number_of_block_length_file_transfer(bytes_number)
+                == (self.mock_raw_data_record.return_value,))
+        self.mock_raw_data_record.assert_called_once_with(name="maxNumberOfBlockLength",
+                                                          length=8 * bytes_number,
+                                                          unit="bytes")
+
+    # get_scaling_byte_extension
 
     def test_get_scaling_byte_extension__2__inconsistency_Error(self):
         with pytest.raises(ValueError):
@@ -379,3 +397,66 @@ class TestFormulas:
                                                               any_order=False)
         mock_exponent_decode_formula.assert_called_once_with(exponent_signed_value)
         mock_mantissa_decode_formula.assert_called_once_with(mantissa_signed_value)
+
+    # get_file_path_and_name
+
+    def test_get_file_path_and_name__value_error(self):
+        with pytest.raises(ValueError):
+            get_file_path_and_name(0x00)
+
+    @pytest.mark.parametrize("file_path_and_name_length", [1, 0xFF])
+    def test_get_file_path_and_name(self, file_path_and_name_length):
+        assert get_file_path_and_name(file_path_and_name_length) == (self.mock_text_data_record.return_value,)
+        self.mock_text_data_record.assert_called_once_with(name="filePathAndName",
+                                                           encoding=TextEncoding.ASCII,
+                                                           min_occurrences=file_path_and_name_length,
+                                                           max_occurrences=file_path_and_name_length)
+
+    # get_file_sizes
+
+    def test_get_file_sizes__value_error(self):
+        with pytest.raises(ValueError):
+            get_file_sizes(0x00)
+
+    @pytest.mark.parametrize("file_size_or_dir_info_parameter_length", [1, 0xFF])
+    def test_get_file_sizes(self, file_size_or_dir_info_parameter_length):
+        assert (get_file_sizes(file_size_or_dir_info_parameter_length)
+                == (self.mock_raw_data_record.return_value, self.mock_raw_data_record.return_value))
+        self.mock_raw_data_record.assert_has_calls([call(name="fileSizeUnCompressed",
+                                                         length=8 * file_size_or_dir_info_parameter_length,
+                                                         unit="bytes"),
+                                                    call(name="fileSizeCompressed",
+                                                         length=8 * file_size_or_dir_info_parameter_length,
+                                                         unit="bytes")],
+                                                   any_order=False)
+
+    # get_file_sizes_or_dir_info
+
+    def test_get_file_sizes_or_dir_info__value_error(self):
+        with pytest.raises(ValueError):
+            get_file_sizes_or_dir_info(0x00)
+
+    @pytest.mark.parametrize("file_size_or_dir_info_parameter_length", [1, 0xFF])
+    def test_get_file_sizes_or_dir_info(self, file_size_or_dir_info_parameter_length):
+        assert (get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length)
+                == (self.mock_raw_data_record.return_value, self.mock_raw_data_record.return_value))
+        self.mock_raw_data_record.assert_has_calls([call(name="fileSizeUncompressedOrDirInfoLength",
+                                                         length=8 * file_size_or_dir_info_parameter_length,
+                                                         unit="bytes"),
+                                                    call(name="fileSizeCompressed",
+                                                         length=8 * file_size_or_dir_info_parameter_length,
+                                                         unit="bytes")],
+                                                   any_order=False)
+
+    # get_dir_info
+
+    def test_get_dir_info__value_error(self):
+        with pytest.raises(ValueError):
+            get_dir_info(0x00)
+
+    @pytest.mark.parametrize("file_size_or_dir_info_parameter_length", [1, 0xFF])
+    def test_get_dir_info(self, file_size_or_dir_info_parameter_length):
+        assert get_dir_info(file_size_or_dir_info_parameter_length) == (self.mock_raw_data_record.return_value,)
+        self.mock_raw_data_record.assert_called_once_with(name="fileSizeUncompressedOrDirInfoLength",
+                                                          length=8 * file_size_or_dir_info_parameter_length,
+                                                          unit="bytes")
