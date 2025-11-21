@@ -72,6 +72,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param segmenter_configuration: Configuration parameters for CAN Segmenter.
 
             - :parameter dlc: Base CAN DLC value to use for CAN packets.
+            - :parameter min_dlc: min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
             - :parameter use_data_optimization: Information whether to use
                 :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>`.
             - :parameter filler_byte: Filler byte value to use for
@@ -151,6 +152,28 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param value: Value to set.
         """
         self.segmenter.dlc = value
+
+    @property
+    def min_dlc(self) -> int:
+        """
+        Value of minimal CAN DLC to use for CAN Packets during Data Optimization.
+
+        .. note:: Output CAN Packets (created by :meth:`~uds.segmentation.can_segmenter.CanSegmenter.segmentation`)
+            will never have DLC smaller than this value even if
+            :ref:`CAN Frame Data Optimization <knowledge-base-can-data-optimization>` is used.
+        """
+        return self.segmenter.min_dlc
+
+    @min_dlc.setter
+    def min_dlc(self, value: Optional[int]) -> None:
+        """
+        Set value of base CAN DLC to use for CAN Packets.
+
+        :param value: Value to set.
+
+        :raise ValueError: Provided value is not smaller than base CAN DLC.
+        """
+        self.segmenter.min_dlc = value
 
     @property
     def use_data_optimization(self) -> bool:

@@ -4,11 +4,6 @@ from mock import Mock, call, patch
 from uds.can import CanFlowStatus
 from uds.can.addressing import (
     CanAddressingInformation,
-    ExtendedCanAddressingInformation,
-    Mixed11BitCanAddressingInformation,
-    Mixed29BitCanAddressingInformation,
-    NormalCanAddressingInformation,
-    NormalFixedCanAddressingInformation,
 )
 from uds.can.segmenter import (
     DEFAULT_FILLER_BYTE,
@@ -33,6 +28,8 @@ class TestCanSegmenter:
     def setup_method(self):
         self.mock_can_segmenter = Mock(spec=CanSegmenter)
         # patching
+        self._patcher_warn = patch(f"{SCRIPT_LOCATION}.warn")
+        self.mock_warn = self._patcher_warn.start()
         self._patcher_abstract_segmenter_init = patch(f"{SCRIPT_LOCATION}.AbstractSegmenter.__init__")
         self.mock_abstract_segmenter_init = self._patcher_abstract_segmenter_init.start()
         self._patcher_uds_message = patch(f"{SCRIPT_LOCATION}.UdsMessage")
@@ -46,26 +43,30 @@ class TestCanSegmenter:
         self.mock_can_packet = self._patcher_can_packet.start()
         self._patcher_is_initial_packet_type = patch(f"{SCRIPT_LOCATION}.CanPacketType.is_initial_packet_type")
         self.mock_is_initial_packet_type = self._patcher_is_initial_packet_type.start()
-        self._patcher_get_max_sf_dl = patch(f"{SCRIPT_LOCATION}.get_max_sf_dl")
-        self.mock_get_max_sf_dl = self._patcher_get_max_sf_dl.start()
         self._patcher_get_first_frame_payload_size = patch(f"{SCRIPT_LOCATION}.get_first_frame_payload_size")
         self.mock_get_first_frame_payload_size = self._patcher_get_first_frame_payload_size.start()
         self._patcher_get_consecutive_frame_max_payload_size \
             = patch(f"{SCRIPT_LOCATION}.get_consecutive_frame_max_payload_size")
         self.mock_get_consecutive_frame_max_payload_size = self._patcher_get_consecutive_frame_max_payload_size.start()
+        self._patcher_get_single_frame_min_dlc = patch(f"{SCRIPT_LOCATION}.get_single_frame_min_dlc")
+        self.mock_get_single_frame_min_dlc = self._patcher_get_single_frame_min_dlc.start()
+        self._patcher_get_consecutive_frame_min_dlc = patch(f"{SCRIPT_LOCATION}.get_consecutive_frame_min_dlc")
+        self.mock_get_consecutive_frame_min_dlc = self._patcher_get_consecutive_frame_min_dlc.start()
         self._patcher_validate_raw_byte = patch(f"{SCRIPT_LOCATION}.validate_raw_byte")
         self.mock_validate_raw_byte = self._patcher_validate_raw_byte.start()
 
     def teardown_method(self):
+        self._patcher_warn.stop()
         self._patcher_abstract_segmenter_init.stop()
         self._patcher_uds_message.stop()
         self._patcher_uds_message_record.stop()
         self._patcher_dlc_handler.stop()
         self._patcher_can_packet.stop()
         self._patcher_is_initial_packet_type.stop()
-        self._patcher_get_max_sf_dl.stop()
         self._patcher_get_first_frame_payload_size.stop()
         self._patcher_get_consecutive_frame_max_payload_size.stop()
+        self._patcher_get_single_frame_min_dlc.stop()
+        self._patcher_get_consecutive_frame_min_dlc.stop()
         self._patcher_validate_raw_byte.stop()
 
     # __init__
@@ -75,21 +76,24 @@ class TestCanSegmenter:
         assert CanSegmenter.__init__(self=self.mock_can_segmenter,
                                      addressing_information=addressing_information) is None
         assert self.mock_can_segmenter.dlc == CanDlcHandler.MIN_BASE_UDS_DLC
+        assert self.mock_can_segmenter.min_dlc is None
         assert self.mock_can_segmenter.use_data_optimization is False
         assert self.mock_can_segmenter.filler_byte == DEFAULT_FILLER_BYTE
         self.mock_abstract_segmenter_init.assert_called_once_with(addressing_information=addressing_information)
 
-    @pytest.mark.parametrize("addressing_information, dlc, use_data_optimization, filler_byte", [
-        (Mock(), Mock(), Mock(), Mock()),
-        (Mock(spec=CanAddressingInformation), 0xF, True, 0xA5),
+    @pytest.mark.parametrize("addressing_information, dlc, min_dlc, use_data_optimization, filler_byte", [
+        (Mock(), Mock(), Mock(), Mock(), Mock()),
+        (Mock(spec=CanAddressingInformation), 0xF, None, True, 0xA5),
     ])
-    def test_init__all_args(self, addressing_information, dlc, use_data_optimization, filler_byte):
+    def test_init__all_args(self, addressing_information, dlc, min_dlc, use_data_optimization, filler_byte):
         assert CanSegmenter.__init__(self=self.mock_can_segmenter,
                                      addressing_information=addressing_information,
                                      dlc=dlc,
+                                     min_dlc=min_dlc,
                                      use_data_optimization=use_data_optimization,
                                      filler_byte=filler_byte) is None
         assert self.mock_can_segmenter.dlc == dlc
+        assert self.mock_can_segmenter.min_dlc == min_dlc
         assert self.mock_can_segmenter.use_data_optimization == use_data_optimization
         assert self.mock_can_segmenter.filler_byte == filler_byte
         self.mock_abstract_segmenter_init.assert_called_once_with(addressing_information=addressing_information)
@@ -128,11 +132,29 @@ class TestCanSegmenter:
             CanSegmenter.dlc.fset(self.mock_can_segmenter, value)
         self.mock_dlc_handler.validate_dlc.assert_called_once_with(value)
 
-    @pytest.mark.parametrize("value", [CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MAX_DLC_VALUE])
-    def test_dlc__set(self, value):
+    @pytest.mark.parametrize("value, min_dlc", [
+        (CanDlcHandler.MIN_BASE_UDS_DLC, CanDlcHandler.MIN_BASE_UDS_DLC + 1),
+        (CanDlcHandler.MAX_DLC_VALUE - 1, CanDlcHandler.MAX_DLC_VALUE),
+    ])
+    def test_dlc__set__with_warning(self, value, min_dlc):
+        self.mock_can_segmenter.min_dlc = min_dlc
         assert CanSegmenter.dlc.fset(self.mock_can_segmenter, value) is None
         assert self.mock_can_segmenter._CanSegmenter__dlc == value
+        assert self.mock_can_segmenter.min_dlc == value
         self.mock_dlc_handler.validate_dlc.assert_called_once_with(value)
+        self.mock_warn.assert_called_once()
+
+    @pytest.mark.parametrize("value, min_dlc", [
+        (CanDlcHandler.MIN_BASE_UDS_DLC, None),
+        (CanDlcHandler.MAX_DLC_VALUE, CanDlcHandler.MAX_DLC_VALUE),
+    ])
+    def test_dlc__set__without_warning(self, value, min_dlc):
+        self.mock_can_segmenter.min_dlc = min_dlc
+        assert CanSegmenter.dlc.fset(self.mock_can_segmenter, value) is None
+        assert self.mock_can_segmenter._CanSegmenter__dlc == value
+        assert self.mock_can_segmenter.min_dlc == min_dlc
+        self.mock_dlc_handler.validate_dlc.assert_called_once_with(value)
+        self.mock_warn.assert_not_called()
 
     # use_data_optimization
 

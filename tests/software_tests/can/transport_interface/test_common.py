@@ -154,6 +154,17 @@ class TestAbstractCanTransportInterface:
         AbstractCanTransportInterface.dlc.fset(self.mock_can_transport_interface, value)
         assert self.mock_can_transport_interface.segmenter.dlc == value
 
+    # min_dlc
+
+    def test_min_dlc__get(self):
+        assert AbstractCanTransportInterface.min_dlc.fget(self.mock_can_transport_interface) \
+               == self.mock_can_transport_interface.segmenter.min_dlc
+
+    @pytest.mark.parametrize("value", ["something", Mock()])
+    def test_min_dlc__set(self, value):
+        AbstractCanTransportInterface.min_dlc.fset(self.mock_can_transport_interface, value)
+        assert self.mock_can_transport_interface.segmenter.min_dlc == value
+
     # use_data_optimization
 
     def test_use_data_optimization__get(self):
