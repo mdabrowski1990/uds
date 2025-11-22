@@ -121,8 +121,8 @@ class CanSegmenter(AbstractSegmenter):
     @min_dlc.setter
     def min_dlc(self, value: Optional[int]) -> None:
         """
-        Set value of base CAN DLC to use for CAN Packets.
-
+        Set value of minimal CAN DLC to use for CAN Packets during Data Optimization.
+    
         :param value: Value to set.
 
         :raise ValueError: Provided value is greater than base CAN DLC.
