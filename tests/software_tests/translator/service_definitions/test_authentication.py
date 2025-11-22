@@ -158,11 +158,11 @@ class TestAuthenticationIntegration:
                     'unit': 'bytes'
                 },
                 {
-                    'children': (),
+                    'children': ((),),
                     'length': 8,
                     'name': 'certificateClient',
-                    'physical_value': 0xD8,
-                    'raw_value': 0xD8,
+                    'physical_value': (0xD8,),
+                    'raw_value': (0xD8,),
                     'unit': None
                 },
                 {
@@ -533,11 +533,11 @@ class TestAuthenticationIntegration:
                     'unit': 'bytes',
                 },
                 {
-                    'children': (),
+                    'children': ((),),
                     'length': 8,
                     'name': 'challengeServer',
-                    'physical_value': 0xA9,
-                    'raw_value': 0xA9,
+                    'physical_value': (0xA9,),
+                    'raw_value': (0xA9,),
                     'unit': None,
                 },
                 {
@@ -565,11 +565,11 @@ class TestAuthenticationIntegration:
                     'unit': 'bytes',
                 },
                 {
-                    'children': (),
+                    'children': ((),),
                     'length': 8,
                     'name': 'proofOfOwnershipServer',
-                    'physical_value': 0x5B,
-                    'raw_value': 0x5B,
+                    'physical_value': (0x5B,),
+                    'raw_value': (0x5B,),
                     'unit': None,
                 },
                 {
@@ -1554,11 +1554,11 @@ class TestAuthenticationIntegration:
                     'unit': 'bytes'
                 },
                 {
-                    'children': (),
+                    'children': ((),),
                     'length': 8,
                     'name': 'proofOfOwnershipClient',
-                    'physical_value': 0x48,
-                    'raw_value': 0x48,
+                    'physical_value': (0x48,),
+                    'raw_value': (0x48,),
                     'unit': None
                 },
                 {
@@ -1570,11 +1570,11 @@ class TestAuthenticationIntegration:
                     'unit': 'bytes'
                 },
                 {
-                    'children': (),
+                    'children': ((),),
                     'length': 8,
                     'name': 'challengeClient',
-                    'physical_value': 0x05,
-                    'raw_value': 0x05,
+                    'physical_value': (0x05,),
+                    'raw_value': (0x05,),
                     'unit': None
                 },
                 {
@@ -1738,11 +1738,11 @@ class TestAuthenticationIntegration:
                     'unit': 'bytes'
                 },
                 {
-                    'children': (),
+                    'children': ((),),
                     'length': 8,
                     'name': 'proofOfOwnershipServer',
-                    'physical_value': 0x7A,
-                    'raw_value': 0x7A,
+                    'physical_value': (0x7A,),
+                    'raw_value': (0x7A,),
                     'unit': None
                 },
                 {
@@ -1894,7 +1894,7 @@ class TestAuthenticationIntegration:
                                      b'\x97\xcb\xa3\xc2R\xfcT\x1c}\xa5\x1b5\xf3u>\xed\x85\x0e\xd5\x8a\x17\xb8\xa4.\xae '
                                      b'Q\x8a\xcd\x95\xf3d',
                 "lengthOfChallengeClient": 0x0001,
-                "challengeClient": 0x55,
+                "challengeClient": (0x55,),
             },
             RequestSID.Authentication,
             None,
@@ -2118,7 +2118,7 @@ class TestAuthenticationIntegration:
                 "algorithmIndicator": (0xA0, 0x5C, 0x18, 0x48, 0xEB, 0x30, 0xD3, 0x5A, 0x40, 0x9A, 0xB0, 0xC4, 0x70,
                                        0xBF, 0x68, 0xC0),
                 "lengthOfProofOfOwnershipClient": 0x0001,
-                "proofOfOwnershipClient": 0x60,
+                "proofOfOwnershipClient": (0x60,),
                 "lengthOfChallengeClient": 0x000A,
                 "challengeClient": (0x9A, 0xD7, 0x34, 0x45, 0x5B, 0x66, 0x03, 0x09, 0x7A, 0x3D),
                 "lengthOfAdditionalParameter": 0x000F,

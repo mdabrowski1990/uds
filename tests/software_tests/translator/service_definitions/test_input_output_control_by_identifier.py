@@ -344,27 +344,29 @@ class TestInputOutputControlByIdentifier2013Integration:
                 },
                 {
                     'children': (
-                        {
-                            'children': (),
-                            'length': 1,
-                            'name': 'reserved (mask)',
-                            'physical_value': 'no',
-                            'raw_value': 0,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 7,
-                            'name': 'ActiveDiagnosticSession (mask)',
-                            'physical_value': 'yes',
-                            'raw_value': 0x7F,
-                            'unit': None
-                        },
+                        (
+                            {
+                                'children': (),
+                                'length': 1,
+                                'name': 'reserved (mask)',
+                                'physical_value': 'no',
+                                'raw_value': 0,
+                                'unit': None
+                            },
+                            {
+                                'children': (),
+                                'length': 7,
+                                'name': 'ActiveDiagnosticSession (mask)',
+                                'physical_value': 'yes',
+                                'raw_value': 0x7F,
+                                'unit': None
+                            },
+                        ),
                     ),
                     'length': 8,
                     'name': 'controlEnableMask',
-                    'physical_value': 0x7F,
-                    'raw_value': 0x7F,
+                    'physical_value': (0x7F,),
+                    'raw_value': (0x7F,),
                     'unit': None
                 }
             )
@@ -942,8 +944,8 @@ class TestInputOutputControlByIdentifier2020Integration:
             {
                 "DID": 0xF186,
                 "inputOutputControlParameter": 0x03,
-                "controlState": 0x60,
-                "controlEnableMask": 0x7F,
+                "controlState": (0x60,),
+                "controlEnableMask": (0x7F,),
             },
             RequestSID.InputOutputControlByIdentifier,
             None,

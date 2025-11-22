@@ -37,21 +37,23 @@ class TestLinearFormulaDataRecord:
                                                                     children=tuple(),
                                                                     unit=None,
                                                                     min_occurrences=1,
-                                                                    max_occurrences=1)
+                                                                    max_occurrences=1,
+                                                                    enforce_reoccurring=False)
 
-    @pytest.mark.parametrize("name, length, factor, offset, unit, min_occurrences, max_occurrences", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-        ("Some name", 8, 0.5, -10, "C degrees", 1, 8),
+    @pytest.mark.parametrize("name, length, factor, offset, min_occurrences, max_occurrences, unit, enforce_reoccurring", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+        ("Some name", 8, 0.5, -10, 1, 8, "C degrees", True),
     ])
-    def test_init__all_args(self, name, length, factor, offset, unit, min_occurrences, max_occurrences):
+    def test_init__all_args(self, name, length, factor, offset, min_occurrences, max_occurrences, unit, enforce_reoccurring):
         assert LinearFormulaDataRecord.__init__(self.mock_formula_data_record,
                                                 name=name,
                                                 length=length,
                                                 factor=factor,
                                                 offset=offset,
-                                                unit=unit,
                                                 min_occurrences=min_occurrences,
-                                                max_occurrences=max_occurrences) is None
+                                                max_occurrences=max_occurrences,
+                                                unit=unit,
+                                                enforce_reoccurring=enforce_reoccurring) is None
         assert self.mock_formula_data_record.factor == factor
         assert self.mock_formula_data_record.offset == offset
         self.mock_abstract_data_record_init.assert_called_once_with(name=name,
@@ -59,7 +61,8 @@ class TestLinearFormulaDataRecord:
                                                                     children=tuple(),
                                                                     unit=unit,
                                                                     min_occurrences=min_occurrences,
-                                                                    max_occurrences=max_occurrences)
+                                                                    max_occurrences=max_occurrences,
+                                                                    enforce_reoccurring=enforce_reoccurring)
 
     # factor
 
@@ -222,15 +225,16 @@ class TestCustomFormulaDataRecord:
                                                                     children=tuple(),
                                                                     unit=None,
                                                                     min_occurrences=1,
-                                                                    max_occurrences=1)
+                                                                    max_occurrences=1,
+                                                                    enforce_reoccurring=False)
 
     @pytest.mark.parametrize("name, length, encoding_formula, decoding_formula, children, unit, "
-                             "min_occurrences, max_occurrences", [
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
-        ("Some name", 8, MagicMock(), MagicMock(), [Mock(), Mock()], "m/s^2", 1, 8),
+                             "min_occurrences, max_occurrences, enforce_reoccurring", [
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+        ("Some name", 8, MagicMock(), MagicMock(), [Mock(), Mock()], "m/s^2", 1, 8, True),
     ])
     def test_init__all_args(self, name, length, encoding_formula, decoding_formula, children, unit,
-                            min_occurrences, max_occurrences):
+                            min_occurrences, max_occurrences, enforce_reoccurring):
         assert CustomFormulaDataRecord.__init__(self.mock_formula_data_record,
                                                 name=name,
                                                 length=length,
@@ -239,7 +243,8 @@ class TestCustomFormulaDataRecord:
                                                 children=children,
                                                 unit=unit,
                                                 min_occurrences=min_occurrences,
-                                                max_occurrences=max_occurrences) is None
+                                                max_occurrences=max_occurrences,
+                                                enforce_reoccurring=enforce_reoccurring) is None
         assert self.mock_formula_data_record.encoding_formula == encoding_formula
         assert self.mock_formula_data_record.decoding_formula == decoding_formula
         self.mock_abstract_data_record_init.assert_called_once_with(name=name,
@@ -247,7 +252,8 @@ class TestCustomFormulaDataRecord:
                                                                     children=children,
                                                                     unit=unit,
                                                                     min_occurrences=min_occurrences,
-                                                                    max_occurrences=max_occurrences)
+                                                                    max_occurrences=max_occurrences,
+                                                                    enforce_reoccurring=enforce_reoccurring)
         
     # encoding_formula
     

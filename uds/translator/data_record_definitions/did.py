@@ -302,7 +302,8 @@ def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataR
                                                  data_record.max_raw_value: "yes"},
                                  children=[_get_mask_data_record(child) for child in data_record.children],
                                  min_occurrences=data_record.min_occurrences,
-                                 max_occurrences=data_record.max_occurrences)
+                                 max_occurrences=data_record.max_occurrences,
+                                 enforce_reoccurring=True)
 
     def _get_did_data_mask(did: int) -> Tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2013.get(did, None)
@@ -347,7 +348,8 @@ def get_did_data_mask_2020(name: str, optional: bool) -> ConditionalFormulaDataR
                                                  data_record.max_raw_value: "yes"},
                                  children=[_get_mask_data_record(child) for child in data_record.children],
                                  min_occurrences=data_record.min_occurrences,
-                                 max_occurrences=data_record.max_occurrences)
+                                 max_occurrences=data_record.max_occurrences,
+                                 enforce_reoccurring=True)
 
     def _get_did_data_mask(did: int) -> Tuple[RawDataRecord]:
         data_records = DID_DATA_MAPPING_2020.get(did, None)

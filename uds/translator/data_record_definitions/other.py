@@ -93,7 +93,8 @@ def get_formula_for_raw_data_record_with_length(data_record_name: str,
             return (RawDataRecord(name=data_record_name,
                                   length=8,
                                   min_occurrences=length,
-                                  max_occurrences=length),)
+                                  max_occurrences=length,
+                                  enforce_reoccurring=True),)
         raise ValueError("Unexpected length value provided. "
                          f"Expected: {0 if accept_zero_length else 1} <= length (int type). "
                          f"Actual value: {length!r}.")
@@ -399,7 +400,8 @@ def get_file_path_and_name(file_path_and_name_length: int) -> Tuple[TextDataReco
     return (TextDataRecord(name="filePathAndName",
                            encoding=TextEncoding.ASCII,
                            min_occurrences=file_path_and_name_length,
-                           max_occurrences=file_path_and_name_length),)
+                           max_occurrences=file_path_and_name_length,
+                           enforce_reoccurring=True),)
 
 
 def get_file_sizes(file_size_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:

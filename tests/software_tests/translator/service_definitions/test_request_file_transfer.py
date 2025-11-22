@@ -682,7 +682,7 @@ class TestRequestFileTransfer2013Integration:
             {
                 "modeOfOperation": 0x01,
                 "filePathAndNameLength": 0x0001,
-                "filePathAndName": 0x54,
+                "filePathAndName": (0x54,),
                 "dataFormatIdentifier": {
                     "compressionMethod": 0x3,
                     "encryptingMethod": 0x9,
@@ -1071,11 +1071,11 @@ class TestRequestFileTransfer2020Integration:
                     'unit': "bytes"
                 },
                 {
-                    'children': (),
+                    'children': ((),),
                     'length': 8,
                     'name': 'filePathAndName',
                     'physical_value': r".",
-                    'raw_value': 0x2E,
+                    'raw_value': (0x2E,),
                     'unit': None
                 },
                 {
@@ -1748,7 +1748,7 @@ class TestRequestFileTransfer2020Integration:
             {
                 "modeOfOperation": 0x05,
                 "filePathAndNameLength": 0x0001,
-                "filePathAndName": 0x4E,
+                "filePathAndName": (0x4E,),
             },
             RequestSID.RequestFileTransfer,
             None,

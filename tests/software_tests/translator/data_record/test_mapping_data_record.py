@@ -104,18 +104,21 @@ class TestMappingDataRecord:
                                                           children=tuple(),
                                                           unit=None,
                                                           min_occurrences=1,
-                                                          max_occurrences=1)
+                                                          max_occurrences=1,
+                                                          enforce_reoccurring=False)
         mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
                                                                        values_mapping=values_mapping)
 
-    @pytest.mark.parametrize("name, length, values_mapping, children, unit, min_occurrences, max_occurrences", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], "m/s", 0, None),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+    @pytest.mark.parametrize("name, length, values_mapping, children, unit, min_occurrences, max_occurrences, "
+                             "enforce_reoccurring", [
+        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, [Mock(), Mock()], "m/s", 0, None, True),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
     ])
     @patch(f"{SCRIPT_LOCATION}.AbstractDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
     def test_init__all_args(self, mock_abstract_mapping_data_record_init, mock_abstract_data_record_init,
-                            name, length, values_mapping, children, unit, min_occurrences, max_occurrences):
+                            name, length, values_mapping, children, unit, min_occurrences, max_occurrences,
+                            enforce_reoccurring):
         assert MappingDataRecord.__init__(self.mock_data_record,
                                           name=name,
                                           length=length,
@@ -123,13 +126,15 @@ class TestMappingDataRecord:
                                           children=children,
                                           unit=unit,
                                           min_occurrences=min_occurrences,
-                                          max_occurrences=max_occurrences) is None
+                                          max_occurrences=max_occurrences,
+                                          enforce_reoccurring=enforce_reoccurring) is None
         mock_abstract_data_record_init.assert_called_once_with(name=name,
                                                                length=length,
                                                                children=children,
                                                                unit=unit,
                                                                min_occurrences=min_occurrences,
-                                                               max_occurrences=max_occurrences)
+                                                               max_occurrences=max_occurrences,
+                                                               enforce_reoccurring=enforce_reoccurring)
         mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
                                                                        values_mapping=values_mapping)
 
@@ -216,18 +221,21 @@ class TestMappingAndLinearFormulaDataRecord:
                                                              offset=offset,
                                                              unit=None,
                                                              min_occurrences=1,
-                                                             max_occurrences=1)
+                                                             max_occurrences=1,
+                                                             enforce_reoccurring=False)
         mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
                                                                        values_mapping=values_mapping)
 
-    @pytest.mark.parametrize("name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences", [
-        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 5, 10, "m/s", 0, None),
-        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
+    @pytest.mark.parametrize("name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences,"
+                             "enforce_reoccurring", [
+        ("TestRawDataRecord", 8, {1: "A", 2: "B", 3: "C"}, 5, 10, "m/s", 0, None, True),
+        (Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock(), Mock()),
     ])
     @patch(f"{SCRIPT_LOCATION}.LinearFormulaDataRecord.__init__")
     @patch(f"{SCRIPT_LOCATION}.AbstractMappingDataRecord.__init__")
     def test_init__all_args(self, mock_abstract_mapping_data_record_init, mock_linear_data_record_init,
-                            name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences):
+                            name, length, values_mapping, factor, offset, unit, min_occurrences, max_occurrences,
+                            enforce_reoccurring):
         assert MappingAndLinearFormulaDataRecord.__init__(self.mock_data_record,
                                                           name=name,
                                                           length=length,
@@ -236,7 +244,8 @@ class TestMappingAndLinearFormulaDataRecord:
                                                           offset=offset,
                                                           unit=unit,
                                                           min_occurrences=min_occurrences,
-                                                          max_occurrences=max_occurrences) is None
+                                                          max_occurrences=max_occurrences,
+                                                          enforce_reoccurring=enforce_reoccurring) is None
         mock_linear_data_record_init.assert_called_once_with(self.mock_data_record,
                                                              name=name,
                                                              length=length,
@@ -244,7 +253,8 @@ class TestMappingAndLinearFormulaDataRecord:
                                                              offset=offset,
                                                              unit=unit,
                                                              min_occurrences=min_occurrences,
-                                                             max_occurrences=max_occurrences)
+                                                             max_occurrences=max_occurrences,
+                                                             enforce_reoccurring=enforce_reoccurring)
         mock_abstract_mapping_data_record_init.assert_called_once_with(self.mock_data_record,
                                                                        values_mapping=values_mapping)
 

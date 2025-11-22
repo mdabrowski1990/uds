@@ -78,7 +78,8 @@ class TestFormulas:
         self.mock_raw_data_record.assert_called_once_with(name=data_record_name,
                                                           length=8,
                                                           min_occurrences=length,
-                                                          max_occurrences=length)
+                                                          max_occurrences=length,
+                                                          enforce_reoccurring=True)
 
     # get_memory_size_and_memory_address
 
@@ -410,7 +411,8 @@ class TestFormulas:
         self.mock_text_data_record.assert_called_once_with(name="filePathAndName",
                                                            encoding=TextEncoding.ASCII,
                                                            min_occurrences=file_path_and_name_length,
-                                                           max_occurrences=file_path_and_name_length)
+                                                           max_occurrences=file_path_and_name_length,
+                                                           enforce_reoccurring=True)
 
     # get_file_sizes
 
