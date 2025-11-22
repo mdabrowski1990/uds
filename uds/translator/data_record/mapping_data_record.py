@@ -215,7 +215,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
 
         :param raw_value: Raw (bit) value of this Data Record single occurrence.
 
-        :return: A label (0from mapping) or a physical (linear transformation) value for this occurrence.
+        :return: A label (from mapping) or a physical (linear transformation) value for this occurrence.
         """
         if raw_value in self.values_mapping:
             return self.values_mapping[raw_value]
@@ -233,7 +233,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
             return self.labels_mapping[physical_value]  # type: ignore
         raw_value = super().get_raw_value(physical_value)  # type: ignore
         if raw_value in self.values_mapping:
-            warn(message="Numeric physical value was provide for a value with a label: "
+            warn(message="Numeric physical value was provided for a value with a label: "
                          f"{raw_value} ({self.values_mapping[raw_value]}).",
                  category=UserWarning,
                  stacklevel=2)

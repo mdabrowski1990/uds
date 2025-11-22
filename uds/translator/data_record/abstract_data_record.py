@@ -419,7 +419,7 @@ class AbstractDataRecord(ABC):
 
         :param raw_values: Raw (bit) values of this Data Record for multiple occurrences.
 
-        :raise RuntimeError: A called was made on a Data Record that is not reoccurring.
+        :raise RuntimeError: A call was made on a Data Record that is not reoccurring.
         :raise ValueError: Incorrect number of occurrences was provided.
 
         :return: Physical values for provided occurrences.

@@ -279,7 +279,7 @@ Methods:
   (not necessarily total length).
 
 .. note:: Attribute :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.enforce_reoccurring`
-  helps to enforce consistent format (:ref:`~uds.translator.data_record.abstract_data_record.MultipleOccurrencesInfo`)
+  helps to enforce consistent format (:meth:`~uds.translator.data_record.abstract_data_record.MultipleOccurrencesInfo`)
   of data that Data Records operates on.
 
   It is especially useful for Conditional Data Records, when proceeding parameter defines number of occurrences
