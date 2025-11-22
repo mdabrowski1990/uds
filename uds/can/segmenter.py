@@ -44,7 +44,7 @@ class CanSegmenter(AbstractSegmenter):
             DoCAN communication.
         :param dlc: Base CAN DLC value to use for creating CAN Packets.
         :param min_dlc: Minimal CAN DLC to use for CAN Packets during Data Optimization.
-            - None - means no restriction
+            None value means no restriction.
         :param use_data_optimization: Information whether to use CAN Frame Data Optimization in created CAN Packets
             during segmentation.
         :param filler_byte: Filler byte value to use for CAN Frame Data Padding in created CAN Packets during
@@ -122,7 +122,7 @@ class CanSegmenter(AbstractSegmenter):
     def min_dlc(self, value: Optional[int]) -> None:
         """
         Set value of minimal CAN DLC to use for CAN Packets during Data Optimization.
-    
+
         :param value: Value to set.
 
         :raise ValueError: Provided value is greater than base CAN DLC.
