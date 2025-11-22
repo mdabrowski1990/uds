@@ -701,11 +701,13 @@ Following functionalities are provided by :class:`~uds.segmentation.can_segmente
       # configure example CAN Segmenter for this CAN Node
       can_segmenter = uds.can.CanSegmenter(addressing_information=can_node_addressing_information,
                                            dlc=8,
+                                           min_dlc=None,
                                            use_data_optimization=False,
                                            filler_byte=0xFF)
 
       # change CAN Segmenter configuration
       can_segmenter.dlc=0xF
+      can_segmenter.min_dlc=0x8
       can_segmenter.use_data_optimization = True
       can_segmenter.filler_byte = 0xAA
 
@@ -847,6 +849,7 @@ Attributes:
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cr_timeout`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.n_cr_measured`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.dlc`
+- :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.min_dlc`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.use_data_optimization`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.filler_byte`
 - :attr:`~uds.can.transport_interface.common.AbstractCanTransportInterface.flow_control_parameters_generator`
@@ -907,6 +910,7 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
         n_cs=0,
         n_cr_timeout = 900,
         dlc=0xF,
+        min_dlc=0x8,
         use_data_optimization=True,
         filler_byte=0x55,
         flow_control_parameters_generator=uds.can.DefaultFlowControlParametersGenerator(st_min=0,
