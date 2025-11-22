@@ -45,9 +45,10 @@ class LinearFormulaDataRecord(AbstractDataRecord):
                  length: int,
                  factor: Union[float, int],
                  offset: Union[float, int],
-                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1) -> None:
+                 max_occurrences: Optional[int] = 1,
+                 unit: Optional[str] = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Configure Linear Formula Data Record.
 
@@ -59,6 +60,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
+        :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         self.factor = factor
         self.offset = offset
@@ -67,7 +69,8 @@ class LinearFormulaDataRecord(AbstractDataRecord):
                          children=tuple(),
                          unit=unit,
                          min_occurrences=min_occurrences,
-                         max_occurrences=max_occurrences)
+                         max_occurrences=max_occurrences,
+                         enforce_reoccurring=enforce_reoccurring)
 
     @property
     def factor(self) -> Union[float, int]:
@@ -186,9 +189,10 @@ class CustomFormulaDataRecord(AbstractDataRecord):
                  encoding_formula: AliasPhysicalValueEncodingFormula,
                  decoding_formula: AliasPhysicalValueDecodingFormula,
                  children: Sequence[AbstractDataRecord] = tuple(),
-                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1) -> None:
+                 max_occurrences: Optional[int] = 1,
+                 unit: Optional[str] = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Configure custom formula Data Record.
 
@@ -196,17 +200,19 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         :param length: Number of bits that are used to store a single occurrence of this Data Record.
         :param encoding_formula: Conversion function that transforms physical values into raw values.
         :param decoding_formula: Conversion function that transforms raw values into physical values.
-        :param unit: Unit in which a physical value is represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
+        :param unit: Unit in which a physical value is represented.
+        :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         super().__init__(name=name,
                          length=length,
                          children=children,
                          unit=unit,
                          min_occurrences=min_occurrences,
-                         max_occurrences=max_occurrences)
+                         max_occurrences=max_occurrences,
+                         enforce_reoccurring=enforce_reoccurring)
         self.encoding_formula = encoding_formula
         self.decoding_formula = decoding_formula
 

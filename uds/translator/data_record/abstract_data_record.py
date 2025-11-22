@@ -104,7 +104,8 @@ class AbstractDataRecord(ABC):
                  children: Sequence["AbstractDataRecord"],
                  min_occurrences: int,
                  max_occurrences: Optional[int],
-                 unit: Optional[str] = None) -> None:
+                 unit: Optional[str] = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Initialize common part for all Data Records.
 
@@ -115,6 +116,7 @@ class AbstractDataRecord(ABC):
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
         :param unit: Unit in which a physical value is represented.
+        :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         self.name = name
         self.length = length
@@ -122,6 +124,7 @@ class AbstractDataRecord(ABC):
         self.min_occurrences = min_occurrences
         self.max_occurrences = max_occurrences
         self.unit = unit
+        self.enforce_reoccurring = enforce_reoccurring
 
     def _validate_raw_value(self, raw_value: int) -> None:
         """
@@ -293,6 +296,27 @@ class AbstractDataRecord(ABC):
             raise TypeError("Unit value must be a str type or equal None.")
 
     @property
+    def enforce_reoccurring(self) -> bool:
+        """
+        Get flag enforcing this Data Record is treated as reoccurring.
+
+        Values meaning:
+
+        - True - even if :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_occurrences`
+            equals 1 enforce
+            :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring` = True.
+        - False - let :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring`
+            be assessed based on
+            :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_occurrences` value
+        """
+        return self.__enforce_reoccurring
+
+    @enforce_reoccurring.setter
+    def enforce_reoccurring(self, value: bool) -> None:
+        """Decide whether to enforce this DataRecord to be treated as re-occurring."""
+        self.__enforce_reoccurring = bool(value)
+
+    @property
     def is_reoccurring(self) -> bool:
         """
         Whether this Data Record might occur multiple times.
@@ -302,7 +326,7 @@ class AbstractDataRecord(ABC):
         - True - number of occurrences might vary
         - False - there might be 0 or 1 occurrence of this Data Record
         """
-        return self.max_occurrences is None or self.max_occurrences > 1
+        return True if self.enforce_reoccurring else self.max_occurrences is None or self.max_occurrences > 1
 
     @property
     def fixed_total_length(self) -> bool:
@@ -395,7 +419,7 @@ class AbstractDataRecord(ABC):
 
         :param raw_values: Raw (bit) values of this Data Record for multiple occurrences.
 
-        :raise RuntimeError: A called was made on a Data Record that is not reoccurring.
+        :raise RuntimeError: A call was made on a Data Record that is not reoccurring.
         :raise ValueError: Incorrect number of occurrences was provided.
 
         :return: Physical values for provided occurrences.

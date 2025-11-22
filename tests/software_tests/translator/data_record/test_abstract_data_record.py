@@ -330,10 +330,31 @@ class TestAbstractDataRecord:
         assert self.mock_data_record._AbstractDataRecord__unit == value
         mock_isinstance.assert_called_once_with(value, str)
 
+    # enforce_reoccurring
+
+    def test_enforce_reoccurring__get(self):
+        self.mock_data_record._AbstractDataRecord__enforce_reoccurring = Mock()
+        assert (AbstractDataRecord.enforce_reoccurring.fget(self.mock_data_record)
+                == self.mock_data_record._AbstractDataRecord__enforce_reoccurring)
+
+    @pytest.mark.parametrize("value", [True, False])
+    @patch(f"{SCRIPT_LOCATION}.bool")
+    def test_enforce_reoccurring__set(self, mock_bool, value):
+        AbstractDataRecord.enforce_reoccurring.fset(self.mock_data_record, value)
+        self.mock_data_record._AbstractDataRecord__enforce_reoccurring = mock_bool.return_value
+        mock_bool.assert_called_once_with(value)
+
     # is_reoccurring
+    
+    @pytest.mark.parametrize("max_occurrences", [1, 2, None, 43])
+    def test_is_reoccurring__enforced(self, max_occurrences):
+        self.mock_data_record.enforce_reoccurring = True
+        self.mock_data_record.max_occurrences = max_occurrences
+        assert AbstractDataRecord.is_reoccurring.fget(self.mock_data_record) is True
 
     @pytest.mark.parametrize("max_occurrences", [1, 2, None, 43])
-    def test_is_reoccurring(self, max_occurrences):
+    def test_is_reoccurring__not_enforced(self, max_occurrences):
+        self.mock_data_record.enforce_reoccurring = False
         self.mock_data_record.max_occurrences = max_occurrences
         if max_occurrences is None:
             assert AbstractDataRecord.is_reoccurring.fget(self.mock_data_record) is True

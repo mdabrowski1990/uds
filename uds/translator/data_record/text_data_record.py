@@ -107,7 +107,8 @@ class TextDataRecord(AbstractDataRecord):
                  name: str,
                  encoding: TextEncoding,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = None) -> None:
+                 max_occurrences: Optional[int] = None,
+                 enforce_reoccurring: bool = True) -> None:
         """
         Configure Text Data Record.
 
@@ -116,13 +117,15 @@ class TextDataRecord(AbstractDataRecord):
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
+        :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         self.encoding = encoding
         super().__init__(name=name,
                          length=self.__ENCODINGS[self.encoding]["length"],
                          children=tuple(),
                          min_occurrences=min_occurrences,
-                         max_occurrences=max_occurrences)
+                         max_occurrences=max_occurrences,
+                         enforce_reoccurring=enforce_reoccurring)
 
     @property
     def encoding(self) -> TextEncoding:

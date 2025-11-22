@@ -91,9 +91,10 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
                  length: int,
                  values_mapping: Dict[int, str],
                  children: Sequence[AbstractDataRecord] = tuple(),
-                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1) -> None:
+                 max_occurrences: Optional[int] = 1,
+                 unit: Optional[str] = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping Data Record.
 
@@ -102,10 +103,11 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
         :param values_mapping: Mapping of raw values to labels with their meaning.
             Dict keys are raw_values. Dict values are corresponding labels.
         :param children: Contained Data Records.
-        :param unit: Unit in which values without mapping are represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
+        :param unit: Unit in which values without mapping are represented.
+        :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         RawDataRecord.__init__(self,
                                name=name,
@@ -113,7 +115,8 @@ class MappingDataRecord(RawDataRecord, AbstractMappingDataRecord):
                                children=children,
                                unit=unit,
                                min_occurrences=min_occurrences,
-                               max_occurrences=max_occurrences)
+                               max_occurrences=max_occurrences,
+                               enforce_reoccurring=enforce_reoccurring)
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
 
@@ -175,9 +178,10 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
                  values_mapping: Dict[int, str],
                  factor: Union[float, int],
                  offset: Union[float, int],
-                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1) -> None:
+                 max_occurrences: Optional[int] = 1,
+                 unit: Optional[str] = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Create Mapping and Linear Formula Data Record.
 
@@ -187,10 +191,11 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
             Dict keys are raw_values. Dict values are corresponding labels.
         :param factor: Multiplication factor for the linear transformation.
         :param offset: Additive offset for the linear transformation.
-        :param unit: Unit in which values without mapping are represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
+        :param unit: Unit in which values without mapping are represented.
+        :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         LinearFormulaDataRecord.__init__(self,
                                          name=name,
@@ -199,7 +204,8 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
                                          offset=offset,
                                          unit=unit,
                                          min_occurrences=min_occurrences,
-                                         max_occurrences=max_occurrences)
+                                         max_occurrences=max_occurrences,
+                                         enforce_reoccurring=enforce_reoccurring)
         AbstractMappingDataRecord.__init__(self,
                                            values_mapping=values_mapping)
 
@@ -209,7 +215,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
 
         :param raw_value: Raw (bit) value of this Data Record single occurrence.
 
-        :return: A label (0from mapping) or a physical (linear transformation) value for this occurrence.
+        :return: A label (from mapping) or a physical (linear transformation) value for this occurrence.
         """
         if raw_value in self.values_mapping:
             return self.values_mapping[raw_value]
@@ -227,7 +233,7 @@ class MappingAndLinearFormulaDataRecord(LinearFormulaDataRecord, AbstractMapping
             return self.labels_mapping[physical_value]  # type: ignore
         raw_value = super().get_raw_value(physical_value)  # type: ignore
         if raw_value in self.values_mapping:
-            warn(message="Numeric physical value was provide for a value with a label: "
+            warn(message="Numeric physical value was provided for a value with a label: "
                          f"{raw_value} ({self.values_mapping[raw_value]}).",
                  category=UserWarning,
                  stacklevel=2)

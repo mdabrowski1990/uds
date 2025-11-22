@@ -23,26 +23,29 @@ class RawDataRecord(AbstractDataRecord):
                  name: str,
                  length: int,
                  children: Sequence[AbstractDataRecord] = tuple(),
-                 unit: Optional[str] = None,
                  min_occurrences: int = 1,
-                 max_occurrences: Optional[int] = 1) -> None:
+                 max_occurrences: Optional[int] = 1,
+                 unit: Optional[str] = None,
+                 enforce_reoccurring: bool = False) -> None:
         """
         Create Raw Data Record.
 
         :param name: A name for this Data Record.
         :param length: Number of bits that are used to store a single occurrence of this Data Record.
         :param children: Contained Data Records.
-        :param unit: Unit in which a physical value is represented.
         :param min_occurrences: Minimal number of this Data Record occurrences.
         :param max_occurrences: Maximal number of this Data Record occurrences.
             Leave None if there is no limit (infinite number of occurrences).
+        :param unit: Unit in which a physical value is represented.
+        :param enforce_reoccurring: Decide whether to enforce this DataRecord to be treated as re-occurring.
         """
         super().__init__(name=name,
                          length=length,
                          unit=unit,
                          children=children,
                          min_occurrences=min_occurrences,
-                         max_occurrences=max_occurrences)
+                         max_occurrences=max_occurrences,
+                         enforce_reoccurring=enforce_reoccurring)
 
     def get_physical_value(self, raw_value: int) -> int:
         """

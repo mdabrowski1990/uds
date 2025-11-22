@@ -63,7 +63,8 @@ DTC_COUNT = RawDataRecord(name="DTCCount",
 DTC = TextDataRecord(name="DTC",
                      encoding=TextEncoding.DTC_OBD_FORMAT,
                      min_occurrences=1,
-                     max_occurrences=1)
+                     max_occurrences=1,
+                     enforce_reoccurring=False)
 
 # DTC Status
 DTC_STATUS_BIT0 = MappingDataRecord(name="testFailed",
