@@ -130,11 +130,33 @@ class TestTextDataRecord:
 
     # __init__
 
+    @pytest.mark.parametrize("name, encoding", [
+        (Mock(), Mock()),
+        ("Some Name", TextEncoding.ASCII),
+    ])
+    def test_init__mandatory_args(self, name, encoding):
+        mock_length = Mock(spec=int)
+        mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_length))
+        mock_encodings = MagicMock(__getitem__=MagicMock(return_value=mock_encoding))
+        self.mock_data_record._TextDataRecord__ENCODINGS = mock_encodings
+        assert TextDataRecord.__init__(self.mock_data_record,
+                                       name=name,
+                                       encoding=encoding) is None
+        assert self.mock_data_record.encoding == encoding
+        self.mock_abstract_data_record_init.assert_called_once_with(name=name,
+                                                                    children=tuple(),
+                                                                    min_occurrences=1,
+                                                                    max_occurrences=None,
+                                                                    length=mock_length,
+                                                                    enforce_reoccurring=True)
+        mock_encodings.__getitem__.assert_called_once_with(encoding)
+        mock_encoding.__getitem__.assert_called_once_with("length")
+
     @pytest.mark.parametrize("name, encoding, min_occurrences, max_occurrences, enforce_reoccurring", [
         (Mock(), Mock(), Mock(), Mock(), True),
         ("Some Name", TextEncoding.ASCII, 0, None, False),
     ])
-    def test_init(self, name, encoding, min_occurrences, max_occurrences, enforce_reoccurring):
+    def test_init__all_args(self, name, encoding, min_occurrences, max_occurrences, enforce_reoccurring):
         mock_length = Mock(spec=int)
         mock_encoding = MagicMock(__getitem__=MagicMock(return_value=mock_length))
         mock_encodings = MagicMock(__getitem__=MagicMock(return_value=mock_encoding))
