@@ -275,8 +275,16 @@ Methods:
   **directly** as this is `an abstract class <https://en.wikipedia.org/wiki/Abstract_type>`_.
 
 .. note:: Attribute :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.length` contains
-    number of **bits** (not bytes) that are used to present **a single Data Record occurrence**
-    (not necessarily total length).
+  number of **bits** (not bytes) that are used to present **a single Data Record occurrence**
+  (not necessarily total length).
+
+.. note:: Attribute :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.enforce_reoccurring`
+  helps to enforce consistent format (:ref:`~uds.translator.data_record.abstract_data_record.MultipleOccurrencesInfo`)
+  of data that Data Records operates on.
+
+  It is especially useful for Conditional Data Records, when proceeding parameter defines number of occurrences
+  (e.g. *filePathAndName* Data Record occurrences number depends on *filePathAndNameLength* value in
+  :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>`).
 
 
 Raw Data Record
@@ -472,7 +480,7 @@ Text Data Record
 :class:`~uds.translator.data_record.text_data_record.TextDataRecord` class is used to define entries
 in diagnostic messages that can be translated to text using known text encoding format.
 All supported encoding formats are defined in :class:`~uds.translator.data_record.text_data_record.TextEncoding` enum.
-Physical values produces by :class:`~uds.translator.data_record.text_data_record.TextDataRecord` are str type, even
+Physical values produced by :class:`~uds.translator.data_record.text_data_record.TextDataRecord` are str type, even
 the output of :meth:`~uds.translator.data_record.text_data_record.TextDataRecord.get_physical_values` method is
 str type.
 
@@ -593,5 +601,5 @@ Typical use cases:
   )
 
   # get_message_continuation
-  conditional_mapping.get_message_continuation(0x11)  # [memoryAddress with length 8, memorySize with length 8]
-  conditional_mapping.get_message_continuation(0x42)  # [memoryAddress with length 16, memorySize with length 32]
+  conditional_formula.get_message_continuation(0x11)  # [memoryAddress with length 8, memorySize with length 8]
+  conditional_formula.get_message_continuation(0x42)  # [memoryAddress with length 16, memorySize with length 32]
