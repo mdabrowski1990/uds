@@ -254,6 +254,7 @@ Attributes:
 - :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_occurrences`
 - :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.max_occurrences`
 - :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.unit`
+- :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.enforce_reoccurring`
 - :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.is_reoccurring`
 - :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.fixed_total_length`
 - :attr:`~uds.translator.data_record.abstract_data_record.AbstractDataRecord.min_raw_value`
