@@ -220,8 +220,12 @@ ROUTINE_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                              children=[SPRMIB, ROUTINE_CONTROL_TYPE])
 
 # SID 0x3E
-ZERO_SUB_FUNCTION = RawDataRecord(name="zeroSubFunction",
-                                  length=7)
+ZERO_SUB_FUNCTION_MAPPING = {
+    0x00: "zeroSubFunction",
+}
+ZERO_SUB_FUNCTION = MappingDataRecord(name="zeroSubFunction",
+                                      length=7,
+                                      values_mapping=ZERO_SUB_FUNCTION_MAPPING)
 TESTER_PRESENT_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                             length=8,
                                             children=[SPRMIB, ZERO_SUB_FUNCTION])

@@ -4673,8 +4673,47 @@ Positive Response Format
 
 TesterPresent (0x3E)
 --------------------
-TesterPresent service is used by the client to indicate to a server(s) that the client is still connected to a vehicle
-and certain diagnostic services and/or communication that have been previously activated are to remain active.
+TesterPresent service is used by the client to indicate to the server that the diagnostic tester is still
+present on the communication bus.
+Reception of this service prevents the server’s :ref:`S3Server <knowledge-base-s3-server>` timer from expiring,
+thereby extending the active diagnostic session.
+
+.. note:: From the server’s implementation perspective, TesterPresent does not perform any diagnostic action.
+   Reception of **any** diagnostic request (TesterPresent or otherwise) resets/extends the S3\ :sub:`Server` timer.
+
+
+Request Format
+``````````````
++----------------------------------------------+------------+-----------+--------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                    | Present |
++==============================================+============+===========+================================+=========+
+| SID                                          | 8          | 0x3E      | TesterPresent                  | Always  |
++-------------+--------------------------------+------------+-----------+--------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required          | Always  |
+|             |                                |            |           |                                |         |
+|             |                                |            |           | 1 = suppress positive response |         |
+|             +--------------------------------+------------+-----------+--------------------------------+         |
+|             | zeroSubFunction                | 7 (b[6-0]) | 0x00-0x7F | 0x00: zeroSubFunction          |         |
+|             |                                |            |           |                                |         |
+|             |                                |            |           | 0x01-0x7F: reserved            |         |
++-------------+--------------------------------+------------+-----------+--------------------------------+---------+
+
+
+Positive Response Format
+````````````````````````
++----------------------------------------------+------------+-----------+-----------------------------------------+---------+
+| Name                                         | Bit Length | Value     | Description                             | Present |
++==============================================+============+===========+=========================================+=========+
+| RSID                                         | 8          | 0x7E      | Positive Response: TesterPresent (0x3E) | Always  |
++-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
+| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                   | Always  |
+|             |                                |            |           |                                         |         |
+|             |                                |            |           | 1 = suppress positive response          |         |
+|             +--------------------------------+------------+-----------+-----------------------------------------+         |
+|             | zeroSubFunction                | 7 (b[6-0]) | 0x00-0x7F | 0x00: zeroSubFunction                   |         |
+|             |                                |            |           |                                         |         |
+|             |                                |            |           | 0x01-0x7F: reserved                     |         |
++-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
 
 
 .. _knowledge-base-service-secured-data-transmission:
