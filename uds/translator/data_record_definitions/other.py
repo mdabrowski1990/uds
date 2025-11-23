@@ -482,6 +482,46 @@ def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRe
                           unit="bytes"),)
 
 
+def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
+    """
+    Get Security Access Data Records that are part of request message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the request message after given SubFunction value.
+    """
+    if sub_function % 2:
+        return (SECURITY_ACCESS_DATA,)
+    return (SECURITY_KEY,)
+
+
+def get_security_access_response(sub_function: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
+    """
+    Get Security Access Data Records that are part of response message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the response message after given SubFunction value.
+    """
+    if sub_function % 2:
+        return (SECURITY_SEED,)
+    return ()
+
+
+def get_communication_control_request(sub_function: int
+                                      ) -> Union[Tuple[RawDataRecord, MappingDataRecord], Tuple[RawDataRecord]]:
+    """
+    Get Communication Control Data Records that are part of request message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the request message after given SubFunction value.
+    """
+    if sub_function & 0x7F in {0x04, 0x05}:
+        return COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER
+    return (COMMUNICATION_TYPE,)
+
+
 # Shared
 RESERVED_BIT = RawDataRecord(name="reserved",
                              length=1)
@@ -782,10 +822,8 @@ SECURITY_KEY = RawDataRecord(name="securityKey",
                              length=8,
                              min_occurrences=1,
                              max_occurrences=None)
-CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(
-    formula=lambda security_access_type: (SECURITY_ACCESS_DATA, ) if security_access_type % 2 else (SECURITY_KEY, ))
-CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(
-    formula=lambda security_access_type: (SECURITY_SEED, ) if security_access_type % 2 else ())
+CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(formula=get_security_access_request)
+CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(formula=get_security_access_response)
 
 # SID 0x28
 MESSAGES_TYPE = MappingDataRecord(name="messagesType",
@@ -810,9 +848,7 @@ COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
                                                values_mapping={0: "reserved"})
-CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(
-    formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER) if control_type & 0x7F in {0x04, 0x05}
-    else (COMMUNICATION_TYPE,))
+CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(formula=get_communication_control_request)
 
 # SID 0x29
 CERTIFICATE_CLIENT_LENGTH = RawDataRecord(name="lengthOfCertificateClient",

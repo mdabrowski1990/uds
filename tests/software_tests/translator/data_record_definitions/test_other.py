@@ -28,7 +28,8 @@ from uds.translator.data_record_definitions.other import (
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
-    get_scaling_byte_extension, get_scaling_byte_extension_formula
+    get_scaling_byte_extension,
+    get_scaling_byte_extension_formula, get_security_access_request, get_security_access_response, get_communication_control_request, SECURITY_ACCESS_DATA, SECURITY_KEY, SECURITY_SEED, COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.other"
@@ -489,3 +490,33 @@ class TestFormulas:
         self.mock_raw_data_record.assert_called_once_with(name="fileSizeUncompressedOrDirInfoLength",
                                                           length=8 * file_size_or_dir_info_parameter_length,
                                                           unit="bytes")
+
+    # get_security_access_request
+
+    @pytest.mark.parametrize("sub_function", [1, 93, 253])
+    def test_get_security_access_request__odd(self, sub_function):
+        assert get_security_access_request(sub_function) == (SECURITY_ACCESS_DATA,)
+
+    @pytest.mark.parametrize("sub_function", [2, 48, 254])
+    def test_get_security_access_request__even(self, sub_function):
+        assert get_security_access_request(sub_function) == (SECURITY_KEY,)
+
+    # get_security_access_response
+
+    @pytest.mark.parametrize("sub_function", [1, 93, 253])
+    def test_get_security_access_response__odd(self, sub_function):
+        assert get_security_access_response(sub_function) == (SECURITY_SEED,)
+
+    @pytest.mark.parametrize("sub_function", [2, 48, 254])
+    def test_get_security_access_response__even(self, sub_function):
+        assert get_security_access_response(sub_function) == ()
+
+    # get_communication_control_request
+
+    @pytest.mark.parametrize("sub_function", [0x04, 0x05, 0x84, 0x85])
+    def test_get_communication_control_request__special(self, sub_function):
+        assert get_communication_control_request(sub_function) == (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER)
+
+    @pytest.mark.parametrize("sub_function", [0x03, 0x06, 0xB4])
+    def test_get_communication_control_request__other(self, sub_function):
+        assert get_communication_control_request(sub_function) == (COMMUNICATION_TYPE,)
