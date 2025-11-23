@@ -400,9 +400,8 @@ class Service:
                     total_raw_value = (total_raw_value << _length) + continuation_raw_value
                     # calculate raw_value of the last Data Record (in the message_continuation)
                     # in case it is followed by another ConditionalDataRecord
-                    if isinstance(message_continuation[-1], AbstractDataRecord):
-                        last_data_record_mask = (1 << message_continuation[-1].length) - 1
-                        raw_value = continuation_raw_value & last_data_record_mask
+                    last_data_record_mask = (1 << message_continuation[-1].length) - 1
+                    raw_value = continuation_raw_value & last_data_record_mask
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if total_length % 8 != 0:
