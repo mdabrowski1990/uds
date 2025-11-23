@@ -40,3 +40,4 @@ from .write_data_by_identifier import (
     WRITE_DATA_BY_IDENTIFIER_2013,
     WRITE_DATA_BY_IDENTIFIER_2020,
 )
+from .write_memory_by_address import WRITE_MEMORY_BY_ADDRESS

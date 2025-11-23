@@ -635,19 +635,20 @@ class TestService:
          [],
          b"\xD0"),
         ([Mock(spec=AbstractDataRecord, name="A #1", length=2),
-          Mock(spec=AbstractConditionalDataRecord)],
-         {"A #1": [0, 1, 0, 1], "A #2": [0x3, 0x0]},
+          Mock(spec=AbstractConditionalDataRecord),
+          Mock(spec=AbstractDataRecord, name="A #3", length=8)],
+         {"A #1": [0, 1, 0, 1], "A #2": [0x3, 0x0], "A #3": 0xFF},
          [Mock(spec=AbstractDataRecord, name="A #2", length=4)],
          b"\xBE\xEF"),
         ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=8),
-          Mock(spec=AbstractConditionalDataRecord, get_message_continuation=Mock(return_value=[])),
-          Mock(spec=AbstractConditionalDataRecord)],
+          Mock(spec=AbstractConditionalDataRecord),
+          Mock(spec=AbstractConditionalDataRecord, get_message_continuation=Mock(return_value=[]))],
          {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
                               0,
                               {"Data Record - 1.1": 9, "Data Record - 1.2": {"A": 1, "B": 2}}],
           "Data Record - 2": [{"Data Record - 2.1": 0, "Data Record - 2.2": 2}]},
          [Mock(spec=AbstractDataRecord, name="Data Record - 2", length=24)],
-         [0xCa, 0xFF, 0xE, 0x56]),
+         [0xCA, 0xFF, 0x0E, 0x56]),
     ])
     @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
     def test_encode_message__valid__condition(self, mock_get_data_record_occurrences,
@@ -659,13 +660,98 @@ class TestService:
         for data_record in message_structure + message_continuation:
             data_record.name = data_record._extract_mock_name()
         mock_get_message_continuation = Mock(return_value=message_continuation)
-        message_structure[-1].get_message_continuation = mock_get_message_continuation
+        message_structure[1].get_message_continuation = mock_get_message_continuation
         assert Service._encode_message(data_records_values=data_records_values,
                                        message_structure=message_structure) == bytearray(payload)
         mock_get_data_record_occurrences.assert_has_calls([call(data_record=dr, value=values_copy[dr.name])
                                                            for dr in message_structure + message_continuation
                                                            if isinstance(dr, AbstractDataRecord)],
-                                                          any_order=False)
+                                                          any_order=True)
+        self.mock_int_to_bytes.assert_called()
+        mock_get_message_continuation.assert_called_once()
+
+    @pytest.mark.parametrize("message_structure, data_records_values, message_continuation_1, message_continuation_2, "
+                             "payload", [
+        ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=8),
+          Mock(spec=AbstractConditionalDataRecord),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
+                              0,
+                              {"Data Record - 1.1": 9, "Data Record - 1.2": {"A": 1, "B": 2}}],
+          "Data Record - 2": [{"Data Record - 2.1": 0, "Data Record - 2.2": 2}],
+          "Data Record - 3": 0x00},
+         [Mock(spec=AbstractDataRecord, name="Data Record - 2", length=8)],
+         [Mock(spec=AbstractDataRecord, name="Data Record - 3", length=8)],
+         [0x12, 0x34, 0x56]),
+        ([Mock(spec=AbstractDataRecord, name="A", length=8),
+          Mock(spec=AbstractConditionalDataRecord),
+          Mock(spec=AbstractConditionalDataRecord),
+          Mock(spec=AbstractDataRecord, name="D", length=16)],
+         {"A": 0xF0,
+          "B1": 0xE1,
+          "B2": 0xD2,
+          "C": 0xC3,
+          "D": 0xB4A5},
+         [Mock(spec=AbstractDataRecord, name="B1", length=8), Mock(spec=AbstractDataRecord, name="B2", length=8)],
+         [Mock(spec=AbstractDataRecord, name="C", length=8, min_occurrences=0)],
+         [0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__valid__condition_after_condition(self, mock_get_data_record_occurrences,
+                                                              message_structure, data_records_values,
+                                                              message_continuation_1, message_continuation_2, payload):
+        values_copy = deepcopy(data_records_values)
+        self.mock_int_to_bytes.return_value = payload
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
+        for data_record in message_structure + message_continuation_1 + message_continuation_2:
+            data_record.name = data_record._extract_mock_name()
+        mock_get_message_continuation_1 = Mock(return_value=message_continuation_1)
+        mock_get_message_continuation_2 = Mock(return_value=message_continuation_2)
+        message_structure[1].get_message_continuation = mock_get_message_continuation_1
+        message_structure[2].get_message_continuation = mock_get_message_continuation_2
+        assert Service._encode_message(data_records_values=data_records_values,
+                                       message_structure=message_structure) == bytearray(payload)
+        mock_get_data_record_occurrences.assert_has_calls(
+            [call(data_record=dr, value=values_copy[dr.name])
+             for dr in message_structure + message_continuation_1 + message_continuation_2
+             if isinstance(dr, AbstractDataRecord)],
+            any_order=True)
+        self.mock_int_to_bytes.assert_called()
+        mock_get_message_continuation_1.assert_called_once()
+        mock_get_message_continuation_2.assert_called_once()
+
+    @pytest.mark.parametrize("message_structure, data_records_values, message_continuation, payload", [
+        ([Mock(spec=AbstractDataRecord, name="Data Record - 1", length=8),
+          Mock(spec=AbstractConditionalDataRecord)],
+         {"Data Record - 1": [{"Data Record - 1.1": 0, "Data Record - 1.2": 2},
+                              0,
+                              {"Data Record - 1.1": 9, "Data Record - 1.2": {"A": 1, "B": 2}}],
+          "Data Record - 2": [{"Data Record - 2.1": 0, "Data Record - 2.2": 2}]},
+         [Mock(spec=AbstractDataRecord, name="Data Record - 2", length=8),
+          Mock(spec=AbstractConditionalDataRecord, get_message_continuation=Mock(return_value=[]))],
+         [0x12, 0x34, 0x56]),
+        ([Mock(spec=AbstractDataRecord, name="A", length=8),
+          Mock(spec=AbstractConditionalDataRecord),
+          Mock(spec=AbstractDataRecord, name="C", length=8)],
+         {"A": 0xF0,
+          "B": 0xE1D2,
+          "C": 0xC3},
+         [Mock(spec=AbstractDataRecord, name="B", length=16),
+          Mock(spec=AbstractConditionalDataRecord, get_message_continuation=Mock(return_value=[]))],
+         [0xF0, 0xE1, 0xD2]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_data_record_occurrences")
+    def test_encode_message__valid__condition_in_condition(self, mock_get_data_record_occurrences,
+                                                           message_structure, data_records_values,
+                                                           message_continuation, payload):
+        self.mock_int_to_bytes.return_value = payload
+        mock_get_data_record_occurrences.side_effect = self.get_data_record_occurrences
+        for data_record in message_structure + message_continuation:
+            data_record.name = data_record._extract_mock_name()
+        mock_get_message_continuation = Mock(return_value=message_continuation)
+        message_structure[1].get_message_continuation = mock_get_message_continuation
+        assert Service._encode_message(data_records_values=data_records_values,
+                                       message_structure=message_structure) == bytearray(payload)
         self.mock_int_to_bytes.assert_called()
         mock_get_message_continuation.assert_called_once()
 

@@ -4,14 +4,21 @@ import pytest
 from mock import Mock, call, patch
 
 from uds.translator.data_record_definitions.other import (
+    COMMUNICATION_TYPE,
     EXPONENT,
     EXPONENT_BIT_LENGTH,
     FORMULA_IDENTIFIER,
     MANTISSA,
     MANTISSA_BIT_LENGTH,
+    NODE_IDENTIFICATION_NUMBER,
+    SECURITY_ACCESS_DATA,
+    SECURITY_KEY,
+    SECURITY_SEED,
     STATE_AND_CONNECTION_TYPE,
     UNIT_OR_FORMAT,
     TextEncoding,
+    get_communication_control_request,
+    get_data,
     get_data_from_memory,
     get_data_records_for_formula_parameters,
     get_decode_float_value_formula,
@@ -28,6 +35,9 @@ from uds.translator.data_record_definitions.other import (
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
     get_scaling_byte_extension,
+    get_scaling_byte_extension_formula,
+    get_security_access_request,
+    get_security_access_response,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.other"
@@ -102,6 +112,20 @@ class TestFormulas:
                                                          length=8 * memory_size_length,
                                                          unit="bytes")],
                                                    any_order=False)
+        
+    # get_data
+
+    def test_get_data__value_error(self):
+        with pytest.raises(ValueError):
+            get_data(0)
+
+    @pytest.mark.parametrize("memory_size_length", [1, 23])
+    def test_get_data(self, memory_size_length):
+        assert get_data(memory_size_length) == (self.mock_raw_data_record.return_value,)
+        self.mock_raw_data_record.assert_called_once_with(name="data",
+                                                          length=8,
+                                                          min_occurrences=memory_size_length,
+                                                          max_occurrences=memory_size_length,)
 
     # get_data_from_memory
 
@@ -223,14 +247,26 @@ class TestFormulas:
     def test_get_scaling_byte_extension__other(self, scaling_byte):
         assert get_scaling_byte_extension(scaling_byte, Mock()) == ()
 
-    # get_formula_parameters
+    # get_scaling_byte_extension_formula
+
+    @patch(f"{SCRIPT_LOCATION}.get_scaling_byte_extension")
+    def test_get_scaling_byte_extension_formula(self, mock_get_scaling_byte_extension):
+        mock_scaling_byte = Mock()
+        mock_scaling_byte_number = Mock()
+        formula = get_scaling_byte_extension_formula(mock_scaling_byte_number)
+        assert callable(formula)
+        assert formula(mock_scaling_byte) == mock_get_scaling_byte_extension.return_value
+        mock_get_scaling_byte_extension.assert_called_once_with(scaling_byte=mock_scaling_byte,
+                                                                scaling_byte_number=mock_scaling_byte_number)
+
+    # get_data_records_for_formula_parameters
 
     @pytest.mark.parametrize("raw_value, physical_value", [
         (0xFF, Mock()),
         (0xAB, "some unknown formula"),
     ])
     @patch(f"{SCRIPT_LOCATION}.FORMULA_IDENTIFIER")
-    def test_get_formula_parameters__value_error(self, mock_formula_identifier, raw_value, physical_value):
+    def test_get_data_records_for_formula_parameters__value_error(self, mock_formula_identifier, raw_value, physical_value):
         mock_formula_identifier.get_physical_value.return_value = physical_value
         with pytest.raises(ValueError):
             get_data_records_for_formula_parameters(formula_identifier=raw_value, scaling_byte_number=1)
@@ -243,7 +279,7 @@ class TestFormulas:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_decode_float_value_formula")
     @patch(f"{SCRIPT_LOCATION}.get_encode_float_value_formula")
-    def test_get_formula_parameters(self, mock_get_encode_float_value_formula,
+    def test_get_data_records_for_formula_parameters(self, mock_get_encode_float_value_formula,
                                     mock_get_decode_float_value_formula,
                                     raw_value, scaling_byte_number, constants_names):
         assert (get_data_records_for_formula_parameters(formula_identifier=raw_value,
@@ -462,3 +498,33 @@ class TestFormulas:
         self.mock_raw_data_record.assert_called_once_with(name="fileSizeUncompressedOrDirInfoLength",
                                                           length=8 * file_size_or_dir_info_parameter_length,
                                                           unit="bytes")
+
+    # get_security_access_request
+
+    @pytest.mark.parametrize("sub_function", [1, 93, 253])
+    def test_get_security_access_request__odd(self, sub_function):
+        assert get_security_access_request(sub_function) == (SECURITY_ACCESS_DATA,)
+
+    @pytest.mark.parametrize("sub_function", [2, 48, 254])
+    def test_get_security_access_request__even(self, sub_function):
+        assert get_security_access_request(sub_function) == (SECURITY_KEY,)
+
+    # get_security_access_response
+
+    @pytest.mark.parametrize("sub_function", [1, 93, 253])
+    def test_get_security_access_response__odd(self, sub_function):
+        assert get_security_access_response(sub_function) == (SECURITY_SEED,)
+
+    @pytest.mark.parametrize("sub_function", [2, 48, 254])
+    def test_get_security_access_response__even(self, sub_function):
+        assert get_security_access_response(sub_function) == ()
+
+    # get_communication_control_request
+
+    @pytest.mark.parametrize("sub_function", [0x04, 0x05, 0x84, 0x85])
+    def test_get_communication_control_request__special(self, sub_function):
+        assert get_communication_control_request(sub_function) == (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER)
+
+    @pytest.mark.parametrize("sub_function", [0x03, 0x06, 0xB4])
+    def test_get_communication_control_request__other(self, sub_function):
+        assert get_communication_control_request(sub_function) == (COMMUNICATION_TYPE,)

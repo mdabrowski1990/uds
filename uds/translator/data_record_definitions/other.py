@@ -1,4 +1,4 @@
-"""Remaining Data Records definitions."""
+"""Remaining Data Records definitions."""  # pylint: disable=too-many-lines
 
 __all__ = [
     # Shared
@@ -51,7 +51,9 @@ __all__ = [
     "FILE_SIZE_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES",
     "LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER",
     "FILE_SIZE_OR_DIR_INFO_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES_OR_DIR_INFO", "CONDITIONAL_DIR_INFO",
-    "FILE_POSITION"
+    "FILE_POSITION",
+    # SID 0x3D
+    "CONDITIONAL_DATA",
 ]
 
 from decimal import Decimal
@@ -124,6 +126,24 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
             RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
+def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
+    """
+    Get `data` Data Record for given `memorySizeLength` value.
+
+    :param memory_size_length: Proceeding `memorySizeLength` value.
+
+    :raise ValueError: Provided `memorySizeLength` equals 0.
+
+    :return: Tuple with `data` Data Record.
+    """
+    if memory_size_length == 0:
+        raise ValueError("Value of `memorySizeLength` must be greater than 0.")
+    return (RawDataRecord(name="data",
+                          length=8,
+                          min_occurrences=memory_size_length,
+                          max_occurrences=memory_size_length),)
+
+
 def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
     """
     Get `Data from Memory` Data Record for given `addressAndLengthFormatIdentifier` value.
@@ -186,7 +206,7 @@ def get_max_number_of_block_length_file_transfer(length_format_identifier: int) 
     :return: Tuple with `maxNumberOfBlockLength` Data Record.
     """
     if length_format_identifier == 0:
-        raise ValueError("Value of `length_format_identifier` must be greater than 0.")
+        raise ValueError("Value of `lengthFormatIdentifier` must be greater than 0.")
     return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * length_format_identifier, unit="bytes"),)
 
 
@@ -460,6 +480,46 @@ def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRe
     return (RawDataRecord(name="fileSizeUncompressedOrDirInfoLength",
                           length=8 * file_size_or_dir_info_parameter_length,
                           unit="bytes"),)
+
+
+def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
+    """
+    Get Security Access Data Records that are part of request message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the request message after given SubFunction value.
+    """
+    if sub_function % 2:
+        return (SECURITY_ACCESS_DATA,)
+    return (SECURITY_KEY,)
+
+
+def get_security_access_response(sub_function: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
+    """
+    Get Security Access Data Records that are part of response message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the response message after given SubFunction value.
+    """
+    if sub_function % 2:
+        return (SECURITY_SEED,)
+    return ()
+
+
+def get_communication_control_request(sub_function: int
+                                      ) -> Union[Tuple[RawDataRecord, MappingDataRecord], Tuple[RawDataRecord]]:
+    """
+    Get Communication Control Data Records that are part of request message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the request message after given SubFunction value.
+    """
+    if sub_function & 0x7F in {0x04, 0x05}:
+        return COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER
+    return (COMMUNICATION_TYPE,)
 
 
 # Shared
@@ -762,10 +822,8 @@ SECURITY_KEY = RawDataRecord(name="securityKey",
                              length=8,
                              min_occurrences=1,
                              max_occurrences=None)
-CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(
-    formula=lambda security_access_type: (SECURITY_ACCESS_DATA, ) if security_access_type % 2 else (SECURITY_KEY, ))
-CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(
-    formula=lambda security_access_type: (SECURITY_SEED, ) if security_access_type % 2 else ())
+CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(formula=get_security_access_request)
+CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(formula=get_security_access_response)
 
 # SID 0x28
 MESSAGES_TYPE = MappingDataRecord(name="messagesType",
@@ -790,9 +848,7 @@ COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
                                                values_mapping={0: "reserved"})
-CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(
-    formula=lambda control_type: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER) if control_type & 0x7F in {0x04, 0x05}
-    else (COMMUNICATION_TYPE,))
+CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(formula=get_communication_control_request)
 
 # SID 0x29
 CERTIFICATE_CLIENT_LENGTH = RawDataRecord(name="lengthOfCertificateClient",
@@ -977,3 +1033,6 @@ CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRec
 
 FILE_POSITION = RawDataRecord(name="filePosition",
                               length=64)
+
+# SID 0x3D
+CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)

@@ -340,6 +340,9 @@ class Service:
                         else len(data_record_info["raw_value"])
                     remaining_length -= occurrences_number * data_record_info["length"]
                     decoded_message_continuation.append(data_record_info)
+                    raw_values.append(data_record_info["raw_value"]
+                                      if isinstance(data_record_info["raw_value"], int) else
+                                      data_record_info["raw_value"][-1])
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if check_remaining_length and remaining_length != 0:
@@ -347,7 +350,7 @@ class Service:
         return tuple(decoded_message_continuation)
 
     @classmethod
-    def _encode_message(cls,
+    def _encode_message(cls,  # pylint: disable=too-many-branches
                         data_records_values: Dict[str, DataRecordValueAlias],
                         message_structure: AliasMessageStructure,
                         check_unused_data_record_values: bool = True) -> bytearray:
@@ -370,7 +373,6 @@ class Service:
         """
         total_raw_value = 0
         total_length = 0
-        occurrences = []
         for data_record in message_structure:
             if isinstance(data_record, AbstractDataRecord):
                 if data_record.name in data_records_values:
@@ -381,6 +383,8 @@ class Service:
                     occurrences = []
                 else:
                     raise InconsistencyError(f"Value for Data Record {data_record.name!r} was not provided.")
+                if len(occurrences) == 0:
+                    break
                 for raw_value in occurrences:
                     total_raw_value = (total_raw_value << data_record.length) + raw_value
                     total_length += data_record.length
@@ -392,13 +396,15 @@ class Service:
                                                                check_unused_data_record_values=False)
                     _length = 8 * len(payload_continuation)
                     total_length += _length
-                    total_raw_value = ((total_raw_value << _length)
-                                       + bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN))
+                    continuation_raw_value = bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN)
+                    total_raw_value = (total_raw_value << _length) + continuation_raw_value
+                    # calculate raw_value of the last Data Record (in the message_continuation)
+                    # in case it is followed by another ConditionalDataRecord
+                    if isinstance(message_continuation[-1], AbstractDataRecord):
+                        last_data_record_mask = (1 << message_continuation[-1].length) - 1
+                        raw_value = continuation_raw_value & last_data_record_mask
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
-            # stop processing if the proceeding Data Record was empty (that means message is over)
-            if not occurrences:
-                break
         if total_length % 8 != 0:
             raise RuntimeError("Incorrect message structure was provided.")
         if check_unused_data_record_values and data_records_values:
