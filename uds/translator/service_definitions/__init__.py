@@ -6,6 +6,7 @@ from .clear_diagnostic_information import (
     CLEAR_DIAGNOSTIC_INFORMATION_2013,
     CLEAR_DIAGNOSTIC_INFORMATION_2020,
 )
+from .write_memory_by_address import WRITE_MEMORY_BY_ADDRESS
 from .diagnostic_session_control import DIAGNOSTIC_SESSION_CONTROL
 from .dynamically_define_data_identifier import (
     DYNAMICALLY_DEFINE_DATA_IDENTIFIER,

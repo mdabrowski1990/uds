@@ -1,4 +1,4 @@
-"""Translation for WriteMemoryByAddress (SID 0x23) service."""
+"""Translation for WriteMemoryByAddress (SID 0x3D) service."""
 
 __all__ = ["WRITE_MEMORY_BY_ADDRESS"]
 
