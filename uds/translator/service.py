@@ -340,7 +340,9 @@ class Service:
                         else len(data_record_info["raw_value"])
                     remaining_length -= occurrences_number * data_record_info["length"]
                     decoded_message_continuation.append(data_record_info)
-                    raw_values.append(data_record_info["raw_value"])
+                    raw_values.append(data_record_info["raw_value"]
+                                      if isinstance(data_record_info["raw_value"], int) else
+                                      data_record_info["raw_value"][-1])
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
         if check_remaining_length and remaining_length != 0:
@@ -394,10 +396,10 @@ class Service:
                     _length = 8 * len(payload_continuation)
                     total_length += _length
                     continuation_raw_value = bytes_to_int(payload_continuation, endianness=Endianness.BIG_ENDIAN)
-                    total_raw_value = ((total_raw_value << _length) + continuation_raw_value)
+                    total_raw_value = (total_raw_value << _length) + continuation_raw_value
                     # calculate raw_value of the last Data Record (in the message_continuation)
                     # in case it is followed by another ConditionalDataRecord
-                    last_data_record_mask = (1 << message_continuation[-1].length) - 1
+                    last_data_record_mask = (1 << message_continuation[-1].length) - 1  # type: ignore
                     raw_value = continuation_raw_value & last_data_record_mask
             else:
                 raise NotImplementedError("Unexpected Data Record type found in the structure.")
