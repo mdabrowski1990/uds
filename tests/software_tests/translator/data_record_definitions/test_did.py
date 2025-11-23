@@ -188,10 +188,24 @@ class TestFunctions:
 
     # get_did_records_formula_2013
 
-    def test_get_did_records_formula_2013(self):
-        assert callable(get_did_records_formula_2013(Mock()))
+    @patch(f"{SCRIPT_LOCATION}.get_dids_2013")
+    def test_get_did_records_formula_2013(self, mock_get_dids_2013):
+        mock_record_number = Mock()
+        mock_did_count = Mock()
+        formula = get_did_records_formula_2013(mock_record_number)
+        assert callable(formula)
+        assert formula(mock_did_count) == mock_get_dids_2013.return_value
+        mock_get_dids_2013.assert_called_once_with(did_count=mock_did_count,
+                                                   record_number=mock_record_number)
 
     # get_did_records_formula_2020
 
-    def test_get_did_records_formula_2020(self):
-        assert callable(get_did_records_formula_2020(Mock()))
+    @patch(f"{SCRIPT_LOCATION}.get_dids_2020")
+    def test_get_did_records_formula_2020(self, mock_get_dids_2020):
+        mock_record_number = Mock()
+        mock_did_count = Mock()
+        formula = get_did_records_formula_2020(mock_record_number)
+        assert callable(formula)
+        assert formula(mock_did_count) == mock_get_dids_2020.return_value
+        mock_get_dids_2020.assert_called_once_with(did_count=mock_did_count,
+                                                   record_number=mock_record_number)

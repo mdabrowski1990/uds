@@ -28,7 +28,7 @@ from uds.translator.data_record_definitions.other import (
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
-    get_scaling_byte_extension,
+    get_scaling_byte_extension, get_scaling_byte_extension_formula
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.other"
@@ -238,14 +238,26 @@ class TestFormulas:
     def test_get_scaling_byte_extension__other(self, scaling_byte):
         assert get_scaling_byte_extension(scaling_byte, Mock()) == ()
 
-    # get_formula_parameters
+    # get_scaling_byte_extension_formula
+
+    @patch(f"{SCRIPT_LOCATION}.get_scaling_byte_extension")
+    def test_get_scaling_byte_extension_formula(self, mock_get_scaling_byte_extension):
+        mock_scaling_byte = Mock()
+        mock_scaling_byte_number = Mock()
+        formula = get_scaling_byte_extension_formula(mock_scaling_byte_number)
+        assert callable(formula)
+        assert formula(mock_scaling_byte) == mock_get_scaling_byte_extension.return_value
+        mock_get_scaling_byte_extension.assert_called_once_with(scaling_byte=mock_scaling_byte,
+                                                                scaling_byte_number=mock_scaling_byte_number)
+
+    # get_data_records_for_formula_parameters
 
     @pytest.mark.parametrize("raw_value, physical_value", [
         (0xFF, Mock()),
         (0xAB, "some unknown formula"),
     ])
     @patch(f"{SCRIPT_LOCATION}.FORMULA_IDENTIFIER")
-    def test_get_formula_parameters__value_error(self, mock_formula_identifier, raw_value, physical_value):
+    def test_get_data_records_for_formula_parameters__value_error(self, mock_formula_identifier, raw_value, physical_value):
         mock_formula_identifier.get_physical_value.return_value = physical_value
         with pytest.raises(ValueError):
             get_data_records_for_formula_parameters(formula_identifier=raw_value, scaling_byte_number=1)
@@ -258,7 +270,7 @@ class TestFormulas:
     ])
     @patch(f"{SCRIPT_LOCATION}.get_decode_float_value_formula")
     @patch(f"{SCRIPT_LOCATION}.get_encode_float_value_formula")
-    def test_get_formula_parameters(self, mock_get_encode_float_value_formula,
+    def test_get_data_records_for_formula_parameters(self, mock_get_encode_float_value_formula,
                                     mock_get_decode_float_value_formula,
                                     raw_value, scaling_byte_number, constants_names):
         assert (get_data_records_for_formula_parameters(formula_identifier=raw_value,
