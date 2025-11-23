@@ -12,6 +12,7 @@ from uds.translator.data_record_definitions.other import (
     STATE_AND_CONNECTION_TYPE,
     UNIT_OR_FORMAT,
     TextEncoding,
+    get_data,
     get_data_from_memory,
     get_data_records_for_formula_parameters,
     get_decode_float_value_formula,
@@ -102,6 +103,20 @@ class TestFormulas:
                                                          length=8 * memory_size_length,
                                                          unit="bytes")],
                                                    any_order=False)
+        
+    # get_data
+
+    def test_get_data__value_error(self):
+        with pytest.raises(ValueError):
+            get_data(0)
+
+    @pytest.mark.parametrize("memory_size_length", [1, 23])
+    def test_get_data(self, memory_size_length):
+        assert get_data(memory_size_length) == (self.mock_raw_data_record.return_value,)
+        self.mock_raw_data_record.assert_called_once_with(name="data",
+                                                          length=8,
+                                                          min_occurrences=memory_size_length,
+                                                          max_occurrences=memory_size_length,)
 
     # get_data_from_memory
 

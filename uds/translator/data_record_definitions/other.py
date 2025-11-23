@@ -1,4 +1,4 @@
-"""Remaining Data Records definitions."""
+"""Remaining Data Records definitions."""  # pylint: disable=too-many-lines
 
 __all__ = [
     # Shared
@@ -51,7 +51,9 @@ __all__ = [
     "FILE_SIZE_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES",
     "LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER",
     "FILE_SIZE_OR_DIR_INFO_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES_OR_DIR_INFO", "CONDITIONAL_DIR_INFO",
-    "FILE_POSITION"
+    "FILE_POSITION",
+    # SID 0x3D
+    "CONDITIONAL_DATA",
 ]
 
 from decimal import Decimal
@@ -124,6 +126,24 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
             RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
+def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
+    """
+    Get `data` Data Record for given `memorySizeLength` value.
+
+    :param memory_size_length: Proceeding `memorySizeLength` value.
+
+    :raise ValueError: Provided `memorySizeLength` equals 0.
+
+    :return: Tuple with `data` Data Record.
+    """
+    if memory_size_length == 0:
+        raise ValueError("Value of `memorySizeLength` must be greater than 0.")
+    return (RawDataRecord(name="data",
+                          length=8,
+                          min_occurrences=memory_size_length,
+                          max_occurrences=memory_size_length),)
+
+
 def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
     """
     Get `Data from Memory` Data Record for given `addressAndLengthFormatIdentifier` value.
@@ -186,7 +206,7 @@ def get_max_number_of_block_length_file_transfer(length_format_identifier: int) 
     :return: Tuple with `maxNumberOfBlockLength` Data Record.
     """
     if length_format_identifier == 0:
-        raise ValueError("Value of `length_format_identifier` must be greater than 0.")
+        raise ValueError("Value of `lengthFormatIdentifier` must be greater than 0.")
     return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * length_format_identifier, unit="bytes"),)
 
 
@@ -977,3 +997,6 @@ CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRec
 
 FILE_POSITION = RawDataRecord(name="filePosition",
                               length=64)
+
+# SID 0x3D
+CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)
