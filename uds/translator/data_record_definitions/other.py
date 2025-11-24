@@ -54,6 +54,14 @@ __all__ = [
     "FILE_POSITION",
     # SID 0x3D
     "CONDITIONAL_DATA",
+    # SID 0x84
+    "SECURITY_DATA_REQUEST_RECORD", "SECURITY_DATA_RESPONSE_RECORD",
+    "ADMINISTRATIVE_PARAMETER",
+    "SIGNATURE_ENCRYPTION_CALCULATION",
+    "SIGNATURE_LENGTH",
+    "ANTI_REPLAY_COUNTER",
+    "INTERNAL_SID", "INTERNAL_RSID", "INTERNAL_REQUEST_PARAMETERS", "INTERNAL_RESPONSE_PARAMETERS",
+    "CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST", "CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE",
 ]
 
 from decimal import Decimal
@@ -73,7 +81,7 @@ from ..data_record import (
     TextDataRecord,
     TextEncoding,
 )
-from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING
+from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING, MAPPING_YES_NO
 
 
 # Formulas
@@ -522,6 +530,56 @@ def get_communication_control_request(sub_function: int
     return (COMMUNICATION_TYPE,)
 
 
+def get_secured_data_transmission_request(signature_length: int) -> Union[
+    Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
+    Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+    """
+    Get Secured Data Transmission Data Records that are part of request message after given Signature Length value.
+
+    :param signature_length: Value of Signature Length.
+
+    :return: Data Records that are present in the request message after given Signature Length value.
+    """
+    if signature_length == 0:
+        return (ANTI_REPLAY_COUNTER,
+                INTERNAL_SID,
+                INTERNAL_REQUEST_PARAMETERS)
+    signature = RawDataRecord(name="Signature/MAC",
+                              length=8,
+                              min_occurrences=signature_length,
+                              max_occurrences=signature_length,
+                              enforce_reoccurring=True)
+    return (ANTI_REPLAY_COUNTER,
+            INTERNAL_SID,
+            INTERNAL_REQUEST_PARAMETERS,
+            signature)
+
+
+def get_secured_data_transmission_response(signature_length: int) -> Union[
+    Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
+    Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+    """
+    Get Secured Data Transmission Data Records that are part of response message after given Signature Length value.
+
+    :param signature_length: Value of Signature Length.
+
+    :return: Data Records that are present in the response message after given Signature Length value.
+    """
+    if signature_length == 0:
+        return (ANTI_REPLAY_COUNTER,
+                INTERNAL_RSID,
+                INTERNAL_RESPONSE_PARAMETERS)
+    signature = RawDataRecord(name="Signature/MAC",
+                              length=8,
+                              min_occurrences=signature_length,
+                              max_occurrences=signature_length,
+                              enforce_reoccurring=True)
+    return (ANTI_REPLAY_COUNTER,
+            INTERNAL_RSID,
+            INTERNAL_RESPONSE_PARAMETERS,
+            signature)
+
+
 # Shared
 RESERVED_BIT = RawDataRecord(name="reserved",
                              length=1)
@@ -529,6 +587,8 @@ RESERVED_2BITS = RawDataRecord(name="reserved",
                                length=2)
 RESERVED_4BITS = RawDataRecord(name="reserved",
                                length=4)
+RESERVED_9BITS = RawDataRecord(name="reserved-9bits",
+                               length=9)
 
 DATA = RawDataRecord(name="data",
                      length=8,
@@ -1036,3 +1096,66 @@ FILE_POSITION = RawDataRecord(name="filePosition",
 
 # SID 0x3D
 CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)
+
+# SID 0x84
+SECURITY_DATA_REQUEST_RECORD = RawDataRecord(name="securityDataRequestRecord",
+                                             length=8,
+                                             min_occurrences=1,
+                                             max_occurrences=None)
+SECURITY_DATA_RESPONSE_RECORD = RawDataRecord(name="securityDataResponseRecord",
+                                              length=8,
+                                              min_occurrences=1,
+                                              max_occurrences=None)
+
+IS_SIGNATURE_REQUESTED = MappingDataRecord(name="Signature on the response is requested.",
+                                           length=1,
+                                           values_mapping=MAPPING_YES_NO)
+IS_MESSAGE_SIGNED = MappingDataRecord(name="Message is signed.",
+                                      length=1,
+                                      values_mapping=MAPPING_YES_NO)
+IS_MESSAGE_ENCRYPTED = MappingDataRecord(name="Message is encrypted.",
+                                         length=1,
+                                         values_mapping=MAPPING_YES_NO)
+IS_PRE_ESTABLISHED_KEY_USED = MappingDataRecord(name="A pre-established key is used.",
+                                                length=1,
+                                                values_mapping=MAPPING_YES_NO)
+IS_REQUEST_MESSAGE = MappingDataRecord(name="Message is request message.",
+                                       length=1,
+                                       values_mapping=MAPPING_YES_NO)
+ADMINISTRATIVE_PARAMETER = RawDataRecord(name="Administrative Parameter",
+                                         length=16,
+                                         children=(RESERVED_9BITS,
+                                                   IS_SIGNATURE_REQUESTED,
+                                                   IS_MESSAGE_SIGNED,
+                                                   IS_MESSAGE_ENCRYPTED,
+                                                   IS_PRE_ESTABLISHED_KEY_USED,
+                                                   RESERVED_2BITS,
+                                                   IS_REQUEST_MESSAGE))
+
+SIGNATURE_ENCRYPTION_CALCULATION = RawDataRecord(name="Signature/Encryption Calculation",
+                                                 length=8)
+
+SIGNATURE_LENGTH = RawDataRecord(name="Signature Length",
+                                 length=16,
+                                 unit="bytes")
+
+ANTI_REPLAY_COUNTER = RawDataRecord(name="Anti-replay Counter",
+                                    length=16)
+
+INTERNAL_SID = RawDataRecord(name="Internal Message Service Request ID",
+                             length=8)
+INTERNAL_RSID = RawDataRecord(name="Internal Message Service Response ID",
+                              length=8)
+INTERNAL_REQUEST_PARAMETERS = RawDataRecord(name="Service Specific Parameters",
+                                            length=8,
+                                            min_occurrences=0,
+                                            max_occurrences=None)
+INTERNAL_RESPONSE_PARAMETERS = RawDataRecord(name="Response Specific Parameters",
+                                             length=8,
+                                             min_occurrences=0,
+                                             max_occurrences=None)
+
+CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST = ConditionalFormulaDataRecord(
+    formula=get_secured_data_transmission_request)
+CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
+    formula=get_secured_data_transmission_response)

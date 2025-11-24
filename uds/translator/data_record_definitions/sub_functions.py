@@ -2,7 +2,7 @@
 
 __all__ = [
     # shared
-    "SPRMIB",
+    "SPRMIB", "MAPPING_YES_NO",
     # SID 0x10
     "DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION", "DIAGNOSTIC_SESSION_TYPE", "DIAGNOSTIC_SESSIONS_MAPPING",
     # SID 0x11
@@ -27,12 +27,13 @@ __all__ = [
 from ..data_record import MappingDataRecord, RawDataRecord
 
 # shared
+MAPPING_YES_NO = {
+    1: "yes",
+    0: "no",
+}
 SPRMIB = MappingDataRecord(name="suppressPosRspMsgIndicationBit",
                            length=1,
-                           values_mapping={
-                               1: "yes",
-                               0: "no",
-                           })
+                           values_mapping=MAPPING_YES_NO)
 
 # SID 0x10
 DIAGNOSTIC_SESSIONS_MAPPING = {

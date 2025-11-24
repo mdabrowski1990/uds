@@ -7,9 +7,9 @@ electronic control system.
 Each DTC corresponds to one distinct diagnostic condition (for example, *“Battery voltage too low”*).
 
 .. seealso::
-  https://www.dtclookup.com/
-  https://obd2pros.com/dtc-codes/
-  https://www.freeautomechanic.com/diagnostictroblecodes.html
+  - https://www.dtclookup.com/
+  - https://obd2pros.com/dtc-codes/
+  - https://www.freeautomechanic.com/diagnostictroblecodes.html
 
 
 DTC Formats
