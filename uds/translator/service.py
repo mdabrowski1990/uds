@@ -284,8 +284,29 @@ class Service:
             return cls._get_reoccurring_data_record_occurrences(data_record=data_record, value=value)  # type: ignore
         return cls._get_single_data_record_occurrence(data_record=data_record, value=value)  # type: ignore
 
+    @staticmethod
+    def _get_remaining_length(message_structure: AliasMessageStructure) -> int:
+        """
+        Get minimal remaining length for the provided message structure.
+
+        :param message_structure: Message structure to check.
+
+        :raise TypeError: All elements of the message structure must be instances of `AbstractDataRecord` class.
+
+        :return: Minimal length of the provided messages structure.
+        """
+        min_length = 0
+        for data_record in message_structure:
+            if isinstance(data_record, AbstractDataRecord):
+                min_length += data_record.length * data_record.min_occurrences
+                if data_record.min_occurrences == 0 and not data_record.is_reoccurring:
+                    break
+            else:
+                raise TypeError("Minimal length can only be assessed for instances of `AbstractDataRecord` class.")
+        return min_length
+
     @classmethod
-    def _decode_payload(cls,
+    def _decode_payload(cls,  # pylint: disable=too-many-branches
                         payload: RawBytesAlias,
                         message_structure: AliasMessageStructure,
                         check_remaining_length: bool = True) -> DecodedMessageAlias:
@@ -307,9 +328,16 @@ class Service:
         remaining_length = 8 * len(payload)
         payload_int = bytes_to_int(bytes_list=payload, endianness=Endianness.BIG_ENDIAN) if payload else 0
         raw_values: List[int] = []
-        for data_record in message_structure:
+        for i, data_record in enumerate(message_structure):
             if isinstance(data_record, AbstractDataRecord):
-                max_occurrences_number = remaining_length // data_record.length
+                if data_record.is_reoccurring and not data_record.fixed_total_length:
+                    try:
+                        additional_required_length = cls._get_remaining_length(message_structure[i + 1:])
+                    except TypeError:
+                        additional_required_length = 0
+                    max_occurrences_number = (remaining_length - additional_required_length) // data_record.length
+                else:
+                    max_occurrences_number = remaining_length // data_record.length
                 occurrences_number = int(min(max_occurrences_number, data_record.max_occurrences or float("inf")))
                 if occurrences_number < data_record.min_occurrences:
                     raise ValueError("Too short payload was provided.")
@@ -320,9 +348,10 @@ class Service:
                     occurrence_value = (payload_int >> remaining_length) & mask
                     raw_values.append(occurrence_value)
                 if data_record.min_occurrences == 0 and not raw_values:
-                    # an information that this is the end of the message
-                    break
-                decoded_message_continuation.append(data_record.get_occurrence_info(*raw_values))
+                    if remaining_length == 0:
+                        break
+                else:
+                    decoded_message_continuation.append(data_record.get_occurrence_info(*raw_values))
             elif isinstance(data_record, AbstractConditionalDataRecord):
                 if remaining_length % 8 != 0:
                     raise RuntimeError("Incorrect Data Records structure.")
@@ -383,7 +412,7 @@ class Service:
                     occurrences = []
                 else:
                     raise InconsistencyError(f"Value for Data Record {data_record.name!r} was not provided.")
-                if len(occurrences) == 0:
+                if len(occurrences) == 0 and not data_records_values:
                     break
                 for raw_value in occurrences:
                     total_raw_value = (total_raw_value << data_record.length) + raw_value

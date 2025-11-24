@@ -4,10 +4,15 @@ import pytest
 from mock import Mock, call, patch
 
 from uds.translator.data_record_definitions.other import (
+    ANTI_REPLAY_COUNTER,
     COMMUNICATION_TYPE,
     EXPONENT,
     EXPONENT_BIT_LENGTH,
     FORMULA_IDENTIFIER,
+    INTERNAL_REQUEST_PARAMETERS,
+    INTERNAL_RESPONSE_PARAMETERS,
+    INTERNAL_RSID,
+    INTERNAL_SID,
     MANTISSA,
     MANTISSA_BIT_LENGTH,
     NODE_IDENTIFICATION_NUMBER,
@@ -36,6 +41,8 @@ from uds.translator.data_record_definitions.other import (
     get_memory_size_and_memory_address,
     get_scaling_byte_extension,
     get_scaling_byte_extension_formula,
+    get_secured_data_transmission_request,
+    get_secured_data_transmission_response,
     get_security_access_request,
     get_security_access_response,
 )
@@ -528,3 +535,41 @@ class TestFormulas:
     @pytest.mark.parametrize("sub_function", [0x03, 0x06, 0xB4])
     def test_get_communication_control_request__other(self, sub_function):
         assert get_communication_control_request(sub_function) == (COMMUNICATION_TYPE,)
+
+    # get_secured_data_transmission_request
+
+    def test_get_secured_data_transmission_request__0(self):
+        assert get_secured_data_transmission_request(0) == (ANTI_REPLAY_COUNTER,
+                                                            INTERNAL_SID,
+                                                            INTERNAL_REQUEST_PARAMETERS)
+
+    @pytest.mark.parametrize("signature_length", [1, 0xFFFF])
+    def test_get_secured_data_transmission_request(self, signature_length):
+        assert get_secured_data_transmission_request(signature_length) == (ANTI_REPLAY_COUNTER,
+                                                                           INTERNAL_SID,
+                                                                           INTERNAL_REQUEST_PARAMETERS,
+                                                                           self.mock_raw_data_record.return_value)
+        self.mock_raw_data_record.assert_called_once_with(name="Signature/MAC",
+                                                          length=8,
+                                                          min_occurrences=signature_length,
+                                                          max_occurrences=signature_length,
+                                                          enforce_reoccurring=True)
+
+    # get_secured_data_transmission_response
+
+    def test_get_secured_data_transmission_response__0(self):
+        assert get_secured_data_transmission_response(0) == (ANTI_REPLAY_COUNTER,
+                                                             INTERNAL_RSID,
+                                                             INTERNAL_RESPONSE_PARAMETERS)
+
+    @pytest.mark.parametrize("signature_length", [1, 0xFFFF])
+    def test_get_secured_data_transmission_response(self, signature_length):
+        assert get_secured_data_transmission_response(signature_length) == (ANTI_REPLAY_COUNTER,
+                                                                            INTERNAL_RSID,
+                                                                            INTERNAL_RESPONSE_PARAMETERS,
+                                                                            self.mock_raw_data_record.return_value)
+        self.mock_raw_data_record.assert_called_once_with(name="Signature/MAC",
+                                                          length=8,
+                                                          min_occurrences=signature_length,
+                                                          max_occurrences=signature_length,
+                                                          enforce_reoccurring=True)
