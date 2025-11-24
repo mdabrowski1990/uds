@@ -532,6 +532,20 @@ class TestService:
                                         message_structure=message_structure)
                 == tuple(data_record.get_occurrence_info.return_value for data_record in message_structure[:1]))
 
+    @pytest.mark.parametrize("payload, message_structure", [
+        ([0xFF],
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None, is_reoccurring=True, fixed_total_length=False),
+          Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1)]),
+        (b"\x12\x34\x56\x78",
+         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=0, max_occurrences=24, is_reoccurring=True, fixed_total_length=False),
+          Mock(spec=AbstractDataRecord, length=8, min_occurrences=2, max_occurrences=2),
+          Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1)]),
+    ])
+    def test_decode_payload__valid__remaining_length_3(self, payload, message_structure):
+        assert (Service._decode_payload(payload=payload,
+                                        message_structure=message_structure)
+                == tuple(data_record.get_occurrence_info.return_value for data_record in message_structure[1:]))
+
     @pytest.mark.parametrize("payload, message_structure, message_continuation", [
         ((0xCA, 0xFE),
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1),

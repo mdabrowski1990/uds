@@ -402,9 +402,10 @@ class TestSecuredDataTransmission2020Integration:
             [0xC4,
              0x00, 0x00,
              0xFF,
-             0x00, 0x00,
+             0x00, 0x05,
              0x15, 0x9D,
-             0x3F],
+             0x3F,
+             0xBF, 0xCE, 0xB7, 0xE4, 0xEE],
             (
                 {
                     'children': (),
@@ -491,8 +492,8 @@ class TestSecuredDataTransmission2020Integration:
                     'children': (),
                     'length': 16,
                     'name': 'Signature Length',
-                    'physical_value': 0x0000,
-                    'raw_value': 0x0000,
+                    'physical_value': 0x0005,
+                    'raw_value': 0x0005,
                     'unit': 'bytes'
                 },
                 {
@@ -511,16 +512,23 @@ class TestSecuredDataTransmission2020Integration:
                     'raw_value': 0x3F,
                     'unit': None
                 },
+                {
+                    'children': ((), (), (), (), ()),
+                    'length': 8,
+                    'name': 'Signature/MAC',
+                    'physical_value': (0xBF, 0xCE, 0xB7, 0xE4, 0xEE),
+                    'raw_value': (0xBF, 0xCE, 0xB7, 0xE4, 0xEE),
+                    'unit': None
+                },
             )
         ),
         (
             [0xC4,
              0x7F, 0xFA,
              0xD4,
-             0x00, 0x05,
+             0x00, 0x00,
              0x89, 0x58,
-             0x04, 0xC7, 0x56, 0x63, 0x65, 0xFE, 0x0C, 0xFC,
-             0xBF, 0xCE, 0xB7, 0xE4, 0xEE],
+             0x04, 0xC7, 0x56, 0x63, 0x65, 0xFE, 0x0C, 0xFC],
             (
                 {
                     'children': (),
@@ -607,8 +615,8 @@ class TestSecuredDataTransmission2020Integration:
                     'children': (),
                     'length': 16,
                     'name': 'Signature Length',
-                    'physical_value': 0x0005,
-                    'raw_value': 0x0005,
+                    'physical_value': 0x0000,
+                    'raw_value': 0x0000,
                     'unit': 'bytes'
                 },
                 {
@@ -633,14 +641,6 @@ class TestSecuredDataTransmission2020Integration:
                     'name': 'Response Specific Parameters',
                     'physical_value': (0xC7, 0x56, 0x63, 0x65, 0xFE, 0x0C, 0xFC),
                     'raw_value': (0xC7, 0x56, 0x63, 0x65, 0xFE, 0x0C, 0xFC),
-                    'unit': None
-                },
-                {
-                    'children': ((), (), (), (), ()),
-                    'length': 8,
-                    'name': 'Signature/MAC',
-                    'physical_value': (0xBF, 0xCE, 0xB7, 0xE4, 0xEE),
-                    'raw_value': (0xBF, 0xCE, 0xB7, 0xE4, 0xEE),
                     'unit': None
                 },
             )

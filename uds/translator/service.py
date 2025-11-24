@@ -348,9 +348,10 @@ class Service:
                     occurrence_value = (payload_int >> remaining_length) & mask
                     raw_values.append(occurrence_value)
                 if data_record.min_occurrences == 0 and not raw_values:
-                    # an information that this is the end of the message
-                    break
-                decoded_message_continuation.append(data_record.get_occurrence_info(*raw_values))
+                    if remaining_length == 0:
+                        break
+                else:
+                    decoded_message_continuation.append(data_record.get_occurrence_info(*raw_values))
             elif isinstance(data_record, AbstractConditionalDataRecord):
                 if remaining_length % 8 != 0:
                     raise RuntimeError("Incorrect Data Records structure.")
