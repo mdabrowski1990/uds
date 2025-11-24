@@ -411,6 +411,37 @@ class TestService:
                                                                              value=mock_value)
         mock_get_single_data_record_occurrence.assert_not_called()
 
+    # _get_remaining_length
+
+    @pytest.mark.parametrize("message_structure", [
+        (2321,),
+        (Mock(),),
+        (Mock(spec=AbstractDataRecord, min_occurrences=0, length=8, is_reoccurring=True),
+         Mock(spec=AbstractConditionalDataRecord)),
+    ])
+    def test_get_remaining_length__type_error(self, message_structure):
+        with pytest.raises(TypeError):
+            Service._get_remaining_length(message_structure=message_structure)
+
+    @pytest.mark.parametrize("message_structure, remaining_length", [
+        (
+            [Mock(spec=AbstractDataRecord, min_occurrences=8, length=5)],
+            40
+        ),
+        (
+            (Mock(spec=AbstractDataRecord, min_occurrences=0, length=8, is_reoccurring=False),
+             Mock(spec=AbstractDataRecord, min_occurrences=1, length=8),),
+            0
+        ),
+        (
+            (Mock(spec=AbstractDataRecord, min_occurrences=0, length=8, is_reoccurring=True),
+             Mock(spec=AbstractDataRecord, min_occurrences=2, length=4),),
+             8
+         ),
+    ])
+    def test_get_remaining_length(self, message_structure, remaining_length):
+        assert Service._get_remaining_length(message_structure=message_structure) == remaining_length
+
     # _decode_payload
 
     @pytest.mark.parametrize("payload, message_structure", [
@@ -470,6 +501,37 @@ class TestService:
                                         message_structure=message_structure)
                 == tuple(data_record.get_occurrence_info.return_value for data_record in message_structure))
 
+    @pytest.mark.parametrize("payload, message_structure", [
+        ([0xFF, 0x00],
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None, is_reoccurring=True, fixed_total_length=False),
+          Mock(spec=AbstractDataRecord, length=8, min_occurrences=1, max_occurrences=1)]),
+        (b"\x12\x34\x56\x78\x9A",
+         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=24, is_reoccurring=True, fixed_total_length=False),
+          Mock(spec=AbstractDataRecord, length=8, min_occurrences=2, max_occurrences=2),
+          Mock(spec=AbstractDataRecord, length=16, min_occurrences=1, max_occurrences=1)]),
+    ])
+    def test_decode_payload__valid__remaining_length(self, payload, message_structure):
+        assert (Service._decode_payload(payload=payload,
+                                        message_structure=message_structure)
+                == tuple(data_record.get_occurrence_info.return_value for data_record in message_structure))
+
+    @pytest.mark.parametrize("payload, message_structure", [
+        ([0xFF],
+         [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None, is_reoccurring=True, fixed_total_length=False),
+          Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=None, is_reoccurring=True, fixed_total_length=False)]),
+        (b"\x12\x34\x56\x78\x9A",
+         [Mock(spec=AbstractDataRecord, length=1, min_occurrences=8, max_occurrences=None, is_reoccurring=True, fixed_total_length=False),
+          Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=2),
+          Mock(spec=AbstractDataRecord, length=16, min_occurrences=0, max_occurrences=1)]),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.Service._get_remaining_length")
+    def test_decode_payload__valid__remaining_length_2(self, mock_get_remaining_length,
+                                                       payload, message_structure):
+        mock_get_remaining_length.side_effect = TypeError
+        assert (Service._decode_payload(payload=payload,
+                                        message_structure=message_structure)
+                == tuple(data_record.get_occurrence_info.return_value for data_record in message_structure[:1]))
+
     @pytest.mark.parametrize("payload, message_structure, message_continuation", [
         ((0xCA, 0xFE),
          [Mock(spec=AbstractDataRecord, length=8, min_occurrences=0, max_occurrences=1),
@@ -510,7 +572,7 @@ class TestService:
         mock_get_message_continuation = Mock(return_value=message_continuation)
         message_structure[-1].get_message_continuation = mock_get_message_continuation
         assert isinstance(Service._decode_payload(payload=payload, message_structure=message_structure), tuple)
-        # self.mock_int_to_bytes.assert_not_called()
+        self.mock_int_to_bytes.assert_not_called()
 
     # _encode_message
 

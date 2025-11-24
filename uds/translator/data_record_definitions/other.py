@@ -531,8 +531,8 @@ def get_communication_control_request(sub_function: int
 
 
 def get_secured_data_transmission_request(signature_length: int) -> Union[
-    Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
-    Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
     """
     Get Secured Data Transmission Data Records that are part of request message after given Signature Length value.
 
@@ -556,8 +556,8 @@ def get_secured_data_transmission_request(signature_length: int) -> Union[
 
 
 def get_secured_data_transmission_response(signature_length: int) -> Union[
-    Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
-    Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
     """
     Get Secured Data Transmission Data Records that are part of response message after given Signature Length value.
 
