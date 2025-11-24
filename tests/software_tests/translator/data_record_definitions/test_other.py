@@ -4,10 +4,15 @@ import pytest
 from mock import Mock, call, patch
 
 from uds.translator.data_record_definitions.other import (
+    ANTI_REPLAY_COUNTER,
     COMMUNICATION_TYPE,
     EXPONENT,
     EXPONENT_BIT_LENGTH,
     FORMULA_IDENTIFIER,
+    INTERNAL_REQUEST_PARAMETERS,
+    INTERNAL_RESPONSE_PARAMETERS,
+    INTERNAL_RSID,
+    INTERNAL_SID,
     MANTISSA,
     MANTISSA_BIT_LENGTH,
     NODE_IDENTIFICATION_NUMBER,
@@ -36,8 +41,10 @@ from uds.translator.data_record_definitions.other import (
     get_memory_size_and_memory_address,
     get_scaling_byte_extension,
     get_scaling_byte_extension_formula,
-    get_security_access_request, INTERNAL_RSID, INTERNAL_RESPONSE_PARAMETERS,
-    get_security_access_response, get_secured_data_transmission_response, get_secured_data_transmission_request, ANTI_REPLAY_COUNTER, INTERNAL_SID, INTERNAL_REQUEST_PARAMETERS
+    get_secured_data_transmission_request,
+    get_secured_data_transmission_response,
+    get_security_access_request,
+    get_security_access_response,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.other"
