@@ -1,4 +1,4 @@
-"""Translation for ControlDTCSetting (SID 0x10) service."""
+"""Translation for ControlDTCSetting (SID 0x85) service."""
 
 __all__ = ["CONTROL_DTC_SETTING"]
 
