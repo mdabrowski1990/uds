@@ -1,5 +1,6 @@
 """Base definitions of translators for diagnostic services."""
 
+from .access_timing_parameter import ACCESS_TIMING_PARAMETER_2013
 from .authentication import AUTHENTICATION
 from .clear_diagnostic_information import (
     CLEAR_DIAGNOSTIC_INFORMATION,

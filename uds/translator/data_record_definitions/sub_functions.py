@@ -21,7 +21,9 @@ __all__ = [
     # SID 0x31
     "ROUTINE_CONTROL_SUB_FUNCTION", "ROUTINE_CONTROL_TYPE", "ROUTINE_CONTROL_TYPE_MAPPING",
     # SID 0x3E
-    "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION",
+    "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION", "ZERO_SUB_FUNCTION_MAPPING",
+    # SID 0x83
+    "ACCESS_TIMING_PARAMETER_SUB_FUNCTION", "TIMING_PARAMETER_ACCESS_TYPE", "TIMING_PARAMETER_ACCESS_TYPE_MAPPING",
 ]
 
 from ..data_record import MappingDataRecord, RawDataRecord
@@ -230,3 +232,17 @@ ZERO_SUB_FUNCTION = MappingDataRecord(name="zeroSubFunction",
 TESTER_PRESENT_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                             length=8,
                                             children=[SPRMIB, ZERO_SUB_FUNCTION])
+
+# SID 0x83
+TIMING_PARAMETER_ACCESS_TYPE_MAPPING = {
+    0x01: "readExtendedTimingParameterSet",
+    0x02: "setTimingParametersToDefaultValues",
+    0x03: "readCurrentlyActiveTimingParameters",
+    0x04: "setTimingParametersToGivenValues",
+}
+TIMING_PARAMETER_ACCESS_TYPE = MappingDataRecord(name="timingParameterAccessType",
+                                                 length=7,
+                                                 values_mapping=TIMING_PARAMETER_ACCESS_TYPE_MAPPING)
+ACCESS_TIMING_PARAMETER_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                                     length=8,
+                                                     children=[SPRMIB, TIMING_PARAMETER_ACCESS_TYPE])

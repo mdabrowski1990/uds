@@ -492,7 +492,7 @@ def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRe
 
 def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
     """
-    Get Security Access Data Records that are part of request message for given SubFunction value.
+    Get SecurityAccess Data Records that are part of request message for given SubFunction value.
 
     :param sub_function: SubFunction value.
 
@@ -505,7 +505,7 @@ def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
 
 def get_security_access_response(sub_function: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
     """
-    Get Security Access Data Records that are part of response message for given SubFunction value.
+    Get SecurityAccess Data Records that are part of response message for given SubFunction value.
 
     :param sub_function: SubFunction value.
 
@@ -519,7 +519,7 @@ def get_security_access_response(sub_function: int) -> Union[Tuple[RawDataRecord
 def get_communication_control_request(sub_function: int
                                       ) -> Union[Tuple[RawDataRecord, MappingDataRecord], Tuple[RawDataRecord]]:
     """
-    Get Communication Control Data Records that are part of request message for given SubFunction value.
+    Get CommunicationControl Data Records that are part of request message for given SubFunction value.
 
     :param sub_function: SubFunction value.
 
@@ -534,7 +534,7 @@ def get_secured_data_transmission_request(signature_length: int) -> Union[
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
     """
-    Get Secured Data Transmission Data Records that are part of request message after given Signature Length value.
+    Get SecuredDataTransmission Data Records that are part of request message after given Signature Length value.
 
     :param signature_length: Value of Signature Length.
 
@@ -559,7 +559,7 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
     """
-    Get Secured Data Transmission Data Records that are part of response message after given Signature Length value.
+    Get SecuredDataTransmission Data Records that are part of response message after given Signature Length value.
 
     :param signature_length: Value of Signature Length.
 
@@ -1096,6 +1096,16 @@ FILE_POSITION = RawDataRecord(name="filePosition",
 
 # SID 0x3D
 CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)
+
+# SID 0x83
+TIMING_PARAMETER_REQUEST_RECORD = RawDataRecord(name="TimingParameterRequestRecord",
+                                                length=8,
+                                                min_occurrences=1,
+                                                max_occurrences=None)
+TIMING_PARAMETER_RESPONSE_RECORD = RawDataRecord(name="TimingParameterResponseRecord",
+                                                 length=8,
+                                                 min_occurrences=1,
+                                                 max_occurrences=None)
 
 # SID 0x84
 SECURITY_DATA_REQUEST_RECORD = RawDataRecord(name="securityDataRequestRecord",

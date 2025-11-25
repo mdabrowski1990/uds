@@ -70,38 +70,41 @@ class RequestSID(ValidatedEnum, ExtendableEnum, ByteEnum):
             return True
         return False
 
+    # Diagnostic and communication management - more information in ISO 14229-1:2013 (obsolete), chapter 9
+    AccessTimingParameter: "RequestSID" = 0x83  # type: ignore
     # Diagnostic and communication management - more information in ISO 14229-1:2020, chapter 10
-    DiagnosticSessionControl: "RequestSID" = 0x10  # type: ignore  # noqa: vulture
-    ECUReset: "RequestSID" = 0x11  # type: ignore  # noqa: vulture
-    SecurityAccess: "RequestSID" = 0x27  # type: ignore  # noqa: vulture
-    CommunicationControl: "RequestSID" = 0x28  # type: ignore  # noqa: vulture
-    Authentication: "RequestSID" = 0x29  # type: ignore  # noqa: vulture
-    TesterPresent: "RequestSID" = 0x3E  # type: ignore  # noqa: vulture
+    DiagnosticSessionControl: "RequestSID" = 0x10  # type: ignore
+    ECUReset: "RequestSID" = 0x11  # type: ignore
+    SecurityAccess: "RequestSID" = 0x27  # type: ignore
+    CommunicationControl: "RequestSID" = 0x28  # type: ignore
+    Authentication: "RequestSID" = 0x29  # type: ignore
+    TesterPresent: "RequestSID" = 0x3E  # type: ignore
     ControlDTCSetting: "RequestSID" = 0x85  # type: ignore  # noqa: vulture
     ResponseOnEvent: "RequestSID" = 0x86  # type: ignore  # noqa: vulture
     LinkControl: "RequestSID" = 0x87  # type: ignore  # noqa: vulture
     # Data transmission - more information in ISO 14229-1:2020, chapter 11
-    ReadDataByIdentifier: "RequestSID" = 0x22  # type: ignore  # noqa: vulture
-    ReadMemoryByAddress: "RequestSID" = 0x23  # type: ignore  # noqa: vulture
-    ReadScalingDataByIdentifier: "RequestSID" = 0x24  # type: ignore  # noqa: vulture
-    ReadDataByPeriodicIdentifier: "RequestSID" = 0x2A  # type: ignore  # noqa: vulture
-    DynamicallyDefineDataIdentifier: "RequestSID" = 0x2C  # type: ignore  # noqa: vulture
-    WriteDataByIdentifier: "RequestSID" = 0x2E  # type: ignore  # noqa: vulture
-    WriteMemoryByAddress: "RequestSID" = 0x3D  # type: ignore  # noqa: vulture
+    ReadDataByIdentifier: "RequestSID" = 0x22  # type: ignore
+    ReadMemoryByAddress: "RequestSID" = 0x23  # type: ignore
+    ReadScalingDataByIdentifier: "RequestSID" = 0x24  # type: ignore
+    ReadDataByPeriodicIdentifier: "RequestSID" = 0x2A  # type: ignore
+    DynamicallyDefineDataIdentifier: "RequestSID" = 0x2C  # type: ignore
+    WriteDataByIdentifier: "RequestSID" = 0x2E  # type: ignore
+    WriteMemoryByAddress: "RequestSID" = 0x3D  # type: ignore
     # Stored data transmission - more information in ISO 14229-1:2020, chapter 12
-    ClearDiagnosticInformation: "RequestSID" = 0x14  # type: ignore  # noqa: vulture
-    ReadDTCInformation: "RequestSID" = 0x19  # type: ignore  # noqa: vulture
+    ClearDiagnosticInformation: "RequestSID" = 0x14  # type: ignore
+    ReadDTCInformation: "RequestSID" = 0x19  # type: ignore
     # InputOutput control - more information in ISO 14229-1:2020, chapter 13
-    InputOutputControlByIdentifier: "RequestSID" = 0x2F  # type: ignore  # noqa: vulture
+    InputOutputControlByIdentifier: "RequestSID" = 0x2F  # type: ignore
     # Routine - more information in ISO 14229-1:2020, chapter 14
-    RoutineControl: "RequestSID" = 0x31  # type: ignore  # noqa: vulture
+    RoutineControl: "RequestSID" = 0x31  # type: ignore
     # Upload download - more information in ISO 14229-1:2020, chapter 15
-    RequestDownload: "RequestSID" = 0x34  # type: ignore  # noqa: vulture
-    RequestUpload: "RequestSID" = 0x35  # type: ignore  # noqa: vulture
-    TransferData: "RequestSID" = 0x36  # type: ignore  # noqa: vulture
-    RequestTransferExit: "RequestSID" = 0x37  # type: ignore  # noqa: vulture
-    RequestFileTransfer: "RequestSID" = 0x38  # type: ignore  # noqa: vulture
-    SecuredDataTransmission: "RequestSID" = 0x84  # type: ignore  # noqa: vulture
+    RequestDownload: "RequestSID" = 0x34  # type: ignore
+    RequestUpload: "RequestSID" = 0x35  # type: ignore
+    TransferData: "RequestSID" = 0x36  # type: ignore
+    RequestTransferExit: "RequestSID" = 0x37  # type: ignore
+    RequestFileTransfer: "RequestSID" = 0x38  # type: ignore
+    # Security sub-layer - more information in ISO 14229-1:2020, chapter 16
+    SecuredDataTransmission: "RequestSID" = 0x84  # type: ignore
 
 
 @unique
