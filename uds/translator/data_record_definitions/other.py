@@ -54,6 +54,8 @@ __all__ = [
     "FILE_POSITION",
     # SID 0x3D
     "CONDITIONAL_DATA",
+    # SID 0x83
+    "TIMING_PARAMETER_REQUEST_RECORD", "TIMING_PARAMETER_RESPONSE_RECORD",
     # SID 0x84
     "SECURITY_DATA_REQUEST_RECORD", "SECURITY_DATA_RESPONSE_RECORD",
     "ADMINISTRATIVE_PARAMETER",
@@ -62,6 +64,8 @@ __all__ = [
     "ANTI_REPLAY_COUNTER",
     "INTERNAL_SID", "INTERNAL_RSID", "INTERNAL_REQUEST_PARAMETERS", "INTERNAL_RESPONSE_PARAMETERS",
     "CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST", "CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE",
+    # SID 0x85
+    "DTC_SETTING_CONTROL_OPTION_RECORD",
 ]
 
 from decimal import Decimal
@@ -1169,3 +1173,9 @@ CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST = ConditionalFormulaDataRecord(
     formula=get_secured_data_transmission_request)
 CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
     formula=get_secured_data_transmission_response)
+
+# SID 0x85
+DTC_SETTING_CONTROL_OPTION_RECORD = RawDataRecord(name="DTCSettingControlOptionRecord",
+                                                  length=8,
+                                                  min_occurrences=0,
+                                                  max_occurrences=None)

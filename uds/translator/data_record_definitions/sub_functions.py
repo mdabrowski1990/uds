@@ -24,6 +24,8 @@ __all__ = [
     "TESTER_PRESENT_SUB_FUNCTION", "ZERO_SUB_FUNCTION", "ZERO_SUB_FUNCTION_MAPPING",
     # SID 0x83
     "ACCESS_TIMING_PARAMETER_SUB_FUNCTION", "TIMING_PARAMETER_ACCESS_TYPE", "TIMING_PARAMETER_ACCESS_TYPE_MAPPING",
+    # SID 0x85
+    "CONTROL_DTC_SETTING_SUB_FUNCTION", "DTC_SETTING_TYPE", "DTC_SETTING_TYPE_MAPPING",
 ]
 
 from ..data_record import MappingDataRecord, RawDataRecord
@@ -246,3 +248,15 @@ TIMING_PARAMETER_ACCESS_TYPE = MappingDataRecord(name="timingParameterAccessType
 ACCESS_TIMING_PARAMETER_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                      length=8,
                                                      children=[SPRMIB, TIMING_PARAMETER_ACCESS_TYPE])
+
+# SID 0x85
+DTC_SETTING_TYPE_MAPPING = {
+    0x01: "on",
+    0x02: "off",
+}
+DTC_SETTING_TYPE = MappingDataRecord(name="DTCSettingType",
+                                     length=7,
+                                     values_mapping=DTC_SETTING_TYPE_MAPPING)
+CONTROL_DTC_SETTING_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                                 length=8,
+                                                 children=[SPRMIB, DTC_SETTING_TYPE])
