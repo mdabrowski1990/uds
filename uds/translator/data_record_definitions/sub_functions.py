@@ -9,7 +9,8 @@ __all__ = [
     "ECU_RESET_SUB_FUNCTION", "RESET_TYPE", "RESET_TYPES_MAPPING",
     # SID 0x19
     "READ_DTC_INFORMATION_SUB_FUNCTION_2020", "READ_DTC_INFORMATION_SUB_FUNCTION_2013",
-    "REPORT_TYPE_2020", "REPORT_TYPE_2013", "REPORT_TYPES_MAPPING_2020", "REPORT_TYPES_MAPPING_2013",
+    "REPORT_TYPE_2020", "REPORT_TYPE_2013",
+    "REPORT_TYPES_MAPPING_2020", "REPORT_TYPES_MAPPING_2013",
     # SID 0x27
     "SECURITY_ACCESS_SUB_FUNCTION", "SECURITY_ACCESS_TYPE", "SECURITY_ACCESS_TYPES_MAPPING",
     # SID 0x28
@@ -26,6 +27,10 @@ __all__ = [
     "ACCESS_TIMING_PARAMETER_SUB_FUNCTION", "TIMING_PARAMETER_ACCESS_TYPE", "TIMING_PARAMETER_ACCESS_TYPE_MAPPING",
     # SID 0x85
     "CONTROL_DTC_SETTING_SUB_FUNCTION", "DTC_SETTING_TYPE", "DTC_SETTING_TYPE_MAPPING",
+    # SID 0x86
+    "RESPONSE_ON_EVENT_SUB_FUNCTION_2020", "RESPONSE_ON_EVENT_SUB_FUNCTION_2013",
+    "EVENT_TYPE_2020", "EVENT_TYPE_2013", "STORAGE_STATE", "EVENT_2020", "EVENT_2013",
+    "EVENT_2020_MAPPING", "EVENT_2013_MAPPING",
 ]
 
 from ..data_record import MappingDataRecord, RawDataRecord
@@ -51,7 +56,7 @@ DIAGNOSTIC_SESSION_TYPE = MappingDataRecord(name="diagnosticSessionType",
                                             values_mapping=DIAGNOSTIC_SESSIONS_MAPPING)
 DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                         length=8,
-                                                        children=[SPRMIB, DIAGNOSTIC_SESSION_TYPE])
+                                                        children=(SPRMIB, DIAGNOSTIC_SESSION_TYPE))
 
 # SID 0x11
 RESET_TYPES_MAPPING = {
@@ -66,7 +71,7 @@ RESET_TYPE = MappingDataRecord(name="resetType",
                                values_mapping=RESET_TYPES_MAPPING)
 ECU_RESET_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                        length=8,
-                                       children=[SPRMIB, RESET_TYPE])
+                                       children=(SPRMIB, RESET_TYPE))
 
 # SID 0x19
 REPORT_TYPES_MAPPING_2013 = {
@@ -132,10 +137,10 @@ REPORT_TYPE_2020 = MappingDataRecord(name="reportType",
                                      values_mapping=REPORT_TYPES_MAPPING_2020)
 READ_DTC_INFORMATION_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
                                                        length=8,
-                                                       children=[SPRMIB, REPORT_TYPE_2013])
+                                                       children=(SPRMIB, REPORT_TYPE_2013))
 READ_DTC_INFORMATION_SUB_FUNCTION_2020 = RawDataRecord(name="SubFunction",
                                                        length=8,
-                                                       children=[SPRMIB, REPORT_TYPE_2020])
+                                                       children=(SPRMIB, REPORT_TYPE_2020))
 
 # SID 0x27
 SECURITY_ACCESS_TYPES_MAPPING = {
@@ -161,7 +166,7 @@ SECURITY_ACCESS_TYPE = MappingDataRecord(name="securityAccessType",
                                          values_mapping=SECURITY_ACCESS_TYPES_MAPPING)
 SECURITY_ACCESS_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                              length=8,
-                                             children=[SPRMIB, SECURITY_ACCESS_TYPE])
+                                             children=(SPRMIB, SECURITY_ACCESS_TYPE))
 
 # SID 0x28
 CONTROL_TYPE_MAPPING = {
@@ -177,7 +182,7 @@ CONTROL_TYPE = MappingDataRecord(name="controlType",
                                  values_mapping=CONTROL_TYPE_MAPPING)
 COMMUNICATION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                    length=8,
-                                                   children=[SPRMIB, CONTROL_TYPE])
+                                                   children=(SPRMIB, CONTROL_TYPE))
 
 # SID 0x29
 AUTHENTICATION_TASK_MAPPING = {
@@ -196,7 +201,7 @@ AUTHENTICATION_TASK = MappingDataRecord(name="authenticationTask",
                                         values_mapping=AUTHENTICATION_TASK_MAPPING)
 AUTHENTICATION_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                             length=8,
-                                            children=[SPRMIB, AUTHENTICATION_TASK])
+                                            children=(SPRMIB, AUTHENTICATION_TASK))
 
 # SID 0x2C
 DEFINITION_TYPE_MAPPING = {
@@ -209,7 +214,7 @@ DEFINITION_TYPE = MappingDataRecord(name="definitionType",
                                     values_mapping=DEFINITION_TYPE_MAPPING)
 DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                                 length=8,
-                                                                children=[SPRMIB, DEFINITION_TYPE])
+                                                                children=(SPRMIB, DEFINITION_TYPE))
 
 # SID 0x31
 ROUTINE_CONTROL_TYPE_MAPPING = {
@@ -222,7 +227,7 @@ ROUTINE_CONTROL_TYPE = MappingDataRecord(name="routineControlType",
                                          values_mapping=ROUTINE_CONTROL_TYPE_MAPPING)
 ROUTINE_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                              length=8,
-                                             children=[SPRMIB, ROUTINE_CONTROL_TYPE])
+                                             children=(SPRMIB, ROUTINE_CONTROL_TYPE))
 
 # SID 0x3E
 ZERO_SUB_FUNCTION_MAPPING = {
@@ -233,7 +238,7 @@ ZERO_SUB_FUNCTION = MappingDataRecord(name="zeroSubFunction",
                                       values_mapping=ZERO_SUB_FUNCTION_MAPPING)
 TESTER_PRESENT_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                             length=8,
-                                            children=[SPRMIB, ZERO_SUB_FUNCTION])
+                                            children=(SPRMIB, ZERO_SUB_FUNCTION))
 
 # SID 0x83
 TIMING_PARAMETER_ACCESS_TYPE_MAPPING = {
@@ -247,7 +252,7 @@ TIMING_PARAMETER_ACCESS_TYPE = MappingDataRecord(name="timingParameterAccessType
                                                  values_mapping=TIMING_PARAMETER_ACCESS_TYPE_MAPPING)
 ACCESS_TIMING_PARAMETER_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                      length=8,
-                                                     children=[SPRMIB, TIMING_PARAMETER_ACCESS_TYPE])
+                                                     children=(SPRMIB, TIMING_PARAMETER_ACCESS_TYPE))
 
 # SID 0x85
 DTC_SETTING_TYPE_MAPPING = {
@@ -259,4 +264,57 @@ DTC_SETTING_TYPE = MappingDataRecord(name="DTCSettingType",
                                      values_mapping=DTC_SETTING_TYPE_MAPPING)
 CONTROL_DTC_SETTING_SUB_FUNCTION = RawDataRecord(name="SubFunction",
                                                  length=8,
-                                                 children=[SPRMIB, DTC_SETTING_TYPE])
+                                                 children=(SPRMIB, DTC_SETTING_TYPE))
+
+# SID 0x86
+EVENT_2013_MAPPING = {
+    0x00: "stopResponseOnEvent",
+    0x01: "onDTCStatusChange",
+    0x02: "onTimerInterrupt",
+    0x03: "onChangeOfDataIdentifier",
+    0x04: "reportActivatedEvents",
+    0x05: "startResponseOnEvent",
+    0x06: "clearResponseOnEvent",
+    0x07: "onComparisonOfValues",
+}
+EVENT_2020_MAPPING = {
+    0x00: "stopResponseOnEvent",
+    0x01: "onDTCStatusChange",
+    0x03: "onChangeOfDataIdentifier",
+    0x04: "reportActivatedEvents",
+    0x05: "startResponseOnEvent",
+    0x06: "clearResponseOnEvent",
+    0x07: "onComparisonOfValues",
+    0x08: "reportMostRecentDtcOnStatusChange",
+    0x09: "reportDTCRecordInformationOnDtcStatusChange",
+}
+
+EVENT_2013 = MappingDataRecord(name="event",
+                               length=6,
+                               values_mapping=EVENT_2013_MAPPING)
+EVENT_2020 = MappingDataRecord(name="event",
+                               length=6,
+                               values_mapping=EVENT_2020_MAPPING)
+
+STORAGE_STATE_MAPPING = {
+    0x00: "doNotStoreEvent",
+    0x01: "storeEvent",
+}
+
+STORAGE_STATE = MappingDataRecord(name="storageState",
+                                  length=1,
+                                  values_mapping=STORAGE_STATE_MAPPING)
+
+EVENT_TYPE_2013 = RawDataRecord(name="eventType",
+                                length=7,
+                                children=(STORAGE_STATE, EVENT_2013))
+EVENT_TYPE_2020 = RawDataRecord(name="eventType",
+                                length=7,
+                                children=(STORAGE_STATE, EVENT_2020))
+
+RESPONSE_ON_EVENT_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
+                                                    length=8,
+                                                    children=(SPRMIB, EVENT_TYPE_2013))
+RESPONSE_ON_EVENT_SUB_FUNCTION_2020 = RawDataRecord(name="SubFunction",
+                                                    length=8,
+                                                    children=(SPRMIB, EVENT_TYPE_2020))

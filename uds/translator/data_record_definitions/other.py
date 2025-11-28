@@ -66,6 +66,7 @@ __all__ = [
     "CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST", "CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE",
     # SID 0x85
     "DTC_SETTING_CONTROL_OPTION_RECORD",
+    # SID 0x86
 ]
 
 from decimal import Decimal
@@ -1179,3 +1180,25 @@ DTC_SETTING_CONTROL_OPTION_RECORD = RawDataRecord(name="DTCSettingControlOptionR
                                                   length=8,
                                                   min_occurrences=0,
                                                   max_occurrences=None)
+
+# SID 0x86
+EVENT_WINDOW_TIME_2020 = MappingDataRecord(name="eventWindowTime",
+                                           length=8,
+                                           values_mapping={
+                                               0x02: "infiniteTimeToResponse",
+                                               0x03: "shortEventWindowTime",
+                                               0x04: "mediumEventWindowTime",
+                                               0x05: "longEventWindowTime",
+                                               0x06: "powerWindowTime",
+                                               0x07: "ignitionWindowTime",
+                                               0x08: "manufacturerTriggerEventWindowTime",
+                                           })
+EVENT_WINDOW_TIME_2013 = MappingDataRecord(name="eventWindowTime",
+                                           length=8,
+                                           values_mapping={
+                                               0x02: "infiniteTimeToResponse",
+                                           })
+
+EVENT_TYPE_RECORD_DTC_STATUS_MASK = RawDataRecord(name="eventTypeRecord",
+                                                  length=8,
+                                                  children=(DTC_STATUS_MASK,))
