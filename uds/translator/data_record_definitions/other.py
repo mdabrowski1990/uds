@@ -1199,6 +1199,3 @@ EVENT_WINDOW_TIME_2013 = MappingDataRecord(name="eventWindowTime",
                                                0x02: "infiniteTimeToResponse",
                                            })
 
-EVENT_TYPE_RECORD_DTC_STATUS_MASK = RawDataRecord(name="eventTypeRecord",
-                                                  length=8,
-                                                  children=(DTC_STATUS_MASK,))

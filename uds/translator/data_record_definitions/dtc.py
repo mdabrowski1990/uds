@@ -24,6 +24,7 @@ __all__ = [
     "DTC_READINESS_GROUP_IDENTIFIER",
     # Other
     "FAULT_DETECTION_COUNTER",
+    "EVENT_TYPE_RECORD_DTC_STATUS_MASK",
     # Mixed
     "DTC_AND_STATUS", "OPTIONAL_DTC_AND_STATUS", "MULTIPLE_DTC_AND_STATUS_RECORDS",
     "MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS",
@@ -254,6 +255,10 @@ DTC_READINESS_GROUP_IDENTIFIER = RawDataRecord(name="DTCReadinessGroupIdentifier
 # Other
 FAULT_DETECTION_COUNTER = RawDataRecord(name="FaultDetectionCounter",
                                         length=8)
+
+EVENT_TYPE_RECORD_DTC_STATUS_MASK = RawDataRecord(name="eventTypeRecord",
+                                                  length=8,
+                                                  children=(DTC_STATUS_MASK,))
 
 # Mixed
 DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
