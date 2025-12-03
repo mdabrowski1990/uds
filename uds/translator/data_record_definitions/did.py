@@ -7,6 +7,7 @@ __all__ = [
     "MULTIPLE_PERIODIC_DID", "OPTIONAL_MULTIPLE_PERIODIC_DID",
     "DATA_FROM_DID_2013", "DATA_FROM_DID_2020",
     "EVENT_TYPE_RECORD_DID_2013", "EVENT_TYPE_RECORD_DID_2020",
+    "EVENT_TYPE_RECORD_DID_COMPARE_2013", "EVENT_TYPE_RECORD_DID_COMPARE_2020",
     "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
     "get_did_data_2013", "get_did_data_2020", "get_did_data_mask_2013", "get_did_data_mask_2020",
     "get_did_records_formula_2013", "get_did_records_formula_2020",
@@ -22,7 +23,14 @@ from ..data_record import (
     MappingDataRecord,
     RawDataRecord,
 )
-from .other import ACTIVE_DIAGNOSTIC_SESSION, RESERVED_BIT
+from .other import (
+    ACTIVE_DIAGNOSTIC_SESSION,
+    COMPARE_VALUE,
+    COMPARISON_LOGIC,
+    HYSTERESIS_VALUE,
+    LOCALIZATION,
+    RESERVED_BIT,
+)
 
 DID_MAPPING_2013 = {
     0xF180: "BootSoftwareIdentificationDataIdentifier",
@@ -189,6 +197,21 @@ EVENT_TYPE_RECORD_DID_2013 = RawDataRecord(name="eventTypeRecord",
 EVENT_TYPE_RECORD_DID_2020 = RawDataRecord(name="eventTypeRecord",
                                            length=16,
                                            children=(DID_2020,))
+
+EVENT_TYPE_RECORD_DID_COMPARE_2013 = RawDataRecord(name="eventTypeRecord",
+                                                   length=80,
+                                                   children=(DID_2013,
+                                                             COMPARISON_LOGIC,
+                                                             COMPARE_VALUE,
+                                                             HYSTERESIS_VALUE,
+                                                             LOCALIZATION))
+EVENT_TYPE_RECORD_DID_COMPARE_2020 = RawDataRecord(name="eventTypeRecord",
+                                                   length=80,
+                                                   children=(DID_2020,
+                                                             COMPARISON_LOGIC,
+                                                             COMPARE_VALUE,
+                                                             HYSTERESIS_VALUE,
+                                                             LOCALIZATION))
 
 def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:
     """

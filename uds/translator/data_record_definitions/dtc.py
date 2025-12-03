@@ -24,7 +24,8 @@ __all__ = [
     "DTC_READINESS_GROUP_IDENTIFIER",
     # Other
     "FAULT_DETECTION_COUNTER",
-    "EVENT_TYPE_RECORD_DTC_STATUS_MASK",
+    "EVENT_TYPE_RECORD_DTC_STATUS_MASK", "EVENT_TYPE_RECORD_READ_DTC_RECORD_2020",
+    "CONDITIONAL_EVENT_TYPE_RECORD_DTC_RECORD",
     # Mixed
     "DTC_AND_STATUS", "OPTIONAL_DTC_AND_STATUS", "MULTIPLE_DTC_AND_STATUS_RECORDS",
     "MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS",
@@ -37,8 +38,9 @@ __all__ = [
 
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
-from ..data_record import ConditionalFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding
+from ..data_record import ConditionalFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding, ConditionalMappingDataRecord
 from .did import get_did_records_formula_2013, get_did_records_formula_2020
+from .other import READ_DTC_SUB_FUNCTION_2020, MEMORY_SELECTION, RESERVED_BIT
 
 # Common
 NO_YES_MAPPING = {0: "no", 1: "yes"}
@@ -259,6 +261,19 @@ FAULT_DETECTION_COUNTER = RawDataRecord(name="FaultDetectionCounter",
 EVENT_TYPE_RECORD_DTC_STATUS_MASK = RawDataRecord(name="eventTypeRecord",
                                                   length=8,
                                                   children=(DTC_STATUS_MASK,))
+
+
+EVENT_TYPE_RECORD_READ_DTC_RECORD_2020 = RawDataRecord(name="eventTypeRecord",
+                                                       length=16,
+                                                       children=(DTC_STATUS_MASK,
+                                                                 RESERVED_BIT,
+                                                                 READ_DTC_SUB_FUNCTION_2020))
+CONDITIONAL_EVENT_TYPE_RECORD_DTC_RECORD = ConditionalMappingDataRecord(mapping={
+    0x04: (DTC_SNAPSHOT_RECORD_NUMBER,),
+    0x06: (DTC_EXTENDED_DATA_RECORD_NUMBER,),
+    0x18: (DTC_SNAPSHOT_RECORD_NUMBER, MEMORY_SELECTION),
+    0x19: (DTC_EXTENDED_DATA_RECORD_NUMBER, MEMORY_SELECTION),
+})
 
 # Mixed
 DTC_AND_STATUS = RawDataRecord(name="DTC and Status",

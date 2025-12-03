@@ -67,6 +67,13 @@ __all__ = [
     # SID 0x85
     "DTC_SETTING_CONTROL_OPTION_RECORD",
     # SID 0x86
+    "NUMBER_OF_IDENTIFIER_EVENTS",
+    "COMPARISON_LOGIC", "COMPARE_VALUE", "HYSTERESIS_VALUE",
+    "COMPARE_SIGN", "BITS_NUMBER", "BIT_OFFSET", "LOCALIZATION",
+    "EVENT_WINDOW_TIME_2013", "EVENT_WINDOW_TIME_2020",
+    "EVENT_TYPE_RECORD_READ_DTC_SUB_FUNCTION_2020",
+    "EVENT_TYPE_RECORD_TIMER_SCHEDULE",
+    "SERVICE_TO_RESPOND"
 ]
 
 from decimal import Decimal
@@ -86,7 +93,12 @@ from ..data_record import (
     TextDataRecord,
     TextEncoding,
 )
-from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING, MAPPING_YES_NO
+from .sub_functions import (
+    DIAGNOSTIC_SESSIONS_MAPPING,
+    MAPPING_YES_NO,
+    REPORT_TYPES_MAPPING_2013,
+    REPORT_TYPES_MAPPING_2020,
+)
 
 
 # Formulas
@@ -1182,6 +1194,43 @@ DTC_SETTING_CONTROL_OPTION_RECORD = RawDataRecord(name="DTCSettingControlOptionR
                                                   max_occurrences=None)
 
 # SID 0x86
+NUMBER_OF_IDENTIFIER_EVENTS = RawDataRecord(name="numberOfIdentifiedEvents",
+                                            length=8)
+
+COMPARISON_LOGIC = MappingDataRecord(name="Comparison logic",
+                                     length=8,
+                                     values_mapping={
+                                         0x01: "<",
+                                         0x02: ">",
+                                         0x03: "=",
+                                         0x04: "<>",
+                                     })
+COMPARE_VALUE = RawDataRecord(name="Compare Value",
+                              length=32)
+HYSTERESIS_VALUE = LinearFormulaDataRecord(name="Hysteresis Value",
+                                           length=8,
+                                           offset=0,
+                                           factor=100/255)
+
+COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
+                                 length=1,
+                                 values_mapping={
+                                     0: "Comparison without sign",
+                                     1: "Comparison with sign",
+                                 })
+BITS_NUMBER = CustomFormulaDataRecord(name="Bits Number",
+                                      length=5,
+                                      encoding_formula=lambda physical_value: 32 if physical_value == 0 else physical_value,
+                                      decoding_formula=lambda raw_value: raw_value%32,
+                                      unit="bits")
+BIT_OFFSET = RawDataRecord(name="Bit Offset",
+                           length=10,
+                           unit="bits")
+LOCALIZATION = RawDataRecord(name="Localization",
+                             length=16,
+                             children=(COMPARE_SIGN,
+                                       BITS_NUMBER,
+                                       BIT_OFFSET))
 EVENT_WINDOW_TIME_2020 = MappingDataRecord(name="eventWindowTime",
                                            length=8,
                                            values_mapping={
@@ -1198,4 +1247,30 @@ EVENT_WINDOW_TIME_2013 = MappingDataRecord(name="eventWindowTime",
                                            values_mapping={
                                                0x02: "infiniteTimeToResponse",
                                            })
+
+READ_DTC_SUB_FUNCTION_2020 = MappingDataRecord(name="ReadDTCInformation SubFunction",
+                                               length=7,
+                                               values_mapping=REPORT_TYPES_MAPPING_2020)
+EVENT_TYPE_RECORD_READ_DTC_SUB_FUNCTION_2020 = RawDataRecord(name="eventTypeRecord",
+                                                             length=8,
+                                                             children=(RESERVED_BIT,
+                                                                       READ_DTC_SUB_FUNCTION_2020))
+
+TIMER_SCHEDULE = MappingDataRecord(name="Timer schedule",
+                                   length=8,
+                                   values_mapping={
+                                       0x01: "Slow rate",
+                                       0x02: "Medium rate",
+                                       0x03: "Fast rate",
+                                   })
+
+EVENT_TYPE_RECORD_TIMER_SCHEDULE = RawDataRecord(name="eventTypeRecord",
+                                                 length=8,
+                                                 children=(TIMER_SCHEDULE,))
+
+SERVICE_TO_RESPOND = RawDataRecord(name="serviceToRespondToRecord",
+                                   length=8,
+                                   min_occurrences=1,
+                                   max_occurrences=None)
+
 

@@ -23,7 +23,7 @@ class TestAbstractMappingDataRecord:
     @pytest.mark.parametrize("values_mapping", [Mock(), {1: "abc"}])
     def test_init(self, values_mapping):
         assert AbstractMappingDataRecord.__init__(self.mock_data_record, values_mapping) is None
-        assert self.mock_data_record.values_mapping==values_mapping
+        assert self.mock_data_record.values_mapping == values_mapping
 
     # values_mapping
 

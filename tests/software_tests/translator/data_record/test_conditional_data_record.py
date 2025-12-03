@@ -1,5 +1,3 @@
-from operator import getitem
-
 import pytest
 from mock import MagicMock, Mock, call, patch
 
@@ -176,15 +174,26 @@ class TestConditionalMappingDataRecord:
 
     # __init__
 
-    @pytest.mark.parametrize("mapping, default_message_continuation", [
-        (Mock(), Mock()),
-        ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION),
-    ])
-    def test_init(self, mapping, default_message_continuation):
+    @pytest.mark.parametrize("mapping", [Mock(), {1: Mock(), 2: []}])
+    def test_init__mandatory_args(self, mapping):
         assert ConditionalMappingDataRecord.__init__(self.mock_conditional_data_record,
-                                                     default_message_continuation=default_message_continuation,
                                                      mapping=mapping) is None
         assert self.mock_conditional_data_record.mapping == mapping
+        assert self.mock_conditional_data_record.value_mask is None
+        self.mock_abstract_conditional_data_record_init.assert_called_once_with(
+            default_message_continuation=None)
+
+    @pytest.mark.parametrize("mapping, default_message_continuation, value_mask", [
+        (Mock(), Mock(), Mock()),
+        ({1: Mock(), 2: []}, DEFAULT_DIAGNOSTIC_MESSAGE_CONTINUATION, 0xFF),
+    ])
+    def test_init__all_args(self, mapping, default_message_continuation, value_mask):
+        assert ConditionalMappingDataRecord.__init__(self.mock_conditional_data_record,
+                                                     mapping=mapping,
+                                                     default_message_continuation=default_message_continuation,
+                                                     value_mask=value_mask) is None
+        assert self.mock_conditional_data_record.mapping == mapping
+        assert self.mock_conditional_data_record.value_mask == value_mask
         self.mock_abstract_conditional_data_record_init.assert_called_once_with(
             default_message_continuation=default_message_continuation)
 
@@ -206,27 +215,50 @@ class TestConditionalMappingDataRecord:
             ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
         mock_isinstance.assert_called_once_with(value, int)
 
-    @pytest.mark.parametrize("value", [0, 25])
+    @pytest.mark.parametrize("value, value_mask", [
+        (55, 0x0F),
+        (0x51, None),
+    ])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_getitem__key_error(self, mock_isinstance, value):
+    def test_getitem__key_error(self, mock_isinstance, value, value_mask):
         mock_isinstance.return_value = True
         mock_getitem = Mock(side_effect=KeyError)
+        self.mock_conditional_data_record.value_mask = value_mask
         self.mock_conditional_data_record.mapping = MagicMock(__getitem__=mock_getitem)
         with pytest.raises(KeyError):
             ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
         mock_isinstance.assert_called_once_with(value, int)
-        mock_getitem.assert_called_once_with(value)
+        if value_mask is None:
+            mock_getitem.assert_called_once_with(value)
+        else:
+            mock_getitem.assert_called_once_with(value & value_mask)
 
     @pytest.mark.parametrize("value", [0, 25])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
-    def test_getitem__valid(self, mock_isinstance, value):
+    def test_getitem__valid__without_mask(self, mock_isinstance, value):
         mock_isinstance.return_value = True
         mock_getitem = Mock()
+        self.mock_conditional_data_record.value_mask = None
         self.mock_conditional_data_record.mapping = MagicMock(__getitem__=mock_getitem)
         assert (ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
                 == mock_getitem.return_value)
         mock_isinstance.assert_called_once_with(value, int)
         mock_getitem.assert_called_once_with(value)
+
+    @pytest.mark.parametrize("value, value_mask", [
+        (0xFF, 0x5A),
+        (0xFC, 0x01),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_getitem__valid__with_mask(self, mock_isinstance, value, value_mask):
+        mock_isinstance.return_value = True
+        mock_getitem = Mock()
+        self.mock_conditional_data_record.value_mask = value_mask
+        self.mock_conditional_data_record.mapping = MagicMock(__getitem__=mock_getitem)
+        assert (ConditionalMappingDataRecord.__getitem__(self.mock_conditional_data_record, value)
+                == mock_getitem.return_value)
+        mock_isinstance.assert_called_once_with(value, int)
+        mock_getitem.assert_called_once_with(value & value_mask)
 
     # mapping
 
@@ -273,6 +305,31 @@ class TestConditionalMappingDataRecord:
         self.mock_conditional_data_record.validate_message_continuation.assert_has_calls(
             [call(i) for i in value.values()], any_order=True)
         self.mock_mapping_proxy_type.assert_called_once_with(value)
+        
+    # value_mask
+    
+    def test_value_mask__get(self):
+        self.mock_conditional_data_record._ConditionalMappingDataRecord__value_mask = Mock()
+        assert (ConditionalMappingDataRecord.value_mask.fget(self.mock_conditional_data_record)
+                == self.mock_conditional_data_record._ConditionalMappingDataRecord__value_mask)
+
+    @pytest.mark.parametrize("value", [Mock(), "Some value"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_value_mask__set__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            ConditionalMappingDataRecord.value_mask.fset(self.mock_conditional_data_record, value)
+        mock_isinstance.assert_called_once_with(value, int)
+
+    @pytest.mark.parametrize("value", [0, -54])
+    def test_value_mask__set__value_error(self, value):
+        with pytest.raises(ValueError):
+            ConditionalMappingDataRecord.value_mask.fset(self.mock_conditional_data_record, value)
+
+    @pytest.mark.parametrize("value", [None, 1, 0xFF])
+    def test_value_mask__set__valid(self, value):
+        assert ConditionalMappingDataRecord.value_mask.fset(self.mock_conditional_data_record, value) is None
+        assert self.mock_conditional_data_record._ConditionalMappingDataRecord__value_mask == value
 
 
 class TestConditionalFormulaDataRecord:
