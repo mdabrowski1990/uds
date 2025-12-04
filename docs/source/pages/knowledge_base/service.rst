@@ -4986,6 +4986,13 @@ ResponseOnEvent (0x86)
 ResponseOnEvent service allows the client to request from the server to start or stop transmission of responses on
 a specified event.
 
+.. warning:: In ISO 14229-1 *DTCSnapshotRecordNumber*, *DTCExtDataRecordNumber* and *MemorySelection* "follow"
+  *ReadDTCInformation SubFunction* and are part of *eventTypeRecord* (if *event* equals 7).
+  In the translator (due to code design limitations), *eventTypeRecord* contains only *DTCStatusMask* and
+  *ReadDTCInformation SubFunction* Data Records.
+  *DTCSnapshotRecordNumber*, *DTCExtDataRecordNumber* and *MemorySelection* are represented as separate Data Records
+  that follows *eventTypeRecord* (for *event* equals 7).
+
 
 Request Format
 ``````````````

@@ -67,17 +67,17 @@ __all__ = [
     # SID 0x85
     "DTC_SETTING_CONTROL_OPTION_RECORD",
     # SID 0x86
-    "NUMBER_OF_IDENTIFIER_EVENTS",
+    "NUMBER_OF_IDENTIFIED_EVENTS",
     "COMPARISON_LOGIC", "COMPARE_VALUE", "HYSTERESIS_VALUE",
     "COMPARE_SIGN", "BITS_NUMBER", "BIT_OFFSET", "LOCALIZATION",
     "EVENT_WINDOW_TIME_2013", "EVENT_WINDOW_TIME_2020",
-    "EVENT_TYPE_RECORD_READ_DTC_SUB_FUNCTION_2020",
-    "EVENT_TYPE_RECORD_TIMER_SCHEDULE",
+    "EVENT_TYPE_RECORD_08_2020",
+    "EVENT_TYPE_RECORD_02",
     "SERVICE_TO_RESPOND"
 ]
 
 from decimal import Decimal
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 from uds.utilities import EXPONENT_BIT_LENGTH, MANTISSA_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, InconsistencyError
 
@@ -95,9 +95,10 @@ from ..data_record import (
 )
 from .sub_functions import (
     DIAGNOSTIC_SESSIONS_MAPPING,
+    EVENT_TYPE_2013,
+    EVENT_TYPE_2020,
     MAPPING_YES_NO,
-    REPORT_TYPES_MAPPING_2013,
-    REPORT_TYPES_MAPPING_2020,
+    REPORT_TYPE_2020,
 )
 
 
@@ -595,6 +596,121 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
             INTERNAL_RSID,
             INTERNAL_RESPONSE_PARAMETERS,
             signature)
+
+
+def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataRecord:
+    """
+    Get eventWindowTime Data Record compatible with ISO 14229-1:2013 version.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventWindowTime Data Record.
+    """
+    return MappingDataRecord(name="eventWindowTime" if event_number is None
+    else f"eventWindowTime#{event_number}",
+                             length=8,
+                             values_mapping={
+                                 0x02: "infiniteTimeToResponse",
+                             })
+
+
+def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
+    """
+    Get eventWindowTime Data Record compatible with ISO 14229-1:2020 version.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventWindowTime Data Record.
+    """
+    return MappingDataRecord(name="eventWindowTime" if event_number is None
+    else f"eventWindowTime#{event_number}",
+                             length=8,
+                             values_mapping={
+                                 0x02: "infiniteTimeToResponse",
+                                 0x03: "shortEventWindowTime",
+                                 0x04: "mediumEventWindowTime",
+                                 0x05: "longEventWindowTime",
+                                 0x06: "powerWindowTime",
+                                 0x07: "ignitionWindowTime",
+                                 0x08: "manufacturerTriggerEventWindowTime",
+                             })
+
+
+def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get serviceToRespondToRecord Data Record.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created serviceToRespondToRecord Data Record.
+    """
+    return RawDataRecord(name="serviceToRespondToRecord" if event_number is None
+    else f"serviceToRespondToRecord#{event_number}",
+                         length=8,
+                         min_occurrences=1,
+                         max_occurrences=None)
+
+
+def event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
+    """
+    Get eventTypeOfActiveEvent Data Record.
+
+    :param event_number: Number of the active event.
+
+    :return: Created eventTypeOfActiveEvent Data Record.
+    """
+    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   EVENT_TYPE_2013))
+
+
+def event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
+    """
+    Get eventTypeOfActiveEvent Data Record.
+
+    :param event_number: Number of the active event.
+
+    :return: Created eventTypeOfActiveEvent Data Record.
+    """
+    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   EVENT_TYPE_2020))
+
+
+def get_event_type_record_02(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x02.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None
+    else f"eventTypeRecord#{event_number}",
+                         length=8,
+                         children=(TIMER_SCHEDULE,))
+
+
+def get_event_type_record_08(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x02.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None
+    else f"eventTypeRecord#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   REPORT_TYPE_2020))
 
 
 # Shared
@@ -1194,7 +1310,7 @@ DTC_SETTING_CONTROL_OPTION_RECORD = RawDataRecord(name="DTCSettingControlOptionR
                                                   max_occurrences=None)
 
 # SID 0x86
-NUMBER_OF_IDENTIFIER_EVENTS = RawDataRecord(name="numberOfIdentifiedEvents",
+NUMBER_OF_IDENTIFIED_EVENTS = RawDataRecord(name="numberOfIdentifiedEvents",
                                             length=8)
 
 COMPARISON_LOGIC = MappingDataRecord(name="Comparison logic",
@@ -1231,30 +1347,10 @@ LOCALIZATION = RawDataRecord(name="Localization",
                              children=(COMPARE_SIGN,
                                        BITS_NUMBER,
                                        BIT_OFFSET))
-EVENT_WINDOW_TIME_2020 = MappingDataRecord(name="eventWindowTime",
-                                           length=8,
-                                           values_mapping={
-                                               0x02: "infiniteTimeToResponse",
-                                               0x03: "shortEventWindowTime",
-                                               0x04: "mediumEventWindowTime",
-                                               0x05: "longEventWindowTime",
-                                               0x06: "powerWindowTime",
-                                               0x07: "ignitionWindowTime",
-                                               0x08: "manufacturerTriggerEventWindowTime",
-                                           })
-EVENT_WINDOW_TIME_2013 = MappingDataRecord(name="eventWindowTime",
-                                           length=8,
-                                           values_mapping={
-                                               0x02: "infiniteTimeToResponse",
-                                           })
+EVENT_WINDOW_TIME_2020 = get_event_window_2020()
+EVENT_WINDOW_TIME_2013 = get_event_window_2013()
 
-READ_DTC_SUB_FUNCTION_2020 = MappingDataRecord(name="ReadDTCInformation SubFunction",
-                                               length=7,
-                                               values_mapping=REPORT_TYPES_MAPPING_2020)
-EVENT_TYPE_RECORD_READ_DTC_SUB_FUNCTION_2020 = RawDataRecord(name="eventTypeRecord",
-                                                             length=8,
-                                                             children=(RESERVED_BIT,
-                                                                       READ_DTC_SUB_FUNCTION_2020))
+EVENT_TYPE_RECORD_08_2020 = get_event_type_record_08()
 
 TIMER_SCHEDULE = MappingDataRecord(name="Timer schedule",
                                    length=8,
@@ -1264,13 +1360,8 @@ TIMER_SCHEDULE = MappingDataRecord(name="Timer schedule",
                                        0x03: "Fast rate",
                                    })
 
-EVENT_TYPE_RECORD_TIMER_SCHEDULE = RawDataRecord(name="eventTypeRecord",
-                                                 length=8,
-                                                 children=(TIMER_SCHEDULE,))
+EVENT_TYPE_RECORD_02 = RawDataRecord(name="eventTypeRecord",
+                                     length=8,
+                                     children=(TIMER_SCHEDULE,))
 
-SERVICE_TO_RESPOND = RawDataRecord(name="serviceToRespondToRecord",
-                                   length=8,
-                                   min_occurrences=1,
-                                   max_occurrences=None)
-
-
+SERVICE_TO_RESPOND = get_service_to_respond()

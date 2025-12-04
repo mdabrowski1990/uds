@@ -6,8 +6,8 @@ __all__ = [
     "MULTIPLE_DID_2013", "MULTIPLE_DID_2020",
     "MULTIPLE_PERIODIC_DID", "OPTIONAL_MULTIPLE_PERIODIC_DID",
     "DATA_FROM_DID_2013", "DATA_FROM_DID_2020",
-    "EVENT_TYPE_RECORD_DID_2013", "EVENT_TYPE_RECORD_DID_2020",
-    "EVENT_TYPE_RECORD_DID_COMPARE_2013", "EVENT_TYPE_RECORD_DID_COMPARE_2020",
+    "EVENT_TYPE_RECORD_03_2013", "EVENT_TYPE_RECORD_03_2020",
+    "EVENT_TYPE_RECORD_07_2013", "EVENT_TYPE_RECORD_07_2020",
     "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
     "get_did_data_2013", "get_did_data_2020", "get_did_data_mask_2013", "get_did_data_mask_2020",
     "get_did_records_formula_2013", "get_did_records_formula_2020",
@@ -119,99 +119,6 @@ DID_DATA_MAPPING_2020 = {
     0xF186: DID_DATA_MAPPING_2013[0xF186],
 }
 
-DID_2013 = MappingDataRecord(name="DID",
-                             length=16,
-                             values_mapping=DID_MAPPING_2013)
-DID_2020 = MappingDataRecord(name="DID",
-                             length=16,
-                             values_mapping=DID_MAPPING_2020)
-SOURCE_DID_2013 = MappingDataRecord(name="sourceDataIdentifier",
-                                    length=16,
-                                    values_mapping=DID_MAPPING_2013)
-SOURCE_DID_2020 = MappingDataRecord(name="sourceDataIdentifier",
-                                    length=16,
-                                    values_mapping=DID_MAPPING_2020)
-DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
-                                        length=16)
-OPTIONAL_DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
-                                                 length=16,
-                                                 min_occurrences=0,
-                                                 max_occurrences=1)
-OPTIONAL_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
-                                                length=8,
-                                                offset=0xF200,
-                                                factor=1,
-                                                min_occurrences=0,
-                                                max_occurrences=1)
-MULTIPLE_DID_2013 = MappingDataRecord(name="DID",
-                                      length=16,
-                                      values_mapping=DID_MAPPING_2013,
-                                      min_occurrences=1,
-                                      max_occurrences=None)
-MULTIPLE_DID_2020 = MappingDataRecord(name="DID",
-                                      length=16,
-                                      values_mapping=DID_MAPPING_2020,
-                                      min_occurrences=1,
-                                      max_occurrences=None)
-MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
-                                                length=8,
-                                                offset=0xF200,
-                                                factor=1,
-                                                min_occurrences=1,
-                                                max_occurrences=None)
-OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
-                                                         length=8,
-                                                         offset=0xF200,
-                                                         factor=1,
-                                                         min_occurrences=0,
-                                                         max_occurrences=None)
-
-POSITION_IN_DID = RawDataRecord(name="positionInSourceDataRecord",
-                                length=8)
-DID_MEMORY_SIZE = RawDataRecord(name="memorySize",
-                                length=8,
-                                unit="bytes")
-
-DATA_FROM_DID_2013 = RawDataRecord(name="Data from DID",
-                                   length=32,
-                                   children=(
-                                       SOURCE_DID_2013,
-                                       POSITION_IN_DID,
-                                       DID_MEMORY_SIZE
-                                   ),
-                                   min_occurrences=1,
-                                   max_occurrences=None)
-DATA_FROM_DID_2020 = RawDataRecord(name="Data from DID",
-                                   length=32,
-                                   children=(
-                                       SOURCE_DID_2020,
-                                       POSITION_IN_DID,
-                                       DID_MEMORY_SIZE
-                                   ),
-                                   min_occurrences=1,
-                                   max_occurrences=None)
-
-EVENT_TYPE_RECORD_DID_2013 = RawDataRecord(name="eventTypeRecord",
-                                           length=16,
-                                           children=(DID_2013,))
-EVENT_TYPE_RECORD_DID_2020 = RawDataRecord(name="eventTypeRecord",
-                                           length=16,
-                                           children=(DID_2020,))
-
-EVENT_TYPE_RECORD_DID_COMPARE_2013 = RawDataRecord(name="eventTypeRecord",
-                                                   length=80,
-                                                   children=(DID_2013,
-                                                             COMPARISON_LOGIC,
-                                                             COMPARE_VALUE,
-                                                             HYSTERESIS_VALUE,
-                                                             LOCALIZATION))
-EVENT_TYPE_RECORD_DID_COMPARE_2020 = RawDataRecord(name="eventTypeRecord",
-                                                   length=80,
-                                                   children=(DID_2020,
-                                                             COMPARISON_LOGIC,
-                                                             COMPARE_VALUE,
-                                                             HYSTERESIS_VALUE,
-                                                             LOCALIZATION))
 
 def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord:
     """
@@ -475,3 +382,158 @@ def get_did_records_formula_2020(record_number: Optional[int]) -> Callable[[int]
     """
     return lambda did_count: get_dids_2020(did_count=did_count,
                                            record_number=record_number)
+
+
+def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x03.
+
+    .. note:: Supports only ISO 14229-1:2013 DIDs.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None
+    else f"eventTypeRecord#{event_number}",
+                         length=16,
+                         children=(DID_2013,))
+
+
+def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x03.
+
+    .. note:: Supports only ISO 14229-1:2020 DIDs.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None
+    else f"eventTypeRecord#{event_number}",
+                         length=16,
+                         children=(DID_2020,))
+
+
+def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x07.
+
+    .. note:: Supports only ISO 14229-1:2013 DIDs.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None
+    else f"eventTypeRecord#{event_number}",
+                         length=80,
+                         children=(DID_2013,
+                                   COMPARISON_LOGIC,
+                                   COMPARE_VALUE,
+                                   HYSTERESIS_VALUE,
+                                   LOCALIZATION))
+
+
+def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x07.
+
+    .. note:: Supports only ISO 14229-1:2020 DIDs.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None
+    else f"eventTypeRecord#{event_number}",
+                         length=80,
+                         children=(DID_2020,
+                                   COMPARISON_LOGIC,
+                                   COMPARE_VALUE,
+                                   HYSTERESIS_VALUE,
+                                   LOCALIZATION))
+
+
+DID_2013 = MappingDataRecord(name="DID",
+                             length=16,
+                             values_mapping=DID_MAPPING_2013)
+DID_2020 = MappingDataRecord(name="DID",
+                             length=16,
+                             values_mapping=DID_MAPPING_2020)
+SOURCE_DID_2013 = MappingDataRecord(name="sourceDataIdentifier",
+                                    length=16,
+                                    values_mapping=DID_MAPPING_2013)
+SOURCE_DID_2020 = MappingDataRecord(name="sourceDataIdentifier",
+                                    length=16,
+                                    values_mapping=DID_MAPPING_2020)
+DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
+                                        length=16)
+OPTIONAL_DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
+                                                 length=16,
+                                                 min_occurrences=0,
+                                                 max_occurrences=1)
+OPTIONAL_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
+                                                length=8,
+                                                offset=0xF200,
+                                                factor=1,
+                                                min_occurrences=0,
+                                                max_occurrences=1)
+MULTIPLE_DID_2013 = MappingDataRecord(name="DID",
+                                      length=16,
+                                      values_mapping=DID_MAPPING_2013,
+                                      min_occurrences=1,
+                                      max_occurrences=None)
+MULTIPLE_DID_2020 = MappingDataRecord(name="DID",
+                                      length=16,
+                                      values_mapping=DID_MAPPING_2020,
+                                      min_occurrences=1,
+                                      max_occurrences=None)
+MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
+                                                length=8,
+                                                offset=0xF200,
+                                                factor=1,
+                                                min_occurrences=1,
+                                                max_occurrences=None)
+OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
+                                                         length=8,
+                                                         offset=0xF200,
+                                                         factor=1,
+                                                         min_occurrences=0,
+                                                         max_occurrences=None)
+
+POSITION_IN_DID = RawDataRecord(name="positionInSourceDataRecord",
+                                length=8)
+DID_MEMORY_SIZE = RawDataRecord(name="memorySize",
+                                length=8,
+                                unit="bytes")
+
+DATA_FROM_DID_2013 = RawDataRecord(name="Data from DID",
+                                   length=32,
+                                   children=(
+                                       SOURCE_DID_2013,
+                                       POSITION_IN_DID,
+                                       DID_MEMORY_SIZE
+                                   ),
+                                   min_occurrences=1,
+                                   max_occurrences=None)
+DATA_FROM_DID_2020 = RawDataRecord(name="Data from DID",
+                                   length=32,
+                                   children=(
+                                       SOURCE_DID_2020,
+                                       POSITION_IN_DID,
+                                       DID_MEMORY_SIZE
+                                   ),
+                                   min_occurrences=1,
+                                   max_occurrences=None)
+
+EVENT_TYPE_RECORD_03_2013 = get_event_type_record_03_2013()
+EVENT_TYPE_RECORD_03_2020 = get_event_type_record_03_2020()
+
+EVENT_TYPE_RECORD_07_2013 = get_event_type_record_07_2013()
+EVENT_TYPE_RECORD_07_2020 = get_event_type_record_07_2020()
