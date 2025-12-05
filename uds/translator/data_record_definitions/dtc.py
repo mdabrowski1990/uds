@@ -49,7 +49,8 @@ from ..data_record import (
     TextEncoding,
 )
 from .did import get_did_records_formula_2013, get_did_records_formula_2020
-from .other import MEMORY_SELECTION, READ_DTC_SUB_FUNCTION_2020, RESERVED_BIT
+from .other import MEMORY_SELECTION, RESERVED_BIT
+from .sub_functions import REPORT_TYPE_2020
 
 # Common
 NO_YES_MAPPING = {0: "no", 1: "yes"}
@@ -97,7 +98,7 @@ def get_event_type_record_09(event_number: Optional[int] = None) -> RawDataRecor
                          length=16,
                          children=(DTC_STATUS_MASK,
                                    RESERVED_BIT,
-                                   READ_DTC_SUB_FUNCTION_2020))
+                                   REPORT_TYPE_2020))
 
 
 def get_conditional_event_type_record_09(event_number: Optional[int] = None) -> ConditionalMappingDataRecord:

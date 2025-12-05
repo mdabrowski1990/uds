@@ -1,6 +1,6 @@
 """Translation for ResponseOnEvent (SID 0x31) service."""
 
-__all__ = ["RESPONSE_ON_EVENT"]
+__all__ = ["RESPONSE_ON_EVENT", "RESPONSE_ON_EVENT_2020", "RESPONSE_ON_EVENT_2013"]
 
 from typing import Tuple, Union
 
