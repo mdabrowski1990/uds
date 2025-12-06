@@ -1326,7 +1326,8 @@ COMPARE_VALUE = RawDataRecord(name="Compare Value",
 HYSTERESIS_VALUE = LinearFormulaDataRecord(name="Hysteresis Value",
                                            length=8,
                                            offset=0,
-                                           factor=100/255)
+                                           factor=100/255,
+                                           unit="%")
 
 COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
                                  length=1,
@@ -1336,8 +1337,8 @@ COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
                                  })
 BITS_NUMBER = CustomFormulaDataRecord(name="Bits Number",
                                       length=5,
-                                      encoding_formula=lambda physical_value: 32 if physical_value == 0 else physical_value,
-                                      decoding_formula=lambda raw_value: raw_value%32,
+                                      encoding_formula=lambda physical_value: physical_value%32,
+                                      decoding_formula=lambda raw_value: 32 if raw_value == 0 else raw_value,
                                       unit="bits")
 BIT_OFFSET = RawDataRecord(name="Bit Offset",
                            length=10,
