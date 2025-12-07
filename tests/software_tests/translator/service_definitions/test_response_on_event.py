@@ -1589,7 +1589,275 @@ class TestResponseOnEvent2013Integration:
             ),
         ),
         # startResponseOnEvent (0x05)
+        (
+            [0x86, 0x85, 0x07],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0x86,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'startResponseOnEvent',
+                                    'raw_value': 0x05,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x05,
+                            'raw_value': 0x05,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x85,
+                    'raw_value': 0x85,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': 0x07,
+                    'raw_value': 0x07,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0xC6, 0x45, 0x00, 0x05],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'startResponseOnEvent',
+                                    'raw_value': 0x05,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x45,
+                            'raw_value': 0x45,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x45,
+                    'raw_value': 0x45,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0x00,
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': 0x05,
+                    'raw_value': 0x05,
+                    'unit': None
+                },
+            ),
+        ),
         # clearResponseOnEvent (0x06)
+        (
+            [0x86, 0x06, 0x04],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0x86,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'clearResponseOnEvent',
+                                    'raw_value': 0x06,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x06,
+                            'raw_value': 0x06,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x06,
+                    'raw_value': 0x06,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': 0x04,
+                    'raw_value': 0x04,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0xC6, 0xC6, 0x2A, 0x0A],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'clearResponseOnEvent',
+                                    'raw_value': 0x06,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x46,
+                            'raw_value': 0x46,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0xC6,
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0x2A,
+                    'raw_value': 0x2A,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': 0x0A,
+                    'raw_value': 0x0A,
+                    'unit': None
+                },
+            ),
+        ),
         # onComparisonOfValues (0x07)
     ])
     def test_decode(self, payload, decoded_message):
@@ -1775,7 +2043,57 @@ class TestResponseOnEvent2013Integration:
                        0x47, 0x00, 0x59, 0x27, 0x01, 0x00, 0x07, 0x89, 0xAB, 0x00, 0xC2, 0x00, 0x50, 0x78, 0xD7, 0x86, 0xB0, 0x44, 0x8B, 0xBA, 0x9B, 0xBD])
         ),
         # startResponseOnEvent (0x05)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": False,
+                    "eventType": 0x45
+                },
+                "eventWindowTime": 0x90,
+            },
+            RequestSID.ResponseOnEvent,
+            None,
+            bytearray([0x86, 0x45, 0x90])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": True,
+                    "eventType": {
+                        "storageState": False,
+                        "event": 0x05,
+                    }
+                },
+                "numberOfIdentifiedEvents": 0x61,
+                "eventWindowTime": 0x6E,
+            },
+            None,
+            ResponseSID.ResponseOnEvent,
+            bytearray([0xC6, 0x85, 0x61, 0x6E])
+        ),
         # clearResponseOnEvent (0x06)
+        (
+            {
+                "SubFunction": 0x86,
+                "eventWindowTime": 0x02,
+            },
+            RequestSID.ResponseOnEvent,
+            None,
+            bytearray([0x86, 0x86, 0x02])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": False,
+                    "eventType": 0x46
+                },
+                "numberOfIdentifiedEvents": 0x00,
+                "eventWindowTime": 0xD5,
+            },
+            None,
+            ResponseSID.ResponseOnEvent,
+            bytearray([0xC6, 0x46, 0x00, 0xD5])
+        ),
         # onComparisonOfValues (0x07)
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
