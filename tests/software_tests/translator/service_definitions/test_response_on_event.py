@@ -1859,6 +1859,305 @@ class TestResponseOnEvent2013Integration:
             ),
         ),
         # onComparisonOfValues (0x07)
+        (
+            [0x86, 0xC7, 0x2F, 0xF1, 0x9C, 0x03, 0xD4, 0xB3, 0xE2, 0xB8, 0x10, 0xC8, 0x00, 0x54],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0x86,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'onComparisonOfValues',
+                                    'raw_value': 0x07,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x47,
+                            'raw_value': 0x47,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0xC7,
+                    'raw_value': 0xC7,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': 0x2F,
+                    'raw_value': 0x2F,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'DID',
+                            'physical_value': "calibrationEquipmentSoftwareNumberDataIdentifier",
+                            'raw_value': 0xF19C,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 8,
+                            'name': 'Comparison logic',
+                            'physical_value': "=",
+                            'raw_value': 0x03,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 32,
+                            'name': 'Compare Value',
+                            'physical_value': 0xD4B3E2B8,
+                            'raw_value': 0xD4B3E2B8,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 8,
+                            'name': 'Hysteresis Value',
+                            'physical_value': 100 / 255 * 0x10,
+                            'raw_value': 0x10,
+                            'unit': "%"
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'Compare Sign',
+                                    'physical_value': "Comparison with sign",
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 5,
+                                    'name': 'Bits Number',
+                                    'physical_value': 0x12,
+                                    'raw_value': 0x12,
+                                    'unit': "bits"
+                                },
+                                {
+                                    'children': (),
+                                    'length': 10,
+                                    'name': 'Bit Offset',
+                                    'physical_value': 0x000,
+                                    'raw_value': 0x000,
+                                    'unit': "bits"
+                                },
+                            ),
+                            'length': 16,
+                            'name': 'Localization',
+                            'physical_value': 0xC800,
+                            'raw_value': 0xC800,
+                            'unit': None
+                        },
+                    ),
+                    'length': 80,
+                    'name': 'eventTypeRecord',
+                    'physical_value': 0xF19C03D4B3E2B810C800,
+                    'raw_value': 0xF19C03D4B3E2B810C800,
+                    'unit': None
+                },
+                {
+                    'children': ((),),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord',
+                    'physical_value': (0x54,),
+                    'raw_value': (0x54,),
+                    'unit': None
+                }
+            )
+        ),
+        (
+            [0xC6, 0x07, 0xE0, 0x0C, 0x5E, 0x12, 0x6C, 0x8C, 0x27, 0xA8, 0x3A, 0x20, 0xE6, 0x4A,
+             0x3C, 0x38, 0xE7, 0xE2, 0x5E, 0xF4],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'onComparisonOfValues',
+                                    'raw_value': 0x07,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x07,
+                            'raw_value': 0x07,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x07,
+                    'raw_value': 0x07,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0xE0,
+                    'raw_value': 0xE0,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': 0x0C,
+                    'raw_value': 0x0C,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'DID',
+                            'physical_value': 0x5E12,
+                            'raw_value': 0x5E12,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 8,
+                            'name': 'Comparison logic',
+                            'physical_value': 0x6C,
+                            'raw_value': 0x6C,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 32,
+                            'name': 'Compare Value',
+                            'physical_value': 0x8C27A83A,
+                            'raw_value': 0x8C27A83A,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 8,
+                            'name': 'Hysteresis Value',
+                            'physical_value': 100 / 255 * 0x20,
+                            'raw_value': 0x20,
+                            'unit': "%"
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'Compare Sign',
+                                    'physical_value': "Comparison with sign",
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 5,
+                                    'name': 'Bits Number',
+                                    'physical_value': 0x19,
+                                    'raw_value': 0x19,
+                                    'unit': "bits"
+                                },
+                                {
+                                    'children': (),
+                                    'length': 10,
+                                    'name': 'Bit Offset',
+                                    'physical_value': 0x24A,
+                                    'raw_value': 0x24A,
+                                    'unit': "bits"
+                                },
+                            ),
+                            'length': 16,
+                            'name': 'Localization',
+                            'physical_value': 0xE64A,
+                            'raw_value': 0xE64A,
+                            'unit': None
+                        },
+                    ),
+                    'length': 80,
+                    'name': 'eventTypeRecord',
+                    'physical_value': 0x5E126C8C27A83A20E64A,
+                    'raw_value': 0x5E126C8C27A83A20E64A,
+                    'unit': None
+                },
+                {
+                    'children': ((), (), (), (), (), ()),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord',
+                    'physical_value': (0x3C, 0x38, 0xE7, 0xE2, 0x5E, 0xF4),
+                    'raw_value': (0x3C, 0x38, 0xE7, 0xE2, 0x5E, 0xF4),
+                    'unit': None
+                }
+            ),
+        ),
     ])
     def test_decode(self, payload, decoded_message):
         assert RESPONSE_ON_EVENT_2013.decode(payload) == decoded_message
@@ -2095,6 +2394,40 @@ class TestResponseOnEvent2013Integration:
             bytearray([0xC6, 0x46, 0x00, 0xD5])
         ),
         # onComparisonOfValues (0x07)
+        (
+            {
+                "SubFunction": 0x47,
+                "eventWindowTime": 0xF1,
+                "eventTypeRecord": {
+                    "DID": 0xA9B7,
+                    "Comparison logic": 0x02,
+                    "Compare Value": 0x3D7E52C5,
+                    "Hysteresis Value": 0xFF,
+                    "Localization": {
+                        "Compare Sign": False,
+                        "Bits Number": 0x1F,
+                        "Bit Offset": 0x001,
+                    }
+                },
+                "serviceToRespondToRecord": (0xEC, 0xAD, 0x25, 0x72),
+            },
+            RequestSID.ResponseOnEvent,
+            None,
+            bytearray([0x86, 0x47, 0xF1, 0xA9, 0xB7, 0x02, 0x3D, 0x7E, 0x52, 0xC5, 0xFF,
+                       0x7C, 0x01, 0xEC, 0xAD, 0x25, 0x72])
+        ),
+        (
+            {
+                "SubFunction": 0x87,
+                "numberOfIdentifiedEvents": 0xEB,
+                "eventWindowTime": 0xB4,
+                "eventTypeRecord": 0x6DC91B40DCA884EEA101,
+                "serviceToRespondToRecord": (0x22, 0x52, 0xA0),
+            },
+            None,
+            ResponseSID.ResponseOnEvent,
+            bytearray([0xC6, 0x87, 0xEB, 0xB4, 0x6D, 0xC9, 0x1B, 0x40, 0xDC, 0xA8, 0x84, 0xEE, 0xA1, 0x01, 0x22, 0x52, 0xA0])
+        ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
         assert RESPONSE_ON_EVENT_2013.encode(data_records_values=data_records_values,
