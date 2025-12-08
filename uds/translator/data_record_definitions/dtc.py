@@ -111,12 +111,11 @@ def get_conditional_event_type_record_09(event_number: Optional[int] = None) -> 
     :return: Created Conditional Data Record.
     """
     if event_number is None:
-        return ConditionalMappingDataRecord(mapping={
-            0x04: (DTC_SNAPSHOT_RECORD_NUMBER,),
-            0x06: (DTC_EXTENDED_DATA_RECORD_NUMBER,),
-            0x18: (DTC_SNAPSHOT_RECORD_NUMBER, MEMORY_SELECTION),
-            0x19: (DTC_EXTENDED_DATA_RECORD_NUMBER, MEMORY_SELECTION),
-        })
+        return ConditionalMappingDataRecord(mapping={0x04: (DTC_SNAPSHOT_RECORD_NUMBER,),
+                                                     0x06: (DTC_EXTENDED_DATA_RECORD_NUMBER,),
+                                                     0x18: (DTC_SNAPSHOT_RECORD_NUMBER, MEMORY_SELECTION),
+                                                     0x19: (DTC_EXTENDED_DATA_RECORD_NUMBER, MEMORY_SELECTION), },
+                                            value_mask=0x7F)
     return ConditionalMappingDataRecord(mapping={
         0x04: (MappingDataRecord(name=f"DTCSnapshotRecordNumber#{event_number}",
                                  values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
@@ -134,7 +133,8 @@ def get_conditional_event_type_record_09(event_number: Optional[int] = None) -> 
                                  length=8),
                RawDataRecord(name=f"MemorySelection#{event_number}",
                              length=8)),
-    })
+    },
+    value_mask=0x7F)
 
 # DTC
 GROUP_OF_DTC = RawDataRecord(name="groupOfDTC",

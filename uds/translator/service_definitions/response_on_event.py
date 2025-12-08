@@ -31,7 +31,11 @@ from ..data_record_definitions.did import (
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
 )
-from ..data_record_definitions.dtc import get_event_type_record_01, get_event_type_record_09
+from ..data_record_definitions.dtc import (
+    get_conditional_event_type_record_09,
+    get_event_type_record_01,
+    get_event_type_record_09,
+)
 from ..data_record_definitions.other import (
     event_type_of_active_event_2013,
     event_type_of_active_event_2020,
@@ -98,6 +102,7 @@ def get_active_events_2020(number_of_activated_events: int) -> Tuple[Union[RawDa
                    get_service_to_respond(event_number)),
             0x09: (get_event_window_2020(event_number),
                    get_event_type_record_09(event_number),
+                   get_conditional_event_type_record_09(event_number),
                    get_service_to_respond(event_number)),
         },
             value_mask=0x3F))

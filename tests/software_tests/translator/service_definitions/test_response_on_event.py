@@ -2440,15 +2440,1326 @@ class TestResponseOnEvent2020Integration:
     """Integration tests for `ResponseOnEvent` service version 2020."""
 
     @pytest.mark.parametrize("payload, decoded_message", [
-        # TODO
+        # stopResponseOnEvent (0x00)
+        (
+            [0x86, 0x80, 0x02],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0x86,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'stopResponseOnEvent',
+                                    'raw_value': 0x00,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x00,
+                            'raw_value': 0x00,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x80,
+                    'raw_value': 0x80,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': "infiniteTimeToResponse",
+                    'raw_value': 0x02,
+                    'unit': None
+                }
+            )
+        ),
+        (
+            [0xC6, 0x40, 0x00, 0x03],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'stopResponseOnEvent',
+                                    'raw_value': 0x00,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x40,
+                            'raw_value': 0x40,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x40,
+                    'raw_value': 0x40,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0x00,
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': "shortEventWindowTime",
+                    'raw_value': 0x03,
+                    'unit': None
+                },
+            ),
+        ),
+        # onDTCStatusChange (0x01)
+        (
+            [0x86, 0x41, 0x00, 0x3C, 0x00],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0x86,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'onDTCStatusChange',
+                                    'raw_value': 0x01,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x41,
+                            'raw_value': 0x41,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x41,
+                    'raw_value': 0x41,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': 0x00,
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'warningIndicatorRequested',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testNotCompletedThisOperationCycle',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailedSinceLastClear',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testNotCompletedSinceLastClear',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'confirmedDTC',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'pendingDTC',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailedThisOperationCycle',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailed',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 8,
+                            'name': 'DTCStatusMask',
+                            'physical_value': 0x3C,
+                            'raw_value': 0x3C,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'eventTypeRecord',
+                    'physical_value': 0x3C,
+                    'raw_value': 0x3C,
+                    'unit': None
+                },
+                {
+                    'children': ((),),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord',
+                    'physical_value': (0x00,),
+                    'raw_value': (0x00,),
+                    'unit': None
+                }
+            )
+        ),
+        (
+            [0xC6, 0x81, 0xFF, 0x04, 0x00, 0x22, 0x21, 0xFE],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'onDTCStatusChange',
+                                    'raw_value': 0x01,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x01,
+                            'raw_value': 0x01,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x81,
+                    'raw_value': 0x81,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0xFF,
+                    'raw_value': 0xFF,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': "mediumEventWindowTime",
+                    'raw_value': 0x04,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'warningIndicatorRequested',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testNotCompletedThisOperationCycle',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailedSinceLastClear',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testNotCompletedSinceLastClear',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'confirmedDTC',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'pendingDTC',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailedThisOperationCycle',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailed',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 8,
+                            'name': 'DTCStatusMask',
+                            'physical_value': 0x00,
+                            'raw_value': 0x00,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'eventTypeRecord',
+                    'physical_value': 0x00,
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+                {
+                    'children': ((), (), ()),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord',
+                    'physical_value': (0x22, 0x21, 0xFE),
+                    'raw_value': (0x22, 0x21, 0xFE),
+                    'unit': None
+                }
+            ),
+        ),
+        # onChangeOfDataIdentifier (0x03)
+        (
+            [0x86, 0x43, 0x05, 0xFF, 0x01, 0x2E, 0xFE, 0xDC, 0xBA, 0x98],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0x86,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'onChangeOfDataIdentifier',
+                                    'raw_value': 0x03,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x43,
+                            'raw_value': 0x43,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x43,
+                    'raw_value': 0x43,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': "longEventWindowTime",
+                    'raw_value': 0x05,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'DID',
+                            'physical_value': "ReservedForISO15765-5",
+                            'raw_value': 0xFF01,
+                            'unit': None
+                        },
+                    ),
+                    'length': 16,
+                    'name': 'eventTypeRecord',
+                    'physical_value': 0xFF01,
+                    'raw_value': 0xFF01,
+                    'unit': None
+                },
+                {
+                    'children': ((), (), (), (), ()),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord',
+                    'physical_value': (0x2E, 0xFE, 0xDC, 0xBA, 0x98),
+                    'raw_value': (0x2E, 0xFE, 0xDC, 0xBA, 0x98),
+                    'unit': None
+                }
+            )
+        ),
+        (
+            [0xC6, 0x83, 0x35, 0x06, 0xF1, 0x90, 0xC2, 0x0D, 0xE1, 0xB4],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'onChangeOfDataIdentifier',
+                                    'raw_value': 0x03,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x03,
+                            'raw_value': 0x03,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x83,
+                    'raw_value': 0x83,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0x35,
+                    'raw_value': 0x35,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': "powerWindowTime",
+                    'raw_value': 0x06,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 16,
+                            'name': 'DID',
+                            'physical_value': "VINDataIdentifier",
+                            'raw_value': 0xF190,
+                            'unit': None
+                        },
+                    ),
+                    'length': 16,
+                    'name': 'eventTypeRecord',
+                    'physical_value': 0xF190,
+                    'raw_value': 0xF190,
+                    'unit': None
+                },
+                {
+                    'children': ((), (), (), ()),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord',
+                    'physical_value': (0xC2, 0x0D, 0xE1, 0xB4),
+                    'raw_value': (0xC2, 0x0D, 0xE1, 0xB4),
+                    'unit': None
+                }
+            ),
+        ),
+        # reportActivatedEvents (0x04)
+        (
+            [0x86, 0x84, 0x08],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0x86,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'reportActivatedEvents',
+                                    'raw_value': 0x04,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x04,
+                            'raw_value': 0x04,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x84,
+                    'raw_value': 0x84,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime',
+                    'physical_value': "manufacturerTriggerEventWindowTime",
+                    'raw_value': 0x08,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0xC6, 0x44, 0x00],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'reportActivatedEvents',
+                                    'raw_value': 0x04,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x44,
+                            'raw_value': 0x44,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x44,
+                    'raw_value': 0x44,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0x00,
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+            ),
+        ),
+        (
+            [0xC6, 0x84, 0x01, 0x08, 0x05, 0x0D, 0x19, 0x01, 0x01],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'reportActivatedEvents',
+                                    'raw_value': 0x04,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x04,
+                            'raw_value': 0x04,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x84,
+                    'raw_value': 0x84,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0x01,
+                    'raw_value': 0x01,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'reserved',
+                            'physical_value': 0,
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'storageState',
+                                    'physical_value': 'doNotStoreEvent',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': 'event',
+                                    'physical_value': 'reportMostRecentDtcOnStatusChange',
+                                    'raw_value': 0x08,
+                                    'unit': None
+                                }
+                            ),
+                            'length': 7,
+                            'name': 'eventType',
+                            'physical_value': 0x08,
+                            'raw_value': 0x08,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'eventTypeOfActiveEvent#1',
+                    'physical_value': 0x08,
+                    'raw_value': 0x08,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime#1',
+                    'physical_value': "longEventWindowTime",
+                    'raw_value': 0x05,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'reserved',
+                            'physical_value': 0,
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'reportType',
+                            'physical_value': "reportMostRecentTestFailedDTC",
+                            'raw_value': 0x0D,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'eventTypeRecord#1',
+                    'physical_value': 0x0D,
+                    'raw_value': 0x0D,
+                    'unit': None
+                },
+                {
+                    'children': ((), (), ()),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord#1',
+                    'physical_value': (0x19, 0x01, 0x01),
+                    'raw_value': (0x19, 0x01, 0x01),
+                    'unit': None
+                },
+            ),
+        ),
+        (
+            [0xC6, 0x44, 0x01, 0xC9, 0x12, 0xAF, 0x04, 0xFF, 0xB2],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ResponseOnEvent',
+                    'raw_value': 0xC6,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': "suppressPosRspMsgIndicationBit",
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': "storageState",
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': "event",
+                                    'physical_value': 'reportActivatedEvents',
+                                    'raw_value': 0x04,
+                                    'unit': None
+                                },
+                            ),
+                            'length': 7,
+                            'name': "eventType",
+                            'physical_value': 0x44,
+                            'raw_value': 0x44,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x44,
+                    'raw_value': 0x44,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'numberOfIdentifiedEvents',
+                    'physical_value': 0x01,
+                    'raw_value': 0x01,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'reserved',
+                            'physical_value': 1,
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'storageState',
+                                    'physical_value': 'storeEvent',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 6,
+                                    'name': 'event',
+                                    'physical_value': 'reportDTCRecordInformationOnDtcStatusChange',
+                                    'raw_value': 0x09,
+                                    'unit': None
+                                }
+                            ),
+                            'length': 7,
+                            'name': 'eventType',
+                            'physical_value': 0x49,
+                            'raw_value': 0x49,
+                            'unit': None
+                        }
+                    ),
+                    'length': 8,
+                    'name': 'eventTypeOfActiveEvent#1',
+                    'physical_value': 0xC9,
+                    'raw_value': 0xC9,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'eventWindowTime#1',
+                    'physical_value': 0x12,
+                    'raw_value': 0x12,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'warningIndicatorRequested',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testNotCompletedThisOperationCycle',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailedSinceLastClear',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testNotCompletedSinceLastClear',
+                                    'physical_value': 'no',
+                                    'raw_value': 0,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'confirmedDTC',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'pendingDTC',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailedThisOperationCycle',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                },
+                                {
+                                    'children': (),
+                                    'length': 1,
+                                    'name': 'testFailed',
+                                    'physical_value': 'yes',
+                                    'raw_value': 1,
+                                    'unit': None
+                                }
+                            ),
+                            'length': 8,
+                            'name': 'DTCStatusMask',
+                            'physical_value': 0xAF,
+                            'raw_value': 0xAF,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'reserved',
+                            'physical_value': 0,
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'reportType',
+                            'physical_value': "reportDTCSnapshotRecordByDTCNumber",
+                            'raw_value': 0x04,
+                            'unit': None
+                        },
+                    ),
+                    'length': 16,
+                    'name': 'eventTypeRecord#1',
+                    'physical_value': 0xAF04,
+                    'raw_value': 0xAF04,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'DTCSnapshotRecordNumber#1',
+                    'physical_value': "all",
+                    'raw_value': 0xFF,
+                    'unit': None
+                },
+                {
+                    'children': ((),),
+                    'length': 8,
+                    'name': 'serviceToRespondToRecord#1',
+                    'physical_value': (0xB2,),
+                    'raw_value': (0xB2,),
+                    'unit': None
+                },
+            ),
+        ),
     ])
     def test_decode(self, payload, decoded_message):
         assert RESPONSE_ON_EVENT_2020.decode(payload) == decoded_message
 
     @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
-        # TODO
+        # stopResponseOnEvent (0x00)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": False,
+                    "eventType": {
+                        "storageState": True,
+                        "event": 0x00,
+                    },
+                },
+                "eventWindowTime": 0xFF,
+            },
+            RequestSID.ResponseOnEvent,
+            None,
+            bytearray([0x86, 0x40, 0xFF])
+        ),
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": True,
+                    "eventType": {
+                        "storageState": False,
+                        "event": 0x00,
+                    },
+                },
+                "numberOfIdentifiedEvents": 0x00,
+                "eventWindowTime": 0x00,
+            },
+            None,
+            ResponseSID.ResponseOnEvent,
+            bytearray([0xC6, 0x80, 0x00, 0x00])
+        ),
+        # onDTCStatusChange (0x01)
+        (
+            {
+                "SubFunction": 0x81,
+                "eventWindowTime": 0xE2,
+                "eventTypeRecord": {
+                    "DTCStatusMask": {
+                        "warningIndicatorRequested": True,
+                        "testNotCompletedThisOperationCycle": False,
+                        "testFailedSinceLastClear": False,
+                        "testNotCompletedSinceLastClear": False,
+                        "confirmedDTC": False,
+                        "pendingDTC": False,
+                        "testFailedThisOperationCycle": False,
+                        "testFailed": True,
+                    },
+                },
+                "serviceToRespondToRecord": (0x11, 0x01),
+            },
+            RequestSID.ResponseOnEvent,
+            None,
+            bytearray([0x86, 0x81, 0xE2, 0x81, 0x11, 0x01])
+        ),
+        (
+            {
+                "SubFunction": 0x41,
+                "numberOfIdentifiedEvents": 0x1C,
+                "eventWindowTime": 0x52,
+                "eventTypeRecord": 0xAA,
+                "serviceToRespondToRecord": (0xFF,),
+            },
+            None,
+            ResponseSID.ResponseOnEvent,
+            bytearray([0xC6, 0x41, 0x1C, 0x52, 0xAA, 0xFF])
+        ),
+        # onChangeOfDataIdentifier (0x03)
+        (
+            {
+                "SubFunction": {
+                    "suppressPosRspMsgIndicationBit": True,
+                    "eventType": 0x43
+                },
+                "eventWindowTime": 0x02,
+                "eventTypeRecord": {
+                    "DID": 0x6F5E,
+                },
+                "serviceToRespondToRecord": (0x22, 0x6F, 0x5E),
+            },
+            RequestSID.ResponseOnEvent,
+            None,
+            bytearray([0x86, 0xC3, 0x02, 0x6F, 0x5E, 0x22, 0x6F, 0x5E])
+        ),
+        (
+            {
+                "SubFunction": 0x03,
+                "numberOfIdentifiedEvents": 0x11,
+                "eventWindowTime": 0x0E,
+                "eventTypeRecord": 0xE0B1,
+                "serviceToRespondToRecord": (0x10, 0x02),
+            },
+            None,
+            ResponseSID.ResponseOnEvent,
+            bytearray([0xC6, 0x03, 0x11, 0x0E, 0xE0, 0xB1, 0x10, 0x02])
+        ),
+        # reportActivatedEvents (0x04)
+        (
+            {
+                "SubFunction": 0x44,
+                "eventWindowTime": 0xFF,
+            },
+            RequestSID.ResponseOnEvent,
+            None,
+            bytearray([0x86, 0x44, 0xFF])
+        ),
+        (
+            {
+                "SubFunction": 0x84,
+                "numberOfIdentifiedEvents": 0x05,
+                "eventTypeOfActiveEvent#1": 0x09,
+                "eventWindowTime#1": 0x6A,
+                "eventTypeRecord#1": {
+                    "DTCStatusMask": 0xA5,
+                    "reserved": 0,
+                    "reportType": 0x19,
+                },
+                "DTCExtDataRecordNumber#1": 0xFF,
+                "MemorySelection#1": 0x0F,
+                "serviceToRespondToRecord#1": (0x22, 0x02, 0x03),
+                "eventTypeOfActiveEvent#2": 0x48,
+                "eventWindowTime#2": 0x05,
+                "eventTypeRecord#2": {
+                    "reserved": 0,
+                    "reportType": 0x0E,
+                },
+                "serviceToRespondToRecord#2": (0x19, 0x02, 0xFF),
+                "eventTypeOfActiveEvent#3": 0x07,
+                "eventWindowTime#3": 0xE0,
+                "eventTypeRecord#3": {
+                    "DID": 0x4E8C,
+                    "Comparison logic": 0x03,
+                    "Compare Value": 0x62AF2DD1,
+                    "Hysteresis Value": 0xB0,
+                    "Localization": {
+                        "Compare Sign": False,
+                        "Bits Number": 0,
+                        "Bit Offset": 1023,
+                    }
+                },
+                "serviceToRespondToRecord#3": (0x83,),
+                "eventTypeOfActiveEvent#4": {
+                    "reserved": 0,
+                    "eventType": {
+                        "storageState": True,
+                        "event": 0x03,
+                    }
+                },
+                "eventWindowTime#4": 0xBE,
+                "eventTypeRecord#4": {
+                    "DID": 0x4567,
+                },
+                "serviceToRespondToRecord#4": (0x21,),
+                "eventTypeOfActiveEvent#5": 0x01,
+                "eventWindowTime#5": 0x08,
+                "eventTypeRecord#5": {
+                    "DTCStatusMask": {
+                        "warningIndicatorRequested": False,
+                        "testNotCompletedThisOperationCycle": True,
+                        "testFailedSinceLastClear": False,
+                        "testNotCompletedSinceLastClear": False,
+                        "confirmedDTC": False,
+                        "pendingDTC": True,
+                        "testFailedThisOperationCycle": False,
+                        "testFailed": False,
+                    }
+                },
+                "serviceToRespondToRecord#5": (0x86, 0x03),
+            },
+            None,
+            ResponseSID.ResponseOnEvent,
+            bytearray([0xC6, 0x84, 0x05,
+                       0x09, 0x6A, 0xA5, 0x19, 0xFF, 0x0F, 0x22, 0x02, 0x03,
+                       0x48, 0x05, 0x0E, 0x19, 0x02, 0xFF,
+                       0x07, 0xE0, 0x4E, 0x8C, 0x03, 0x62, 0xAF, 0x2D, 0xD1, 0xB0, 0x03, 0xFF, 0x83,
+                       0x43, 0xBE, 0x45, 0x67, 0x21,
+                       0x01, 0x08, 0x44, 0x86, 0x03])
+        ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
         assert RESPONSE_ON_EVENT_2020.encode(data_records_values=data_records_values,
-                                                sid=sid,
-                                                rsid=rsid) == payload
+                                             sid=sid,
+                                             rsid=rsid) == payload
