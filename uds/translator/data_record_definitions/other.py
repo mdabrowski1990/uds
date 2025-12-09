@@ -609,9 +609,7 @@ def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataReco
     """
     return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
-                             values_mapping={
-                                 0x02: "infiniteTimeToResponse",
-                             })
+                             values_mapping={0x02: "infiniteTimeToResponse"})
 
 
 def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
@@ -625,15 +623,13 @@ def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataReco
     """
     return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
-                             values_mapping={
-                                 0x02: "infiniteTimeToResponse",
-                                 0x03: "shortEventWindowTime",
-                                 0x04: "mediumEventWindowTime",
-                                 0x05: "longEventWindowTime",
-                                 0x06: "powerWindowTime",
-                                 0x07: "ignitionWindowTime",
-                                 0x08: "manufacturerTriggerEventWindowTime",
-                             })
+                             values_mapping={0x02: "infiniteTimeToResponse",
+                                             0x03: "shortEventWindowTime",
+                                             0x04: "mediumEventWindowTime",
+                                             0x05: "longEventWindowTime",
+                                             0x06: "powerWindowTime",
+                                             0x07: "ignitionWindowTime",
+                                             0x08: "manufacturerTriggerEventWindowTime"})
 
 
 def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
