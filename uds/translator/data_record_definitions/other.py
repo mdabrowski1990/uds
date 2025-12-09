@@ -652,7 +652,7 @@ def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
                          max_occurrences=None)
 
 
-def event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
+def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
     """
     Get eventTypeOfActiveEvent Data Record.
 
@@ -666,7 +666,7 @@ def event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
                                    EVENT_TYPE_2013))
 
 
-def event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
+def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
     """
     Get eventTypeOfActiveEvent Data Record.
 
@@ -694,7 +694,7 @@ def get_event_type_record_02(event_number: Optional[int] = None) -> RawDataRecor
                          children=(TIMER_SCHEDULE,))
 
 
-def get_event_type_record_08(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
     Get eventTypeRecord Data Record for event equal to 0x02.
 
@@ -1347,7 +1347,7 @@ LOCALIZATION = RawDataRecord(name="Localization",
 EVENT_WINDOW_TIME_2020 = get_event_window_2020()
 EVENT_WINDOW_TIME_2013 = get_event_window_2013()
 
-EVENT_TYPE_RECORD_08_2020 = get_event_type_record_08()
+EVENT_TYPE_RECORD_08_2020 = get_event_type_record_08_2020()
 
 TIMER_SCHEDULE = MappingDataRecord(name="Timer schedule",
                                    length=8,

@@ -83,7 +83,7 @@ def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecor
                          children=(DTC_STATUS_MASK,))
 
 
-def get_event_type_record_09(event_number: Optional[int] = None) -> RawDataRecord:
+def get_event_type_record_09_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
     Get eventTypeRecord Data Record for event equal to 0x09.
 
@@ -99,7 +99,7 @@ def get_event_type_record_09(event_number: Optional[int] = None) -> RawDataRecor
                                    REPORT_TYPE_2020))
 
 
-def get_conditional_event_type_record_09(event_number: Optional[int] = None) -> ConditionalMappingDataRecord:
+def get_conditional_event_type_record_09_2020(event_number: Optional[int] = None) -> ConditionalMappingDataRecord:
     """
     Get conditional continuation for eventTypeRecord Data Record (event equal to 0x09).
 
@@ -338,8 +338,8 @@ FAULT_DETECTION_COUNTER = RawDataRecord(name="FaultDetectionCounter",
 
 EVENT_TYPE_RECORD_01 = get_event_type_record_01()
 
-EVENT_TYPE_RECORD_09_2020 = get_event_type_record_09()
-CONDITIONAL_EVENT_TYPE_RECORD_09 = get_conditional_event_type_record_09()
+EVENT_TYPE_RECORD_09_2020 = get_event_type_record_09_2020()
+CONDITIONAL_EVENT_TYPE_RECORD_09 = get_conditional_event_type_record_09_2020()
 
 # Mixed
 DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
