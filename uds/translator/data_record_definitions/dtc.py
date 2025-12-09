@@ -78,8 +78,7 @@ def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecor
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=8,
                          children=(DTC_STATUS_MASK,))
 
@@ -93,8 +92,7 @@ def get_event_type_record_09(event_number: Optional[int] = None) -> RawDataRecor
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=16,
                          children=(DTC_STATUS_MASK,
                                    RESERVED_BIT,
@@ -134,7 +132,8 @@ def get_conditional_event_type_record_09(event_number: Optional[int] = None) -> 
                RawDataRecord(name=f"MemorySelection#{event_number}",
                              length=8)),
     },
-    value_mask=0x7F)
+        value_mask=0x7F)
+
 
 # DTC
 GROUP_OF_DTC = RawDataRecord(name="groupOfDTC",

@@ -395,8 +395,7 @@ def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawData
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=16,
                          children=(DID_2013,))
 
@@ -412,8 +411,7 @@ def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawData
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=16,
                          children=(DID_2020,))
 
@@ -429,8 +427,7 @@ def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawData
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=80,
                          children=(DID_2013,
                                    COMPARISON_LOGIC,
@@ -450,8 +447,7 @@ def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawData
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=80,
                          children=(DID_2020,
                                    COMPARISON_LOGIC,

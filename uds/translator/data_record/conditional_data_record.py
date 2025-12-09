@@ -225,6 +225,7 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
                 raise ValueError("Mask must be a positive value")
         self.__value_mask = value
 
+
 class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
     """
     Conditional Data Records that uses formula to generate diagnostic message continuation.

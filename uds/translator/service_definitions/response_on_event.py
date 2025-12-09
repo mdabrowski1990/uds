@@ -2,7 +2,7 @@
 
 __all__ = ["RESPONSE_ON_EVENT", "RESPONSE_ON_EVENT_2020", "RESPONSE_ON_EVENT_2013"]
 
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 from uds.message import RequestSID
 
@@ -48,7 +48,8 @@ from ..data_record_definitions.other import (
 from ..service import Service
 
 
-def get_active_events_2013(number_of_activated_events: int) -> Tuple[Union[RawDataRecord, MappingDataRecord], ...]:
+def get_active_events_2013(number_of_activated_events: int
+                           ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
     """
     Get activated events (event = reportActivatedEvents).
 
@@ -56,7 +57,7 @@ def get_active_events_2013(number_of_activated_events: int) -> Tuple[Union[RawDa
 
     :return: Data Records for Activated Events.
     """
-    data_records = []
+    data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
     for event_number in range(1, number_of_activated_events + 1):
         data_records.append(event_type_of_active_event_2013(event_number))
         data_records.append(ConditionalMappingDataRecord(mapping={
@@ -76,7 +77,9 @@ def get_active_events_2013(number_of_activated_events: int) -> Tuple[Union[RawDa
             value_mask=0x3F))
     return tuple(data_records)
 
-def get_active_events_2020(number_of_activated_events: int) -> Tuple[Union[RawDataRecord, MappingDataRecord], ...]:
+
+def get_active_events_2020(number_of_activated_events: int
+                           ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
     """
     Get activated events (event = reportActivatedEvents).
 
@@ -84,7 +87,7 @@ def get_active_events_2020(number_of_activated_events: int) -> Tuple[Union[RawDa
 
     :return: Data Records for Activated Events.
     """
-    data_records = []
+    data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
     for event_number in range(1, number_of_activated_events + 1):
         data_records.append(event_type_of_active_event_2020(event_number))
         data_records.append(ConditionalMappingDataRecord(mapping={
@@ -107,6 +110,7 @@ def get_active_events_2020(number_of_activated_events: int) -> Tuple[Union[RawDa
         },
             value_mask=0x3F))
     return tuple(data_records)
+
 
 CONDITIONAL_ACTIVATED_EVENTS_2013 = ConditionalFormulaDataRecord(formula=get_active_events_2013)
 CONDITIONAL_ACTIVATED_EVENTS_2020 = ConditionalFormulaDataRecord(formula=get_active_events_2020)
@@ -214,7 +218,7 @@ RESPONSE_ON_EVENT_2020 = Service(request_sid=RequestSID.ResponseOnEvent,
                                                     CONDITIONAL_REQUEST_CONTINUATION_2020),
                                  response_structure=(RESPONSE_ON_EVENT_SUB_FUNCTION_2020,
                                                      CONDITIONAL_RESPONSE_CONTINUATION_2020))
-"""Translator for :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service 
+"""Translator for :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service
 compatible with ISO 14229-1:2020."""
 
 RESPONSE_ON_EVENT = RESPONSE_ON_EVENT_2020

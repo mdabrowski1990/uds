@@ -607,8 +607,7 @@ def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataReco
 
     :return: Created eventWindowTime Data Record.
     """
-    return MappingDataRecord(name="eventWindowTime" if event_number is None
-    else f"eventWindowTime#{event_number}",
+    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
                              values_mapping={
                                  0x02: "infiniteTimeToResponse",
@@ -624,8 +623,7 @@ def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataReco
 
     :return: Created eventWindowTime Data Record.
     """
-    return MappingDataRecord(name="eventWindowTime" if event_number is None
-    else f"eventWindowTime#{event_number}",
+    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
                              values_mapping={
                                  0x02: "infiniteTimeToResponse",
@@ -648,7 +646,7 @@ def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
     :return: Created serviceToRespondToRecord Data Record.
     """
     return RawDataRecord(name="serviceToRespondToRecord" if event_number is None
-    else f"serviceToRespondToRecord#{event_number}",
+                              else f"serviceToRespondToRecord#{event_number}",
                          length=8,
                          min_occurrences=1,
                          max_occurrences=None)
@@ -691,8 +689,7 @@ def get_event_type_record_02(event_number: Optional[int] = None) -> RawDataRecor
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=8,
                          children=(TIMER_SCHEDULE,))
 
@@ -706,8 +703,7 @@ def get_event_type_record_08(event_number: Optional[int] = None) -> RawDataRecor
 
     :return: Created eventTypeRecord Data Record.
     """
-    return RawDataRecord(name="eventTypeRecord" if event_number is None
-    else f"eventTypeRecord#{event_number}",
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=8,
                          children=(RESERVED_BIT,
                                    REPORT_TYPE_2020))
@@ -1326,7 +1322,7 @@ COMPARE_VALUE = RawDataRecord(name="Compare Value",
 HYSTERESIS_VALUE = LinearFormulaDataRecord(name="Hysteresis Value",
                                            length=8,
                                            offset=0,
-                                           factor=100/255,
+                                           factor=100 / 255,
                                            unit="%")
 
 COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
@@ -1337,7 +1333,7 @@ COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
                                  })
 BITS_NUMBER = CustomFormulaDataRecord(name="Bits Number",
                                       length=5,
-                                      encoding_formula=lambda physical_value: physical_value%32,
+                                      encoding_formula=lambda physical_value: physical_value % 32,
                                       decoding_formula=lambda raw_value: 32 if raw_value == 0 else raw_value,
                                       unit="bits")
 BIT_OFFSET = RawDataRecord(name="Bit Offset",
