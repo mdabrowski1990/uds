@@ -6,8 +6,7 @@ from typing import List, Tuple, Union
 
 from uds.message import RequestSID
 
-from .. import RawDataRecord
-from ..data_record import ConditionalFormulaDataRecord, ConditionalMappingDataRecord, MappingDataRecord
+from ..data_record import ConditionalFormulaDataRecord, ConditionalMappingDataRecord, MappingDataRecord, RawDataRecord
 from ..data_record_definitions import (
     CONDITIONAL_EVENT_TYPE_RECORD_09,
     EVENT_TYPE_RECORD_01,
