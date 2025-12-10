@@ -4987,11 +4987,11 @@ ResponseOnEvent service allows the client to request from the server to start or
 a specified event.
 
 .. warning:: In ISO 14229-1 *DTCSnapshotRecordNumber*, *DTCExtDataRecordNumber* and *MemorySelection* "follow"
-  *ReadDTCInformation SubFunction* and are part of *eventTypeRecord* (if *event* equals 7).
+  *ReadDTCInformation SubFunction* and are part of *eventTypeRecord* (if *event* equals 9).
   In the translator (due to code design limitations), *eventTypeRecord* contains only *DTCStatusMask* and
   *ReadDTCInformation SubFunction* Data Records.
   *DTCSnapshotRecordNumber*, *DTCExtDataRecordNumber* and *MemorySelection* are represented as separate Data Records
-  that follows *eventTypeRecord* (for *event* equals 7).
+  that follows *eventTypeRecord* (for *event* equals 9).
 
 
 Request Format

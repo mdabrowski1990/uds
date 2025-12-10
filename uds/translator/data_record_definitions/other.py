@@ -67,7 +67,7 @@ __all__ = [
     # SID 0x85
     "DTC_SETTING_CONTROL_OPTION_RECORD",
     # SID 0x86
-    "NUMBER_OF_IDENTIFIED_EVENTS",
+    "NUMBER_OF_IDENTIFIED_EVENTS", "NUMBER_OF_ACTIVATED_EVENTS",
     "COMPARISON_LOGIC", "COMPARE_VALUE", "HYSTERESIS_VALUE",
     "COMPARE_SIGN", "BITS_NUMBER", "BIT_OFFSET", "LOCALIZATION",
     "EVENT_WINDOW_TIME_2013", "EVENT_WINDOW_TIME_2020",
@@ -692,7 +692,7 @@ def get_event_type_record_02(event_number: Optional[int] = None) -> RawDataRecor
 
 def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get eventTypeRecord Data Record for event equal to 0x02.
+    Get eventTypeRecord Data Record for event equal to 0x08.
 
     :param event_number: Order number of the event record to contain this Data Record.
         None if there are no records.
@@ -1304,6 +1304,8 @@ DTC_SETTING_CONTROL_OPTION_RECORD = RawDataRecord(name="DTCSettingControlOptionR
 # SID 0x86
 NUMBER_OF_IDENTIFIED_EVENTS = RawDataRecord(name="numberOfIdentifiedEvents",
                                             length=8)
+NUMBER_OF_ACTIVATED_EVENTS = RawDataRecord(name="numberOfActivatedEvents",
+                                           length=8)
 
 COMPARISON_LOGIC = MappingDataRecord(name="Comparison logic",
                                      length=8,

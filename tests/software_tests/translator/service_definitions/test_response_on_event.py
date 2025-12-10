@@ -1071,7 +1071,7 @@ class TestResponseOnEvent2013Integration:
                 {
                     'children': (),
                     'length': 8,
-                    'name': 'numberOfIdentifiedEvents',
+                    'name': 'numberOfActivatedEvents',
                     'physical_value': 0x01,
                     'raw_value': 0x01,
                     'unit': None
@@ -1274,7 +1274,7 @@ class TestResponseOnEvent2013Integration:
                 {
                     'children': (),
                     'length': 8,
-                    'name': 'numberOfIdentifiedEvents',
+                    'name': 'numberOfActivatedEvents',
                     'physical_value': 0x01,
                     'raw_value': 0x01,
                     'unit': None
@@ -1412,7 +1412,7 @@ class TestResponseOnEvent2013Integration:
                 {
                     'children': (),
                     'length': 8,
-                    'name': 'numberOfIdentifiedEvents',
+                    'name': 'numberOfActivatedEvents',
                     'physical_value': 0x01,
                     'raw_value': 0x01,
                     'unit': None
@@ -1552,7 +1552,7 @@ class TestResponseOnEvent2013Integration:
                 {
                     'children': (),
                     'length': 8,
-                    'name': 'numberOfIdentifiedEvents',
+                    'name': 'numberOfActivatedEvents',
                     'physical_value': 0x01,
                     'raw_value': 0x01,
                     'unit': None
@@ -2404,7 +2404,7 @@ class TestResponseOnEvent2013Integration:
         (
             {
                 "SubFunction": 0x04,
-                "numberOfIdentifiedEvents": 0x04,
+                "numberOfActivatedEvents": 0x04,
                 "eventTypeOfActiveEvent#1": 0x01,
                 "eventWindowTime#1": 0x01,
                 "eventTypeRecord#1": 0x32,
@@ -3298,7 +3298,7 @@ class TestResponseOnEvent2020Integration:
                 {
                     'children': (),
                     'length': 8,
-                    'name': 'numberOfIdentifiedEvents',
+                    'name': 'numberOfActivatedEvents',
                     'physical_value': 0x00,
                     'raw_value': 0x00,
                     'unit': None
@@ -3361,7 +3361,7 @@ class TestResponseOnEvent2020Integration:
                 {
                     'children': (),
                     'length': 8,
-                    'name': 'numberOfIdentifiedEvents',
+                    'name': 'numberOfActivatedEvents',
                     'physical_value': 0x01,
                     'raw_value': 0x01,
                     'unit': None
@@ -3507,7 +3507,7 @@ class TestResponseOnEvent2020Integration:
                 {
                     'children': (),
                     'length': 8,
-                    'name': 'numberOfIdentifiedEvents',
+                    'name': 'numberOfActivatedEvents',
                     'physical_value': 0x01,
                     'raw_value': 0x01,
                     'unit': None
@@ -4933,7 +4933,7 @@ class TestResponseOnEvent2020Integration:
         (
             {
                 "SubFunction": 0x84,
-                "numberOfIdentifiedEvents": 0x05,
+                "numberOfActivatedEvents": 0x05,
                 "eventTypeOfActiveEvent#1": 0x09,
                 "eventWindowTime#1": 0x6A,
                 "eventTypeRecord#1": {
