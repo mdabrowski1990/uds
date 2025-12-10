@@ -86,12 +86,10 @@ RESPONSE_CONTINUATION_MAPPING = {
     0x08: (AUTHENTICATION_RETURN_PARAMETER,),
 }
 
-CONDITIONAL_REQUEST_CONTINUATION = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING | {key + 0x80: value
-                                            for key, value in REQUEST_CONTINUATION_MAPPING.items()})
-CONDITIONAL_RESPONSE_CONTINUATION = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING | {key + 0x80: value
-                                             for key, value in RESPONSE_CONTINUATION_MAPPING.items()})
+CONDITIONAL_REQUEST_CONTINUATION = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING,
+                                                                value_mask=0x7F)
+CONDITIONAL_RESPONSE_CONTINUATION = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING,
+                                                                 value_mask=0x7F)
 
 AUTHENTICATION = Service(request_sid=RequestSID.Authentication,
                          request_structure=(AUTHENTICATION_SUB_FUNCTION,

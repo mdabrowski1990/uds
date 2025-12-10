@@ -160,19 +160,15 @@ RESPONSE_CONTINUATION_MAPPING_2020 = {
            DTC_READINESS_GROUP_IDENTIFIER, MULTIPLE_DTC_AND_STATUS_RECORDS)
 }
 
-CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING_2013 | {key + 0x80: value
-                                                 for key, value in REQUEST_CONTINUATION_MAPPING_2013.items()})
-CONDITIONAL_REQUEST_CONTINUATION_2020 = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING_2020 | {key + 0x80: value
-                                                 for key, value in REQUEST_CONTINUATION_MAPPING_2020.items()})
+CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2013,
+                                                                     value_mask=0x7F)
+CONDITIONAL_REQUEST_CONTINUATION_2020 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2020,
+                                                                     value_mask=0x7F)
 
-CONDITIONAL_RESPONSE_CONTINUATION_2013 = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING_2013 | {key + 0x80: value
-                                                  for key, value in RESPONSE_CONTINUATION_MAPPING_2013.items()})
-CONDITIONAL_RESPONSE_CONTINUATION_2020 = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING_2020 | {key + 0x80: value
-                                                  for key, value in RESPONSE_CONTINUATION_MAPPING_2020.items()})
+CONDITIONAL_RESPONSE_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING_2013,
+                                                                      value_mask=0x7F)
+CONDITIONAL_RESPONSE_CONTINUATION_2020 = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING_2020,
+                                                                      value_mask=0x7F)
 
 READ_DTC_INFORMATION_2013 = Service(request_sid=RequestSID.ReadDTCInformation,
                                     request_structure=(READ_DTC_INFORMATION_SUB_FUNCTION_2013,

@@ -20,9 +20,8 @@ RESPONSE_CONTINUATION_MAPPING = {
     0x03: (RID, ROUTINE_STATUS),
 }
 
-CONDITIONAL_RESPONSE_CONTINUATION = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING | {key + 0x80: value
-                                             for key, value in RESPONSE_CONTINUATION_MAPPING.items()})
+CONDITIONAL_RESPONSE_CONTINUATION = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING,
+                                                                 value_mask=0x7F)
 
 ROUTINE_CONTROL = Service(request_sid=RequestSID.RoutineControl,
                           request_structure=(ROUTINE_CONTROL_SUB_FUNCTION,

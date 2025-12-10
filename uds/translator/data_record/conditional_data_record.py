@@ -148,7 +148,8 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
 
     def __init__(self,
                  mapping: Mapping[int, AliasMessageStructure],
-                 default_message_continuation: Optional[AliasMessageStructure] = None) -> None:
+                 default_message_continuation: Optional[AliasMessageStructure] = None,
+                 value_mask: Optional[int] = None) -> None:
         """
         Define logic for this Conditional Data Record.
 
@@ -156,8 +157,10 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             continuation.
         :param default_message_continuation: Value of default message continuation.
             Leave None if you do not wish to use default message continuation.
+        :param value_mask: Value mask to apply on a raw value of the proceeding Data Record.
         """
         self.mapping = mapping
+        self.value_mask = value_mask
         super().__init__(default_message_continuation=default_message_continuation)
 
     def __getitem__(self, raw_value: int) -> AliasMessageStructure:
@@ -175,7 +178,7 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             raise TypeError("Provided value is not int type.")
         if raw_value < 0:
             raise ValueError("Provided value is not a raw value as it is lower than 0.")
-        return self.mapping[raw_value]
+        return self.mapping[raw_value if self.value_mask is None else raw_value & self.value_mask]
 
     @property
     def mapping(self) -> Mapping[int, AliasMessageStructure]:
@@ -201,6 +204,26 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         for value in mapping.values():
             self.validate_message_continuation(value)
         self.__mapping = MappingProxyType(mapping)
+
+    @property
+    def value_mask(self) -> Optional[int]:
+        """Get the mask to apply on a raw value of the proceeding Data Record."""
+        return self.__value_mask
+
+    @value_mask.setter
+    def value_mask(self, value: Optional[int]) -> None:
+        """
+        Set the mask to apply on a raw value of the proceeding Data Record.
+
+        :param value: Mask value to set.
+            Set None to not use masking.
+        """
+        if value is not None:
+            if not isinstance(value, int):
+                raise TypeError("Provided time parameter value must be None or int type.")
+            if value <= 0:
+                raise ValueError("Mask must be a positive value")
+        self.__value_mask = value
 
 
 class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):

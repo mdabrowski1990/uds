@@ -24,6 +24,8 @@ __all__ = [
     "DTC_READINESS_GROUP_IDENTIFIER",
     # Other
     "FAULT_DETECTION_COUNTER",
+    "EVENT_TYPE_RECORD_01", "EVENT_TYPE_RECORD_09_2020",
+    "CONDITIONAL_EVENT_TYPE_RECORD_09",
     # Mixed
     "DTC_AND_STATUS", "OPTIONAL_DTC_AND_STATUS", "MULTIPLE_DTC_AND_STATUS_RECORDS",
     "MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS",
@@ -34,10 +36,21 @@ __all__ = [
     "DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST",
 ]
 
+from typing import Optional
+
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
-from ..data_record import ConditionalFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding
+from ..data_record import (
+    ConditionalFormulaDataRecord,
+    ConditionalMappingDataRecord,
+    MappingDataRecord,
+    RawDataRecord,
+    TextDataRecord,
+    TextEncoding,
+)
 from .did import get_did_records_formula_2013, get_did_records_formula_2020
+from .other import MEMORY_SELECTION, RESERVED_BIT
+from .sub_functions import REPORT_TYPE_2020
 
 # Common
 NO_YES_MAPPING = {0: "no", 1: "yes"}
@@ -53,6 +66,74 @@ RECORDS_DID_COUNTS_LIST = [RawDataRecord(name=f"DIDCount#{record_number + 1}",
                                          max_occurrences=1,
                                          unit="DIDs")
                            for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
+
+
+# formulas
+def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x01.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
+                         length=8,
+                         children=(DTC_STATUS_MASK,))
+
+
+def get_event_type_record_09_2020(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x09.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
+                         length=16,
+                         children=(DTC_STATUS_MASK,
+                                   RESERVED_BIT,
+                                   REPORT_TYPE_2020))
+
+
+def get_conditional_event_type_record_09_2020(event_number: Optional[int] = None) -> ConditionalMappingDataRecord:
+    """
+    Get conditional continuation for eventTypeRecord Data Record (event equal to 0x09).
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created Conditional Data Record.
+    """
+    if event_number is None:
+        return ConditionalMappingDataRecord(mapping={0x04: (DTC_SNAPSHOT_RECORD_NUMBER,),
+                                                     0x06: (DTC_EXTENDED_DATA_RECORD_NUMBER,),
+                                                     0x18: (DTC_SNAPSHOT_RECORD_NUMBER, MEMORY_SELECTION),
+                                                     0x19: (DTC_EXTENDED_DATA_RECORD_NUMBER, MEMORY_SELECTION), },
+                                            value_mask=0x7F)
+    return ConditionalMappingDataRecord(mapping={
+        0x04: (MappingDataRecord(name=f"DTCSnapshotRecordNumber#{event_number}",
+                                 values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
+                                 length=8),),
+        0x06: (MappingDataRecord(name=f"DTCExtDataRecordNumber#{event_number}",
+                                 values_mapping=DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING,
+                                 length=8),),
+        0x18: (MappingDataRecord(name=f"DTCSnapshotRecordNumber#{event_number}",
+                                 values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
+                                 length=8),
+               RawDataRecord(name=f"MemorySelection#{event_number}",
+                             length=8)),
+        0x19: (MappingDataRecord(name=f"DTCExtDataRecordNumber#{event_number}",
+                                 values_mapping=DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING,
+                                 length=8),
+               RawDataRecord(name=f"MemorySelection#{event_number}",
+                             length=8)),
+    },
+        value_mask=0x7F)
+
 
 # DTC
 GROUP_OF_DTC = RawDataRecord(name="groupOfDTC",
@@ -254,6 +335,11 @@ DTC_READINESS_GROUP_IDENTIFIER = RawDataRecord(name="DTCReadinessGroupIdentifier
 # Other
 FAULT_DETECTION_COUNTER = RawDataRecord(name="FaultDetectionCounter",
                                         length=8)
+
+EVENT_TYPE_RECORD_01 = get_event_type_record_01()
+
+EVENT_TYPE_RECORD_09_2020 = get_event_type_record_09_2020()
+CONDITIONAL_EVENT_TYPE_RECORD_09 = get_conditional_event_type_record_09_2020()
 
 # Mixed
 DTC_AND_STATUS = RawDataRecord(name="DTC and Status",

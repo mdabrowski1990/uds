@@ -26,13 +26,11 @@ RESPONSE_CONTINUATION_MAPPING_2013 = {
     0x04: (),
 }
 
-CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING_2013 | {key + 0x80: value
-                                                 for key, value in REQUEST_CONTINUATION_MAPPING_2013.items()})
+CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2013,
+                                                                     value_mask=0x7F)
 
-CONDITIONAL_RESPONSE_CONTINUATION_2013 = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING_2013 | {key + 0x80: value
-                                                  for key, value in RESPONSE_CONTINUATION_MAPPING_2013.items()})
+CONDITIONAL_RESPONSE_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING_2013,
+                                                                      value_mask=0x7F)
 
 ACCESS_TIMING_PARAMETER_2013 = Service(request_sid=RequestSID.AccessTimingParameter,
                                        request_structure=(ACCESS_TIMING_PARAMETER_SUB_FUNCTION,

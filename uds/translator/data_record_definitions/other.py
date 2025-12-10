@@ -66,10 +66,18 @@ __all__ = [
     "CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST", "CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE",
     # SID 0x85
     "DTC_SETTING_CONTROL_OPTION_RECORD",
+    # SID 0x86
+    "NUMBER_OF_IDENTIFIED_EVENTS", "NUMBER_OF_ACTIVATED_EVENTS",
+    "COMPARISON_LOGIC", "COMPARE_VALUE", "HYSTERESIS_VALUE",
+    "COMPARE_SIGN", "BITS_NUMBER", "BIT_OFFSET", "LOCALIZATION",
+    "EVENT_WINDOW_TIME_2013", "EVENT_WINDOW_TIME_2020",
+    "EVENT_TYPE_RECORD_08_2020",
+    "EVENT_TYPE_RECORD_02",
+    "SERVICE_TO_RESPOND"
 ]
 
 from decimal import Decimal
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 from uds.utilities import EXPONENT_BIT_LENGTH, MANTISSA_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, InconsistencyError
 
@@ -85,7 +93,13 @@ from ..data_record import (
     TextDataRecord,
     TextEncoding,
 )
-from .sub_functions import DIAGNOSTIC_SESSIONS_MAPPING, MAPPING_YES_NO
+from .sub_functions import (
+    DIAGNOSTIC_SESSIONS_MAPPING,
+    EVENT_TYPE_2013,
+    EVENT_TYPE_2020,
+    MAPPING_YES_NO,
+    REPORT_TYPE_2020,
+)
 
 
 # Formulas
@@ -584,6 +598,113 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
             signature)
 
 
+def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataRecord:
+    """
+    Get eventWindowTime Data Record compatible with ISO 14229-1:2013 version.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventWindowTime Data Record.
+    """
+    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
+                             length=8,
+                             values_mapping={0x02: "infiniteTimeToResponse"})
+
+
+def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
+    """
+    Get eventWindowTime Data Record compatible with ISO 14229-1:2020 version.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventWindowTime Data Record.
+    """
+    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
+                             length=8,
+                             values_mapping={0x02: "infiniteTimeToResponse",
+                                             0x03: "shortEventWindowTime",
+                                             0x04: "mediumEventWindowTime",
+                                             0x05: "longEventWindowTime",
+                                             0x06: "powerWindowTime",
+                                             0x07: "ignitionWindowTime",
+                                             0x08: "manufacturerTriggerEventWindowTime"})
+
+
+def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get serviceToRespondToRecord Data Record.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created serviceToRespondToRecord Data Record.
+    """
+    return RawDataRecord(name="serviceToRespondToRecord" if event_number is None
+                              else f"serviceToRespondToRecord#{event_number}",
+                         length=8,
+                         min_occurrences=1,
+                         max_occurrences=None)
+
+
+def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
+    """
+    Get eventTypeOfActiveEvent Data Record.
+
+    :param event_number: Number of the active event.
+
+    :return: Created eventTypeOfActiveEvent Data Record.
+    """
+    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   EVENT_TYPE_2013))
+
+
+def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
+    """
+    Get eventTypeOfActiveEvent Data Record.
+
+    :param event_number: Number of the active event.
+
+    :return: Created eventTypeOfActiveEvent Data Record.
+    """
+    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   EVENT_TYPE_2020))
+
+
+def get_event_type_record_02(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x02.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
+                         length=8,
+                         children=(TIMER_SCHEDULE,))
+
+
+def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x08.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   REPORT_TYPE_2020))
+
+
 # Shared
 RESERVED_BIT = RawDataRecord(name="reserved",
                              length=1)
@@ -670,7 +791,8 @@ POWER_DOWN_TIME = MappingAndLinearFormulaDataRecord(name="powerDownTime",
                                                     offset=0,
                                                     unit="s")
 CONDITIONAL_POWER_DOWN_TIME = ConditionalMappingDataRecord(mapping={0x4: [POWER_DOWN_TIME]},
-                                                           default_message_continuation=[])
+                                                           default_message_continuation=[],
+                                                           value_mask=0x7F)
 
 # SID 0x14
 OPTIONAL_MEMORY_SELECTION = RawDataRecord(name="MemorySelection",
@@ -912,6 +1034,8 @@ COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
                                                values_mapping={0: "reserved"})
+# TODO: change CONDITIONAL_COMMUNICATION_CONTROL_REQUEST to ConditionalMappingDataRecord
+#  https://github.com/mdabrowski1990/uds/issues/413
 CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(formula=get_communication_control_request)
 
 # SID 0x29
@@ -1179,3 +1303,63 @@ DTC_SETTING_CONTROL_OPTION_RECORD = RawDataRecord(name="DTCSettingControlOptionR
                                                   length=8,
                                                   min_occurrences=0,
                                                   max_occurrences=None)
+
+# SID 0x86
+NUMBER_OF_IDENTIFIED_EVENTS = RawDataRecord(name="numberOfIdentifiedEvents",
+                                            length=8)
+NUMBER_OF_ACTIVATED_EVENTS = RawDataRecord(name="numberOfActivatedEvents",
+                                           length=8)
+
+COMPARISON_LOGIC = MappingDataRecord(name="Comparison logic",
+                                     length=8,
+                                     values_mapping={
+                                         0x01: "<",
+                                         0x02: ">",
+                                         0x03: "=",
+                                         0x04: "<>",
+                                     })
+COMPARE_VALUE = RawDataRecord(name="Compare Value",
+                              length=32)
+HYSTERESIS_VALUE = LinearFormulaDataRecord(name="Hysteresis Value",
+                                           length=8,
+                                           offset=0,
+                                           factor=100 / 255,
+                                           unit="%")
+
+COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
+                                 length=1,
+                                 values_mapping={
+                                     0: "Comparison without sign",
+                                     1: "Comparison with sign",
+                                 })
+BITS_NUMBER = CustomFormulaDataRecord(name="Bits Number",
+                                      length=5,
+                                      encoding_formula=lambda physical_value: physical_value % 32,
+                                      decoding_formula=lambda raw_value: 32 if raw_value == 0 else raw_value,
+                                      unit="bits")
+BIT_OFFSET = RawDataRecord(name="Bit Offset",
+                           length=10,
+                           unit="bits")
+LOCALIZATION = RawDataRecord(name="Localization",
+                             length=16,
+                             children=(COMPARE_SIGN,
+                                       BITS_NUMBER,
+                                       BIT_OFFSET))
+EVENT_WINDOW_TIME_2020 = get_event_window_2020()
+EVENT_WINDOW_TIME_2013 = get_event_window_2013()
+
+EVENT_TYPE_RECORD_08_2020 = get_event_type_record_08_2020()
+
+TIMER_SCHEDULE = MappingDataRecord(name="Timer schedule",
+                                   length=8,
+                                   values_mapping={
+                                       0x01: "Slow rate",
+                                       0x02: "Medium rate",
+                                       0x03: "Fast rate",
+                                   })
+
+EVENT_TYPE_RECORD_02 = RawDataRecord(name="eventTypeRecord",
+                                     length=8,
+                                     children=(TIMER_SCHEDULE,))
+
+SERVICE_TO_RESPOND = get_service_to_respond()

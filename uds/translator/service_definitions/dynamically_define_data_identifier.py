@@ -34,16 +34,13 @@ RESPONSE_CONTINUATION_MAPPING = {
     0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID,),
 }
 
-CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING_2013 | {key + 0x80: value
-                                                 for key, value in REQUEST_CONTINUATION_MAPPING_2013.items()})
-CONDITIONAL_REQUEST_CONTINUATION_2020 = ConditionalMappingDataRecord(
-    mapping=REQUEST_CONTINUATION_MAPPING_2020 | {key + 0x80: value
-                                                 for key, value in REQUEST_CONTINUATION_MAPPING_2020.items()})
+CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2013,
+                                                                     value_mask=0x7F)
+CONDITIONAL_REQUEST_CONTINUATION_2020 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2020,
+                                                                     value_mask=0x7F)
 
-CONDITIONAL_RESPONSE_CONTINUATION = ConditionalMappingDataRecord(
-    mapping=RESPONSE_CONTINUATION_MAPPING | {key + 0x80: value
-                                             for key, value in RESPONSE_CONTINUATION_MAPPING.items()})
+CONDITIONAL_RESPONSE_CONTINUATION = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING,
+                                                                 value_mask=0x7F)
 
 DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2013 = Service(request_sid=RequestSID.DynamicallyDefineDataIdentifier,
                                                   request_structure=(DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION,
