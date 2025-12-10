@@ -157,7 +157,7 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
             continuation.
         :param default_message_continuation: Value of default message continuation.
             Leave None if you do not wish to use default message continuation.
-        :param value_mask: Value mask to apply on provided signal value.
+        :param value_mask: Value mask to apply on a raw value of the proceeding Data Record.
         """
         self.mapping = mapping
         self.value_mask = value_mask
@@ -207,13 +207,13 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
 
     @property
     def value_mask(self) -> Optional[int]:
-        """Get the mask to apply on raw value of the proceeding Data Record."""
+        """Get the mask to apply on a raw value of the proceeding Data Record."""
         return self.__value_mask
 
     @value_mask.setter
     def value_mask(self, value: Optional[int]) -> None:
         """
-        Set the mask to apply on raw value of the proceeding Data Record.
+        Set the mask to apply on a raw value of the proceeding Data Record.
 
         :param value: Mask value to set.
             Set None to not use masking.
