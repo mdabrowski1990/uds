@@ -31,6 +31,8 @@ __all__ = [
     "RESPONSE_ON_EVENT_SUB_FUNCTION_2020", "RESPONSE_ON_EVENT_SUB_FUNCTION_2013",
     "EVENT_TYPE_2020", "EVENT_TYPE_2013", "STORAGE_STATE", "EVENT_2020", "EVENT_2013",
     "EVENT_2020_MAPPING", "EVENT_2013_MAPPING",
+    # SID 0x87
+    "LINK_CONTROL_SUB_FUNCTION", "LINK_CONTROL_TYPE", "LINK_CONTROL_TYPE_MAPPING"
 ]
 
 from ..data_record import MappingDataRecord, RawDataRecord
@@ -318,3 +320,16 @@ RESPONSE_ON_EVENT_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
 RESPONSE_ON_EVENT_SUB_FUNCTION_2020 = RawDataRecord(name="SubFunction",
                                                     length=8,
                                                     children=(SPRMIB, EVENT_TYPE_2020))
+
+# SID 0x87
+LINK_CONTROL_TYPE_MAPPING = {
+    0x01: "verifyModeTransitionWithFixedParameter",
+    0x02: "verifyModeTransitionWithSpecificParameter",
+    0x03: "transitionMode",
+}
+LINK_CONTROL_TYPE = MappingDataRecord(name="linkControlType",
+                                      length=7,
+                                      values_mapping=LINK_CONTROL_TYPE_MAPPING)
+LINK_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
+                                          length=8,
+                                          children=(SPRMIB, LINK_CONTROL_TYPE))

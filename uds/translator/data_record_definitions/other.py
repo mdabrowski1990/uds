@@ -73,7 +73,11 @@ __all__ = [
     "EVENT_WINDOW_TIME_2013", "EVENT_WINDOW_TIME_2020",
     "EVENT_TYPE_RECORD_08_2020",
     "EVENT_TYPE_RECORD_02",
-    "SERVICE_TO_RESPOND"
+    "SERVICE_TO_RESPOND",
+    # SID 0x87
+    "LINK_RECORD",
+    "LINK_CONTROL_MODE_IDENTIFIER",
+    "CONDITIONAL_LINK_CONTROL_REQUEST",
 ]
 
 from decimal import Decimal
@@ -1363,3 +1367,27 @@ EVENT_TYPE_RECORD_02 = RawDataRecord(name="eventTypeRecord",
                                      children=(TIMER_SCHEDULE,))
 
 SERVICE_TO_RESPOND = get_service_to_respond()
+
+# SID 0x87
+LINK_CONTROL_MODE_IDENTIFIER = MappingDataRecord(name="linkControlModeIdentifier",
+                                                 length=8,
+                                                 values_mapping={
+                                                     0x01: "PC9600Baud",
+                                                     0x02: "PC19200Baud",
+                                                     0x03: "PC38400Baud",
+                                                     0x04: "PC57600Baud",
+                                                     0x05: "PC115200Baud",
+                                                     0x10: "CAN125000Baud",
+                                                     0x11: "CAN250000Baud",
+                                                     0x12: "CAN500000Baud",
+                                                     0x13: "CAN1000000Baud",
+                                                     0x20: "ProgrammingSetup",
+                                                 })
+LINK_RECORD = RawDataRecord(name="linkRecord",
+                            length=24)
+CONDITIONAL_LINK_CONTROL_REQUEST = ConditionalMappingDataRecord(value_mask=0x7F,
+                                                                mapping={
+                                                                    0x01: (LINK_CONTROL_MODE_IDENTIFIER,),
+                                                                    0x02: (LINK_RECORD,),
+                                                                    0x03: (),
+                                                                })
