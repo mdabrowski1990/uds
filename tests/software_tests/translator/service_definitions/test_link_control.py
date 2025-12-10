@@ -336,5 +336,5 @@ class TestLinkControlIntegration:
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
         assert LINK_CONTROL.encode(data_records_values=data_records_values,
-                                                 sid=sid,
-                                                 rsid=rsid) == payload
+                                   sid=sid,
+                                   rsid=rsid) == payload
