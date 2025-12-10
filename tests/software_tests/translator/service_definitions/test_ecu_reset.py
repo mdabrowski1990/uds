@@ -20,7 +20,45 @@ class TestECUResetIntegration:
 
     @pytest.mark.parametrize("payload, decoded_message", [
         (
-            [0x11, 0x81],
+            [0x11, 0x01],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ECUReset',
+                    'raw_value': 0x11,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'suppressPosRspMsgIndicationBit',
+                            'physical_value': 'no',
+                            'raw_value': 0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'resetType',
+                            'physical_value': 'hardReset',
+                            'raw_value': 0x01,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x01,
+                    'raw_value': 0x01,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0x11, 0x84],
             (
                 {
                     'children': (),
@@ -44,15 +82,15 @@ class TestECUResetIntegration:
                             'children': (),
                             'length': 7,
                             'name': 'resetType',
-                            'physical_value': 'hardReset',
-                            'raw_value': 0x01,
+                            'physical_value': 'enableRapidPowerShutDown',
+                            'raw_value': 0x04,
                             'unit': None
                         },
                     ),
                     'length': 8,
                     'name': 'SubFunction',
-                    'physical_value': 0x81,
-                    'raw_value': 0x81,
+                    'physical_value': 0x84,
+                    'raw_value': 0x84,
                     'unit': None
                 },
             )
@@ -99,6 +137,52 @@ class TestECUResetIntegration:
                     'name': 'powerDownTime',
                     'physical_value': 'failure or time unavailable',
                     'raw_value': 0xFF,
+                    'unit': 's'
+                },
+            )
+        ),
+        (
+            [0x51, 0x84, 0x02],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ECUReset',
+                    'raw_value': 0x51,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 1,
+                            'name': 'suppressPosRspMsgIndicationBit',
+                            'physical_value': 'yes',
+                            'raw_value': 1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 7,
+                            'name': 'resetType',
+                            'physical_value': 'enableRapidPowerShutDown',
+                            'raw_value': 0x04,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'SubFunction',
+                    'physical_value': 0x84,
+                    'raw_value': 0x84,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'powerDownTime',
+                    'physical_value': 2,
+                    'raw_value': 0x02,
                     'unit': 's'
                 },
             )

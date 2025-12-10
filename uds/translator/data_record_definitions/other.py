@@ -791,7 +791,8 @@ POWER_DOWN_TIME = MappingAndLinearFormulaDataRecord(name="powerDownTime",
                                                     offset=0,
                                                     unit="s")
 CONDITIONAL_POWER_DOWN_TIME = ConditionalMappingDataRecord(mapping={0x4: [POWER_DOWN_TIME]},
-                                                           default_message_continuation=[])
+                                                           default_message_continuation=[],
+                                                           value_mask=0x7F)
 
 # SID 0x14
 OPTIONAL_MEMORY_SELECTION = RawDataRecord(name="MemorySelection",
@@ -1033,6 +1034,8 @@ COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
                                                values_mapping={0: "reserved"})
+# TODO: change CONDITIONAL_COMMUNICATION_CONTROL_REQUEST to ConditionalMappingDataRecord
+#  https://github.com/mdabrowski1990/uds/issues/413
 CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(formula=get_communication_control_request)
 
 # SID 0x29
