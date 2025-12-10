@@ -5575,7 +5575,7 @@ Request Format
 |               |                                  |            |                   |                                                 |                                                                              |
 |               |                                  |            |                   | 0x04-0x3F: reserved                             |                                                                              |
 |               |                                  |            |                   |                                                 |                                                                              |
-|               |                                  |            |                   | 0x40-0x5F: vehicle manufaturer specific         |                                                                              |
+|               |                                  |            |                   | 0x40-0x5F: vehicle manufacturer specific        |                                                                              |
 |               |                                  |            |                   |                                                 |                                                                              |
 |               |                                  |            |                   | 0x60-0x7E: system supplier specific             |                                                                              |
 |               |                                  |            |                   |                                                 |                                                                              |

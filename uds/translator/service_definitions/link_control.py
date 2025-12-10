@@ -10,4 +10,4 @@ from ..service import Service
 LINK_CONTROL = Service(request_sid=RequestSID.LinkControl,
                        request_structure=(LINK_CONTROL_SUB_FUNCTION, CONDITIONAL_LINK_CONTROL_REQUEST),
                        response_structure=(LINK_CONTROL_SUB_FUNCTION,))
-"""Default translator for :ref:`LinkControl <knowledge-base-service-diagnostic-session-control>` service."""
+"""Default translator for :ref:`LinkControl <knowledge-base-service-link-control>` service."""
