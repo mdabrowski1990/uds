@@ -20,95 +20,95 @@ It also defines the general purpose and format of the diagnostic message.
 
 List of all Service Identifier (SID) values and their application:
 
-- 0x00 - not applicable, reserved by ISO 14229-1
-- 0x01-0x0F - ISO 15031-5/SAE J1979 specific services
-- 0x10 - :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service request
-- 0x11 - :ref:`ECUReset <knowledge-base-service-ecu-reset>` service request
-- 0x12-0x13 - reserved by ISO 14229-1
-- 0x14 - :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>` service request
-- 0x15-0x18 - reserved by ISO 14229-1
-- 0x19 - :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service request
-- 0x1A-0x21 - reserved by ISO 14229-1
-- 0x22 - :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service request
-- 0x23 - :ref:`ReadMemoryByAddress <knowledge-base-service-read-memory-by-address>` service request
-- 0x24 - :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service request
-- 0x25-0x26 - reserved by ISO 14229-1
-- 0x27 - :ref:`SecurityAccess <knowledge-base-service-security-access>` service request
-- 0x28 - :ref:`CommunicationControl <knowledge-base-service-communication-control>` service request
-- 0x29 - :ref:`Authentication <knowledge-base-service-authentication>` service request
-- 0x2A - :ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` service request
-- 0x2B - reserved by ISO 14229-1
-- 0x2C - :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service request
-- 0x2D - reserved by ISO 14229-1
-- 0x2E - :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service request
-- 0x2F - :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service request
-- 0x30 - reserved by ISO 14229-1
-- 0x31 - :ref:`RoutineControl <knowledge-base-service-routine-control>` service request
-- 0x32-0x33 - reserved by ISO 14229-1
-- 0x34 - :ref:`RequestDownload <knowledge-base-service-request-download>` service request
-- 0x35 - :ref:`RequestUpload <knowledge-base-service-request-upload>` service request
-- 0x36 - :ref:`TransferData <knowledge-base-service-transfer-data>` service request
-- 0x37 - :ref:`RequestTransferExit <knowledge-base-service-request-transfer-exit>` service request
-- 0x38 - :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service request
-- 0x39-0x3C - reserved by ISO 14229-1
-- 0x3D - :ref:`WriteMemoryByAddress <knowledge-base-service-write-memory-by-address>` service request
-- 0x3E - :ref:`TesterPresent <knowledge-base-service-tester-present>` service request
-- 0x3F - not applicable, reserved by ISO 14229-1
-- 0x40 - not applicable, reserved by ISO 14229-1
-- 0x41-0x4F - ISO 15031-5/SAE J1979 specific services
-- 0x50 - positive response to :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service
-- 0x51 - positive response to :ref:`ECUReset <knowledge-base-service-ecu-reset>` service
-- 0x52-0x53 - reserved by ISO 14229-1
-- 0x54 - positive response to :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>` service
-- 0x55-0x58 - reserved by ISO 14229-1
-- 0x59 - positive response to :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service
-- 0x5A-0x61 - reserved by ISO 14229-1
-- 0x62 - positive response to :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service
-- 0x63 - positive response to :ref:`ReadMemoryByAddress <knowledge-base-service-read-memory-by-address>` service
-- 0x64 - positive response to :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service
-- 0x65-0x66 - reserved by ISO 14229-1
-- 0x67 - positive response to :ref:`SecurityAccess <knowledge-base-service-security-access>` service
-- 0x68 - positive response to :ref:`CommunicationControl <knowledge-base-service-communication-control>` service
-- 0x69 - positive response to :ref:`Authentication <knowledge-base-service-authentication>` service
-- 0x6A - positive response to :ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` service
-- 0x6B - reserved by ISO 14229-1
-- 0x6C - positive response to :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service
-- 0x6D - reserved by ISO 14229-1
-- 0x6E - positive response to :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service
-- 0x6F - positive response to :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service
-- 0x70 - reserved by ISO 14229-1
-- 0x71 - positive response to :ref:`RoutineControl <knowledge-base-service-routine-control>` service
-- 0x72-0x73 - reserved by ISO 14229-1
-- 0x74 - positive response to :ref:`RequestDownload <knowledge-base-service-request-download>` service
-- 0x75 - positive response to :ref:`RequestUpload <knowledge-base-service-request-upload>` service
-- 0x76 - positive response to :ref:`TransferData <knowledge-base-service-transfer-data>` service
-- 0x77 - positive response to :ref:`RequestTransferExit <knowledge-base-service-request-transfer-exit>` service
-- 0x78 - positive response to :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service
-- 0x79-0x7C - reserved by ISO 14229-1
-- 0x7D - positive response to :ref:`WriteMemoryByAddress <knowledge-base-service-write-memory-by-address>` service
-- 0x7E - positive response to :ref:`TesterPresent <knowledge-base-service-tester-present>` service
-- 0x7F - negative response service identifier
-- 0x80-0x82 - not applicable, reserved by ISO 14229-1
-- 0x83 - :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` service request
+- **0x00** - not applicable, reserved by ISO 14229-1
+- **0x01**-**0x0F** - ISO 15031-5/SAE J1979 specific services
+- **0x10** - :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service request
+- **0x11** - :ref:`ECUReset <knowledge-base-service-ecu-reset>` service request
+- **0x12**-**0x13** - reserved by ISO 14229-1
+- **0x14** - :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>` service request
+- **0x15**-**0x18** - reserved by ISO 14229-1
+- **0x19** - :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service request
+- **0x1A**-**0x21** - reserved by ISO 14229-1
+- **0x22** - :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service request
+- **0x23** - :ref:`ReadMemoryByAddress <knowledge-base-service-read-memory-by-address>` service request
+- **0x24** - :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service request
+- **0x25**-**0x26** - reserved by ISO 14229-1
+- **0x27** - :ref:`SecurityAccess <knowledge-base-service-security-access>` service request
+- **0x28** - :ref:`CommunicationControl <knowledge-base-service-communication-control>` service request
+- **0x29** - :ref:`Authentication <knowledge-base-service-authentication>` service request
+- **0x2A** - :ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` service request
+- **0x2B** - reserved by ISO 14229-1
+- **0x2C** - :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service request
+- **0x2D** - reserved by ISO 14229-1
+- **0x2E** - :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service request
+- **0x2F** - :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service request
+- **0x30** - reserved by ISO 14229-1
+- **0x31** - :ref:`RoutineControl <knowledge-base-service-routine-control>` service request
+- **0x32**-**0x33** - reserved by ISO 14229-1
+- **0x34** - :ref:`RequestDownload <knowledge-base-service-request-download>` service request
+- **0x35** - :ref:`RequestUpload <knowledge-base-service-request-upload>` service request
+- **0x36** - :ref:`TransferData <knowledge-base-service-transfer-data>` service request
+- **0x37** - :ref:`RequestTransferExit <knowledge-base-service-request-transfer-exit>` service request
+- **0x38** - :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service request
+- **0x39**-**0x3C** - reserved by ISO 14229-1
+- **0x3D** - :ref:`WriteMemoryByAddress <knowledge-base-service-write-memory-by-address>` service request
+- **0x3E** - :ref:`TesterPresent <knowledge-base-service-tester-present>` service request
+- **0x3F** - not applicable, reserved by ISO 14229-1
+- **0x40** - not applicable, reserved by ISO 14229-1
+- **0x41**-**0x4F** - ISO 15031-5/SAE J1979 specific services
+- **0x50** - positive response to :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` service
+- **0x51** - positive response to :ref:`ECUReset <knowledge-base-service-ecu-reset>` service
+- **0x52**-**0x53** - reserved by ISO 14229-1
+- **0x54** - positive response to :ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>` service
+- **0x55**-**0x58** - reserved by ISO 14229-1
+- **0x59** - positive response to :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service
+- **0x5A**-**0x61** - reserved by ISO 14229-1
+- **0x62** - positive response to :ref:`ReadDataByIdentifier <knowledge-base-service-read-data-by-identifier>` service
+- **0x63** - positive response to :ref:`ReadMemoryByAddress <knowledge-base-service-read-memory-by-address>` service
+- **0x64** - positive response to :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` service
+- **0x65**-**0x66** - reserved by ISO 14229-1
+- **0x67** - positive response to :ref:`SecurityAccess <knowledge-base-service-security-access>` service
+- **0x68** - positive response to :ref:`CommunicationControl <knowledge-base-service-communication-control>` service
+- **0x69** - positive response to :ref:`Authentication <knowledge-base-service-authentication>` service
+- **0x6A** - positive response to :ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` service
+- **0x6B** - reserved by ISO 14229-1
+- **0x6C** - positive response to :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` service
+- **0x6D** - reserved by ISO 14229-1
+- **0x6E** - positive response to :ref:`WriteDataByIdentifier <knowledge-base-service-write-data-by-identifier>` service
+- **0x6F** - positive response to :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` service
+- **0x70** - reserved by ISO 14229-1
+- **0x71** - positive response to :ref:`RoutineControl <knowledge-base-service-routine-control>` service
+- **0x72**-**0x73** - reserved by ISO 14229-1
+- **0x74** - positive response to :ref:`RequestDownload <knowledge-base-service-request-download>` service
+- **0x75** - positive response to :ref:`RequestUpload <knowledge-base-service-request-upload>` service
+- **0x76** - positive response to :ref:`TransferData <knowledge-base-service-transfer-data>` service
+- **0x77** - positive response to :ref:`RequestTransferExit <knowledge-base-service-request-transfer-exit>` service
+- **0x78** - positive response to :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service
+- **0x79**-**0x7C** - reserved by ISO 14229-1
+- **0x7D** - positive response to :ref:`WriteMemoryByAddress <knowledge-base-service-write-memory-by-address>` service
+- **0x7E** - positive response to :ref:`TesterPresent <knowledge-base-service-tester-present>` service
+- **0x7F** - negative response service identifier
+- **0x80**-**0x82** - not applicable, reserved by ISO 14229-1
+- **0x83** - :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` service request
   *(withdrawn in ISO 14229-1:2020)*
-- 0x84 - :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service request
-- 0x85 - :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service request
-- 0x86 - :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service request
-- 0x87 - :ref:`LinkControl <knowledge-base-service-link-control>` service request
-- 0x88 - reserved by ISO 14229-1
-- 0x89-0xB9 - not applicable, reserved by ISO 14229-1
-- 0xBA-0xBE - system supplier specific service requests
-- 0xBF-0xC2 - not applicable, reserved by ISO 14229-1
-- 0xC3 - positive response to :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` service
+- **0x84** - :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service request
+- **0x85** - :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service request
+- **0x86** - :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service request
+- **0x87** - :ref:`LinkControl <knowledge-base-service-link-control>` service request
+- **0x88** - reserved by ISO 14229-1
+- **0x89**-**0xB9** - not applicable, reserved by ISO 14229-1
+- **0xBA**-**0xBE** - system supplier specific service requests
+- **0xBF**-**0xC2** - not applicable, reserved by ISO 14229-1
+- **0xC3** - positive response to :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` service
   *(withdrawn in ISO 14229-1:2020)*
-- 0xC4 - positive response to :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
-- 0xC5 - positive response to :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service
-- 0xC6 - positive response to :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service
-- 0xC7 - positive response to :ref:`LinkControl <knowledge-base-service-link-control>` service
-- 0xC8 - reserved by ISO 14229-1
-- 0xC9-0xF9 - not applicable, reserved by ISO 14229-1
-- 0xFA-0xFE - positive responses to system supplier specific requests
-- 0xFF - not applicable, reserved by ISO 14229-1
+- **0xC4** - positive response to :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
+- **0xC5** - positive response to :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` service
+- **0xC6** - positive response to :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` service
+- **0xC7** - positive response to :ref:`LinkControl <knowledge-base-service-link-control>` service
+- **0xC8** - reserved by ISO 14229-1
+- **0xC9**-**0xF9** - not applicable, reserved by ISO 14229-1
+- **0xFA**-**0xFE** - positive responses to system supplier specific requests
+- **0xFF** - not applicable, reserved by ISO 14229-1
 
 
 Request Service Identifier
