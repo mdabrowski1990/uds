@@ -140,72 +140,55 @@ Server shall always be in exactly one diagnostic session.
 
 Request Format
 ``````````````
-+----------------------------------------------+------------+-----------+------------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                              | Present |
-+==============================================+============+===========+==========================================+=========+
-| SID                                          | 8          | 0x10      | DiagnosticSessionControl                 | Always  |
-+-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                    | Always  |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 1 = suppress positive response           |         |
-|             +--------------------------------+------------+-----------+------------------------------------------+         |
-|             | diagnosticSessionType          | 7 (b[6-0]) | 0x00-0x7F | 0x00: reserved                           |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x01: defaultSession                     |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x02: programmingSession                 |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x03: extendedDiagnosticSession          |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x04: safetySystemDiagnosticSession      |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x05–0x3F: reserved                      |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x40–0x5F: vehicle manufacturer specific |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x60–0x7E: system supplier specific      |         |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 0x7F: reserved                           |         |
-+-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
++--------------------------------------------------+------------+-----------+------------------------------------------+---------+
+| Name                                             | Bit Length | Value     | Description                              | Present |
++==================================================+============+===========+==========================================+=========+
+| *SID*                                            | 8          | 0x10      | DiagnosticSessionControl                 | Always  |
++---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1   | 0: response required                     | Always  |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 1: suppress positive response            |         |
+|               +----------------------------------+------------+-----------+------------------------------------------+         |
+|               | *diagnosticSessionType*          | 7 (b[6-0]) | 0x00-0x7F | 0x00: reserved                           |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x01: defaultSession                     |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x02: programmingSession                 |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x03: extendedDiagnosticSession          |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x04: safetySystemDiagnosticSession      |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x05–0x3F: reserved                      |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x40–0x5F: vehicle manufacturer specific |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x60–0x7E: system supplier specific      |         |
+|               |                                  |            |           |                                          |         |
+|               |                                  |            |           | 0x7F: reserved                           |         |
++---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
 
 
 Positive Response Format
 ````````````````````````
-+---------------------------------------------------------+------------+---------------+----------------------------------------------------+---------+
-| Name                                                    | Bit Length | Value         | Description                                        | Present |
-+=========================================================+============+===============+====================================================+=========+
-| RSID                                                    | 8          | 0x50          | Positive Response: DiagnosticSessionControl (0x10) | Always  |
-+------------------------+--------------------------------+------------+---------------+----------------------------------------------------+---------+
-| SubFunction            | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1       | 0 = response required                              | Always  |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 1 = suppress positive response                     |         |
-|                        +--------------------------------+------------+---------------+----------------------------------------------------+         |
-|                        | diagnosticSessionType          | 7 (b[6-0]) | 0x00-0x7F     | 0x00: reserved                                     |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x01: defaultSession                               |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x02: programmingSession                           |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x03: extendedDiagnosticSession                    |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x04: safetySystemDiagnosticSession                |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x05–0x3F: reserved                                |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x40–0x5F: vehicle manufacturer specific           |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x60–0x7E: system supplier specific                |         |
-|                        |                                |            |               |                                                    |         |
-|                        |                                |            |               | 0x7F: reserved                                     |         |
-+------------------------+--------------------------------+------------+---------------+----------------------------------------------------+---------+
-| sessionParameterRecord | P2Server_max                   | 16         | 0x0000-0xFFFF | Maximum P2 timing used by server in this session   | Always  |
-|                        +--------------------------------+------------+---------------+----------------------------------------------------+         |
-|                        | P2\*Server_max                 | 16         | 0x0000-0xFFFF | Maximum P2* timing used by server in this session  |         |
-+------------------------+--------------------------------+------------+---------------+----------------------------------------------------+---------+
+:ref:`P2Server_max <knowledge-base-p2-server>` field is provided directly in milliseconds.
 
-.. note:: :ref:`P2Server_max <knowledge-base-p2-server>` field is provided directly in milliseconds.
-  :ref:`P2*Server_max <knowledge-base-p2*-server>` field is encoded in units of 10 ms, so it must be multiplied by 10
-  to obtain the value in milliseconds.
+:ref:`P2*Server_max <knowledge-base-p2*-server>` field is encoded in units of 10 ms, so it must be multiplied by 10
+to obtain the value in milliseconds.
+
++-------------------------------------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
+| Name                                                        | Bit Length | Value         | Description                                                     | Present |
++=============================================================+============+===============+=================================================================+=========+
+| *RSID*                                                      | 8          | 0x50          | DiagnosticSessionControl                                        | Always  |
++--------------------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
+| *SubFunction*            | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1       | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always  |
+|                          +----------------------------------+------------+---------------+-----------------------------------------------------------------+         |
+|                          | *diagnosticSessionType*          | 7 (b[6-0]) | 0x00-0x7F     | Echo of *diagnosticSessionType* value from the request          |         |
++--------------------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
+| *sessionParameterRecord* | *P2Server_max*                   | 16         | 0x0000-0xFFFF | Maximum P2 value used by the server in this session             | Always  |
+|                          +----------------------------------+------------+---------------+-----------------------------------------------------------------+         |
+|                          | *P2\*Server_max*                 | 16         | 0x0000-0xFFFF | Maximum P2\* value used by the server in this session           |         |
++--------------------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-ecu-reset:
