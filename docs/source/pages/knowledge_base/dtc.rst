@@ -89,7 +89,6 @@ Example DTC values:
 - 0xFFFFFF
 
 
-
 .. _knowledge-base-dtc-status:
 
 DTC Status
@@ -223,20 +222,53 @@ DTC Aging Counter
 -----------------
 For each DTC, an Aging Counter is stored. It records the number of vehicle operation cycles since the last occurrence
 of the fault.
-When the Aging Counter reaches 40 operation cycles, the DTC is considered aged and shall be cleared from memory.
+When the Aging Counter reaches Aging Counter Threshold (usually after 40 operation cycles),
+the DTC is considered aged and shall be cleared from memory.
 This procedure is often referred to as *self-healing*.
 
 
+.. _knowledge-base-dtc-functional-unit:
+
 DTC Functional Unit
 -------------------
-TODO
+DTC Functional Unit identifies the system or component reporting the fault.
+The values meaning is defined by the vehicle manufacturer.
 
 
-DTC Functional Group
---------------------
-TODO
+.. _knowledge-base-dtc-functional-group-identifier:
 
+Functional Group Identifier
+---------------------------
+Functional Group Identifier groups vehicle's systems by their functionalities.
+
++-----------+--------------------------+
+| Value     | Description              |
++===========+==========================+
+| 0x00-0x32 | Reserved                 |
++-----------+--------------------------+
+| 0x33      | Emissions-system group   |
++-----------+--------------------------+
+| 0x34-0xCF | Reserved                 |
++-----------+--------------------------+
+| 0xD0      | Safety-system group      |
++-----------+--------------------------+
+| 0xD1-0xDF | Legislative system group |
++-----------+--------------------------+
+| 0xE0-0xFD | Reserved                 |
++-----------+--------------------------+
+| 0xFE      | VOBD system              |
++-----------+--------------------------+
+| 0xFF      | Reserved                 |
++-----------+--------------------------+
+
+
+.. _knowledge-base-dtc-readiness-group:
 
 DTC Readiness Group
 -------------------
-TODO
+DTC Readiness Group provides a finer categorization of diagnostic functions within a given
+`Functional Group Identifier`_.
+The meaning of each readiness group depends entirely on the use-case standard associated with the
+`Functional Group Identifier`_.
+
+.. seealso:: SAE J1979-DA

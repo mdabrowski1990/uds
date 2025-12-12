@@ -324,6 +324,7 @@ DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING = {
     0xFE: "VOBD system",
     0xFF: "all"
 }
+# TODO: separate from DTCFunctionalUnit (https://github.com/mdabrowski1990/uds/issues/413)
 DTC_FUNCTIONAL_GROUP_IDENTIFIER = MappingDataRecord(name="FunctionalGroupIdentifier",
                                                     values_mapping=DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING,
                                                     length=8)
