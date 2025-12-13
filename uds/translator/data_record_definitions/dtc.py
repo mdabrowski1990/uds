@@ -23,6 +23,7 @@ __all__ = [
     # DTC Readiness Group Identifier
     "DTC_READINESS_GROUP_IDENTIFIER",
     # Other
+    "DTC_FUNCTIONAL_UNIT",
     "FAULT_DETECTION_COUNTER",
     "EVENT_TYPE_RECORD_01", "EVENT_TYPE_RECORD_09_2020",
     "CONDITIONAL_EVENT_TYPE_RECORD_09",
@@ -324,7 +325,6 @@ DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING = {
     0xFE: "VOBD system",
     0xFF: "all"
 }
-# TODO: separate from DTCFunctionalUnit (https://github.com/mdabrowski1990/uds/issues/413)
 DTC_FUNCTIONAL_GROUP_IDENTIFIER = MappingDataRecord(name="FunctionalGroupIdentifier",
                                                     values_mapping=DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING,
                                                     length=8)
@@ -334,6 +334,8 @@ DTC_READINESS_GROUP_IDENTIFIER = RawDataRecord(name="DTCReadinessGroupIdentifier
                                                length=8)
 
 # Other
+DTC_FUNCTIONAL_UNIT = RawDataRecord(name="DTCFunctionalUnit",
+                                    length=8)
 FAULT_DETECTION_COUNTER = RawDataRecord(name="FaultDetectionCounter",
                                         length=8)
 
@@ -380,19 +382,19 @@ MULTIPLE_DTC_AND_FAULT_DETECTION_COUNTERS = RawDataRecord(name="DTC and Fault De
                                                           max_occurrences=None)
 
 OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="Severity, Functional Unit, DTC and DTCStatus",
+    name="DTCSeverity, DTCFunctionalUnit, DTC and DTCStatus",
     length=48,
     children=(DTC_SEVERITY,
-              DTC_FUNCTIONAL_GROUP_IDENTIFIER,
+              DTC_FUNCTIONAL_UNIT,
               DTC,
               DTC_STATUS),
     min_occurrences=0,
     max_occurrences=1)
 MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="Severity, Functional Unit, DTC and DTCStatus",
+    name="DTCSeverity, DTCFunctionalUnit, DTC and DTCStatus",
     length=48,
     children=(DTC_SEVERITY,
-              DTC_FUNCTIONAL_GROUP_IDENTIFIER,
+              DTC_FUNCTIONAL_UNIT,
               DTC,
               DTC_STATUS),
     min_occurrences=0,
