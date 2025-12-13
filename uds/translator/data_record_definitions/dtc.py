@@ -343,24 +343,24 @@ EVENT_TYPE_RECORD_09_2020 = get_event_type_record_09_2020()
 CONDITIONAL_EVENT_TYPE_RECORD_09 = get_conditional_event_type_record_09_2020()
 
 # Mixed
-DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
+DTC_AND_STATUS = RawDataRecord(name="DTC and DTCStatus",
                                length=32,
                                children=(DTC, DTC_STATUS))
-OPTIONAL_DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
+OPTIONAL_DTC_AND_STATUS = RawDataRecord(name="DTC and DTCStatus",
                                         length=32,
                                         children=(DTC, DTC_STATUS),
                                         min_occurrences=0,
                                         max_occurrences=1)
-MULTIPLE_DTC_AND_STATUS_RECORDS = RawDataRecord(name="DTC and Status",
+MULTIPLE_DTC_AND_STATUS_RECORDS = RawDataRecord(name="DTC and DTCStatus",
                                                 length=32,
                                                 children=(DTC, DTC_STATUS),
                                                 min_occurrences=0,
                                                 max_occurrences=None)
-DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_number + 1}",
+DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and DTCStatus#{record_number + 1}",
                                         length=32,
                                         children=(DTC, DTC_STATUS))
                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
-OPTIONAL_DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_number + 1}",
+OPTIONAL_DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and DTCStatus#{record_number + 1}",
                                                  length=32,
                                                  children=(DTC, DTC_STATUS),
                                                  min_occurrences=0,
@@ -380,7 +380,7 @@ MULTIPLE_DTC_AND_FAULT_DETECTION_COUNTERS = RawDataRecord(name="DTC and Fault De
                                                           max_occurrences=None)
 
 OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="Severity, Functional Unit, DTC and Status",
+    name="Severity, Functional Unit, DTC and DTCStatus",
     length=48,
     children=(DTC_SEVERITY,
               DTC_FUNCTIONAL_GROUP_IDENTIFIER,
@@ -389,7 +389,7 @@ OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
     min_occurrences=0,
     max_occurrences=1)
 MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="Severity, Functional Unit, DTC and Status",
+    name="Severity, Functional Unit, DTC and DTCStatus",
     length=48,
     children=(DTC_SEVERITY,
               DTC_FUNCTIONAL_GROUP_IDENTIFIER,
@@ -398,7 +398,7 @@ MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
     min_occurrences=0,
     max_occurrences=None)
 
-MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER_RECORDS = RawDataRecord(name="DTC and Snapshot Record Number",
+MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER_RECORDS = RawDataRecord(name="DTC and DTCSnapshotRecordNumber",
                                                                 length=32,
                                                                 children=(DTC, DTC_SNAPSHOT_RECORD_NUMBER),
                                                                 min_occurrences=0,

@@ -659,7 +659,7 @@ class TestReadDTCInformation2013Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x12455655, 0xF0E1D2AA),
                     'raw_value': (0x12455655, 0xF0E1D2AA),
                     'unit': None
@@ -799,7 +799,7 @@ class TestReadDTCInformation2013Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Snapshot Record Number',
+                    'name': 'DTC and DTCSnapshotRecordNumber',
                     'physical_value': (0x12345601, 0x123456BD, 0xF1E2D3CC),
                     'raw_value': (0x12345601, 0x123456BD, 0xF1E2D3CC),
                     'unit': None
@@ -982,7 +982,7 @@ class TestReadDTCInformation2013Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0x12345689,
                     'raw_value': 0x12345689,
                     'unit': None,
@@ -1197,7 +1197,7 @@ class TestReadDTCInformation2013Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status#1',
+                    'name': 'DTC and DTCStatus#1',
                     'physical_value': 0xEFCDAB03,
                     'raw_value': 0xEFCDAB03,
                     'unit': None,
@@ -1404,7 +1404,7 @@ class TestReadDTCInformation2013Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0xFEDCBA76,
                     'raw_value': 0xFEDCBA76,
                     'unit': None,
@@ -2529,7 +2529,7 @@ class TestReadDTCInformation2013Integration:
                         )
             ),
                     'length': 48,
-                    'name': 'Severity, Functional Unit, DTC and Status',
+                    'name': 'Severity, Functional Unit, DTC and DTCStatus',
                     'physical_value': (0x00012334561B, 0xFF33789ABC01, 0xC0FFFFFFFF00),
                     'raw_value': (0x00012334561B, 0xFF33789ABC01, 0xC0FFFFFFFF00),
                     'unit': None
@@ -3178,7 +3178,7 @@ class TestReadDTCInformation2013Integration:
                         ),
             ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x6587A9CB, 0xF0E1D2AA, 0x4A5B6C7D, 0xBFAE9D8C),
                     'raw_value': (0x6587A9CB, 0xF0E1D2AA, 0x4A5B6C7D, 0xBFAE9D8C),
                     'unit': None
@@ -3418,7 +3418,7 @@ class TestReadDTCInformation2013Integration:
                         }
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0x7394B501,
                     'raw_value': 0x7394B501,
                     'unit': None
@@ -3808,7 +3808,7 @@ class TestReadDTCInformation2013Integration:
                         }
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0xC8D7E65F,
                     'raw_value': 0xC8D7E65F,
                     'unit': None
@@ -4048,7 +4048,7 @@ class TestReadDTCInformation2013Integration:
                         }
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0xB7D6F514,
                     'raw_value': 0xB7D6F514,
                     'unit': None
@@ -4446,7 +4446,7 @@ class TestReadDTCInformation2013Integration:
                         ),
             ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x6285A802, 0xAF816220),
                     'raw_value': (0x6285A802, 0xAF816220),
                     'unit': None
@@ -4629,7 +4629,7 @@ class TestReadDTCInformation2013Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0x70F24454,
                     'raw_value': 0x70F24454,
                     'unit': None,
@@ -5689,7 +5689,7 @@ class TestReadDTCInformation2013Integration:
                         ),
             ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x2D687F2B, 0x26E6C0CB, 0x33A61E05, 0xD92A02B5),
                     'raw_value': (0x2D687F2B, 0x26E6C0CB, 0x33A61E05, 0xD92A02B5),
                     'unit': None
@@ -6144,7 +6144,7 @@ class TestReadDTCInformation2013Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status#1',
+                    'name': 'DTC and DTCStatus#1',
                     'physical_value': 0x1C543009,
                     'raw_value': 0x1C543009,
                     'unit': None,
@@ -6590,7 +6590,7 @@ class TestReadDTCInformation2013Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0xC645035A,
                     'raw_value': 0xC645035A,
                     'unit': None,
@@ -6821,7 +6821,7 @@ class TestReadDTCInformation2013Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0xA886A7A4,
                     'raw_value': 0xA886A7A4,
                     'unit': None,
@@ -7973,7 +7973,7 @@ class TestReadDTCInformation2013Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x692E89B9,),
                     'raw_value': (0x692E89B9,),
                     'unit': None
@@ -8064,7 +8064,7 @@ class TestReadDTCInformation2013Integration:
         (
             {
                 "SubFunction": 0x83,
-                "DTC and Snapshot Record Number": [
+                "DTC and DTCSnapshotRecordNumber": [
                     {
                         "DTC": 0x5A6B7C,
                         "DTCSnapshotRecordNumber": 0x20
@@ -8096,7 +8096,7 @@ class TestReadDTCInformation2013Integration:
                     "suppressPosRspMsgIndicationBit": 1,
                     "reportType": 0x04,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0xBEEF02,
                     "DTCStatus": {
                         "warningIndicatorRequested": 1,
@@ -8123,7 +8123,7 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x84,
-                       0xBE, 0xEF, 0x02, 0xAB,  # DTC and Status
+                       0xBE, 0xEF, 0x02, 0xAB,  # DTC and DTCStatus
                        0x3C, 0x02, 0x01, 0x00, 0xF1, 0xE2, 0x01, 0x01, 0xD3,  # DTCSnapshotRecord#1
                        0x40, 0x01, 0x01, 0x02, 0xC4, 0xB5, 0xA6, 0x97, 0x88]), # DTCSnapshotRecord#2
         ),
@@ -8141,7 +8141,7 @@ class TestReadDTCInformation2013Integration:
             {
                 "SubFunction": 0x05,
                 "DTCStoredDataRecordNumber#1": 0x2E,
-                "DTC and Status#1": {
+                "DTC and DTCStatus#1": {
                     "DTC": 0x987654,
                     "DTCStatus": {
                     "warningIndicatorRequested": 1,
@@ -8160,7 +8160,7 @@ class TestReadDTCInformation2013Integration:
                 "DID#1_2": 0x0101,
                 "DID#1_2 data": [0xD3],
                 "DTCStoredDataRecordNumber#2": 0xF4,
-                "DTC and Status#2": {
+                "DTC and DTCStatus#2": {
                     "DTC": 0x1F2E3D,
                     "DTCStatus": 0x6C,
                 },
@@ -8191,7 +8191,7 @@ class TestReadDTCInformation2013Integration:
                     "suppressPosRspMsgIndicationBit": 1,
                     "reportType": 0x06,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0x896C3B,
                     "DTCStatus": 0x5A,
                 },
@@ -8205,7 +8205,7 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x86,
-                       0x89, 0x6C, 0x3B, 0x5A,  # DTC and Status
+                       0x89, 0x6C, 0x3B, 0x5A,  # DTC and DTCStatus
                        0x01, 0x12, 0x34,  # DTCExtendedDataRecord#1
                        0x02, 0x34, 0x56,  # DTCExtendedDataRecord#2
                        0x43, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#3
@@ -8280,7 +8280,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 0,
                     "testFailed": 0,
                 },
-                "Severity, Functional Unit, DTC and Status": [
+                "Severity, Functional Unit, DTC and DTCStatus": [
                     {
                         "DTCSeverity": 0xF0,
                         "FunctionalGroupIdentifier": 0xE1,
@@ -8332,7 +8332,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "Severity, Functional Unit, DTC and Status": {
+                "Severity, Functional Unit, DTC and DTCStatus": {
                         "DTCSeverity": 0xF0,
                         "FunctionalGroupIdentifier": 0xE1,
                         "DTC": 0xD2C3B4,
@@ -8368,7 +8368,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x012345,
                         "DTCStatus": 0x67,
@@ -8421,7 +8421,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                         "DTC": 0xF1E2D3,
                         "DTCStatus": 0x89,
                 },
@@ -8456,7 +8456,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "DTC and Status": None
+                "DTC and DTCStatus": None
             },
             None,
             ResponseSID.ReadDTCInformation,
@@ -8487,7 +8487,7 @@ class TestReadDTCInformation2013Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                         "DTC": 0x5A6B7C,
                         "DTCStatus": 0x2B,
                 },
@@ -8544,7 +8544,7 @@ class TestReadDTCInformation2013Integration:
                     "reportType": 0x0F,
                 },
                 "DTCStatusAvailabilityMask": 0xFF,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x012345,
                         "DTCStatus": 0x67,
@@ -8575,7 +8575,7 @@ class TestReadDTCInformation2013Integration:
                     "suppressPosRspMsgIndicationBit": 1,
                     "reportType": 0x10,
                 },
-                "DTC and Status": 0x123456AB,
+                "DTC and DTCStatus": 0x123456AB,
                 "DTCExtDataRecordNumber#1": 0x50,
                 "DTCExtDataRecord#1": [0xF6],
                 "DTCExtDataRecordNumber#2": 0x6D,
@@ -8586,7 +8586,7 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x90,
-                       0x12, 0x34, 0x56, 0xAB,  # DTC and Status
+                       0x12, 0x34, 0x56, 0xAB,  # DTC and DTCStatus
                        0x50, 0xF6,  # DTCExtendedDataRecord#1
                        0x6D, 0xBE, 0xEF,  # DTCExtendedDataRecord#2
                        0xC2, 0x73, 0x84, 0x95, 0xA6, 0xB7, 0xC8, 0xD9, 0xEA, 0xFB])  # DTCExtendedDataRecord#3
@@ -8662,7 +8662,7 @@ class TestReadDTCInformation2013Integration:
             {
                 "SubFunction": 0x93,
                 "DTCStatusAvailabilityMask": 0xFF,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x102030,
                         "DTCStatus": {
@@ -8686,9 +8686,9 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x93, 0xFF,
-                       0x10, 0x20, 0x30, 0x00,  # DTC and Status #1
-                       0x00, 0x00, 0x01, 0xFF,  # DTC and Status #2
-                       0xF2, 0x1D, 0x0C, 0xBF])  # DTC and Status #3
+                       0x10, 0x20, 0x30, 0x00,  # DTC and DTCStatus #1
+                       0x00, 0x00, 0x01, 0xFF,  # DTC and DTCStatus #2
+                       0xF2, 0x1D, 0x0C, 0xBF])  # DTC and DTCStatus #3
         ),
         # reportDTCFaultDetectionCounter (0x14)
         (
@@ -8740,7 +8740,7 @@ class TestReadDTCInformation2013Integration:
             {
                 "SubFunction": 0x15,
                 "DTCStatusAvailabilityMask": 0xED,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x000000,
                         "DTCStatus": {
@@ -8764,9 +8764,9 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x15, 0xED,
-                       0x00, 0x00, 0x00, 0x00,  # DTC and Status #1
-                       0x5A, 0x5A, 0x5A, 0x6B,  # DTC and Status #2
-                       0xFF, 0xFF, 0xFF, 0xFF])  # DTC and Status #3
+                       0x00, 0x00, 0x00, 0x00,  # DTC and DTCStatus #1
+                       0x5A, 0x5A, 0x5A, 0x6B,  # DTC and DTCStatus #2
+                       0xFF, 0xFF, 0xFF, 0xFF])  # DTC and DTCStatus #3
         ),
         # reportDTCExtDataRecordByRecordNumber (0x16)
         (
@@ -8782,14 +8782,14 @@ class TestReadDTCInformation2013Integration:
             {
                 "SubFunction": 0x96,
                 "DTCExtDataRecordNumber": 0xE2,
-                "DTC and Status#1": {
+                "DTC and DTCStatus#1": {
                     "DTC": 0x3B896C,
                     "DTCStatus": 0xA5,
                 },
                 "DTCExtDataRecord#1": [0x21, 0x43, 0x68],
-                "DTC and Status#2": 0xFECB9864,
+                "DTC and DTCStatus#2": 0xFECB9864,
                 "DTCExtDataRecord#2": [0xCA, 0xFF, 0xEE],
-                "DTC and Status#3":{
+                "DTC and DTCStatus#3":{
                     "DTC": 0x765432,
                     "DTCStatus": {
                         "warningIndicatorRequested": 0,
@@ -8830,7 +8830,7 @@ class TestReadDTCInformation2013Integration:
                 },
                 "MemorySelection": 0x01,
                 "DTCStatusAvailabilityMask": 0xEF,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0xDADDEE,
                         "DTCStatus": {
@@ -8854,9 +8854,9 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x17, 0x01, 0xEF,
-                       0xDA, 0xDD, 0xEE, 0x54,  # DTC and Status #1
-                       0xFB, 0xBE, 0xEF, 0xC6, # DTC and Status #2
-                       0x9E, 0x8D, 0x7C, 0x6B])  # DTC and Status #3
+                       0xDA, 0xDD, 0xEE, 0x54,  # DTC and DTCStatus #1
+                       0xFB, 0xBE, 0xEF, 0xC6, # DTC and DTCStatus #2
+                       0x9E, 0x8D, 0x7C, 0x6B])  # DTC and DTCStatus #3
         ),
         # reportUserDefMemoryDTCSnapshotRecordByDTCNumber (0x18)
         (
@@ -8877,7 +8877,7 @@ class TestReadDTCInformation2013Integration:
                     "reportType": 0x18,
                 },
                 "MemorySelection": 0x7D,
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0xDEEDEE,
                     "DTCStatus": {
                         "warningIndicatorRequested": 0,
@@ -8904,7 +8904,7 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x98, 0x7D,
-                       0xDE, 0xED, 0xEE, 0x04,  # DTC and Status
+                       0xDE, 0xED, 0xEE, 0x04,  # DTC and DTCStatus
                        0x12, 0x02, 0x21, 0x0F, 0x00, 0x12, 0xE1, 0x51, 0x52, 0x53, 0x54,  # DTCSnapshotRecord#1
                        0x00, 0x01, 0x01, 0x23, 0x33, 0x44, 0x55]), # DTCSnapshotRecord#2
         ),
@@ -8927,7 +8927,7 @@ class TestReadDTCInformation2013Integration:
                     "reportType": 0x19,
                 },
                 "MemorySelection": 0x6E,
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0x3B896C,
                     "DTCStatus": 0xA5,
                 },
@@ -8939,7 +8939,7 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x99, 0x6E,
-                       0x3B, 0x89, 0x6C, 0xA5,  # DTC and Status
+                       0x3B, 0x89, 0x6C, 0xA5,  # DTC and DTCStatus
                        0x41,  # DTCExtDataRecordNumber
                        0x21, 0x43,  # DTCExtendedDataRecord#1
                        0xF0, 0x0F,  # DTCExtendedDataRecord#2
@@ -9017,9 +9017,9 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0xC2, 0xD0, 0x9F, 0xE3, 0x54,
-                       0x82, 0xCA, 0xFF, 0xEE, 0xAB,  # Severity, DTC and Status #1
-                       0x01, 0xBA, 0xDD, 0xAD, 0x03,  # Severity, DTC and Status #2
-                       0x0F, 0xE1, 0x2D, 0xC3, 0x4B])  # Severity, DTC and Status #3
+                       0x82, 0xCA, 0xFF, 0xEE, 0xAB,  # Severity, DTC and DTCStatus #1
+                       0x01, 0xBA, 0xDD, 0xAD, 0x03,  # Severity, DTC and DTCStatus #2
+                       0x0F, 0xE1, 0x2D, 0xC3, 0x4B])  # Severity, DTC and DTCStatus #3
         ),
         # reportWWHOBDDTCWithPermanentStatus (0x55)
         (
@@ -9037,7 +9037,7 @@ class TestReadDTCInformation2013Integration:
                 "FunctionalGroupIdentifier": 0x33,
                 "DTCStatusAvailabilityMask": 0xAB,
                 "DTCFormatIdentifier": 0x02,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x214365,
                         "DTCStatus": 0x87,
@@ -9061,9 +9061,9 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x55, 0x33, 0xAB, 0x02,
-                       0x21, 0x43, 0x65, 0x87,  # DTC and Status #1
-                       0xEF, 0xCD, 0xAB, 0x89,  # DTC and Status #2
-                       0x0F, 0x1E, 0x2D, 0x35])  # DTC and Status #3
+                       0x21, 0x43, 0x65, 0x87,  # DTC and DTCStatus #1
+                       0xEF, 0xCD, 0xAB, 0x89,  # DTC and DTCStatus #2
+                       0x0F, 0x1E, 0x2D, 0x35])  # DTC and DTCStatus #3
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
@@ -9709,7 +9709,7 @@ class TestReadDTCInformation2020Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Snapshot Record Number',
+                    'name': 'DTC and DTCSnapshotRecordNumber',
                     'physical_value': (0x5DBBC96A, 0xA6331E84, 0x38115F57, 0x669DC4EA, 0x0ABA0445),
                     'raw_value': (0x5DBBC96A, 0xA6331E84, 0x38115F57, 0x669DC4EA, 0x0ABA0445),
                     'unit': None
@@ -9892,7 +9892,7 @@ class TestReadDTCInformation2020Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0x73F7CF1F,
                     'raw_value': 0x73F7CF1F,
                     'unit': None,
@@ -10107,7 +10107,7 @@ class TestReadDTCInformation2020Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status#1',
+                    'name': 'DTC and DTCStatus#1',
                     'physical_value': 0x5A0699F0,
                     'raw_value': 0x5A0699F0,
                     'unit': None,
@@ -10314,7 +10314,7 @@ class TestReadDTCInformation2020Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0x4E78030F,
                     'raw_value': 0x4E78030F,
                     'unit': None,
@@ -11267,7 +11267,7 @@ class TestReadDTCInformation2020Integration:
                             }
                     ),
                     'length': 48,
-                    'name': 'Severity, Functional Unit, DTC and Status',
+                    'name': 'Severity, Functional Unit, DTC and DTCStatus',
                     'physical_value': 0x0ED0BDBA0E58,
                     'raw_value': 0x0ED0BDBA0E58,
                     'unit': None
@@ -11509,7 +11509,7 @@ class TestReadDTCInformation2020Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x0F546006,),
                     'raw_value': (0x0F546006,),
                     'unit': None
@@ -11749,7 +11749,7 @@ class TestReadDTCInformation2020Integration:
                         }
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0xEBC5F304,
                     'raw_value': 0xEBC5F304,
                     'unit': None
@@ -11989,7 +11989,7 @@ class TestReadDTCInformation2020Integration:
                         }
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0xF482FB05,
                     'raw_value': 0xF482FB05,
                     'unit': None
@@ -12774,7 +12774,7 @@ class TestReadDTCInformation2020Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0xA7B51C53, 0x029CA49C, 0xB28B82AB),
                     'raw_value': (0xA7B51C53, 0x029CA49C, 0xB28B82AB),
                     'unit': None
@@ -12957,7 +12957,7 @@ class TestReadDTCInformation2020Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status#1',
+                    'name': 'DTC and DTCStatus#1',
                     'physical_value': 0xC22F297C,
                     'raw_value': 0xC22F297C,
                     'unit': None,
@@ -13403,7 +13403,7 @@ class TestReadDTCInformation2020Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0x492F604F,
                     'raw_value': 0x492F604F,
                     'unit': None,
@@ -13634,7 +13634,7 @@ class TestReadDTCInformation2020Integration:
                         },
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': 0x0FEF53D3,
                     'raw_value': 0x0FEF53D3,
                     'unit': None,
@@ -14074,7 +14074,7 @@ class TestReadDTCInformation2020Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x8F46D685, 0xE40D69C5, 0x4114DBBB),
                     'raw_value': (0x8F46D685, 0xE40D69C5, 0x4114DBBB),
                     'unit': None
@@ -15089,7 +15089,7 @@ class TestReadDTCInformation2020Integration:
                         ),
                     ),
                     'length': 32,
-                    'name': 'DTC and Status',
+                    'name': 'DTC and DTCStatus',
                     'physical_value': (0x8979BA85, 0xEBC9EEC1, 0xF9D8EA86),
                     'raw_value': (0x8979BA85, 0xEBC9EEC1, 0xF9D8EA86),
                     'unit': None
@@ -15151,7 +15151,7 @@ class TestReadDTCInformation2020Integration:
                     "testFailedThisOperationCycle": 0,
                     "testFailed": 1,
                 },
-                "DTC and Status": [],
+                "DTC and DTCStatus": [],
             },
             None,
             ResponseSID.ReadDTCInformation,
@@ -15172,7 +15172,7 @@ class TestReadDTCInformation2020Integration:
         (
             {
                 "SubFunction": 0x03,
-                "DTC and Snapshot Record Number": [
+                "DTC and DTCSnapshotRecordNumber": [
                     {
                         "DTC": 0xA5B6C7,
                         "DTCSnapshotRecordNumber": 0x00
@@ -15204,7 +15204,7 @@ class TestReadDTCInformation2020Integration:
                     "suppressPosRspMsgIndicationBit": 1,
                     "reportType": 0x04,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0xBEEF02,
                     "DTCStatus": {
                         "warningIndicatorRequested": 1,
@@ -15231,7 +15231,7 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x84,
-                       0xBE, 0xEF, 0x02, 0xAB,  # DTC and Status
+                       0xBE, 0xEF, 0x02, 0xAB,  # DTC and DTCStatus
                        0x3C, 0x02, 0x01, 0x21, 0xF1, 0xE2, 0x01, 0x62, 0xD3,  # DTCSnapshotRecord#1
                        0x40, 0x01, 0x01, 0x83, 0xC4, 0xB5, 0xA6, 0x97, 0x88]), # DTCSnapshotRecord#2
         ),
@@ -15252,7 +15252,7 @@ class TestReadDTCInformation2020Integration:
             {
                 "SubFunction": 0x05,
                 "DTCStoredDataRecordNumber#1": 0xFF,
-                "DTC and Status#1": {
+                "DTC and DTCStatus#1": {
                     "DTC": 0x987654,
                     "DTCStatus": {
                         "warningIndicatorRequested": 1,
@@ -15271,7 +15271,7 @@ class TestReadDTCInformation2020Integration:
                 "DID#1_2": 0xFFFF,
                 "DID#1_2 data": [0xD3],
                 "DTCStoredDataRecordNumber#2": 0x00,
-                "DTC and Status#2": 0xF1E2D3C4,
+                "DTC and DTCStatus#2": 0xF1E2D3C4,
                 "DIDCount#2": 0x01,
                 "DID#2_1": 0x0102,
                 "DID#2_1 data": [0xCA, 0xFF, 0xEE, 0x00, 0xBE, 0xEF],
@@ -15299,7 +15299,7 @@ class TestReadDTCInformation2020Integration:
                     "suppressPosRspMsgIndicationBit": 0,
                     "reportType": 0x06,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0x987654,
                     "DTCStatus": 0x00,
                 },
@@ -15313,7 +15313,7 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x06,
-                       0x98, 0x76, 0x54, 0x00,  # DTC and Status
+                       0x98, 0x76, 0x54, 0x00,  # DTC and DTCStatus
                        0x01, 0x12, 0x34,  # DTCExtendedDataRecord#1
                        0x02, 0x34, 0x56,  # DTCExtendedDataRecord#2
                        0x43, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#3
@@ -15397,7 +15397,7 @@ class TestReadDTCInformation2020Integration:
                     "testFailedThisOperationCycle": 0,
                     "testFailed": 0,
                 },
-                "Severity, Functional Unit, DTC and Status": [
+                "Severity, Functional Unit, DTC and DTCStatus": [
                     {
                         "DTCSeverity": {
                             "checkImmediately": 1,
@@ -15467,7 +15467,7 @@ class TestReadDTCInformation2020Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "Severity, Functional Unit, DTC and Status": {
+                "Severity, Functional Unit, DTC and DTCStatus": {
                         "DTCSeverity": 0xD9,
                         "FunctionalGroupIdentifier": 0xE2,
                         "DTC": 0x00FF00,
@@ -15491,7 +15491,7 @@ class TestReadDTCInformation2020Integration:
             {
                 "SubFunction": 0x0A,
                 "DTCStatusAvailabilityMask": 0xB7,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x012345,
                         "DTCStatus": 0x67,
@@ -15544,7 +15544,7 @@ class TestReadDTCInformation2020Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 0,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                         "DTC": 0xF1E2D3,
                         "DTCStatus": 0x88,
                 },
@@ -15573,7 +15573,7 @@ class TestReadDTCInformation2020Integration:
                     "reportType": 0x0C,
                 },
                 "DTCStatusAvailabilityMask": 0x25,
-                "DTC and Status": None
+                "DTC and DTCStatus": None
             },
             None,
             ResponseSID.ReadDTCInformation,
@@ -15604,7 +15604,7 @@ class TestReadDTCInformation2020Integration:
                     "testFailedThisOperationCycle": 1,
                     "testFailed": 1,
                 },
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                         "DTC": 0x5A6B7C,
                         "DTCStatus": 0x8F,
                 },
@@ -15682,7 +15682,7 @@ class TestReadDTCInformation2020Integration:
                     "reportType": 0x15,
                 },
                 "DTCStatusAvailabilityMask": 0xEF,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x000000,
                         "DTCStatus": {
@@ -15706,9 +15706,9 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x15, 0xEF,
-                       0x00, 0x00, 0x00, 0x00,  # DTC and Status #1
-                       0x1A, 0xB6, 0x30, 0x96,  # DTC and Status #2
-                       0xFF, 0xFF, 0xFF, 0xFF])  # DTC and Status #3
+                       0x00, 0x00, 0x00, 0x00,  # DTC and DTCStatus #1
+                       0x1A, 0xB6, 0x30, 0x96,  # DTC and DTCStatus #2
+                       0xFF, 0xFF, 0xFF, 0xFF])  # DTC and DTCStatus #3
         ),
         # reportDTCExtDataRecordByRecordNumber (0x16)
         (
@@ -15730,14 +15730,14 @@ class TestReadDTCInformation2020Integration:
                     "reportType": 0x16,
                 },
                 "DTCExtDataRecordNumber": 0xFF,
-                "DTC and Status#1": 0x3B896CA5,
+                "DTC and DTCStatus#1": 0x3B896CA5,
                 "DTCExtDataRecord#1": [0x21, 0x43, 0x68],
-                "DTC and Status#2": {
+                "DTC and DTCStatus#2": {
                     "DTC": 0xFECB98,
                     "DTCStatus": 0x64,
                 },
                 "DTCExtDataRecord#2": [0xCA, 0xFF, 0xEE],
-                "DTC and Status#3": {
+                "DTC and DTCStatus#3": {
                     "DTC": 0x765432,
                     "DTCStatus": {
                         "warningIndicatorRequested": 0,
@@ -15775,7 +15775,7 @@ class TestReadDTCInformation2020Integration:
                 "SubFunction": 0x17,
                 "MemorySelection": 0x0B,
                 "DTCStatusAvailabilityMask": 0xFC,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0xDADDEE,
                         "DTCStatus": {
@@ -15799,9 +15799,9 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x17, 0x0B, 0xFC,
-                       0xDA, 0xDD, 0xEE, 0x54,  # DTC and Status #1
-                       0xFB, 0xBE, 0xEF, 0x58,  # DTC and Status #2
-                       0x9E, 0x8D, 0x7C, 0x6B])  # DTC and Status #3
+                       0xDA, 0xDD, 0xEE, 0x54,  # DTC and DTCStatus #1
+                       0xFB, 0xBE, 0xEF, 0x58,  # DTC and DTCStatus #2
+                       0x9E, 0x8D, 0x7C, 0x6B])  # DTC and DTCStatus #3
         ),
         # reportUserDefMemoryDTCSnapshotRecordByDTCNumber (0x18)
         (
@@ -15822,7 +15822,7 @@ class TestReadDTCInformation2020Integration:
             {
                 "SubFunction": 0x98,
                 "MemorySelection": 0x80,
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0xDEEDEE,
                     "DTCStatus": {
                         "warningIndicatorRequested": 0,
@@ -15849,7 +15849,7 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x98, 0x80,
-                       0xDE, 0xED, 0xEE, 0x04,  # DTC and Status
+                       0xDE, 0xED, 0xEE, 0x04,  # DTC and DTCStatus
                        0xE1, 0x02, 0x21, 0x0F, 0x00, 0x12, 0xE1, 0x51, 0x52, 0x53, 0x54,  # DTCSnapshotRecord#1
                        0x00, 0x01, 0x01, 0x23, 0x33, 0x44, 0x55]), # DTCSnapshotRecord#2
         ),
@@ -15872,7 +15872,7 @@ class TestReadDTCInformation2020Integration:
                     "reportType": 0x19,
                 },
                 "MemorySelection": 0x0F,
-                "DTC and Status": {
+                "DTC and DTCStatus": {
                     "DTC": 0xB398C6,
                     "DTCStatus": 0x5A,
                 },
@@ -15883,7 +15883,7 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x19, 0x0F,
-                       0xB3, 0x98, 0xC6, 0x5A,  # DTC and Status
+                       0xB3, 0x98, 0xC6, 0x5A,  # DTC and DTCStatus
                        0x41,
                        0x21, 0x43,  # DTCExtendedDataRecord#1
                        0x78, 0x9A, 0xBC, 0xDE, 0xF0])  # DTCExtendedDataRecord#2
@@ -15909,7 +15909,7 @@ class TestReadDTCInformation2020Integration:
                 },
                 "DTCStatusAvailabilityMask": 0xFF,
                 "DTCExtDataRecordNumber": 0xFD,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0xBADDAD,
                         "DTCStatus": {
@@ -15933,9 +15933,9 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x1A, 0xFF, 0xFD,
-                       0xBA, 0xDD, 0xAD, 0x00,  # DTC and Status #1
-                       0xDA, 0xDD, 0xEE, 0xFF,  # DTC and Status #2
-                       0xFE, 0xDC, 0xBA, 0x98])  # DTC and Status #3
+                       0xBA, 0xDD, 0xAD, 0x00,  # DTC and DTCStatus #1
+                       0xDA, 0xDD, 0xEE, 0xFF,  # DTC and DTCStatus #2
+                       0xFE, 0xDC, 0xBA, 0x98])  # DTC and DTCStatus #3
         ),
         # reportWWHOBDDTCByMaskRecord (0x42)
         (
@@ -16027,9 +16027,9 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x42, 0xD0, 0x9F, 0x7F, 0x02,
-                       0x90, 0xCA, 0xFF, 0xEE, 0xAB,  # Severity, DTC and Status #1
-                       0x2D, 0xF0, 0x1E, 0xD2, 0x3C,  # Severity, DTC and Status #2
-                       0xB4, 0x5A, 0x96, 0x78, 0x78])  # Severity, DTC and Status #3
+                       0x90, 0xCA, 0xFF, 0xEE, 0xAB,  # Severity, DTC and DTCStatus #1
+                       0x2D, 0xF0, 0x1E, 0xD2, 0x3C,  # Severity, DTC and DTCStatus #2
+                       0xB4, 0x5A, 0x96, 0x78, 0x78])  # Severity, DTC and DTCStatus #3
         ),
         # reportWWHOBDDTCWithPermanentStatus (0x55)
         (
@@ -16050,7 +16050,7 @@ class TestReadDTCInformation2020Integration:
                 "FunctionalGroupIdentifier": 0x33,
                 "DTCStatusAvailabilityMask": 0x7E,
                 "DTCFormatIdentifier": 0x04,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     {
                         "DTC": 0x214365,
                         "DTCStatus": 0x87,
@@ -16074,9 +16074,9 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x55, 0x33, 0x7E, 0x04,
-                       0x21, 0x43, 0x65, 0x87,  # DTC and Status #1
-                       0xEF, 0xCD, 0xAB, 0x89,  # DTC and Status #2
-                       0x0F, 0x1E, 0x2D, 0x35])  # DTC and Status #3
+                       0x21, 0x43, 0x65, 0x87,  # DTC and DTCStatus #1
+                       0xEF, 0xCD, 0xAB, 0x89,  # DTC and DTCStatus #2
+                       0x0F, 0x1E, 0x2D, 0x35])  # DTC and DTCStatus #3
         ),
         # reportDTCInformationByDTCReadinessGroupIdentifier (0x56)
         (
@@ -16099,7 +16099,7 @@ class TestReadDTCInformation2020Integration:
                 "DTCStatusAvailabilityMask":0xFF,
                 "DTCFormatIdentifier": 0x2D,
                 "DTCReadinessGroupIdentifier": 0x16,
-                "DTC and Status": [
+                "DTC and DTCStatus": [
                     0x192A3B4D,
                     {
                         "DTC": 0x0ECFE0,
@@ -16110,8 +16110,8 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0xD6, 0x00, 0xFF, 0x2D, 0x16,
-                       0x19, 0x2A, 0x3B, 0x4D,  # DTC and Status #1
-                       0x0E, 0xCF, 0xE0, 0x58])  # DTC and Status #2
+                       0x19, 0x2A, 0x3B, 0x4D,  # DTC and DTCStatus #1
+                       0x0E, 0xCF, 0xE0, 0x58])  # DTC and DTCStatus #2
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
