@@ -140,33 +140,37 @@ Server shall always be in exactly one diagnostic session.
 
 Request Format
 ``````````````
-+--------------------------------------------------+------------+-----------+------------------------------------------+---------+
-| Name                                             | Bit Length | Value     | Description                              | Present |
-+==================================================+============+===========+==========================================+=========+
-| *SID*                                            | 8          | 0x10      | DiagnosticSessionControl                 | Always  |
-+---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
-| *SubFunction* | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1   | 0: response required                     | Always  |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 1: suppress positive response            |         |
-|               +----------------------------------+------------+-----------+------------------------------------------+         |
-|               | *diagnosticSessionType*          | 7 (b[6-0]) | 0x00-0x7F | 0x00: reserved                           |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x01: defaultSession                     |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x02: programmingSession                 |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x03: extendedDiagnosticSession          |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x04: safetySystemDiagnosticSession      |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x05–0x3F: reserved                      |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x40–0x5F: vehicle manufacturer specific |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x60–0x7E: system supplier specific      |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x7F: reserved                           |         |
-+---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x10      | DiagnosticSessionControl                                     | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *diagnosticSessionType*          |   | 7 (b[6-0]) | 0x00-0x7F | Diagnostic Session to enter                                  |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x00: reserved                                               |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x01: defaultSession                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x02: programmingSession                                     |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x03: extendedDiagnosticSession                              |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x04: safetySystemDiagnosticSession                          |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x05–0x3F: reserved                                          |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x40–0x5F: vehicle manufacturer specific                     |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x60–0x7E: system supplier specific                          |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x7F: reserved                                               |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
@@ -176,19 +180,19 @@ Positive Response Format
 :ref:`P2*Server_max <knowledge-base-p2*-server>` field is encoded in units of 10 ms, so it must be multiplied by 10
 to obtain the value in milliseconds.
 
-+-------------------------------------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| Name                                                        | Bit Length | Value         | Description                                                     | Present |
-+=============================================================+============+===============+=================================================================+=========+
-| *RSID*                                                      | 8          | 0x50          | DiagnosticSessionControl                                        | Always  |
-+--------------------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| *SubFunction*            | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1       | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always  |
-|                          +----------------------------------+------------+---------------+-----------------------------------------------------------------+         |
-|                          | *diagnosticSessionType*          | 7 (b[6-0]) | 0x00-0x7F     | Echo of *diagnosticSessionType* value from the request          |         |
-+--------------------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| *sessionParameterRecord* | *P2Server_max*                   | 16         | 0x0000-0xFFFF | Maximum P2 value used by the server in this session             | Always  |
-|                          +----------------------------------+------------+---------------+-----------------------------------------------------------------+         |
-|                          | *P2\*Server_max*                 | 16         | 0x0000-0xFFFF | Maximum P2\* value used by the server in this session           |         |
-+--------------------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
++-------------------------------------------------------------+-----------------+---------------+-----------------------------------------------------------------+---------+
+| Name                                                        | Bit Length      | Value         | Description                                                     | Present |
++=============================================================+=================+===============+=================================================================+=========+
+| *RSID*                                                      | 8               | 0x50          | DiagnosticSessionControl                                        | Always  |
++--------------------------+----------------------------------+----+------------+---------------+-----------------------------------------------------------------+---------+
+| *SubFunction*            | *suppressPosRspMsgIndicationBit* | 8  | 1 (b[7])   | 0x0-0x1       | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always  |
+|                          +----------------------------------+    +------------+---------------+-----------------------------------------------------------------+         |
+|                          | *diagnosticSessionType*          |    | 7 (b[6-0]) | 0x00-0x7F     | Echo of *diagnosticSessionType* value from the request          |         |
++--------------------------+----------------------------------+----+------------+---------------+-----------------------------------------------------------------+---------+
+| *sessionParameterRecord* | *P2Server_max*                   | 32 | 16         | 0x0000-0xFFFF | Maximum P2 value used by the server in this session             | Always  |
+|                          +----------------------------------+    +------------+---------------+-----------------------------------------------------------------+         |
+|                          | *P2\*Server_max*                 |    | 16         | 0x0000-0xFFFF | Maximum P2\* value used by the server in this session           |         |
++--------------------------+----------------------------------+----+------------+---------------+-----------------------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-ecu-reset:
@@ -202,35 +206,39 @@ the positive response).
 
 Request Format
 ``````````````
-+--------------------------------------------------+------------+-----------+------------------------------------------+---------+
-| Name                                             | Bit Length | Value     | Description                              | Present |
-+==================================================+============+===========+==========================================+=========+
-| *SID*                                            | 8          | 0x11      | ECUReset                                 | Always  |
-+---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
-| *SubFunction* | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1   | 0: response required                     | Always  |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 1: suppress positive response            |         |
-|               +----------------------------------+------------+-----------+------------------------------------------+         |
-|               | *resetType*                      | 7 (b[6-0]) | 0x00-0x7F | 0x00: reserved                           |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x01: hardReset                          |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x02: keyOffOnReset                      |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x03: softReset                          |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x04: enableRapidPowerShutDown           |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x05: disableRapidPowerShutDown          |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x06-0x3F: reserved                      |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x40-0x5F: vehicle manufacturer specific |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x60-0x7E: system supplier specific      |         |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 0x7F: reserved                           |         |
-+---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x11      | ECUReset                                                     | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *resetType*                      |   | 7 (b[6-0]) | 0x00-0x7F | Type of reset to perform                                     |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x00: reserved                                               |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x01: hardReset                                              |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x02: keyOffOnReset                                          |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x03: softReset                                              |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x04: enableRapidPowerShutDown                               |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x05: disableRapidPowerShutDown                              |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x06-0x3F: reserved                                          |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x40-0x5F: vehicle manufacturer specific                     |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x60-0x7E: system supplier specific                          |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0x7F: reserved                                               |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
@@ -239,19 +247,21 @@ The *powerDownTime* field defines the minimum time (in seconds) that the server 
 it can be safely restarted.
 A value of :code:`0xFF` indicates that either the time requirement is not available or a failure occurred.
 
-+--------------------------------------------------+------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
-| Name                                             | Bit Length | Value     | Description                                                     | Present                                               |
-+==================================================+============+===========+=================================================================+=======================================================+
-| *RSID*                                           | 8          | 0x51      | ECUReset                                                        | Always                                                |
-+---------------+----------------------------------+------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
-| *SubFunction* | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1   | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                                |
-|               +----------------------------------+------------+-----------+-----------------------------------------------------------------+                                                       |
-|               | *resetType*                      | 7 (b[6-0]) | 0x00-0x7F | Echo of *resetType* value from the request                      |                                                       |
-+---------------+----------------------------------+------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
-| *powerDownTime*                                  | 8          | 0x00-0xFF | 0x00-0xFE: down time in seconds (0-254)                         | If *resetType* equals 0x04 (enableRapidPowerShutDown) |
-|                                                  |            |           |                                                                 |                                                       |
-|                                                  |            |           | 0xFF: failure or time unavailable                               |                                                       |
-+--------------------------------------------------+------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
++--------------------------------------------------+----------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
+| Name                                             | Bit Length     | Value     | Description                                                     | Present                                               |
++==================================================+================+===========+=================================================================+=======================================================+
+| *RSID*                                           | 8              | 0x51      | ECUReset                                                        | Always                                                |
++---------------+----------------------------------+---+------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                                |
+|               +----------------------------------+   +------------+-----------+-----------------------------------------------------------------+                                                       |
+|               | *resetType*                      |   | 7 (b[6-0]) | 0x00-0x7F | Echo of *resetType* value from the request                      |                                                       |
++---------------+----------------------------------+---+------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
+| *powerDownTime*                                  | 8              | 0x00-0xFF | Time required by the server to complete the reset sequence      | If *resetType* equals 0x04 (enableRapidPowerShutDown) |
+|                                                  |                |           |                                                                 |                                                       |
+|                                                  |                |           | 0x00-0xFE: down time in seconds (0-254)                         |                                                       |
+|                                                  |                |           |                                                                 |                                                       |
+|                                                  |                |           | 0xFF: failure or time unavailable                               |                                                       |
++--------------------------------------------------+----------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
 
 
 .. _knowledge-base-service-clear-diagnostic-information:
@@ -353,58 +363,64 @@ ISO 14229-1 defines the following DTC report types (values of the *reportType* p
 
 reportNumberOfDTCByStatusMask (0x01)
 ````````````````````````````````````
-This sub-function can be used by the client to request the number of stored DTCs that match
+This sub-function allows the client to request the number of stored DTCs that match
 a specific status mask (*DTCStatusMask*).
-It is typically used as a lightweight way to determine how many DTCs fulfill a given diagnostic condition without
+It is typically used as a lightweight mechanism to determine how many DTCs fulfill a given diagnostic condition without
 retrieving the DTC values themselves.
 
 
 Request Format
 ''''''''''''''
-The *DTCStatusMask* parameter specifies which status bits should be used as a filter when matching DTCs.
-A value of 0x00 means that no status bits are selected. Since no DTC can match this, the result will always be
-a count of 0.
+The *DTCStatusMask* parameter specifies which :ref:`DTC Status <knowledge-base-dtc-status>` bits should be used
+as a filter when matching DTCs.
+A value of 0x00 means that no status bits are selected. Since no DTC can match this by definition, the result will
+always be a count of 0.
 
-+--------------------------------------------------+------------+-----------+------------------------------------------+---------+
-| Name                                             | Bit Length | Value     | Description                              | Present |
-+==================================================+============+===========+==========================================+=========+
-| *SID*                                            | 8          | 0x19      | ReadDTCInformation                       | Always  |
-+---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
-| *SubFunction* | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1   | 0: response required                     | Always  |
-|               |                                  |            |           |                                          |         |
-|               |                                  |            |           | 1: suppress positive response            |         |
-|               +----------------------------------+------------+-----------+------------------------------------------+         |
-|               | *reportType*                     | 7 (b[6-0]) | 0x01      | reportNumberOfDTCByStatusMask            |         |
-+---------------+----------------------------------+------------+-----------+------------------------------------------+---------+
-| *DTCStatusMask*                                  | 8          | 0x00-0xFF | DTC status mask to use for DTCs matching | Always  |
-+--------------------------------------------------+------------+-----------+------------------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x01      | reportNumberOfDTCByStatusMask                                |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *DTCStatusMask*                                  | 8              | 0x00-0xFF | DTC status mask to use for DTCs matching                     | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+--------------------------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| Name                                             | Bit Length | Value         | Description                                                     | Present |
-+==================================================+============+===============+=================================================================+=========+
-| *RSID*                                           | 8          | 0x59          | ReadDTCInformation                                              | Always  |
-+---------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| *SubFunction* | *suppressPosRspMsgIndicationBit* | 1 (b[7])   | 0x0-0x1       | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always  |
-|               +----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-|               | *reportType*                     | 7 (b[6-0]) | 0x01          | reportNumberOfDTCByStatusMask                                   | Always  |
-+---------------+----------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCStatusAvailabilityMask*                      | 8          | 0x00-0xFF     | DTC status bits supported by the server                         | Always  |
-+--------------------------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCFormatIdentifier*                            | 8          | 0x00-0xFF     | 0x00: SAE J2012-DA DTC Format 00                                | Always  |
-|                                                  |            |               |                                                                 |         |
-|                                                  |            |               | 0x01: ISO 14229-1 DTC Format                                    |         |
-|                                                  |            |               |                                                                 |         |
-|                                                  |            |               | 0x02: SAE J1939-73 DTC Format                                   |         |
-|                                                  |            |               |                                                                 |         |
-|                                                  |            |               | 0x03: ISO 11992-4 DTC Format                                    |         |
-|                                                  |            |               |                                                                 |         |
-|                                                  |            |               | 0x04: SAE J2012-DA DTC Format 04                                |         |
-+--------------------------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCCount*                                       | 16         | 0x0000-0xFFFF | Number of DTCs that match the criteria                          | Always  |
-+--------------------------------------------------+------------+---------------+-----------------------------------------------------------------+---------+
+*DTCStatusAvailabilityMask* informs about :ref:`DTC Status <knowledge-base-dtc-status>` bits that are used by the server.
+It means that if a bit is set to 0 in *DTCStatusAvailabilityMask*, then the server will never set it for any DTC.
+
++--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value         | Description                                                     | Present |
++==================================================+================+===============+=================================================================+=========+
+| *RSID*                                           | 8              | 0x59          | ReadDTCInformation                                              | Always  |
++---------------+----------------------------------+---+------------+---------------+-----------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1       | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always  |
+|               +----------------------------------+   +------------+---------------+-----------------------------------------------------------------+---------+
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x01          | reportNumberOfDTCByStatusMask                                   | Always  |
++---------------+----------------------------------+---+------------+---------------+-----------------------------------------------------------------+---------+
+| *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC status bits supported by the server                         | Always  |
++--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
+| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | 0x00: SAE J2012-DA DTC Format 00                                | Always  |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x01: ISO 14229-1 DTC Format                                    |         |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x02: SAE J1939-73 DTC Format                                   |         |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x03: ISO 11992-4 DTC Format                                    |         |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x04: SAE J2012-DA DTC Format 04                                |         |
++--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
+| *DTCCount*                                       | 16             | 0x0000-0xFFFF | Number of DTCs that match the criteria                          | Always  |
++--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
 
 
 .. _knowledge-base-service-read-dtc-information-02:
@@ -419,46 +435,49 @@ all DTCs that satisfy the given mask.
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+------------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                              | Present |
-+==============================================+============+===========+==========================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                       | Always  |
-+-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                    | Always  |
-|             |                                |            |           |                                          |         |
-|             |                                |            |           | 1 = suppress positive response           |         |
-|             +--------------------------------+------------+-----------+------------------------------------------+         |
-|             | reportType                     | 7 (b[6-0]) | 0x02      | reportDTCByStatusMask                    |         |
-+-------------+--------------------------------+------------+-----------+------------------------------------------+---------+
-| DTCStatusMask                                | 8          | 0x00-0xFF | DTC status mask to use for DTCs matching | Always  |
-+----------------------------------------------+------------+-----------+------------------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x02      | reportDTCByStatusMask                                        |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *DTCStatusMask*                                  | 8              | 0x00-0xFF | DTC status mask to use for DTCs matching                     | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                  | Present                                  |
-+=================================================+============+===================+==============================================+==========================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                |                                |            |                   |                                              |                                          |
-|                |                                |            |                   | 1 = suppress positive response               |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x02              | reportDTCByStatusMask                        | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                       | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | ...                                                                                                                                                       |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
+*DTCStatusAvailabilityMask* informs about :ref:`DTC Status <knowledge-base-dtc-status>` bits that are used by the server.
+It means that if a bit is set to 0 in *DTCStatusAvailabilityMask*, then the server will never set it for any DTC.
+
++-----------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| Name                                                | Bit Length        | Value             | Description                                                     | Present                                  |
++=====================================================+===================+===================+=================================================================+==========================================+
+| *RSID*                                              | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
++------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *SubFunction*    | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
+|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                  | *reportType*                     |      | 7 (b[6-0]) | 0x02              | reportDTCByStatusMask                                           | Always                                   |
++------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCStatusAvailabilityMask*                         | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
++------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTC and Status* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC matches the criteria |
+|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                  | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
+|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                  | ...                              |      | ...                                                                                                                                         |
+|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                  | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs matches the criteria  |
+|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                  | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
++------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-03:
