@@ -5785,7 +5785,7 @@ class TestReadDTCInformation2013Integration:
                             {
                                 'children': (),
                                 'length': 8,
-                                'name': 'FaultDetectionCounter',
+                                'name': 'DTCFaultDetectionCounter',
                                 'physical_value': 0x73,
                                 'raw_value': 0x73,
                                 'unit': None,
@@ -5803,7 +5803,7 @@ class TestReadDTCInformation2013Integration:
                             {
                                 'children': (),
                                 'length': 8,
-                                'name': 'FaultDetectionCounter',
+                                'name': 'DTCFaultDetectionCounter',
                                 'physical_value': 0xBC,
                                 'raw_value': 0xBC,
                                 'unit': None,
@@ -5811,7 +5811,7 @@ class TestReadDTCInformation2013Integration:
                         ),
             ),
                     'length': 32,
-                    'name': 'DTC and Fault Detection Counter',
+                    'name': 'DTC and DTCFaultDetectionCounter',
                     'physical_value': (0x7B2B5773, 0x70EDC4BC),
                     'raw_value': (0x7B2B5773, 0x70EDC4BC),
                     'unit': None
@@ -7707,7 +7707,7 @@ class TestReadDTCInformation2013Integration:
                         ),
                     ),
                     'length': 40,
-                    'name': 'Severity, DTC and DTC Status',
+                    'name': 'DTCSeverity, DTC and DTCStatus',
                     'physical_value': (0x05119459C6, 0xC02C17D66F, 0xD7B8B79FC0),
                     'raw_value': (0x05119459C6, 0xC02C17D66F, 0xD7B8B79FC0),
                     'unit': None
@@ -8705,14 +8705,14 @@ class TestReadDTCInformation2013Integration:
                     "suppressPosRspMsgIndicationBit": 0,
                     "reportType": 0x14,
                 },
-                "DTC and Fault Detection Counter": [
+                "DTC and DTCFaultDetectionCounter": [
                     {
                         "DTC": 0x000000,
-                        "FaultDetectionCounter": 0x00,
+                        "DTCFaultDetectionCounter": 0x00,
                     },
                     {
                         "DTC": 0x896745,
-                        "FaultDetectionCounter": 0x23,
+                        "DTCFaultDetectionCounter": 0x23,
                     },
                     0xFFFFFFFF
                 ],
@@ -8720,9 +8720,9 @@ class TestReadDTCInformation2013Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x14,
-                       0x00, 0x00, 0x00, 0x00,  # DTC and Fault Detection Counter #1
-                       0x89, 0x67, 0x45, 0x23,  # DTC and Fault Detection Counter #2
-                       0xFF, 0xFF, 0xFF, 0xFF])  # DTC and Fault Detection Counter #3
+                       0x00, 0x00, 0x00, 0x00,  # DTC and DTCFaultDetectionCounter #1
+                       0x89, 0x67, 0x45, 0x23,  # DTC and DTCFaultDetectionCounter #2
+                       0xFF, 0xFF, 0xFF, 0xFF])  # DTC and DTCFaultDetectionCounter #3
         ),
         # reportDTCWithPermanentStatus (0x15)
         (
@@ -8982,7 +8982,7 @@ class TestReadDTCInformation2013Integration:
                     "DTCClass_0": 1,
                 },
                 "DTCFormatIdentifier": 0x54,
-                "Severity, DTC and DTC Status": [
+                "DTCSeverity, DTC and DTCStatus": [
                     {
                         "DTCSeverity": {
                             "checkImmediately": 1,
@@ -15647,14 +15647,14 @@ class TestReadDTCInformation2020Integration:
         (
             {
                 "SubFunction": 0x94,
-                "DTC and Fault Detection Counter": [
+                "DTC and DTCFaultDetectionCounter": [
                     {
                         "DTC": 0x000000,
-                        "FaultDetectionCounter": 0x00,
+                        "DTCFaultDetectionCounter": 0x00,
                     },
                     {
                         "DTC": 0xFFFFFF,
-                        "FaultDetectionCounter": 0xFF,
+                        "DTCFaultDetectionCounter": 0xFF,
                     },
                     0x12345678
                 ],
@@ -15662,9 +15662,9 @@ class TestReadDTCInformation2020Integration:
             None,
             ResponseSID.ReadDTCInformation,
             bytearray([0x59, 0x94,
-                       0x00, 0x00, 0x00, 0x00,  # DTC and Fault Detection Counter #1
-                       0xFF, 0xFF, 0xFF, 0xFF,  # DTC and Fault Detection Counter #2
-                       0x12, 0x34, 0x56, 0x78])  # DTC and Fault Detection Counter #3
+                       0x00, 0x00, 0x00, 0x00,  # DTC and DTCFaultDetectionCounter #1
+                       0xFF, 0xFF, 0xFF, 0xFF,  # DTC and DTCFaultDetectionCounter #2
+                       0x12, 0x34, 0x56, 0x78])  # DTC and DTCFaultDetectionCounter #3
         ),
         # reportDTCWithPermanentStatus (0x15)
         (
@@ -15992,7 +15992,7 @@ class TestReadDTCInformation2020Integration:
                     "DTCClass_0": 1,
                 },
                 "DTCFormatIdentifier": 0x02,
-                "Severity, DTC and DTC Status": [
+                "DTCSeverity, DTC and DTCStatus": [
                     {
                         "DTCSeverity": {
                             "checkImmediately": 1,

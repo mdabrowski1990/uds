@@ -43,7 +43,7 @@ class TestClearDiagnosticInformation2013Integration:
                     'children': (),
                     'length': 24,
                     'name': 'groupOfDTC',
-                    'physical_value': 0xFFFFFF,
+                    'physical_value': "all",
                     'raw_value': 0xFFFFFF,
                     'unit': None
                 },
@@ -137,7 +137,7 @@ class TestClearDiagnosticInformation2020Integration:
                     'children': (),
                     'length': 24,
                     'name': 'groupOfDTC',
-                    'physical_value': 0xFFFFFF,
+                    'physical_value': "all",
                     'raw_value': 0xFFFFFF,
                     'unit': None
                 },
