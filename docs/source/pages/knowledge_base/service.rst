@@ -379,8 +379,8 @@ ISO 14229-1 defines the following DTC report types (values of the *reportType* p
 
 reportNumberOfDTCByStatusMask (0x01)
 ````````````````````````````````````
-This sub-function allows the client to request the number of stored DTCs that match
-a specific status mask (*DTCStatusMask*).
+This sub-function allows the client to request the number of stored :ref:`DTCs <knowledge-base-dtc>`` that match
+a specific :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 It is typically used as a lightweight mechanism to determine how many DTCs fulfill a given diagnostic condition without
 retrieving the DTC values themselves.
 
@@ -388,7 +388,7 @@ retrieving the DTC values themselves.
 Request Format
 ''''''''''''''
 The *DTCStatusMask* parameter specifies which :ref:`DTC Status <knowledge-base-dtc-status>` bits should be used
-as a filter when matching DTCs.
+as a filter when matching :ref:`DTCs <knowledge-base-dtc>`.
 A value of 0x00 means that no status bits are selected. Since no DTC can match this by definition, the result will
 always be a count of 0.
 
@@ -411,9 +411,6 @@ always be a count of 0.
 
 Positive Response Format
 ''''''''''''''''''''''''
-*DTCStatusAvailabilityMask* informs about :ref:`DTC Status <knowledge-base-dtc-status>` bits that are used by the server.
-It means that if a bit is set to 0 in *DTCStatusAvailabilityMask*, then the server will never set it for any DTC.
-
 +--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
 | Name                                             | Bit Length     | Value         | Description                                                     | Present |
 +==================================================+================+===============+=================================================================+=========+
@@ -423,9 +420,11 @@ It means that if a bit is set to 0 in *DTCStatusAvailabilityMask*, then the serv
 |               +----------------------------------+   +------------+---------------+-----------------------------------------------------------------+         |
 |               | *reportType*                     |   | 7 (b[6-0]) | 0x01          | reportNumberOfDTCByStatusMask                                   |         |
 +---------------+----------------------------------+---+------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC status bits supported by the server                         | Always  |
+| *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC Status bits supported by the server                         | Always  |
 +--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | 0x00: SAE J2012-DA DTC Format 00                                | Always  |
+| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | DTC Format used by the server                                   | Always  |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x00: SAE J2012-DA DTC Format 00                                |         |
 |                                                  |                |               |                                                                 |         |
 |                                                  |                |               | 0x01: ISO 14229-1 DTC Format                                    |         |
 |                                                  |                |               |                                                                 |         |
@@ -443,8 +442,9 @@ It means that if a bit is set to 0 in *DTCStatusAvailabilityMask*, then the serv
 
 reportDTCByStatusMask (0x02)
 ````````````````````````````
-This sub-function can be used by the client to request a list of all DTCs stored in the server’s memory that match
-a specific status mask (*DTCStatusMask*). A DTC is included in the response if :code:`DTC Status & DTCStatusMask) != 0`.
+This sub-function can be used by the client to request a list of all :ref:`DTCs <knowledge-base-dtc>` stored in
+the server’s memory that match a specific :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
+A DTC is included in the response if :code:`DTC Status & DTCStatusMask) != 0`.
 This sub-function provides the client with both the DTC values and their corresponding status information for
 all DTCs that satisfy the given mask.
 
@@ -470,30 +470,27 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
-*DTCStatusAvailabilityMask* informs about :ref:`DTC Status <knowledge-base-dtc-status>` bits that are used by the server.
-It means that if a bit is set to 0 in *DTCStatusAvailabilityMask*, then the server will never set it for any DTC.
-
-+-----------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
-| Name                                                | Bit Length        | Value             | Description                                                     | Present                                  |
-+=====================================================+===================+===================+=================================================================+==========================================+
-| *RSID*                                              | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
-+------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
-| *SubFunction*    | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
-|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
-|                  | *reportType*                     |      | 7 (b[6-0]) | 0x02              | reportDTCByStatusMask                                           |                                          |
-+------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
-| *DTCStatusAvailabilityMask*                         | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
-+------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
-| *DTC and Status* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC matches the criteria |
-|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
-|                  | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
-|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
-|                  | ...                              |      | ...                                                                                                                                         |
-|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
-|                  | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs matches the criteria  |
-|                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
-|                  | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
-+------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                  |
++========================================================+===================+===================+=================================================================+==========================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *reportType*                     |      | 7 (b[6-0]) | 0x02              | reportDTCByStatusMask                                           |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCStatusAvailabilityMask*                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC matches the criteria |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | ...                              |      | ...                                                                                                                                         |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs matches the criteria  |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-03:
@@ -553,9 +550,6 @@ a specific :ref:`DTC <knowledge-base-dtc>` (*DTC*) and snapshot record number (*
 
 Request Format
 ''''''''''''''
-*DTCSnapshotRecordNumber* (0x01–0xFE) selects a single snapshot record.
-If equal to 0xFF, all available snapshot records for the :ref:`DTC <knowledge-base-dtc>` are returned.
-
 +--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
 | Name                                             | Bit Length     | Value             | Description                                                  | Present |
 +==================================================+================+===================+==============================================================+=========+
@@ -639,9 +633,6 @@ This sub-function can be used by the client to request stored data for a specifi
 
 Request Format
 ''''''''''''''
-*DTCStoredDataRecordNumber* (0x01–0xFE) selects a single stored data record.
-If equal to 0xFF, all available stored data records for the :ref:`DTC <knowledge-base-dtc>` are returned.
-
 +--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 | Name                                             | Bit Length     | Value     | Description                                                  | Present |
 +==================================================+================+===========+==============================================================+=========+
@@ -722,16 +713,12 @@ Positive Response Format
 
 reportDTCExtDataRecordByDTCNumber (0x06)
 ````````````````````````````````````````
-This sub-function can be used by the client to request extended data records for a specific DTC (*DTC*)
-and record number (*DTCExtDataRecordNumber*).
+This sub-function can be used by the client to request extended data records for
+a specific :ref:`DTC <knowledge-base-dtc>` (*DTC*) and record number (*DTCExtDataRecordNumber*).
 
 
 Request Format
 ''''''''''''''
-*DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
-If equal 0xFE, all regulated emissions OBD records are requested.
-If equal 0xFF, all extended data records for the DTC are requested.
-
 +--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
 | Name                                             | Bit Length     | Value             | Description                                                  | Present |
 +==================================================+================+===================+==============================================================+=========+
@@ -798,8 +785,9 @@ Positive Response Format
 
 reportNumberOfDTCBySeverityMaskRecord (0x07)
 ````````````````````````````````````````````
-This sub-function can be used by the client to request the number of DTCs that match a given
-severity mask (*DTCSeverityMask*) and status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request the number of :ref:`DTCs <knowledge-base-dtc>` that match
+a given :ref:`severity <knowledge-base-dtc-severity>` mask (*DTCSeverityMask*)
+and :ref:`status <knowledge-base-dtc-status>`` mask (*DTCStatusMask*).
 
 
 Request Format
@@ -836,7 +824,9 @@ Positive Response Format
 +---------------+----------------------------------+---+------------+---------------+-----------------------------------------------------------------+---------+
 | *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC Status bits supported by the ECU                            | Always  |
 +--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | 0x00: SAE J2012-DA DTC Format 00                                | Always  |
+| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | DTC Format used by the server                                   | Always  |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x00: SAE J2012-DA DTC Format 00                                |         |
 |                                                  |                |               |                                                                 |         |
 |                                                  |                |               | 0x01: ISO 14229-1 DTC Format                                    |         |
 |                                                  |                |               |                                                                 |         |
@@ -854,8 +844,9 @@ Positive Response Format
 
 reportDTCBySeverityMaskRecord (0x08)
 ````````````````````````````````````
-This sub-function can be used by the client to request all DTCs that match a given severity mask (*DTCSeverityMask*)
-and status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request all :ref:`DTCs <knowledge-base-dtc>`` that match
+a given :ref:`severity <knowledge-base-dtc-severity>` mask (*DTCSeverityMask*)
+and :ref:`status <knowledge-base-dtc-status>`` mask (*DTCStatusMask*).
 
 
 Request Format
@@ -917,7 +908,7 @@ Positive Response Format
 reportSeverityInformationOfDTC (0x09)
 `````````````````````````````````````
 This sub-function can be used by the client to request severity and functional unit information for
-a specific DTC (*DTC*).
+a specific :ref:`DTC <knowledge-base-dtc>` (*DTC*).
 
 
 Request Format
@@ -966,7 +957,8 @@ Positive Response Format
 
 reportSupportedDTC (0x0A)
 `````````````````````````
-This sub-function can be used by the client to request a list of all DTCs supported by the server.
+This sub-function can be used by the client to request a list of all :ref:`DTCs <knowledge-base-dtc>`
+supported by the server.
 
 
 Request Format
@@ -1015,8 +1007,9 @@ Positive Response Format
 
 reportFirstTestFailedDTC (0x0B)
 ```````````````````````````````
-This sub-function can be used by the client to request the first DTC that failed a test since the last
-:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+This sub-function can be used by the client to request the first :ref:`DTC <knowledge-base-dtc>` that
+failed a test (had **testFailed** :ref:`DTC Status <knowledge-base-dtc-status>` bit set) since
+the last :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 
 Request Format
@@ -1038,9 +1031,6 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
-The returned *DTC* is the first one detected with testFailed status bit (b0) set since the last
-:ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
-
 +--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
 | Name                                                   | Bit Length        | Value             | Description                                                     | Present                                    |
 +========================================================+===================+===================+=================================================================+============================================+
@@ -1062,8 +1052,9 @@ The returned *DTC* is the first one detected with testFailed status bit (b0) set
 
 reportFirstConfirmedDTC (0x0C)
 ``````````````````````````````
-This sub-function can be used by the client to request the first confirmed DTC since the last
-:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+This sub-function can be used by the client to request the first confirmed :ref:`DTC <knowledge-base-dtc>`
+(had **confirmedDTC** :ref:`DTC Status <knowledge-base-dtc-status>` bit set) since
+the last :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 
 Request Format
@@ -1085,9 +1076,6 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
-The returned *DTC* is the first one detected with confirmedDTC status bit (b3) set since the last
-:ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
-
 +--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+----------------------------------------------+
 | Name                                                   | Bit Length        | Value             | Description                                                     | Present                                      |
 +========================================================+===================+===================+=================================================================+==============================================+
@@ -1109,8 +1097,9 @@ The returned *DTC* is the first one detected with confirmedDTC status bit (b3) s
 
 reportMostRecentTestFailedDTC (0x0D)
 ````````````````````````````````````
-This sub-function can be used by the client to request the most recent DTC that failed a test since the last
-:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+This sub-function can be used by the client to request the most recent :ref:`DTC <knowledge-base-dtc>` that
+failed a test (had **testFailed** :ref:`DTC Status <knowledge-base-dtc-status>` bit set) since
+the last :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 
 Request Format
@@ -1132,9 +1121,6 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
-The returned *DTC* is the most recent one detected with testFailed status bit (b0) set since the last
-:ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
-
 +--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
 | Name                                                   | Bit Length        | Value             | Description                                                     | Present                                    |
 +========================================================+===================+===================+=================================================================+============================================+
@@ -1156,8 +1142,9 @@ The returned *DTC* is the most recent one detected with testFailed status bit (b
 
 reportMostRecentConfirmedDTC (0x0E)
 ```````````````````````````````````
-This sub-function can be used by the client to request the most recent confirmed DTC since the last
-:ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
+This sub-function can be used by the client to request the most recent confirmed :ref:`DTC <knowledge-base-dtc>`
+(had **confirmedDTC** :ref:`DTC Status <knowledge-base-dtc-status>` bit set) since
+the last :ref:`Clearing Diagnostic Information <knowledge-base-service-clear-diagnostic-information>`.
 
 
 Request Format
@@ -1179,9 +1166,6 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
-The returned *DTC* is the most recent one detected with confirmedDTC status bit (b3) set since the last
-:ref:`ClearDiagnosticInformation <knowledge-base-service-clear-diagnostic-information>`.
-
 +--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+----------------------------------------------+
 | Name                                                   | Bit Length        | Value             | Description                                                     | Present                                      |
 +========================================================+===================+===================+=================================================================+==============================================+
@@ -1203,8 +1187,8 @@ The returned *DTC* is the most recent one detected with confirmedDTC status bit 
 
 reportMirrorMemoryDTCByStatusMask (0x0F)
 ````````````````````````````````````````
-This sub-function can be used by the client to request all DTCs in the DTC mirror memory that match
-a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request all :ref:`DTCs <knowledge-base-dtc>` in the DTC mirror memory
+that match a given :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -1261,7 +1245,7 @@ Positive Response Format
 reportMirrorMemoryDTCExtDataRecordByDTCNumber (0x10)
 ````````````````````````````````````````````````````
 This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*) for
-a specific DTC (*DTC*) from the DTC mirror memory.
+a specific :ref:`DTC <knowledge-base-dtc>` (*DTC*) from the DTC mirror memory.
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -1271,10 +1255,6 @@ a specific DTC (*DTC*) from the DTC mirror memory.
 
 Request Format
 ''''''''''''''
-*DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
-If equal 0xFE, all regulated emissions OBD records are requested.
-If equal 0xFF, all extended data records for the DTC are requested.
-
 +--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
 | Name                                             | Bit Length     | Value             | Description                                                  | Present |
 +==================================================+================+===================+==============================================================+=========+
@@ -1288,7 +1268,7 @@ If equal 0xFF, all extended data records for the DTC are requested.
 |               +----------------------------------+   +------------+-------------------+--------------------------------------------------------------+         |
 |               | *reportType*                     |   | 7 (b[6-0]) | 0x10              | reportMirrorMemoryDTCExtDataRecordByDTCNumber                |         |
 +---------------+----------------------------------+---+------------+-------------------+--------------------------------------------------------------+---------+
-| *DTC*                                            | 24             | 0x000000-0xFFFFFF | DTC number                                                   | Always  |
+| *DTC*                                            | 24             | 0x000000-0xFFFFFF | DTC for which extended data are requested                    | Always  |
 +--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
 | *DTCExtDataRecordNumber*                         | 8              | 0x00-0xFF         | Number of requested DTC Extended Data Record(s)              | Always  |
 |                                                  |                |                   |                                                              |         |
@@ -1341,8 +1321,8 @@ Positive Response Format
 
 reportNumberOfMirrorMemoryDTCByStatusMask (0x11)
 ````````````````````````````````````````````````
-This sub-function can be used by the client to request the number of DTCs in the DTC mirror memory that match
-a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request the number of :ref:`DTCs <knowledge-base-dtc>` in
+the DTC mirror memory that match a given :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -1380,9 +1360,11 @@ Positive Response Format
 |               +----------------------------------+   +------------+---------------+-----------------------------------------------------------------+         |
 |               | *reportType*                     |   | 7 (b[6-0]) | 0x11          | reportNumberOfMirrorMemoryDTCByStatusMask                       |         |
 +---------------+----------------------------------+---+------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC status bits supported by the server                         | Always  |
+| *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC Status bits supported by the server                         | Always  |
 +--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | 0x00: SAE J2012-DA DTC Format 00                                | Always  |
+| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | DTC Format used by the server                                   | Always  |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x00: SAE J2012-DA DTC Format 00                                |         |
 |                                                  |                |               |                                                                 |         |
 |                                                  |                |               | 0x01: ISO 14229-1 DTC Format                                    |         |
 |                                                  |                |               |                                                                 |         |
@@ -1400,8 +1382,8 @@ Positive Response Format
 
 reportNumberOfEmissionsOBDDTCByStatusMask (0x12)
 ````````````````````````````````````````````````
-This sub-function can be used by the client to request the number of emissions-related OBD DTCs that match
-a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request the number of emissions-related OBD
+:ref:`DTCs <knowledge-base-dtc>` that match a given :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
@@ -1436,9 +1418,11 @@ Positive Response Format
 |               +----------------------------------+   +------------+---------------+-----------------------------------------------------------------+         |
 |               | *reportType*                     |   | 7 (b[6-0]) | 0x12          | reportNumberOfEmissionsOBDDTCByStatusMask                       |         |
 +---------------+----------------------------------+---+------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC status bits supported by the server                         | Always  |
+| *DTCStatusAvailabilityMask*                      | 8              | 0x00-0xFF     | DTC Status bits supported by the server                         | Always  |
 +--------------------------------------------------+----------------+---------------+-----------------------------------------------------------------+---------+
-| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | 0x00: SAE J2012-DA DTC Format 00                                | Always  |
+| *DTCFormatIdentifier*                            | 8              | 0x00-0xFF     | DTC Format used by the server                                   | Always  |
+|                                                  |                |               |                                                                 |         |
+|                                                  |                |               | 0x00: SAE J2012-DA DTC Format 00                                |         |
 |                                                  |                |               |                                                                 |         |
 |                                                  |                |               | 0x01: ISO 14229-1 DTC Format                                    |         |
 |                                                  |                |               |                                                                 |         |
@@ -1456,153 +1440,152 @@ Positive Response Format
 
 reportEmissionsOBDDTCByStatusMask (0x13)
 ````````````````````````````````````````
-This sub-function can be used by the client to request a list of emissions-related OBD DTCs that match
-a given status mask (*DTCStatusMask*).
+This sub-function can be used by the client to request a list of emissions-related OBD :ref:`DTCs <knowledge-base-dtc>`
+that match a given :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 
 .. warning:: Withdrawn in ISO 14229-1:2020
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                             | Present |
-+==============================================+============+===========+=========================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                      | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                   | Always  |
-|             |                                |            |           |                                         |         |
-|             |                                |            |           | 1 = suppress positive response          |         |
-|             +--------------------------------+------------+-----------+-----------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x13      | reportEmissionsOBDDTCByStatusMask       | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
-| DTCStatusMask                                | 8          | 0x00-0xFF | DTC status mask to use for DTC matching | Always  |
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x13      | reportEmissionsOBDDTCByStatusMask                            |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *DTCStatusMask*                                  | 8              | 0x00-0xFF | DTC status mask to use for DTCs matching                     | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                  | Present                                  |
-+=================================================+============+===================+==============================================+==========================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                |                                |            |                   |                                              |                                          |
-|                |                                |            |                   | 1 = suppress positive response               |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x13              | reportEmissionsOBDDTCByStatusMask            | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                       | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTC Status                     | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | ...                                                                                                                                                       |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTC Status                     | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                  |
++========================================================+===================+===================+=================================================================+==========================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *reportType*                     |      | 7 (b[6-0]) | 0x13              | reportEmissionsOBDDTCByStatusMask                               |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCStatusAvailabilityMask*                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC matches the criteria |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | ...                              |      | ...                                                                                                                                         |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs matches the criteria  |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-14:
 
 reportDTCFaultDetectionCounter (0x14)
 `````````````````````````````````````
-This sub-function can be used by the client to request fault detection counters for DTCs that have not been reported
-or confirmed.
+This sub-function can be used by the client to request
+:ref:`fault detection counters <knowledge-base-dtc-fault-detection-counter>` for :ref:`DTCs <knowledge-base-dtc>`
+that have not been reported or confirmed (no :ref:`DTC Status <knowledge-base-dtc-status>` bits set).
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+---------+--------------------------------+---------+
-| Name                                         | Bit Length | Value   | Description                    | Present |
-+==============================================+============+=========+================================+=========+
-| SID                                          | 8          | 0x19    | ReadDTCInformation             | Always  |
-+-------------+--------------------------------+------------+---------+--------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1 | 0 = response required          | Always  |
-|             |                                |            |         |                                |         |
-|             |                                |            |         | 1 = suppress positive response |         |
-|             +--------------------------------+------------+---------+--------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x14    | reportDTCFaultDetectionCounter | Always  |
-+-------------+--------------------------------+------------+---------+--------------------------------+---------+
++--------------------------------------------------+----------------+---------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value   | Description                                                  | Present |
++==================================================+================+=========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19    | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+---------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1 | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |         |                                                              |         |
+|               |                                  |   |            |         | 0: response required                                         |         |
+|               |                                  |   |            |         |                                                              |         |
+|               |                                  |   |            |         | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+---------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x14    | reportDTCFaultDetectionCounter                               |         |
++---------------+----------------------------------+---+------------+---------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                                              | Bit Length | Value             | Description                                  | Present                                  |
-+===================================================================+============+===================+==============================================+==========================================+
-| RSID                                                              | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction                      | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                                  |                                |            |                   |                                              |                                          |
-|                                  |                                |            |                   | 1 = suppress positive response               |                                          |
-|                                  +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                                  | reportType                     | 7 (b[6-0]) | 0x14              | reportDTCFaultDetectionCounter               | Always                                   |
-+----------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                                         | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+----------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTC and Fault Detection Counter  | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                                  +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                                  | DTCFaultDetectionCounter       | 8          | 0x01-0xFF         | Value of fault detection counter for DTC#1   |                                          |
-|                                  +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                                  | ...                                                                                                                                                       |
-|                                  +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                                  | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                                  +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                                  | DTCFaultDetectionCounter       | 8          | 0x01-0xFF         | Value of fault detection counter for DTC#n   |                                          |
-+----------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
++-----------------------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+----------------------------------------------------------------------+
+| Name                                                                  | Bit Length        | Value             | Description                                                     | Present                                                              |
++=======================================================================+===================+===================+=================================================================+======================================================================+
+| *RSID*                                                                | 8                 | 0x59              | ReadDTCInformation                                              | Always                                                               |
++------------------------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+----------------------------------------------------------------------+
+| *SubFunction*                      | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                                               |
+|                                    +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                                                      |
+|                                    | *reportType*                     |      | 7 (b[6-0]) | 0x14              | reportDTCFaultDetectionCounter                                  |                                                                      |
++------------------------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+----------------------------------------------------------------------+
+| *DTC and DTCFaultDetectionCounter* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC has positive value of *DTCFaultDetectionCounter* |
+|                                    +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                                                      |
+|                                    | *DTCFaultDetectionCounter*       |      | 8          | 0x00-0xFF         | Value of fault detection counter for DTC#1                      |                                                                      |
+|                                    +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+----------------------------------------------------------------------+
+|                                    | ...                              |      | ...                                                                                                                                                                     |
+|                                    +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+----------------------------------------------------------------------+
+|                                    | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs has positive value of *DTCFaultDetectionCounter*  |
+|                                    +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                                                      |
+|                                    | *DTCFaultDetectionCounter*       |      | 8          | 0x00-0xFF         | Value of fault detection counter for DTC#n                      |                                                                      |
++------------------------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+----------------------------------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-15:
 
 reportDTCWithPermanentStatus (0x15)
 ```````````````````````````````````
-This sub-function can be used by the client to request a list of DTCs with permanent status (once reported,
-never cleared by healing).
+This sub-function can be used by the client to request a list of :ref:`DTCs <knowledge-base-dtc>` with permanent status
+(once reported, never cleared or healed).
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+---------+--------------------------------+---------+
-| Name                                         | Bit Length | Value   | Description                    | Present |
-+==============================================+============+=========+================================+=========+
-| SID                                          | 8          | 0x19    | ReadDTCInformation             | Always  |
-+-------------+--------------------------------+------------+---------+--------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1 | 0 = response required          | Always  |
-|             |                                |            |         |                                |         |
-|             |                                |            |         | 1 = suppress positive response |         |
-|             +--------------------------------+------------+---------+--------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x15    | reportDTCWithPermanentStatus   | Always  |
-+-------------+--------------------------------+------------+---------+--------------------------------+---------+
++--------------------------------------------------+----------------+---------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value   | Description                                                  | Present |
++==================================================+================+=========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19    | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+---------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1 | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |         |                                                              |         |
+|               |                                  |   |            |         | 0: response required                                         |         |
+|               |                                  |   |            |         |                                                              |         |
+|               |                                  |   |            |         | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+---------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x15    | reportDTCWithPermanentStatus                                 |         |
++---------------+----------------------------------+---+------------+---------+--------------------------------------------------------------+---------+
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                  | Present                                  |
-+=================================================+============+===================+==============================================+==========================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                |                                |            |                   |                                              |                                          |
-|                |                                |            |                   | 1 = suppress positive response               |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x15              | reportDTCWithPermanentStatus                 | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                       | 8          | 0x00-0xFF         | DTC Status bits supported by the server      | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | ...                                                                                                                                                       |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+----------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                          |
++========================================================+===================+===================+=================================================================+==================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                           |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+----------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                           |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                  |
+|                     | *reportType*                     |      | 7 (b[6-0]) | 0x15              | reportDTCWithPermanentStatus                                    |                                  |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+----------------------------------+
+| *DTCStatusAvailabilityMask*                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                           |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+----------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC is supported |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                  |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                  |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+----------------------------------+
+|                     | ...                              |      | ...                                                                                                                                 |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+----------------------------------+
+|                     | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs are supported |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                  |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                  |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+----------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-16:
@@ -1615,66 +1598,64 @@ regardless of the DTC number.
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+-------------------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                                     | Present |
-+==============================================+============+===========+=================================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                              | Always  |
-+-------------+--------------------------------+------------+-----------+-------------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                           | Always  |
-|             |                                |            |           |                                                 |         |
-|             |                                |            |           | 1 = suppress positive response                  |         |
-|             +--------------------------------+------------+-----------+-------------------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x16      | reportDTCExtDataRecordByRecordNumber            | Always  |
-+-------------+--------------------------------+------------+-----------+-------------------------------------------------+---------+
-| DTCExtDataRecordNumber                       | 8          | 0x00-0xFF | 0x00: reserved                                  | Always  |
-|                                              |            |           |                                                 |         |
-|                                              |            |           | 0x01-0x8F: vehicle manufacturer specific record |         |
-|                                              |            |           |                                                 |         |
-|                                              |            |           | 0x90-0x9F: regulated emissions OBD record       |         |
-|                                              |            |           |                                                 |         |
-|                                              |            |           | 0xA0-0xEF: regulated record                     |         |
-|                                              |            |           |                                                 |         |
-|                                              |            |           | 0xF0-0xFD: reserved                             |         |
-|                                              |            |           |                                                 |         |
-|                                              |            |           | 0xFE: all regulated emissions OBD records       |         |
-|                                              |            |           |                                                 |         |
-|                                              |            |           | 0xFF: all extended data records                 |         |
-+----------------------------------------------+------------+-----------+-------------------------------------------------+---------+
-
-.. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
-  0xFE requests all regulated emissions OBD records.
-  0xFF requests all extended data records for the DTC.
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x16      | reportDTCExtDataRecordByRecordNumber                         |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *DTCExtDataRecordNumber*                         | 8              | 0x00-0xFF | Number of requested DTC Extended Data Record(s)              | Always  |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x00: reserved                                               |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x01-0x8F: vehicle manufacturer specific record              |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x90-0x9F: regulated emissions OBD record                    |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xA0-0xEF: regulated record                                  |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xF0-0xFD: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFE: all regulated emissions OBD records                    |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFF: all extended data records                              |         |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+---------------------------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
-| Name                                              | Bit Length | Value             | Description                                  | Present                                       |
-+===================================================+============+===================+==============================================+===============================================+
-| RSID                                              | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                        |
-+------------------+--------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
-| SubFunction      | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                        |
-|                  |                                |            |                   |                                              |                                               |
-|                  |                                |            |                   | 1 = suppress positive response               |                                               |
-|                  +--------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
-|                  | reportType                     | 7 (b[6-0]) | 0x16              | reportDTCExtDataRecordByRecordNumber         | Always                                        |
-+------------------+--------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
-| DTCExtDataRecordNumber                            | 8          | 0x00-0xEF         | Identification number of DTCExtDataRecord    | Always                                        |
-+------------------+--------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
-| DTC and Status#1 | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTCExtDataRecord is available |
-|                  +--------------------------------+------------+-------------------+----------------------------------------------+                                               |
-|                  | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#1                              |                                               |
-+------------------+--------------------------------+------------+-------------------+----------------------------------------------+                                               |
-| DTCExtDataRecord#1                                | at least 8 |                   | Extended Data #1                             |                                               |
-+---------------------------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
-| ...                                                                                                                                                                               |
-+------------------+--------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
-| DTC and Status#n | DTC                            | 24         | 0x00-0xFF         | DTC#n                                        | If at least n DTCExtDataRecords are available |
-|                  +--------------------------------+------------+-------------------+----------------------------------------------+                                               |
-|                  | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#n                              |                                               |
-+------------------+--------------------------------+------------+-------------------+----------------------------------------------+                                               |
-| DTCExtDataRecord#n                                | at least 8 |                   | Extended Data #n                             |                                               |
-+---------------------------------------------------+------------+-------------------+----------------------------------------------+-----------------------------------------------+
++----------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
+| Name                                                     | Bit Length        | Value             | Description                                                     | Present                                       |
++==========================================================+===================+===================+=================================================================+===============================================+
+| *RSID*                                                   | 8                 | 0x59              | ReadDTCInformation                                              | Always                                        |
++-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
+| *SubFunction*         | *suppressPosRspMsgIndicationBit* | 8  | 1 (b[7])     | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                        |
+|                       +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                                               |
+|                       | *reportType*                     |    | 7 (b[6-0])   | 0x16              | reportDTCExtDataRecordByRecordNumber                            |                                               |
++-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
+| *DTCExtDataRecordNumber*                                 | 8                 | 0x00-0xEF         | Identification number of DTCExtDataRecord                       | Always                                        |
++-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
+| *DTC and DTCStatus#1* | *DTC*                            | 32 | 24 (b[31-8]) | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTCExtDataRecord is available |
+|                       +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                                               |
+|                       | *DTCStatus*                      |    | 8 (b[7-0])   | 0x00-0xFF         | Status of DTC#1                                                 |                                               |
++-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+                                               |
+| *DTCExtDataRecord#1*                                     | multiple of 8     |                   | Extended Data #1                                                |                                               |
++----------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
+| ...                                                                                                                                                                                                                |
++-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
+| *DTC and DTCStatus#n* | *DTC*                            | 32 | 24 (b[31-8]) | 0x00-0xFF         | DTC#n                                                           | If at least n DTCExtDataRecords are available |
+|                       +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                                               |
+|                       | *DTCStatus*                      |    | 8 (b[7-0])   | 0x00-0xFF         | Status of DTC#n                                                 |                                               |
++-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+                                               |
+| *DTCExtDataRecord#n*                                     | multiple of 8     |                   | Extended Data #n                                                |                                               |
++----------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-17:
@@ -1682,58 +1663,57 @@ Positive Response Format
 reportUserDefMemoryDTCByStatusMask (0x17)
 `````````````````````````````````````````
 This sub-function can be used by the client to request the number of DTCs that match a given
-status mask (*DTCStatusMask*) in a selected memory (*MemorySelection*).
+:ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*) in a selected memory (*MemorySelection*).
+
+*MemorySelection* allows reading DTC related information from a specific DTC memory (e.g. one of the sub-systems).
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                             | Present |
-+==============================================+============+===========+=========================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                      | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                   | Always  |
-|             |                                |            |           |                                         |         |
-|             |                                |            |           | 1 = suppress positive response          |         |
-|             +--------------------------------+------------+-----------+-----------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x17      | reportUserDefMemoryDTCByStatusMask      | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
-| DTCStatusMask                                | 8          | 0x00-0xFF | DTC status mask to use for DTC matching | Always  |
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
-| MemorySelection                              | 8          | 0x00-0xFF | Identifies DTC memory                   | Always  |
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
-
-.. note:: :code:`MemorySelection` allows reading DTC related information from a specific DTC memory (e.g. one of
-  the sub-systems).
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x17      | reportUserDefMemoryDTCByStatusMask                           |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *DTCStatusMask*                                  | 8              | 0x00-0xFF | DTC status mask to use for DTCs matching                     | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| *MemorySelection*                                | 8              | 0x00-0xFF | Specifies DTC memory                                         | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                  | Present                                  |
-+=================================================+============+===================+==============================================+==========================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                |                                |            |                   |                                              |                                          |
-|                |                                |            |                   | 1 = suppress positive response               |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x17              | reportUserDefMemoryDTCByStatusMask           | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| MemorySelection                                 | 8          | 0x00-0xFF         | Selected memory                              | Always                                   |
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                       | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTC Status                     | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | ...                                                                                                                                                       |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTC Status                     | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                  |
++========================================================+===================+===================+=================================================================+==========================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *reportType*                     |      | 7 (b[6-0]) | 0x17              | reportUserDefMemoryDTCByStatusMask]                             |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *MemorySelection*                                      | 8                 | 0x00-0xFF         | Echo of *MemorySelection* value from the request                | Always                                   |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCStatusAvailabilityMask*                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC matches the criteria |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | ...                              |      | ...                                                                                                                                         |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs matches the criteria  |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-18:
@@ -1741,88 +1721,89 @@ Positive Response Format
 reportUserDefMemoryDTCSnapshotRecordByDTCNumber (0x18)
 ``````````````````````````````````````````````````````
 This sub-function can be used by the client to request snapshot records (*DTCSnapshotRecordNumber*) for
-a specific DTC (*DTC*) in a selected memory (*MemorySelection*).
+a specific :ref:`DTC <knowledge-base-dtc>` (*DTC*) in a selected memory (*MemorySelection*).
+
+*MemorySelection* allows reading DTC related information from a specific DTC memory (e.g. one of the sub-systems).
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| Name                                         | Bit Length | Value             | Description                                     | Present |
-+==============================================+============+===================+=================================================+=========+
-| SID                                          | 8          | 0x19              | ReadDTCInformation                              | Always  |
-+-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                           | Always  |
-|             |                                |            |                   |                                                 |         |
-|             |                                |            |                   | 1 = suppress positive response                  |         |
-|             +--------------------------------+------------+-------------------+-------------------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x18              | reportUserDefMemoryDTCSnapshotRecordByDTCNumber | Always  |
-+-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| DTC                                          | 24         | 0x000000-0xFFFFFF | DTC number                                      | Always  |
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| DTCSnapshotRecordNumber                      | 8          | 0x00-0xFF         | 0x00: reserved (legislated purposes)            | Always  |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0x01-0xFE: specific snapshot record             |         |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0xFF: all snapshot records                      |         |
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| MemorySelection                              | 8          | 0x00-0xFF         | Identifies DTC memory                           | Always  |
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-
-.. note:: :code:`MemorySelection` allows reading DTC related information from a specific DTC memory (e.g. one of
-  the sub-systems).
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value             | Description                                                  | Present |
++==================================================+================+===================+==============================================================+=========+
+| *SID*                                            | 8              | 0x19              | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-------------------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1           | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |                   |                                                              |         |
+|               |                                  |   |            |                   | 0: response required                                         |         |
+|               |                                  |   |            |                   |                                                              |         |
+|               |                                  |   |            |                   | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-------------------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x18              | reportUserDefMemoryDTCSnapshotRecordByDTCNumber              |         |
++---------------+----------------------------------+---+------------+-------------------+--------------------------------------------------------------+---------+
+| *DTC*                                            | 24             | 0x000000-0xFFFFFF | DTC number                                                   | Always  |
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
+| *DTCSnapshotRecordNumber*                        | 8              | 0x00-0xFF         | Number of requested DTC Snapshot Record(s)                   | Always  |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0x00: reserved (legislated purposes)                         |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0x01-0xFE: specific snapshot record                          |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0xFF: all snapshot records                                   |         |
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
+| *MemorySelection*                                | 8              | 0x00-0xFF         | Specifies DTC memory                                         | Always  |
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                     | Present                                                    |
-+=================================================+============+===================+=================================================+============================================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19)    | Always                                                     |
-+----------------+--------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                           | Always                                                     |
-|                |                                |            |                   |                                                 |                                                            |
-|                |                                |            |                   | 1 = suppress positive response                  |                                                            |
-|                +--------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x18              | reportUserDefMemoryDTCSnapshotRecordByDTCNumber | Always                                                     |
-+----------------+--------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-| MemorySelection                                 | 8          | 0x00-0xFF         | Selected memory                                 | Always                                                     |
-+----------------+--------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | Selected DTC                                    | Always                                                     |
-|                +--------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC                                   | Always                                                     |
-+----------------+--------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-| DTCSnapshotRecordNumber#1                       | 8          | 0x00-0xFF         | Number of DTCSnapshot#1                         | If at least one DTCSnapshotRecord is available for the DTC |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DIDCount#1                                      | 8          | 0x00-0xFF         | Number of DIDs stored in DTCSnapshotRecord#1    |                                                            |
-|                                                 |            |                   | (equals m)                                      |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DID#1_1                                         | 16         | 0x0000-0xFFFF     | DID#1 that is part of DTCSnapshotRecord#1       |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DID#1_1 data                                    | 8 or more  |                   | Data stored under DID#1_1                       |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| ...                                                                                                                                |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DID#1_m                                         | 16         | 0x0000-0xFFFF     | DID#m that is part of DTCSnapshotRecord#1       |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DID#1_m data                                    | 8 or more  |                   | Data stored under DID#1_m                       |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-| ...                                                                                                                                                                                             |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
-| DTCSnapshotRecordNumber#n                       | 8          | 0x00-0xFF         | Number of DTCSnapshot#n                         | If requested for multiple DTCSnapshot records              |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DIDCount#n                                      | 8          | 0x00-0xFF         | Number of DIDs stored in DTCSnapshotRecord#n    | AND                                                        |
-|                                                 |            |                   | (equals k)                                      |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+ at least n DTCSnapshotRecords are available for the DTC    |
-| DID#n_1                                         | 16         | 0x0000-0xFFFF     | DID#1 that is part of DTCSnapshot#n             |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DID#n_1 data                                    | 8 or more  |                   | Data stored under DID#n_1                       |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| ...                                                                                                                                |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DID#n_k                                         | 16         | 0x0000-0xFFFF     | DID#k that is part of DTCSnapshot#n             |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+                                                            |
-| DID#n_k data                                    | 8 or more  |                   | Data stored under DID#n_k                       |                                                            |
-+-------------------------------------------------+------------+-------------------+-------------------------------------------------+------------------------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                                    |
++========================================================+===================+===================+=================================================================+============================================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                                     |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8  | 1 (b[7])     | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                                     |
+|                     +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                                                            |
+|                     | *reportType*                     |    | 7 (b[6-0])   | 0x18              | reportUserDefMemoryDTCSnapshotRecordByDTCNumber                 |                                                            |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+| *MemorySelection*                                      | 8                 | 0x00-0xFF         | Echo of *MemorySelection* value from the request                | Always                                                     |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32 | 24 (b[31-8]) | 0x000000-0xFFFFFF | Considered DTC                                                  | Always                                                     |
+|                     +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+|                     | *DTCStatus*                      |    | 8 (b[7-0])   | 0x00-0xFF         | Current status of the *DTC*                                     | Always                                                     |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+| *DTCSnapshotRecordNumber#1*                            | 8                 | 0x00-0xFF         | Number of DTCSnapshotRecord#1                                   | If at least one DTCSnapshotRecord is available for the DTC |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DIDCount#1*                                           | 8                 | 0x00-0xFF         | Number of DIDs stored in DTCSnapshotRecord#1                    |                                                            |
+|                                                        |                   |                   | (equals m)                                                      |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DID#1_1*                                              | 16                | 0x0000-0xFFFF     | DID#1 that is part of DTCSnapshotRecord#1                       |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DID#1_1 data*                                         | multiple of 8     |                   | Data stored under *DID#1_1*                                     |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| ...                                                                                                                                                              |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DID#1_m*                                              | 16                | 0x0000-0xFFFF     | DID#m that is part of DTCSnapshotRecord#1                       |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DID#1_m data*                                         | multiple of 8     |                   | Data stored under *DID#1_m*                                     |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+| ...                                                                                                                                                                                                                           |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
+| *DTCSnapshotRecordNumber#n*                            | 8                 | 0x00-0xFF         | Number of DTCSnapshotRecord#n                                   | If requested for multiple DTCSnapshotRecords               |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DIDCount#n*                                           | 8                 | 0x00-0xFF         | Number of DIDs stored in DTCSnapshotRecord#n                    | AND                                                        |
+|                                                        |                   |                   | (equals k)                                                      |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+ at least n DTCSnapshotRecords are available for the DTC    |
+| *DID#n_1*                                              | 16                | 0x0000-0xFFFF     | DID#1 that is part of DTCSnapshotRecord#n                       |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DID#n_1 data*                                         | multiple of 8     |                   | Data stored under *DID#n_1*                                     |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| ...                                                                                                                                                              |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DID#n_k*                                              | 16                | 0x0000-0xFFFF     | DID#k that is part of DTCSnapshotRecord#n                       |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                            |
+| *DID#n_k data*                                         | multiple of 8     |                   | Data stored under *DID#n_k*                                     |                                                            |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-19:
@@ -1830,426 +1811,409 @@ Positive Response Format
 reportUserDefMemoryDTCExtDataRecordByDTCNumber (0x19)
 `````````````````````````````````````````````````````
 This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*) for
-a specific DTC (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
+a specific :ref:`DTC <knowledge-base-dtc>` (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
+
+*MemorySelection* allows reading DTC related information from a specific DTC memory (e.g. one of the sub-systems).
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| Name                                         | Bit Length | Value             | Description                                     | Present |
-+==============================================+============+===================+=================================================+=========+
-| SID                                          | 8          | 0x19              | ReadDTCInformation                              | Always  |
-+-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                           | Always  |
-|             |                                |            |                   |                                                 |         |
-|             |                                |            |                   | 1 = suppress positive response                  |         |
-|             +--------------------------------+------------+-------------------+-------------------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x19              | reportUserDefMemoryDTCExtDataRecordByDTCNumber  | Always  |
-+-------------+--------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| DTC                                          | 24         | 0x000000-0xFFFFFF | DTC number                                      | Always  |
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| DTCExtDataRecordNumber                       | 8          | 0x00-0xFF         | 0x00: reserved                                  | Always  |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0x01-0x8F: vehicle manufacturer specific record |         |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0x90-0x9F: regulated emissions OBD record       |         |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0xA0-0xEF: regulated record                     |         |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0xF0-0xFD: reserved                             |         |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0xFE: all regulated emissions OBD records       |         |
-|                                              |            |                   |                                                 |         |
-|                                              |            |                   | 0xFF: all extended data records                 |         |
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-| MemorySelection                              | 8          | 0x00-0xFF         | Specifies DTC memory                            | Always  |
-+----------------------------------------------+------------+-------------------+-------------------------------------------------+---------+
-
-.. note:: *DTCExtDataRecordNumber* (0x01–0xEF) selects a single extended data record.
-  0xFE requests all regulated emissions OBD records.
-  0xFF requests all extended data records for the DTC.
-
-.. note:: :code:`MemorySelection` allows reading DTC related information from a specific DTC memory (e.g. one of
-  the sub-systems).
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value             | Description                                                  | Present |
++==================================================+================+===================+==============================================================+=========+
+| *SID*                                            | 8              | 0x19              | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-------------------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1           | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |                   |                                                              |         |
+|               |                                  |   |            |                   | 0: response required                                         |         |
+|               |                                  |   |            |                   |                                                              |         |
+|               |                                  |   |            |                   | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-------------------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x19              | reportUserDefMemoryDTCExtDataRecordByDTCNumber               |         |
++---------------+----------------------------------+---+------------+-------------------+--------------------------------------------------------------+---------+
+| *DTC*                                            | 24             | 0x000000-0xFFFFFF | DTC for which extended data are requested                    | Always  |
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
+| *DTCExtDataRecordNumber*                         | 8              | 0x00-0xFF         | Number of requested DTC Extended Data Record(s)              | Always  |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0x00: reserved                                               |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0x01-0x8F: vehicle manufacturer specific record              |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0x90-0x9F: regulated emissions OBD record                    |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0xA0-0xEF: regulated record                                  |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0xF0-0xFD: reserved                                          |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0xFE: all regulated emissions OBD records                    |         |
+|                                                  |                |                   |                                                              |         |
+|                                                  |                |                   | 0xFF: all extended data records                              |         |
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
+| *MemorySelection*                                | 8              | 0x00-0xFF         | Specifies DTC memory                                         | Always  |
++--------------------------------------------------+----------------+-------------------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                    | Present                                       |
-+=================================================+============+===================+================================================+===============================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19)   | Always                                        |
-+----------------+--------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                          | Always                                        |
-|                |                                |            |                   |                                                |                                               |
-|                |                                |            |                   | 1 = suppress positive response                 |                                               |
-|                +--------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x19              | reportUserDefMemoryDTCExtDataRecordByDTCNumber | Always                                        |
-+----------------+--------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| MemorySelection                                 | 8          | 0x00-0xFF         | Selected memory                                | Always                                        |
-+----------------+--------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | Considered DTC                                 | Always                                        |
-|                +--------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC                                  | Always                                        |
-+----------------+--------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| DTCExtDataRecordNumber#1                        | 8          | 0x00-0xFF         | Number of requested DTCExtDataRecord(s)        | If at least one DTCExtDataRecord is available |
-+-------------------------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| DTCExtDataRecord#1                              | at least 8 |                   | Extended Data #1                               | If at least one DTCExtDataRecord is available |
-+-------------------------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| ...                                                                                                                                                                               |
-+-------------------------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
-| DTCExtDataRecord#n                              | at least 8 |                   | Extended Data #n                               | If at least n DTCExtDataRecords are available |
-+-------------------------------------------------+------------+-------------------+------------------------------------------------+-----------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                                   |
++========================================================+===================+===================+=================================================================+===========================================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                                    |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8  | 1 (b[7])     | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                                    |
+|                     +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                                                           |
+|                     | *reportType*                     |    | 7 (b[6-0])   | 0x19              | reportUserDefMemoryDTCExtDataRecordByDTCNumber                  |                                                           |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+| *MemorySelection*                                      | 8                 | 0x00-0xFF         | Echo of *MemorySelection* value from the request                | Always                                                    |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32 | 24 (b[31-8]) | 0x000000-0xFFFFFF | Considered DTC                                                  | Always                                                    |
+|                     +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+|                     | *DTCStatus*                      |    | 8 (b[7-0])   | 0x00-0xFF         | Current status of the *DTC*                                     | Always                                                    |
++---------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+| *DTCExtDataRecordNumber#1*                             | 8                 | 0x00-0xFF         | Number of DTCExtDataRecord#1                                    | If at least one DTCExtDataRecord is available for the DTC |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+                                                           |
+| *DTCExtDataRecord#1*                                   | multiple of 8     |                   | Data stored in DTCExtDataRecord#1                               |                                                           |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+| ...                                                                                                                                                                                                                          |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
+| *DTCExtDataRecordNumber#n*                             | 8                 | 0x00-0xFF         | Number of DTCExtDataRecord#n                                    | If requested for multiple DTCExtDataRecords               |
+|                                                        |                   |                   |                                                                 |                                                           |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+ AND                                                       |
+| *DTCExtDataRecord#n*                                   | multiple of 8     |                   | Data stored in DTCExtDataRecord#n                               |                                                           |
+|                                                        |                   |                   |                                                                 | at least n DTCExtDataRecords are available for the DTC    |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-1A:
 
 reportSupportedDTCExtDataRecord (0x1A)
 ``````````````````````````````````````
-This sub-function can be used by the client to request the list of DTCs that support a given
-extended data record number (*DTCExtDataRecordNumber*).
+This sub-function can be used by the client to request the list of :ref:`DTCs <knowledge-base-dtc>` that support
+a given extended data record number (*DTCExtDataRecordNumber*).
 
 .. warning:: Introduced in ISO 14229-1:2020
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+---------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                     | Present |
-+==============================================+============+===========+=================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation              | Always  |
-+-------------+--------------------------------+------------+-----------+---------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required           | Always  |
-|             |                                |            |           |                                 |         |
-|             |                                |            |           | 1 = suppress positive response  |         |
-|             +--------------------------------+------------+-----------+---------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x1A      | reportSupportedDTCExtDataRecord | Always  |
-+-------------+--------------------------------+------------+-----------+---------------------------------+---------+
-| DTCExtDataRecordNumber                       | 8          | 0x00-0xFD | Extended data record number     | Always  |
-+----------------------------------------------+------------+-----------+---------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x1A      | reportSupportedDTCExtDataRecord                              |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *DTCExtDataRecordNumber*                         | 8              | 0x00-0xFD | Number of requested DTC Extended Data Record                 | Always  |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x00: reserved                                               |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x01-0x8F: vehicle manufacturer specific record              |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x90-0x9F: regulated emissions OBD record                    |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xA0-0xEF: regulated record                                  |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xF0-0xFD: reserved                                          |         |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                  | Present                                                    |
-+=================================================+============+===================+==============================================+============================================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                                     |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                                     |
-|                |                                |            |                   |                                              |                                                            |
-|                |                                |            |                   | 1 = suppress positive response               |                                                            |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x1A              | reportSupportedDTCExtDataRecord              | Always                                                     |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-| DTCStatusAvailabilityMask                       | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                                     |
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-| DTCExtDataRecordNumber                          | 8          | 0x01-0xFD         | Identification number of DTCExtDataRecord    | If at least one DTC supports the selected DTCExtDataRecord |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC supports the selected DTCExtDataRecord |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                                            |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#1                              |                                                            |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-|                | ...                                                                                                                                                                         |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
-|                | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs support the selected DTCExtDataRecord   |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                                            |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#n                              |                                                            |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                    |
++========================================================+===================+===================+=================================================================+============================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                     |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                     |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                            |
+|                     | *reportType*                     |      | 7 (b[6-0]) | 0x1A              | reportSupportedDTCExtDataRecord                                 |                                            |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
+| *DTCStatusAvailabilityMask*                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                     |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
+| *DTCExtDataRecordNumber*                               | 8                 | 0x00-0xFD         | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                     |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC supports ExtDataRecord |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                            |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                            |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
+|                     | ...                              |      | ...                                                                                                                                           |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
+|                     | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs supports ExtDataRecord  |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                            |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                            |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-42:
 
 reportWWHOBDDTCByMaskRecord (0x42)
 ``````````````````````````````````
-This sub-function can be used by the client to request WWH-OBD DTCs and their associated status and
-severity information, filtered by a status mask (*DTCStatusMask*) and a severity mask (*DTCSeverityMaskRecord*).
+This sub-function can be used by the client to request WWH-OBD :ref:`DTCs <knowledge-base-dtc-status>` and
+their associated :ref:`status <knowledge-base-dtc-status>` and :ref:`severity information <knowledge-base-dtc-severity>`,
+filtered by a :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*) and
+a :ref:`severity <knowledge-base-dtc-severity>` mask (*DTCSeverityMaskRecord*).
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                             | Present |
-+==============================================+============+===========+=========================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                      | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                   | Always  |
-|             |                                |            |           |                                         |         |
-|             |                                |            |           | 1 = suppress positive response          |         |
-|             +--------------------------------+------------+-----------+-----------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x42      | reportWWHOBDDTCByMaskRecord             | Always  |
-+-------------+--------------------------------+------------+-----------+-----------------------------------------+---------+
-| FunctionalGroupIdentifier                    | 8          | 0x00-0xFF | 0x00-0x32: reserved                     | Always  |
-|                                              |            |           |                                         |         |
-|                                              |            |           | 0x33: emissions-system group            |         |
-|                                              |            |           |                                         |         |
-|                                              |            |           | 0x34-0xCF: reserved                     |         |
-|                                              |            |           |                                         |         |
-|                                              |            |           | 0xD0: safety-system group               |         |
-|                                              |            |           |                                         |         |
-|                                              |            |           | 0xD1-0xDF: legislative system group     |         |
-|                                              |            |           |                                         |         |
-|                                              |            |           | 0xE0-0xFD: reserved                     |         |
-|                                              |            |           |                                         |         |
-|                                              |            |           | 0xFE: VOBD system                       |         |
-|                                              |            |           |                                         |         |
-|                                              |            |           | 0xFF: reserved                          |         |
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
-| DTCSeverityMaskRecord                        | 8          | 0x00-0xFF | Severity mask to use for DTC matching   | Always  |
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
-| DTCStatusMask                                | 8          | 0x00-0xFF | DTC status mask to use for DTC matching | Always  |
-+----------------------------------------------+------------+-----------+-----------------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x42      | reportWWHOBDDTCByMaskRecord                                  |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *FunctionalGroupIdentifier*                      | 8              | 0x00-0xFF | Functional group to use for DTC matching                     | Always  |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x00-0x32: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x33: emissions-system group                                 |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x34-0xCF: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xD0: safety-system group                                    |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xD1-0xDF: legislative system group                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xE0-0xFD: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFE: VOBD system                                            |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFF: reserved                                               |         |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| *DTCSeverityMaskRecord*                          | 8              | 0x00-0xFF | DTC severity mask to use for DTC matching                    | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| *DTCStatusMask*                                  | 8              | 0x00-0xFF | DTC status mask to use for DTC matching                      | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+---------------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                                          | Bit Length | Value             | Description                                  | Present                                  |
-+===============================================================+============+===================+==============================================+==========================================+
-| RSID                                                          | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction                  | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                              |                                |            |                   |                                              |                                          |
-|                              |                                |            |                   | 1 = suppress positive response               |                                          |
-|                              +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                              | reportType                     | 7 (b[6-0]) | 0x42              | reportWWHOBDDTCByMaskRecord                  | Always                                   |
-+------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| FunctionalGroupIdentifier                                     | 8          | 0x00-0xFF         | 0x00-0x32: reserved                          | Always                                   |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0x33: emissions-system group                 |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0x34-0xCF: reserved                          |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0xD0: safety-system group                    |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0xD1-0xDF: legislative system group          |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0xE0-0xFD: reserved                          |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0xFE: VOBD system                            |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0xFF: reserved                               |                                          |
-+---------------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                                     | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+---------------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCSeverityAvailabilityMask                                   | 8          | 0x00-0xFF         | DTC Severity bits supported by the ECU       | Always                                   |
-+---------------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCFormatIdentifier                                           | 8          | 0x00-0xFF         | 0x00: SAE J2012-DA DTC Format 00             | Always                                   |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0x01: ISO 14229-1 DTC Format                 |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0x02: SAE J1939-73 DTC Format                |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0x03: ISO 11992-4 DTC Format                 |                                          |
-|                                                               |            |                   |                                              |                                          |
-|                                                               |            |                   | 0x04: SAE J2012-DA DTC Format 04             |                                          |
-+------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Severity, DTC and DTC Status | DTCSeverity                    | 8          | 0x00-0xFF         | Severity of DTC#1                            | If at least one DTC matches the criteria |
-|                              +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                              | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        |                                          |
-|                              +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                              | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
-|                              +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                              | ...                                                                                                                                                       |
-|                              +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                              | DTCSeverity                    | 8          | 0x00-0xFF         | Severity of DTC#n                            | If at least n DTCs matches the criteria  |
-|                              +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                              | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        |                                          |
-|                              +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                              | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
-+------------------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
++---------------------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| Name                                                                | Bit Length        | Value             | Description                                                     | Present                                  |
++=====================================================================+===================+===================+=================================================================+==========================================+
+| *RSID*                                                              | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
++----------------------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *SubFunction*                    | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
+|                                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                                  | *reportType*                     |      | 7 (b[6-0]) | 0x42              | reportWWHOBDDTCByMaskRecord                                     |                                          |
++----------------------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *FunctionalGroupIdentifier*                                         | 8                 | 0x00-0xFF         | Echo of *FunctionalGroupIdentifier* value from the request      | Always                                   |
++---------------------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCStatusAvailabilityMask*                                         | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
++---------------------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCSeverityAvailabilityMask*                                       | 8                 | 0x00-0xFF         | DTC Severity bits supported by the ECU                          | Always                                   |
++---------------------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCFormatIdentifier*                                               | 8                 | 0x00-0xFF         | DTC Format used by the server                                   | Always                                   |
+|                                                                     |                   |                   |                                                                 |                                          |
+|                                                                     |                   |                   | 0x00: SAE J2012-DA DTC Format 00                                |                                          |
+|                                                                     |                   |                   |                                                                 |                                          |
+|                                                                     |                   |                   | 0x01: ISO 14229-1 DTC Format                                    |                                          |
+|                                                                     |                   |                   |                                                                 |                                          |
+|                                                                     |                   |                   | 0x02: SAE J1939-73 DTC Format                                   |                                          |
+|                                                                     |                   |                   |                                                                 |                                          |
+|                                                                     |                   |                   | 0x03: ISO 11992-4 DTC Format                                    |                                          |
+|                                                                     |                   |                   |                                                                 |                                          |
+|                                                                     |                   |                   | 0x04: SAE J2012-DA DTC Format 04                                |                                          |
++----------------------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCSeverity, DTC and DTCStatus* | *DTCSeverity*                    | 40*n | 8          | 0x00-0xFF         | Severity of DTC#1                                               | If at least one DTC matches the criteria |
+|                                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                                  | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#1                                                           |                                          |
+|                                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                                  | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
+|                                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                                  | ...                              |      | ...                                                                                                                                         |
+|                                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                                  | *DTCSeverity*                    |      | 8          | 0x00-0xFF         | Severity of DTC#n                                               | If at least n DTCs matches the criteria  |
+|                                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                                  | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           |                                          |
+|                                  +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                                  | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
++----------------------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-55:
 
 reportWWHOBDDTCWithPermanentStatus (0x55)
 `````````````````````````````````````````
-This sub-function can be used by the client to request WWH-OBD DTCs with permanent status.
+This sub-function can be used by the client to request WWH-OBD :ref:`DTCs <knowledge-base-dtc>` with permanent status.
 
 
 Request Format
 ''''''''''''''
-+----------------------------------------------+------------+-----------+-------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                         | Present |
-+==============================================+============+===========+=====================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                  | Always  |
-+-------------+--------------------------------+------------+-----------+-------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required               | Always  |
-|             |                                |            |           |                                     |         |
-|             |                                |            |           | 1 = suppress positive response      |         |
-|             +--------------------------------+------------+-----------+-------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x55      | reportWWHOBDDTCWithPermanentStatus  | Always  |
-+-------------+--------------------------------+------------+-----------+-------------------------------------+---------+
-| FunctionalGroupIdentifier                    | 8          | 0x00-0xFF | 0x00-0x32: reserved                 | Always  |
-|                                              |            |           |                                     |         |
-|                                              |            |           | 0x33: emissions-system group        |         |
-|                                              |            |           |                                     |         |
-|                                              |            |           | 0x34-0xCF: reserved                 |         |
-|                                              |            |           |                                     |         |
-|                                              |            |           | 0xD0: safety-system group           |         |
-|                                              |            |           |                                     |         |
-|                                              |            |           | 0xD1-0xDF: legislative system group |         |
-|                                              |            |           |                                     |         |
-|                                              |            |           | 0xE0-0xFD: reserved                 |         |
-|                                              |            |           |                                     |         |
-|                                              |            |           | 0xFE: VOBD system                   |         |
-|                                              |            |           |                                     |         |
-|                                              |            |           | 0xFF: reserved                      |         |
-+----------------------------------------------+------------+-----------+-------------------------------------+---------+
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x55      | reportWWHOBDDTCWithPermanentStatus                           |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *FunctionalGroupIdentifier*                      | 8              | 0x00-0xFF | Functional group to use for DTC matching                     | Always  |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x00-0x32: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x33: emissions-system group                                 |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x34-0xCF: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xD0: safety-system group                                    |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xD1-0xDF: legislative system group                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xE0-0xFD: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFE: VOBD system                                            |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFF: reserved                                               |         |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
 
 
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                                  | Bit Length | Value             | Description                                  | Present                                  |
-+=======================================================+============+===================+==============================================+==========================================+
-| RSID                                                  | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction          | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                      |                                |            |                   |                                              |                                          |
-|                      |                                |            |                   | 1 = suppress positive response               |                                          |
-|                      +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                      | reportType                     | 7 (b[6-0]) | 0x55              | reportWWHOBDDTCWithPermanentStatus           | Always                                   |
-+----------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| FunctionalGroupIdentifier                             | 8          | 0x00-0xFF         | 0x00-0x32: reserved                          | Always                                   |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0x33: emissions-system group                 |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0x34-0xCF: reserved                          |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0xD0: safety-system group                    |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0xD1-0xDF: legislative system group          |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0xE0-0xFD: reserved                          |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0xFE: VOBD system                            |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0xFF: reserved                               |                                          |
-+-------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                             | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+-------------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCFormatIdentifier                                   | 8          | 0x00-0xFF         | 0x00: SAE J2012-DA DTC Format 00             | Always                                   |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0x01: ISO 14229-1 DTC Format                 |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0x02: SAE J1939-73 DTC Format                |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0x03: ISO 11992-4 DTC Format                 |                                          |
-|                                                       |            |                   |                                              |                                          |
-|                                                       |            |                   | 0x04: SAE J2012-DA DTC Format 04             |                                          |
-+----------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTC and Status       | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                      +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                      | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
-|                      +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                      | ...                                                                                                                                                       |
-|                      +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                      | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                      +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                      | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
-+----------------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                  |
++========================================================+===================+===================+=================================================================+==========================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *reportType*                     |      | 7 (b[6-0]) | 0x55              | reportWWHOBDDTCWithPermanentStatus                              |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *FunctionalGroupIdentifier*                            | 8                 | 0x00-0xFF         | Echo of *FunctionalGroupIdentifier* value from the request      | Always                                   |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCStatusAvailabilityMask*                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCFormatIdentifier*                                  | 8                 | 0x00-0xFF         | DTC Format used by the server                                   | Always                                   |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x00: SAE J2012-DA DTC Format 00                                |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x01: ISO 14229-1 DTC Format                                    |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x02: SAE J1939-73 DTC Format                                   |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x03: ISO 11992-4 DTC Format                                    |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x04: SAE J2012-DA DTC Format 04                                |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC matches the criteria |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | ...                              |      | ...                                                                                                                                         |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs matches the criteria  |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-dtc-information-56:
 
 reportDTCInformationByDTCReadinessGroupIdentifier (0x56)
 ````````````````````````````````````````````````````````
-This sub-function can be used by the client to request OBD DTCs that belong to a given
-readiness group (*DTCReadinessGroupIdentifier*).
+This sub-function can be used by the client to request OBD :ref:`DTCs <knowledge-base-dtc>` that belong to
+a given :ref:`readiness group <knowledge-base-dtc-readiness-group>` (*DTCReadinessGroupIdentifier*).
 
 .. warning:: Introduced in ISO 14229-1:2020
-
-
-Request Format
-''''''''''''''
-+----------------------------------------------+------------+-----------+---------------------------------------------------+---------+
-| Name                                         | Bit Length | Value     | Description                                       | Present |
-+==============================================+============+===========+===================================================+=========+
-| SID                                          | 8          | 0x19      | ReadDTCInformation                                | Always  |
-+-------------+--------------------------------+------------+-----------+---------------------------------------------------+---------+
-| SubFunction | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1   | 0 = response required                             | Always  |
-|             |                                |            |           |                                                   |         |
-|             |                                |            |           | 1 = suppress positive response                    |         |
-|             +--------------------------------+------------+-----------+---------------------------------------------------+---------+
-|             | reportType                     | 7 (b[6-0]) | 0x56      | reportDTCInformationByDTCReadinessGroupIdentifier | Always  |
-+-------------+--------------------------------+------------+-----------+---------------------------------------------------+---------+
-| FunctionalGroupIdentifier                    | 8          | 0x00-0xFF | 0x00-0x32: reserved                               | Always  |
-|                                              |            |           |                                                   |         |
-|                                              |            |           | 0x33: emissions-system group                      |         |
-|                                              |            |           |                                                   |         |
-|                                              |            |           | 0x34-0xCF: reserved                               |         |
-|                                              |            |           |                                                   |         |
-|                                              |            |           | 0xD0: safety-system group                         |         |
-|                                              |            |           |                                                   |         |
-|                                              |            |           | 0xD1-0xDF: legislative system group               |         |
-|                                              |            |           |                                                   |         |
-|                                              |            |           | 0xE0-0xFD: reserved                               |         |
-|                                              |            |           |                                                   |         |
-|                                              |            |           | 0xFE: VOBD system                                 |         |
-|                                              |            |           |                                                   |         |
-|                                              |            |           | 0xFF: reserved                                    |         |
-+----------------------------------------------+------------+-----------+---------------------------------------------------+---------+
-| DTCReadinessGroupIdentifier                  | 8          | 0x00-0xFF | Specifies DTC readiness group                     | Always  |
-+----------------------------------------------+------------+-----------+---------------------------------------------------+---------+
 
 .. note:: `SAE J1979-DA <https://www.sae.org/standards/j1979da_202203-j1979-da-digital-annex-e-e-diagnostic-test-modes>`_
   defines values mapping for *DTCReadinessGroupIdentifier* parameter.
 
 
+Request Format
+''''''''''''''
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| Name                                             | Bit Length     | Value     | Description                                                  | Present |
++==================================================+================+===========+==============================================================+=========+
+| *SID*                                            | 8              | 0x19      | ReadDTCInformation                                           | Always  |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *SubFunction* | *suppressPosRspMsgIndicationBit* | 8 | 1 (b[7])   | 0x0-0x1   | Information for the server whether to send positive response | Always  |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 0: response required                                         |         |
+|               |                                  |   |            |           |                                                              |         |
+|               |                                  |   |            |           | 1: suppress positive response                                |         |
+|               +----------------------------------+   +------------+-----------+--------------------------------------------------------------+         |
+|               | *reportType*                     |   | 7 (b[6-0]) | 0x56      | reportDTCInformationByDTCReadinessGroupIdentifier            |         |
++---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
+| *FunctionalGroupIdentifier*                      | 8              | 0x00-0xFF | Functional group to use for DTC matching                     | Always  |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x00-0x32: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x33: emissions-system group                                 |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0x34-0xCF: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xD0: safety-system group                                    |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xD1-0xDF: legislative system group                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xE0-0xFD: reserved                                          |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFE: VOBD system                                            |         |
+|                                                  |                |           |                                                              |         |
+|                                                  |                |           | 0xFF: reserved                                               |         |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+| *DTCReadinessGroupIdentifier*                    | 8              | 0x00-0xFF | Specifies DTC readiness group                                | Always  |
++--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
+
+
 Positive Response Format
 ''''''''''''''''''''''''
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| Name                                            | Bit Length | Value             | Description                                  | Present                                  |
-+=================================================+============+===================+==============================================+==========================================+
-| RSID                                            | 8          | 0x59              | Positive Response: ReadDTCInformation (0x19) | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| SubFunction    | suppressPosRspMsgIndicationBit | 1 (b[7])   | 0x0-0x1           | 0 = response required                        | Always                                   |
-|                |                                |            |                   |                                              |                                          |
-|                |                                |            |                   | 1 = suppress positive response               |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | reportType                     | 7 (b[6-0]) | 0x56              | reportDTCByReadinessGroupIdentifier          | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| FunctionalGroupIdentifier                       | 8          | 0x00-0xFF         | 0x00-0x32: reserved                          | Always                                   |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0x33: emissions-system group                 |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0x34-0xCF: reserved                          |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0xD0: safety-system group                    |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0xD1-0xDF: legislative system group          |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0xE0-0xFD: reserved                          |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0xFE: VOBD system                            |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0xFF: reserved                               |                                          |
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCStatusAvailabilityMask                       | 8          | 0x00-0xFF         | DTC Status bits supported by the ECU         | Always                                   |
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCFormatIdentifier                             | 8          | 0x00-0xFF         | 0x00: SAE J2012-DA DTC Format 00             | Always                                   |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0x01: ISO 14229-1 DTC Format                 |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0x02: SAE J1939-73 DTC Format                |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0x03: ISO 11992-4 DTC Format                 |                                          |
-|                                                 |            |                   |                                              |                                          |
-|                                                 |            |                   | 0x04: SAE J2012-DA DTC Format 04             |                                          |
-+-------------------------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTCReadinessGroupIdentifier                     | 8          | 0x00-0xFF         | Selected readiness group                     | Always                                   |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-| DTC and Status | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#1                                        | If at least one DTC matches the criteria |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#1                              |                                          |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | ...                                                                                                                                                       |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
-|                | DTC                            | 24         | 0x000000-0xFFFFFF | DTC#n                                        | If at least n DTCs matches the criteria  |
-|                +--------------------------------+------------+-------------------+----------------------------------------------+                                          |
-|                | DTCStatus                      | 8          | 0x00-0xFF         | Status of DTC#n                              |                                          |
-+----------------+--------------------------------+------------+-------------------+----------------------------------------------+------------------------------------------+
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| Name                                                   | Bit Length        | Value             | Description                                                     | Present                                  |
++========================================================+===================+===================+=================================================================+==========================================+
+| *RSID*                                                 | 8                 | 0x59              | ReadDTCInformation                                              | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8    | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *reportType*                     |      | 7 (b[6-0]) | 0x56              | reportDTCInformationByDTCReadinessGroupIdentifier               |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *FunctionalGroupIdentifier*                            | 8                 | 0x00-0xFF         | Echo of *FunctionalGroupIdentifier* value from the request      | Always                                   |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCStatusAvailabilityMask*                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                   |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCFormatIdentifier*                                  | 8                 | 0x00-0xFF         | DTC Format used by the server                                   | Always                                   |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x00: SAE J2012-DA DTC Format 00                                |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x01: ISO 14229-1 DTC Format                                    |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x02: SAE J1939-73 DTC Format                                   |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x03: ISO 11992-4 DTC Format                                    |                                          |
+|                                                        |                   |                   |                                                                 |                                          |
+|                                                        |                   |                   | 0x04: SAE J2012-DA DTC Format 04                                |                                          |
++--------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTCReadinessGroupIdentifier*                          | 8                 | 0x00-0xFF         | Echo of *DTCReadinessGroupIdentifier* value from the request    | Always                                   |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+| *DTC and DTCStatus* | *DTC*                            | 32*n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC matches the criteria |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#1                                                 |                                          |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | ...                              |      | ...                                                                                                                                         |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
+|                     | *DTC*                            |      | 24         | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCs matches the criteria  |
+|                     +----------------------------------+      +------------+-------------------+-----------------------------------------------------------------+                                          |
+|                     | *DTCStatus*                      |      | 8          | 0x00-0xFF         | Status of DTC#n                                                 |                                          |
++---------------------+----------------------------------+------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 
 
 .. _knowledge-base-service-read-data-by-identifier:

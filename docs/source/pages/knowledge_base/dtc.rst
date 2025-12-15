@@ -12,8 +12,8 @@ Each DTC corresponds to one distinct diagnostic condition (for example, *“Batt
   - https://www.freeautomechanic.com/diagnostictroblecodes.html
 
 
-DTC Formats
------------
+DTC Presentation Formats
+------------------------
 Historically, DTCs were 2 bytes (16 bits) long.
 Modern diagnostic protocols defined by ISO 14229 (UDS) and SAE J2012 use 3-byte (24-bit) DTCs,
 which are now the industry standard.
