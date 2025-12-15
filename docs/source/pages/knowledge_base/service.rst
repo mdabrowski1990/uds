@@ -379,7 +379,7 @@ ISO 14229-1 defines the following DTC report types (values of the *reportType* p
 
 reportNumberOfDTCByStatusMask (0x01)
 ````````````````````````````````````
-This sub-function allows the client to request the number of stored :ref:`DTCs <knowledge-base-dtc>`` that match
+This sub-function allows the client to request the number of stored :ref:`DTCs <knowledge-base-dtc>` that match
 a specific :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 It is typically used as a lightweight mechanism to determine how many DTCs fulfill a given diagnostic condition without
 retrieving the DTC values themselves.
@@ -787,7 +787,7 @@ reportNumberOfDTCBySeverityMaskRecord (0x07)
 ````````````````````````````````````````````
 This sub-function can be used by the client to request the number of :ref:`DTCs <knowledge-base-dtc>` that match
 a given :ref:`severity <knowledge-base-dtc-severity>` mask (*DTCSeverityMask*)
-and :ref:`status <knowledge-base-dtc-status>`` mask (*DTCStatusMask*).
+and :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 
 
 Request Format
@@ -844,9 +844,9 @@ Positive Response Format
 
 reportDTCBySeverityMaskRecord (0x08)
 ````````````````````````````````````
-This sub-function can be used by the client to request all :ref:`DTCs <knowledge-base-dtc>`` that match
+This sub-function can be used by the client to request all :ref:`DTCs <knowledge-base-dtc>` that match
 a given :ref:`severity <knowledge-base-dtc-severity>` mask (*DTCSeverityMask*)
-and :ref:`status <knowledge-base-dtc-status>`` mask (*DTCStatusMask*).
+and :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
 
 
 Request Format
@@ -2269,30 +2269,30 @@ ReadMemoryByAddress service allows the client to request server's memory data st
 
 Request Format
 ``````````````
-+--------------------------------------------------------+-----------------------+---------+------------------------------------------+---------+
-| Name                                                   | Bit Length            | Value   | Description                              | Present |
-+========================================================+=======================+=========+==========================================+=========+
-| SID                                                    | 8                     | 0x23    | ReadMemoryByAddress                      | Always  |
-+----------------------------------+---------------------+-----------------------+---------+------------------------------------------+---------+
-| addressAndLengthFormatIdentifier | memorySizeLength    | 4 (b[7-4])            | 0x1-0xF | Number of bytes to use for memorySize    | Always  |
-|                                  +---------------------+-----------------------+---------+------------------------------------------+         |
-|                                  | memoryAddressLength | 4 (b[3-0])            | 0x1-0xF | Number of bytes to use for memoryAddress |         |
-+----------------------------------+---------------------+-----------------------+---------+------------------------------------------+---------+
-| memoryAddress                                          | 8*memoryAddressLength |         | Starting address in the server's memory  | Always  |
-+--------------------------------------------------------+-----------------------+---------+------------------------------------------+---------+
-| memorySize                                             | 8*memorySizeLength    |         | Number of bytes to read                  | Always  |
-+--------------------------------------------------------+-----------------------+---------+------------------------------------------+---------+
++------------------------------------------------------------+--------------------------+---------+--------------------------------------------+---------+
+| Name                                                       | Bit Length               | Value   | Description                                | Present |
++============================================================+==========================+=========+============================================+=========+
+| *SID*                                                      | 8                        | 0x23    | ReadMemoryByAddress                        | Always  |
++------------------------------------+-----------------------+--------+-----------------+---------+--------------------------------------------+---------+
+| *addressAndLengthFormatIdentifier* | *memorySizeLength*    | 8      | 4 (b[7-4])      | 0x1-0xF | Number of bytes to use for *memorySize*    | Always  |
+|                                    +-----------------------+        +-----------------+---------+--------------------------------------------+         |
+|                                    | *memoryAddressLength* |        | 4 (b[3-0])      | 0x1-0xF | Number of bytes to use for *memoryAddress* |         |
++------------------------------------+-----------------------+--------+-----------------+---------+--------------------------------------------+---------+
+| *memoryAddress*                                            | 8\**memoryAddressLength* |         | Starting address in the server's memory    | Always  |
++------------------------------------------------------------+--------------------------+---------+--------------------------------------------+---------+
+| *memorySize*                                               | 8\**memorySizeLength*    |         | Number of bytes to read                    | Always  |
++------------------------------------------------------------+--------------------------+---------+--------------------------------------------+---------+
 
 
 Positive Response Format
 ````````````````````````
-+------+--------------+-------+-----------------------------------------------+---------+
-| Name | Bit Length   | Value | Description                                   | Present |
-+======+==============+=======+===============================================+=========+
-| RSID | 8            | 0x63  | Positive Response: ReadMemoryByAddress (0x23) | Always  |
-+------+--------------+-------+-----------------------------------------------+---------+
-| data | 8*memorySize |       | Data read from server's memory                | Always  |
-+------+--------------+-------+-----------------------------------------------+---------+
++--------+-----------------+-------+--------------------------------+---------+
+| Name   | Bit Length      | Value | Description                    | Present |
++========+=================+=======+================================+=========+
+| *RSID* | 8               | 0x63  | ReadMemoryByAddress            | Always  |
++--------+-----------------+-------+--------------------------------+---------+
+| *data* | 8\**memorySize* |       | Data read from server's memory | Always  |
++--------+-----------------+-------+--------------------------------+---------+
 
 
 .. _knowledge-base-service-read-scaling-data-by-identifier:
