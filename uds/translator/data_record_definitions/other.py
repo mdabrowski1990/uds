@@ -964,40 +964,42 @@ UNIT_OR_FORMAT = MappingDataRecord(name="unit/format",
                                              "- date and time",
                                    })
 
-SIGNAL_ACCESS = MappingDataRecord(
-    name="signalAccess",
-    length=2,
-    values_mapping={
-        0x0: "Internal signal",  # not available in ECU connector
-        0x1: "Low side switch (2 states)",  # Pull-down resistor input type
-        0x2: "High side switch (2 states)",  # Pull-up resistor input type
-        0x3: "Low side and high side switch (2 states)",  # Pull-up and pull-down resistor input type
-    })
-SIGNAL_TYPE = MappingDataRecord(name="signalType",
-                                length=1,
-                                values_mapping={
-                                    0x0: "Input signal",
-                                    0x1: "Output signal",
-                                })
-SIGNAL = MappingDataRecord(name="signal",
-                           length=2,
-                           values_mapping={
-                               0x0: "Signal at low level (ground)",
-                               0x1: "Signal at middle level (between ground and +)",
-                               0x2: "Signal at high level (+)",
-                           })
-STATE = MappingDataRecord(name="state",
-                          length=3,
-                          values_mapping={
-                              0x0: "Not Active",
-                              0x1: "Active, function 1",
-                              0x2: "Error detected",
-                              0x3: "Not available",
-                              0x4: "Active, function 2",
-                          })
+STATE_AND_CONNECTION_TYPE_TYPE = MappingDataRecord(name="type",
+                                                   length=2,
+                                                   values_mapping={
+                                                       0x0: "Internal signal",
+                                                       0x1: "2 states (low by default)",
+                                                       0x2: "2 states (high by default)",
+                                                       0x3: "3 states",
+                                                   })
+STATE_AND_CONNECTION_TYPE_DIRECTION = MappingDataRecord(name="direction",
+                                                        length=1,
+                                                        values_mapping={
+                                                            0x0: "Input signal",
+                                                            0x1: "Output signal",
+                                                        })
+STATE_AND_CONNECTION_TYPE_LEVEL = MappingDataRecord(name="level",
+                                                    length=2,
+                                                    values_mapping={
+                                                        0x0: "Signal at low level (ground)",
+                                                        0x1: "Signal at middle level (between ground and +)",
+                                                        0x2: "Signal at high level (+)",
+                                                    })
+STATE_AND_CONNECTION_TYPE_STATE = MappingDataRecord(name="state",
+                                                    length=3,
+                                                    values_mapping={
+                                                        0x0: "Not Active",
+                                                        0x1: "Active, function 1",
+                                                        0x2: "Error detected",
+                                                        0x3: "Not available",
+                                                        0x4: "Active, function 2",
+                                                    })
 STATE_AND_CONNECTION_TYPE = RawDataRecord(name="stateAndConnectionType",
                                           length=8,
-                                          children=(SIGNAL_ACCESS, SIGNAL_TYPE, SIGNAL, STATE))
+                                          children=(STATE_AND_CONNECTION_TYPE_TYPE,
+                                                    STATE_AND_CONNECTION_TYPE_DIRECTION,
+                                                    STATE_AND_CONNECTION_TYPE_LEVEL,
+                                                    STATE_AND_CONNECTION_TYPE_STATE))
 
 # SID 0x27
 SECURITY_ACCESS_DATA = RawDataRecord(name="securityAccessData",
