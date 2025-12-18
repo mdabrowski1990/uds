@@ -4321,6 +4321,7 @@ Positive Response Format
   However, ISO does not define the content, format, or conditions of use for either field for any standardised RID.
   Because both fields are entirely vehicle-manufacturer–specific, this documentation simplifies the model by combining
   them into a single parameter named *routineStatus*.
+
   This has no functional impact and avoids implying that ISO provides a fixed structure for either field.
 
 
@@ -4361,6 +4362,11 @@ Request Format
 
 Positive Response Format
 ````````````````````````
+The *maxNumberOfBlockLength* value specifies the maximum permitted size of the complete TransferData request
+that the server supports, including *SID* and *blockSequenceCounter* Data Records.
+
+.. warning:: The *reserved* value shall be equal to 0.
+
 +------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
 | Name                                                       | Bit Length                          | Value   | Description                                                                 | Present |
 +============================================================+=====================================+=========+=============================================================================+=========+
@@ -4372,11 +4378,6 @@ Positive Response Format
 +------------------------+-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
 | maxNumberOfBlockLength                                     | 8*maxNumberOfBlockLengthBytesNumber |         | Maximal TransferData message length that this server is capable of handling | Always  |
 +------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
-
-.. warning:: The *reserved* value shall be equal to 0.
-
-.. note:: The *maxNumberOfBlockLength* value specifies the maximum permitted size of the complete TransferData request
-  that the server supports, including *SID* and *blockSequenceCounter* Data Records.
 
 
 .. _knowledge-base-service-request-upload:
@@ -4416,6 +4417,11 @@ Request Format
 
 Positive Response Format
 ````````````````````````
+The *maxNumberOfBlockLength* value specifies the maximum permitted size of the complete TransferData response
+that the server supports, including *RSID* and *blockSequenceCounter* Data Records.
+
+.. warning:: The *reserved* value shall be equal to 0.
+
 +------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
 | Name                                                       | Bit Length                          | Value   | Description                                                                 | Present |
 +============================================================+=====================================+=========+=============================================================================+=========+
@@ -4427,11 +4433,6 @@ Positive Response Format
 +------------------------+-----------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
 | maxNumberOfBlockLength                                     | 8*maxNumberOfBlockLengthBytesNumber |         | Maximal TransferData message length that this server is capable of handling | Always  |
 +------------------------------------------------------------+-------------------------------------+---------+-----------------------------------------------------------------------------+---------+
-
-.. warning:: The *reserved* value shall be equal to 0.
-
-.. note:: The *maxNumberOfBlockLength* value specifies the maximum permitted size of the complete TransferData response
-  that the server supports, including *RSID* and *blockSequenceCounter* Data Records.
 
 
 .. _knowledge-base-service-transfer-data:
