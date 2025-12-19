@@ -878,6 +878,8 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
+.. seealso:: :ref:`DTC Functional Unit <knowledge-base-dtc-functional-unit>`
+
 +----------------------------------------------------------------------------------------+---------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 | Name                                                                                   | Bit Length          | Value             | Description                                                     | Present                                  |
 +========================================================================================+=====================+===================+=================================================================+==========================================+
@@ -938,6 +940,8 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
+.. seealso:: :ref:`DTC Functional Unit <knowledge-base-dtc-functional-unit>`
+
 +----------------------------------------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+------------------------------+
 | Name                                                                                   | Bit Length        | Value             | Description                                                     | Present                      |
 +========================================================================================+===================+===================+=================================================================+==============================+
@@ -1524,6 +1528,8 @@ Request Format
 
 Positive Response Format
 ''''''''''''''''''''''''
+.. seealso:: :ref:`DTC Fault Detection Counter <knowledge-base-dtc-fault-detection-counter>`
+
 +-----------------------------------------------------------------------+---------------------+-------------------+-----------------------------------------------------------------+----------------------------------------------------------------------+
 | Name                                                                  | Bit Length          | Value             | Description                                                     | Present                                                              |
 +=======================================================================+=====================+===================+=================================================================+======================================================================+
@@ -1965,6 +1971,8 @@ their associated :ref:`status <knowledge-base-dtc-status>` and :ref:`severity in
 filtered by a :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*) and
 a :ref:`severity <knowledge-base-dtc-severity>` mask (*DTCSeverityMaskRecord*).
 
+.. seealso:: :ref:`Functional Group Identifier <knowledge-base-dtc-functional-group-identifier>`
+
 
 Request Format
 ''''''''''''''
@@ -2056,6 +2064,8 @@ reportWWHOBDDTCWithPermanentStatus (0x55)
 `````````````````````````````````````````
 This sub-function can be used by the client to request WWH-OBD :ref:`DTCs <knowledge-base-dtc>` with permanent status.
 
+.. seealso:: :ref:`Functional Group Identifier <knowledge-base-dtc-functional-group-identifier>`
+
 
 Request Format
 ''''''''''''''
@@ -2140,8 +2150,8 @@ a given :ref:`readiness group <knowledge-base-dtc-readiness-group>` (*DTCReadine
 
 .. warning:: Introduced in ISO 14229-1:2020
 
-.. note:: `SAE J1979-DA <https://www.sae.org/standards/j1979da_202203-j1979-da-digital-annex-e-e-diagnostic-test-modes>`_
-  defines values mapping for *DTCReadinessGroupIdentifier* parameter.
+.. seealso:: :ref:`Functional Group Identifier <knowledge-base-dtc-functional-group-identifier>` and
+  :ref:`DTC Readiness Group <knowledge-base-dtc-readiness-group>`
 
 
 Request Format

@@ -271,4 +271,5 @@ DTC Readiness Group provides a finer categorization of diagnostic functions with
 The meaning of each readiness group depends entirely on the use-case standard associated with the
 `Functional Group Identifier`_.
 
-.. seealso:: SAE J1979-DA
+.. seealso::
+  SAE J1979-DA <https://www.sae.org/standards/j1979da_202203-j1979-da-digital-annex-e-e-diagnostic-test-modes>`_
