@@ -1823,7 +1823,7 @@ Positive Response Format
 reportUserDefMemoryDTCExtDataRecordByDTCNumber (0x19)
 `````````````````````````````````````````````````````
 This sub-function can be used by the client to request extended data records (*DTCExtDataRecordNumber*) for
-a specific :ref:`DTC <knowledge-base-dtc>` (*DTCMaskRecord*) in a selected memory (*MemorySelection*).
+a specific :ref:`DTC <knowledge-base-dtc>` (*DTC*) in a selected memory (*MemorySelection*).
 
 *MemorySelection* allows reading DTC related information from a specific DTC memory (e.g. one of the sub-systems).
 
@@ -1948,7 +1948,7 @@ Positive Response Format
 +---------------------+----------------------------------+--------+------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
 | *DTCStatusAvailabilityMask*                            | 8                   | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                                     |
 +--------------------------------------------------------+---------------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
-| *DTCExtDataRecordNumber*                               | 8                   | 0x00-0xFD         | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                     |
+| *DTCExtDataRecordNumber*                               | 8                   | 0x00-0xFD         | Echo of *DTCExtDataRecordNumber* value from the request         | Always                                     |
 +---------------------+----------------------------------+--------+------------+-------------------+-----------------------------------------------------------------+--------------------------------------------+
 | *DTC and DTCStatus* | *DTC*                            | 32 * n | 24         | 0x000000-0xFFFFFF | DTC#1                                                           | If at least one DTC supports ExtDataRecord |
 |                     +----------------------------------+        +------------+-------------------+-----------------------------------------------------------------+                                            |
