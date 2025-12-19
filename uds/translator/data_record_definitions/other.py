@@ -1326,11 +1326,8 @@ COMPARISON_LOGIC = MappingDataRecord(name="Comparison logic",
                                      })
 COMPARE_VALUE = RawDataRecord(name="Compare Value",
                               length=32)
-HYSTERESIS_VALUE = LinearFormulaDataRecord(name="Hysteresis Value",
-                                           length=8,
-                                           offset=0,
-                                           factor=100 / 255,
-                                           unit="%")
+HYSTERESIS_VALUE = RawDataRecord(name="Hysteresis Value",
+                                 length=8)
 
 COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
                                  length=1,
