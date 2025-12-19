@@ -163,11 +163,11 @@ Request Format
 |               |                                  |   |            |           |                                                              |         |
 |               |                                  |   |            |           | 0x04: safetySystemDiagnosticSession                          |         |
 |               |                                  |   |            |           |                                                              |         |
-|               |                                  |   |            |           | 0x05–0x3F: reserved                                          |         |
+|               |                                  |   |            |           | 0x05-0x3F: reserved                                          |         |
 |               |                                  |   |            |           |                                                              |         |
-|               |                                  |   |            |           | 0x40–0x5F: vehicle manufacturer specific                     |         |
+|               |                                  |   |            |           | 0x40-0x5F: vehicle manufacturer specific                     |         |
 |               |                                  |   |            |           |                                                              |         |
-|               |                                  |   |            |           | 0x60–0x7E: system supplier specific                          |         |
+|               |                                  |   |            |           | 0x60-0x7E: system supplier specific                          |         |
 |               |                                  |   |            |           |                                                              |         |
 |               |                                  |   |            |           | 0x7F: reserved                                               |         |
 +---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+---------+
@@ -450,7 +450,7 @@ reportDTCByStatusMask (0x02)
 ````````````````````````````
 This sub-function can be used by the client to request a list of all :ref:`DTCs <knowledge-base-dtc>` stored in
 the server’s memory that match a specific :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*).
-A DTC is included in the response if :code:`DTC Status & DTCStatusMask) != 0`.
+A DTC is included in the response if :code:`(DTC Status & DTCStatusMask) != 0`.
 This sub-function provides the client with both the DTC values and their corresponding status information for
 all DTCs that satisfy the given mask.
 
@@ -656,7 +656,7 @@ Request Format
 |                                                  |                |           |                                                              |         |
 |                                                  |                |           | 0x00: reserved (legislated purposes)                         |         |
 |                                                  |                |           |                                                              |         |
-|                                                  |                |           | 0x01–0xFE: specific stored data record                       |         |
+|                                                  |                |           | 0x01-0xFE: specific stored data record                       |         |
 |                                                  |                |           |                                                              |         |
 |                                                  |                |           | 0xFF: all records                                            |         |
 +--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+---------+
@@ -953,7 +953,7 @@ Positive Response Format
 +-----------------------------------------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+------------------------------+
 | *DTCStatusAvailabilityMask*                                                            | 8                 | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                       |
 +-----------------------------------------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+------------------------------+
-| *DTCSeverity, DTCFunctionalUnit, DTC and DTCStatus* | *DTCSeverity*                    | 48 | 8 (b[47-40)  | 0x00-0xFF         | Severity of the *DTC*                                           | If provided DTC is supported |
+| *DTCSeverity, DTCFunctionalUnit, DTC and DTCStatus* | *DTCSeverity*                    | 48 | 8 (b[47-40]) | 0x00-0xFF         | Severity of the *DTC*                                           | If provided DTC is supported |
 |                                                     +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                              |
 |                                                     | *DTCFunctionalUnit*              |    | 8 (b[39-32]) | 0x00-0xFF         | Functional Unit of the *DTC*                                    |                              |
 |                                                     +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                              |
@@ -997,7 +997,7 @@ Positive Response Format
 +---------------------+----------------------------------+--------+------------+-------------------+-----------------------------------------------------------------+----------------------------------+
 | *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8      | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                           |
 |                     +----------------------------------+        +------------+-------------------+-----------------------------------------------------------------+                                  |
-|                     | *reportType*                     |        | 7 (b[6-0]) | 0x0A              | reportSupportedDTCs                                             |                                  |
+|                     | *reportType*                     |        | 7 (b[6-0]) | 0x0A              | reportSupportedDTC                                              |                                  |
 +---------------------+----------------------------------+--------+------------+-------------------+-----------------------------------------------------------------+----------------------------------+
 | *DTCStatusAvailabilityMask*                            | 8                   | 0x00-0xFF         | DTC Status bits supported by the ECU                            | Always                           |
 +---------------------+----------------------------------+--------+------------+-------------------+-----------------------------------------------------------------+----------------------------------+
@@ -1662,7 +1662,7 @@ Positive Response Format
 +----------------------------------------------------------+-------------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
 | ...                                                                                                                                                                                                                |
 +-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+-----------------------------------------------+
-| *DTC and DTCStatus#n* | *DTC*                            | 32 | 24 (b[31-8]) | 0x00-0xFF         | DTC#n                                                           | If at least n DTCExtDataRecords are available |
+| *DTC and DTCStatus#n* | *DTC*                            | 32 | 24 (b[31-8]) | 0x000000-0xFFFFFF | DTC#n                                                           | If at least n DTCExtDataRecords are available |
 |                       +----------------------------------+    +--------------+-------------------+-----------------------------------------------------------------+                                               |
 |                       | *DTCStatus*                      |    | 8 (b[7-0])   | 0x00-0xFF         | Status of DTC#n                                                 |                                               |
 +-----------------------+----------------------------------+----+--------------+-------------------+-----------------------------------------------------------------+                                               |
@@ -1710,7 +1710,7 @@ Positive Response Format
 +---------------------+----------------------------------+--------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 | *SubFunction*       | *suppressPosRspMsgIndicationBit* | 8      | 1 (b[7])   | 0x0-0x1           | Echo of *suppressPosRspMsgIndicationBit* value from the request | Always                                   |
 |                     +----------------------------------+        +------------+-------------------+-----------------------------------------------------------------+                                          |
-|                     | *reportType*                     |        | 7 (b[6-0]) | 0x17              | reportUserDefMemoryDTCByStatusMask]                             |                                          |
+|                     | *reportType*                     |        | 7 (b[6-0]) | 0x17              | reportUserDefMemoryDTCByStatusMask                              |                                          |
 +---------------------+----------------------------------+--------+------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
 | *MemorySelection*                                      | 8                   | 0x00-0xFF         | Echo of *MemorySelection* value from the request                | Always                                   |
 +--------------------------------------------------------+---------------------+-------------------+-----------------------------------------------------------------+------------------------------------------+
@@ -1966,7 +1966,7 @@ Positive Response Format
 
 reportWWHOBDDTCByMaskRecord (0x42)
 ``````````````````````````````````
-This sub-function can be used by the client to request WWH-OBD :ref:`DTCs <knowledge-base-dtc-status>` and
+This sub-function can be used by the client to request WWH-OBD :ref:`DTCs <knowledge-base-dtc>` and
 their associated :ref:`status <knowledge-base-dtc-status>` and :ref:`severity information <knowledge-base-dtc-severity>`,
 filtered by a :ref:`status <knowledge-base-dtc-status>` mask (*DTCStatusMask*) and
 a :ref:`severity <knowledge-base-dtc-severity>` mask (*DTCSeverityMaskRecord*).
@@ -2236,7 +2236,7 @@ Positive Response Format
 
 ReadDataByIdentifier (0x22)
 ---------------------------
-ReadDataByIdentifier service allows the client to request data record values from the server identifier by one or more
+ReadDataByIdentifier service allows the client to request data record values from the server identified by one or more
 :ref:`DataIdentifiers (DIDs) <knowledge-base-did>`.
 
 
@@ -4019,9 +4019,9 @@ Once defined, the newly created DID can later be read using
 
 ISO 14229-1 defines the following :ref:`DID <knowledge-base-did>` definition types (*definitionType* parameter values):
 
-- 0x01 – :ref:`defineByIdentifier <knowledge-base-service-dynamically-define-data-identifier-01>`
-- 0x02 – :ref:`defineByMemoryAddress <knowledge-base-service-dynamically-define-data-identifier-02>`
-- 0x03 – :ref:`clearDynamicallyDefinedDataIdentifier <knowledge-base-service-dynamically-define-data-identifier-03>`
+- 0x01 - :ref:`defineByIdentifier <knowledge-base-service-dynamically-define-data-identifier-01>`
+- 0x02 - :ref:`defineByMemoryAddress <knowledge-base-service-dynamically-define-data-identifier-02>`
+- 0x03 - :ref:`clearDynamicallyDefinedDataIdentifier <knowledge-base-service-dynamically-define-data-identifier-03>`
 
 
 Request Format
@@ -4205,23 +4205,23 @@ Request Format
 ``````````````
 The *inputOutputControlParameter* determines the type of control to apply:
 
-- **0x00 – returnControlToECU**
+- **0x00 - returnControlToECU**
   The server restores normal control of all values associated with the DID.
 
-- **0x01 – resetToDefault**
+- **0x01 - resetToDefault**
   The server resets the controlled values to their default state.
 
-- **0x02 – freezeCurrentState**
+- **0x02 - freezeCurrentState**
   The server freezes the current values (prevents them from changing).
 
-- **0x03 – shortTermAdjustment**
+- **0x03 - shortTermAdjustment**
   The server temporarily applies the value(s) provided by the client.
 
 If the *controlEnableMask* Data Record is present, it specifies which parts of the DID's data are subject to control.
 Each bit corresponds to the respective field in the DID structure:
 
-- **1** – take control of this value
-- **0** – leave this value under server control
+- **1** - take control of this value
+- **0** - leave this value under server control
 
 If the *controlState* Data Record is present, it contains the value(s) to be set to the corresponding fields of the DID.
 
@@ -4335,7 +4335,7 @@ Positive Response Format
 
 .. warning:: ISO 14229-1 distinguishes two optional parameters in the positive response: *routineInfo* and *routineStatus*.
   However, ISO does not define the content, format, or conditions of use for either field for any standardised RID.
-  Because both fields are entirely vehicle-manufacturer–specific, this documentation simplifies the model by combining
+  Because both fields are entirely vehicle-manufacturer-specific, this documentation simplifies the model by combining
   them into a single parameter named *routineStatus*.
 
   This has no functional impact and avoids implying that ISO provides a fixed structure for either field.
@@ -4754,7 +4754,7 @@ Request Format
 |               |                                  |   |            |           |                                                              |                                                                               |
 |               |                                  |   |            |           | 0x04: setTimingParametersToGivenValues                       |                                                                               |
 |               |                                  |   |            |           |                                                              |                                                                               |
-|               |                                  |   |            |           | 0x05–0x7F: reserved                                          |                                                                               |
+|               |                                  |   |            |           | 0x05-0x7F: reserved                                          |                                                                               |
 +---------------+----------------------------------+---+------------+-----------+--------------------------------------------------------------+-------------------------------------------------------------------------------+
 | *TimingParameterRequestRecord*                   | multiple of 8  |           | Values of the timing parameter to set                        | If *timingParameterAccessType* equals 0x04 (setTimingParametersToGivenValues) |
 +--------------------------------------------------+----------------+-----------+--------------------------------------------------------------+-------------------------------------------------------------------------------+
