@@ -463,7 +463,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                                 {
                                     'children': (),
                                     'length': 2,
-                                    'name': 'signalAccess',
+                                    'name': 'type',
                                     'physical_value': "Internal signal",
                                     'raw_value': 0x0,
                                     'unit': None
@@ -471,7 +471,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                                 {
                                     'children': (),
                                     'length': 1,
-                                    'name': 'signalType',
+                                    'name': 'direction',
                                     'physical_value': "Output signal",
                                     'raw_value': 0x1,
                                     'unit': None
@@ -479,7 +479,7 @@ class TestReadScalingDataByIdentifier2013Integration:
                                 {
                                     'children': (),
                                     'length': 2,
-                                    'name': 'signal',
+                                    'name': 'level',
                                     'physical_value': "Signal at low level (ground)",
                                     'raw_value': 0x0,
                                     'unit': None
@@ -527,9 +527,9 @@ class TestReadScalingDataByIdentifier2013Integration:
                 "scalingByte#1": 0xB1,
                 "scalingByteExtension#1": {
                     "stateAndConnectionType": {
-                        "signalAccess": 0x3,
-                        "signalType": 0x0,
-                        "signal": 0x1,
+                        "type": 0x3,
+                        "direction": 0x0,
+                        "level": 0x1,
                         "state": 0x4,
                     },
                 },
@@ -824,9 +824,9 @@ class TestReadScalingDataByIdentifier2020Integration:
                 "scalingByte#1": 0xB1,
                 "scalingByteExtension#1": {
                     "stateAndConnectionType": {
-                        "signalAccess": 0x1,
-                        "signalType": 0x1,
-                        "signal": 0x2,
+                        "type": 0x1,
+                        "direction": 0x1,
+                        "level": 0x2,
                         "state": 0x0,
                     },
                 },

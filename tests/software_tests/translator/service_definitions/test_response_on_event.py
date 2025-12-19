@@ -1637,9 +1637,9 @@ class TestResponseOnEvent2013Integration:
                             'children': (),
                             'length': 8,
                             'name': 'Hysteresis Value',
-                            'physical_value': 100 / 255 * 0x7F,
+                            'physical_value': 0x7F,
                             'raw_value': 0x7F,
-                            'unit': "%"
+                            'unit': None
                         },
                         {
                             'children': (
@@ -2053,9 +2053,9 @@ class TestResponseOnEvent2013Integration:
                             'children': (),
                             'length': 8,
                             'name': 'Hysteresis Value',
-                            'physical_value': 100 / 255 * 0x10,
+                            'physical_value': 0x10,
                             'raw_value': 0x10,
-                            'unit': "%"
+                            'unit': None
                         },
                         {
                             'children': (
@@ -2207,9 +2207,9 @@ class TestResponseOnEvent2013Integration:
                             'children': (),
                             'length': 8,
                             'name': 'Hysteresis Value',
-                            'physical_value': 100 / 255 * 0x20,
+                            'physical_value': 0x20,
                             'raw_value': 0x20,
-                            'unit': "%"
+                            'unit': None
                         },
                         {
                             'children': (
@@ -3306,7 +3306,7 @@ class TestResponseOnEvent2020Integration:
             ),
         ),
         (
-            [0xC6, 0x84, 0x01, 0x08, 0x05, 0x0D, 0x19, 0x01, 0x01],
+            [0xC6, 0x84, 0x01, 0x08, 0x05, 0x0D],
             (
                 {
                     'children': (),
@@ -3441,18 +3441,10 @@ class TestResponseOnEvent2020Integration:
                     'raw_value': 0x0D,
                     'unit': None
                 },
-                {
-                    'children': ((), (), ()),
-                    'length': 8,
-                    'name': 'serviceToRespondToRecord#1',
-                    'physical_value': (0x19, 0x01, 0x01),
-                    'raw_value': (0x19, 0x01, 0x01),
-                    'unit': None
-                },
             ),
         ),
         (
-            [0xC6, 0x44, 0x01, 0xC9, 0x12, 0xAF, 0x04, 0xFF, 0xB2],
+            [0xC6, 0x44, 0x01, 0xC9, 0x12, 0xAF, 0x04, 0xFF],
             (
                 {
                     'children': (),
@@ -3666,14 +3658,6 @@ class TestResponseOnEvent2020Integration:
                     'name': 'DTCSnapshotRecordNumber#1',
                     'physical_value': "all",
                     'raw_value': 0xFF,
-                    'unit': None
-                },
-                {
-                    'children': ((),),
-                    'length': 8,
-                    'name': 'serviceToRespondToRecord#1',
-                    'physical_value': (0xB2,),
-                    'raw_value': (0xB2,),
                     'unit': None
                 },
             ),
@@ -4040,9 +4024,9 @@ class TestResponseOnEvent2020Integration:
                             'children': (),
                             'length': 8,
                             'name': 'Hysteresis Value',
-                            'physical_value': 100 / 255 * 0xD1,
+                            'physical_value': 0xD1,
                             'raw_value': 0xD1,
-                            'unit': "%"
+                            'unit': None
                         },
                         {
                             'children': (
@@ -4193,9 +4177,9 @@ class TestResponseOnEvent2020Integration:
                             'children': (),
                             'length': 8,
                             'name': 'Hysteresis Value',
-                            'physical_value': 100,
+                            'physical_value': 0xFF,
                             'raw_value': 0xFF,
-                            'unit': "%"
+                            'unit': None
                         },
                         {
                             'children': (
@@ -4249,7 +4233,7 @@ class TestResponseOnEvent2020Integration:
         ),
         # reportMostRecentDtcOnStatusChange (0x08)
         (
-            [0x86, 0xC8, 0x00, 0x8E, 0xD0, 0xEF, 0x2A, 0x59, 0xC7, 0x23, 0xF3],
+            [0x86, 0xC8, 0x00, 0x8E],
             (
                 {
                     'children': (),
@@ -4334,18 +4318,10 @@ class TestResponseOnEvent2020Integration:
                     'raw_value': 0x8E,
                     'unit': None
                 },
-                {
-                    'children': ((), (), (), (), (), (), ()),
-                    'length': 8,
-                    'name': 'serviceToRespondToRecord',
-                    'physical_value': (0xD0, 0xEF, 0x2A, 0x59, 0xC7, 0x23, 0xF3),
-                    'raw_value': (0xD0, 0xEF, 0x2A, 0x59, 0xC7, 0x23, 0xF3),
-                    'unit': None
-                },
             )
         ),
         (
-            [0xC6, 0x08, 0x12, 0x11, 0x01, 0x19, 0x01, 0xFF],
+            [0xC6, 0x08, 0x12, 0x11, 0x01],
             (
                 {
                     'children': (),
@@ -4438,19 +4414,11 @@ class TestResponseOnEvent2020Integration:
                     'raw_value': 0x01,
                     'unit': None
                 },
-                {
-                    'children': ((), (), ()),
-                    'length': 8,
-                    'name': 'serviceToRespondToRecord',
-                    'physical_value': (0x19, 0x01, 0xFF),
-                    'raw_value': (0x19, 0x01, 0xFF),
-                    'unit': None
-                },
             ),
         ),
         # reportDTCRecordInformationOnDtcStatusChange (0x09)
         (
-            [0x86, 0x09, 0x05, 0xAA, 0x99, 0xFE, 0x00, 0x14, 0xFF, 0xFF, 0xFF],
+            [0x86, 0x09, 0x05, 0xAA, 0x99, 0xFE, 0x00],
             (
                 {
                     'children': (),
@@ -4624,18 +4592,10 @@ class TestResponseOnEvent2020Integration:
                     'raw_value': 0x00,
                     'unit': None
                 },
-                {
-                    'children': ((), (), (), ()),
-                    'length': 8,
-                    'name': 'serviceToRespondToRecord',
-                    'physical_value': (0x14, 0xFF, 0xFF, 0xFF),
-                    'raw_value': (0x14, 0xFF, 0xFF, 0xFF),
-                    'unit': None
-                },
             )
         ),
         (
-            [0xC6, 0xC9, 0x07, 0x0F, 0x55, 0x06, 0x01, 0x01],
+            [0xC6, 0xC9, 0x07, 0x0F, 0x55, 0x06, 0x01],
             (
                 {
                     'children': (),
@@ -4809,14 +4769,6 @@ class TestResponseOnEvent2020Integration:
                     'raw_value': 0x01,
                     'unit': None
                 },
-                {
-                    'children': ((),),
-                    'length': 8,
-                    'name': 'serviceToRespondToRecord',
-                    'physical_value': (0x01,),
-                    'raw_value': (0x01,),
-                    'unit': None
-                },
             ),
         ),
     ])
@@ -4943,14 +4895,12 @@ class TestResponseOnEvent2020Integration:
                 },
                 "DTCExtDataRecordNumber#1": 0xFF,
                 "MemorySelection#1": 0x0F,
-                "serviceToRespondToRecord#1": (0x22, 0x02, 0x03),
                 "eventTypeOfActiveEvent#2": 0x48,
                 "eventWindowTime#2": 0x05,
                 "eventTypeRecord#2": {
                     "reserved": 0,
                     "reportType": 0x0E,
                 },
-                "serviceToRespondToRecord#2": (0x19, 0x02, 0xFF),
                 "eventTypeOfActiveEvent#3": 0x07,
                 "eventWindowTime#3": 0xE0,
                 "eventTypeRecord#3": {
@@ -4996,8 +4946,8 @@ class TestResponseOnEvent2020Integration:
             None,
             ResponseSID.ResponseOnEvent,
             bytearray([0xC6, 0x84, 0x05,
-                       0x09, 0x6A, 0xA5, 0x19, 0xFF, 0x0F, 0x22, 0x02, 0x03,
-                       0x48, 0x05, 0x0E, 0x19, 0x02, 0xFF,
+                       0x09, 0x6A, 0xA5, 0x19, 0xFF, 0x0F,
+                       0x48, 0x05, 0x0E,
                        0x07, 0xE0, 0x4E, 0x8C, 0x03, 0x62, 0xAF, 0x2D, 0xD1, 0xB0, 0x03, 0xFF, 0x83,
                        0x43, 0xBE, 0x45, 0x67, 0x21,
                        0x01, 0x08, 0x44, 0x86, 0x03])
@@ -5101,13 +5051,11 @@ class TestResponseOnEvent2020Integration:
                     "reserved": 0,
                     "reportType": 0x7F,
                 },
-                "serviceToRespondToRecord": (0x06, 0xF3, 0x95, 0xFE, 0xB9, 0x77, 0xAC),
             },
             RequestSID.ResponseOnEvent,
             None,
             bytearray([0x86, 0x48, 0xED,
-                       0x7F,
-                       0x06, 0xF3, 0x95, 0xFE, 0xB9, 0x77, 0xAC])
+                       0x7F])
         ),
         (
             {
@@ -5115,13 +5063,11 @@ class TestResponseOnEvent2020Integration:
                 "numberOfIdentifiedEvents": 0x20,
                 "eventWindowTime": 0x4D,
                 "eventTypeRecord": 0x8D,
-                "serviceToRespondToRecord": (0x22, 0x65, 0xA9),
             },
             None,
             ResponseSID.ResponseOnEvent,
             bytearray([0xC6, 0x88, 0x20, 0x4D,
-                       0x8D,
-                       0x22, 0x65, 0xA9])
+                       0x8D])
         ),
         # reportDTCRecordInformationOnDtcStatusChange (0x09)
         (
@@ -5131,13 +5077,11 @@ class TestResponseOnEvent2020Integration:
                 "eventTypeRecord": 0xFE98,
                 "DTCSnapshotRecordNumber": 0xF3,
                 "MemorySelection": 0x03,
-                "serviceToRespondToRecord": (0xB9, 0xD8, 0xE9, 0x30, 0xDB, 0xAC),
             },
             RequestSID.ResponseOnEvent,
             None,
             bytearray([0x86, 0xC9, 0xD4,
-                       0xFE, 0x98, 0xF3, 0x03,
-                       0xB9, 0xD8, 0xE9, 0x30, 0xDB, 0xAC])
+                       0xFE, 0x98, 0xF3, 0x03])
         ),
         (
             {
@@ -5165,13 +5109,11 @@ class TestResponseOnEvent2020Integration:
                     "reportType": 0x06,
                 },
                 "DTCExtDataRecordNumber": 0x22,
-                "serviceToRespondToRecord": (0x22, 0xDF, 0x81),
             },
             None,
             ResponseSID.ResponseOnEvent,
             bytearray([0xC6, 0x09, 0x01, 0x07,
-                       0x96, 0x06, 0x22,
-                       0x22, 0xDF, 0x81])
+                       0x96, 0x06, 0x22])
         ),
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):

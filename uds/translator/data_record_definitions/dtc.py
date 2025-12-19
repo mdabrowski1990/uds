@@ -23,6 +23,7 @@ __all__ = [
     # DTC Readiness Group Identifier
     "DTC_READINESS_GROUP_IDENTIFIER",
     # Other
+    "DTC_FUNCTIONAL_UNIT",
     "FAULT_DETECTION_COUNTER",
     "EVENT_TYPE_RECORD_01", "EVENT_TYPE_RECORD_09_2020",
     "CONDITIONAL_EVENT_TYPE_RECORD_09",
@@ -136,8 +137,14 @@ def get_conditional_event_type_record_09_2020(event_number: Optional[int] = None
 
 
 # DTC
-GROUP_OF_DTC = RawDataRecord(name="groupOfDTC",
-                             length=24)
+GROUP_OF_DTC = MappingDataRecord(name="groupOfDTC",
+                                 length=24,
+                                 values_mapping={
+                                     0xFFFF33: "Emissions-system group",
+                                     0xFFFFD0: "Safety-system group",
+                                     0xFFFFFE: "VOBD system group",
+                                     0xFFFFFF: "all",
+                                 })
 DTC_COUNT = RawDataRecord(name="DTCCount",
                           length=16,
                           unit="DTCs")
@@ -333,7 +340,9 @@ DTC_READINESS_GROUP_IDENTIFIER = RawDataRecord(name="DTCReadinessGroupIdentifier
                                                length=8)
 
 # Other
-FAULT_DETECTION_COUNTER = RawDataRecord(name="FaultDetectionCounter",
+DTC_FUNCTIONAL_UNIT = RawDataRecord(name="DTCFunctionalUnit",
+                                    length=8)
+FAULT_DETECTION_COUNTER = RawDataRecord(name="DTCFaultDetectionCounter",
                                         length=8)
 
 EVENT_TYPE_RECORD_01 = get_event_type_record_01()
@@ -342,62 +351,62 @@ EVENT_TYPE_RECORD_09_2020 = get_event_type_record_09_2020()
 CONDITIONAL_EVENT_TYPE_RECORD_09 = get_conditional_event_type_record_09_2020()
 
 # Mixed
-DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
+DTC_AND_STATUS = RawDataRecord(name="DTC and DTCStatus",
                                length=32,
                                children=(DTC, DTC_STATUS))
-OPTIONAL_DTC_AND_STATUS = RawDataRecord(name="DTC and Status",
+OPTIONAL_DTC_AND_STATUS = RawDataRecord(name="DTC and DTCStatus",
                                         length=32,
                                         children=(DTC, DTC_STATUS),
                                         min_occurrences=0,
                                         max_occurrences=1)
-MULTIPLE_DTC_AND_STATUS_RECORDS = RawDataRecord(name="DTC and Status",
+MULTIPLE_DTC_AND_STATUS_RECORDS = RawDataRecord(name="DTC and DTCStatus",
                                                 length=32,
                                                 children=(DTC, DTC_STATUS),
                                                 min_occurrences=0,
                                                 max_occurrences=None)
-DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_number + 1}",
+DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and DTCStatus#{record_number + 1}",
                                         length=32,
                                         children=(DTC, DTC_STATUS))
                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
-OPTIONAL_DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and Status#{record_number + 1}",
+OPTIONAL_DTCS_AND_STATUSES_LIST = [RawDataRecord(name=f"DTC and DTCStatus#{record_number + 1}",
                                                  length=32,
                                                  children=(DTC, DTC_STATUS),
                                                  min_occurrences=0,
                                                  max_occurrences=1)
                                    for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
-MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS = RawDataRecord(name="Severity, DTC and DTC Status",
+MULTIPLE_DTC_AND_SEVERITY_STATUS_RECORDS = RawDataRecord(name="DTCSeverity, DTC and DTCStatus",
                                                          length=40,
                                                          children=(DTC_SEVERITY, DTC, DTC_STATUS),
                                                          min_occurrences=0,
                                                          max_occurrences=None)
 
-MULTIPLE_DTC_AND_FAULT_DETECTION_COUNTERS = RawDataRecord(name="DTC and Fault Detection Counter",
+MULTIPLE_DTC_AND_FAULT_DETECTION_COUNTERS = RawDataRecord(name="DTC and DTCFaultDetectionCounter",
                                                           length=32,
                                                           children=(DTC, FAULT_DETECTION_COUNTER),
                                                           min_occurrences=0,
                                                           max_occurrences=None)
 
 OPTIONAL_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="Severity, Functional Unit, DTC and Status",
+    name="DTCSeverity, DTCFunctionalUnit, DTC and DTCStatus",
     length=48,
     children=(DTC_SEVERITY,
-              DTC_FUNCTIONAL_GROUP_IDENTIFIER,
+              DTC_FUNCTIONAL_UNIT,
               DTC,
               DTC_STATUS),
     min_occurrences=0,
     max_occurrences=1)
 MULTIPLE_DTC_AND_SEVERITY_FUNCTIONAL_UNIT_STATUS_RECORDS = RawDataRecord(
-    name="Severity, Functional Unit, DTC and Status",
+    name="DTCSeverity, DTCFunctionalUnit, DTC and DTCStatus",
     length=48,
     children=(DTC_SEVERITY,
-              DTC_FUNCTIONAL_GROUP_IDENTIFIER,
+              DTC_FUNCTIONAL_UNIT,
               DTC,
               DTC_STATUS),
     min_occurrences=0,
     max_occurrences=None)
 
-MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER_RECORDS = RawDataRecord(name="DTC and Snapshot Record Number",
+MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER_RECORDS = RawDataRecord(name="DTC and DTCSnapshotRecordNumber",
                                                                 length=32,
                                                                 children=(DTC, DTC_SNAPSHOT_RECORD_NUMBER),
                                                                 min_occurrences=0,

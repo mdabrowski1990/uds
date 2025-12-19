@@ -105,12 +105,10 @@ def get_active_events_2020(number_of_activated_events: int
                    get_event_type_record_07_2020(event_number),
                    service_to_respond),
             0x08: (event_window,
-                   get_event_type_record_08_2020(event_number),
-                   service_to_respond),
+                   get_event_type_record_08_2020(event_number)),
             0x09: (event_window,
                    get_event_type_record_09_2020(event_number),
-                   get_conditional_event_type_record_09_2020(event_number),
-                   service_to_respond),
+                   get_conditional_event_type_record_09_2020(event_number)),
         },
             value_mask=0x3F))
     return tuple(data_records)
@@ -152,11 +150,9 @@ REQUEST_CONTINUATION_MAPPING_2020 = {
            EVENT_TYPE_RECORD_07_2020,
            SERVICE_TO_RESPOND),
     0x08: (EVENT_WINDOW_TIME_2020,
-           EVENT_TYPE_RECORD_08_2020,
-           SERVICE_TO_RESPOND),
+           EVENT_TYPE_RECORD_08_2020),
     0x09: (EVENT_WINDOW_TIME_2020,
-           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09,
-           SERVICE_TO_RESPOND),
+           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09),
 }
 
 RESPONSE_CONTINUATION_MAPPING_2013 = {
@@ -192,11 +188,9 @@ RESPONSE_CONTINUATION_MAPPING_2020 = {
            EVENT_TYPE_RECORD_07_2020,
            SERVICE_TO_RESPOND),
     0x08: (NUMBER_OF_IDENTIFIED_EVENTS, EVENT_WINDOW_TIME_2020,
-           EVENT_TYPE_RECORD_08_2020,
-           SERVICE_TO_RESPOND),
+           EVENT_TYPE_RECORD_08_2020),
     0x09: (NUMBER_OF_IDENTIFIED_EVENTS, EVENT_WINDOW_TIME_2020,
-           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09,
-           SERVICE_TO_RESPOND),
+           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09),
 }
 
 CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2013,
