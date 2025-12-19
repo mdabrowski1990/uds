@@ -190,8 +190,12 @@ to obtain the value in milliseconds.
 |                          | *diagnosticSessionType*          |    | 7 (b[6-0])    | 0x00-0x7F     | Echo of *diagnosticSessionType* value from the request          |         |
 +--------------------------+----------------------------------+----+---------------+---------------+-----------------------------------------------------------------+---------+
 | *sessionParameterRecord* | *P2Server_max*                   | 32 | 16 (b[31-16]) | 0x0000-0xFFFF | Maximum P2 value used by the server in this session             | Always  |
+|                          |                                  |    |               |               |                                                                 |         |
+|                          |                                  |    |               |               | y = x [ms]                                                      |         |
 |                          +----------------------------------+    +---------------+---------------+-----------------------------------------------------------------+         |
 |                          | *P2\*Server_max*                 |    | 16 (b[15-0])  | 0x0000-0xFFFF | Maximum P2\* value used by the server in this session           |         |
+|                          |                                  |    |               |               |                                                                 |         |
+|                          |                                  |    |               |               | y = 10 \* x [ms]                                                |         |
 +--------------------------+----------------------------------+----+---------------+---------------+-----------------------------------------------------------------+---------+
 
 
@@ -261,6 +265,8 @@ A value of :code:`0xFF` indicates that either the time requirement is not availa
 |                                                  |                |           | 0x00-0xFE: down time in seconds (0-254)                         |                                                       |
 |                                                  |                |           |                                                                 |                                                       |
 |                                                  |                |           | 0xFF: failure or time unavailable                               |                                                       |
+|                                                  |                |           |                                                                 |                                                       |
+|                                                  |                |           | y = x [s]                                                       |                                                       |
 +--------------------------------------------------+----------------+-----------+-----------------------------------------------------------------+-------------------------------------------------------+
 
 
@@ -3578,7 +3584,7 @@ Request Format
 |                                                  |                |           |                                                                                           |         |
 |                                                  |                |           | Values meanings are vehicle manufacturer specific.                                        |         |
 +--------------------------------------------------+----------------+-----------+-------------------------------------------------------------------------------------------+---------+
-| algorithmIndicator                               | 128            |           | Indicates the algorithm used in the generating and verifying Proof of Ownership.          | Always  |
+| *algorithmIndicator*                             | 128            |           | Indicates the algorithm used in the generating and verifying Proof of Ownership.          | Always  |
 |                                                  |                |           |                                                                                           |         |
 |                                                  |                |           | This field is a 16 byte value containing the BER encoded OID value of the algorithm used. |         |
 |                                                  |                |           | The value is left aligned and right padded with zero up to 16 bytes.                      |         |
