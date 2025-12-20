@@ -1,19 +1,27 @@
 """Data Records definitions for :ref:`Data Identifiers <knowledge-base-did>`."""
 
 __all__ = [
-    "DID_2013", "DID_2020",
+    "DID_2020", "DID_2013",
     "DYNAMICALLY_DEFINED_DID", "OPTIONAL_DYNAMICALLY_DEFINED_DID", "OPTIONAL_PERIODIC_DID",
-    "MULTIPLE_DID_2013", "MULTIPLE_DID_2020",
+    "MULTIPLE_DID_2020", "MULTIPLE_DID_2013",
     "MULTIPLE_PERIODIC_DID", "OPTIONAL_MULTIPLE_PERIODIC_DID",
     "DATA_FROM_DID_2013", "DATA_FROM_DID_2020",
-    "EVENT_TYPE_RECORD_03_2013", "EVENT_TYPE_RECORD_03_2020",
-    "EVENT_TYPE_RECORD_07_2013", "EVENT_TYPE_RECORD_07_2020",
-    "get_did_2013", "get_did_2020", "get_dids_2013", "get_dids_2020",
-    "get_did_data_2013", "get_did_data_2020", "get_did_data_mask_2013", "get_did_data_mask_2020",
-    "get_did_records_formula_2013", "get_did_records_formula_2020",
+    "EVENT_TYPE_RECORD_03_2020", "EVENT_TYPE_RECORD_03_2013",
+    "EVENT_TYPE_RECORD_07_2020", "EVENT_TYPE_RECORD_07_2013",
+    "get_did_2020", "get_did_2013", "get_dids_2020", "get_dids_2013",
+    "get_did_data_2020", "get_did_data_2013", "get_did_data_mask_2020", "get_did_data_mask_2013",
+    "get_did_records_formula_2020", "get_did_records_formula_2013",
 ]
 
 from typing import Callable, List, Optional, Tuple, Union
+
+from uds.utilities import (
+    DID_BIT_LENGTH,
+    DID_MAPPING_2013,
+    DID_MAPPING_2020,
+    PERIODIC_DID_BIT_LENGTH,
+    PERIODIC_DID_OFFSET,
+)
 
 from ..data_record import (
     AbstractDataRecord,
@@ -31,86 +39,6 @@ from .other import (
     LOCALIZATION,
     RESERVED_BIT,
 )
-
-DID_MAPPING_2013 = {
-    0xF180: "BootSoftwareIdentificationDataIdentifier",
-    0xF181: "applicationSoftwareIdentificationDataIdentifier",
-    0xF182: "applicationDataIdentificationDataIdentifier",
-    0xF183: "bootSoftwareFingerprintDataIdentifier",
-    0xF184: "applicationSoftwareFingerprintDataIdentifier",
-    0xF185: "applicationDataFingerprintDataIdentifier",
-    0xF186: "ActiveDiagnosticSessionDataIdentifier",
-    0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-    0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-    0xF189: "vehicleManufacturerECUSoftwareVersionNumberDataIdentifier",
-    0xF18A: "systemSupplierIdentifierDataIdentifier",
-    0xF18B: "ECUManufacturingDateDataIdentifier",
-    0xF18C: "ECUSerialNumberDataIdentifier",
-    0xF18D: "supportedFunctionalUnitsDataIdentifier",
-    0xF18E: "VehicleManufacturerKitAssemblyPartNumberDataIdentifier",
-    0xF190: "VINDataIdentifier",
-    0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-    0xF192: "systemSupplierECUHardwareNumberDataIdentifier",
-    0xF193: "systemSupplierECUHardwareVersionNumberDataIdentifier",
-    0xF194: "systemSupplierECUSoftwareNumberDataIdentifier",
-    0xF195: "systemSupplierECUSoftwareVersionNumberDataIdentifier",
-    0xF196: "exhaustRegulationOrTypeApprovalNumberDataIdentifier",
-    0xF197: "systemNameOrEngineTypeDataIdentifier",
-    0xF198: "repairShopCodeOrTesterSerialNumberDataIdentifier",
-    0xF199: "programmingDateDataIdentifier",
-    0xF19A: "calibrationRepairShopCodeOrCalibrationEquipmentSerialNumberDataIdentifier",
-    0xF19B: "calibrationDateDataIdentifier",
-    0xF19C: "calibrationEquipmentSoftwareNumberDataIdentifier",
-    0xF19D: "ECUInstallationDateDataIdentifier",
-    0xF19E: "ODXFileDataIdentifier",
-    0xF19F: "EntityDataIdentifier",
-    0xFA10: "NumberOfEDRDevices",
-    0xFA11: "EDRIdentification",
-    0xFA12: "EDRDeviceAddressInformation",
-    0xFF00: "UDSVersionDataIdentifier",
-}
-""":ref:`Data Identifiers mapping according to ISO 14229-1:2013 <knowledge-base-did-2013>`."""
-
-DID_MAPPING_2020 = {
-    0xF180: "BootSoftwareIdentificationDataIdentifier",
-    0xF181: "applicationSoftwareIdentificationDataIdentifier",
-    0xF182: "applicationDataIdentificationDataIdentifier",
-    0xF183: "bootSoftwareFingerprintDataIdentifier",
-    0xF184: "applicationSoftwareFingerprintDataIdentifier",
-    0xF185: "applicationDataFingerprintDataIdentifier",
-    0xF186: "ActiveDiagnosticSessionDataIdentifier",
-    0xF187: "vehicleManufacturerSparePartNumberDataIdentifier",
-    0xF188: "vehicleManufacturerECUSoftwareNumberDataIdentifier",
-    0xF189: "vehicleManufacturerECUSoftwareVersionNumberDataIdentifier",
-    0xF18A: "systemSupplierIdentifierDataIdentifier",
-    0xF18B: "ECUManufacturingDateDataIdentifier",
-    0xF18C: "ECUSerialNumberDataIdentifier",
-    0xF18D: "supportedFunctionalUnitsDataIdentifier",
-    0xF18E: "VehicleManufacturerKitAssemblyPartNumberDataIdentifier",
-    0xF18F: "RegulationXSoftwareIdentificationNumbers",
-    0xF190: "VINDataIdentifier",
-    0xF191: "vehicleManufacturerECUHardwareNumberDataIdentifier",
-    0xF192: "systemSupplierECUHardwareNumberDataIdentifier",
-    0xF193: "systemSupplierECUHardwareVersionNumberDataIdentifier",
-    0xF194: "systemSupplierECUSoftwareNumberDataIdentifier",
-    0xF195: "systemSupplierECUSoftwareVersionNumberDataIdentifier",
-    0xF196: "exhaustRegulationOrTypeApprovalNumberDataIdentifier",
-    0xF197: "systemNameOrEngineTypeDataIdentifier",
-    0xF198: "repairShopCodeOrTesterSerialNumberDataIdentifier",
-    0xF199: "programmingDateDataIdentifier",
-    0xF19A: "calibrationRepairShopCodeOrCalibrationEquipmentSerialNumberDataIdentifier",
-    0xF19B: "calibrationDateDataIdentifier",
-    0xF19C: "calibrationEquipmentSoftwareNumberDataIdentifier",
-    0xF19D: "ECUInstallationDateDataIdentifier",
-    0xF19E: "ODXFileDataIdentifier",
-    0xF19F: "EntityDataIdentifier",
-    0xFA10: "NumberOfEDRDevices",
-    0xFA11: "EDRIdentification",
-    0xFA12: "EDRDeviceAddressInformation",
-    0xFF00: "UDSVersionDataIdentifier",
-    0xFF01: "ReservedForISO15765-5",
-}
-""":ref:`Data Identifiers mapping according to ISO 14229-1:2020 <knowledge-base-did-2020>`."""
 
 DID_DATA_MAPPING_2013 = {
     0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
@@ -130,7 +58,7 @@ def get_did_2013(name: str = "DID", optional: bool = False) -> MappingDataRecord
     :return: Created DID Data Record.
     """
     return MappingDataRecord(name=name,
-                             length=16,
+                             length=DID_BIT_LENGTH,
                              values_mapping=DID_MAPPING_2013,
                              min_occurrences=0 if optional else 1,
                              max_occurrences=1)
@@ -146,7 +74,7 @@ def get_did_2020(name: str = "DID", optional: bool = False) -> MappingDataRecord
     :return: Created DID Data Record.
     """
     return MappingDataRecord(name=name,
-                             length=16,
+                             length=DID_BIT_LENGTH,
                              values_mapping=DID_MAPPING_2020,
                              min_occurrences=0 if optional else 1,
                              max_occurrences=1)
@@ -396,7 +324,7 @@ def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawData
     :return: Created eventTypeRecord Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
-                         length=16,
+                         length=DID_BIT_LENGTH,
                          children=(DID_2013,))
 
 
@@ -412,7 +340,7 @@ def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawData
     :return: Created eventTypeRecord Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
-                         length=16,
+                         length=DID_BIT_LENGTH,
                          children=(DID_2020,))
 
 
@@ -457,48 +385,48 @@ def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawData
 
 
 DID_2013 = MappingDataRecord(name="DID",
-                             length=16,
+                             length=DID_BIT_LENGTH,
                              values_mapping=DID_MAPPING_2013)
 DID_2020 = MappingDataRecord(name="DID",
-                             length=16,
+                             length=DID_BIT_LENGTH,
                              values_mapping=DID_MAPPING_2020)
 SOURCE_DID_2013 = MappingDataRecord(name="sourceDataIdentifier",
-                                    length=16,
+                                    length=DID_BIT_LENGTH,
                                     values_mapping=DID_MAPPING_2013)
 SOURCE_DID_2020 = MappingDataRecord(name="sourceDataIdentifier",
-                                    length=16,
+                                    length=DID_BIT_LENGTH,
                                     values_mapping=DID_MAPPING_2020)
 DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
-                                        length=16)
+                                        length=DID_BIT_LENGTH)
 OPTIONAL_DYNAMICALLY_DEFINED_DID = RawDataRecord(name="dynamicallyDefinedDataIdentifier",
-                                                 length=16,
+                                                 length=DID_BIT_LENGTH,
                                                  min_occurrences=0,
                                                  max_occurrences=1)
 OPTIONAL_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
-                                                length=8,
-                                                offset=0xF200,
+                                                length=PERIODIC_DID_BIT_LENGTH,
+                                                offset=PERIODIC_DID_OFFSET,
                                                 factor=1,
                                                 min_occurrences=0,
                                                 max_occurrences=1)
 MULTIPLE_DID_2013 = MappingDataRecord(name="DID",
-                                      length=16,
+                                      length=DID_BIT_LENGTH,
                                       values_mapping=DID_MAPPING_2013,
                                       min_occurrences=1,
                                       max_occurrences=None)
 MULTIPLE_DID_2020 = MappingDataRecord(name="DID",
-                                      length=16,
+                                      length=DID_BIT_LENGTH,
                                       values_mapping=DID_MAPPING_2020,
                                       min_occurrences=1,
                                       max_occurrences=None)
 MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
-                                                length=8,
-                                                offset=0xF200,
+                                                length=PERIODIC_DID_BIT_LENGTH,
+                                                offset=PERIODIC_DID_OFFSET,
                                                 factor=1,
                                                 min_occurrences=1,
                                                 max_occurrences=None)
 OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
-                                                         length=8,
-                                                         offset=0xF200,
+                                                         length=PERIODIC_DID_BIT_LENGTH,
+                                                         offset=PERIODIC_DID_OFFSET,
                                                          factor=1,
                                                          min_occurrences=0,
                                                          max_occurrences=None)

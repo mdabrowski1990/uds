@@ -39,7 +39,16 @@ __all__ = [
 
 from typing import Optional
 
-from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
+from uds.utilities import (
+    DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING,
+    DTC_FORMAT_IDENTIFIER_MAPPING,
+    DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING,
+    DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
+    DTC_STORED_DATA_RECORD_NUMBER_MAPPING,
+    GROUP_OF_DTC_MAPPING,
+    NO_YES_MAPPING,
+    REPEATED_DATA_RECORDS_NUMBER,
+)
 
 from ..data_record import (
     ConditionalFormulaDataRecord,
@@ -54,7 +63,7 @@ from .other import MEMORY_SELECTION, RESERVED_BIT
 from .sub_functions import REPORT_TYPE_2020
 
 # Common
-NO_YES_MAPPING = {0: "no", 1: "yes"}
+
 DTC_DIDS_RECORDS_LIST_2013 = [
     ConditionalFormulaDataRecord(formula=get_did_records_formula_2013(record_number + 1))
     for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
@@ -139,12 +148,7 @@ def get_conditional_event_type_record_09_2020(event_number: Optional[int] = None
 # DTC
 GROUP_OF_DTC = MappingDataRecord(name="groupOfDTC",
                                  length=24,
-                                 values_mapping={
-                                     0xFFFF33: "Emissions-system group",
-                                     0xFFFFD0: "Safety-system group",
-                                     0xFFFFFE: "VOBD system group",
-                                     0xFFFFFF: "all",
-                                 })
+                                 values_mapping=GROUP_OF_DTC_MAPPING)
 DTC_COUNT = RawDataRecord(name="DTCCount",
                           length=16,
                           unit="DTCs")
@@ -241,9 +245,7 @@ DTC_SEVERITY_AVAILABILITY_MASK = RawDataRecord(name="DTCSeverityAvailabilityMask
                                                length=8)
 
 # DTC Snapshot Data
-DTC_SNAPSHOT_RECORD_NUMBER_MAPPING = {
-    0xFF: "all"
-}
+
 
 DTC_SNAPSHOT_RECORD_NUMBER = MappingDataRecord(name="DTCSnapshotRecordNumber",
                                                values_mapping=DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
@@ -266,10 +268,7 @@ DTC_SNAPSHOT_RECORDS_LIST_2020 = [
     for item in snapshot_record]
 
 # DTC Extended Data
-DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING = {
-    0xFE: "all regulated emissions data",
-    0xFF: "all",
-}
+
 OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCExtDataRecordNumber",
                                                              values_mapping=DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING,
                                                              length=8,
@@ -299,9 +298,7 @@ DTC_EXTENDED_DATA_RECORDS_NUMBERS_AND_DATA_LIST = [
     for item in extended_data_record]
 
 # DTC Stored Data
-DTC_STORED_DATA_RECORD_NUMBER_MAPPING = {
-    0xFF: "all",
-}
+
 DTC_STORED_DATA_RECORD_NUMBER = MappingDataRecord(name="DTCStoredDataRecordNumber",
                                                   values_mapping=DTC_STORED_DATA_RECORD_NUMBER_MAPPING,
                                                   length=8)
@@ -313,24 +310,13 @@ DTC_STORED_DATA_RECORD_NUMBERS_LIST = [MappingDataRecord(name=f"DTCStoredDataRec
                                        for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
 
 # DTC Format Identifier
-DTC_FORMAT_IDENTIFIER_MAPPING = {
-    0x00: "SAE J2012-DA DTC Format 00",
-    0x01: "ISO 14229-1 DTC Format",
-    0x02: "SAE J1939-73 DTC Format",
-    0x03: "ISO 11992-4 DTC Format",
-    0x04: "SAE J2012-DA DTC Format 04"
-}
+
 DTC_FORMAT_IDENTIFIER = MappingDataRecord(name="DTCFormatIdentifier",
                                           values_mapping=DTC_FORMAT_IDENTIFIER_MAPPING,
                                           length=8)
 
 # DTC Functional Group Identifier
-DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING = {
-    0x33: "Emissions-system group",
-    0xD0: "Safety-system group",
-    0xFE: "VOBD system",
-    0xFF: "all"
-}
+
 DTC_FUNCTIONAL_GROUP_IDENTIFIER = MappingDataRecord(name="FunctionalGroupIdentifier",
                                                     values_mapping=DTC_FUNCTIONAL_GROUP_IDENTIFIER_MAPPING,
                                                     length=8)

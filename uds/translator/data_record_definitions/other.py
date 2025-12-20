@@ -83,7 +83,38 @@ __all__ = [
 from decimal import Decimal
 from typing import Callable, Optional, Tuple, Union
 
-from uds.utilities import EXPONENT_BIT_LENGTH, MANTISSA_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER, InconsistencyError
+from uds.utilities import (
+    AUTHENTICATION_RETURN_PARAMETER_MAPPING,
+    COMPARE_SIGN_MAPPING,
+    COMPARISON_LOGIC_MAPPING,
+    COMPRESSION_METHOD_MAPPING,
+    DIAGNOSTIC_SESSION_TYPE_MAPPING,
+    ENCRYPTION_METHOD_MAPPING,
+    EVENT_WINDOW_TIME_MAPPING_2013,
+    EVENT_WINDOW_TIME_MAPPING_2020,
+    EXPONENT_BIT_LENGTH,
+    FORMULA_IDENTIFIER_MAPPING,
+    INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING,
+    LINK_CONTROL_MODE_IDENTIFIER_MAPPING,
+    MANTISSA_BIT_LENGTH,
+    MESSAGE_TYPE_MAPPING,
+    MODE_OF_OPERATION_MAPPING_2013,
+    MODE_OF_OPERATION_MAPPING_2020,
+    NETWORKS_MAPPING,
+    NO_YES_MAPPING,
+    NODE_IDENTIFICATION_NUMBER_MAPPING,
+    POWER_DOWN_TIME_MAPPING,
+    REPEATED_DATA_RECORDS_NUMBER,
+    SCALING_BYTE_TYPE_MAPPING,
+    STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING,
+    STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING,
+    STATE_AND_CONNECTION_TYPE_STATE_MAPPING,
+    STATE_AND_CONNECTION_TYPE_TYPE_MAPPING,
+    TIMER_SCHEDULE_MAPPING_2013,
+    TRANSMISSION_MODE_MAPPING,
+    UNIT_OR_FORMAT_MAPPING,
+    InconsistencyError,
+)
 
 from ..data_record import (
     AliasMessageStructure,
@@ -97,13 +128,7 @@ from ..data_record import (
     TextDataRecord,
     TextEncoding,
 )
-from .sub_functions import (
-    DIAGNOSTIC_SESSIONS_MAPPING,
-    EVENT_TYPE_2013,
-    EVENT_TYPE_2020,
-    MAPPING_YES_NO,
-    REPORT_TYPE_2020,
-)
+from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 
 # Formulas
@@ -613,7 +638,7 @@ def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataReco
     """
     return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
-                             values_mapping={0x02: "infiniteTimeToResponse"})
+                             values_mapping=EVENT_WINDOW_TIME_MAPPING_2013)
 
 
 def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
@@ -627,13 +652,7 @@ def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataReco
     """
     return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
-                             values_mapping={0x02: "infiniteTimeToResponse",
-                                             0x03: "shortEventWindowTime",
-                                             0x04: "mediumEventWindowTime",
-                                             0x05: "longEventWindowTime",
-                                             0x06: "powerWindowTime",
-                                             0x07: "ignitionWindowTime",
-                                             0x08: "manufacturerTriggerEventWindowTime"})
+                             values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
 
 
 def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
@@ -738,18 +757,10 @@ CONDITIONAL_MEMORY_ADDRESS_AND_SIZE = ConditionalFormulaDataRecord(formula=get_m
 
 COMPRESSION_METHOD = MappingDataRecord(name="compressionMethod",
                                        length=4,
-                                       values_mapping={
-                                           0: "no compression",
-                                       } | {
-                                           value: f"compression #{value}" for value in range(1, 0x10)
-                                       })
+                                       values_mapping=COMPRESSION_METHOD_MAPPING)
 ENCRYPTION_METHOD = MappingDataRecord(name="encryptingMethod",
                                       length=4,
-                                      values_mapping={
-                                          0: "no encryption",
-                                      } | {
-                                          value: f"encryption #{value}" for value in range(1, 0x10)
-                                      })
+                                      values_mapping=ENCRYPTION_METHOD_MAPPING)
 DATA_FORMAT_IDENTIFIER = RawDataRecord(name="dataFormatIdentifier",
                                        length=8,
                                        children=(COMPRESSION_METHOD, ENCRYPTION_METHOD))
@@ -790,7 +801,7 @@ SESSION_PARAMETER_RECORD = RawDataRecord(name="sessionParameterRecord",
 # SID 0x11
 POWER_DOWN_TIME = MappingAndLinearFormulaDataRecord(name="powerDownTime",
                                                     length=8,
-                                                    values_mapping={0xFF: "failure or time unavailable"},
+                                                    values_mapping=POWER_DOWN_TIME_MAPPING,
                                                     factor=1,
                                                     offset=0,
                                                     unit="s")
@@ -810,26 +821,13 @@ MEMORY_SELECTION = RawDataRecord(name="MemorySelection",
 
 # SID 0x22
 ACTIVE_DIAGNOSTIC_SESSION = MappingDataRecord(name="ActiveDiagnosticSession",
-                                              values_mapping=DIAGNOSTIC_SESSIONS_MAPPING,
+                                              values_mapping=DIAGNOSTIC_SESSION_TYPE_MAPPING,
                                               length=7)
 
 # SID 0x24
 SCALING_BYTE_TYPE = MappingDataRecord(name="type",
                                       length=4,
-                                      values_mapping={
-                                          0x0: "unSignedNumeric",
-                                          0x1: "signedNumeric",
-                                          0x2: "bitMappedReportedWithOutMask",
-                                          0x3: "bitMappedReportedWithMask",
-                                          0x4: "BinaryCodedDecimal",
-                                          0x5: "stateEncodedVariable",
-                                          0x6: "ASCII",
-                                          0x7: "signedFloatingPoint",
-                                          0x8: "packet",
-                                          0x9: "formula",
-                                          0xA: "unit/format",
-                                          0xB: "stateAndConnectionType",
-                                      })
+                                      values_mapping=SCALING_BYTE_TYPE_MAPPING)
 SCALING_BYTE_LENGTH = RawDataRecord(name="numberOfBytesOfParameter",
                                     length=4,
                                     unit="bytes")
@@ -847,18 +845,7 @@ SCALING_DATA_RECORDS = [item for scaling_data_records in zip(SCALING_BYTES_LIST,
 
 FORMULA_IDENTIFIER = MappingDataRecord(name="formulaIdentifier",
                                        length=8,
-                                       values_mapping={
-                                           0x00: "y = C0 * x + C1",
-                                           0x01: "y = C0 * (x + C1)",
-                                           0x02: "y = C0 / (x + C1) + C2",
-                                           0x03: "y = x / C0 + C1",
-                                           0x04: "y = (x + C0) / C1",
-                                           0x05: "y = (x + C0) / C1 + C2",
-                                           0x06: "y = C0 * x",
-                                           0x07: "y = x / C0",
-                                           0x08: "y = x + C0",
-                                           0x09: "y = x * C0 / C1",
-                                       })
+                                       values_mapping=FORMULA_IDENTIFIER_MAPPING)
 EXPONENT = CustomFormulaDataRecord(name="Exponent",
                                    length=EXPONENT_BIT_LENGTH,
                                    encoding_formula=get_encode_signed_value_formula(EXPONENT_BIT_LENGTH),
@@ -870,130 +857,20 @@ MANTISSA = CustomFormulaDataRecord(name="Mantissa",
 
 UNIT_OR_FORMAT = MappingDataRecord(name="unit/format",
                                    length=8,
-                                   values_mapping={
-                                       0x00: "No unit, no prefix",
-                                       0x01: "Meter [m] - length",
-                                       0x02: "Foot [ft] - length",
-                                       0x03: "Inch [in] - length",
-                                       0x04: "Yard [yd] - length",
-                                       0x05: "Mile (English) [mi] - length",
-                                       0x06: "Gram [g] - mass",
-                                       0x07: "Ton (metric) [t] - mass",
-                                       0x08: "Second [s] - time",
-                                       0x09: "Minute [min] - time",
-                                       0x0A: "Hour [h] - time",
-                                       0x0B: "Day [d] - time",
-                                       0x0C: "Year [y] - time",
-                                       0x0D: "Ampere [A] - current",
-                                       0x0E: "Volt [V] - voltage",
-                                       0x0F: "Coulomb [C] - electric charge",
-                                       0x10: "Ohm [Ω] - resistance",
-                                       0x11: "Farad [F] - capacitance",
-                                       0x12: "Henry [H] - inductance",
-                                       0x13: "Siemens [S] - electric conductance",
-                                       0x14: "Weber [Wb] - magnetic flux",
-                                       0x15: "Tesla [T] - magnetic flux density",
-                                       0x16: "Kelvin [K] - thermodynamic temperature",
-                                       0x17: "Celsius [°C] - thermodynamic temperature",
-                                       0x18: "Fahrenheit [°F] - thermodynamic temperature",
-                                       0x19: "Candela [cd] - luminous intensity",
-                                       0x1A: "Radian [rad] - plane angle",
-                                       0x1B: "Degree [°] - plane angle",
-                                       0x1C: "Hertz [Hz] - frequency",
-                                       0x1D: "Joule [J] - energy",
-                                       0x1E: "Newton [N] - force",
-                                       0x1F: "Kilopond [kp] - force",
-                                       0x20: "Pound force [lbf] - force",
-                                       0x21: "Watt [W] - power",
-                                       0x22: "Horse power (metric) [hk] - power",
-                                       0x23: "Horse power (UK and US) [hp] - power",
-                                       0x24: "Pascal [Pa] - pressure",
-                                       0x25: "Bar [bar] - pressure",
-                                       0x26: "Atmosphere [atm] - pressure",
-                                       0x27: "Pound force per square inch [psi] - pressure",
-                                       0x28: "Becquerel [Bq] - radioactivity",
-                                       0x29: "Lumen [Lm] - light flux",
-                                       0x2A: "Lux [lx] - illuminance",
-                                       0x2B: "Litre [l] - volume",
-                                       0x2C: "Gallon (British) - volume",
-                                       0x2D: "Gallon (US liq) - volume",
-                                       0x2E: "Cubic inch [cu in] - volume",
-                                       0x2F: "Meter per second [m/s] - speed",
-                                       0x30: "Kilometer per hour [km/h] - speed",
-                                       0x31: "Mile per hour [mph] - speed",
-                                       0x32: "Revolutions per second [rps] - angular velocity",
-                                       0x33: "Revolutions per minute [rpm] - angular velocity",
-                                       0x34: "Counts",
-                                       0x35: "Percent [%]",
-                                       0x36: "Milligram per stroke [mg/stroke] - mass per engine stroke",
-                                       0x37: "Meter per square second [m/s2] - acceleration",
-                                       0x38: "Newton meter [Nm] - moment (e.g. torsion moment)",
-                                       0x39: "Litre per minute [l/min] - flow",
-                                       0x3A: "Watt per square meter [W/m2] - intensity",
-                                       0x3B: "Bar per second [bar/s] - pressure change",
-                                       0x3C: "Radians per second [rad/s] - angular velocity",
-                                       0x3D: "Radians per square second [rad/s2] - angular acceleration",
-                                       0x3E: "Kilogram per square meter [kg/m2]",
-                                       0x40: "Exa (prefix) [E] - 10^18",
-                                       0x41: "Peta (prefix) [P] - 10^15",
-                                       0x42: "Tera (prefix) [T] - 10^12",
-                                       0x43: "Giga (prefix) [G] - 10^9",
-                                       0x44: "Mega (prefix) [M] - 10^6",
-                                       0x45: "Kilo (prefix) [k] - 10^3",
-                                       0x46: "Hecto (prefix) [h] - 10^2",
-                                       0x47: "Deca (prefix) [da] - 10",
-                                       0x48: "Deci (prefix) [d] - 10^-1",
-                                       0x49: "Centi (prefix) [c] - 10^-2",
-                                       0x4A: "Milli (prefix) [m] - 10^-3",
-                                       0x4B: "Micro (prefix) [μ] - 10^-6",
-                                       0x4C: "Nano (prefix) [n] - 10^-9",
-                                       0x4D: "Pico (prefix) [p] - 10^-12",
-                                       0x4E: "Femto (prefix) [f] - 10^-15",
-                                       0x4F: "Atto (prefix) [a] - 10^-18",
-                                       0x50: "Year/Month/Day - date",
-                                       0x51: "Day/Month/Year - date",
-                                       0x52: "Month/Day/Year - date",
-                                       0x53: "Week - calendar week",
-                                       0x54: "UTC Hour/Minute/Second - time",
-                                       0x55: "Hour/Minute/Second - time",
-                                       0x56: "Second/Minute/Hour/Day/Month/Year - date and time",
-                                       0x57: "Second/Minute/Hour/Day/Month/Year/Local minute offset/Local hour offset "
-                                             "- date and time",
-                                       0x58: "Second/Minute/Hour/Month/Day/Year - date and time",
-                                       0x59: "Second/Minute/Hour/Month/Day/Year/Local minute offset/Local hour offset "
-                                             "- date and time",
-                                   })
+                                   values_mapping=UNIT_OR_FORMAT_MAPPING)
 
 STATE_AND_CONNECTION_TYPE_TYPE = MappingDataRecord(name="type",
                                                    length=2,
-                                                   values_mapping={
-                                                       0x0: "Internal signal",
-                                                       0x1: "2 states (low by default)",
-                                                       0x2: "2 states (high by default)",
-                                                       0x3: "3 states",
-                                                   })
+                                                   values_mapping=STATE_AND_CONNECTION_TYPE_TYPE_MAPPING)
 STATE_AND_CONNECTION_TYPE_DIRECTION = MappingDataRecord(name="direction",
                                                         length=1,
-                                                        values_mapping={
-                                                            0x0: "Input signal",
-                                                            0x1: "Output signal",
-                                                        })
+                                                        values_mapping=STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING)
 STATE_AND_CONNECTION_TYPE_LEVEL = MappingDataRecord(name="level",
                                                     length=2,
-                                                    values_mapping={
-                                                        0x0: "Signal at low level (ground)",
-                                                        0x1: "Signal at middle level (between ground and +)",
-                                                        0x2: "Signal at high level (+)",
-                                                    })
+                                                    values_mapping=STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING)
 STATE_AND_CONNECTION_TYPE_STATE = MappingDataRecord(name="state",
                                                     length=3,
-                                                    values_mapping={
-                                                        0x0: "Not Active",
-                                                        0x1: "Active, function 1",
-                                                        0x2: "Error detected",
-                                                        0x3: "Not available",
-                                                        0x4: "Active, function 2",
-                                                    })
+                                                    values_mapping=STATE_AND_CONNECTION_TYPE_STATE_MAPPING)
 STATE_AND_CONNECTION_TYPE = RawDataRecord(name="stateAndConnectionType",
                                           length=8,
                                           children=(STATE_AND_CONNECTION_TYPE_TYPE,
@@ -1020,26 +897,16 @@ CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(formula=get_
 # SID 0x28
 MESSAGES_TYPE = MappingDataRecord(name="messagesType",
                                   length=2,
-                                  values_mapping={
-                                      0: "reserved",
-                                      1: "normalCommunicationMessages",
-                                      2: "networkManagementCommunicationMessages",
-                                      3: "networkManagementCommunicationMessages and normalCommunicationMessages",
-                                  })
+                                  values_mapping=MESSAGE_TYPE_MAPPING)
 NETWORKS = MappingDataRecord(name="networks",
                                   length=4,
-                                  values_mapping={
-                                      0x0: "all connected networks",
-                                      0xF: "network on which this request is received",
-                                  } | {
-                                      raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)
-                                  })
+                                  values_mapping=NETWORKS_MAPPING)
 COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
                                    length=8,
                                    children=(MESSAGES_TYPE, RESERVED_2BITS, NETWORKS))
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
-                                               values_mapping={0: "reserved"})
+                                               values_mapping=NODE_IDENTIFICATION_NUMBER_MAPPING)
 # TODO: change CONDITIONAL_COMMUNICATION_CONTROL_REQUEST to ConditionalMappingDataRecord
 #  https://github.com/mdabrowski1990/uds/issues/413
 CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(formula=get_communication_control_request)
@@ -1143,27 +1010,12 @@ ALGORITHM_INDICATOR = RawDataRecord(name="algorithmIndicator",
 AUTHENTICATION_RETURN_PARAMETER = MappingDataRecord(
     name="authenticationReturnParameter",
     length=8,
-    values_mapping={
-        0x00: "RequestAccepted",
-        0x01: "GeneralReject",
-        0x02: "AuthenticationConfiguration",
-        0x03: "AuthenticationConfiguration ACR with asymmetric cryptography",
-        0x04: "AuthenticationConfiguration ACR with symmetric cryptography",
-        0x10: "DeAuthentication successful",
-        0x11: "CertificateVerified, OwnershipVerificationNecessary",
-        0x12: "OwnershipVerified, AuthenticationComplete",
-        0x13: "CertificateVerified",
-    })
+    values_mapping=AUTHENTICATION_RETURN_PARAMETER_MAPPING)
 
 # SID 0x2A
 TRANSMISSION_MODE = MappingDataRecord(name="transmissionMode",
                                       length=8,
-                                      values_mapping={
-                                          0x01: "sendAtSlowRate",
-                                          0x02: "sendAtMediumRate",
-                                          0x03: "sendAtFastRate",
-                                          0x04: "stopSending",
-                                      })
+                                      values_mapping=TRANSMISSION_MODE_MAPPING)
 
 # SID 0x2C
 CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
@@ -1171,12 +1023,7 @@ CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_fro
 # SID 0x2F
 INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParameter",
                                                    length=8,
-                                                   values_mapping={
-                                                       0x00: "returnControlToECU",
-                                                       0x01: "resetToDefault",
-                                                       0x02: "freezeCurrentState",
-                                                       0x03: "shortTermAdjustment",
-                                                   })
+                                                   values_mapping=INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING)
 
 # SID 0x36
 BLOCK_SEQUENCE_COUNTER = RawDataRecord(name="blockSequenceCounter",
@@ -1185,23 +1032,10 @@ BLOCK_SEQUENCE_COUNTER = RawDataRecord(name="blockSequenceCounter",
 # SID 0x38
 MODE_OF_OPERATION_2013 = MappingDataRecord(name="modeOfOperation",
                                            length=8,
-                                           values_mapping={
-                                               0x01: "AddFile",
-                                               0x02: "DeleteFile",
-                                               0x03: "ReplaceFile",
-                                               0x04: "ReadFile",
-                                               0x05: "ReadDir",
-                                           })
+                                           values_mapping=MODE_OF_OPERATION_MAPPING_2013)
 MODE_OF_OPERATION_2020 = MappingDataRecord(name="modeOfOperation",
                                            length=8,
-                                           values_mapping={
-                                               0x01: "AddFile",
-                                               0x02: "DeleteFile",
-                                               0x03: "ReplaceFile",
-                                               0x04: "ReadFile",
-                                               0x05: "ReadDir",
-                                               0x06: "ResumeFile",
-                                           })
+                                           values_mapping=MODE_OF_OPERATION_MAPPING_2020)
 
 FILE_AND_PATH_NAME_LENGTH = RawDataRecord(name="filePathAndNameLength",
                                           length=16,
@@ -1253,19 +1087,19 @@ SECURITY_DATA_RESPONSE_RECORD = RawDataRecord(name="securityDataResponseRecord",
 
 IS_SIGNATURE_REQUESTED = MappingDataRecord(name="Signature on the response is requested.",
                                            length=1,
-                                           values_mapping=MAPPING_YES_NO)
+                                           values_mapping=NO_YES_MAPPING)
 IS_MESSAGE_SIGNED = MappingDataRecord(name="Message is signed.",
                                       length=1,
-                                      values_mapping=MAPPING_YES_NO)
+                                      values_mapping=NO_YES_MAPPING)
 IS_MESSAGE_ENCRYPTED = MappingDataRecord(name="Message is encrypted.",
                                          length=1,
-                                         values_mapping=MAPPING_YES_NO)
+                                         values_mapping=NO_YES_MAPPING)
 IS_PRE_ESTABLISHED_KEY_USED = MappingDataRecord(name="A pre-established key is used.",
                                                 length=1,
-                                                values_mapping=MAPPING_YES_NO)
+                                                values_mapping=NO_YES_MAPPING)
 IS_REQUEST_MESSAGE = MappingDataRecord(name="Message is request message.",
                                        length=1,
-                                       values_mapping=MAPPING_YES_NO)
+                                       values_mapping=NO_YES_MAPPING)
 ADMINISTRATIVE_PARAMETER = RawDataRecord(name="Administrative Parameter",
                                          length=16,
                                          children=(RESERVED_9BITS,
@@ -1318,12 +1152,7 @@ NUMBER_OF_ACTIVATED_EVENTS = RawDataRecord(name="numberOfActivatedEvents",
 
 COMPARISON_LOGIC = MappingDataRecord(name="Comparison logic",
                                      length=8,
-                                     values_mapping={
-                                         0x01: "<",
-                                         0x02: ">",
-                                         0x03: "=",
-                                         0x04: "<>",
-                                     })
+                                     values_mapping=COMPARISON_LOGIC_MAPPING)
 COMPARE_VALUE = RawDataRecord(name="Compare Value",
                               length=32)
 HYSTERESIS_VALUE = RawDataRecord(name="Hysteresis Value",
@@ -1331,10 +1160,7 @@ HYSTERESIS_VALUE = RawDataRecord(name="Hysteresis Value",
 
 COMPARE_SIGN = MappingDataRecord(name="Compare Sign",
                                  length=1,
-                                 values_mapping={
-                                     0: "Comparison without sign",
-                                     1: "Comparison with sign",
-                                 })
+                                 values_mapping=COMPARE_SIGN_MAPPING)
 BITS_NUMBER = CustomFormulaDataRecord(name="Bits Number",
                                       length=5,
                                       encoding_formula=lambda physical_value: physical_value % 32,
@@ -1355,11 +1181,7 @@ EVENT_TYPE_RECORD_08_2020 = get_event_type_record_08_2020()
 
 TIMER_SCHEDULE = MappingDataRecord(name="Timer schedule",
                                    length=8,
-                                   values_mapping={
-                                       0x01: "Slow rate",
-                                       0x02: "Medium rate",
-                                       0x03: "Fast rate",
-                                   })
+                                   values_mapping=TIMER_SCHEDULE_MAPPING_2013)
 
 EVENT_TYPE_RECORD_02 = RawDataRecord(name="eventTypeRecord",
                                      length=8,
@@ -1370,18 +1192,7 @@ SERVICE_TO_RESPOND = get_service_to_respond()
 # SID 0x87
 LINK_CONTROL_MODE_IDENTIFIER = MappingDataRecord(name="linkControlModeIdentifier",
                                                  length=8,
-                                                 values_mapping={
-                                                     0x01: "PC9600Baud",
-                                                     0x02: "PC19200Baud",
-                                                     0x03: "PC38400Baud",
-                                                     0x04: "PC57600Baud",
-                                                     0x05: "PC115200Baud",
-                                                     0x10: "CAN125000Baud",
-                                                     0x11: "CAN250000Baud",
-                                                     0x12: "CAN500000Baud",
-                                                     0x13: "CAN1000000Baud",
-                                                     0x20: "ProgrammingSetup",
-                                                 })
+                                                 values_mapping=LINK_CONTROL_MODE_IDENTIFIER_MAPPING)
 LINK_RECORD = RawDataRecord(name="linkRecord",
                             length=24)
 CONDITIONAL_LINK_CONTROL_REQUEST = ConditionalMappingDataRecord(value_mask=0x7F,
