@@ -1,16 +1,17 @@
 import pytest
 from mock import patch
 
-from uds.translator.data_record_definitions.dtc import (
-    DTC_STATUS_MASK,
-    REPORT_TYPE_2020,
-    RESERVED_BIT,
+from uds.translator.data_record_definitions.formula import (
     get_conditional_event_type_record_09_2020,
     get_event_type_record_01,
     get_event_type_record_09_2020,
+    DTC_STATUS_MASK,
+    REPORT_TYPE_2020,
+    RESERVED_BIT,
 )
 
-SCRIPT_LOCATION = "uds.translator.data_record_definitions.dtc"
+SCRIPT_LOCATION = "uds.translator.data_record_definitions.formula"
+
 
 class TestFunctions:
     """Unit tests for module functions."""
@@ -42,7 +43,7 @@ class TestFunctions:
         self.mock_raw_data_record.assert_called_once_with(name=f"eventTypeRecord#{event_number}",
                                                           length=8,
                                                           children=(DTC_STATUS_MASK,))
-        
+
     # get_event_type_record_09_2020
 
     def test_get_event_type_record_09_2020__without_event_number(self):
@@ -60,9 +61,9 @@ class TestFunctions:
                                                           length=16,
                                                           children=(DTC_STATUS_MASK,
                                                                     RESERVED_BIT,
-                                                                    REPORT_TYPE_2020))       
-        
-    # get_conditional_event_type_record_09_2020
+                                                                    REPORT_TYPE_2020))
+
+        # get_conditional_event_type_record_09_2020
 
     @pytest.mark.parametrize("event_number", [None, 1, 255])
     def test_get_conditional_event_type_record_09_2020(self, event_number):

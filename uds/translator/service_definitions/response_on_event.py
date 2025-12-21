@@ -8,7 +8,7 @@ from uds.message import RequestSID
 
 from ..data_record import ConditionalFormulaDataRecord, ConditionalMappingDataRecord, MappingDataRecord, RawDataRecord
 from ..data_record_definitions import (
-    CONDITIONAL_EVENT_TYPE_RECORD_09,
+    CONDITIONAL_EVENT_TYPE_RECORD_09_2020,
     EVENT_TYPE_RECORD_01,
     EVENT_TYPE_RECORD_02,
     EVENT_TYPE_RECORD_03_2013,
@@ -31,7 +31,7 @@ from ..data_record_definitions.did import (
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
 )
-from ..data_record_definitions.dtc import (
+from ..data_record_definitions.formula import (
     get_conditional_event_type_record_09_2020,
     get_event_type_record_01,
     get_event_type_record_09_2020,
@@ -152,7 +152,7 @@ REQUEST_CONTINUATION_MAPPING_2020 = {
     0x08: (EVENT_WINDOW_TIME_2020,
            EVENT_TYPE_RECORD_08_2020),
     0x09: (EVENT_WINDOW_TIME_2020,
-           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09),
+           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09_2020),
 }
 
 RESPONSE_CONTINUATION_MAPPING_2013 = {
@@ -190,7 +190,7 @@ RESPONSE_CONTINUATION_MAPPING_2020 = {
     0x08: (NUMBER_OF_IDENTIFIED_EVENTS, EVENT_WINDOW_TIME_2020,
            EVENT_TYPE_RECORD_08_2020),
     0x09: (NUMBER_OF_IDENTIFIED_EVENTS, EVENT_WINDOW_TIME_2020,
-           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09),
+           EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09_2020),
 }
 
 CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2013,
