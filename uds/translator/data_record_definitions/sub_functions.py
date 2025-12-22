@@ -1,7 +1,7 @@
 """Data Records definitions for sub-functions."""
 
 __all__ = [
-    # shared
+    # Shared
     "SPRMIB",
     # SID 0x10
     "DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION", "DIAGNOSTIC_SESSION_TYPE",
@@ -56,13 +56,15 @@ from uds.utilities import (
 
 from ..data_record import MappingDataRecord, RawDataRecord
 
-# shared
+# Shared
+
 SPRMIB = MappingDataRecord(name="suppressPosRspMsgIndicationBit",
                            length=1,
                            values_mapping=NO_YES_MAPPING)
 """Definition of `suppressPosRspMsgIndicationBit` Data Record that is part of every SubFunction."""
 
 # SID 0x10
+
 DIAGNOSTIC_SESSION_TYPE = MappingDataRecord(name="diagnosticSessionType",
                                             length=7,
                                             values_mapping=DIAGNOSTIC_SESSION_TYPE_MAPPING)
@@ -75,6 +77,7 @@ DIAGNOSTIC_SESSION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` SubFunction."""
 
 # SID 0x11
+
 RESET_TYPE = MappingDataRecord(name="resetType",
                                length=7,
                                values_mapping=RESET_TYPE_MAPPING)
@@ -87,6 +90,7 @@ ECU_RESET_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`ECUReset <knowledge-base-service-ecu-reset>` SubFunction."""
 
 # SID 0x19
+
 REPORT_TYPE_2020 = MappingDataRecord(name="reportType",
                                      length=7,
                                      values_mapping=REPORT_TYPE_MAPPING_2020)
@@ -110,6 +114,7 @@ READ_DTC_INFORMATION_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` SubFunction."""
 
 # SID 0x27
+
 SECURITY_ACCESS_TYPE = MappingDataRecord(name="securityAccessType",
                                          length=7,
                                          values_mapping=SECURITY_ACCESS_TYPE_MAPPING)
@@ -122,6 +127,7 @@ SECURITY_ACCESS_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`SecurityAccess <knowledge-base-service-security-access>` SubFunction."""
 
 # SID 0x28
+
 CONTROL_TYPE = MappingDataRecord(name="controlType",
                                  length=7,
                                  values_mapping=CONTROL_TYPE_MAPPING)
@@ -134,6 +140,7 @@ COMMUNICATION_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`CommunicationControl <knowledge-base-service-communication-control>` SubFunction."""
 
 # SID 0x29
+
 AUTHENTICATION_TASK = MappingDataRecord(name="authenticationTask",
                                         length=7,
                                         values_mapping=AUTHENTICATION_TASK_MAPPING)
@@ -146,6 +153,7 @@ AUTHENTICATION_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`Authentication <knowledge-base-service-authentication>` SubFunction."""
 
 # SID 0x2C
+
 DEFINITION_TYPE = MappingDataRecord(name="definitionType",
                                     length=7,
                                     values_mapping=DEFINITION_TYPE_MAPPING)
@@ -159,6 +167,7 @@ DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION = RawDataRecord(name="SubFunctio
 :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` SubFunction."""
 
 # SID 0x31
+
 ROUTINE_CONTROL_TYPE = MappingDataRecord(name="routineControlType",
                                          length=7,
                                          values_mapping=ROUTINE_CONTROL_TYPE_MAPPING)
@@ -171,6 +180,7 @@ ROUTINE_CONTROL_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`RoutineControl <knowledge-base-service-routine-control>` SubFunction."""
 
 # SID 0x3E
+
 ZERO_SUB_FUNCTION = MappingDataRecord(name="zeroSubFunction",
                                       length=7,
                                       values_mapping=ZERO_SUB_FUNCTION_MAPPING)
@@ -183,6 +193,7 @@ TESTER_PRESENT_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`TesterPresent <knowledge-base-service-tester-present>` SubFunction."""
 
 # SID 0x83
+
 TIMING_PARAMETER_ACCESS_TYPE_2013 = MappingDataRecord(name="timingParameterAccessType",
                                                       length=7,
                                                       values_mapping=TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013)
@@ -196,6 +207,7 @@ ACCESS_TIMING_PARAMETER_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
 :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` SubFunction."""
 
 # SID 0x85
+
 DTC_SETTING_TYPE = MappingDataRecord(name="DTCSettingType",
                                      length=7,
                                      values_mapping=DTC_SETTING_TYPE_MAPPING)
@@ -208,6 +220,7 @@ CONTROL_DTC_SETTING_SUB_FUNCTION = RawDataRecord(name="SubFunction",
 """Definition of :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` SubFunction."""
 
 # SID 0x86
+
 EVENT_2020 = MappingDataRecord(name="event",
                                length=6,
                                values_mapping=EVENT_MAPPING_2020)
@@ -249,6 +262,7 @@ RESPONSE_ON_EVENT_SUB_FUNCTION_2013 = RawDataRecord(name="SubFunction",
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` SubFunction."""
 
 # SID 0x87
+
 LINK_CONTROL_TYPE = MappingDataRecord(name="linkControlType",
                                       length=7,
                                       values_mapping=LINK_CONTROL_TYPE_MAPPING)
