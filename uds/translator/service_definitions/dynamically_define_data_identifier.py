@@ -12,26 +12,33 @@ from ..data_record_definitions import (
     DATA_FROM_DID_2013,
     DATA_FROM_DID_2020,
     DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION,
-    DYNAMICALLY_DEFINED_DID,
-    OPTIONAL_DYNAMICALLY_DEFINED_DID,
+    DYNAMICALLY_DEFINED_DID_2013,
+    DYNAMICALLY_DEFINED_DID_2020,
+    OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,
+    OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,
 )
 from ..service import Service
 
 REQUEST_CONTINUATION_MAPPING_2013 = {
-    0x01: (DYNAMICALLY_DEFINED_DID, DATA_FROM_DID_2013,),
-    0x02: (DYNAMICALLY_DEFINED_DID, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
-    0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID,),
+    0x01: (DYNAMICALLY_DEFINED_DID_2013, DATA_FROM_DID_2013,),
+    0x02: (DYNAMICALLY_DEFINED_DID_2013, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
+    0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,),
 }
 REQUEST_CONTINUATION_MAPPING_2020 = {
-    0x01: (DYNAMICALLY_DEFINED_DID, DATA_FROM_DID_2020,),
-    0x02: (DYNAMICALLY_DEFINED_DID, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
-    0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID,),
+    0x01: (DYNAMICALLY_DEFINED_DID_2020, DATA_FROM_DID_2020,),
+    0x02: (DYNAMICALLY_DEFINED_DID_2020, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
+    0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,),
 }
 
-RESPONSE_CONTINUATION_MAPPING = {
-    0x01: (DYNAMICALLY_DEFINED_DID,),
-    0x02: (DYNAMICALLY_DEFINED_DID,),
-    0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID,),
+RESPONSE_CONTINUATION_MAPPING_2013 = {
+    0x01: (DYNAMICALLY_DEFINED_DID_2013,),
+    0x02: (DYNAMICALLY_DEFINED_DID_2013,),
+    0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,),
+}
+RESPONSE_CONTINUATION_MAPPING_2020 = {
+    0x01: (DYNAMICALLY_DEFINED_DID_2020,),
+    0x02: (DYNAMICALLY_DEFINED_DID_2020,),
+    0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,),
 }
 
 CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2013,
@@ -39,14 +46,16 @@ CONDITIONAL_REQUEST_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=REQ
 CONDITIONAL_REQUEST_CONTINUATION_2020 = ConditionalMappingDataRecord(mapping=REQUEST_CONTINUATION_MAPPING_2020,
                                                                      value_mask=0x7F)
 
-CONDITIONAL_RESPONSE_CONTINUATION = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING,
-                                                                 value_mask=0x7F)
+CONDITIONAL_RESPONSE_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING_2013,
+                                                                      value_mask=0x7F)
+CONDITIONAL_RESPONSE_CONTINUATION_2020 = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING_2020,
+                                                                      value_mask=0x7F)
 
 DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2013 = Service(request_sid=RequestSID.DynamicallyDefineDataIdentifier,
                                                   request_structure=(DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION,
                                                                      CONDITIONAL_REQUEST_CONTINUATION_2013),
                                                   response_structure=(DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION,
-                                                                      CONDITIONAL_RESPONSE_CONTINUATION))
+                                                                      CONDITIONAL_RESPONSE_CONTINUATION_2013))
 """Translator for :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>`
 service compatible with ISO 14229-1:2013."""
 
@@ -54,7 +63,7 @@ DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2020 = Service(request_sid=RequestSID.Dynamic
                                                   request_structure=(DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION,
                                                                      CONDITIONAL_REQUEST_CONTINUATION_2020),
                                                   response_structure=(DYNAMICALLY_DEFINE_DATA_IDENTIFIER_SUB_FUNCTION,
-                                                                      CONDITIONAL_RESPONSE_CONTINUATION))
+                                                                      CONDITIONAL_RESPONSE_CONTINUATION_2020))
 """Translator for :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>`
 service compatible with ISO 14229-1:2020."""
 
