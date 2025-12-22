@@ -5,7 +5,8 @@ __all__ = ["READ_DATA_BY_IDENTIFIER", "READ_DATA_BY_IDENTIFIER_2020", "READ_DATA
 from uds.message import RequestSID
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
-from ..data_record_definitions import MULTIPLE_DID_2013, MULTIPLE_DID_2020, get_dids_2013, get_dids_2020
+from ..data_record_definitions import MULTIPLE_DID_2013, MULTIPLE_DID_2020
+from ..data_record_definitions.formula import get_dids_2013, get_dids_2020
 from ..service import Service
 
 DIDS_2013 = (*get_dids_2013(did_count=1, record_number=None, optional=False),

@@ -25,15 +25,13 @@ from ..data_record_definitions import (
     RESPONSE_ON_EVENT_SUB_FUNCTION_2020,
     SERVICE_TO_RESPOND,
 )
-from ..data_record_definitions.did import (
+from ..data_record_definitions.formula import (
+    get_conditional_event_type_record_09_2020,
+    get_event_type_record_01,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
-)
-from ..data_record_definitions.formula import (
-    get_conditional_event_type_record_09_2020,
-    get_event_type_record_01,
     get_event_type_record_09_2020,
 )
 from ..data_record_definitions.other import (

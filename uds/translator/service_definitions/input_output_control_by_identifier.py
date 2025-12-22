@@ -7,10 +7,8 @@ __all__ = ["INPUT_OUTPUT_CONTROL_BY_IDENTIFIER",
 from uds.message import RequestSID
 
 from ..data_record import AliasMessageStructure, ConditionalFormulaDataRecord, ConditionalMappingDataRecord
-from ..data_record_definitions import (
-    DID_2013,
-    DID_2020,
-    INPUT_OUTPUT_CONTROL_PARAMETER,
+from ..data_record_definitions import DID_2013, DID_2020, INPUT_OUTPUT_CONTROL_PARAMETER
+from ..data_record_definitions.formula import (
     get_did_data_2013,
     get_did_data_2020,
     get_did_data_mask_2013,
