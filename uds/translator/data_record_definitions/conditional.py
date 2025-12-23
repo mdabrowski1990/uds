@@ -3,6 +3,7 @@
 __all__ = [
     # Shared
     "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
+    "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
     # SID 0x29
     "CONDITIONAL_CERTIFICATE_CLIENT",
     "CONDITIONAL_CERTIFICATE_SERVER",
@@ -16,6 +17,10 @@ __all__ = [
     "CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER",
     "CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER",
     "CONDITIONAL_OPTIONAL_SESSION_KEY_INFO",
+    # SID 0x2C
+    "CONDITIONAL_DATA_FROM_MEMORY",
+    # SID 0x3D
+    "CONDITIONAL_DATA",
     # SID 0x86
     "EVENT_TYPE_RECORD_01",
     "EVENT_TYPE_RECORD_03_2020", "EVENT_TYPE_RECORD_03_2013",
@@ -35,6 +40,8 @@ from .dtc import (
 )
 from .formula import (
     get_conditional_event_type_record_09_2020,
+    get_data,
+    get_data_from_memory,
     get_did_records_formula_2013,
     get_did_records_formula_2020,
     get_event_type_record_01,
@@ -44,6 +51,8 @@ from .formula import (
     get_event_type_record_07_2020,
     get_event_type_record_09_2020,
     get_formula_for_raw_data_record_with_length,
+    get_max_number_of_block_length,
+    get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
 )
 
@@ -93,6 +102,9 @@ DTC_STORED_DATA_RECORDS_LIST_2020 = [
 
 CONDITIONAL_MEMORY_ADDRESS_AND_SIZE = ConditionalFormulaDataRecord(formula=get_memory_size_and_memory_address)
 """Definition of conditional `memoryAddress` and `memorySize` Data Records."""
+
+CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=get_max_number_of_block_length)
+"""Definition of conditional `maxNumberOfBlockLength` Data Record."""
 
 # SID 0x29
 
@@ -159,6 +171,23 @@ CONDITIONAL_OPTIONAL_SESSION_KEY_INFO = ConditionalFormulaDataRecord(
     formula=get_formula_for_raw_data_record_with_length(data_record_name="sessionKeyInfo",
                                                         accept_zero_length=True))
 """Definition of optional conditional `sessionKeyInfo` Data Record."""
+
+# SID 0x2C
+
+CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
+"""Definition of conditional `Data from Memory` Data Record."""
+
+# SID 0x38
+
+CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRecord(
+    formula=get_max_number_of_block_length_file_transfer)
+"""Definition of conditional `maxNumberOfBlockLength` Data Record that is part of
+:ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` message."""
+
+# SID 0x3D
+
+CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)
+"""Definition of conditional `data` Data Record."""
 
 # SID 0x86
 

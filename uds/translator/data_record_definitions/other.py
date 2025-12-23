@@ -5,7 +5,7 @@ __all__ = [
     "RESERVED_BIT",
     "DATA",
     "ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER",
-    "DATA_FORMAT_IDENTIFIER", "LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
+    "DATA_FORMAT_IDENTIFIER", "LENGTH_FORMAT_IDENTIFIER",
     "TRANSFER_REQUEST_PARAMETER", "TRANSFER_RESPONSE_PARAMETER",
     # SID 0x10
     "P2_SERVER_MAX", "P2_EXT_SERVER_MAX", "SESSION_PARAMETER_RECORD",
@@ -39,8 +39,6 @@ __all__ = [
     "NEEDED_ADDITIONAL_PARAMETER_LENGTH",
     # SID 0x2A
     "TRANSMISSION_MODE",
-    # SID 0x2C
-    "CONDITIONAL_DATA_FROM_MEMORY",
     # SID 0x2F
     "INPUT_OUTPUT_CONTROL_PARAMETER",
     # SID 0x36
@@ -49,11 +47,9 @@ __all__ = [
     "MODE_OF_OPERATION_2013", "MODE_OF_OPERATION_2020",
     "FILE_AND_PATH_NAME_LENGTH", "CONDITIONAL_FILE_AND_PATH_NAME",
     "FILE_SIZE_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES",
-    "LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER",
+    "LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER",
     "FILE_SIZE_OR_DIR_INFO_PARAMETER_LENGTH", "CONDITIONAL_FILE_SIZES_OR_DIR_INFO", "CONDITIONAL_DIR_INFO",
     "FILE_POSITION",
-    # SID 0x3D
-    "CONDITIONAL_DATA",
     # SID 0x83
     "TIMING_PARAMETER_REQUEST_RECORD", "TIMING_PARAMETER_RESPONSE_RECORD",
     # SID 0x84
@@ -135,90 +131,6 @@ from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 
 
-
-
-def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
-    """
-    Get `data` Data Record for given `memorySizeLength` value.
-
-    :param memory_size_length: Proceeding `memorySizeLength` value.
-
-    :raise ValueError: Provided `memorySizeLength` equals 0.
-
-    :return: Tuple with `data` Data Record.
-    """
-    if memory_size_length == 0:
-        raise ValueError("Value of `memorySizeLength` must be greater than 0.")
-    return (RawDataRecord(name="data",
-                          length=8,
-                          min_occurrences=memory_size_length,
-                          max_occurrences=memory_size_length),)
-
-
-def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
-    """
-    Get `Data from Memory` Data Record for given `addressAndLengthFormatIdentifier` value.
-
-    :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
-
-    :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
-        (`memoryAddressLength` or `memorySizeLength`) equals 0.
-
-    :return: Tuple with `Data from Memory` Data Record.
-    """
-    memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
-    memory_address_length = address_and_length_format_identifier & 0x0F
-    if memory_address_length == 0 or memory_size_length == 0:
-        raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
-                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both contained values"
-                         f"`memoryAddressLength` ({memory_address_length}) and "
-                         f"`memorySizeLength` ({memory_size_length}) must be greater than 0.")
-    return (RawDataRecord(name="Data from Memory",
-                          length=8 * (memory_address_length + memory_size_length),
-                          children=(RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
-                                    RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes")),
-                          min_occurrences=1,
-                          max_occurrences=None),)
-
-
-def get_max_number_of_block_length(length_format_identifier: int) -> Tuple[RawDataRecord]:
-    """
-    Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
-
-    .. warning:: This method must not be used for
-        :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service as it contains
-        `lengthFormatIdentifier` in different format.
-
-    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
-
-    :raise ValueError: The high nibble of `lengthFormatIdentifier` (`maxNumberOfBlockLengthBytesNumber`) equals 0.
-
-    :return: Tuple with `maxNumberOfBlockLength` Data Record.
-    """
-    bytes_number = (length_format_identifier & 0xF0) >> 4
-    if bytes_number == 0:
-        raise ValueError(f"Provided `lengthFormatIdentifier` value (0x{length_format_identifier:02X}) is incorrect "
-                         f"as contained value `maxNumberOfBlockLengthBytesNumber` ({bytes_number}) "
-                         "must be greater than 0.")
-    return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * bytes_number, unit="bytes"),)
-
-
-def get_max_number_of_block_length_file_transfer(length_format_identifier: int) -> Tuple[RawDataRecord]:
-    """
-    Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
-
-    .. warning:: This method is specific for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>`
-        service as it contains `lengthFormatIdentifier` in slightly different format.
-
-    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
-
-    :raise ValueError: Provided `lengthFormatIdentifier` equals 0.
-
-    :return: Tuple with `maxNumberOfBlockLength` Data Record.
-    """
-    if length_format_identifier == 0:
-        raise ValueError("Value of `lengthFormatIdentifier` must be greater than 0.")
-    return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * length_format_identifier, unit="bytes"),)
 
 
 def get_scaling_byte_extension(scaling_byte: int,
@@ -728,7 +640,7 @@ LENGTH_FORMAT_IDENTIFIER = RawDataRecord(name="lengthFormatIdentifier",
                                          length=8,
                                          children=(MAX_NUMBER_OF_BLOCK_LENGTH_BYTES_NUMBER, RESERVED_4BITS))
 
-CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=get_max_number_of_block_length)
+
 
 TRANSFER_REQUEST_PARAMETER = RawDataRecord(name="transferRequestParameter",
                                            length=8,
@@ -946,8 +858,7 @@ TRANSMISSION_MODE = MappingDataRecord(name="transmissionMode",
                                       length=8,
                                       values_mapping=TRANSMISSION_MODE_MAPPING)
 
-# SID 0x2C
-CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
+
 
 # SID 0x2F
 INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParameter",
@@ -985,14 +896,12 @@ CONDITIONAL_FILE_SIZES_OR_DIR_INFO = ConditionalFormulaDataRecord(formula=get_fi
 LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER = RawDataRecord(name="lengthFormatIdentifier",
                                                        length=8,
                                                        unit="bytes")
-CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRecord(
-    formula=get_max_number_of_block_length_file_transfer)
+
 
 FILE_POSITION = RawDataRecord(name="filePosition",
                               length=64)
 
-# SID 0x3D
-CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)
+
 
 # SID 0x83
 TIMING_PARAMETER_REQUEST_RECORD = RawDataRecord(name="TimingParameterRequestRecord",

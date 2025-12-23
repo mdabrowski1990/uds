@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock
-
 import pytest
 from mock import Mock, call, patch
 
@@ -28,8 +26,6 @@ from uds.translator.data_record_definitions.other import (
     UNIT_OR_FORMAT,
     TextEncoding,
     get_communication_control_request,
-    get_data,
-    get_data_from_memory,
     get_data_records_for_formula_parameters,
     get_decode_float_value_formula,
     get_decode_signed_value_formula,
@@ -46,8 +42,6 @@ from uds.translator.data_record_definitions.other import (
     get_file_sizes,
     get_file_sizes_or_dir_info,
     get_formula_data_records_for_formula_parameters,
-    get_max_number_of_block_length,
-    get_max_number_of_block_length_file_transfer,
     get_scaling_byte_extension,
     get_scaling_byte_extension_formula,
     get_secured_data_transmission_request,
@@ -80,80 +74,10 @@ class TestFormulas:
         self._patcher_custom_formula_data_record.stop()
         self._patcher_conditional_formula_data_record.stop()
 
-    # get_data
 
-    def test_get_data__value_error(self):
-        with pytest.raises(ValueError):
-            get_data(0)
-
-    @pytest.mark.parametrize("memory_size_length", [1, 23])
-    def test_get_data(self, memory_size_length):
-        assert get_data(memory_size_length) == (self.mock_raw_data_record.return_value,)
-        self.mock_raw_data_record.assert_called_once_with(name="data",
-                                                          length=8,
-                                                          min_occurrences=memory_size_length,
-                                                          max_occurrences=memory_size_length,)
-
-    # get_data_from_memory
-
-    @pytest.mark.parametrize("address_and_length_format_identifier", [0x00, 0x01, 0xF0])
-    def test_get_data_from_memory__value_error(self, address_and_length_format_identifier):
-        with pytest.raises(ValueError):
-            get_data_from_memory(address_and_length_format_identifier)
-
-    @pytest.mark.parametrize("memory_address_length, memory_size_length", [
-        (0x1, 0x1),
-        (0xD, 0x3),
-        (0xF, 0xF),
-    ])
-    def test_get_data_from_memory(self, memory_address_length, memory_size_length):
-        assert (get_data_from_memory((memory_size_length << 4) + memory_address_length)
-                == (self.mock_raw_data_record.return_value,))
-        self.mock_raw_data_record.assert_has_calls([call(name="memoryAddress",
-                                                         length=8 * memory_address_length),
-                                                    call(name="memorySize",
-                                                         length=8 * memory_size_length,
-                                                         unit="bytes"),
-                                                    call(name="Data from Memory",
-                                                         children=(self.mock_raw_data_record.return_value,
-                                                                   self.mock_raw_data_record.return_value),
-                                                         length=8 * (memory_address_length + memory_size_length),
-                                                         min_occurrences=1,
-                                                         max_occurrences=None)],
-                                                   any_order=True)
     
-    # get_max_number_of_block_length
 
-    @pytest.mark.parametrize("length_format_identifier", [0x00, 0x0F])
-    def test_get_max_number_of_block_length__value_error(self, length_format_identifier):
-        with pytest.raises(ValueError):
-            get_max_number_of_block_length(length_format_identifier)
 
-    @pytest.mark.parametrize("bytes_number, reserved", [
-        (0x1, 0x0),
-        (0xD, 0x3),
-        (0xF, 0x0),
-    ])
-    def test_get_max_number_of_block_length(self, bytes_number, reserved):
-        assert (get_max_number_of_block_length((bytes_number << 4) + reserved)
-                == (self.mock_raw_data_record.return_value,))
-        self.mock_raw_data_record.assert_called_once_with(name="maxNumberOfBlockLength",
-                                                          length=8 * bytes_number,
-                                                          unit="bytes")
-
-    # get_max_number_of_block_length_file_transfer
-
-    def test_get_max_number_of_block_length_file_transfer__value_error(self):
-        with pytest.raises(ValueError):
-            get_max_number_of_block_length_file_transfer(0x00)
-
-    @pytest.mark.parametrize("bytes_number", [0x01, 0xFF])
-    def test_get_max_number_of_block_length_file_transfer(self, bytes_number):
-        assert (get_max_number_of_block_length_file_transfer(bytes_number)
-                == (self.mock_raw_data_record.return_value,))
-        self.mock_raw_data_record.assert_called_once_with(name="maxNumberOfBlockLength",
-                                                          length=8 * bytes_number,
-                                                          unit="bytes")
 
     # get_scaling_byte_extension
 

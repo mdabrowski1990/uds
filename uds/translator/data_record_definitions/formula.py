@@ -7,10 +7,17 @@ __all__ = [
     "get_dids_2020", "get_dids_2013",
     "get_did_data_2020", "get_did_data_2013",
     "get_memory_size_and_memory_address",
+    "get_max_number_of_block_length",
     # SID 0x19
     "get_did_records_formula_2020", "get_did_records_formula_2013",
+    # SID 0x2C
+    "get_data_from_memory",
     # SID 0x2F
     "get_did_data_mask_2020", "get_did_data_mask_2013",
+    # SID 0x38
+    "get_max_number_of_block_length_file_transfer",
+    # SID 0x3D
+    "get_data",
     # SID 0x86
     "get_event_type_record_01",
     "get_event_type_record_03_2020", "get_event_type_record_03_2013",
@@ -238,6 +245,28 @@ def get_memory_size_and_memory_address(address_and_length_format_identifier: int
             RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
+def get_max_number_of_block_length(length_format_identifier: int) -> Tuple[RawDataRecord]:
+    """
+    Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
+
+    .. warning:: This method must not be used for
+        :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service as it contains
+        `lengthFormatIdentifier` in different format.
+
+    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
+
+    :raise ValueError: The high nibble of `lengthFormatIdentifier` (`maxNumberOfBlockLengthBytesNumber`) equals 0.
+
+    :return: Tuple with `maxNumberOfBlockLength` Data Record.
+    """
+    bytes_number = (length_format_identifier & 0xF0) >> 4
+    if bytes_number == 0:
+        raise ValueError(f"Provided `lengthFormatIdentifier` value (0x{length_format_identifier:02X}) is incorrect "
+                         f"as contained value `maxNumberOfBlockLengthBytesNumber` ({bytes_number}) "
+                         "must be greater than 0.")
+    return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * bytes_number, unit="bytes"),)
+
+
 # SID 0x19
 
 
@@ -269,6 +298,35 @@ def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int]
     """
     return lambda did_count: get_dids_2013(did_count=did_count,
                                            record_number=record_number)
+
+
+# SID 0x2C
+
+
+def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[RawDataRecord]:
+    """
+    Get `Data from Memory` Data Record for given `addressAndLengthFormatIdentifier` value.
+
+    :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
+
+    :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
+        (`memoryAddressLength` or `memorySizeLength`) equals 0.
+
+    :return: Tuple with `Data from Memory` Data Record.
+    """
+    memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
+    memory_address_length = address_and_length_format_identifier & 0x0F
+    if memory_address_length == 0 or memory_size_length == 0:
+        raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
+                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both contained values"
+                         f"`memoryAddressLength` ({memory_address_length}) and "
+                         f"`memorySizeLength` ({memory_size_length}) must be greater than 0.")
+    return (RawDataRecord(name="Data from Memory",
+                          length=8 * (memory_address_length + memory_size_length),
+                          children=(RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
+                                    RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes")),
+                          min_occurrences=1,
+                          max_occurrences=None),)
 
 
 # SID 0x2F
@@ -364,7 +422,50 @@ def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataR
                                         default_message_continuation=[default_did_data_mask])
 
 
+# SID 0x38
+
+
+def get_max_number_of_block_length_file_transfer(length_format_identifier: int) -> Tuple[RawDataRecord]:
+    """
+    Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
+
+    .. warning:: This method is specific for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>`
+        service as it contains `lengthFormatIdentifier` in slightly different format.
+
+    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
+
+    :raise ValueError: Provided `lengthFormatIdentifier` equals 0.
+
+    :return: Tuple with `maxNumberOfBlockLength` Data Record.
+    """
+    if length_format_identifier == 0:
+        raise ValueError("Value of `lengthFormatIdentifier` must be greater than 0.")
+    return (RawDataRecord(name="maxNumberOfBlockLength", length=8 * length_format_identifier, unit="bytes"),)
+
+
+# SID 0x3D
+
+
+def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
+    """
+    Get `data` Data Record for given `memorySizeLength` value.
+
+    :param memory_size_length: Proceeding `memorySizeLength` value.
+
+    :raise ValueError: Provided `memorySizeLength` equals 0.
+
+    :return: Tuple with `data` Data Record.
+    """
+    if memory_size_length == 0:
+        raise ValueError("Value of `memorySizeLength` must be greater than 0.")
+    return (RawDataRecord(name="data",
+                          length=8,
+                          min_occurrences=memory_size_length,
+                          max_occurrences=memory_size_length),)
+
+
 # SID 0x86
+
 
 def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecord:
     """
