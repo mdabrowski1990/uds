@@ -71,8 +71,7 @@ OPTIONAL_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                 factor=1,
                                                 min_occurrences=0,
                                                 max_occurrences=1)
-"""Definition of optional `Periodic DID` Data Record that is part of
-:ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` message."""
+"""Definition of optional `Periodic DID` Data Record."""
 
 MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                 length=PERIODIC_DID_BIT_LENGTH,
@@ -80,8 +79,7 @@ MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                 factor=1,
                                                 min_occurrences=1,
                                                 max_occurrences=None)
-"""Definition of multiple `Periodic DID` Data Record that is part of
-:ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` message."""
+"""Definition of multiple `Periodic DID` Data Record."""
 
 OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                          length=PERIODIC_DID_BIT_LENGTH,
@@ -89,58 +87,49 @@ OPTIONAL_MULTIPLE_PERIODIC_DID = LinearFormulaDataRecord(name="Periodic DID",
                                                          factor=1,
                                                          min_occurrences=0,
                                                          max_occurrences=None)
-"""Definition of optional, multiple `Periodic DID` Data Record that is part of
-:ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` message."""
+"""Definition of optional, multiple `Periodic DID` Data Record."""
 
 # SID 0x2C
 
 DYNAMICALLY_DEFINED_DID_2020 = MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
                                                  length=DID_BIT_LENGTH,
                                                  values_mapping=DID_MAPPING_2020)
-"""Definition of `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2020) that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2020)."""
 DYNAMICALLY_DEFINED_DID_2013 = MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
                                                  length=DID_BIT_LENGTH,
                                                  values_mapping=DID_MAPPING_2013)
-"""Definition of `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2020) that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2020)."""
 
 OPTIONAL_DYNAMICALLY_DEFINED_DID_2020 = MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
                                                           length=DID_BIT_LENGTH,
                                                           values_mapping=DID_MAPPING_2020,
                                                           min_occurrences=0,
                                                           max_occurrences=1)
-"""Definition of optional `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2020) that is 
-part of :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of optional `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2020)."""
 OPTIONAL_DYNAMICALLY_DEFINED_DID_2013 = MappingDataRecord(name="dynamicallyDefinedDataIdentifier",
                                                           length=DID_BIT_LENGTH,
                                                           values_mapping=DID_MAPPING_2013,
                                                           min_occurrences=0,
                                                           max_occurrences=1)
-"""Definition of optional `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2013) that is 
-part of :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of optional `dynamicallyDefinedDataIdentifier` Data Record (compatible with ISO 14229-1:2013)"""
 
 SOURCE_DID_2020 = MappingDataRecord(name="sourceDataIdentifier",
                                     length=DID_BIT_LENGTH,
                                     values_mapping=DID_MAPPING_2020)
-"""Definition of Source :ref:`DID <knowledge-base-did>` Data Record (compatible with ISO 14229-1:2020) that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of Source :ref:`DID <knowledge-base-did>` Data Record (compatible with ISO 14229-1:2020)."""
 SOURCE_DID_2013 = MappingDataRecord(name="sourceDataIdentifier",
                                     length=DID_BIT_LENGTH,
                                     values_mapping=DID_MAPPING_2013)
-"""Definition of Source :ref:`DID <knowledge-base-did>` Data Record (compatible with ISO 14229-1:2013) that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of Source :ref:`DID <knowledge-base-did>` Data Record (compatible with ISO 14229-1:2013)."""
 
 POSITION_IN_DID = RawDataRecord(name="positionInSourceDataRecord",
                                 length=8)
-"""Definition of `positionInSourceDataRecord` Data Record that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of `positionInSourceDataRecord` Data Record."""
 
 DID_MEMORY_SIZE = RawDataRecord(name="memorySize",
                                 length=8,
                                 unit="bytes")
-"""Definition of `memorySize` Data Record that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of `memorySize` Data Record."""
 
 DATA_FROM_DID_2020 = RawDataRecord(name="Data from DID",
                                    length=32,
@@ -151,9 +140,7 @@ DATA_FROM_DID_2020 = RawDataRecord(name="Data from DID",
                                    ),
                                    min_occurrences=1,
                                    max_occurrences=None)
-"""Definition of `Data from DID` Data Record (compatible with ISO 14229-1:2020) that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
-
+"""Definition of `Data from DID` Data Record (compatible with ISO 14229-1:2020)."""
 DATA_FROM_DID_2013 = RawDataRecord(name="Data from DID",
                                    length=32,
                                    children=(
@@ -163,5 +150,4 @@ DATA_FROM_DID_2013 = RawDataRecord(name="Data from DID",
                                    ),
                                    min_occurrences=1,
                                    max_occurrences=None)
-"""Definition of `Data from DID` Data Record (compatible with ISO 14229-1:2013) that is part of
-:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` message."""
+"""Definition of `Data from DID` Data Record (compatible with ISO 14229-1:2013)."""

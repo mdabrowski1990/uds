@@ -45,7 +45,7 @@ from .sub_functions import REPORT_TYPE_2020
 
 def get_did_2020(name: str, optional: bool = False) -> MappingDataRecord:
     """
-    Get DID Data Record compatible with ISO 14229-1:2020 version.
+    Get `DID` Data Record compatible with ISO 14229-1:2020 version.
 
     :param name: Name to assign to the Data Record.
     :param optional: False if the Data Record presence is mandatory, True otherwise.
@@ -61,7 +61,7 @@ def get_did_2020(name: str, optional: bool = False) -> MappingDataRecord:
 
 def get_did_2013(name: str, optional: bool = False) -> MappingDataRecord:
     """
-    Get DID Data Record compatible with ISO 14229-1:2013 version.
+    Get `DID` Data Record compatible with ISO 14229-1:2013 version.
 
     :param name: Name to assign to the Data Record.
     :param optional: False if the Data Record presence is mandatory, True otherwise.
@@ -331,14 +331,14 @@ def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecor
 
 def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get eventTypeRecord Data Record for event equal to 0x03.
+    Get `eventTypeRecord` Data Record for `event` equal to 0x03.
 
     .. note:: Supports only ISO 14229-1:2020 DIDs.
 
     :param event_number: Order number of the event record to contain this Data Record.
         None if there are no records.
 
-    :return: Created eventTypeRecord Data Record.
+    :return: Created `eventTypeRecord` Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=DID_BIT_LENGTH,
@@ -347,14 +347,14 @@ def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get eventTypeRecord Data Record for event equal to 0x03.
+    Get `eventTypeRecord` Data Record for `event` equal to 0x03.
 
     .. note:: Supports only ISO 14229-1:2013 DIDs.
 
     :param event_number: Order number of the event record to contain this Data Record.
         None if there are no records.
 
-    :return: Created eventTypeRecord Data Record.
+    :return: Created `eventTypeRecord` Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=DID_BIT_LENGTH,
@@ -363,14 +363,14 @@ def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get eventTypeRecord Data Record for event equal to 0x07.
+    Get `eventTypeRecord` Data Record for `event` equal to 0x07.
 
     .. note:: Supports only ISO 14229-1:2020 DIDs.
 
     :param event_number: Order number of the event record to contain this Data Record.
         None if there are no records.
 
-    :return: Created eventTypeRecord Data Record.
+    :return: Created `eventTypeRecord` Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=80,
@@ -383,14 +383,14 @@ def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get eventTypeRecord Data Record for event equal to 0x07.
+    Get `eventTypeRecord` Data Record for `event` equal to 0x07.
 
     .. note:: Supports only ISO 14229-1:2013 DIDs.
 
     :param event_number: Order number of the event record to contain this Data Record.
         None if there are no records.
 
-    :return: Created eventTypeRecord Data Record.
+    :return: Created `eventTypeRecord` Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=80,

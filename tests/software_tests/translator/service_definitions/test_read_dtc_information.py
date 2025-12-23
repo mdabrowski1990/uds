@@ -5786,7 +5786,7 @@ class TestReadDTCInformation2013Integration:
                                 'children': (),
                                 'length': 8,
                                 'name': 'DTCFaultDetectionCounter',
-                                'physical_value': 0x73,
+                                'physical_value': 115,
                                 'raw_value': 0x73,
                                 'unit': None,
                             }
@@ -5804,7 +5804,7 @@ class TestReadDTCInformation2013Integration:
                                 'children': (),
                                 'length': 8,
                                 'name': 'DTCFaultDetectionCounter',
-                                'physical_value': 0xBC,
+                                'physical_value': -68,
                                 'raw_value': 0xBC,
                                 'unit': None,
                             }
