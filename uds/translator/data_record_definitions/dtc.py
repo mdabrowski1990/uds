@@ -70,7 +70,7 @@ from uds.utilities import (
     REPEATED_DATA_RECORDS_NUMBER,
 )
 
-from ..data_record import MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding, CustomFormulaDataRecord
+from ..data_record import CustomFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding
 from ..data_record_definitions.other import get_decode_signed_value_formula, get_encode_signed_value_formula
 
 # DTC

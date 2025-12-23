@@ -2,9 +2,11 @@
 
 __all__ = [
     # Shared
+    "get_formula_for_raw_data_record_with_length",
     "get_did_2020", "get_did_2013",
     "get_dids_2020", "get_dids_2013",
     "get_did_data_2020", "get_did_data_2013",
+    "get_memory_size_and_memory_address",
     # SID 0x19
     "get_did_records_formula_2020", "get_did_records_formula_2013",
     # SID 0x2F
@@ -41,6 +43,32 @@ from .other import COMPARE_VALUE, COMPARISON_LOGIC, HYSTERESIS_VALUE, LOCALIZATI
 from .sub_functions import REPORT_TYPE_2020
 
 # Shared
+
+
+def get_formula_for_raw_data_record_with_length(data_record_name: str,
+                                                accept_zero_length: bool
+                                                ) -> Callable[[int], Union[Tuple[RawDataRecord], Tuple[()]]]:
+    """
+    Get formula for Conditional Data Record that returns Raw Data Record with given name.
+
+    :param data_record_name: Name for Raw Data Record name.
+    :param accept_zero_length: True to accept length equal zero else False.
+
+    :return: Formula for creating Raw Data Record that is proceeded by (bytes) length parameter.
+    """
+    def get_raw_data_record(length: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
+        if accept_zero_length and length == 0:
+            return ()
+        if length > 0:
+            return (RawDataRecord(name=data_record_name,
+                                  length=8,
+                                  min_occurrences=length,
+                                  max_occurrences=length,
+                                  enforce_reoccurring=True),)
+        raise ValueError("Unexpected length value provided. "
+                         f"Expected: {0 if accept_zero_length else 1} <= length (int type). "
+                         f"Actual value: {length!r}.")
+    return get_raw_data_record
 
 
 def get_did_2020(name: str, optional: bool = False) -> MappingDataRecord:
@@ -185,6 +213,29 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
 
     return ConditionalFormulaDataRecord(formula=_get_did_data,
                                         default_message_continuation=[default_did_data])
+
+
+def get_memory_size_and_memory_address(address_and_length_format_identifier: int
+                                       ) -> Tuple[RawDataRecord, RawDataRecord]:
+    """
+    Get `memoryAddress` and `memorySize` Data Records for given `addressAndLengthFormatIdentifier` value.
+
+    :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
+
+    :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
+        (`memoryAddressLength` or `memorySizeLength`) equals 0.
+
+    :return: Tuple with `memoryAddress` and `memorySize` Data Records.
+    """
+    memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
+    memory_address_length = address_and_length_format_identifier & 0x0F
+    if memory_address_length == 0 or memory_size_length == 0:
+        raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
+                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both contained values"
+                         f"`memoryAddressLength` ({memory_address_length}) and "
+                         f"`memorySizeLength` ({memory_size_length}) must be greater than 0.")
+    return (RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
+            RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
 # SID 0x19

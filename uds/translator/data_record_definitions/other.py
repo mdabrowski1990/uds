@@ -4,7 +4,7 @@ __all__ = [
     # Shared
     "RESERVED_BIT",
     "DATA",
-    "ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
+    "ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER",
     "DATA_FORMAT_IDENTIFIER", "LENGTH_FORMAT_IDENTIFIER", "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
     "TRANSFER_REQUEST_PARAMETER", "TRANSFER_RESPONSE_PARAMETER",
     # SID 0x10
@@ -25,18 +25,18 @@ __all__ = [
     "CONDITIONAL_COMMUNICATION_CONTROL_REQUEST",
     # SID 0x29
     "COMMUNICATION_CONFIGURATION", "CERTIFICATE_EVALUATION", "ALGORITHM_INDICATOR", "AUTHENTICATION_RETURN_PARAMETER",
-    "CERTIFICATE_CLIENT_LENGTH", "CONDITIONAL_CERTIFICATE_CLIENT",
-    "CERTIFICATE_SERVER_LENGTH", "CONDITIONAL_CERTIFICATE_SERVER",
-    "CERTIFICATE_DATA_LENGTH", "CONDITIONAL_CERTIFICATE_DATA",
-    "CHALLENGE_CLIENT_LENGTH", "CONDITIONAL_CHALLENGE_CLIENT", "CONDITIONAL_OPTIONAL_CHALLENGE_CLIENT",
-    "CHALLENGE_SERVER_LENGTH", "CONDITIONAL_CHALLENGE_SERVER",
-    "PROOF_OF_OWNERSHIP_CLIENT_LENGTH", "CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT",
-    "PROOF_OF_OWNERSHIP_SERVER_LENGTH", "CONDITIONAL_PROOF_OF_OWNERSHIP_SERVER",
-    "EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH", "CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_CLIENT",
-    "EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH", "CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_SERVER",
-    "SESSION_KEY_INFO_LENGTH", "CONDITIONAL_OPTIONAL_SESSION_KEY_INFO",
-    "ADDITIONAL_PARAMETER_LENGTH", "CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER",
-    "NEEDED_ADDITIONAL_PARAMETER_LENGTH", "CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER",
+    "CERTIFICATE_CLIENT_LENGTH",
+    "CERTIFICATE_SERVER_LENGTH",
+    "CERTIFICATE_DATA_LENGTH",
+    "CHALLENGE_CLIENT_LENGTH",
+    "CHALLENGE_SERVER_LENGTH",
+    "PROOF_OF_OWNERSHIP_CLIENT_LENGTH",
+    "PROOF_OF_OWNERSHIP_SERVER_LENGTH",
+    "EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH",
+    "EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH",
+    "SESSION_KEY_INFO_LENGTH",
+    "ADDITIONAL_PARAMETER_LENGTH",
+    "NEEDED_ADDITIONAL_PARAMETER_LENGTH",
     # SID 0x2A
     "TRANSMISSION_MODE",
     # SID 0x2C
@@ -130,55 +130,11 @@ from ..data_record import (
 )
 from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
-
 # Formulas
-def get_formula_for_raw_data_record_with_length(data_record_name: str,
-                                                accept_zero_length: bool
-                                                ) -> Callable[[int], Union[Tuple[RawDataRecord], Tuple[()]]]:
-    """
-    Get formula for Conditional Data Record that returns Raw Data Record with given name.
-
-    :param data_record_name: Name for Raw Data Record name.
-    :param accept_zero_length: True to accept length equal zero else False.
-
-    :return: Formula for creating Raw Data Record that is proceeded by (bytes) length parameter.
-    """
-    def get_raw_data_record(length: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
-        if accept_zero_length and length == 0:
-            return ()
-        if length > 0:
-            return (RawDataRecord(name=data_record_name,
-                                  length=8,
-                                  min_occurrences=length,
-                                  max_occurrences=length,
-                                  enforce_reoccurring=True),)
-        raise ValueError("Unexpected length value provided. "
-                         f"Expected: {0 if accept_zero_length else 1} <= length (int type). "
-                         f"Actual value: {length!r}.")
-    return get_raw_data_record
 
 
-def get_memory_size_and_memory_address(address_and_length_format_identifier: int
-                                       ) -> Tuple[RawDataRecord, RawDataRecord]:
-    """
-    Get `memoryAddress` and `memorySize` Data Records for given `addressAndLengthFormatIdentifier` value.
 
-    :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
 
-    :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
-        (`memoryAddressLength` or `memorySizeLength`) equals 0.
-
-    :return: Tuple with `memoryAddress` and `memorySize` Data Records.
-    """
-    memory_size_length = (address_and_length_format_identifier & 0xF0) >> 4
-    memory_address_length = address_and_length_format_identifier & 0x0F
-    if memory_address_length == 0 or memory_size_length == 0:
-        raise ValueError("Provided `addressAndLengthFormatIdentifier` value "
-                         f"(0x{address_and_length_format_identifier:02X}) is incorrect as both contained values"
-                         f"`memoryAddressLength` ({memory_address_length}) and "
-                         f"`memorySizeLength` ({memory_size_length}) must be greater than 0.")
-    return (RawDataRecord(name="memoryAddress", length=8 * memory_address_length),
-            RawDataRecord(name="memorySize", length=8 * memory_size_length, unit="bytes"))
 
 
 def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
@@ -753,7 +709,7 @@ ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER = RawDataRecord(name="addressAndLengthForma
                                                      length=8,
                                                      children=(MEMORY_SIZE_LENGTH, MEMORY_ADDRESS_LENGTH))
 
-CONDITIONAL_MEMORY_ADDRESS_AND_SIZE = ConditionalFormulaDataRecord(formula=get_memory_size_and_memory_address)
+
 
 COMPRESSION_METHOD = MappingDataRecord(name="compressionMethod",
                                        length=4,
@@ -915,89 +871,62 @@ CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(formula
 CERTIFICATE_CLIENT_LENGTH = RawDataRecord(name="lengthOfCertificateClient",
                                           length=16,
                                           unit="bytes")
-CONDITIONAL_CERTIFICATE_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="certificateClient",
-                                                        accept_zero_length=False))
+
 
 CERTIFICATE_SERVER_LENGTH = RawDataRecord(name="lengthOfCertificateServer",
                                           length=16,
                                           unit="bytes")
-CONDITIONAL_CERTIFICATE_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="certificateServer",
-                                                        accept_zero_length=False))
+
 
 CERTIFICATE_DATA_LENGTH = RawDataRecord(name="lengthOfCertificateData",
                                         length=16,
                                         unit="bytes")
-CONDITIONAL_CERTIFICATE_DATA = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="certificateData",
-                                                        accept_zero_length=False))
+
 
 CHALLENGE_CLIENT_LENGTH = RawDataRecord(name="lengthOfChallengeClient",
                                         length=16,
                                         unit="bytes")
-CONDITIONAL_CHALLENGE_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="challengeClient",
-                                                        accept_zero_length=False))
-CONDITIONAL_OPTIONAL_CHALLENGE_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="challengeClient",
-                                                        accept_zero_length=True))
+
 
 CHALLENGE_SERVER_LENGTH = RawDataRecord(name="lengthOfChallengeServer",
                                         length=16,
                                         unit="bytes")
-CONDITIONAL_CHALLENGE_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="challengeServer",
-                                                        accept_zero_length=False))
+
 
 PROOF_OF_OWNERSHIP_CLIENT_LENGTH = RawDataRecord(name="lengthOfProofOfOwnershipClient",
                                                  length=16,
                                                  unit="bytes")
-CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="proofOfOwnershipClient",
-                                                        accept_zero_length=False))
+
 
 PROOF_OF_OWNERSHIP_SERVER_LENGTH = RawDataRecord(name="lengthOfProofOfOwnershipServer",
                                                  length=16,
                                                  unit="bytes")
-CONDITIONAL_PROOF_OF_OWNERSHIP_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="proofOfOwnershipServer",
-                                                        accept_zero_length=False))
+
 
 EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH = RawDataRecord(name="lengthOfEphemeralPublicKeyClient",
                                                    length=16,
                                                    unit="bytes")
-CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="ephemeralPublicKeyClient",
-                                                        accept_zero_length=True))
+
 
 EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH = RawDataRecord(name="lengthOfEphemeralPublicKeyServer",
                                                    length=16,
                                                    unit="bytes")
-CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="ephemeralPublicKeyServer",
-                                                        accept_zero_length=True))
+
 
 NEEDED_ADDITIONAL_PARAMETER_LENGTH = RawDataRecord(name="lengthOfNeededAdditionalParameter",
                                                    length=16,
                                                    unit="bytes")
-CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="neededAdditionalParameter",
-                                                        accept_zero_length=True))
+
 
 ADDITIONAL_PARAMETER_LENGTH = RawDataRecord(name="lengthOfAdditionalParameter",
                                             length=16,
                                             unit="bytes")
-CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="additionalParameter",
-                                                        accept_zero_length=True))
+
 
 SESSION_KEY_INFO_LENGTH = RawDataRecord(name="lengthOfSessionKeyInfo",
                                         length=16,
                                         unit="bytes")
-CONDITIONAL_OPTIONAL_SESSION_KEY_INFO = ConditionalFormulaDataRecord(
-    formula=get_formula_for_raw_data_record_with_length(data_record_name="sessionKeyInfo",
-                                                        accept_zero_length=True))
+
 
 COMMUNICATION_CONFIGURATION = RawDataRecord(name="communicationConfiguration",
                                             length=8)

@@ -46,10 +46,8 @@ from uds.translator.data_record_definitions.other import (
     get_file_sizes,
     get_file_sizes_or_dir_info,
     get_formula_data_records_for_formula_parameters,
-    get_formula_for_raw_data_record_with_length,
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
-    get_memory_size_and_memory_address,
     get_scaling_byte_extension,
     get_scaling_byte_extension_formula,
     get_secured_data_transmission_request,
@@ -82,59 +80,6 @@ class TestFormulas:
         self._patcher_custom_formula_data_record.stop()
         self._patcher_conditional_formula_data_record.stop()
 
-    # get_formula_for_raw_data_record_with_length
-
-    @pytest.mark.parametrize("accept_zero_length, length", [
-        (True, -1),
-        (False, 0),
-    ])
-    def test_get_formula_for_raw_data_record_with_length__formula_value_error(self, accept_zero_length, length):
-        formula = get_formula_for_raw_data_record_with_length(data_record_name=MagicMock(),
-                                                              accept_zero_length=accept_zero_length)
-        with pytest.raises(ValueError):
-            formula(-1)
-
-    def test_get_formula_for_raw_data_record_with_length__empty(self):
-        formula = get_formula_for_raw_data_record_with_length(data_record_name=MagicMock(),
-                                                              accept_zero_length=True)
-        assert formula(0) == ()
-
-    @pytest.mark.parametrize("data_record_name, accept_zero_length, length", [
-        ("Some Name", True, 54),
-        ("XYZ - abc", False, 1),
-    ])
-    def test_get_formula_for_raw_data_record_with_length__value(self, data_record_name, accept_zero_length, length):
-        formula = get_formula_for_raw_data_record_with_length(data_record_name=data_record_name,
-                                                              accept_zero_length=accept_zero_length)
-        assert formula(length) == (self.mock_raw_data_record.return_value, )
-        self.mock_raw_data_record.assert_called_once_with(name=data_record_name,
-                                                          length=8,
-                                                          min_occurrences=length,
-                                                          max_occurrences=length,
-                                                          enforce_reoccurring=True)
-
-    # get_memory_size_and_memory_address
-
-    @pytest.mark.parametrize("address_and_length_format_identifier", [0x00, 0x01, 0xF0])
-    def test_get_memory_size_and_memory_address__value_error(self, address_and_length_format_identifier):
-        with pytest.raises(ValueError):
-            get_memory_size_and_memory_address(address_and_length_format_identifier)
-
-    @pytest.mark.parametrize("memory_address_length, memory_size_length", [
-        (0x1, 0x1),
-        (0xD, 0x3),
-        (0xF, 0xF),
-    ])
-    def test_get_memory_size_and_memory_address(self, memory_address_length, memory_size_length):
-        assert (get_memory_size_and_memory_address((memory_size_length << 4) + memory_address_length)
-                == (self.mock_raw_data_record.return_value, self.mock_raw_data_record.return_value))
-        self.mock_raw_data_record.assert_has_calls([call(name="memoryAddress",
-                                                         length=8 * memory_address_length),
-                                                    call(name="memorySize",
-                                                         length=8 * memory_size_length,
-                                                         unit="bytes")],
-                                                   any_order=False)
-        
     # get_data
 
     def test_get_data__value_error(self):

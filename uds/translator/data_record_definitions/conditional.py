@@ -1,6 +1,21 @@
 """Definitions for Conditional Data Records."""
 
 __all__ = [
+    # Shared
+    "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
+    # SID 0x29
+    "CONDITIONAL_CERTIFICATE_CLIENT",
+    "CONDITIONAL_CERTIFICATE_SERVER",
+    "CONDITIONAL_CERTIFICATE_DATA",
+    "CONDITIONAL_CHALLENGE_CLIENT", "CONDITIONAL_OPTIONAL_CHALLENGE_CLIENT",
+    "CONDITIONAL_CHALLENGE_SERVER",
+    "CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT",
+    "CONDITIONAL_PROOF_OF_OWNERSHIP_SERVER",
+    "CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_CLIENT",
+    "CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_SERVER",
+    "CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER",
+    "CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER",
+    "CONDITIONAL_OPTIONAL_SESSION_KEY_INFO",
     # SID 0x86
     "EVENT_TYPE_RECORD_01",
     "EVENT_TYPE_RECORD_03_2020", "EVENT_TYPE_RECORD_03_2013",
@@ -28,6 +43,8 @@ from .formula import (
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
     get_event_type_record_09_2020,
+    get_formula_for_raw_data_record_with_length,
+    get_memory_size_and_memory_address,
 )
 
 DTC_DIDS_RECORDS_LIST_2013 = [
@@ -72,7 +89,79 @@ DTC_STORED_DATA_RECORDS_LIST_2020 = [
                                        DTC_DIDS_RECORDS_LIST_2020)
     for item in stored_data_record]
 
+# Shared
+
+CONDITIONAL_MEMORY_ADDRESS_AND_SIZE = ConditionalFormulaDataRecord(formula=get_memory_size_and_memory_address)
+"""Definition of conditional `memoryAddress` and `memorySize` Data Records."""
+
+# SID 0x29
+
+CONDITIONAL_CERTIFICATE_CLIENT = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="certificateClient",
+                                                        accept_zero_length=False))
+"""Definition of conditional `certificateClient` Data Record."""
+
+CONDITIONAL_CERTIFICATE_SERVER = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="certificateServer",
+                                                        accept_zero_length=False))
+"""Definition of conditional `certificateServer` Data Record."""
+
+CONDITIONAL_CERTIFICATE_DATA = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="certificateData",
+                                                        accept_zero_length=False))
+"""Definition of conditional `certificateData` Data Record."""
+
+CONDITIONAL_CHALLENGE_CLIENT = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="challengeClient",
+                                                        accept_zero_length=False))
+"""Definition of conditional `challengeClient` Data Record."""
+CONDITIONAL_OPTIONAL_CHALLENGE_CLIENT = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="challengeClient",
+                                                        accept_zero_length=True))
+"""Definition of optional conditional `challengeClient` Data Record."""
+
+CONDITIONAL_CHALLENGE_SERVER = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="challengeServer",
+                                                        accept_zero_length=False))
+"""Definition of conditional `challengeServer` Data Record."""
+
+CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="proofOfOwnershipClient",
+                                                        accept_zero_length=False))
+"""Definition of conditional `proofOfOwnershipClient` Data Record."""
+
+CONDITIONAL_PROOF_OF_OWNERSHIP_SERVER = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="proofOfOwnershipServer",
+                                                        accept_zero_length=False))
+"""Definition of conditional `proofOfOwnershipServer` Data Record."""
+
+CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_CLIENT = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="ephemeralPublicKeyClient",
+                                                        accept_zero_length=True))
+"""Definition of optional conditional `ephemeralPublicKeyClient` Data Record."""
+
+CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_SERVER = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="ephemeralPublicKeyServer",
+                                                        accept_zero_length=True))
+"""Definition of optional conditional `ephemeralPublicKeyServer` Data Record."""
+
+CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="neededAdditionalParameter",
+                                                        accept_zero_length=True))
+"""Definition of optional conditional `neededAdditionalParameter` Data Record."""
+
+CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="additionalParameter",
+                                                        accept_zero_length=True))
+"""Definition of optional conditional `additionalParameter` Data Record."""
+
+CONDITIONAL_OPTIONAL_SESSION_KEY_INFO = ConditionalFormulaDataRecord(
+    formula=get_formula_for_raw_data_record_with_length(data_record_name="sessionKeyInfo",
+                                                        accept_zero_length=True))
+"""Definition of optional conditional `sessionKeyInfo` Data Record."""
+
 # SID 0x86
+
 EVENT_TYPE_RECORD_01 = get_event_type_record_01()
 """Definition of `eventTypeRecord` Data Record for `event` equal to 0x01."""
 EVENT_TYPE_RECORD_03_2020 = get_event_type_record_03_2020()
