@@ -67,11 +67,10 @@ from uds.utilities import (
     DTC_STORED_DATA_RECORD_NUMBER_MAPPING,
     GROUP_OF_DTC_MAPPING,
     NO_YES_MAPPING,
-    REPEATED_DATA_RECORDS_NUMBER,
+    REPEATED_DATA_RECORDS_NUMBER, get_signed_value_decoding_formula, get_signed_value_encoding_formula
 )
 
 from ..data_record import CustomFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding
-from ..data_record_definitions.other import get_decode_signed_value_formula, get_encode_signed_value_formula
 
 # DTC
 
@@ -313,8 +312,8 @@ DTC_FUNCTIONAL_UNIT = RawDataRecord(name="DTCFunctionalUnit",
 
 FAULT_DETECTION_COUNTER = CustomFormulaDataRecord(name="DTCFaultDetectionCounter",
                                                   length=8,
-                                                  encoding_formula=get_encode_signed_value_formula(8),
-                                                  decoding_formula=get_decode_signed_value_formula(8))
+                                                  encoding_formula=get_signed_value_encoding_formula(8),
+                                                  decoding_formula=get_signed_value_decoding_formula(8))
 """Definition of :ref:`DTCFaultDetectionCounter <knowledge-base-dtc-fault-detection-counter>` Data Record."""
 
 # Mixed

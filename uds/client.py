@@ -79,12 +79,6 @@ class Client:
         :param p6_ext_client_timeout: Timeout value for P*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
-        self.transport_interface = transport_interface
-        self.p2_client_timeout = p2_client_timeout
-        self.p2_ext_client_timeout = p2_ext_client_timeout
-        self.p6_client_timeout = p6_client_timeout
-        self.p6_ext_client_timeout = p6_ext_client_timeout
-        self.s3_client = s3_client
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
@@ -100,6 +94,12 @@ class Client:
         self.__receiving_break_event.clear()
         self.__receiving_not_in_progress.set()
         self.__tester_present_stop_event.set()
+        self.transport_interface = transport_interface
+        self.p2_client_timeout = p2_client_timeout
+        self.p2_ext_client_timeout = p2_ext_client_timeout
+        self.p6_client_timeout = p6_client_timeout
+        self.p6_ext_client_timeout = p6_ext_client_timeout
+        self.s3_client = s3_client
 
     def __del__(self) -> None:
         """Safely finish all tasks."""

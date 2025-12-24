@@ -170,7 +170,7 @@ class TestClient:
     def test_p2_client_timeout__get(self):
         self.mock_client._Client__p2_client_timeout = Mock()
         assert Client.p2_client_timeout.fget(self.mock_client) == self.mock_client._Client__p2_client_timeout
-            
+
     @pytest.mark.parametrize("p2_client_timeout", [Mock(), "Some time"])
     @patch(f"{SCRIPT_LOCATION}.isinstance")
     def test_p2_client_timeout__set__type_error(self, mock_isinstance, p2_client_timeout):
@@ -301,7 +301,7 @@ class TestClient:
 
     @pytest.mark.parametrize("p6_ext_client_timeout, p2_ext_client_timeout, p6_client_timeout", [
         (Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_CLIENT_TIMEOUT),
-        (Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT, 
+        (Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT,
          Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT),
     ])
     def test_p6_ext_client_timeout__set__valid(self, p6_ext_client_timeout,
@@ -363,7 +363,7 @@ class TestClient:
     def test_is_receiving__false(self):
         self.mock_client._Client__receiving_thread = None
         assert Client.is_receiving.fget(self.mock_client) is False
-        
+
     # is_tester_present_sent
 
     def test_is_tester_present_sent__true(self):
@@ -456,7 +456,7 @@ class TestClient:
         assert Client._update_p2_ext_client_measured(self.mock_client, *p2_ext_client_measured_list) is None
         assert self.mock_client._Client__p2_ext_client_measured == tuple(p2_ext_client_measured_list)
         self.mock_warn.assert_not_called()
-        
+
     # _update_p6_client_measured
 
     @pytest.mark.parametrize("p6_client", [Mock(), "Some time"])
@@ -491,7 +491,7 @@ class TestClient:
         assert Client._update_p6_client_measured(self.mock_client, p6_client_measured) is None
         assert self.mock_client._Client__p6_client_measured == p6_client_measured
         self.mock_warn.assert_not_called()
-        
+
     # _update_p6_ext_client_measured
 
     @pytest.mark.parametrize("p6_ext_client", [Mock(), "Some time"])

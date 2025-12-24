@@ -74,7 +74,15 @@ from .constants import (
     UNIT_OR_FORMAT_MAPPING,
     ZERO_SUB_FUNCTION_MAPPING,
 )
-from .conversions import bytes_to_hex, bytes_to_int, int_to_bytes, int_to_obd_dtc, obd_dtc_to_int
+from .conversions import (
+    bytes_to_hex,
+    bytes_to_int,
+    get_signed_value_decoding_formula,
+    get_signed_value_encoding_formula,
+    int_to_bytes,
+    int_to_obd_dtc,
+    obd_dtc_to_int,
+)
 from .custom_exceptions import (
     AmbiguityError,
     InconsistencyError,

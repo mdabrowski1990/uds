@@ -17,8 +17,6 @@ __all__ = [
     "MEMORY_SELECTION",
     # SID 0x22
     "ACTIVE_DIAGNOSTIC_SESSION",
-    # SID 0x24
-    "SCALING_DATA_RECORDS",
     # SID 0x27
     "CONDITIONAL_SECURITY_ACCESS_REQUEST", "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
     # SID 0x28
@@ -76,8 +74,8 @@ __all__ = [
     "CONDITIONAL_LINK_CONTROL_REQUEST",
 ]
 
-from decimal import Decimal
-from typing import Callable, Optional, Tuple, Union
+
+from typing import Optional, Tuple, Union
 
 from uds.utilities import (
     AUTHENTICATION_RETURN_PARAMETER_MAPPING,
@@ -100,7 +98,6 @@ from uds.utilities import (
     NO_YES_MAPPING,
     NODE_IDENTIFICATION_NUMBER_MAPPING,
     POWER_DOWN_TIME_MAPPING,
-    REPEATED_DATA_RECORDS_NUMBER,
     SCALING_BYTE_TYPE_MAPPING,
     STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING,
     STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING,
@@ -109,11 +106,11 @@ from uds.utilities import (
     TIMER_SCHEDULE_MAPPING_2013,
     TRANSMISSION_MODE_MAPPING,
     UNIT_OR_FORMAT_MAPPING,
-    InconsistencyError,
+    get_signed_value_decoding_formula,
+    get_signed_value_encoding_formula,
 )
 
 from ..data_record import (
-    AliasMessageStructure,
     ConditionalFormulaDataRecord,
     ConditionalMappingDataRecord,
     CustomFormulaDataRecord,
@@ -133,199 +130,22 @@ from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 
 
-def get_scaling_byte_extension(scaling_byte: int,
-                               scaling_byte_number: int
-                               ) -> Tuple[Union[RawDataRecord, ConditionalFormulaDataRecord], ...]:
-    """
-    Get scalingByteExtension Data Records for given scalingByte value.
-
-    :param scaling_byte: Proceeding `scalingByte` value.
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
-
-    :raise InconsistencyError: Provided `scalingByte` equals 0x20.
-
-    :return: Data Records for scalingByteExtension.
-    """
-    parameter_type = (scaling_byte & 0xF0) >> 4
-    number_of_bytes = scaling_byte & 0x0F
-    if parameter_type == 0x2:  # bitMappedReportedWithOutMask
-        if number_of_bytes == 0:
-            raise InconsistencyError("Provided `scalingByte` value is incorrect (0x20) - byte length equals 0.")
-        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
-                              length=8 * number_of_bytes,
-                              children=(RawDataRecord(name="validityMask",
-                                                      length=8 * number_of_bytes),)),)
-    if parameter_type == 0x9:  # formula
-        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
-                              length=FORMULA_IDENTIFIER.length,
-                              children=(FORMULA_IDENTIFIER,)),
-                ConditionalFormulaDataRecord(
-                    formula=get_formula_data_records_for_formula_parameters(scaling_byte_number)),)
-    if parameter_type == 0xA:  # unit/format
-        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
-                              length=UNIT_OR_FORMAT.length,
-                              children=(UNIT_OR_FORMAT,)),)
-    if parameter_type == 0xB:  # stateAndConnectionType
-        return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
-                              length=STATE_AND_CONNECTION_TYPE.length,
-                              children=(STATE_AND_CONNECTION_TYPE,)),)
-    return ()
 
 
-def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], AliasMessageStructure]:
-    """
-    Get formula that can be used by Conditional Data Record for getting scalingByteExtension Data Records.
-
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
-
-    :return: Formula for given scaling byte number.
-    """
-    return lambda scaling_byte: get_scaling_byte_extension(scaling_byte=scaling_byte,
-                                                           scaling_byte_number=scaling_byte_number)
 
 
-def get_data_records_for_formula_parameters(formula_identifier: int,
-                                            scaling_byte_number: int) -> Tuple[CustomFormulaDataRecord, ...]:
-    """
-    Get coefficients' Data Records for formula type parameter.
-
-    :param formula_identifier: Formula Identifier used.
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
-
-    :raise ValueError: Undefined value of Formula Identifier was provided.
-
-    :return: Tuple with coefficients' Data Records for given formula type parameter.
-    """
-    physical_value = FORMULA_IDENTIFIER.get_physical_value(formula_identifier)
-    if isinstance(physical_value, str) and "C0" in physical_value:
-        data_records = []
-        constant_index = 0
-        encoding_formula = get_encode_float_value_formula(exponent_bit_length=EXPONENT_BIT_LENGTH,
-                                                          mantissa_bit_length=MANTISSA_BIT_LENGTH)
-        decoding_formula = get_decode_float_value_formula(exponent_bit_length=EXPONENT_BIT_LENGTH,
-                                                          mantissa_bit_length=MANTISSA_BIT_LENGTH)
-        length = EXPONENT_BIT_LENGTH + MANTISSA_BIT_LENGTH
-        while f"C{constant_index}" in physical_value:
-            data_records.append(CustomFormulaDataRecord(name=f"C{constant_index}#{scaling_byte_number}",
-                                                        length=length,
-                                                        children=(EXPONENT, MANTISSA),
-                                                        encoding_formula=encoding_formula,
-                                                        decoding_formula=decoding_formula))
-            constant_index += 1
-        return tuple(data_records)
-    raise ValueError(f"Unknown formula identifier was provided: 0x{formula_identifier:02X}.")
 
 
-def get_formula_data_records_for_formula_parameters(scaling_byte_number: int
-                                                    ) -> Callable[[int], Tuple[CustomFormulaDataRecord, ...]]:
-    """
-    Get formula that can be used by Conditional Data Record for getting formula coefficients.
-
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
-
-    :return: Formula for given scaling byte number.
-    """
-    return lambda formula_identifier: get_data_records_for_formula_parameters(formula_identifier=formula_identifier,
-                                                                              scaling_byte_number=scaling_byte_number)
 
 
-def get_decode_signed_value_formula(bit_length: int) -> Callable[[int], int]:
-    """
-    Get formula for decoding signed integer value.
-
-    :param bit_length: Number of bits used for signed integer value.
-
-    :raise TypeError: Provided value is not int type.
-    :raise ValueError: Provided value is out of range.
-
-    :return: Formula for decoding singed integer value from unsigned integer value.
-    """
-    if not isinstance(bit_length, int):
-        raise TypeError("Provided `bit_length` value is not int type.")
-    if bit_length < 2:
-        raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
-
-    def decode_signed_value(value: int) -> int:
-        max_value = (1 << bit_length) - 1
-        msb_value = 1 << (bit_length - 1)
-        if not 0 <= value <= max_value:
-            raise ValueError(f"Provided value is out of range (0 <= value <= {max_value}): {value}.")
-        return (- (value & msb_value)) + (value & (max_value ^ msb_value))
-    return decode_signed_value
 
 
-def get_encode_signed_value_formula(bit_length: int) -> Callable[[int], int]:
-    """
-    Get formula for encoding signed integer value.
-
-    :param bit_length: Number of bits used for signed integer value.
-
-    :raise TypeError: Provided value is not int type.
-    :raise ValueError: Provided value is out of range.
-
-    :return: Formula for encoding singed integer value into unsinged integer value.
-    """
-    if not isinstance(bit_length, int):
-        raise TypeError("Provided `bit_length` value is not int type.")
-    if bit_length < 2:
-        raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
-
-    def encode_signed_value(value: int) -> int:
-        msb_value = 1 << (bit_length - 1)
-        min_value = - msb_value
-        max_value = msb_value - 1
-        if not min_value <= value <= max_value:
-            raise ValueError(f"Provided value is out of range ({min_value} <= value <= {max_value}): {value}.")
-        if value >= 0:
-            return value
-        return 2 * msb_value + value
-    return encode_signed_value
 
 
-def get_decode_float_value_formula(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[int], float]:
-    """
-    Get formula for decoding float value.
-
-    :param exponent_bit_length: Number of bits used for exponent's signed integer value.
-    :param mantissa_bit_length: Number of bits used for mantissa's signed integer value.
-
-    :return: Formula for decoding float value from unsigned integer value.
-    """
-    exponent_encode_formula = get_encode_signed_value_formula(exponent_bit_length)
-    mantissa_encode_formula = get_encode_signed_value_formula(mantissa_bit_length)
-    exponent_mask = ((1 << exponent_bit_length) - 1) << mantissa_bit_length
-    mantissa_mask = (1 << mantissa_bit_length) - 1
-
-    def get_float_value(value: int) -> float:
-        exponent_unsigned_value = (value & exponent_mask) >> mantissa_bit_length
-        mantissa_unsigned_value = value & mantissa_mask
-        exponent_value: int = exponent_encode_formula(exponent_unsigned_value)
-        mantissa_value: int = mantissa_encode_formula(mantissa_unsigned_value)
-        return float(10 ** exponent_value) * mantissa_value
-    return get_float_value
 
 
-def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[float], int]:
-    """
-    Get formula for encoding float value.
 
-    :param exponent_bit_length: Number of bits used for exponent's signed integer value.
-    :param mantissa_bit_length: Number of bits used for mantissa's signed integer value.
 
-    :return: Formula for encoding float value into unsigned integer value.
-    """
-    exponent_decode_formula = get_decode_signed_value_formula(exponent_bit_length)
-    mantissa_decode_formula = get_decode_signed_value_formula(mantissa_bit_length)
-
-    def get_unsinged_value(value: float) -> int:
-        sign, digits, exponent_signed_value = Decimal(str(value)).normalize().as_tuple()
-        if not isinstance(exponent_signed_value, int):
-            raise ValueError("No handling for literal values.")
-        mantissa_signed_value = int(f"{'-' if sign else ''}{''.join((str(digit) for digit in digits))}")
-        exponent_unsigned_value = exponent_decode_formula(exponent_signed_value)
-        mantissa_unsigned_value = mantissa_decode_formula(mantissa_signed_value)
-        return (exponent_unsigned_value << mantissa_bit_length) + mantissa_unsigned_value
-    return get_unsinged_value
 
 
 def get_file_path_and_name(file_path_and_name_length: int) -> Tuple[TextDataRecord]:
@@ -699,29 +519,23 @@ SCALING_BYTE_TYPE = MappingDataRecord(name="type",
 SCALING_BYTE_LENGTH = RawDataRecord(name="numberOfBytesOfParameter",
                                     length=4,
                                     unit="bytes")
-SCALING_BYTES_LIST = [RawDataRecord(name=f"scalingByte#{index + 1}",
-                                    children=(SCALING_BYTE_TYPE, SCALING_BYTE_LENGTH),
-                                    length=8,
-                                    min_occurrences=1 if index == 0 else 0,
-                                    max_occurrences=1)
-                      for index in range(REPEATED_DATA_RECORDS_NUMBER)]
-SCALING_BYTES_EXTENSIONS_LIST = [ConditionalFormulaDataRecord(formula=get_scaling_byte_extension_formula(index + 1))
-                                 for index in range(REPEATED_DATA_RECORDS_NUMBER)]
-SCALING_DATA_RECORDS = [item for scaling_data_records in zip(SCALING_BYTES_LIST,
-                                                             SCALING_BYTES_EXTENSIONS_LIST)
-                        for item in scaling_data_records]
 
 FORMULA_IDENTIFIER = MappingDataRecord(name="formulaIdentifier",
                                        length=8,
                                        values_mapping=FORMULA_IDENTIFIER_MAPPING)
+
 EXPONENT = CustomFormulaDataRecord(name="Exponent",
                                    length=EXPONENT_BIT_LENGTH,
-                                   encoding_formula=get_encode_signed_value_formula(EXPONENT_BIT_LENGTH),
-                                   decoding_formula=get_decode_signed_value_formula(EXPONENT_BIT_LENGTH))
+                                   encoding_formula=get_signed_value_encoding_formula(EXPONENT_BIT_LENGTH),
+                                   decoding_formula=get_signed_value_decoding_formula(EXPONENT_BIT_LENGTH))
+"""Definition of `Exponent` Data Record."""
+
 MANTISSA = CustomFormulaDataRecord(name="Mantissa",
                                    length=MANTISSA_BIT_LENGTH,
-                                   encoding_formula=get_encode_signed_value_formula(MANTISSA_BIT_LENGTH),
-                                   decoding_formula=get_decode_signed_value_formula(MANTISSA_BIT_LENGTH))
+                                   encoding_formula=get_signed_value_encoding_formula(MANTISSA_BIT_LENGTH),
+                                   decoding_formula=get_signed_value_decoding_formula(MANTISSA_BIT_LENGTH))
+"""Definition of `Mantissa` Data Record."""
+
 
 UNIT_OR_FORMAT = MappingDataRecord(name="unit/format",
                                    length=8,

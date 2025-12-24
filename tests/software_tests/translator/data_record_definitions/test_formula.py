@@ -12,10 +12,13 @@ from uds.translator.data_record_definitions.formula import (
     DID_MAPPING_2013,
     DID_MAPPING_2020,
     DTC_STATUS_MASK,
+    FORMULA_IDENTIFIER,
     HYSTERESIS_VALUE,
     LOCALIZATION,
     REPORT_TYPE_2020,
     RESERVED_BIT,
+    STATE_AND_CONNECTION_TYPE,
+    UNIT_OR_FORMAT,
     get_conditional_event_type_record_09_2020,
     get_data,
     get_data_from_memory,
@@ -32,13 +35,15 @@ from uds.translator.data_record_definitions.formula import (
     get_event_type_record_01,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
-    get_event_type_record_07_2013,
+    get_event_type_record_07_2013,get_coefficients, get_formula_coefficients,EXPONENT_BIT_LENGTH, MANTISSA_BIT_LENGTH,EXPONENT, MANTISSA,
     get_event_type_record_07_2020,
     get_event_type_record_09_2020,
-    get_formula_for_raw_data_record_with_length,
+    get_formula_raw_data_record_with_length,
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
+    get_scaling_byte_extension,
+    get_formula_scaling_byte_extension,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.formula"
@@ -52,6 +57,8 @@ class TestFunctions:
         self.mock_raw_data_record = self._patcher_raw_data_record.start()
         self._patcher_mapping_data_record = patch(f"{SCRIPT_LOCATION}.MappingDataRecord")
         self.mock_mapping_data_record = self._patcher_mapping_data_record.start()
+        self._patcher_custom_formula_data_record = patch(f"{SCRIPT_LOCATION}.CustomFormulaDataRecord")
+        self.mock_custom_formula_data_record = self._patcher_custom_formula_data_record.start()
         self._patcher_conditional_mapping_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord")
         self.mock_conditional_mapping_data_record = self._patcher_conditional_mapping_data_record.start()
         self._patcher_conditional_formula_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord")
@@ -60,6 +67,7 @@ class TestFunctions:
     def teardown_method(self):
         self._patcher_raw_data_record.stop()
         self._patcher_mapping_data_record.stop()
+        self._patcher_custom_formula_data_record.stop()
         self._patcher_conditional_mapping_data_record.stop()
         self._patcher_conditional_formula_data_record.stop()
 
@@ -70,14 +78,14 @@ class TestFunctions:
         (False, 0),
     ])
     def test_get_formula_for_raw_data_record_with_length__formula_value_error(self, accept_zero_length, length):
-        formula = get_formula_for_raw_data_record_with_length(data_record_name=MagicMock(),
-                                                              accept_zero_length=accept_zero_length)
+        formula = get_formula_raw_data_record_with_length(data_record_name=MagicMock(),
+                                                          accept_zero_length=accept_zero_length)
         with pytest.raises(ValueError):
             formula(-1)
 
     def test_get_formula_for_raw_data_record_with_length__empty(self):
-        formula = get_formula_for_raw_data_record_with_length(data_record_name=MagicMock(),
-                                                              accept_zero_length=True)
+        formula = get_formula_raw_data_record_with_length(data_record_name=MagicMock(),
+                                                          accept_zero_length=True)
         assert formula(0) == ()
 
     @pytest.mark.parametrize("data_record_name, accept_zero_length, length", [
@@ -85,8 +93,8 @@ class TestFunctions:
         ("XYZ - abc", False, 1),
     ])
     def test_get_formula_for_raw_data_record_with_length__value(self, data_record_name, accept_zero_length, length):
-        formula = get_formula_for_raw_data_record_with_length(data_record_name=data_record_name,
-                                                              accept_zero_length=accept_zero_length)
+        formula = get_formula_raw_data_record_with_length(data_record_name=data_record_name,
+                                                          accept_zero_length=accept_zero_length)
         assert formula(length) == (self.mock_raw_data_record.return_value, )
         self.mock_raw_data_record.assert_called_once_with(name=data_record_name,
                                                           length=8,
@@ -252,6 +260,128 @@ class TestFunctions:
         assert formula(mock_did_count) == mock_get_dids_2013.return_value
         mock_get_dids_2013.assert_called_once_with(did_count=mock_did_count,
                                                    record_number=mock_record_number)
+
+    # get_scaling_byte_extension
+
+    def test_get_scaling_byte_extension__2__inconsistency_Error(self):
+        with pytest.raises(ValueError):
+            get_scaling_byte_extension(0x20, Mock())
+
+    @pytest.mark.parametrize("number_of_bytes, scaling_byte_number", [
+        (1, 23),
+        (15, 1)
+    ])
+    def test_get_scaling_byte_extension__2(self, number_of_bytes, scaling_byte_number):
+        assert (get_scaling_byte_extension(0x20 + number_of_bytes, scaling_byte_number)
+                == (self.mock_raw_data_record.return_value,))
+        self.mock_raw_data_record.assert_called_with(name=f"scalingByteExtension#{scaling_byte_number}",
+                                                     length=8 * number_of_bytes,
+                                                     children=(self.mock_raw_data_record.return_value,))
+
+    @pytest.mark.parametrize("number_of_bytes, scaling_byte_number", [
+        (1, 23),
+        (15, 1)
+    ])
+    @patch(f"{SCRIPT_LOCATION}.get_formula_coefficients")
+    def test_get_scaling_byte_extension__9(self, mock_get_formula_coefficients,
+                                           number_of_bytes, scaling_byte_number):
+        assert (get_scaling_byte_extension(0x90 + number_of_bytes, scaling_byte_number)
+                == (self.mock_raw_data_record.return_value, self.mock_conditional_formula_data_record.return_value))
+        self.mock_raw_data_record.assert_called_once_with(name=f"scalingByteExtension#{scaling_byte_number}",
+                                                          length=FORMULA_IDENTIFIER.length,
+                                                          children=(FORMULA_IDENTIFIER,))
+        self.mock_conditional_formula_data_record.assert_called_once_with(
+            formula=mock_get_formula_coefficients.return_value)
+        mock_get_formula_coefficients.assert_called_once_with(scaling_byte_number)
+
+    @pytest.mark.parametrize("number_of_bytes, scaling_byte_number", [
+        (1, 23),
+        (15, 1)
+    ])
+    def test_get_scaling_byte_extension__A(self, number_of_bytes, scaling_byte_number):
+        assert (get_scaling_byte_extension(0xA0 + number_of_bytes, scaling_byte_number)
+                == (self.mock_raw_data_record.return_value,))
+        self.mock_raw_data_record.assert_called_with(name=f"scalingByteExtension#{scaling_byte_number}",
+                                                     length=UNIT_OR_FORMAT.length,
+                                                     children=(UNIT_OR_FORMAT,))
+
+    @pytest.mark.parametrize("number_of_bytes, scaling_byte_number", [
+        (1, 23),
+        (15, 1)
+    ])
+    def test_get_scaling_byte_extension__B(self, number_of_bytes, scaling_byte_number):
+        assert (get_scaling_byte_extension(0xB0 + number_of_bytes, scaling_byte_number)
+                == (self.mock_raw_data_record.return_value,))
+        self.mock_raw_data_record.assert_called_with(name=f"scalingByteExtension#{scaling_byte_number}",
+                                                     length=STATE_AND_CONNECTION_TYPE.length,
+                                                     children=(STATE_AND_CONNECTION_TYPE,))
+
+    @pytest.mark.parametrize("scaling_byte", [0x00, 0x15, 0xF1])
+    def test_get_scaling_byte_extension__other(self, scaling_byte):
+        assert get_scaling_byte_extension(scaling_byte, Mock()) == ()
+
+    # get_formula_scaling_byte_extension
+
+    @patch(f"{SCRIPT_LOCATION}.get_scaling_byte_extension")
+    def test_get_scaling_byte_extension_formula(self, mock_get_scaling_byte_extension):
+        mock_scaling_byte = Mock()
+        mock_scaling_byte_number = Mock()
+        formula = get_formula_scaling_byte_extension(mock_scaling_byte_number)
+        assert callable(formula)
+        assert formula(mock_scaling_byte) == mock_get_scaling_byte_extension.return_value
+        mock_get_scaling_byte_extension.assert_called_once_with(scaling_byte=mock_scaling_byte,
+                                                                scaling_byte_number=mock_scaling_byte_number)
+
+    # get_coefficients
+
+    @pytest.mark.parametrize("raw_value, physical_value", [
+        (0xFF, Mock()),
+        (0xAB, "some unknown formula"),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.FORMULA_IDENTIFIER")
+    def test_get_coefficients__value_error(self, mock_formula_identifier, raw_value, physical_value):
+        mock_formula_identifier.get_physical_value.return_value = physical_value
+        with pytest.raises(ValueError):
+            get_coefficients(formula_identifier=raw_value, scaling_byte_number=1)
+        mock_formula_identifier.get_physical_value.assert_called_once_with(raw_value)
+
+    @pytest.mark.parametrize("raw_value, scaling_byte_number, constants_names", [
+        (0x00, 1, ("C0#1", "C1#1")),
+        (0x07, 5, ("C0#5",)),
+        (0x09, 12, ("C0#12", "C1#12")),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.get_formula_decode_float_value")
+    @patch(f"{SCRIPT_LOCATION}.get_formula_encode_float_value")
+    def test_get_coefficients(self, mock_get_formula_encode_float_value,
+                              mock_get_formula_decode_float_value,
+                              raw_value, scaling_byte_number, constants_names):
+        assert (get_coefficients(formula_identifier=raw_value,
+                                 scaling_byte_number=scaling_byte_number)
+                == (self.mock_custom_formula_data_record.return_value,) * len(constants_names))
+        self.mock_custom_formula_data_record.assert_has_calls(
+            [call(name=constant_name,
+                  length=EXPONENT_BIT_LENGTH + MANTISSA_BIT_LENGTH,
+                  children=(EXPONENT, MANTISSA),
+                  encoding_formula=mock_get_formula_encode_float_value.return_value,
+                  decoding_formula=mock_get_formula_decode_float_value.return_value)
+             for constant_name in constants_names],
+            any_order=False)
+        mock_get_formula_encode_float_value.assert_called_once_with(exponent_bit_length=EXPONENT_BIT_LENGTH,
+                                                                    mantissa_bit_length=MANTISSA_BIT_LENGTH)
+        mock_get_formula_encode_float_value.assert_called_once_with(exponent_bit_length=EXPONENT_BIT_LENGTH,
+                                                                    mantissa_bit_length=MANTISSA_BIT_LENGTH)
+
+    # get_formula_coefficients
+
+    @pytest.mark.parametrize("scaling_byte_number", [4, 10])
+    @patch(f"{SCRIPT_LOCATION}.get_coefficients")
+    def test_get_formula_coefficients(self, mock_get_coefficients,
+                                                             scaling_byte_number):
+        mock_formula_identifier = Mock()
+        formula = get_formula_coefficients(scaling_byte_number)
+        assert formula(mock_formula_identifier) == mock_get_coefficients.return_value
+        mock_get_coefficients.assert_called_once_with(formula_identifier=mock_formula_identifier,
+                                                                             scaling_byte_number=scaling_byte_number)
 
     # get_data_from_memory
 
