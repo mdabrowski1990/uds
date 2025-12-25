@@ -17,8 +17,6 @@ __all__ = [
     "MEMORY_SELECTION",
     # SID 0x22
     "ACTIVE_DIAGNOSTIC_SESSION",
-    # SID 0x27
-    "CONDITIONAL_SECURITY_ACCESS_REQUEST", "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
     # SID 0x28
     "CONDITIONAL_COMMUNICATION_CONTROL_REQUEST",
     # SID 0x29
@@ -150,30 +148,7 @@ from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 
 
-def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
-    """
-    Get SecurityAccess Data Records that are part of request message for given SubFunction value.
 
-    :param sub_function: SubFunction value.
-
-    :return: Data Records that are present in the request message after given SubFunction value.
-    """
-    if sub_function % 2:
-        return (SECURITY_ACCESS_DATA,)
-    return (SECURITY_KEY,)
-
-
-def get_security_access_response(sub_function: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
-    """
-    Get SecurityAccess Data Records that are part of response message for given SubFunction value.
-
-    :param sub_function: SubFunction value.
-
-    :return: Data Records that are present in the response message after given SubFunction value.
-    """
-    if sub_function % 2:
-        return (SECURITY_SEED,)
-    return ()
 
 
 def get_communication_control_request(sub_function: int
@@ -498,8 +473,7 @@ SECURITY_KEY = RawDataRecord(name="securityKey",
                              length=8,
                              min_occurrences=1,
                              max_occurrences=None)
-CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(formula=get_security_access_request)
-CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(formula=get_security_access_response)
+
 
 # SID 0x28
 MESSAGES_TYPE = MappingDataRecord(name="messagesType",

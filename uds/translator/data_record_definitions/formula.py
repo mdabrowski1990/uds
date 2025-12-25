@@ -14,6 +14,9 @@ __all__ = [
     # SID 0x24
     "get_scaling_byte_extension", "get_formula_scaling_byte_extension",
     "get_coefficients", "get_formula_coefficients",
+    # SID 0x27
+    "get_security_access_request",
+    "get_security_access_response",
     # SID 0x2C
     "get_data_from_memory",
     # SID 0x2F
@@ -73,6 +76,9 @@ from .other import (
     MANTISSA,
     MEMORY_SELECTION,
     RESERVED_BIT,
+    SECURITY_ACCESS_DATA,
+    SECURITY_KEY,
+    SECURITY_SEED,
     STATE_AND_CONNECTION_TYPE,
     UNIT_OR_FORMAT,
 )
@@ -469,6 +475,35 @@ def get_formula_coefficients(scaling_byte_number: int) -> Callable[[int], Tuple[
     """
     return lambda formula_identifier: get_coefficients(formula_identifier=formula_identifier,
                                                        scaling_byte_number=scaling_byte_number)
+
+
+# SID 0x27
+
+
+def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
+    """
+    Get SecurityAccess Data Records that are part of request message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the request message after given SubFunction value.
+    """
+    if sub_function % 2:
+        return (SECURITY_ACCESS_DATA,)
+    return (SECURITY_KEY,)
+
+
+def get_security_access_response(sub_function: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
+    """
+    Get SecurityAccess Data Records that are part of response message for given SubFunction value.
+
+    :param sub_function: SubFunction value.
+
+    :return: Data Records that are present in the response message after given SubFunction value.
+    """
+    if sub_function % 2:
+        return (SECURITY_SEED,)
+    return ()
 
 
 # SID 0x2C

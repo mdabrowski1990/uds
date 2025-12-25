@@ -12,13 +12,22 @@ from uds.translator.data_record_definitions.formula import (
     DID_MAPPING_2013,
     DID_MAPPING_2020,
     DTC_STATUS_MASK,
+    EXPONENT,
+    EXPONENT_BIT_LENGTH,
     FORMULA_IDENTIFIER,
     HYSTERESIS_VALUE,
     LOCALIZATION,
+    MANTISSA,
+    MANTISSA_BIT_LENGTH,
     REPORT_TYPE_2020,
     RESERVED_BIT,
+    SECURITY_ACCESS_DATA,
+    SECURITY_KEY,
+    SECURITY_SEED,
     STATE_AND_CONNECTION_TYPE,
     UNIT_OR_FORMAT,
+    TextEncoding,
+    get_coefficients,
     get_conditional_event_type_record_09_2020,
     get_data,
     get_data_from_memory,
@@ -30,20 +39,27 @@ from uds.translator.data_record_definitions.formula import (
     get_did_data_mask_2020,
     get_did_records_formula_2013,
     get_did_records_formula_2020,
-    get_dids_2013, get_file_path_and_name, get_file_sizes, get_file_sizes_or_dir_info,get_dir_info, TextEncoding,
+    get_dids_2013,
     get_dids_2020,
+    get_dir_info,
     get_event_type_record_01,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
-    get_event_type_record_07_2013,get_coefficients, get_formula_coefficients,EXPONENT_BIT_LENGTH, MANTISSA_BIT_LENGTH,EXPONENT, MANTISSA,
+    get_event_type_record_07_2013,
     get_event_type_record_07_2020,
     get_event_type_record_09_2020,
+    get_file_path_and_name,
+    get_file_sizes,
+    get_file_sizes_or_dir_info,
+    get_formula_coefficients,
     get_formula_raw_data_record_with_length,
+    get_formula_scaling_byte_extension,
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
     get_scaling_byte_extension,
-    get_formula_scaling_byte_extension,
+    get_security_access_request,
+    get_security_access_response,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.formula"
@@ -385,6 +401,26 @@ class TestFunctions:
         assert formula(mock_formula_identifier) == mock_get_coefficients.return_value
         mock_get_coefficients.assert_called_once_with(formula_identifier=mock_formula_identifier,
                                                                              scaling_byte_number=scaling_byte_number)
+
+    # get_security_access_request
+
+    @pytest.mark.parametrize("sub_function", [1, 93, 253])
+    def test_get_security_access_request__odd(self, sub_function):
+        assert get_security_access_request(sub_function) == (SECURITY_ACCESS_DATA,)
+
+    @pytest.mark.parametrize("sub_function", [2, 48, 254])
+    def test_get_security_access_request__even(self, sub_function):
+        assert get_security_access_request(sub_function) == (SECURITY_KEY,)
+
+    # get_security_access_response
+
+    @pytest.mark.parametrize("sub_function", [1, 93, 253])
+    def test_get_security_access_response__odd(self, sub_function):
+        assert get_security_access_response(sub_function) == (SECURITY_SEED,)
+
+    @pytest.mark.parametrize("sub_function", [2, 48, 254])
+    def test_get_security_access_response__even(self, sub_function):
+        assert get_security_access_response(sub_function) == ()
 
     # get_data_from_memory
 

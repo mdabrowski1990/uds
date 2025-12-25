@@ -4,6 +4,9 @@ __all__ = [
     # Shared
     "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
     "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
+    # SID 0x27
+    "CONDITIONAL_SECURITY_ACCESS_REQUEST",
+    "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
     # SID 0x29
     "CONDITIONAL_CERTIFICATE_CLIENT",
     "CONDITIONAL_CERTIFICATE_SERVER",
@@ -65,6 +68,8 @@ from .formula import (
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
+    get_security_access_request,
+    get_security_access_response,
 )
 from .other import SCALING_BYTE_LENGTH, SCALING_BYTE_TYPE
 
@@ -136,6 +141,16 @@ SCALING_DATA_RECORDS = [item for scaling_data_records in zip(SCALING_BYTES_LIST,
                                                              SCALING_BYTES_EXTENSIONS_LIST)
                         for item in scaling_data_records]
 """Collection of `scalingByte` and `scalingByteExtension` Data Records."""
+
+# SID 0x27
+
+CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(formula=get_security_access_request)
+"""Definition of conditional continuation of 
+:ref:`SecurityAccess <knowledge-base-service-security-access>` request message."""
+
+CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(formula=get_security_access_response)
+"""Definition of conditional continuation of 
+:ref:`SecurityAccess <knowledge-base-service-security-access>` response message."""
 
 # SID 0x29
 

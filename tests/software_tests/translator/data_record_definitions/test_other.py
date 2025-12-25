@@ -26,8 +26,6 @@ from uds.translator.data_record_definitions.other import (
     get_event_window_2020,
     get_secured_data_transmission_request,
     get_secured_data_transmission_response,
-    get_security_access_request,
-    get_security_access_response,
     get_service_to_respond,
 )
 
@@ -62,25 +60,7 @@ class TestFormulas:
 
 
 
-    # get_security_access_request
 
-    @pytest.mark.parametrize("sub_function", [1, 93, 253])
-    def test_get_security_access_request__odd(self, sub_function):
-        assert get_security_access_request(sub_function) == (SECURITY_ACCESS_DATA,)
-
-    @pytest.mark.parametrize("sub_function", [2, 48, 254])
-    def test_get_security_access_request__even(self, sub_function):
-        assert get_security_access_request(sub_function) == (SECURITY_KEY,)
-
-    # get_security_access_response
-
-    @pytest.mark.parametrize("sub_function", [1, 93, 253])
-    def test_get_security_access_response__odd(self, sub_function):
-        assert get_security_access_response(sub_function) == (SECURITY_SEED,)
-
-    @pytest.mark.parametrize("sub_function", [2, 48, 254])
-    def test_get_security_access_response__even(self, sub_function):
-        assert get_security_access_response(sub_function) == ()
 
     # get_communication_control_request
 
