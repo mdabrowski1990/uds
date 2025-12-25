@@ -36,10 +36,13 @@ __all__ = [
     "CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST",
     "CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE",
     # SID 0x86
+    "EVENT_WINDOW_TIME_2020", "EVENT_WINDOW_TIME_2013",
     "EVENT_TYPE_RECORD_01",
     "EVENT_TYPE_RECORD_03_2020", "EVENT_TYPE_RECORD_03_2013",
     "EVENT_TYPE_RECORD_07_2020", "EVENT_TYPE_RECORD_07_2013",
-    "EVENT_TYPE_RECORD_09_2020", "CONDITIONAL_EVENT_TYPE_RECORD_09_2020"
+    "EVENT_TYPE_RECORD_08_2020",
+    "EVENT_TYPE_RECORD_09_2020", "CONDITIONAL_EVENT_TYPE_RECORD_09_2020",
+    "SERVICE_TO_RESPOND",
 ]
 
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
@@ -53,18 +56,24 @@ from .dtc import (
     OPTIONAL_DTCS_AND_STATUSES_LIST,
 )
 from .formula import (
-    get_conditional_event_type_record_09_2020,
     get_data,
     get_data_from_memory,
     get_did_records_formula_2013,
     get_did_records_formula_2020,
     get_dir_info,
+    get_event_type_of_active_event_2013,
+    get_event_type_of_active_event_2020,
     get_event_type_record_01,
+    get_event_type_record_02_2013,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
+    get_event_type_record_08_2020,
     get_event_type_record_09_2020,
+    get_event_type_record_09_2020_continuation,
+    get_event_window_2013,
+    get_event_window_2020,
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
@@ -77,6 +86,7 @@ from .formula import (
     get_secured_data_transmission_response,
     get_security_access_request,
     get_security_access_response,
+    get_service_to_respond,
 )
 from .other import COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER, SCALING_BYTE_LENGTH, SCALING_BYTE_TYPE
 
@@ -280,6 +290,11 @@ CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
 
 # SID 0x86
 
+EVENT_WINDOW_TIME_2020 = get_event_window_2020()
+"""Definition of `eventWindowTime` Data Record (compatible with ISO 14229-1:2020)."""
+EVENT_WINDOW_TIME_2013 = get_event_window_2013()
+"""Definition of `eventWindowTime` Data Record (compatible with ISO 14229-1:2013)."""
+
 EVENT_TYPE_RECORD_01 = get_event_type_record_01()
 """Definition of `eventTypeRecord` Data Record for `event` equal to 0x01."""
 EVENT_TYPE_RECORD_03_2020 = get_event_type_record_03_2020()
@@ -290,7 +305,12 @@ EVENT_TYPE_RECORD_07_2020 = get_event_type_record_07_2020()
 """Definition of `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x07."""
 EVENT_TYPE_RECORD_07_2013 = get_event_type_record_07_2013()
 """Definition of `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x07."""
+EVENT_TYPE_RECORD_08_2020 = get_event_type_record_08_2020()
+"""Definition of `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x08."""
 EVENT_TYPE_RECORD_09_2020 = get_event_type_record_09_2020()
 """Definition of `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x09."""
-CONDITIONAL_EVENT_TYPE_RECORD_09_2020 = get_conditional_event_type_record_09_2020()
+CONDITIONAL_EVENT_TYPE_RECORD_09_2020 = get_event_type_record_09_2020_continuation()
 """Continuation of `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x09."""
+
+SERVICE_TO_RESPOND = get_service_to_respond()
+"""Definition of `serviceToRespondToRecord` Data Record."""

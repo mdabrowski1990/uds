@@ -32,8 +32,8 @@ class TestResponseOnEvent:
         self.mock_get_service_to_respond = self._patcher_get_service_to_respond.start()
         self._patcher_get_event_type_record_01 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
         self.mock_get_event_type_record_01 = self._patcher_get_event_type_record_01.start()
-        self._patcher_get_event_type_record_02 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_02")
-        self.mock_get_event_type_record_02 = self._patcher_get_event_type_record_02.start()
+        self._patcher_get_event_type_record_02_2013 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_02_2013")
+        self.mock_get_event_type_record_02_2013 = self._patcher_get_event_type_record_02_2013.start()
         self._patcher_get_event_type_record_03_2013 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2013")
         self.mock_get_event_type_record_03_2013 = self._patcher_get_event_type_record_03_2013.start()
         self._patcher_get_event_type_record_03_2020 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2020")
@@ -46,10 +46,10 @@ class TestResponseOnEvent:
         self.mock_get_event_type_record_08_2020 = self._patcher_get_event_type_record_08_2020.start()
         self._patcher_get_event_type_record_09_2020 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020")
         self.mock_get_event_type_record_09_2020 = self._patcher_get_event_type_record_09_2020.start()
-        self._patcher_get_conditional_event_type_record_09_2020 \
-            = patch(f"{SCRIPT_LOCATION}.get_conditional_event_type_record_09_2020")
-        self.mock_get_conditional_event_type_record_09_2020 \
-            = self._patcher_get_conditional_event_type_record_09_2020.start()
+        self._patcher_get_event_type_record_09_2020_continuation \
+            = patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020_continuation")
+        self.mock_get_event_type_record_09_2020_continuation \
+            = self._patcher_get_event_type_record_09_2020_continuation.start()
 
     def teardown_method(self):
         self._patcher_conditional_mapping_data_record.stop()
@@ -59,14 +59,14 @@ class TestResponseOnEvent:
         self._patcher_get_event_window_2020.stop()
         self._patcher_get_service_to_respond.stop()
         self._patcher_get_event_type_record_01.stop()
-        self._patcher_get_event_type_record_02.stop()
+        self._patcher_get_event_type_record_02_2013.stop()
         self._patcher_get_event_type_record_03_2013.stop()
         self._patcher_get_event_type_record_03_2020.stop()
         self._patcher_get_event_type_record_07_2013.stop()
         self._patcher_get_event_type_record_07_2020.stop()
         self._patcher_get_event_type_record_08_2020.stop()
         self._patcher_get_event_type_record_09_2020.stop()
-        self._patcher_get_conditional_event_type_record_09_2020.stop()
+        self._patcher_get_event_type_record_09_2020_continuation.stop()
 
     def test_request_sid(self):
         assert RESPONSE_ON_EVENT_2013.request_sid == RequestSID.ResponseOnEvent
@@ -91,7 +91,7 @@ class TestResponseOnEvent:
         self.mock_get_event_type_of_active_event_2013.assert_has_calls(calls, any_order=False)
         self.mock_get_event_window_2013.assert_has_calls(calls, any_order=False)
         self.mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_02.assert_has_calls(calls, any_order=False)
+        self.mock_get_event_type_record_02_2013.assert_has_calls(calls, any_order=False)
         self.mock_get_event_type_record_03_2013.assert_has_calls(calls, any_order=False)
         self.mock_get_event_type_record_07_2013.assert_has_calls(calls, any_order=False)
         self.mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
@@ -118,7 +118,7 @@ class TestResponseOnEvent:
         self.mock_get_event_type_record_07_2020.assert_has_calls(calls, any_order=False)
         self.mock_get_event_type_record_08_2020.assert_has_calls(calls, any_order=False)
         self.mock_get_event_type_record_09_2020.assert_has_calls(calls, any_order=False)
-        self.mock_get_conditional_event_type_record_09_2020.assert_has_calls(calls, any_order=False)
+        self.mock_get_event_type_record_09_2020_continuation.assert_has_calls(calls, any_order=False)
         self.mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
         assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
         self.mock_get_event_type_of_active_event_2013.assert_not_called()

@@ -13,6 +13,8 @@ from uds.translator.data_record_definitions.formula import (
     DID_MAPPING_2013,
     DID_MAPPING_2020,
     DTC_STATUS_MASK,
+    EVENT_TYPE_2013,
+    EVENT_TYPE_2020,
     EXPONENT,
     EXPONENT_BIT_LENGTH,
     FORMULA_IDENTIFIER,
@@ -30,10 +32,10 @@ from uds.translator.data_record_definitions.formula import (
     SECURITY_KEY,
     SECURITY_SEED,
     STATE_AND_CONNECTION_TYPE,
+    TIMER_SCHEDULE_2013,
     UNIT_OR_FORMAT,
     TextEncoding,
     get_coefficients,
-    get_conditional_event_type_record_09_2020,
     get_data,
     get_data_from_memory,
     get_did_2013,
@@ -47,12 +49,19 @@ from uds.translator.data_record_definitions.formula import (
     get_dids_2013,
     get_dids_2020,
     get_dir_info,
+    get_event_type_of_active_event_2013,
+    get_event_type_of_active_event_2020,
     get_event_type_record_01,
+    get_event_type_record_02_2013,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
+    get_event_type_record_08_2020,
     get_event_type_record_09_2020,
+    get_event_type_record_09_2020_continuation,
+    get_event_window_2013,
+    get_event_window_2020,
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
@@ -67,6 +76,7 @@ from uds.translator.data_record_definitions.formula import (
     get_secured_data_transmission_response,
     get_security_access_request,
     get_security_access_response,
+    get_service_to_respond,
 )
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.formula"
@@ -644,6 +654,80 @@ class TestFunctions:
                                                           max_occurrences=signature_length,
                                                           enforce_reoccurring=True)
 
+    # get_event_window_2013
+
+    def test_get_event_window_2013__without_event_number(self):
+        assert get_event_window_2013() == self.mock_mapping_data_record.return_value
+        self.mock_mapping_data_record.assert_called_once_with(name="eventWindowTime",
+                                                              length=8,
+                                                              values_mapping={
+                                                                  # TODO: replace with a mapping variable (https://github.com/mdabrowski1990/uds/issues/413)
+                                                                  0x02: "infiniteTimeToResponse",
+                                                              })
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_window_2013__with_event_number(self, event_number):
+        assert get_event_window_2013(event_number) == self.mock_mapping_data_record.return_value
+        self.mock_mapping_data_record.assert_called_once_with(name=f"eventWindowTime#{event_number}",
+                                                              length=8,
+                                                              values_mapping={
+                                                                  # TODO: replace with a mapping variable (https://github.com/mdabrowski1990/uds/issues/413)
+                                                                  0x02: "infiniteTimeToResponse",
+                                                              })
+
+    # get_event_window_2020
+
+    def test_get_event_window_2020__without_event_number(self):
+        assert get_event_window_2020() == self.mock_mapping_data_record.return_value
+        self.mock_mapping_data_record.assert_called_once_with(name="eventWindowTime",
+                                                              length=8,
+                                                              values_mapping={
+                                                                  # TODO: replace with a mapping variable (https://github.com/mdabrowski1990/uds/issues/413)
+                                                                  0x02: "infiniteTimeToResponse",
+                                                                  0x03: "shortEventWindowTime",
+                                                                  0x04: "mediumEventWindowTime",
+                                                                  0x05: "longEventWindowTime",
+                                                                  0x06: "powerWindowTime",
+                                                                  0x07: "ignitionWindowTime",
+                                                                  0x08: "manufacturerTriggerEventWindowTime",
+                                                              })
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_window_2020__with_event_number(self, event_number):
+        assert get_event_window_2020(event_number) == self.mock_mapping_data_record.return_value
+        self.mock_mapping_data_record.assert_called_once_with(name=f"eventWindowTime#{event_number}",
+                                                              length=8,
+                                                              values_mapping={
+                                                                  # TODO: replace with a mapping variable (https://github.com/mdabrowski1990/uds/issues/413)
+                                                                  0x02: "infiniteTimeToResponse",
+                                                                  0x03: "shortEventWindowTime",
+                                                                  0x04: "mediumEventWindowTime",
+                                                                  0x05: "longEventWindowTime",
+                                                                  0x06: "powerWindowTime",
+                                                                  0x07: "ignitionWindowTime",
+                                                                  0x08: "manufacturerTriggerEventWindowTime",
+                                                              })
+
+    # event_type_of_active_event_2013
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_event_type_of_active_event_2013(self, event_number):
+        assert get_event_type_of_active_event_2013(event_number) == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name=f"eventTypeOfActiveEvent#{event_number}",
+                                                          length=8,
+                                                          children=(RESERVED_BIT,
+                                                                    EVENT_TYPE_2013))
+
+    # event_type_of_active_event_2020
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_event_type_of_active_event_2020(self, event_number):
+        assert get_event_type_of_active_event_2020(event_number) == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name=f"eventTypeOfActiveEvent#{event_number}",
+                                                          length=8,
+                                                          children=(RESERVED_BIT,
+                                                                    EVENT_TYPE_2020))
+
     # get_event_type_record_01
 
     def test_get_event_type_record_01__without_event_number(self):
@@ -658,6 +742,21 @@ class TestFunctions:
         self.mock_raw_data_record.assert_called_once_with(name=f"eventTypeRecord#{event_number}",
                                                           length=8,
                                                           children=(DTC_STATUS_MASK,))
+
+    # get_event_type_record_02
+
+    def test_get_event_type_record_02__without_event_number(self):
+        assert get_event_type_record_02_2013() == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name="eventTypeRecord",
+                                                          length=8,
+                                                          children=(TIMER_SCHEDULE_2013,))
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_type_record_02__with_event_number(self, event_number):
+        assert get_event_type_record_02_2013(event_number) == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name=f"eventTypeRecord#{event_number}",
+                                                          length=8,
+                                                          children=(TIMER_SCHEDULE_2013,))
 
     # get_event_type_record_03_2020
 
@@ -735,6 +834,23 @@ class TestFunctions:
                                                                     HYSTERESIS_VALUE,
                                                                     LOCALIZATION))
 
+    # get_event_type_record_08
+
+    def test_get_event_type_record_08__without_event_number(self):
+        assert get_event_type_record_08_2020() == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name="eventTypeRecord",
+                                                          length=8,
+                                                          children=(RESERVED_BIT,
+                                                                    REPORT_TYPE_2020))
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_event_type_record_08__with_event_number(self, event_number):
+        assert get_event_type_record_08_2020(event_number) == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name=f"eventTypeRecord#{event_number}",
+                                                          length=8,
+                                                          children=(RESERVED_BIT,
+                                                                    REPORT_TYPE_2020))
+
     # get_event_type_record_09_2020
 
     def test_get_event_type_record_09_2020__without_event_number(self):
@@ -758,6 +874,23 @@ class TestFunctions:
 
     @pytest.mark.parametrize("event_number", [None, 1, 255])
     def test_get_conditional_event_type_record_09_2020(self, event_number):
-        assert (get_conditional_event_type_record_09_2020(event_number)
+        assert (get_event_type_record_09_2020_continuation(event_number)
                 == self.mock_conditional_mapping_data_record.return_value)
         self.mock_conditional_mapping_data_record.assert_called_once()
+
+    # get_service_to_respond
+
+    def test_get_service_to_respond__without_event_number(self):
+        assert get_service_to_respond() == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name="serviceToRespondToRecord",
+                                                          length=8,
+                                                          min_occurrences=1,
+                                                          max_occurrences=None)
+
+    @pytest.mark.parametrize("event_number", [1, 32])
+    def test_get_service_to_respond__with_event_number(self, event_number):
+        assert get_service_to_respond(event_number) == self.mock_raw_data_record.return_value
+        self.mock_raw_data_record.assert_called_once_with(name=f"serviceToRespondToRecord#{event_number}",
+                                                          length=8,
+                                                          min_occurrences=1,
+                                                          max_occurrences=None)

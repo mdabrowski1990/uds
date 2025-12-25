@@ -26,19 +26,17 @@ from ..data_record_definitions import (
     SERVICE_TO_RESPOND,
 )
 from ..data_record_definitions.formula import (
-    get_conditional_event_type_record_09_2020,
+    get_event_type_of_active_event_2013,
+    get_event_type_of_active_event_2020,
     get_event_type_record_01,
+    get_event_type_record_02_2013,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
-    get_event_type_record_09_2020,
-)
-from ..data_record_definitions.other import (
-    get_event_type_of_active_event_2013,
-    get_event_type_of_active_event_2020,
-    get_event_type_record_02,
     get_event_type_record_08_2020,
+    get_event_type_record_09_2020,
+    get_event_type_record_09_2020_continuation,
     get_event_window_2013,
     get_event_window_2020,
     get_service_to_respond,
@@ -65,7 +63,7 @@ def get_active_events_2013(number_of_activated_events: int
                    get_event_type_record_01(event_number),
                    service_to_respond),
             0x02: (event_window,
-                   get_event_type_record_02(event_number),
+                   get_event_type_record_02_2013(event_number),
                    service_to_respond),
             0x03: (event_window,
                    get_event_type_record_03_2013(event_number),
@@ -106,7 +104,7 @@ def get_active_events_2020(number_of_activated_events: int
                    get_event_type_record_08_2020(event_number)),
             0x09: (event_window,
                    get_event_type_record_09_2020(event_number),
-                   get_conditional_event_type_record_09_2020(event_number)),
+                   get_event_type_record_09_2020_continuation(event_number)),
         },
             value_mask=0x3F))
     return tuple(data_records)

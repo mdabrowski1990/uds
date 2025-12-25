@@ -34,7 +34,7 @@ __all__ = [
     "get_event_type_record_03_2020", "get_event_type_record_03_2013",
     "get_event_type_record_07_2020", "get_event_type_record_07_2013",
     "get_event_type_record_09_2020",
-    "get_conditional_event_type_record_09_2020",
+    "get_event_type_record_09_2020_continuation",
 ]
 
 from decimal import Decimal
@@ -70,6 +70,8 @@ from .other import (
     ANTI_REPLAY_COUNTER,
     COMPARE_VALUE,
     COMPARISON_LOGIC,
+    EVENT_WINDOW_TIME_MAPPING_2013,
+    EVENT_WINDOW_TIME_MAPPING_2020,
     EXPONENT,
     FORMULA_IDENTIFIER,
     HYSTERESIS_VALUE,
@@ -85,9 +87,10 @@ from .other import (
     SECURITY_KEY,
     SECURITY_SEED,
     STATE_AND_CONNECTION_TYPE,
+    TIMER_SCHEDULE_2013,
     UNIT_OR_FORMAT,
 )
-from .sub_functions import REPORT_TYPE_2020
+from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 # Shared
 
@@ -808,6 +811,62 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
 # SID 0x86
 
 
+def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataRecord:
+    """
+    Get eventWindowTime Data Record compatible with ISO 14229-1:2013 version.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventWindowTime Data Record.
+    """
+    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
+                             length=8,
+                             values_mapping=EVENT_WINDOW_TIME_MAPPING_2013)
+
+
+def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
+    """
+    Get eventWindowTime Data Record compatible with ISO 14229-1:2020 version.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventWindowTime Data Record.
+    """
+    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
+                             length=8,
+                             values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
+
+
+def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
+    """
+    Get eventTypeOfActiveEvent Data Record.
+
+    :param event_number: Number of the active event.
+
+    :return: Created eventTypeOfActiveEvent Data Record.
+    """
+    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   EVENT_TYPE_2013))
+
+
+def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
+    """
+    Get eventTypeOfActiveEvent Data Record.
+
+    :param event_number: Number of the active event.
+
+    :return: Created eventTypeOfActiveEvent Data Record.
+    """
+    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   EVENT_TYPE_2020))
+
+
 def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record for `event` equal to 0x01.
@@ -820,6 +879,20 @@ def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecor
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=8,
                          children=(DTC_STATUS_MASK,))
+
+
+def get_event_type_record_02_2013(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x02.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
+                         length=8,
+                         children=(TIMER_SCHEDULE_2013,))
 
 
 def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawDataRecord:
@@ -894,6 +967,21 @@ def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawData
                                    LOCALIZATION))
 
 
+def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get eventTypeRecord Data Record for event equal to 0x08.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created eventTypeRecord Data Record.
+    """
+    return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   REPORT_TYPE_2020))
+
+
 def get_event_type_record_09_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
     Get `eventTypeRecord` Data Record for `event` equal to 0x09.
@@ -910,7 +998,7 @@ def get_event_type_record_09_2020(event_number: Optional[int] = None) -> RawData
                                    REPORT_TYPE_2020))
 
 
-def get_conditional_event_type_record_09_2020(event_number: Optional[int] = None) -> ConditionalMappingDataRecord:
+def get_event_type_record_09_2020_continuation(event_number: Optional[int] = None) -> ConditionalMappingDataRecord:
     """
     Get continuation for `eventTypeRecord` Data Record (`event` equal to 0x09).
 
@@ -944,3 +1032,18 @@ def get_conditional_event_type_record_09_2020(event_number: Optional[int] = None
                              length=8)),
     },
         value_mask=0x7F)
+
+def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
+    """
+    Get serviceToRespondToRecord Data Record.
+
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
+
+    :return: Created serviceToRespondToRecord Data Record.
+    """
+    return RawDataRecord(name="serviceToRespondToRecord" if event_number is None
+                              else f"serviceToRespondToRecord#{event_number}",
+                         length=8,
+                         min_occurrences=1,
+                         max_occurrences=None)
