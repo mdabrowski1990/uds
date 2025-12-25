@@ -46,13 +46,13 @@ from uds.utilities import (
     DID_MAPPING_2020,
     DTC_EXTENDED_DATA_RECORD_NUMBER_MAPPING,
     DTC_SNAPSHOT_RECORD_NUMBER_MAPPING,
+    EVENT_WINDOW_TIME_MAPPING_2013,
+    EVENT_WINDOW_TIME_MAPPING_2020,
     EXPONENT_BIT_LENGTH,
     MANTISSA_BIT_LENGTH,
     InconsistencyError,
     get_signed_value_decoding_formula,
     get_signed_value_encoding_formula,
-    EVENT_WINDOW_TIME_MAPPING_2013,
-    EVENT_WINDOW_TIME_MAPPING_2020,
 )
 
 from ..data_record import (

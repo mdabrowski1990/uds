@@ -1,4 +1,4 @@
-"""Translation for ReadDTCInformation (SID 0x19) service."""
+"""Translation for :ref:`ReadDTCInformation (SID 0x19) <knowledge-base-service-read-dtc-information>` service."""
 
 __all__ = ["READ_DTC_INFORMATION", "READ_DTC_INFORMATION_2020", "READ_DTC_INFORMATION_2013"]
 
@@ -170,14 +170,6 @@ CONDITIONAL_RESPONSE_CONTINUATION_2013 = ConditionalMappingDataRecord(mapping=RE
 CONDITIONAL_RESPONSE_CONTINUATION_2020 = ConditionalMappingDataRecord(mapping=RESPONSE_CONTINUATION_MAPPING_2020,
                                                                       value_mask=0x7F)
 
-READ_DTC_INFORMATION_2013 = Service(request_sid=RequestSID.ReadDTCInformation,
-                                    request_structure=(READ_DTC_INFORMATION_SUB_FUNCTION_2013,
-                                                       CONDITIONAL_REQUEST_CONTINUATION_2013),
-                                    response_structure=(READ_DTC_INFORMATION_SUB_FUNCTION_2013,
-                                                        CONDITIONAL_RESPONSE_CONTINUATION_2013))
-"""Translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service compatible with
-ISO 14229-1:2013."""
-
 READ_DTC_INFORMATION_2020 = Service(request_sid=RequestSID.ReadDTCInformation,
                                     request_structure=(READ_DTC_INFORMATION_SUB_FUNCTION_2020,
                                                        CONDITIONAL_REQUEST_CONTINUATION_2020),
@@ -185,6 +177,14 @@ READ_DTC_INFORMATION_2020 = Service(request_sid=RequestSID.ReadDTCInformation,
                                                         CONDITIONAL_RESPONSE_CONTINUATION_2020))
 """Translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service compatible with
 ISO 14229-1:2020."""
+
+READ_DTC_INFORMATION_2013 = Service(request_sid=RequestSID.ReadDTCInformation,
+                                    request_structure=(READ_DTC_INFORMATION_SUB_FUNCTION_2013,
+                                                       CONDITIONAL_REQUEST_CONTINUATION_2013),
+                                    response_structure=(READ_DTC_INFORMATION_SUB_FUNCTION_2013,
+                                                        CONDITIONAL_RESPONSE_CONTINUATION_2013))
+"""Translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service compatible with
+ISO 14229-1:2013."""
 
 READ_DTC_INFORMATION = READ_DTC_INFORMATION_2020
 """Default translator for :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` service."""

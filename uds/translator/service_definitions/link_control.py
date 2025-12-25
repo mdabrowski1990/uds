@@ -1,4 +1,4 @@
-"""Translation for LinkControl (SID 0x87) service."""
+"""Translation for :ref:`LinkControl (SID 0x87) <knowledge-base-service-link-control>` service."""
 
 __all__ = ["LINK_CONTROL"]
 

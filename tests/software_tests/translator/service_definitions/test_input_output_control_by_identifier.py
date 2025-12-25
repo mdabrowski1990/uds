@@ -1,43 +1,15 @@
 import pytest
-from mock import Mock, patch
 
 from uds.message import RequestSID, ResponseSID
 from uds.translator.service_definitions.input_output_control_by_identifier import (
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER,
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013,
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020,
-    INPUT_OUTPUT_CONTROL_PARAMETER,
-    get_request_continuation_2013,
-    get_request_continuation_2020,
-    get_response_continuation_2013,
-    get_response_continuation_2020,
 )
 
-SCRIPT_LOCATION = "uds.translator.service_definitions.input_output_control_by_identifier"
 
 class TestInputOutputControlByIdentifier:
     """Unit tests for `InputOutputControlByIdentifier` service."""
-
-    def setup_method(self):
-        self._patcher_conditional_mapping_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord")
-        self.mock_conditional_mapping_data_record = self._patcher_conditional_mapping_data_record.start()
-        self._patcher_conditional_control_state_2013 = patch(f"{SCRIPT_LOCATION}.CONDITIONAL_CONTROL_STATE_2013")
-        self.mock_conditional_control_state_2013 = self._patcher_conditional_control_state_2013.start()
-        self._patcher_conditional_control_state_2020 = patch(f"{SCRIPT_LOCATION}.CONDITIONAL_CONTROL_STATE_2020")
-        self.mock_conditional_control_state_2020 = self._patcher_conditional_control_state_2020.start()
-        self._patcher_conditional_control_enable_mask_2013 \
-            = patch(f"{SCRIPT_LOCATION}.CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013")
-        self.mock_conditional_control_enable_mask_2013 = self._patcher_conditional_control_enable_mask_2013.start()
-        self._patcher_conditional_control_enable_mask_2020 \
-            = patch(f"{SCRIPT_LOCATION}.CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020")
-        self.mock_conditional_control_enable_mask_2020 = self._patcher_conditional_control_enable_mask_2020.start()
-
-    def teardown_method(self):
-        self._patcher_conditional_mapping_data_record.stop()
-        self._patcher_conditional_control_state_2013.stop()
-        self._patcher_conditional_control_state_2020.stop()
-        self._patcher_conditional_control_enable_mask_2013.stop()
-        self._patcher_conditional_control_enable_mask_2020.stop()
 
     def test_request_sid(self):
         assert INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013.request_sid == RequestSID.InputOutputControlByIdentifier
@@ -49,40 +21,6 @@ class TestInputOutputControlByIdentifier:
 
     def test_default_translator(self):
         assert INPUT_OUTPUT_CONTROL_BY_IDENTIFIER is INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020
-
-    # get_request_continuation_2013
-
-    def test_get_request_continuation_2013(self):
-        mock_did = Mock()
-        assert (get_request_continuation_2013(mock_did)
-                == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
-        self.mock_conditional_control_state_2013.get_message_continuation.assert_called_once_with(mock_did)
-        self.mock_conditional_control_enable_mask_2013.get_message_continuation.assert_called_once_with(mock_did)
-
-    # get_request_continuation_2020
-
-    def test_get_request_continuation_2020(self):
-        mock_did = Mock()
-        assert (get_request_continuation_2020(mock_did)
-                == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
-        self.mock_conditional_control_state_2020.get_message_continuation.assert_called_once_with(mock_did)
-        self.mock_conditional_control_enable_mask_2020.get_message_continuation.assert_called_once_with(mock_did)
-
-    # get_response_continuation_2013
-
-    def test_get_response_continuation_2013(self):
-        mock_did = Mock()
-        assert (get_response_continuation_2013(mock_did)
-                == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
-        self.mock_conditional_control_state_2013.get_message_continuation.assert_called_once_with(mock_did)
-
-    # get_response_continuation_2020
-
-    def test_get_response_continuation_2020(self):
-        mock_did = Mock()
-        assert (get_response_continuation_2020(mock_did)
-                == (INPUT_OUTPUT_CONTROL_PARAMETER, self.mock_conditional_mapping_data_record.return_value))
-        self.mock_conditional_control_state_2020.get_message_continuation.assert_called_once_with(mock_did)
 
 
 @pytest.mark.integration

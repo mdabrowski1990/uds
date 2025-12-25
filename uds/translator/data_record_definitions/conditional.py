@@ -26,6 +26,8 @@ __all__ = [
     "CONDITIONAL_OPTIONAL_SESSION_KEY_INFO",
     "CONDITIONAL_AUTHENTICATION_REQUEST",
     "CONDITIONAL_AUTHENTICATION_RESPONSE",
+    # SID 0x2A
+    "CONDITIONAL_PERIODIC_DID",
     # SID 0x2C
     "CONDITIONAL_DATA_FROM_MEMORY",
     "CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2020",
@@ -35,6 +37,10 @@ __all__ = [
     # SID 0x2F
     "CONDITIONAL_CONTROL_STATE_2020", "CONDITIONAL_CONTROL_STATE_2013",
     "CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020", "CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013",
+    "CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_REQUEST_2020",
+    "CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_REQUEST_2013",
+    "CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_RESPONSE_2020",
+    "CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_RESPONSE_2013",
     # SID 0x38
     "CONDITIONAL_FILE_AND_PATH_NAME",
     "CONDITIONAL_FILE_SIZES",
@@ -61,14 +67,21 @@ __all__ = [
 
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
-from ..data_record import ConditionalFormulaDataRecord, ConditionalMappingDataRecord, RawDataRecord
+from ..data_record import (
+    AliasMessageStructure,
+    ConditionalFormulaDataRecord,
+    ConditionalMappingDataRecord,
+    RawDataRecord,
+)
 from .did import (
     DATA_FROM_DID_2013,
     DATA_FROM_DID_2020,
     DYNAMICALLY_DEFINED_DID_2013,
     DYNAMICALLY_DEFINED_DID_2020,
+    MULTIPLE_PERIODIC_DID,
     OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,
     OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,
+    OPTIONAL_MULTIPLE_PERIODIC_DID,
 )
 from .dtc import (
     DTC_EXTENDED_DATA_RECORDS_DATA_LIST,
@@ -129,6 +142,7 @@ from .other import (
     COMMUNICATION_TYPE,
     EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH,
     EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH,
+    INPUT_OUTPUT_CONTROL_PARAMETER,
     NEEDED_ADDITIONAL_PARAMETER_LENGTH,
     NODE_IDENTIFICATION_NUMBER,
     PROOF_OF_OWNERSHIP_CLIENT_LENGTH,
@@ -354,6 +368,16 @@ CONDITIONAL_AUTHENTICATION_RESPONSE = ConditionalMappingDataRecord(
 """Definition of conditional continuation of 
 :ref:`Authentication <knowledge-base-service-authentication>` response message."""
 
+# SID 0x2A
+
+CONDITIONAL_PERIODIC_DID = ConditionalMappingDataRecord(mapping={
+    0x01: (MULTIPLE_PERIODIC_DID,),
+    0x02: (MULTIPLE_PERIODIC_DID,),
+    0x03: (MULTIPLE_PERIODIC_DID,),
+    0x04: (OPTIONAL_MULTIPLE_PERIODIC_DID,),
+})
+"""Definition of conditional `Periodic DID` Data Record."""
+
 # SID 0x2C
 
 CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
@@ -410,6 +434,104 @@ CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020 = get_did_data_mask_2020(name="con
 """Definition of optional conditional (compatible with ISO 14229-1:2020) `controlEnableMask` Data Record."""
 CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013 = get_did_data_mask_2013(name="controlEnableMask", optional=True)
 """Definition of optional conditional (compatible with ISO 14229-1:2013) `controlEnableMask` Data Record."""
+
+def get_input_output_control_by_identifier_request_2020(did: int) -> AliasMessageStructure:
+    """
+    Get message continuation (after DID Data Record) for InputOutputControlByIdentifier request.
+
+    .. note:: Supports only ISO 14229-1:2020 DIDs.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2020.
+    """
+    return (INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(mapping={
+                0x00: (),
+                0x01: (),
+                0x02: (),
+                0x03: (*CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did),
+                       *CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020.get_message_continuation(did)),
+            }))
+
+
+def get_input_output_control_by_identifier_request_2013(did: int) -> AliasMessageStructure:
+    """
+    Get continuation (after DID Data Record) of InputOutputControlByIdentifier request message.
+
+    .. note:: Supports only ISO 14229-1:2013 DIDs.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2013.
+    """
+    return (INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(mapping={
+                0x00: (),
+                0x01: (),
+                0x02: (),
+                0x03: (*CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did),
+                       *CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013.get_message_continuation(did)),
+            }))
+
+
+def get_input_output_control_by_identifier_response_2020(did: int) -> AliasMessageStructure:
+    """
+    Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
+
+    .. note:: Supports only ISO 14229-1:2020 DIDs.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2020.
+    """
+    control_state_data_records_2020 = CONDITIONAL_CONTROL_STATE_2020.get_message_continuation(did)
+    return (INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(mapping={
+                0x00: control_state_data_records_2020,
+                0x01: control_state_data_records_2020,
+                0x02: control_state_data_records_2020,
+                0x03: control_state_data_records_2020,
+            }))
+
+
+def get_input_output_control_by_identifier_response_2013(did: int) -> AliasMessageStructure:
+    """
+    Get message continuation (after DID Data Record) for InputOutputControlByIdentifier positive response.
+
+    .. note:: Supports only ISO 14229-1:2013 DIDs.
+
+    :param did: Value of proceeding DID.
+
+    :return: Following Data Records that are consistent with ISO 14229-1:2013.
+    """
+    control_state_data_records_2013 = CONDITIONAL_CONTROL_STATE_2013.get_message_continuation(did)
+    return (INPUT_OUTPUT_CONTROL_PARAMETER,
+            ConditionalMappingDataRecord(mapping={
+                0x00: control_state_data_records_2013,
+                0x01: control_state_data_records_2013,
+                0x02: control_state_data_records_2013,
+                0x03: control_state_data_records_2013,
+            }))
+
+
+CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_REQUEST_2020 = ConditionalFormulaDataRecord(
+    formula=get_input_output_control_by_identifier_request_2020)
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+:ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` request message."""
+CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_REQUEST_2013 = ConditionalFormulaDataRecord(
+    formula=get_input_output_control_by_identifier_request_2013)
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+:ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` request message."""
+
+CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_RESPONSE_2020 = ConditionalFormulaDataRecord(
+    formula=get_input_output_control_by_identifier_response_2020)
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+:ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` response message."""
+CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_RESPONSE_2013 = ConditionalFormulaDataRecord(
+    formula=get_input_output_control_by_identifier_response_2013)
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+:ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` response message."""
 
 # SID 0x38
 

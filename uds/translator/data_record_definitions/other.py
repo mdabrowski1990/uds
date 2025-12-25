@@ -361,8 +361,6 @@ TRANSMISSION_MODE = MappingDataRecord(name="transmissionMode",
                                       length=8,
                                       values_mapping=TRANSMISSION_MODE_MAPPING)
 
-
-
 # SID 0x2F
 INPUT_OUTPUT_CONTROL_PARAMETER = MappingDataRecord(name="inputOutputControlParameter",
                                                    length=8,
