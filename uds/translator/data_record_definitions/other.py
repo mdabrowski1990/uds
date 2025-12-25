@@ -17,8 +17,6 @@ __all__ = [
     "MEMORY_SELECTION",
     # SID 0x22
     "ACTIVE_DIAGNOSTIC_SESSION",
-    # SID 0x28
-    "CONDITIONAL_COMMUNICATION_CONTROL_REQUEST",
     # SID 0x29
     "COMMUNICATION_CONFIGURATION", "CERTIFICATE_EVALUATION", "ALGORITHM_INDICATOR", "AUTHENTICATION_RETURN_PARAMETER",
     "CERTIFICATE_CLIENT_LENGTH",
@@ -151,18 +149,7 @@ from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 
 
 
-def get_communication_control_request(sub_function: int
-                                      ) -> Union[Tuple[RawDataRecord, MappingDataRecord], Tuple[RawDataRecord]]:
-    """
-    Get CommunicationControl Data Records that are part of request message for given SubFunction value.
 
-    :param sub_function: SubFunction value.
-
-    :return: Data Records that are present in the request message after given SubFunction value.
-    """
-    if sub_function & 0x7F in {0x04, 0x05}:
-        return COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER
-    return (COMMUNICATION_TYPE,)
 
 
 def get_secured_data_transmission_request(signature_length: int) -> Union[
@@ -488,9 +475,6 @@ COMMUNICATION_TYPE = RawDataRecord(name="communicationType",
 NODE_IDENTIFICATION_NUMBER = MappingDataRecord(name="nodeIdentificationNumber",
                                                length=16,
                                                values_mapping=NODE_IDENTIFICATION_NUMBER_MAPPING)
-# TODO: change CONDITIONAL_COMMUNICATION_CONTROL_REQUEST to ConditionalMappingDataRecord
-#  https://github.com/mdabrowski1990/uds/issues/413
-CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalFormulaDataRecord(formula=get_communication_control_request)
 
 # SID 0x29
 CERTIFICATE_CLIENT_LENGTH = RawDataRecord(name="lengthOfCertificateClient",

@@ -3,21 +3,15 @@ from mock import patch
 
 from uds.translator.data_record_definitions.other import (
     ANTI_REPLAY_COUNTER,
-    COMMUNICATION_TYPE,
     EVENT_TYPE_2013,
     EVENT_TYPE_2020,
     INTERNAL_REQUEST_PARAMETERS,
     INTERNAL_RESPONSE_PARAMETERS,
     INTERNAL_RSID,
     INTERNAL_SID,
-    NODE_IDENTIFICATION_NUMBER,
     REPORT_TYPE_2020,
     RESERVED_BIT,
-    SECURITY_ACCESS_DATA,
-    SECURITY_KEY,
-    SECURITY_SEED,
     TIMER_SCHEDULE,
-    get_communication_control_request,
     get_event_type_of_active_event_2013,
     get_event_type_of_active_event_2020,
     get_event_type_record_02,
@@ -49,28 +43,12 @@ class TestFormulas:
         self._patcher_conditional_formula_data_record.stop()
 
 
-    
 
 
 
 
 
 
-
-
-
-
-
-
-    # get_communication_control_request
-
-    @pytest.mark.parametrize("sub_function", [0x04, 0x05, 0x84, 0x85])
-    def test_get_communication_control_request__special(self, sub_function):
-        assert get_communication_control_request(sub_function) == (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER)
-
-    @pytest.mark.parametrize("sub_function", [0x03, 0x06, 0xB4])
-    def test_get_communication_control_request__other(self, sub_function):
-        assert get_communication_control_request(sub_function) == (COMMUNICATION_TYPE,)
 
     # get_secured_data_transmission_request
 

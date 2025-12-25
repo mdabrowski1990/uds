@@ -7,6 +7,8 @@ __all__ = [
     # SID 0x27
     "CONDITIONAL_SECURITY_ACCESS_REQUEST",
     "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
+    # SID 0x28
+    "CONDITIONAL_COMMUNICATION_CONTROL_REQUEST",
     # SID 0x29
     "CONDITIONAL_CERTIFICATE_CLIENT",
     "CONDITIONAL_CERTIFICATE_SERVER",
@@ -39,7 +41,7 @@ __all__ = [
 
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
-from ..data_record import ConditionalFormulaDataRecord, RawDataRecord
+from ..data_record import ConditionalFormulaDataRecord, ConditionalMappingDataRecord, RawDataRecord
 from .dtc import (
     DTC_EXTENDED_DATA_RECORDS_DATA_LIST,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
@@ -71,7 +73,7 @@ from .formula import (
     get_security_access_request,
     get_security_access_response,
 )
-from .other import SCALING_BYTE_LENGTH, SCALING_BYTE_TYPE
+from .other import COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER, SCALING_BYTE_LENGTH, SCALING_BYTE_TYPE
 
 DTC_DIDS_RECORDS_LIST_2013 = [
     ConditionalFormulaDataRecord(formula=get_did_records_formula_2013(record_number + 1))
@@ -151,6 +153,18 @@ CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(formula=get_s
 CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(formula=get_security_access_response)
 """Definition of conditional continuation of 
 :ref:`SecurityAccess <knowledge-base-service-security-access>` response message."""
+
+# SID 0x28
+
+CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    default_message_continuation=(COMMUNICATION_TYPE,),
+    mapping={
+        0x04: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER),
+        0x05: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER),
+    })
+"""Definition of conditional continuation of 
+:ref:`CommunicationControl <knowledge-base-service-communication-control>` request message."""
 
 # SID 0x29
 
