@@ -19,6 +19,10 @@ __all__ = [
     # SID 0x2F
     "get_did_data_mask_2020", "get_did_data_mask_2013",
     # SID 0x38
+    "get_file_path_and_name",
+    "get_file_sizes",
+    "get_file_sizes_or_dir_info",
+    "get_dir_info",
     "get_max_number_of_block_length_file_transfer",
     # SID 0x3D
     "get_data",
@@ -54,6 +58,8 @@ from ..data_record import (
     CustomFormulaDataRecord,
     MappingDataRecord,
     RawDataRecord,
+    TextDataRecord,
+    TextEncoding,
 )
 from .did import DID_2013, DID_2020, DID_DATA_MAPPING_2013, DID_DATA_MAPPING_2020
 from .dtc import DTC_EXTENDED_DATA_RECORD_NUMBER, DTC_SNAPSHOT_RECORD_NUMBER, DTC_STATUS_MASK
@@ -588,6 +594,83 @@ def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataR
 
 
 # SID 0x38
+
+
+def get_file_path_and_name(file_path_and_name_length: int) -> Tuple[TextDataRecord]:
+    """
+    Get `filePathAndName` Data Record of given bytes length.
+
+    :param file_path_and_name_length: Bytes length of `filePathAndName` Data Record.
+
+    :raise ValueError: Provided `filePathAndNameLength` value equals 0.
+
+    :return: Tuple with `filePathAndName` Data Record.
+    """
+    if file_path_and_name_length == 0:
+        raise ValueError("Value of `filePathAndNameLength` must be greater than 0.")
+    return (TextDataRecord(name="filePathAndName",
+                           encoding=TextEncoding.ASCII,
+                           min_occurrences=file_path_and_name_length,
+                           max_occurrences=file_path_and_name_length,
+                           enforce_reoccurring=True),)
+
+
+def get_file_sizes(file_size_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
+    """
+    Get file size Data Records of given bytes length.
+
+    :param file_size_parameter_length: Bytes length of `fileSizeUnCompressed` and `fileSizeCompressed` Data Records.
+
+    :raise ValueError: Provided `fileSizeParameterLength` value equals 0.
+
+    :return: Tuple with `fileSizeUnCompressed` and `fileSizeCompressed` Data Records.
+    """
+    if file_size_parameter_length == 0:
+        raise ValueError("Value of `fileSizeParameterLength` must be greater than 0.")
+    return (RawDataRecord(name="fileSizeUnCompressed",
+                          length=8 * file_size_parameter_length,
+                          unit="bytes"),
+            RawDataRecord(name="fileSizeCompressed",
+                          length=8 * file_size_parameter_length,
+                          unit="bytes"))
+
+
+def get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
+    """
+    Get file size Data Records of given bytes length.
+
+    :param file_size_or_dir_info_parameter_length: Bytes length of `fileSizeUncompressedOrDirInfoLength`
+        and `fileSizeCompressed` Data Records.
+
+    :raise ValueError: Provided `fileSizeOrDirInfoParameterLength` value equals 0.
+
+    :return: Tuple with `fileSizeUncompressedOrDirInfoLength` and `fileSizeCompressed` Data Records.
+    """
+    if file_size_or_dir_info_parameter_length == 0:
+        raise ValueError("Value of `fileSizeOrDirInfoParameterLength` must be greater than 0.")
+    return (RawDataRecord(name="fileSizeUncompressedOrDirInfoLength",
+                          length=8 * file_size_or_dir_info_parameter_length,
+                          unit="bytes"),
+            RawDataRecord(name="fileSizeCompressed",
+                          length=8 * file_size_or_dir_info_parameter_length,
+                          unit="bytes"))
+
+
+def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord]:
+    """
+    Get dir info Data Record of given bytes length.
+
+    :param file_size_or_dir_info_parameter_length: Bytes length of `fileSizeUncompressedOrDirInfoLength` Data Record.
+
+    :raise ValueError: Provided `fileSizeOrDirInfoParameterLength` value equals 0.
+
+    :return: Tuple with `file_size_or_dir_info_parameter_length` Data Record.
+    """
+    if file_size_or_dir_info_parameter_length == 0:
+        raise ValueError("Value of `fileSizeOrDirInfoParameterLength` must be greater than 0.")
+    return (RawDataRecord(name="fileSizeUncompressedOrDirInfoLength",
+                          length=8 * file_size_or_dir_info_parameter_length,
+                          unit="bytes"),)
 
 
 def get_max_number_of_block_length_file_transfer(length_format_identifier: int) -> Tuple[RawDataRecord]:

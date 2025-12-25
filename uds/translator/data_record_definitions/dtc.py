@@ -67,7 +67,9 @@ from uds.utilities import (
     DTC_STORED_DATA_RECORD_NUMBER_MAPPING,
     GROUP_OF_DTC_MAPPING,
     NO_YES_MAPPING,
-    REPEATED_DATA_RECORDS_NUMBER, get_signed_value_decoding_formula, get_signed_value_encoding_formula
+    REPEATED_DATA_RECORDS_NUMBER,
+    get_signed_value_decoding_formula,
+    get_signed_value_encoding_formula,
 )
 
 from ..data_record import CustomFormulaDataRecord, MappingDataRecord, RawDataRecord, TextDataRecord, TextEncoding

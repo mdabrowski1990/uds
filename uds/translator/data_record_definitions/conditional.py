@@ -19,6 +19,12 @@ __all__ = [
     "CONDITIONAL_OPTIONAL_SESSION_KEY_INFO",
     # SID 0x2C
     "CONDITIONAL_DATA_FROM_MEMORY",
+    # SID 0x38
+    "CONDITIONAL_FILE_AND_PATH_NAME",
+    "CONDITIONAL_FILE_SIZES",
+    "CONDITIONAL_FILE_SIZES_OR_DIR_INFO",
+    "CONDITIONAL_DIR_INFO",
+    "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER",
     # SID 0x3D
     "CONDITIONAL_DATA",
     # SID 0x86
@@ -28,9 +34,9 @@ __all__ = [
     "EVENT_TYPE_RECORD_09_2020", "CONDITIONAL_EVENT_TYPE_RECORD_09_2020"
 ]
 
-from uds.utilities import EXPONENT_BIT_LENGTH, MANTISSA_BIT_LENGTH, REPEATED_DATA_RECORDS_NUMBER
+from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
-from ..data_record import ConditionalFormulaDataRecord, CustomFormulaDataRecord, RawDataRecord
+from ..data_record import ConditionalFormulaDataRecord, RawDataRecord
 from .dtc import (
     DTC_EXTENDED_DATA_RECORDS_DATA_LIST,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
@@ -44,12 +50,16 @@ from .formula import (
     get_data_from_memory,
     get_did_records_formula_2013,
     get_did_records_formula_2020,
+    get_dir_info,
     get_event_type_record_01,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
     get_event_type_record_07_2013,
     get_event_type_record_07_2020,
     get_event_type_record_09_2020,
+    get_file_path_and_name,
+    get_file_sizes,
+    get_file_sizes_or_dir_info,
     get_formula_raw_data_record_with_length,
     get_formula_scaling_byte_extension,
     get_max_number_of_block_length,
@@ -199,6 +209,18 @@ CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_fro
 """Definition of conditional `Data from Memory` Data Record."""
 
 # SID 0x38
+
+CONDITIONAL_FILE_AND_PATH_NAME = ConditionalFormulaDataRecord(formula=get_file_path_and_name)
+"""Definition of conditional `filePathAndName` Data Record."""
+
+CONDITIONAL_FILE_SIZES = ConditionalFormulaDataRecord(formula=get_file_sizes)
+"""Definition of conditional `fileSizeUnCompressed` and `fileSizeCompressed` Data Records."""
+
+CONDITIONAL_FILE_SIZES_OR_DIR_INFO = ConditionalFormulaDataRecord(formula=get_file_sizes_or_dir_info)
+"""Definition of conditional `fileSizeUncompressedOrDirInfoLength` and `fileSizeCompressed` Data Records."""
+
+CONDITIONAL_DIR_INFO = ConditionalFormulaDataRecord(formula=get_dir_info)
+"""Definition of conditional `fileSizeUncompressedOrDirInfoLength` Data Record."""
 
 CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRecord(
     formula=get_max_number_of_block_length_file_transfer)

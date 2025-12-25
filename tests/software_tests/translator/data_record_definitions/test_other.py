@@ -1,41 +1,29 @@
 import pytest
-from mock import Mock, call, patch
+from mock import patch
 
 from uds.translator.data_record_definitions.other import (
     ANTI_REPLAY_COUNTER,
     COMMUNICATION_TYPE,
     EVENT_TYPE_2013,
     EVENT_TYPE_2020,
-    EXPONENT,
-    EXPONENT_BIT_LENGTH,
-    FORMULA_IDENTIFIER,
     INTERNAL_REQUEST_PARAMETERS,
     INTERNAL_RESPONSE_PARAMETERS,
     INTERNAL_RSID,
     INTERNAL_SID,
-    MANTISSA,
-    MANTISSA_BIT_LENGTH,
     NODE_IDENTIFICATION_NUMBER,
     REPORT_TYPE_2020,
     RESERVED_BIT,
     SECURITY_ACCESS_DATA,
     SECURITY_KEY,
     SECURITY_SEED,
-    STATE_AND_CONNECTION_TYPE,
     TIMER_SCHEDULE,
-    UNIT_OR_FORMAT,
-    TextEncoding,
     get_communication_control_request,
-    get_dir_info,
     get_event_type_of_active_event_2013,
     get_event_type_of_active_event_2020,
     get_event_type_record_02,
     get_event_type_record_08_2020,
     get_event_window_2013,
     get_event_window_2020,
-    get_file_path_and_name,
-    get_file_sizes,
-    get_file_sizes_or_dir_info,
     get_secured_data_transmission_request,
     get_secured_data_transmission_response,
     get_security_access_request,
@@ -52,15 +40,14 @@ class TestFormulas:
         self.mock_raw_data_record = self._patcher_raw_data_record.start()
         self._patcher_mapping_data_record = patch(f"{SCRIPT_LOCATION}.MappingDataRecord")
         self.mock_mapping_data_record = self._patcher_mapping_data_record.start()
-        self._patcher_text_data_record = patch(f"{SCRIPT_LOCATION}.TextDataRecord")
-        self.mock_text_data_record = self._patcher_text_data_record.start()
+
         self._patcher_conditional_formula_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalFormulaDataRecord")
         self.mock_conditional_formula_data_record = self._patcher_conditional_formula_data_record.start()
 
     def teardown_method(self):
         self._patcher_raw_data_record.stop()
         self._patcher_mapping_data_record.stop()
-        self._patcher_text_data_record.stop()
+
         self._patcher_conditional_formula_data_record.stop()
 
 
@@ -73,69 +60,7 @@ class TestFormulas:
 
 
 
-    # get_file_path_and_name
 
-    def test_get_file_path_and_name__value_error(self):
-        with pytest.raises(ValueError):
-            get_file_path_and_name(0x00)
-
-    @pytest.mark.parametrize("file_path_and_name_length", [1, 0xFF])
-    def test_get_file_path_and_name(self, file_path_and_name_length):
-        assert get_file_path_and_name(file_path_and_name_length) == (self.mock_text_data_record.return_value,)
-        self.mock_text_data_record.assert_called_once_with(name="filePathAndName",
-                                                           encoding=TextEncoding.ASCII,
-                                                           min_occurrences=file_path_and_name_length,
-                                                           max_occurrences=file_path_and_name_length,
-                                                           enforce_reoccurring=True)
-
-    # get_file_sizes
-
-    def test_get_file_sizes__value_error(self):
-        with pytest.raises(ValueError):
-            get_file_sizes(0x00)
-
-    @pytest.mark.parametrize("file_size_or_dir_info_parameter_length", [1, 0xFF])
-    def test_get_file_sizes(self, file_size_or_dir_info_parameter_length):
-        assert (get_file_sizes(file_size_or_dir_info_parameter_length)
-                == (self.mock_raw_data_record.return_value, self.mock_raw_data_record.return_value))
-        self.mock_raw_data_record.assert_has_calls([call(name="fileSizeUnCompressed",
-                                                         length=8 * file_size_or_dir_info_parameter_length,
-                                                         unit="bytes"),
-                                                    call(name="fileSizeCompressed",
-                                                         length=8 * file_size_or_dir_info_parameter_length,
-                                                         unit="bytes")],
-                                                   any_order=False)
-
-    # get_file_sizes_or_dir_info
-
-    def test_get_file_sizes_or_dir_info__value_error(self):
-        with pytest.raises(ValueError):
-            get_file_sizes_or_dir_info(0x00)
-
-    @pytest.mark.parametrize("file_size_or_dir_info_parameter_length", [1, 0xFF])
-    def test_get_file_sizes_or_dir_info(self, file_size_or_dir_info_parameter_length):
-        assert (get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length)
-                == (self.mock_raw_data_record.return_value, self.mock_raw_data_record.return_value))
-        self.mock_raw_data_record.assert_has_calls([call(name="fileSizeUncompressedOrDirInfoLength",
-                                                         length=8 * file_size_or_dir_info_parameter_length,
-                                                         unit="bytes"),
-                                                    call(name="fileSizeCompressed",
-                                                         length=8 * file_size_or_dir_info_parameter_length,
-                                                         unit="bytes")],
-                                                   any_order=False)
-
-    # get_dir_info
-
-    def test_get_dir_info__value_error(self):
-        with pytest.raises(ValueError):
-            get_dir_info(0x00)
-
-    @pytest.mark.parametrize("file_size_or_dir_info_parameter_length", [1, 0xFF])
-    def test_get_dir_info(self, file_size_or_dir_info_parameter_length):
-        assert get_dir_info(file_size_or_dir_info_parameter_length) == (self.mock_raw_data_record.return_value,)
-        self.mock_raw_data_record.assert_called_once_with(name="fileSizeUncompressedOrDirInfoLength",
-                                                          length=8 * file_size_or_dir_info_parameter_length,
-                                                          unit="bytes")
 
     # get_security_access_request
 
