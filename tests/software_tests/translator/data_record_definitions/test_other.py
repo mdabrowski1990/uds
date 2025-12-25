@@ -18,8 +18,6 @@ from uds.translator.data_record_definitions.other import (
     get_event_type_record_08_2020,
     get_event_window_2013,
     get_event_window_2020,
-    get_secured_data_transmission_request,
-    get_secured_data_transmission_response,
     get_service_to_respond,
 )
 
@@ -49,44 +47,6 @@ class TestFormulas:
 
 
 
-
-    # get_secured_data_transmission_request
-
-    def test_get_secured_data_transmission_request__0(self):
-        assert get_secured_data_transmission_request(0) == (ANTI_REPLAY_COUNTER,
-                                                            INTERNAL_SID,
-                                                            INTERNAL_REQUEST_PARAMETERS)
-
-    @pytest.mark.parametrize("signature_length", [1, 0xFFFF])
-    def test_get_secured_data_transmission_request(self, signature_length):
-        assert get_secured_data_transmission_request(signature_length) == (ANTI_REPLAY_COUNTER,
-                                                                           INTERNAL_SID,
-                                                                           INTERNAL_REQUEST_PARAMETERS,
-                                                                           self.mock_raw_data_record.return_value)
-        self.mock_raw_data_record.assert_called_once_with(name="Signature/MAC",
-                                                          length=8,
-                                                          min_occurrences=signature_length,
-                                                          max_occurrences=signature_length,
-                                                          enforce_reoccurring=True)
-
-    # get_secured_data_transmission_response
-
-    def test_get_secured_data_transmission_response__0(self):
-        assert get_secured_data_transmission_response(0) == (ANTI_REPLAY_COUNTER,
-                                                             INTERNAL_RSID,
-                                                             INTERNAL_RESPONSE_PARAMETERS)
-
-    @pytest.mark.parametrize("signature_length", [1, 0xFFFF])
-    def test_get_secured_data_transmission_response(self, signature_length):
-        assert get_secured_data_transmission_response(signature_length) == (ANTI_REPLAY_COUNTER,
-                                                                            INTERNAL_RSID,
-                                                                            INTERNAL_RESPONSE_PARAMETERS,
-                                                                            self.mock_raw_data_record.return_value)
-        self.mock_raw_data_record.assert_called_once_with(name="Signature/MAC",
-                                                          length=8,
-                                                          min_occurrences=signature_length,
-                                                          max_occurrences=signature_length,
-                                                          enforce_reoccurring=True)
 
     # get_event_window_2013
 

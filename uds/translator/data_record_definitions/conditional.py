@@ -32,6 +32,9 @@ __all__ = [
     "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER",
     # SID 0x3D
     "CONDITIONAL_DATA",
+    # SID 0x84
+    "CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST",
+    "CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE",
     # SID 0x86
     "EVENT_TYPE_RECORD_01",
     "EVENT_TYPE_RECORD_03_2020", "EVENT_TYPE_RECORD_03_2013",
@@ -70,6 +73,8 @@ from .formula import (
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
+    get_secured_data_transmission_request,
+    get_secured_data_transmission_response,
     get_security_access_request,
     get_security_access_response,
 )
@@ -260,6 +265,18 @@ CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRec
 
 CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)
 """Definition of conditional `data` Data Record."""
+
+# SID 0x84
+
+CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST = ConditionalFormulaDataRecord(
+    formula=get_secured_data_transmission_request)
+"""Definition of conditional continuation of 
+:ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>`request message."""
+
+CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
+    formula=get_secured_data_transmission_response)
+"""Definition of conditional continuation of 
+:ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` response message."""
 
 # SID 0x86
 

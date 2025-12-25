@@ -67,11 +67,16 @@ from ..data_record import (
 from .did import DID_2013, DID_2020, DID_DATA_MAPPING_2013, DID_DATA_MAPPING_2020
 from .dtc import DTC_EXTENDED_DATA_RECORD_NUMBER, DTC_SNAPSHOT_RECORD_NUMBER, DTC_STATUS_MASK
 from .other import (
+    ANTI_REPLAY_COUNTER,
     COMPARE_VALUE,
     COMPARISON_LOGIC,
     EXPONENT,
     FORMULA_IDENTIFIER,
     HYSTERESIS_VALUE,
+    INTERNAL_REQUEST_PARAMETERS,
+    INTERNAL_RESPONSE_PARAMETERS,
+    INTERNAL_RSID,
+    INTERNAL_SID,
     LOCALIZATION,
     MANTISSA,
     MEMORY_SELECTION,
@@ -745,6 +750,59 @@ def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
                           length=8,
                           min_occurrences=memory_size_length,
                           max_occurrences=memory_size_length),)
+
+
+# SID 0x84
+
+
+def get_secured_data_transmission_request(signature_length: int) -> Union[
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+    """
+    Get SecuredDataTransmission Data Records that are part of request message after given Signature Length value.
+
+    :param signature_length: Value of Signature Length.
+
+    :return: Data Records that are present in the request message after given Signature Length value.
+    """
+    if signature_length == 0:
+        return (ANTI_REPLAY_COUNTER,
+                INTERNAL_SID,
+                INTERNAL_REQUEST_PARAMETERS)
+    signature = RawDataRecord(name="Signature/MAC",
+                              length=8,
+                              min_occurrences=signature_length,
+                              max_occurrences=signature_length,
+                              enforce_reoccurring=True)
+    return (ANTI_REPLAY_COUNTER,
+            INTERNAL_SID,
+            INTERNAL_REQUEST_PARAMETERS,
+            signature)
+
+
+def get_secured_data_transmission_response(signature_length: int) -> Union[
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
+        Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
+    """
+    Get SecuredDataTransmission Data Records that are part of response message after given Signature Length value.
+
+    :param signature_length: Value of Signature Length.
+
+    :return: Data Records that are present in the response message after given Signature Length value.
+    """
+    if signature_length == 0:
+        return (ANTI_REPLAY_COUNTER,
+                INTERNAL_RSID,
+                INTERNAL_RESPONSE_PARAMETERS)
+    signature = RawDataRecord(name="Signature/MAC",
+                              length=8,
+                              min_occurrences=signature_length,
+                              max_occurrences=signature_length,
+                              enforce_reoccurring=True)
+    return (ANTI_REPLAY_COUNTER,
+            INTERNAL_RSID,
+            INTERNAL_RESPONSE_PARAMETERS,
+            signature)
 
 
 # SID 0x86
