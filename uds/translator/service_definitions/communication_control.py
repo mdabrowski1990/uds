@@ -1,4 +1,4 @@
-"""Translation for CommunicationControl (SID 0x28) service."""
+"""Translation for :ref:`CommunicationControl (SID 0x28) <knowledge-base-service-communication-control>` service."""
 
 __all__ = ["COMMUNICATION_CONTROL"]
 

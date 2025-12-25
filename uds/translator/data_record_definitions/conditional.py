@@ -4,6 +4,8 @@ __all__ = [
     # Shared
     "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
     "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
+    # SID 0x24
+    "SCALING_DATA_RECORDS",
     # SID 0x27
     "CONDITIONAL_SECURITY_ACCESS_REQUEST",
     "CONDITIONAL_SECURITY_ACCESS_RESPONSE",
@@ -22,8 +24,17 @@ __all__ = [
     "CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER",
     "CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER",
     "CONDITIONAL_OPTIONAL_SESSION_KEY_INFO",
+    "CONDITIONAL_AUTHENTICATION_REQUEST",
+    "CONDITIONAL_AUTHENTICATION_RESPONSE",
     # SID 0x2C
     "CONDITIONAL_DATA_FROM_MEMORY",
+    "CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2020",
+    "CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2013",
+    "CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2020",
+    "CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2013",
+    # SID 0x2F
+    "CONDITIONAL_CONTROL_STATE_2020", "CONDITIONAL_CONTROL_STATE_2013",
+    "CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020", "CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013",
     # SID 0x38
     "CONDITIONAL_FILE_AND_PATH_NAME",
     "CONDITIONAL_FILE_SIZES",
@@ -32,6 +43,9 @@ __all__ = [
     "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER",
     # SID 0x3D
     "CONDITIONAL_DATA",
+    # SID 0x83
+    "CONDITIONAL_ACCESS_TIMING_PARAMETER_REQUEST_2013",
+    "CONDITIONAL_ACCESS_TIMING_PARAMETER_RESPONSE_2013",
     # SID 0x84
     "CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST",
     "CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE",
@@ -48,6 +62,14 @@ __all__ = [
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
 from ..data_record import ConditionalFormulaDataRecord, ConditionalMappingDataRecord, RawDataRecord
+from .did import (
+    DATA_FROM_DID_2013,
+    DATA_FROM_DID_2020,
+    DYNAMICALLY_DEFINED_DID_2013,
+    DYNAMICALLY_DEFINED_DID_2020,
+    OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,
+    OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,
+)
 from .dtc import (
     DTC_EXTENDED_DATA_RECORDS_DATA_LIST,
     DTC_STORED_DATA_RECORD_NUMBERS_LIST,
@@ -58,6 +80,10 @@ from .dtc import (
 from .formula import (
     get_data,
     get_data_from_memory,
+    get_did_data_2013,
+    get_did_data_2020,
+    get_did_data_mask_2013,
+    get_did_data_mask_2020,
     get_did_records_formula_2013,
     get_did_records_formula_2020,
     get_dir_info,
@@ -88,7 +114,31 @@ from .formula import (
     get_security_access_response,
     get_service_to_respond,
 )
-from .other import COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER, SCALING_BYTE_LENGTH, SCALING_BYTE_TYPE
+from .other import (
+    ADDITIONAL_PARAMETER_LENGTH,
+    ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER,
+    ALGORITHM_INDICATOR,
+    AUTHENTICATION_RETURN_PARAMETER,
+    CERTIFICATE_CLIENT_LENGTH,
+    CERTIFICATE_DATA_LENGTH,
+    CERTIFICATE_EVALUATION,
+    CERTIFICATE_SERVER_LENGTH,
+    CHALLENGE_CLIENT_LENGTH,
+    CHALLENGE_SERVER_LENGTH,
+    COMMUNICATION_CONFIGURATION,
+    COMMUNICATION_TYPE,
+    EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH,
+    EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH,
+    NEEDED_ADDITIONAL_PARAMETER_LENGTH,
+    NODE_IDENTIFICATION_NUMBER,
+    PROOF_OF_OWNERSHIP_CLIENT_LENGTH,
+    PROOF_OF_OWNERSHIP_SERVER_LENGTH,
+    SCALING_BYTE_LENGTH,
+    SCALING_BYTE_TYPE,
+    SESSION_KEY_INFO_LENGTH,
+    TIMING_PARAMETER_REQUEST_RECORD,
+    TIMING_PARAMETER_RESPONSE_RECORD,
+)
 
 DTC_DIDS_RECORDS_LIST_2013 = [
     ConditionalFormulaDataRecord(formula=get_did_records_formula_2013(record_number + 1))
@@ -142,21 +192,22 @@ CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=ge
 
 # SID 0x24
 
-SCALING_BYTES_LIST = [RawDataRecord(name=f"scalingByte#{index + 1}",
-                                    children=(SCALING_BYTE_TYPE, SCALING_BYTE_LENGTH),
-                                    length=8,
-                                    min_occurrences=1 if index == 0 else 0,
-                                    max_occurrences=1)
-                      for index in range(REPEATED_DATA_RECORDS_NUMBER)]
+_SCALING_BYTES_RECORDS = tuple(RawDataRecord(name=f"scalingByte#{index}",
+                                             children=(SCALING_BYTE_TYPE, SCALING_BYTE_LENGTH),
+                                             length=8,
+                                             min_occurrences=1 if index == 1 else 0,
+                                             max_occurrences=1)
+                               for index in range(1, REPEATED_DATA_RECORDS_NUMBER + 1))
 """Collection of `scalingByte` Data Records."""
 
-SCALING_BYTES_EXTENSIONS_LIST = [ConditionalFormulaDataRecord(formula=get_formula_scaling_byte_extension(index + 1))
-                                 for index in range(REPEATED_DATA_RECORDS_NUMBER)]
+_SCALING_BYTES_EXTENSIONS_RECORDS = tuple(
+    ConditionalFormulaDataRecord(formula=get_formula_scaling_byte_extension(index))
+    for index in range(1, REPEATED_DATA_RECORDS_NUMBER + 1))
 """Collection of `scalingByteExtension` Data Records."""
 
-SCALING_DATA_RECORDS = [item for scaling_data_records in zip(SCALING_BYTES_LIST,
-                                                             SCALING_BYTES_EXTENSIONS_LIST)
-                        for item in scaling_data_records]
+SCALING_DATA_RECORDS = tuple(item
+                             for scaling_data_records in zip(_SCALING_BYTES_RECORDS, _SCALING_BYTES_EXTENSIONS_RECORDS)
+                             for item in scaling_data_records)
 """Collection of `scalingByte` and `scalingByteExtension` Data Records."""
 
 # SID 0x27
@@ -247,10 +298,118 @@ CONDITIONAL_OPTIONAL_SESSION_KEY_INFO = ConditionalFormulaDataRecord(
                                                     accept_zero_length=True))
 """Definition of optional conditional `sessionKeyInfo` Data Record."""
 
+CONDITIONAL_AUTHENTICATION_REQUEST = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+        0x00: (),
+        0x01: (COMMUNICATION_CONFIGURATION,
+               CERTIFICATE_CLIENT_LENGTH, CONDITIONAL_CERTIFICATE_CLIENT,
+               CHALLENGE_CLIENT_LENGTH, CONDITIONAL_OPTIONAL_CHALLENGE_CLIENT),
+        0x02: (COMMUNICATION_CONFIGURATION,
+               CERTIFICATE_CLIENT_LENGTH, CONDITIONAL_CERTIFICATE_CLIENT,
+               CHALLENGE_CLIENT_LENGTH, CONDITIONAL_CHALLENGE_CLIENT),
+        0x03: (PROOF_OF_OWNERSHIP_CLIENT_LENGTH, CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT,
+               EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH, CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_CLIENT),
+        0x04: (CERTIFICATE_EVALUATION,
+               CERTIFICATE_DATA_LENGTH, CONDITIONAL_CERTIFICATE_DATA),
+        0x05: (COMMUNICATION_CONFIGURATION, ALGORITHM_INDICATOR),
+        0x06: (ALGORITHM_INDICATOR,
+               PROOF_OF_OWNERSHIP_CLIENT_LENGTH, CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT,
+               CHALLENGE_CLIENT_LENGTH, CONDITIONAL_OPTIONAL_CHALLENGE_CLIENT,
+               ADDITIONAL_PARAMETER_LENGTH, CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER),
+        0x07: (ALGORITHM_INDICATOR,
+               PROOF_OF_OWNERSHIP_CLIENT_LENGTH, CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT,
+               CHALLENGE_CLIENT_LENGTH, CONDITIONAL_CHALLENGE_CLIENT,
+               ADDITIONAL_PARAMETER_LENGTH, CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER),
+        0x08: (),
+    })
+"""Definition of conditional continuation of 
+:ref:`Authentication <knowledge-base-service-authentication>` request message."""
+
+CONDITIONAL_AUTHENTICATION_RESPONSE = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+        0x00: (AUTHENTICATION_RETURN_PARAMETER,),
+        0x01: (AUTHENTICATION_RETURN_PARAMETER,
+               CHALLENGE_SERVER_LENGTH, CONDITIONAL_CHALLENGE_SERVER,
+               EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH, CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_SERVER),
+        0x02: (AUTHENTICATION_RETURN_PARAMETER,
+               CHALLENGE_SERVER_LENGTH, CONDITIONAL_CHALLENGE_SERVER,
+               CERTIFICATE_SERVER_LENGTH, CONDITIONAL_CERTIFICATE_SERVER,
+               PROOF_OF_OWNERSHIP_SERVER_LENGTH, CONDITIONAL_PROOF_OF_OWNERSHIP_SERVER,
+               EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH, CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_SERVER),
+        0x03: (AUTHENTICATION_RETURN_PARAMETER,
+               SESSION_KEY_INFO_LENGTH, CONDITIONAL_OPTIONAL_SESSION_KEY_INFO),
+        0x04: (AUTHENTICATION_RETURN_PARAMETER,),
+        0x05: (AUTHENTICATION_RETURN_PARAMETER, ALGORITHM_INDICATOR,
+               CHALLENGE_SERVER_LENGTH, CONDITIONAL_CHALLENGE_SERVER,
+               NEEDED_ADDITIONAL_PARAMETER_LENGTH, CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER),
+        0x06: (AUTHENTICATION_RETURN_PARAMETER, ALGORITHM_INDICATOR,
+               SESSION_KEY_INFO_LENGTH, CONDITIONAL_OPTIONAL_SESSION_KEY_INFO),
+        0x07: (AUTHENTICATION_RETURN_PARAMETER, ALGORITHM_INDICATOR,
+               PROOF_OF_OWNERSHIP_SERVER_LENGTH, CONDITIONAL_PROOF_OF_OWNERSHIP_SERVER,
+               SESSION_KEY_INFO_LENGTH, CONDITIONAL_OPTIONAL_SESSION_KEY_INFO),
+        0x08: (AUTHENTICATION_RETURN_PARAMETER,),
+    })
+"""Definition of conditional continuation of 
+:ref:`Authentication <knowledge-base-service-authentication>` response message."""
+
 # SID 0x2C
 
 CONDITIONAL_DATA_FROM_MEMORY = ConditionalFormulaDataRecord(formula=get_data_from_memory)
 """Definition of conditional `Data from Memory` Data Record."""
+
+CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2020 = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+        0x01: (DYNAMICALLY_DEFINED_DID_2020, DATA_FROM_DID_2020,),
+        0x02: (DYNAMICALLY_DEFINED_DID_2020, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
+        0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,),
+    })
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` request message."""
+
+CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2013 = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+        0x01: (DYNAMICALLY_DEFINED_DID_2013, DATA_FROM_DID_2013,),
+        0x02: (DYNAMICALLY_DEFINED_DID_2013, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
+        0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,),
+    })
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` request message."""
+
+CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2020 = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+        0x01: (DYNAMICALLY_DEFINED_DID_2020,),
+        0x02: (DYNAMICALLY_DEFINED_DID_2020,),
+        0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,),
+    })
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` response message."""
+
+CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2013 = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+        0x01: (DYNAMICALLY_DEFINED_DID_2013,),
+        0x02: (DYNAMICALLY_DEFINED_DID_2013,),
+        0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,),
+    })
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+:ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` response message."""
+
+# SID 0x2F
+
+CONDITIONAL_CONTROL_STATE_2020 = get_did_data_2020(name="controlState")
+"""Definition of conditional (compatible with ISO 14229-1:2020) `controlState` Data Record."""
+CONDITIONAL_CONTROL_STATE_2013 = get_did_data_2013(name="controlState")
+"""Definition of conditional (compatible with ISO 14229-1:2013) `controlState` Data Record."""
+
+CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020 = get_did_data_mask_2020(name="controlEnableMask", optional=True)
+"""Definition of optional conditional (compatible with ISO 14229-1:2020) `controlEnableMask` Data Record."""
+CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013 = get_did_data_mask_2013(name="controlEnableMask", optional=True)
+"""Definition of optional conditional (compatible with ISO 14229-1:2013) `controlEnableMask` Data Record."""
 
 # SID 0x38
 
@@ -275,6 +434,30 @@ CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH_FILE_TRANSFER = ConditionalFormulaDataRec
 
 CONDITIONAL_DATA = ConditionalFormulaDataRecord(formula=get_data)
 """Definition of conditional `data` Data Record."""
+
+# SID 0x83
+
+CONDITIONAL_ACCESS_TIMING_PARAMETER_REQUEST_2013 = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+        0x01: (),
+        0x02: (),
+        0x03: (),
+        0x04: (TIMING_PARAMETER_REQUEST_RECORD,),
+    })
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+:ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` request message."""
+
+CONDITIONAL_ACCESS_TIMING_PARAMETER_RESPONSE_2013 = ConditionalMappingDataRecord(
+    value_mask=0x7F,
+    mapping={
+    0x01: (TIMING_PARAMETER_RESPONSE_RECORD,),
+    0x02: (),
+    0x03: (TIMING_PARAMETER_RESPONSE_RECORD,),
+    0x04: (),
+})
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+:ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` response message."""
 
 # SID 0x84
 

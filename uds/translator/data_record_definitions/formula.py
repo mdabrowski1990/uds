@@ -51,6 +51,8 @@ from uds.utilities import (
     InconsistencyError,
     get_signed_value_decoding_formula,
     get_signed_value_encoding_formula,
+    EVENT_WINDOW_TIME_MAPPING_2013,
+    EVENT_WINDOW_TIME_MAPPING_2020,
 )
 
 from ..data_record import (
@@ -70,8 +72,6 @@ from .other import (
     ANTI_REPLAY_COUNTER,
     COMPARE_VALUE,
     COMPARISON_LOGIC,
-    EVENT_WINDOW_TIME_MAPPING_2013,
-    EVENT_WINDOW_TIME_MAPPING_2020,
     EXPONENT,
     FORMULA_IDENTIFIER,
     HYSTERESIS_VALUE,
