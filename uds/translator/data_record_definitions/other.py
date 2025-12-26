@@ -1,4 +1,4 @@
-"""Remaining Data Records definitions."""  # pylint: disable=too-many-lines
+"""Remaining Data Records definitions."""
 
 __all__ = [
     # Shared
