@@ -401,20 +401,18 @@ def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int]
 # SID 0x24
 
 
-# TODO: continue
-
 def get_scaling_byte_extension(scaling_byte: int,
                                scaling_byte_number: int
                                ) -> Tuple[Union[RawDataRecord, ConditionalFormulaDataRecord], ...]:
     """
-    Get scalingByteExtension Data Records for given scalingByte value.
+    Get `scalingByteExtension` Data Records for given `scalingByte` value.
 
     :param scaling_byte: Preceding `scalingByte` value.
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
+    :param scaling_byte_number: Order numbers of the `scalingByte` and `scalingByteExtension` Data Records.
 
     :raise InconsistencyError: Provided `scalingByte` equals 0x20.
 
-    :return: Data Records for scalingByteExtension.
+    :return: Data Records for `scalingByteExtension` parameter.
     """
     parameter_type = (scaling_byte & 0xF0) >> 4
     number_of_bytes = scaling_byte & 0x0F
@@ -443,11 +441,11 @@ def get_scaling_byte_extension(scaling_byte: int,
 
 def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], AliasMessageStructure]:
     """
-    Get formula that can be used by Conditional Data Record for getting scalingByteExtension Data Records.
+    Get formula that can be used by Conditional Data Record for getting `scalingByteExtension` Data Records.
 
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
+    :param scaling_byte_number: Order numbers of the `scalingByte` and `scalingByteExtension` Data Records.
 
-    :return: Formula for given scaling byte number.
+    :return: Formula for given order number.
     """
     return lambda scaling_byte: get_scaling_byte_extension(scaling_byte=scaling_byte,
                                                            scaling_byte_number=scaling_byte_number)
@@ -458,7 +456,7 @@ def get_coefficients(formula_identifier: int, scaling_byte_number: int) -> Tuple
     Get coefficients' Data Records for formula type parameter.
 
     :param formula_identifier: Formula Identifier used.
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
+    :param scaling_byte_number: Order numbers of the `scalingByte` and `scalingByteExtension` Data Records.
 
     :raise ValueError: Undefined value of Formula Identifier was provided.
 
@@ -488,9 +486,9 @@ def get_coefficients_formula(scaling_byte_number: int) -> Callable[[int], Tuple[
     """
     Get formula that can be used by Conditional Data Record for getting formula coefficients.
 
-    :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
+    :param scaling_byte_number: Order numbers of the `scalingByte` and `scalingByteExtension` Data Records.
 
-    :return: Formula for given scaling byte number.
+    :return: Formula for given order number.
     """
     return lambda formula_identifier: get_coefficients(formula_identifier=formula_identifier,
                                                        scaling_byte_number=scaling_byte_number)
@@ -501,9 +499,9 @@ def get_coefficients_formula(scaling_byte_number: int) -> Callable[[int], Tuple[
 
 def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
     """
-    Get SecurityAccess Data Records that are part of request message for given SubFunction value.
+    Get Data Records that are part of SecurityAccess request message.
 
-    :param sub_function: SubFunction value.
+    :param sub_function: SecurityAccess SubFunction value.
 
     :return: Data Records that are present in the request message after given SubFunction value.
     """
@@ -514,9 +512,9 @@ def get_security_access_request(sub_function: int) -> Tuple[RawDataRecord]:
 
 def get_security_access_response(sub_function: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
     """
-    Get SecurityAccess Data Records that are part of response message for given SubFunction value.
+    Get Data Records that are part of SecurityAccess response message.
 
-    :param sub_function: SubFunction value.
+    :param sub_function: SecurityAccess SubFunction value.
 
     :return: Data Records that are present in the response message after given SubFunction value.
     """
@@ -559,12 +557,12 @@ def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[Raw
 
 def get_did_data_mask_2020(name: str, optional: bool) -> ConditionalFormulaDataRecord:
     """
-    Get Conditional Data Record for DID data mask that is compatible with ISO 14229-1:2020 version.
+    Get Conditional Data Record (compatible with ISO 14229-1:2020) for DID data mask.
 
     :param name: Name for the Data Record that contains whole DID data mask.
-    :param optional: Whether the field is optional or mandatory.
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
 
-    :return: Conditional Data Record for DID data.
+    :return: Conditional Data Record for DID data mask.
     """
     default_did_data_mask = RawDataRecord(name=name,
                                           length=8,
@@ -604,12 +602,12 @@ def get_did_data_mask_2020(name: str, optional: bool) -> ConditionalFormulaDataR
 
 def get_did_data_mask_2013(name: str, optional: bool) -> ConditionalFormulaDataRecord:
     """
-    Get Conditional Data Record for DID data mask that is compatible with ISO 14229-1:2013 version.
+    Get Conditional Data Record (compatible with ISO 14229-1:2013) for DID data mask.
 
     :param name: Name for the Data Record that contains whole DID data mask.
-    :param optional: Whether the field is optional or mandatory.
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
 
-    :return: Conditional Data Record for DID data.
+    :return: Conditional Data Record for DID data mask.
     """
     default_did_data_mask = RawDataRecord(name=name,
                                           length=8,
@@ -671,9 +669,9 @@ def get_file_path_and_name(file_path_and_name_length: int) -> Tuple[TextDataReco
 
 def get_file_sizes(file_size_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
     """
-    Get file size Data Records of given bytes length.
+    Get `fileSizeUnCompressed` and `fileSizeCompressed` Data Records of given bytes length.
 
-    :param file_size_parameter_length: Bytes length of `fileSizeUnCompressed` and `fileSizeCompressed` Data Records.
+    :param file_size_parameter_length: Value of `fileSizeParameterLength` which is Data Records length in bytes.
 
     :raise ValueError: Provided `fileSizeParameterLength` value equals 0.
 
@@ -691,10 +689,10 @@ def get_file_sizes(file_size_parameter_length: int) -> Tuple[RawDataRecord, RawD
 
 def get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord, RawDataRecord]:
     """
-    Get file size Data Records of given bytes length.
+    Get fileSizeUncompressedOrDirInfoLength` and `fileSizeCompressed` Data Records of given bytes length.
 
-    :param file_size_or_dir_info_parameter_length: Bytes length of `fileSizeUncompressedOrDirInfoLength`
-        and `fileSizeCompressed` Data Records.
+    :param file_size_or_dir_info_parameter_length: Value of `fileSizeOrDirInfoParameterLength` which is Data Records
+        length in bytes.
 
     :raise ValueError: Provided `fileSizeOrDirInfoParameterLength` value equals 0.
 
@@ -712,13 +710,14 @@ def get_file_sizes_or_dir_info(file_size_or_dir_info_parameter_length: int) -> T
 
 def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRecord]:
     """
-    Get dir info Data Record of given bytes length.
+    Get `fileSizeUncompressedOrDirInfoLength` Data Record of given bytes length.
 
-    :param file_size_or_dir_info_parameter_length: Bytes length of `fileSizeUncompressedOrDirInfoLength` Data Record.
+    :param file_size_or_dir_info_parameter_length: Value of `fileSizeOrDirInfoParameterLength` which is Data Records
+        length in bytes.
 
     :raise ValueError: Provided `fileSizeOrDirInfoParameterLength` value equals 0.
 
-    :return: Tuple with `file_size_or_dir_info_parameter_length` Data Record.
+    :return: Tuple with `fileSizeUncompressedOrDirInfoLength` Data Record.
     """
     if file_size_or_dir_info_parameter_length == 0:
         raise ValueError("Value of `fileSizeOrDirInfoParameterLength` must be greater than 0.")
@@ -729,12 +728,12 @@ def get_dir_info(file_size_or_dir_info_parameter_length: int) -> Tuple[RawDataRe
 
 def get_max_number_of_block_length_file_transfer(length_format_identifier: int) -> Tuple[RawDataRecord]:
     """
-    Get `maxNumberOfBlockLength` Data Record for given `lengthFormatIdentifier` value.
+    Get `maxNumberOfBlockLength` Data Record of given bytes length.
 
     .. warning:: This method is specific for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>`
         service as it contains `lengthFormatIdentifier` in slightly different format.
 
-    :param length_format_identifier: Preceding `lengthFormatIdentifier` value.
+    :param length_format_identifier: Value of `lengthFormatIdentifier` which is Data Records length in bytes.
 
     :raise ValueError: Provided `lengthFormatIdentifier` equals 0.
 
@@ -750,9 +749,9 @@ def get_max_number_of_block_length_file_transfer(length_format_identifier: int) 
 
 def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
     """
-    Get `data` Data Record for given `memorySizeLength` value.
+    Get `data` Data Record of given bytes length.
 
-    :param memory_size_length: Preceding `memorySizeLength` value.
+    :param memory_size_length: Value of `memorySizeLength` which is Data Records length in bytes.
 
     :raise ValueError: Provided `memorySizeLength` equals 0.
 
@@ -773,11 +772,11 @@ def get_secured_data_transmission_request(signature_length: int) -> Union[
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
     """
-    Get SecuredDataTransmission Data Records that are part of request message after given Signature Length value.
+    Get Data Records that are part of SecuredDataTransmission request message.
 
-    :param signature_length: Value of Signature Length.
+    :param signature_length: Value of preceding `Signature Length`.
 
-    :return: Data Records that are present in the request message after given Signature Length value.
+    :return: Data Records that are present in the request message after given `Signature Length` value.
     """
     if signature_length == 0:
         return (ANTI_REPLAY_COUNTER,
@@ -798,11 +797,11 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord, RawDataRecord],
         Tuple[RawDataRecord, RawDataRecord, RawDataRecord]]:
     """
-    Get SecuredDataTransmission Data Records that are part of response message after given Signature Length value.
+    Get Data Records that are part of SecuredDataTransmission response message.
 
-    :param signature_length: Value of Signature Length.
+    :param signature_length: Value of preceding `Signature Length`.
 
-    :return: Data Records that are present in the response message after given Signature Length value.
+    :return: Data Records that are present in the response message after given `Signature Length` value.
     """
     if signature_length == 0:
         return (ANTI_REPLAY_COUNTER,
@@ -824,12 +823,12 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
 
 def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
     """
-    Get eventWindowTime Data Record compatible with ISO 14229-1:2020 version.
+    Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2020).
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
-    :return: Created eventWindowTime Data Record.
+    :return: Created `eventWindowTime` Data Record.
     """
     return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
@@ -838,12 +837,12 @@ def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataReco
 
 def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataRecord:
     """
-    Get eventWindowTime Data Record compatible with ISO 14229-1:2013 version.
+    Get `eventWindowTime` Data Record (compatible with ISO 14229-1:2013).
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
-    :return: Created eventWindowTime Data Record.
+    :return: Created `eventWindowTime` Data Record.
     """
     return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
                              length=8,
@@ -852,11 +851,11 @@ def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataReco
 
 def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
     """
-    Get eventTypeOfActiveEvent Data Record.
+    Get `eventTypeOfActiveEvent` Data Record (compatible with ISO 14229-1:2020).
 
     :param event_number: Number of the active event.
 
-    :return: Created eventTypeOfActiveEvent Data Record.
+    :return: Created `eventTypeOfActiveEvent` Data Record.
     """
     return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
                          length=8,
@@ -866,11 +865,11 @@ def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
 
 def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
     """
-    Get eventTypeOfActiveEvent Data Record.
+    Get `eventTypeOfActiveEvent` Data Record (compatible with ISO 14229-1:2013).
 
     :param event_number: Number of the active event.
 
-    :return: Created eventTypeOfActiveEvent Data Record.
+    :return: Created `eventTypeOfActiveEvent` Data Record.
     """
     return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
                          length=8,
@@ -882,7 +881,7 @@ def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecor
     """
     Get `eventTypeRecord` Data Record for `event` equal to 0x01.
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
     :return: Created `eventTypeRecord` Data Record.
@@ -894,12 +893,12 @@ def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecor
 
 def get_event_type_record_02_2013(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get eventTypeRecord Data Record for event equal to 0x02.
+    Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x02.
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
-    :return: Created eventTypeRecord Data Record.
+    :return: Created `eventTypeRecord` Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=8,
@@ -908,11 +907,9 @@ def get_event_type_record_02_2013(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get `eventTypeRecord` Data Record for `event` equal to 0x03.
+    Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x03.
 
-    .. note:: Supports only ISO 14229-1:2020 DIDs.
-
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
     :return: Created `eventTypeRecord` Data Record.
@@ -924,11 +921,9 @@ def get_event_type_record_03_2020(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get `eventTypeRecord` Data Record for `event` equal to 0x03.
+    Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x03.
 
-    .. note:: Supports only ISO 14229-1:2013 DIDs.
-
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
     :return: Created `eventTypeRecord` Data Record.
@@ -940,11 +935,9 @@ def get_event_type_record_03_2013(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get `eventTypeRecord` Data Record for `event` equal to 0x07.
+    Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x07.
 
-    .. note:: Supports only ISO 14229-1:2020 DIDs.
-
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
     :return: Created `eventTypeRecord` Data Record.
@@ -960,11 +953,9 @@ def get_event_type_record_07_2020(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get `eventTypeRecord` Data Record for `event` equal to 0x07.
+    Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x07.
 
-    .. note:: Supports only ISO 14229-1:2013 DIDs.
-
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
     :return: Created `eventTypeRecord` Data Record.
@@ -980,12 +971,12 @@ def get_event_type_record_07_2013(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get eventTypeRecord Data Record for event equal to 0x08.
+    Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x08.
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
-    :return: Created eventTypeRecord Data Record.
+    :return: Created `eventTypeRecord` Data Record.
     """
     return RawDataRecord(name="eventTypeRecord" if event_number is None else f"eventTypeRecord#{event_number}",
                          length=8,
@@ -995,9 +986,9 @@ def get_event_type_record_08_2020(event_number: Optional[int] = None) -> RawData
 
 def get_event_type_record_09_2020(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get `eventTypeRecord` Data Record for `event` equal to 0x09.
+    Get `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x09.
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
     :return: Created `eventTypeRecord` Data Record.
@@ -1013,10 +1004,16 @@ def get_event_type_record_09_2020_continuation(event_number: Optional[int] = Non
     """
     Get continuation for `eventTypeRecord` Data Record (`event` equal to 0x09).
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    .. warning:: `DTCSnapshotRecordNumber`, `DTCExtDataRecordNumber` and `MemorySelection` cannot be part of
+        `eventTypeRecord` cause, names and length of the signals depends on `reportType` value that is part of
+        `eventTypeRecord` (Data Record cannot mutate while being analyzed).
+
+        This exception is mentioned in :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` as well.
+
+    :param event_number: Order number of the event record.
         None if there are no records.
 
-    :return: Created Conditional Data Record.
+    :return: Created Conditional Data Record with `eventTypeRecord` continuation.
     """
     if event_number is None:
         return ConditionalMappingDataRecord(mapping={0x04: (DTC_SNAPSHOT_RECORD_NUMBER,),
@@ -1047,12 +1044,12 @@ def get_event_type_record_09_2020_continuation(event_number: Optional[int] = Non
 
 def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
     """
-    Get serviceToRespondToRecord Data Record.
+    Get `serviceToRespondToRecord` Data Record.
 
-    :param event_number: Order number of the event record to contain this Data Record.
+    :param event_number: Order number of the event record.
         None if there are no records.
 
-    :return: Created serviceToRespondToRecord Data Record.
+    :return: Created `serviceToRespondToRecord` Data Record.
     """
     return RawDataRecord(name="serviceToRespondToRecord" if event_number is None
                               else f"serviceToRespondToRecord#{event_number}",
@@ -1064,11 +1061,11 @@ def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
 def get_activated_events_2020(number_of_activated_events: int
                               ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
     """
-    Get activated events (event = reportActivatedEvents).
+    Get activated events (compatible with ISO 14229-1:2020).
 
     :param number_of_activated_events: Number of activated events.
 
-    :return: Data Records for Activated Events.
+    :return: Data Records for activated events.
     """
     data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
     for event_number in range(1, number_of_activated_events + 1):
@@ -1098,11 +1095,11 @@ def get_activated_events_2020(number_of_activated_events: int
 def get_activated_events_2013(number_of_activated_events: int
                               ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
     """
-    Get activated events (event = reportActivatedEvents).
+    Get activated events (compatible with ISO 14229-1:2013).
 
     :param number_of_activated_events: Number of activated events.
 
-    :return: Data Records for Activated Events.
+    :return: Data Records for activated events.
     """
     data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
     for event_number in range(1, number_of_activated_events + 1):
