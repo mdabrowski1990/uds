@@ -13,7 +13,7 @@ __all__ = [
     "FORMULA_IDENTIFIER_MAPPING",
     "UNIT_OR_FORMAT_MAPPING",
     "STATE_AND_CONNECTION_TYPE_TYPE_MAPPING", "STATE_AND_CONNECTION_TYPE_DIRECTION_MAPPING",
-    "STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING" , "STATE_AND_CONNECTION_TYPE_STATE_MAPPING",
+    "STATE_AND_CONNECTION_TYPE_LEVEL_MAPPING", "STATE_AND_CONNECTION_TYPE_STATE_MAPPING",
     # SID 0x28
     "MESSAGE_TYPE_MAPPING",
     "NETWORKS_MAPPING",
@@ -43,18 +43,12 @@ REPEATED_DATA_RECORDS_NUMBER: int = 100  # TODO: remove if possible
 NO_YES_MAPPING: Dict[int, str] = {0: "no", 1: "yes"}
 """Generic `no` and `yes` values mapping."""
 
-COMPRESSION_METHOD_MAPPING: Dict[int, str] = {
-                                                 0: "no compression",
-                                             } | {
-                                                 value: f"compression #{value}" for value in range(1, 0x10)
-                                             }
+COMPRESSION_METHOD_MAPPING: Dict[int, str] = ({0: "no compression"}
+                                              | {value: f"compression #{value}" for value in range(1, 0x10)})
 """Values mapping for compressionMethod Data Record that is part of messages for multiple services."""
 
-ENCRYPTION_METHOD_MAPPING: Dict[int, str] = {
-                                                0: "no encryption",
-                                            } | {
-                                                value: f"encryption #{value}" for value in range(1, 0x10)
-                                            }
+ENCRYPTION_METHOD_MAPPING: Dict[int, str] = ({0: "no encryption"}
+                                             | {value: f"encryption #{value}" for value in range(1, 0x10)})
 """Values mapping for encryptingMethod Data Record that is part of messages for multiple services."""
 
 # SID 0x11
@@ -245,12 +239,9 @@ MESSAGE_TYPE_MAPPING: Dict[int, str] = {
 """Values mapping for `messagesType` Data Record that is part of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 
-NETWORKS_MAPPING: Dict[int, str] = {
-                                       0x0: "all connected networks",
-                                       0xF: "network on which this request is received",
-                                   } | {
-                                       raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)
-                                   }
+NETWORKS_MAPPING: Dict[int, str] = ({0x0: "all connected networks",
+                                     0xF: "network on which this request is received"}
+                                    | {raw_value: f"subnet {raw_value}" for raw_value in range(1, 0xF)})
 """Values mapping for `networks` Data Record that is part of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 

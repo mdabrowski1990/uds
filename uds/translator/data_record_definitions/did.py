@@ -17,7 +17,7 @@ __all__ = [
 ]
 
 
-from typing import Dict
+from typing import Dict, Tuple
 
 from uds.utilities import (
     DID_BIT_LENGTH,
@@ -27,16 +27,16 @@ from uds.utilities import (
     PERIODIC_DID_OFFSET,
 )
 
-from ..data_record import AliasMessageStructure, LinearFormulaDataRecord, MappingDataRecord, RawDataRecord
+from ..data_record import AbstractDataRecord, LinearFormulaDataRecord, MappingDataRecord, RawDataRecord
 from .other import ACTIVE_DIAGNOSTIC_SESSION, RESERVED_BIT
 
 # Shared
 
-DID_DATA_MAPPING_2020: Dict[int, AliasMessageStructure] = {
+DID_DATA_MAPPING_2020: Dict[int, Tuple[AbstractDataRecord, ...]] = {
     0xF186: (RESERVED_BIT, ACTIVE_DIAGNOSTIC_SESSION),
 }
 """DID values mapping (compatible with ISO 14229-1:2020) to DID data message structure."""
-DID_DATA_MAPPING_2013: Dict[int, AliasMessageStructure] = {
+DID_DATA_MAPPING_2013: Dict[int, Tuple[AbstractDataRecord, ...]] = {
     0xF186: DID_DATA_MAPPING_2020[0xF186],
 }
 """DID values mapping (compatible with ISO 14229-1:2013) to DID data message structure."""

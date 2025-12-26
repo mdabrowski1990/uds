@@ -12,7 +12,7 @@ DID_BIT_LENGTH = 16
 """Number of bits used for :ref:`DID <knowledge-base-did>`"""
 
 PERIODIC_DID_BIT_LENGTH = 8
-"""Number of bits used for `periodicDataIdentifier` in 
+"""Number of bits used for `periodicDataIdentifier` in
 :ref:`ReadDataByPeriodicIdentifier service <knowledge-base-service-read-data-by-periodic-identifier>`"""
 PERIODIC_DID_OFFSET = 0xF200
 """Offset used by `periodicDataIdentifiers`"""

@@ -1,9 +1,11 @@
-"""Definitions for Conditional Data Records."""
+"""Definitions for Conditional Data Records."""  # pylint: disable=too-many-lines
 
 __all__ = [
     # Shared
     "CONDITIONAL_MEMORY_ADDRESS_AND_SIZE",
     "CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH",
+    # SID 0x11
+    "CONDITIONAL_POWER_DOWN_TIME",
     # SID 0x19
     "CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2020", "CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2013",
     "CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2020", "CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2013",
@@ -65,6 +67,7 @@ __all__ = [
     # SID 0x86
     "EVENT_WINDOW_TIME_2020", "EVENT_WINDOW_TIME_2013",
     "EVENT_TYPE_RECORD_01",
+    "EVENT_TYPE_RECORD_02_2013",
     "EVENT_TYPE_RECORD_03_2020", "EVENT_TYPE_RECORD_03_2013",
     "EVENT_TYPE_RECORD_07_2020", "EVENT_TYPE_RECORD_07_2013",
     "EVENT_TYPE_RECORD_08_2020",
@@ -72,6 +75,8 @@ __all__ = [
     "SERVICE_TO_RESPOND",
     "CONDITIONAL_RESPONSE_ON_EVENT_REQUEST_2020", "CONDITIONAL_RESPONSE_ON_EVENT_REQUEST_2013",
     "CONDITIONAL_RESPONSE_ON_EVENT_RESPONSE_2020", "CONDITIONAL_RESPONSE_ON_EVENT_RESPONSE_2013",
+    # SID 0x87
+    "CONDITIONAL_LINK_CONTROL_REQUEST",
 ]
 
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
@@ -135,6 +140,7 @@ from .formula import (
     get_did_records_formula_2020,
     get_dir_info,
     get_event_type_record_01,
+    get_event_type_record_02_2013,
     get_event_type_record_03_2013,
     get_event_type_record_03_2020,
     get_event_type_record_07_2013,
@@ -147,11 +153,11 @@ from .formula import (
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
-    get_raw_data_record_with_length_formula,
-    get_scaling_byte_extension_formula,
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
+    get_raw_data_record_with_length_formula,
+    get_scaling_byte_extension_formula,
     get_secured_data_transmission_request,
     get_secured_data_transmission_response,
     get_security_access_request,
@@ -174,25 +180,27 @@ from .other import (
     DATA_FORMAT_IDENTIFIER,
     EPHEMERAL_PUBLIC_KEY_CLIENT_LENGTH,
     EPHEMERAL_PUBLIC_KEY_SERVER_LENGTH,
-    EVENT_TYPE_RECORD_02,
     FILE_AND_PATH_NAME_LENGTH,
     FILE_POSITION,
     FILE_SIZE_OR_DIR_INFO_PARAMETER_LENGTH,
     FILE_SIZE_PARAMETER_LENGTH,
     INPUT_OUTPUT_CONTROL_PARAMETER,
     LENGTH_FORMAT_IDENTIFIER_FILE_TRANSFER,
+    LINK_CONTROL_MODE_IDENTIFIER,
+    LINK_RECORD,
     MEMORY_SELECTION,
     NEEDED_ADDITIONAL_PARAMETER_LENGTH,
     NODE_IDENTIFICATION_NUMBER,
     NUMBER_OF_ACTIVATED_EVENTS,
     NUMBER_OF_IDENTIFIED_EVENTS,
+    POWER_DOWN_TIME,
     PROOF_OF_OWNERSHIP_CLIENT_LENGTH,
     PROOF_OF_OWNERSHIP_SERVER_LENGTH,
     SCALING_BYTE_LENGTH,
     SCALING_BYTE_TYPE,
     SESSION_KEY_INFO_LENGTH,
-    TIMING_PARAMETER_REQUEST_RECORD,
-    TIMING_PARAMETER_RESPONSE_RECORD,
+    TIMING_PARAMETER_REQUEST_RECORD_2013,
+    TIMING_PARAMETER_RESPONSE_RECORD_2013,
 )
 from .rid import OPTIONAL_ROUTINE_STATUS, RID, ROUTINE_STATUS
 
@@ -203,6 +211,13 @@ CONDITIONAL_MEMORY_ADDRESS_AND_SIZE = ConditionalFormulaDataRecord(formula=get_m
 
 CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=get_max_number_of_block_length)
 """Definition of conditional `maxNumberOfBlockLength` Data Record."""
+
+# SID 0x11
+
+CONDITIONAL_POWER_DOWN_TIME = ConditionalMappingDataRecord(mapping={0x4: [POWER_DOWN_TIME]},
+                                                           default_message_continuation=[],
+                                                           value_mask=0x7F)
+"""Definition of conditional `powerDownTime` Data Record."""
 
 # SID 0x19
 
@@ -236,7 +251,7 @@ _DTC_SNAPSHOT_RECORDS_2013 = tuple(item
 
 _DTC_EXTENDED_DATA_RECORDS = tuple(item
                                    for data_records in zip(OPTIONAL_DTCS_AND_STATUSES_LIST,
-                                                                         DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
+                                                           DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
                                    for item in data_records)
 """Collection of DTC Extended Data Records."""
 
@@ -282,7 +297,7 @@ CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2020 = ConditionalMappingDataRecord(map
     0x56: (DTC_FUNCTIONAL_GROUP_IDENTIFIER, DTC_READINESS_GROUP_IDENTIFIER),
 },
     value_mask=0x7F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` request message."""
 
 CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2013 = ConditionalMappingDataRecord(mapping={
@@ -315,7 +330,7 @@ CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2013 = ConditionalMappingDataRecord(map
     0x55: (DTC_FUNCTIONAL_GROUP_IDENTIFIER,),
 },
     value_mask=0x7F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` request message."""
 
 CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2020 = ConditionalMappingDataRecord(mapping={
@@ -349,7 +364,7 @@ CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2020 = ConditionalMappingDataRecord(ma
            DTC_READINESS_GROUP_IDENTIFIER, MULTIPLE_DTC_AND_STATUS)
 },
     value_mask=0x7F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` response message."""
 
 CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2013 = ConditionalMappingDataRecord(mapping={
@@ -385,7 +400,7 @@ CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2013 = ConditionalMappingDataRecord(ma
            MULTIPLE_DTC_AND_STATUS),
 },
     value_mask=0x7F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` response message."""
 
 # SID 0x24
@@ -411,11 +426,11 @@ SCALING_DATA_RECORDS = tuple(item
 # SID 0x27
 
 CONDITIONAL_SECURITY_ACCESS_REQUEST = ConditionalFormulaDataRecord(formula=get_security_access_request)
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`SecurityAccess <knowledge-base-service-security-access>` request message."""
 
 CONDITIONAL_SECURITY_ACCESS_RESPONSE = ConditionalFormulaDataRecord(formula=get_security_access_response)
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`SecurityAccess <knowledge-base-service-security-access>` response message."""
 
 # SID 0x28
@@ -427,7 +442,7 @@ CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalMappingDataRecord(
         0x04: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER),
         0x05: (COMMUNICATION_TYPE, NODE_IDENTIFICATION_NUMBER),
     })
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` request message."""
 
 # SID 0x29
@@ -521,7 +536,7 @@ CONDITIONAL_AUTHENTICATION_REQUEST = ConditionalMappingDataRecord(
                ADDITIONAL_PARAMETER_LENGTH, CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER),
         0x08: (),
     })
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`Authentication <knowledge-base-service-authentication>` request message."""
 
 CONDITIONAL_AUTHENTICATION_RESPONSE = ConditionalMappingDataRecord(
@@ -549,7 +564,7 @@ CONDITIONAL_AUTHENTICATION_RESPONSE = ConditionalMappingDataRecord(
                SESSION_KEY_INFO_LENGTH, CONDITIONAL_OPTIONAL_SESSION_KEY_INFO),
         0x08: (AUTHENTICATION_RETURN_PARAMETER,),
     })
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`Authentication <knowledge-base-service-authentication>` response message."""
 
 # SID 0x2A
@@ -574,7 +589,7 @@ CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2020 = ConditionalMapping
         0x02: (DYNAMICALLY_DEFINED_DID_2020, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
         0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,),
     })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` request message."""
 
 CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2013 = ConditionalMappingDataRecord(
@@ -584,7 +599,7 @@ CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_REQUEST_2013 = ConditionalMapping
         0x02: (DYNAMICALLY_DEFINED_DID_2013, ADDRESS_AND_LENGTH_FORMAT_IDENTIFIER, CONDITIONAL_DATA_FROM_MEMORY,),
         0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,),
     })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` request message."""
 
 CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2020 = ConditionalMappingDataRecord(
@@ -594,7 +609,7 @@ CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2020 = ConditionalMappin
         0x02: (DYNAMICALLY_DEFINED_DID_2020,),
         0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2020,),
     })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` response message."""
 
 CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2013 = ConditionalMappingDataRecord(
@@ -604,7 +619,7 @@ CONDITIONAL_DYNAMICALLY_DEFINE_DATA_IDENTIFIER_RESPONSE_2013 = ConditionalMappin
         0x02: (DYNAMICALLY_DEFINED_DID_2013,),
         0x03: (OPTIONAL_DYNAMICALLY_DEFINED_DID_2013,),
     })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` response message."""
 
 # SID 0x2F
@@ -618,6 +633,7 @@ CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2020 = get_did_data_mask_2020(name="con
 """Definition of optional conditional (compatible with ISO 14229-1:2020) `controlEnableMask` Data Record."""
 CONDITIONAL_OPTIONAL_CONTROL_ENABLE_MASK_2013 = get_did_data_mask_2013(name="controlEnableMask", optional=True)
 """Definition of optional conditional (compatible with ISO 14229-1:2013) `controlEnableMask` Data Record."""
+
 
 def get_input_output_control_by_identifier_request_2020(did: int) -> AliasMessageStructure:
     """
@@ -701,20 +717,20 @@ def get_input_output_control_by_identifier_response_2013(did: int) -> AliasMessa
 
 CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_REQUEST_2020 = ConditionalFormulaDataRecord(
     formula=get_input_output_control_by_identifier_request_2020)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` request message."""
 CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_REQUEST_2013 = ConditionalFormulaDataRecord(
     formula=get_input_output_control_by_identifier_request_2013)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` request message."""
 
 CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_RESPONSE_2020 = ConditionalFormulaDataRecord(
     formula=get_input_output_control_by_identifier_response_2020)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` response message."""
 CONDITIONAL_INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_RESPONSE_2013 = ConditionalFormulaDataRecord(
     formula=get_input_output_control_by_identifier_response_2013)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` response message."""
 
 # SID 0x31
@@ -725,7 +741,7 @@ CONDITIONAL_ROUTINE_CONTROL_RESPONSE = ConditionalMappingDataRecord(mapping={
     0x03: (RID, ROUTINE_STATUS),
 },
     value_mask=0x7F)
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`RoutineControl <knowledge-base-service-routine-control>` response message."""
 
 # SID 0x38
@@ -762,7 +778,7 @@ CONDITIONAL_REQUEST_FILE_TRANSFER_REQUEST_2020 = ConditionalMappingDataRecord(ma
            DATA_FORMAT_IDENTIFIER,
            FILE_SIZE_PARAMETER_LENGTH, CONDITIONAL_FILE_SIZES),
 })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` request message."""
 
 CONDITIONAL_REQUEST_FILE_TRANSFER_REQUEST_2013 = ConditionalMappingDataRecord(mapping={
@@ -777,7 +793,7 @@ CONDITIONAL_REQUEST_FILE_TRANSFER_REQUEST_2013 = ConditionalMappingDataRecord(ma
            DATA_FORMAT_IDENTIFIER),
     0x05: (FILE_AND_PATH_NAME_LENGTH, CONDITIONAL_FILE_AND_PATH_NAME),
 })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` request message."""
 
 CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2020 = ConditionalMappingDataRecord(mapping={
@@ -796,7 +812,7 @@ CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2020 = ConditionalMappingDataRecord(m
            DATA_FORMAT_IDENTIFIER,
            FILE_POSITION),
 })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` response message."""
 
 CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2013 = ConditionalMappingDataRecord(mapping={
@@ -812,7 +828,7 @@ CONDITIONAL_REQUEST_FILE_TRANSFER_RESPONSE_2013 = ConditionalMappingDataRecord(m
            DATA_FORMAT_IDENTIFIER,
            FILE_SIZE_OR_DIR_INFO_PARAMETER_LENGTH, CONDITIONAL_DIR_INFO),
 })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` response message."""
 
 # SID 0x3D
@@ -828,32 +844,32 @@ CONDITIONAL_ACCESS_TIMING_PARAMETER_REQUEST_2013 = ConditionalMappingDataRecord(
         0x01: (),
         0x02: (),
         0x03: (),
-        0x04: (TIMING_PARAMETER_REQUEST_RECORD,),
+        0x04: (TIMING_PARAMETER_REQUEST_RECORD_2013,),
     })
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` request message."""
 
 CONDITIONAL_ACCESS_TIMING_PARAMETER_RESPONSE_2013 = ConditionalMappingDataRecord(
     value_mask=0x7F,
     mapping={
-    0x01: (TIMING_PARAMETER_RESPONSE_RECORD,),
-    0x02: (),
-    0x03: (TIMING_PARAMETER_RESPONSE_RECORD,),
-    0x04: (),
-})
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+        0x01: (TIMING_PARAMETER_RESPONSE_RECORD_2013,),
+        0x02: (),
+        0x03: (TIMING_PARAMETER_RESPONSE_RECORD_2013,),
+        0x04: (),
+    })
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` response message."""
 
 # SID 0x84
 
 CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST = ConditionalFormulaDataRecord(
     formula=get_secured_data_transmission_request)
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>`request message."""
 
 CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
     formula=get_secured_data_transmission_response)
-"""Definition of conditional continuation of 
+"""Definition of conditional continuation of
 :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` response message."""
 
 # SID 0x86
@@ -870,6 +886,8 @@ CONDITIONAL_ACTIVATED_EVENTS_2013 = ConditionalFormulaDataRecord(formula=get_act
 
 EVENT_TYPE_RECORD_01 = get_event_type_record_01()
 """Definition of `eventTypeRecord` Data Record for `event` equal to 0x01."""
+EVENT_TYPE_RECORD_02_2013 = get_event_type_record_02_2013()
+"""Definition of `eventTypeRecord` Data Record (compatible with ISO 14229-1:2013) for `event` equal to 0x02."""
 EVENT_TYPE_RECORD_03_2020 = get_event_type_record_03_2020()
 """Definition of `eventTypeRecord` Data Record (compatible with ISO 14229-1:2020) for `event` equal to 0x03."""
 EVENT_TYPE_RECORD_03_2013 = get_event_type_record_03_2013()
@@ -908,7 +926,7 @@ CONDITIONAL_RESPONSE_ON_EVENT_REQUEST_2020 = ConditionalMappingDataRecord(mappin
            EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09_2020),
 },
     value_mask=0x3F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` request message."""
 
 CONDITIONAL_RESPONSE_ON_EVENT_REQUEST_2013 = ConditionalMappingDataRecord(mapping={
@@ -917,7 +935,7 @@ CONDITIONAL_RESPONSE_ON_EVENT_REQUEST_2013 = ConditionalMappingDataRecord(mappin
            EVENT_TYPE_RECORD_01,
            SERVICE_TO_RESPOND),
     0x02: (EVENT_WINDOW_TIME_2013,
-           EVENT_TYPE_RECORD_02,
+           EVENT_TYPE_RECORD_02_2013,
            SERVICE_TO_RESPOND),
     0x03: (EVENT_WINDOW_TIME_2013,
            EVENT_TYPE_RECORD_03_2013,
@@ -930,7 +948,7 @@ CONDITIONAL_RESPONSE_ON_EVENT_REQUEST_2013 = ConditionalMappingDataRecord(mappin
            SERVICE_TO_RESPOND),
 },
     value_mask=0x3F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` request message."""
 
 
@@ -954,7 +972,7 @@ CONDITIONAL_RESPONSE_ON_EVENT_RESPONSE_2020 = ConditionalMappingDataRecord(mappi
            EVENT_TYPE_RECORD_09_2020, CONDITIONAL_EVENT_TYPE_RECORD_09_2020),
 },
     value_mask=0x3F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2020) of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` response message."""
 
 CONDITIONAL_RESPONSE_ON_EVENT_RESPONSE_2013 = ConditionalMappingDataRecord(mapping={
@@ -963,7 +981,7 @@ CONDITIONAL_RESPONSE_ON_EVENT_RESPONSE_2013 = ConditionalMappingDataRecord(mappi
            EVENT_TYPE_RECORD_01,
            SERVICE_TO_RESPOND),
     0x02: (NUMBER_OF_IDENTIFIED_EVENTS, EVENT_WINDOW_TIME_2013,
-           EVENT_TYPE_RECORD_02,
+           EVENT_TYPE_RECORD_02_2013,
            SERVICE_TO_RESPOND),
     0x03: (NUMBER_OF_IDENTIFIED_EVENTS, EVENT_WINDOW_TIME_2013,
            EVENT_TYPE_RECORD_03_2013,
@@ -976,5 +994,16 @@ CONDITIONAL_RESPONSE_ON_EVENT_RESPONSE_2013 = ConditionalMappingDataRecord(mappi
            SERVICE_TO_RESPOND),
 },
     value_mask=0x3F)
-"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of 
+"""Definition of conditional continuation (compatible with ISO 14229-1:2013) of
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` response message."""
+
+# SID 0x87
+
+CONDITIONAL_LINK_CONTROL_REQUEST = ConditionalMappingDataRecord(value_mask=0x7F,
+                                                                mapping={
+                                                                    0x01: (LINK_CONTROL_MODE_IDENTIFIER,),
+                                                                    0x02: (LINK_RECORD,),
+                                                                    0x03: (),
+                                                                })
+"""Definition of conditional continuation of
+:ref:`LinkControl <knowledge-base-service-link-control>` request message."""
