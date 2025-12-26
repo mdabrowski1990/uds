@@ -35,6 +35,8 @@ from uds.translator.data_record_definitions.formula import (
     TIMER_SCHEDULE_2013,
     UNIT_OR_FORMAT,
     TextEncoding,
+    get_activated_events_2013,
+    get_activated_events_2020,
     get_coefficients,
     get_data,
     get_data_from_memory,
@@ -47,7 +49,7 @@ from uds.translator.data_record_definitions.formula import (
     get_did_records_formula_2013,
     get_did_records_formula_2020,
     get_dids_2013,
-    get_dids_2020, get_activated_events_2013, get_activated_events_2020,
+    get_dids_2020,
     get_dir_info,
     get_event_type_of_active_event_2013,
     get_event_type_of_active_event_2020,
@@ -65,9 +67,9 @@ from uds.translator.data_record_definitions.formula import (
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
-    get_formula_coefficients,
-    get_formula_raw_data_record_with_length,
-    get_formula_scaling_byte_extension,
+    get_coefficients_formula,
+    get_raw_data_record_with_length_formula,
+    get_scaling_byte_extension_formula,
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
@@ -107,20 +109,20 @@ class TestFunctions:
         self._patcher_conditional_mapping_data_record.stop()
         self._patcher_conditional_formula_data_record.stop()
 
-    # get_formula_for_raw_data_record_with_length
+    # get_raw_data_record_with_length_formula
 
     @pytest.mark.parametrize("accept_zero_length, length", [
         (True, -1),
         (False, 0),
     ])
-    def test_get_formula_for_raw_data_record_with_length__formula_value_error(self, accept_zero_length, length):
-        formula = get_formula_raw_data_record_with_length(data_record_name=MagicMock(),
+    def test_get_raw_data_record_with_length_formula__formula_value_error(self, accept_zero_length, length):
+        formula = get_raw_data_record_with_length_formula(data_record_name=MagicMock(),
                                                           accept_zero_length=accept_zero_length)
         with pytest.raises(ValueError):
             formula(-1)
 
-    def test_get_formula_for_raw_data_record_with_length__empty(self):
-        formula = get_formula_raw_data_record_with_length(data_record_name=MagicMock(),
+    def test_get_raw_data_record_with_length_formula__empty(self):
+        formula = get_raw_data_record_with_length_formula(data_record_name=MagicMock(),
                                                           accept_zero_length=True)
         assert formula(0) == ()
 
@@ -128,8 +130,8 @@ class TestFunctions:
         ("Some Name", True, 54),
         ("XYZ - abc", False, 1),
     ])
-    def test_get_formula_for_raw_data_record_with_length__value(self, data_record_name, accept_zero_length, length):
-        formula = get_formula_raw_data_record_with_length(data_record_name=data_record_name,
+    def test_get_raw_data_record_with_length_formula__value(self, data_record_name, accept_zero_length, length):
+        formula = get_raw_data_record_with_length_formula(data_record_name=data_record_name,
                                                           accept_zero_length=accept_zero_length)
         assert formula(length) == (self.mock_raw_data_record.return_value, )
         self.mock_raw_data_record.assert_called_once_with(name=data_record_name,
@@ -137,6 +139,16 @@ class TestFunctions:
                                                           min_occurrences=length,
                                                           max_occurrences=length,
                                                           enforce_reoccurring=True)
+
+    # get_decode_float_value_formula
+
+    # TODO
+
+    # get_encode_float_value_formula
+
+    # TODO
+
+
 
     # get_did_2020
 
@@ -362,7 +374,7 @@ class TestFunctions:
     def test_get_scaling_byte_extension_formula(self, mock_get_scaling_byte_extension):
         mock_scaling_byte = Mock()
         mock_scaling_byte_number = Mock()
-        formula = get_formula_scaling_byte_extension(mock_scaling_byte_number)
+        formula = get_scaling_byte_extension_formula(mock_scaling_byte_number)
         assert callable(formula)
         assert formula(mock_scaling_byte) == mock_get_scaling_byte_extension.return_value
         mock_get_scaling_byte_extension.assert_called_once_with(scaling_byte=mock_scaling_byte,
@@ -414,7 +426,7 @@ class TestFunctions:
     def test_get_formula_coefficients(self, mock_get_coefficients,
                                                              scaling_byte_number):
         mock_formula_identifier = Mock()
-        formula = get_formula_coefficients(scaling_byte_number)
+        formula = get_coefficients_formula(scaling_byte_number)
         assert formula(mock_formula_identifier) == mock_get_coefficients.return_value
         mock_get_coefficients.assert_called_once_with(formula_identifier=mock_formula_identifier,
                                                                              scaling_byte_number=scaling_byte_number)

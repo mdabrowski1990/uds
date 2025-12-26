@@ -1,4 +1,4 @@
-"""Definition of UDS messages translator for data encoding and decoding."""
+"""Implementation of UDS messages translator for data encoding and decoding."""
 
 __all__ = ["Translator"]
 

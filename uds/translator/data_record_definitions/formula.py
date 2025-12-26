@@ -2,8 +2,8 @@
 
 __all__ = [
     # Shared
-    "get_formula_raw_data_record_with_length",
-    "get_formula_decode_float_value", "get_formula_encode_float_value",
+    "get_raw_data_record_with_length_formula",
+    "get_decode_float_value_formula", "get_encode_float_value_formula",
     "get_did_2020", "get_did_2013",
     "get_dids_2020", "get_dids_2013",
     "get_did_data_2020", "get_did_data_2013",
@@ -12,8 +12,8 @@ __all__ = [
     # SID 0x19
     "get_did_records_formula_2020", "get_did_records_formula_2013",
     # SID 0x24
-    "get_scaling_byte_extension", "get_formula_scaling_byte_extension",
-    "get_coefficients", "get_formula_coefficients",
+    "get_scaling_byte_extension", "get_scaling_byte_extension_formula",
+    "get_coefficients", "get_coefficients_formula",
     # SID 0x27
     "get_security_access_request",
     "get_security_access_response",
@@ -29,12 +29,20 @@ __all__ = [
     "get_max_number_of_block_length_file_transfer",
     # SID 0x3D
     "get_data",
+    # SID 0x84
+    "get_secured_data_transmission_request",
+    "get_secured_data_transmission_response",
     # SID 0x86
+    "get_event_window_2020", "get_event_window_2013",
+    "get_event_type_of_active_event_2020", "get_event_type_of_active_event_2013",
     "get_event_type_record_01",
+    "get_event_type_record_02_2013",
     "get_event_type_record_03_2020", "get_event_type_record_03_2013",
     "get_event_type_record_07_2020", "get_event_type_record_07_2013",
+    "get_event_type_record_08_2020",
     "get_event_type_record_09_2020",
     "get_event_type_record_09_2020_continuation",
+    "get_service_to_respond",
     "get_activated_events_2020", "get_activated_events_2013",
 ]
 
@@ -96,16 +104,16 @@ from .sub_functions import EVENT_TYPE_2013, EVENT_TYPE_2020, REPORT_TYPE_2020
 # Shared
 
 
-def get_formula_raw_data_record_with_length(data_record_name: str,
+def get_raw_data_record_with_length_formula(data_record_name: str,
                                             accept_zero_length: bool
                                             ) -> Callable[[int], Union[Tuple[RawDataRecord], Tuple[()]]]:
     """
-    Get formula for Conditional Data Record that returns Raw Data Record with given name.
+    Get formula for Conditional Data Record that returns Raw Data Record with length of proceeding value.
 
-    :param data_record_name: Name for Raw Data Record name.
+    :param data_record_name: Name for Raw Data Record.
     :param accept_zero_length: True to accept length equal zero else False.
 
-    :return: Formula for creating Raw Data Record that is proceeded by (bytes) length parameter.
+    :return: Formula for creating Raw Data Record that is following (bytes) length parameter.
     """
     def get_raw_data_record(length: int) -> Union[Tuple[RawDataRecord], Tuple[()]]:
         if accept_zero_length and length == 0:
@@ -122,14 +130,14 @@ def get_formula_raw_data_record_with_length(data_record_name: str,
     return get_raw_data_record
 
 
-def get_formula_decode_float_value(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[int], float]:
+def get_decode_float_value_formula(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[int], float]:
     """
     Get formula for decoding float value.
 
     :param exponent_bit_length: Number of bits used for exponent's signed integer value.
     :param mantissa_bit_length: Number of bits used for mantissa's signed integer value.
 
-    :return: Formula for decoding float value from unsigned integer value.
+    :return: Formula for decoding float value from unsigned integer values.
     """
     exponent_encode_formula = get_signed_value_encoding_formula(exponent_bit_length)
     mantissa_encode_formula = get_signed_value_encoding_formula(mantissa_bit_length)
@@ -145,14 +153,14 @@ def get_formula_decode_float_value(exponent_bit_length: int, mantissa_bit_length
     return get_float_value
 
 
-def get_formula_encode_float_value(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[float], int]:
+def get_encode_float_value_formula(exponent_bit_length: int, mantissa_bit_length: int) -> Callable[[float], int]:
     """
     Get formula for encoding float value.
 
     :param exponent_bit_length: Number of bits used for exponent's signed integer value.
     :param mantissa_bit_length: Number of bits used for mantissa's signed integer value.
 
-    :return: Formula for encoding float value into unsigned integer value.
+    :return: Formula for encoding float value into unsigned integer values.
     """
     exponent_decode_formula = get_signed_value_decoding_formula(exponent_bit_length)
     mantissa_decode_formula = get_signed_value_decoding_formula(mantissa_bit_length)
@@ -172,7 +180,7 @@ def get_did_2020(name: str, optional: bool = False) -> MappingDataRecord:
     """
     Get `DID` Data Record compatible with ISO 14229-1:2020 version.
 
-    :param name: Name to assign to the Data Record.
+    :param name: Name for the DID Data Record.
     :param optional: False if the Data Record presence is mandatory, True otherwise.
 
     :return: Created DID Data Record.
@@ -188,7 +196,7 @@ def get_did_2013(name: str, optional: bool = False) -> MappingDataRecord:
     """
     Get `DID` Data Record compatible with ISO 14229-1:2013 version.
 
-    :param name: Name to assign to the Data Record.
+    :param name: Name for the DID Data Record.
     :param optional: False if the Data Record presence is mandatory, True otherwise.
 
     :return: Created DID Data Record.
@@ -198,7 +206,7 @@ def get_did_2013(name: str, optional: bool = False) -> MappingDataRecord:
                              values_mapping=DID_MAPPING_2013,
                              min_occurrences=0 if optional else 1,
                              max_occurrences=1)
-
+# TODO: continue rework here
 
 def get_dids_2020(did_count: int,
                   record_number: Optional[int],
@@ -419,7 +427,7 @@ def get_scaling_byte_extension(scaling_byte: int,
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
                               length=FORMULA_IDENTIFIER.length,
                               children=(FORMULA_IDENTIFIER,)),
-                ConditionalFormulaDataRecord(formula=get_formula_coefficients(scaling_byte_number)),)
+                ConditionalFormulaDataRecord(formula=get_coefficients_formula(scaling_byte_number)),)
     if parameter_type == 0xA:  # unit/format
         return (RawDataRecord(name=f"scalingByteExtension#{scaling_byte_number}",
                               length=UNIT_OR_FORMAT.length,
@@ -431,7 +439,7 @@ def get_scaling_byte_extension(scaling_byte: int,
     return ()
 
 
-def get_formula_scaling_byte_extension(scaling_byte_number: int) -> Callable[[int], AliasMessageStructure]:
+def get_scaling_byte_extension_formula(scaling_byte_number: int) -> Callable[[int], AliasMessageStructure]:
     """
     Get formula that can be used by Conditional Data Record for getting scalingByteExtension Data Records.
 
@@ -458,9 +466,9 @@ def get_coefficients(formula_identifier: int, scaling_byte_number: int) -> Tuple
     if isinstance(physical_value, str) and "C0" in physical_value:
         data_records = []
         constant_index = 0
-        encoding_formula = get_formula_encode_float_value(exponent_bit_length=EXPONENT_BIT_LENGTH,
+        encoding_formula = get_encode_float_value_formula(exponent_bit_length=EXPONENT_BIT_LENGTH,
                                                           mantissa_bit_length=MANTISSA_BIT_LENGTH)
-        decoding_formula = get_formula_decode_float_value(exponent_bit_length=EXPONENT_BIT_LENGTH,
+        decoding_formula = get_decode_float_value_formula(exponent_bit_length=EXPONENT_BIT_LENGTH,
                                                           mantissa_bit_length=MANTISSA_BIT_LENGTH)
         length = EXPONENT_BIT_LENGTH + MANTISSA_BIT_LENGTH
         while f"C{constant_index}" in physical_value:
@@ -474,7 +482,7 @@ def get_coefficients(formula_identifier: int, scaling_byte_number: int) -> Tuple
     raise ValueError(f"Unknown formula identifier was provided: 0x{formula_identifier:02X}.")
 
 
-def get_formula_coefficients(scaling_byte_number: int) -> Callable[[int], Tuple[CustomFormulaDataRecord, ...]]:
+def get_coefficients_formula(scaling_byte_number: int) -> Callable[[int], Tuple[CustomFormulaDataRecord, ...]]:
     """
     Get formula that can be used by Conditional Data Record for getting formula coefficients.
 
@@ -812,20 +820,6 @@ def get_secured_data_transmission_response(signature_length: int) -> Union[
 # SID 0x86
 
 
-def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataRecord:
-    """
-    Get eventWindowTime Data Record compatible with ISO 14229-1:2013 version.
-
-    :param event_number: Order number of the event record to contain this Data Record.
-        None if there are no records.
-
-    :return: Created eventWindowTime Data Record.
-    """
-    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
-                             length=8,
-                             values_mapping=EVENT_WINDOW_TIME_MAPPING_2013)
-
-
 def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataRecord:
     """
     Get eventWindowTime Data Record compatible with ISO 14229-1:2020 version.
@@ -840,18 +834,18 @@ def get_event_window_2020(event_number: Optional[int] = None) -> MappingDataReco
                              values_mapping=EVENT_WINDOW_TIME_MAPPING_2020)
 
 
-def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
+def get_event_window_2013(event_number: Optional[int] = None) -> MappingDataRecord:
     """
-    Get eventTypeOfActiveEvent Data Record.
+    Get eventWindowTime Data Record compatible with ISO 14229-1:2013 version.
 
-    :param event_number: Number of the active event.
+    :param event_number: Order number of the event record to contain this Data Record.
+        None if there are no records.
 
-    :return: Created eventTypeOfActiveEvent Data Record.
+    :return: Created eventWindowTime Data Record.
     """
-    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
-                         length=8,
-                         children=(RESERVED_BIT,
-                                   EVENT_TYPE_2013))
+    return MappingDataRecord(name="eventWindowTime" if event_number is None else f"eventWindowTime#{event_number}",
+                             length=8,
+                             values_mapping=EVENT_WINDOW_TIME_MAPPING_2013)
 
 
 def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
@@ -866,6 +860,20 @@ def get_event_type_of_active_event_2020(event_number: int) -> RawDataRecord:
                          length=8,
                          children=(RESERVED_BIT,
                                    EVENT_TYPE_2020))
+
+
+def get_event_type_of_active_event_2013(event_number: int) -> RawDataRecord:
+    """
+    Get eventTypeOfActiveEvent Data Record.
+
+    :param event_number: Number of the active event.
+
+    :return: Created eventTypeOfActiveEvent Data Record.
+    """
+    return RawDataRecord(name=f"eventTypeOfActiveEvent#{event_number}",
+                         length=8,
+                         children=(RESERVED_BIT,
+                                   EVENT_TYPE_2013))
 
 
 def get_event_type_record_01(event_number: Optional[int] = None) -> RawDataRecord:

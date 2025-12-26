@@ -147,8 +147,8 @@ from .formula import (
     get_file_path_and_name,
     get_file_sizes,
     get_file_sizes_or_dir_info,
-    get_formula_raw_data_record_with_length,
-    get_formula_scaling_byte_extension,
+    get_raw_data_record_with_length_formula,
+    get_scaling_byte_extension_formula,
     get_max_number_of_block_length,
     get_max_number_of_block_length_file_transfer,
     get_memory_size_and_memory_address,
@@ -196,48 +196,6 @@ from .other import (
 )
 from .rid import OPTIONAL_ROUTINE_STATUS, RID, ROUTINE_STATUS
 
-DTC_DIDS_RECORDS_LIST_2013 = [
-    ConditionalFormulaDataRecord(formula=get_did_records_formula_2013(record_number + 1))
-    for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
-DTC_DIDS_RECORDS_LIST_2020 = [
-    ConditionalFormulaDataRecord(formula=get_did_records_formula_2020(record_number + 1))
-    for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
-RECORDS_DID_COUNTS_LIST = [RawDataRecord(name=f"DIDCount#{record_number + 1}",
-                                         length=8,
-                                         min_occurrences=1,
-                                         max_occurrences=1,
-                                         unit="DIDs")
-                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER)]
-
-DTC_SNAPSHOT_RECORDS_LIST_2013 = [
-    item for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                    RECORDS_DID_COUNTS_LIST,
-                                    DTC_DIDS_RECORDS_LIST_2013)
-    for item in snapshot_record]
-DTC_SNAPSHOT_RECORDS_LIST_2020 = [
-    item for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
-                                    RECORDS_DID_COUNTS_LIST,
-                                    DTC_DIDS_RECORDS_LIST_2020)
-    for item in snapshot_record]
-
-DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST = [
-    item for data_records in zip(OPTIONAL_DTCS_AND_STATUSES_LIST,
-                                 DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
-    for item in data_records]
-
-DTC_STORED_DATA_RECORDS_LIST_2013 = [
-    item for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
-                                       DTCS_AND_STATUSES_LIST,
-                                       RECORDS_DID_COUNTS_LIST,
-                                       DTC_DIDS_RECORDS_LIST_2013)
-    for item in stored_data_record]
-DTC_STORED_DATA_RECORDS_LIST_2020 = [
-    item for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
-                                       DTCS_AND_STATUSES_LIST,
-                                       RECORDS_DID_COUNTS_LIST,
-                                       DTC_DIDS_RECORDS_LIST_2020)
-    for item in stored_data_record]
-
 # Shared
 
 CONDITIONAL_MEMORY_ADDRESS_AND_SIZE = ConditionalFormulaDataRecord(formula=get_memory_size_and_memory_address)
@@ -247,6 +205,55 @@ CONDITIONAL_MAX_NUMBER_OF_BLOCK_LENGTH = ConditionalFormulaDataRecord(formula=ge
 """Definition of conditional `maxNumberOfBlockLength` Data Record."""
 
 # SID 0x19
+
+_DID_RECORDS_2020 = tuple(ConditionalFormulaDataRecord(formula=get_did_records_formula_2020(record_number + 1))
+                          for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+"""Collection of `DID` Data Records (compatible with ISO 14229-1:2020)."""
+_DID_RECORDS_2013 = tuple(ConditionalFormulaDataRecord(formula=get_did_records_formula_2013(record_number + 1))
+                          for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+"""Collection of `DID` Data Records (compatible with ISO 14229-1:2013)."""
+
+_DID_COUNT_RECORDS = tuple(RawDataRecord(name=f"DIDCount#{record_number + 1}",
+                                         length=8,
+                                         min_occurrences=1,
+                                         max_occurrences=1,
+                                         unit="DIDs")
+                           for record_number in range(REPEATED_DATA_RECORDS_NUMBER))
+"""Collection of `DIDCount` Data Records."""
+
+_DTC_SNAPSHOT_RECORDS_2020 = tuple(item
+                                   for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                                              _DID_COUNT_RECORDS,
+                                                              _DID_RECORDS_2020)
+                                   for item in snapshot_record)
+"""Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2020)."""
+_DTC_SNAPSHOT_RECORDS_2013 = tuple(item
+                                   for snapshot_record in zip(OPTIONAL_DTC_SNAPSHOT_RECORDS_NUMBERS_LIST,
+                                                              _DID_COUNT_RECORDS,
+                                                              _DID_RECORDS_2013)
+                                   for item in snapshot_record)
+"""Collection of DTC Snapshot Data Records (compatible with ISO 14229-1:2013)."""
+
+_DTC_EXTENDED_DATA_RECORDS = tuple(item
+                                   for data_records in zip(OPTIONAL_DTCS_AND_STATUSES_LIST,
+                                                                         DTC_EXTENDED_DATA_RECORDS_DATA_LIST)
+                                   for item in data_records)
+"""Collection of DTC Extended Data Records."""
+
+_DTC_STORED_DATA_RECORDS_2020 = tuple(item
+                                      for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                                                    DTCS_AND_STATUSES_LIST,
+                                                                    _DID_COUNT_RECORDS,
+                                                                    _DID_RECORDS_2020)
+                                      for item in stored_data_record)
+"""Collection of DTC Stored Data Records (compatible with ISO 14229-1:2020)."""
+_DTC_STORED_DATA_RECORDS_2013 = tuple(item
+                                      for stored_data_record in zip(DTC_STORED_DATA_RECORD_NUMBERS_LIST,
+                                                                    DTCS_AND_STATUSES_LIST,
+                                                                    _DID_COUNT_RECORDS,
+                                                                    _DID_RECORDS_2013)
+                                      for item in stored_data_record)
+"""Collection of DTC Stored Data Records (compatible with ISO 14229-1:2013)."""
 
 CONDITIONAL_READ_DTC_INFORMATION_REQUEST_2020 = ConditionalMappingDataRecord(mapping={
     0x01: (DTC_STATUS_MASK,),
@@ -315,8 +322,8 @@ CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2020 = ConditionalMappingDataRecord(ma
     0x01: (DTC_STATUS_AVAILABILITY_MASK, DTC_FORMAT_IDENTIFIER, DTC_COUNT),
     0x02: (DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_AND_STATUS),
     0x03: (MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER,),
-    0x04: (DTC_AND_STATUS, *DTC_SNAPSHOT_RECORDS_LIST_2020),
-    0x05: DTC_STORED_DATA_RECORDS_LIST_2020,
+    0x04: (DTC_AND_STATUS, *_DTC_SNAPSHOT_RECORDS_2020),
+    0x05: _DTC_STORED_DATA_RECORDS_2020,
     0x06: (DTC_AND_STATUS, *DTC_EXTENDED_DATA_RECORDS_NUMBERS_AND_DATA_LIST),
     0x07: (DTC_STATUS_AVAILABILITY_MASK, DTC_FORMAT_IDENTIFIER, DTC_COUNT),
     0x08: (DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_SEVERITY_FUNCTIONAL_UNIT_DTC_AND_STATUS),
@@ -328,9 +335,9 @@ CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2020 = ConditionalMappingDataRecord(ma
     0x0E: (DTC_STATUS_AVAILABILITY_MASK, OPTIONAL_DTC_AND_STATUS),
     0x14: (MULTIPLE_DTC_AND_FAULT_DETECTION_COUNTER,),
     0x15: (DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_AND_STATUS),
-    0x16: (DTC_EXTENDED_DATA_RECORD_NUMBER, *DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST),
+    0x16: (DTC_EXTENDED_DATA_RECORD_NUMBER, *_DTC_EXTENDED_DATA_RECORDS),
     0x17: (MEMORY_SELECTION, DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_AND_STATUS),
-    0x18: (MEMORY_SELECTION, DTC_AND_STATUS, *DTC_SNAPSHOT_RECORDS_LIST_2020),
+    0x18: (MEMORY_SELECTION, DTC_AND_STATUS, *_DTC_SNAPSHOT_RECORDS_2020),
     0x19: (MEMORY_SELECTION, DTC_AND_STATUS, OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER,
            DTC_EXTENDED_DATA_RECORDS_DATA_LIST[0], *OPTIONAL_DTC_EXTENDED_DATA_RECORDS_DATA_LIST[1:]),
     0x1A: (DTC_STATUS_AVAILABILITY_MASK, OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER, MULTIPLE_DTC_AND_STATUS),
@@ -349,8 +356,8 @@ CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2013 = ConditionalMappingDataRecord(ma
     0x01: (DTC_STATUS_AVAILABILITY_MASK, DTC_FORMAT_IDENTIFIER, DTC_COUNT),
     0x02: (DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_AND_STATUS),
     0x03: (MULTIPLE_DTC_AND_SNAPSHOT_RECORD_NUMBER,),
-    0x04: (DTC_AND_STATUS, *DTC_SNAPSHOT_RECORDS_LIST_2013),
-    0x05: DTC_STORED_DATA_RECORDS_LIST_2013,
+    0x04: (DTC_AND_STATUS, *_DTC_SNAPSHOT_RECORDS_2013),
+    0x05: _DTC_STORED_DATA_RECORDS_2013,
     0x06: (DTC_AND_STATUS, *DTC_EXTENDED_DATA_RECORDS_NUMBERS_AND_DATA_LIST),
     0x07: (DTC_STATUS_AVAILABILITY_MASK, DTC_FORMAT_IDENTIFIER, DTC_COUNT),
     0x08: (DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_SEVERITY_FUNCTIONAL_UNIT_DTC_AND_STATUS),
@@ -367,9 +374,9 @@ CONDITIONAL_READ_DTC_INFORMATION_RESPONSE_2013 = ConditionalMappingDataRecord(ma
     0x13: (DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_AND_STATUS),
     0x14: (MULTIPLE_DTC_AND_FAULT_DETECTION_COUNTER,),
     0x15: (DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_AND_STATUS),
-    0x16: (DTC_EXTENDED_DATA_RECORD_NUMBER, *DTCS_WITH_STATUSES_AND_EXTENDED_DATA_RECORDS_DATA_LIST),
+    0x16: (DTC_EXTENDED_DATA_RECORD_NUMBER, *_DTC_EXTENDED_DATA_RECORDS),
     0x17: (MEMORY_SELECTION, DTC_STATUS_AVAILABILITY_MASK, MULTIPLE_DTC_AND_STATUS),
-    0x18: (MEMORY_SELECTION, DTC_AND_STATUS, *DTC_SNAPSHOT_RECORDS_LIST_2013),
+    0x18: (MEMORY_SELECTION, DTC_AND_STATUS, *_DTC_SNAPSHOT_RECORDS_2013),
     0x19: (MEMORY_SELECTION, DTC_AND_STATUS, OPTIONAL_DTC_EXTENDED_DATA_RECORD_NUMBER,
            DTC_EXTENDED_DATA_RECORDS_DATA_LIST[0], *OPTIONAL_DTC_EXTENDED_DATA_RECORDS_DATA_LIST[1:]),
     0x42: (DTC_FUNCTIONAL_GROUP_IDENTIFIER, DTC_STATUS_AVAILABILITY_MASK, DTC_SEVERITY_AVAILABILITY_MASK,
@@ -392,7 +399,7 @@ _SCALING_BYTES_RECORDS = tuple(RawDataRecord(name=f"scalingByte#{index}",
 """Collection of `scalingByte` Data Records."""
 
 _SCALING_BYTES_EXTENSIONS_RECORDS = tuple(
-    ConditionalFormulaDataRecord(formula=get_formula_scaling_byte_extension(index))
+    ConditionalFormulaDataRecord(formula=get_scaling_byte_extension_formula(index))
     for index in range(1, REPEATED_DATA_RECORDS_NUMBER + 1))
 """Collection of `scalingByteExtension` Data Records."""
 
@@ -426,66 +433,66 @@ CONDITIONAL_COMMUNICATION_CONTROL_REQUEST = ConditionalMappingDataRecord(
 # SID 0x29
 
 CONDITIONAL_CERTIFICATE_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="certificateClient",
+    formula=get_raw_data_record_with_length_formula(data_record_name="certificateClient",
                                                     accept_zero_length=False))
 """Definition of conditional `certificateClient` Data Record."""
 
 CONDITIONAL_CERTIFICATE_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="certificateServer",
+    formula=get_raw_data_record_with_length_formula(data_record_name="certificateServer",
                                                     accept_zero_length=False))
 """Definition of conditional `certificateServer` Data Record."""
 
 CONDITIONAL_CERTIFICATE_DATA = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="certificateData",
+    formula=get_raw_data_record_with_length_formula(data_record_name="certificateData",
                                                     accept_zero_length=False))
 """Definition of conditional `certificateData` Data Record."""
 
 CONDITIONAL_CHALLENGE_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="challengeClient",
+    formula=get_raw_data_record_with_length_formula(data_record_name="challengeClient",
                                                     accept_zero_length=False))
 """Definition of conditional `challengeClient` Data Record."""
 CONDITIONAL_OPTIONAL_CHALLENGE_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="challengeClient",
+    formula=get_raw_data_record_with_length_formula(data_record_name="challengeClient",
                                                     accept_zero_length=True))
 """Definition of optional conditional `challengeClient` Data Record."""
 
 CONDITIONAL_CHALLENGE_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="challengeServer",
+    formula=get_raw_data_record_with_length_formula(data_record_name="challengeServer",
                                                     accept_zero_length=False))
 """Definition of conditional `challengeServer` Data Record."""
 
 CONDITIONAL_PROOF_OF_OWNERSHIP_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="proofOfOwnershipClient",
+    formula=get_raw_data_record_with_length_formula(data_record_name="proofOfOwnershipClient",
                                                     accept_zero_length=False))
 """Definition of conditional `proofOfOwnershipClient` Data Record."""
 
 CONDITIONAL_PROOF_OF_OWNERSHIP_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="proofOfOwnershipServer",
+    formula=get_raw_data_record_with_length_formula(data_record_name="proofOfOwnershipServer",
                                                     accept_zero_length=False))
 """Definition of conditional `proofOfOwnershipServer` Data Record."""
 
 CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_CLIENT = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="ephemeralPublicKeyClient",
+    formula=get_raw_data_record_with_length_formula(data_record_name="ephemeralPublicKeyClient",
                                                     accept_zero_length=True))
 """Definition of optional conditional `ephemeralPublicKeyClient` Data Record."""
 
 CONDITIONAL_OPTIONAL_EPHEMERAL_PUBLIC_KEY_SERVER = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="ephemeralPublicKeyServer",
+    formula=get_raw_data_record_with_length_formula(data_record_name="ephemeralPublicKeyServer",
                                                     accept_zero_length=True))
 """Definition of optional conditional `ephemeralPublicKeyServer` Data Record."""
 
 CONDITIONAL_OPTIONAL_NEEDED_ADDITIONAL_PARAMETER = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="neededAdditionalParameter",
+    formula=get_raw_data_record_with_length_formula(data_record_name="neededAdditionalParameter",
                                                     accept_zero_length=True))
 """Definition of optional conditional `neededAdditionalParameter` Data Record."""
 
 CONDITIONAL_OPTIONAL_ADDITIONAL_PARAMETER = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="additionalParameter",
+    formula=get_raw_data_record_with_length_formula(data_record_name="additionalParameter",
                                                     accept_zero_length=True))
 """Definition of optional conditional `additionalParameter` Data Record."""
 
 CONDITIONAL_OPTIONAL_SESSION_KEY_INFO = ConditionalFormulaDataRecord(
-    formula=get_formula_raw_data_record_with_length(data_record_name="sessionKeyInfo",
+    formula=get_raw_data_record_with_length_formula(data_record_name="sessionKeyInfo",
                                                     accept_zero_length=True))
 """Definition of optional conditional `sessionKeyInfo` Data Record."""
 

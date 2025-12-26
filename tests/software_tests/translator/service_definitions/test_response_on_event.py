@@ -7,6 +7,7 @@ from uds.translator.service_definitions.response_on_event import (
     RESPONSE_ON_EVENT_2020,
 )
 
+
 class TestResponseOnEvent:
     """Unit tests for `ResponseOnEvent` service."""
 
