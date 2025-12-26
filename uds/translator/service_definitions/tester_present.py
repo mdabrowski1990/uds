@@ -1,4 +1,4 @@
-""":ref:`TesterPresent (SID 0x3E) <knowledge-base-service-tester-present> translation."""
+""":ref:`TesterPresent (SID 0x3E) <knowledge-base-service-tester-present>` translation."""
 
 __all__ = ["TESTER_PRESENT"]
 
