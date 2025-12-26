@@ -35,6 +35,7 @@ __all__ = [
     "get_event_type_record_07_2020", "get_event_type_record_07_2013",
     "get_event_type_record_09_2020",
     "get_event_type_record_09_2020_continuation",
+    "get_activated_events_2020", "get_activated_events_2013",
 ]
 
 from decimal import Decimal
@@ -1033,6 +1034,7 @@ def get_event_type_record_09_2020_continuation(event_number: Optional[int] = Non
     },
         value_mask=0x7F)
 
+
 def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
     """
     Get serviceToRespondToRecord Data Record.
@@ -1047,3 +1049,69 @@ def get_service_to_respond(event_number: Optional[int] = None) -> RawDataRecord:
                          length=8,
                          min_occurrences=1,
                          max_occurrences=None)
+
+
+def get_activated_events_2020(number_of_activated_events: int
+                              ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
+    """
+    Get activated events (event = reportActivatedEvents).
+
+    :param number_of_activated_events: Number of activated events.
+
+    :return: Data Records for Activated Events.
+    """
+    data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
+    for event_number in range(1, number_of_activated_events + 1):
+        event_window = get_event_window_2020(event_number)
+        service_to_respond = get_service_to_respond(event_number)
+        data_records.append(get_event_type_of_active_event_2020(event_number))
+        data_records.append(ConditionalMappingDataRecord(mapping={
+            0x01: (event_window,
+                   get_event_type_record_01(event_number),
+                   service_to_respond),
+            0x03: (event_window,
+                   get_event_type_record_03_2020(event_number),
+                   service_to_respond),
+            0x07: (event_window,
+                   get_event_type_record_07_2020(event_number),
+                   service_to_respond),
+            0x08: (event_window,
+                   get_event_type_record_08_2020(event_number)),
+            0x09: (event_window,
+                   get_event_type_record_09_2020(event_number),
+                   get_event_type_record_09_2020_continuation(event_number)),
+        },
+            value_mask=0x3F))
+    return tuple(data_records)
+
+
+def get_activated_events_2013(number_of_activated_events: int
+                              ) -> Tuple[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord], ...]:
+    """
+    Get activated events (event = reportActivatedEvents).
+
+    :param number_of_activated_events: Number of activated events.
+
+    :return: Data Records for Activated Events.
+    """
+    data_records: List[Union[RawDataRecord, MappingDataRecord, ConditionalMappingDataRecord]] = []
+    for event_number in range(1, number_of_activated_events + 1):
+        event_window = get_event_window_2013(event_number)
+        service_to_respond = get_service_to_respond(event_number)
+        data_records.append(get_event_type_of_active_event_2013(event_number))
+        data_records.append(ConditionalMappingDataRecord(mapping={
+            0x01: (event_window,
+                   get_event_type_record_01(event_number),
+                   service_to_respond),
+            0x02: (event_window,
+                   get_event_type_record_02_2013(event_number),
+                   service_to_respond),
+            0x03: (event_window,
+                   get_event_type_record_03_2013(event_number),
+                   service_to_respond),
+            0x07: (event_window,
+                   get_event_type_record_07_2013(event_number),
+                   service_to_respond),
+        },
+            value_mask=0x3F))
+    return tuple(data_records)

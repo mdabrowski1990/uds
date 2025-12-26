@@ -1,4 +1,7 @@
-"""Translation for SecuredDataTransmission (SID 0x84) service."""
+"""
+Translation for
+:ref:`SecuredDataTransmission (SID 0x84) <knowledge-base-service-secured-data-transmission>` service.
+"""
 
 __all__ = ["SECURED_DATA_TRANSMISSION", "SECURED_DATA_TRANSMISSION_2020", "SECURED_DATA_TRANSMISSION_2013"]
 
@@ -15,12 +18,6 @@ from ..data_record_definitions import (
 )
 from ..service import Service
 
-SECURED_DATA_TRANSMISSION_2013 = Service(request_sid=RequestSID.SecuredDataTransmission,
-                                         request_structure=(SECURITY_DATA_REQUEST_RECORD,),
-                                         response_structure=(SECURITY_DATA_RESPONSE_RECORD,))
-"""Translator for :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
-compatible with ISO 14229-1:2013."""
-
 SECURED_DATA_TRANSMISSION_2020 = Service(request_sid=RequestSID.SecuredDataTransmission,
                                          request_structure=(ADMINISTRATIVE_PARAMETER,
                                                             SIGNATURE_ENCRYPTION_CALCULATION,
@@ -32,6 +29,12 @@ SECURED_DATA_TRANSMISSION_2020 = Service(request_sid=RequestSID.SecuredDataTrans
                                                              CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE))
 """Translator for :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
 compatible with ISO 14229-1:2020."""
+
+SECURED_DATA_TRANSMISSION_2013 = Service(request_sid=RequestSID.SecuredDataTransmission,
+                                         request_structure=(SECURITY_DATA_REQUEST_RECORD,),
+                                         response_structure=(SECURITY_DATA_RESPONSE_RECORD,))
+"""Translator for :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` service
+compatible with ISO 14229-1:2013."""
 
 SECURED_DATA_TRANSMISSION = SECURED_DATA_TRANSMISSION_2020
 """Default translator for :ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>`

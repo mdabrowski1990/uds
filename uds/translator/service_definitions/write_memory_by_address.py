@@ -1,4 +1,4 @@
-"""Translation for WriteMemoryByAddress (SID 0x3D) service."""
+"""Translation for :ref:`WriteMemoryByAddress (SID 0x3D) <knowledge-base-service-write-memory-by-address>` service."""
 
 __all__ = ["WRITE_MEMORY_BY_ADDRESS"]
 

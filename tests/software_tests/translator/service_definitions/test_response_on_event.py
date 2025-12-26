@@ -1,72 +1,14 @@
 import pytest
-from mock import call, patch
 
 from uds.message import RequestSID, ResponseSID
 from uds.translator.service_definitions.response_on_event import (
     RESPONSE_ON_EVENT,
     RESPONSE_ON_EVENT_2013,
     RESPONSE_ON_EVENT_2020,
-    get_active_events_2013,
-    get_active_events_2020,
 )
-
-SCRIPT_LOCATION = "uds.translator.service_definitions.response_on_event"
 
 class TestResponseOnEvent:
     """Unit tests for `ResponseOnEvent` service."""
-
-    def setup_method(self):
-        self._patcher_conditional_mapping_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord")
-        self.mock_conditional_mapping_data_record = self._patcher_conditional_mapping_data_record.start()
-        self._patcher_get_event_type_of_active_event_2013 \
-            = patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2013")
-        self.mock_get_event_type_of_active_event_2013 = self._patcher_get_event_type_of_active_event_2013.start()
-        self._patcher_get_event_type_of_active_event_2020 \
-            = patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2020")
-        self.mock_get_event_type_of_active_event_2020 = self._patcher_get_event_type_of_active_event_2020.start()
-        self._patcher_get_event_window_2013 = patch(f"{SCRIPT_LOCATION}.get_event_window_2013")
-        self.mock_get_event_window_2013 = self._patcher_get_event_window_2013.start()
-        self._patcher_get_event_window_2020 = patch(f"{SCRIPT_LOCATION}.get_event_window_2020")
-        self.mock_get_event_window_2020 = self._patcher_get_event_window_2020.start()
-        self._patcher_get_service_to_respond = patch(f"{SCRIPT_LOCATION}.get_service_to_respond")
-        self.mock_get_service_to_respond = self._patcher_get_service_to_respond.start()
-        self._patcher_get_event_type_record_01 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
-        self.mock_get_event_type_record_01 = self._patcher_get_event_type_record_01.start()
-        self._patcher_get_event_type_record_02_2013 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_02_2013")
-        self.mock_get_event_type_record_02_2013 = self._patcher_get_event_type_record_02_2013.start()
-        self._patcher_get_event_type_record_03_2013 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2013")
-        self.mock_get_event_type_record_03_2013 = self._patcher_get_event_type_record_03_2013.start()
-        self._patcher_get_event_type_record_03_2020 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2020")
-        self.mock_get_event_type_record_03_2020 = self._patcher_get_event_type_record_03_2020.start()
-        self._patcher_get_event_type_record_07_2013 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_07_2013")
-        self.mock_get_event_type_record_07_2013 = self._patcher_get_event_type_record_07_2013.start()
-        self._patcher_get_event_type_record_07_2020 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_07_2020")
-        self.mock_get_event_type_record_07_2020 = self._patcher_get_event_type_record_07_2020.start()
-        self._patcher_get_event_type_record_08_2020 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_08_2020")
-        self.mock_get_event_type_record_08_2020 = self._patcher_get_event_type_record_08_2020.start()
-        self._patcher_get_event_type_record_09_2020 = patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020")
-        self.mock_get_event_type_record_09_2020 = self._patcher_get_event_type_record_09_2020.start()
-        self._patcher_get_event_type_record_09_2020_continuation \
-            = patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020_continuation")
-        self.mock_get_event_type_record_09_2020_continuation \
-            = self._patcher_get_event_type_record_09_2020_continuation.start()
-
-    def teardown_method(self):
-        self._patcher_conditional_mapping_data_record.stop()
-        self._patcher_get_event_type_of_active_event_2013.stop()
-        self._patcher_get_event_type_of_active_event_2020.stop()
-        self._patcher_get_event_window_2013.stop()
-        self._patcher_get_event_window_2020.stop()
-        self._patcher_get_service_to_respond.stop()
-        self._patcher_get_event_type_record_01.stop()
-        self._patcher_get_event_type_record_02_2013.stop()
-        self._patcher_get_event_type_record_03_2013.stop()
-        self._patcher_get_event_type_record_03_2020.stop()
-        self._patcher_get_event_type_record_07_2013.stop()
-        self._patcher_get_event_type_record_07_2020.stop()
-        self._patcher_get_event_type_record_08_2020.stop()
-        self._patcher_get_event_type_record_09_2020.stop()
-        self._patcher_get_event_type_record_09_2020_continuation.stop()
 
     def test_request_sid(self):
         assert RESPONSE_ON_EVENT_2013.request_sid == RequestSID.ResponseOnEvent
@@ -79,52 +21,6 @@ class TestResponseOnEvent:
     def test_default_translator(self):
         assert RESPONSE_ON_EVENT is RESPONSE_ON_EVENT_2020
 
-    # get_active_events_2013
-
-    @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
-    def test_get_active_events_2013(self, number_of_activated_events):
-        assert get_active_events_2013(number_of_activated_events) == (
-            self.mock_get_event_type_of_active_event_2013.return_value,
-            self.mock_conditional_mapping_data_record.return_value
-        ) * number_of_activated_events
-        calls = [call(i + 1) for i in range(number_of_activated_events)]
-        self.mock_get_event_type_of_active_event_2013.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_window_2013.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_02_2013.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_03_2013.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_07_2013.assert_has_calls(calls, any_order=False)
-        self.mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
-        assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
-        self.mock_get_event_type_of_active_event_2020.assert_not_called()
-        self.mock_get_event_type_record_03_2020.assert_not_called()
-        self.mock_get_event_type_record_07_2020.assert_not_called()
-        self.mock_get_event_type_record_08_2020.assert_not_called()
-        self.mock_get_event_type_record_09_2020.assert_not_called()
-
-    # get_active_events_2020
-
-    @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
-    def test_get_active_events_2020(self, number_of_activated_events):
-        assert get_active_events_2020(number_of_activated_events) == (
-            self.mock_get_event_type_of_active_event_2020.return_value,
-            self.mock_conditional_mapping_data_record.return_value
-        ) * number_of_activated_events
-        calls = [call(i + 1) for i in range(number_of_activated_events)]
-        self.mock_get_event_type_of_active_event_2020.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_window_2020.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_03_2020.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_07_2020.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_08_2020.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_09_2020.assert_has_calls(calls, any_order=False)
-        self.mock_get_event_type_record_09_2020_continuation.assert_has_calls(calls, any_order=False)
-        self.mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
-        assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
-        self.mock_get_event_type_of_active_event_2013.assert_not_called()
-        self.mock_get_event_window_2013.assert_not_called()
-        self.mock_get_event_type_record_03_2013.assert_not_called()
-        self.mock_get_event_type_record_07_2013.assert_not_called()
 
 @pytest.mark.integration
 class TestResponseOnEvent2013Integration:

@@ -47,7 +47,7 @@ from uds.translator.data_record_definitions.formula import (
     get_did_records_formula_2013,
     get_did_records_formula_2020,
     get_dids_2013,
-    get_dids_2020,
+    get_dids_2020, get_activated_events_2013, get_activated_events_2020,
     get_dir_info,
     get_event_type_of_active_event_2013,
     get_event_type_of_active_event_2020,
@@ -894,3 +894,111 @@ class TestFunctions:
                                                           length=8,
                                                           min_occurrences=1,
                                                           max_occurrences=None)
+
+    # get_activated_events_2020
+
+    @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
+    @patch(f"{SCRIPT_LOCATION}.get_service_to_respond")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020_continuation")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_08_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_07_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_07_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_02_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2020")
+    def test_get_activated_events_2020(self,
+                                       mock_get_event_type_of_active_event_2020,
+                                       mock_get_event_type_of_active_event_2013,
+                                       mock_get_event_window_2020,
+                                       mock_get_event_window_2013,
+                                       mock_get_event_type_record_01,
+                                       mock_get_event_type_record_02_2013,
+                                       mock_get_event_type_record_03_2020,
+                                       mock_get_event_type_record_03_2013,
+                                       mock_get_event_type_record_07_2020,
+                                       mock_get_event_type_record_07_2013,
+                                       mock_get_event_type_record_08_2020,
+                                       mock_get_event_type_record_09_2020,
+                                       mock_get_event_type_record_09_2020_continuation,
+                                       mock_get_service_to_respond,
+                                       number_of_activated_events):
+        assert get_activated_events_2020(number_of_activated_events) == (
+            mock_get_event_type_of_active_event_2020.return_value,
+            self.mock_conditional_mapping_data_record.return_value
+        ) * number_of_activated_events
+        calls = [call(i + 1) for i in range(number_of_activated_events)]
+        mock_get_event_type_of_active_event_2020.assert_has_calls(calls, any_order=False)
+        mock_get_event_window_2020.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_03_2020.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_07_2020.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_08_2020.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_09_2020.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_09_2020_continuation.assert_has_calls(calls, any_order=False)
+        mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
+        assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
+        mock_get_event_type_of_active_event_2013.assert_not_called()
+        mock_get_event_window_2013.assert_not_called()
+        mock_get_event_type_record_02_2013.assert_not_called()
+        mock_get_event_type_record_03_2013.assert_not_called()
+        mock_get_event_type_record_07_2013.assert_not_called()
+
+    # get_activated_events_2013
+
+    @pytest.mark.parametrize("number_of_activated_events", [0, 1, 5])
+    @patch(f"{SCRIPT_LOCATION}.get_service_to_respond")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020_continuation")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_09_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_08_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_07_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_07_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_03_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_02_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_record_01")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_window_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_event_type_of_active_event_2020")
+    def test_get_activated_events_2013(self,
+                                       mock_get_event_type_of_active_event_2020,
+                                       mock_get_event_type_of_active_event_2013,
+                                       mock_get_event_window_2020,
+                                       mock_get_event_window_2013,
+                                       mock_get_event_type_record_01,
+                                       mock_get_event_type_record_02_2013,
+                                       mock_get_event_type_record_03_2020,
+                                       mock_get_event_type_record_03_2013,
+                                       mock_get_event_type_record_07_2020,
+                                       mock_get_event_type_record_07_2013,
+                                       mock_get_event_type_record_08_2020,
+                                       mock_get_event_type_record_09_2020,
+                                       mock_get_event_type_record_09_2020_continuation,
+                                       mock_get_service_to_respond,
+                                       number_of_activated_events):
+        assert get_activated_events_2013(number_of_activated_events) == (
+            mock_get_event_type_of_active_event_2013.return_value,
+            self.mock_conditional_mapping_data_record.return_value
+        ) * number_of_activated_events
+        calls = [call(i + 1) for i in range(number_of_activated_events)]
+        mock_get_event_type_of_active_event_2013.assert_has_calls(calls, any_order=False)
+        mock_get_event_window_2013.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_01.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_02_2013.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_03_2013.assert_has_calls(calls, any_order=False)
+        mock_get_event_type_record_07_2013.assert_has_calls(calls, any_order=False)
+        mock_get_service_to_respond.assert_has_calls(calls, any_order=False)
+        assert self.mock_conditional_mapping_data_record.call_count == number_of_activated_events
+        mock_get_event_type_of_active_event_2020.assert_not_called()
+        mock_get_event_window_2020.assert_not_called()
+        mock_get_event_type_record_03_2020.assert_not_called()
+        mock_get_event_type_record_07_2020.assert_not_called()
+        mock_get_event_type_record_08_2020.assert_not_called()
+        mock_get_event_type_record_09_2020.assert_not_called()
+        mock_get_event_type_record_09_2020_continuation.assert_not_called()
