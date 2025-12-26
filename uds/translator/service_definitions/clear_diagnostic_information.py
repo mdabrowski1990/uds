@@ -1,7 +1,4 @@
-"""
-Translation for
-:ref:`ClearDiagnosticInformation (SID 0x14) <knowledge-base-service-clear-diagnostic-information>` service.
-"""
+""":ref:`ClearDiagnosticInformation (SID 0x14) <knowledge-base-service-clear-diagnostic-information>` translation."""
 
 __all__ = ["CLEAR_DIAGNOSTIC_INFORMATION", "CLEAR_DIAGNOSTIC_INFORMATION_2020", "CLEAR_DIAGNOSTIC_INFORMATION_2013"]
 

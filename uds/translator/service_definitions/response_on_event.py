@@ -1,4 +1,4 @@
-"""Translation for :ref:`ResponseOnEvent (SID 0x86) <knowledge-base-service-response-on-event>` service."""
+""":ref:`ResponseOnEvent (SID 0x86) <knowledge-base-service-response-on-event>` translation."""
 
 __all__ = ["RESPONSE_ON_EVENT", "RESPONSE_ON_EVENT_2020", "RESPONSE_ON_EVENT_2013"]
 

@@ -1,4 +1,4 @@
-"""Translation for :ref:`RequestUpload (SID 0x35) <knowledge-base-service-request-upload>` service."""
+""":ref:`RequestUpload (SID 0x35) <knowledge-base-service-request-upload>` translation."""
 
 __all__ = ["REQUEST_UPLOAD"]
 

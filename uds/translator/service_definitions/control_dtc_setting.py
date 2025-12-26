@@ -1,4 +1,4 @@
-"""Translation for :ref:`ControlDTCSetting (SID 0x85) <knowledge-base-service-control-dtc-setting>` service."""
+""":ref:`ControlDTCSetting (SID 0x85) <knowledge-base-service-control-dtc-setting>` translation."""
 
 __all__ = ["CONTROL_DTC_SETTING"]
 

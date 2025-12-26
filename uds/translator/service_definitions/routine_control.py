@@ -1,4 +1,4 @@
-"""Translation for :ref:`RoutineControl (SID 0x31) <knowledge-base-service-routine-control>` service."""
+""":ref:`RoutineControl (SID 0x31) <knowledge-base-service-routine-control>` translation."""
 
 __all__ = ["ROUTINE_CONTROL"]
 

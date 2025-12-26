@@ -1,4 +1,4 @@
-"""Translation for :ref:`RequestTransferExit (SID 0x37) <knowledge-base-service-request-transfer-exit>` service."""
+""":ref:`RequestTransferExit (SID 0x37) <knowledge-base-service-request-transfer-exit>` translation."""
 
 __all__ = ["REQUEST_TRANSFER_EXIT"]
 

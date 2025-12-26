@@ -1,4 +1,4 @@
-"""Translation for :ref:`ReadDTCInformation (SID 0x19) <knowledge-base-service-read-dtc-information>` service."""
+""":ref:`ReadDTCInformation (SID 0x19) <knowledge-base-service-read-dtc-information>` translation."""
 
 __all__ = ["READ_DTC_INFORMATION", "READ_DTC_INFORMATION_2020", "READ_DTC_INFORMATION_2013"]
 

@@ -1,4 +1,4 @@
-"""Translation for ReadDataByPeriodicIdentifier (SID 0x2A) service."""
+"""ReadDataByPeriodicIdentifier (SID 0x2A) translation."""
 
 __all__ = ["READ_DATA_BY_PERIODIC_IDENTIFIER"]
 

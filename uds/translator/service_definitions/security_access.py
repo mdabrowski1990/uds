@@ -1,4 +1,4 @@
-"""Translation for :ref:`SecurityAccess (SID 0x27) <knowledge-base-service-security-access>` service."""
+""":ref:`SecurityAccess (SID 0x27) <knowledge-base-service-security-access>` translation."""
 
 __all__ = ["SECURITY_ACCESS"]
 

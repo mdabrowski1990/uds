@@ -1,7 +1,4 @@
-"""
-Translation for :
-ref:`InputOutputControlByIdentifier (SID 0x2F) <knowledge-base-service-input-output-control-by-identifier>` service.
-"""
+""":ref:`InputOutputControlByIdentifier (SID 0x2F) <knowledge-base-service-input-output-control-by-identifier>` translation."""  # pylint: disable=line-too-long
 
 __all__ = ["INPUT_OUTPUT_CONTROL_BY_IDENTIFIER",
            "INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020",

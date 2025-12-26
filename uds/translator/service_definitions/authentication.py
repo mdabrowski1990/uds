@@ -1,4 +1,4 @@
-"""Translation for :ref:`Authentication (SID 0x29) <knowledge-base-service-authentication>` service."""
+""":ref:`Authentication (SID 0x29) <knowledge-base-service-authentication>` translation."""
 
 __all__ = ["AUTHENTICATION"]
 

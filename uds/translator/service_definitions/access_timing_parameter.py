@@ -1,4 +1,4 @@
-"""Translation for :ref:`AccessTimingParameter (SID 0x83) <knowledge-base-service-access-timing-parameter>` service."""
+""":ref:`AccessTimingParameter (SID 0x83) <knowledge-base-service-access-timing-parameter>` translation."""
 
 __all__ = ["ACCESS_TIMING_PARAMETER_2013"]
 

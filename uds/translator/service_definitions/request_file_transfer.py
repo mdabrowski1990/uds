@@ -1,4 +1,4 @@
-"""Translation for :ref:`RequestFileTransfer (SID 0x38) <knowledge-base-service-request-file-transfer>` service."""
+""":ref:`RequestFileTransfer (SID 0x38) <knowledge-base-service-request-file-transfer>` translation."""
 
 __all__ = ["REQUEST_FILE_TRANSFER", "REQUEST_FILE_TRANSFER_2020", "REQUEST_FILE_TRANSFER_2013"]
 

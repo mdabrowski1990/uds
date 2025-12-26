@@ -1,4 +1,4 @@
-"""Translation for :ref:`TransferData (SID 0x36) <knowledge-base-service-transfer-data>` service."""
+""":ref:`TransferData (SID 0x36) <knowledge-base-service-transfer-data>` translation."""
 
 __all__ = ["TRANSFER_DATA"]
 

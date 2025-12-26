@@ -1,4 +1,4 @@
-"""Translation for :ref:`ReadDataByIdentifier (SID 0x22) <knowledge-base-service-read-data-by-identifier>` service."""
+""":ref:`ReadDataByIdentifier (SID 0x22) <knowledge-base-service-read-data-by-identifier>` translation."""
 
 __all__ = ["READ_DATA_BY_IDENTIFIER", "READ_DATA_BY_IDENTIFIER_2020", "READ_DATA_BY_IDENTIFIER_2013"]
 

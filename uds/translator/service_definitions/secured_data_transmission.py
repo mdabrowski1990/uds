@@ -1,7 +1,4 @@
-"""
-Translation for
-:ref:`SecuredDataTransmission (SID 0x84) <knowledge-base-service-secured-data-transmission>` service.
-"""
+""":ref:`SecuredDataTransmission (SID 0x84) <knowledge-base-service-secured-data-transmission>` translation."""
 
 __all__ = ["SECURED_DATA_TRANSMISSION", "SECURED_DATA_TRANSMISSION_2020", "SECURED_DATA_TRANSMISSION_2013"]
 

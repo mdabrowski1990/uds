@@ -1,4 +1,4 @@
-"""Translation for :ref:`WriteDataByIdentifier (SID 0x2E) <knowledge-base-service-write-data-by-identifier>` service."""
+""":ref:`WriteDataByIdentifier (SID 0x2E) <knowledge-base-service-write-data-by-identifier>` translation."""
 
 __all__ = ["WRITE_DATA_BY_IDENTIFIER", "WRITE_DATA_BY_IDENTIFIER_2020", "WRITE_DATA_BY_IDENTIFIER_2013"]
 
