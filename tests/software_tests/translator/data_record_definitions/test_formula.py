@@ -48,8 +48,8 @@ from uds.translator.data_record_definitions.formula import (
     get_did_data_mask_2020,
     get_did_records_formula_2013,
     get_did_records_formula_2020,
-    get_dids_2013,
-    get_dids_2020,
+    get_did_record_2013,
+    get_did_record_2020,
     get_dir_info,
     get_event_type_of_active_event_2013,
     get_event_type_of_active_event_2020,
@@ -76,7 +76,7 @@ from uds.translator.data_record_definitions.formula import (
     get_scaling_byte_extension,
     get_secured_data_transmission_request,
     get_secured_data_transmission_response,
-    get_security_access_request,
+    get_security_access_request, get_decode_float_value_formula, get_encode_float_value_formula,
     get_security_access_response,
     get_service_to_respond,
 )
@@ -142,13 +142,66 @@ class TestFunctions:
 
     # get_decode_float_value_formula
 
-    # TODO
+    @pytest.mark.parametrize("exponent_bit_length, mantissa_bit_length, "
+                             "exponent_unsigned_value, mantissa_unsigned_value, "
+                             "exponent_value, mantissa_value", [
+        (6, 12, 1, 1, -1, -1),
+        (10, 10, 0xFF, 0x3FF, -2, 123),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.get_signed_value_encoding_formula")
+    def test_get_decode_float_value_formula(self, mock_get_signed_value_encoding_formula,
+                                            exponent_bit_length, mantissa_bit_length,
+                                            exponent_unsigned_value, mantissa_unsigned_value,
+                                            exponent_value, mantissa_value):
+        mock_exponent_encode_formula = Mock(return_value=exponent_value)
+        mock_mantissa_encode_formula = Mock(return_value=mantissa_value)
+        mock_get_signed_value_encoding_formula.side_effect = [mock_exponent_encode_formula,
+                                                              mock_mantissa_encode_formula]
+        formula = get_decode_float_value_formula(exponent_bit_length=exponent_bit_length,
+                                                 mantissa_bit_length=mantissa_bit_length)
+        assert (formula((exponent_unsigned_value << mantissa_bit_length) + mantissa_unsigned_value)
+                == (10 ** exponent_value) *  mantissa_value)
+        mock_get_signed_value_encoding_formula.assert_has_calls([call(exponent_bit_length), call(mantissa_bit_length)],
+                                                                any_order=False)
+        mock_exponent_encode_formula.assert_called_once_with(exponent_unsigned_value)
+        mock_mantissa_encode_formula.assert_called_once_with(mantissa_unsigned_value)
 
     # get_encode_float_value_formula
 
-    # TODO
+    @pytest.mark.parametrize("exponent_bit_length, mantissa_bit_length, float_value", [
+        (4, 12, float("inf")),
+        (8, 24, float("inf")),
+    ])
+    def test_get_encode_float_value_formula__formula_value_error(self, exponent_bit_length, mantissa_bit_length, float_value):
+        formula = get_encode_float_value_formula(exponent_bit_length=exponent_bit_length,
+                                                 mantissa_bit_length=mantissa_bit_length)
+        with pytest.raises(ValueError):
+            formula(float_value)
 
-
+    @pytest.mark.parametrize("exponent_bit_length, mantissa_bit_length, "
+                             "exponent_unsigned_value, mantissa_unsigned_value, "
+                             "exponent_signed_value, mantissa_signed_value, "
+                             "float_value", [
+        (4, 12, 0xF, 0x234, -1, 564, 56.4),
+        (8, 24, 0xFD, 0xF0E1D2, -3, -990766, -990.766),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.get_signed_value_decoding_formula")
+    def test_get_encode_float_value_formula(self, mock_get_signed_value_decoding_formula,
+                                            exponent_bit_length, mantissa_bit_length,
+                                            exponent_unsigned_value, mantissa_unsigned_value,
+                                            exponent_signed_value, mantissa_signed_value,
+                                            float_value):
+        mock_exponent_decode_formula = Mock(return_value=exponent_unsigned_value)
+        mock_mantissa_decode_formula = Mock(return_value=mantissa_unsigned_value)
+        mock_get_signed_value_decoding_formula.side_effect = [mock_exponent_decode_formula,
+                                                              mock_mantissa_decode_formula]
+        formula = get_encode_float_value_formula(exponent_bit_length=exponent_bit_length,
+                                                 mantissa_bit_length=mantissa_bit_length)
+        assert formula(float_value) == (exponent_unsigned_value << mantissa_bit_length) + mantissa_unsigned_value
+        mock_get_signed_value_decoding_formula.assert_has_calls([call(exponent_bit_length), call(mantissa_bit_length)],
+                                                                any_order=False)
+        mock_exponent_decode_formula.assert_called_once_with(exponent_signed_value)
+        mock_mantissa_decode_formula.assert_called_once_with(mantissa_signed_value)
 
     # get_did_2020
 
@@ -179,32 +232,6 @@ class TestFunctions:
                                                               values_mapping=DID_MAPPING_2013,
                                                               min_occurrences=int(optional) ^ 1,
                                                               max_occurrences=1)
-
-    # get_dids_2020
-
-    @pytest.mark.parametrize("did_count, record_number", [
-        (1, None),
-        (7, 5),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.get_did_data_2020")
-    @patch(f"{SCRIPT_LOCATION}.get_did_2020")
-    def test_get_dids_2020(self, mock_get_did_2020, mock_get_did_data_2020,
-                                                  did_count, record_number):
-        assert (get_dids_2020(did_count=did_count, record_number=record_number)
-                == (mock_get_did_2020.return_value, mock_get_did_data_2020.return_value) * did_count)
-
-    # get_dids_2013
-
-    @pytest.mark.parametrize("did_count, record_number", [
-        (1, None),
-        (7, 5),
-    ])
-    @patch(f"{SCRIPT_LOCATION}.get_did_data_2013")
-    @patch(f"{SCRIPT_LOCATION}.get_did_2013")
-    def test_get_dids_2013(self, mock_get_did_2013, mock_get_did_data_2013,
-                                                  did_count, record_number):
-        assert (get_dids_2013(did_count=did_count, record_number=record_number)
-                == (mock_get_did_2013.return_value, mock_get_did_data_2013.return_value) * did_count)
 
     # get_did_data_2020
 
@@ -243,6 +270,32 @@ class TestFunctions:
         with pytest.raises(ValueError):
             input_kwargs["formula"](incorrect_did)
         assert input_kwargs["formula"](some_defined_did) == (self.mock_raw_data_record.return_value, )
+        
+    # get_did_record_2020
+
+    @pytest.mark.parametrize("did_count, record_number", [
+        (1, None),
+        (7, 5),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.get_did_data_2020")
+    @patch(f"{SCRIPT_LOCATION}.get_did_2020")
+    def test_get_did_record_2020(self, mock_get_did_2020, mock_get_did_data_2020,
+                                                  did_count, record_number):
+        assert (get_did_record_2020(did_count=did_count, record_number=record_number)
+                == (mock_get_did_2020.return_value, mock_get_did_data_2020.return_value) * did_count)
+
+    # get_did_record_2013
+
+    @pytest.mark.parametrize("did_count, record_number", [
+        (1, None),
+        (7, 5),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.get_did_data_2013")
+    @patch(f"{SCRIPT_LOCATION}.get_did_2013")
+    def test_get_did_record_2013(self, mock_get_did_2013, mock_get_did_data_2013,
+                                                  did_count, record_number):
+        assert (get_did_record_2013(did_count=did_count, record_number=record_number)
+                == (mock_get_did_2013.return_value, mock_get_did_data_2013.return_value) * did_count)
 
     # get_memory_size_and_memory_address
 
@@ -287,27 +340,29 @@ class TestFunctions:
 
     # get_did_records_formula_2020
 
-    @patch(f"{SCRIPT_LOCATION}.get_dids_2020")
-    def test_get_did_records_formula_2020(self, mock_get_dids_2020):
+    @patch(f"{SCRIPT_LOCATION}.get_did_record_2020")
+    def test_get_did_records_formula_2020(self, mock_get_did_record_2020):
         mock_record_number = Mock()
         mock_did_count = Mock()
         formula = get_did_records_formula_2020(mock_record_number)
         assert callable(formula)
-        assert formula(mock_did_count) == mock_get_dids_2020.return_value
-        mock_get_dids_2020.assert_called_once_with(did_count=mock_did_count,
+        assert formula(mock_did_count) == mock_get_did_record_2020.return_value
+        mock_get_did_record_2020.assert_called_once_with(did_count=mock_did_count,
                                                    record_number=mock_record_number)
 
     # get_did_records_formula_2013
 
-    @patch(f"{SCRIPT_LOCATION}.get_dids_2013")
-    def test_get_did_records_formula_2013(self, mock_get_dids_2013):
+    @patch(f"{SCRIPT_LOCATION}.get_did_record_2013")
+    def test_get_did_records_formula_2013(self, mock_get_did_record_2013):
         mock_record_number = Mock()
         mock_did_count = Mock()
         formula = get_did_records_formula_2013(mock_record_number)
         assert callable(formula)
-        assert formula(mock_did_count) == mock_get_dids_2013.return_value
-        mock_get_dids_2013.assert_called_once_with(did_count=mock_did_count,
+        assert formula(mock_did_count) == mock_get_did_record_2013.return_value
+        mock_get_did_record_2013.assert_called_once_with(did_count=mock_did_count,
                                                    record_number=mock_record_number)
+
+    # TODO: continue
 
     # get_scaling_byte_extension
 
@@ -327,11 +382,11 @@ class TestFunctions:
                                                      children=(self.mock_raw_data_record.return_value,))
 
     @pytest.mark.parametrize("number_of_bytes, scaling_byte_number", [
-        (1, 23),
+        (0, 23),
         (15, 1)
     ])
-    @patch(f"{SCRIPT_LOCATION}.get_formula_coefficients")
-    def test_get_scaling_byte_extension__9(self, mock_get_formula_coefficients,
+    @patch(f"{SCRIPT_LOCATION}.get_coefficients_formula")
+    def test_get_scaling_byte_extension__9(self, mock_get_coefficients_formula,
                                            number_of_bytes, scaling_byte_number):
         assert (get_scaling_byte_extension(0x90 + number_of_bytes, scaling_byte_number)
                 == (self.mock_raw_data_record.return_value, self.mock_conditional_formula_data_record.return_value))
@@ -339,8 +394,8 @@ class TestFunctions:
                                                           length=FORMULA_IDENTIFIER.length,
                                                           children=(FORMULA_IDENTIFIER,))
         self.mock_conditional_formula_data_record.assert_called_once_with(
-            formula=mock_get_formula_coefficients.return_value)
-        mock_get_formula_coefficients.assert_called_once_with(scaling_byte_number)
+            formula=mock_get_coefficients_formula.return_value)
+        mock_get_coefficients_formula.assert_called_once_with(scaling_byte_number)
 
     @pytest.mark.parametrize("number_of_bytes, scaling_byte_number", [
         (1, 23),

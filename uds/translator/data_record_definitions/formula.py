@@ -5,7 +5,7 @@ __all__ = [
     "get_raw_data_record_with_length_formula",
     "get_decode_float_value_formula", "get_encode_float_value_formula",
     "get_did_2020", "get_did_2013",
-    "get_dids_2020", "get_dids_2013",
+    "get_did_record_2020", "get_did_record_2013",
     "get_did_data_2020", "get_did_data_2013",
     "get_memory_size_and_memory_address",
     "get_max_number_of_block_length",
@@ -206,57 +206,11 @@ def get_did_2013(name: str, optional: bool = False) -> MappingDataRecord:
                              values_mapping=DID_MAPPING_2013,
                              min_occurrences=0 if optional else 1,
                              max_occurrences=1)
-# TODO: continue rework here
-
-def get_dids_2020(did_count: int,
-                  record_number: Optional[int],
-                  optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
-    """
-    Get DIDs related Data Records for given record (e.g. Snapshot or Stored Data).
-
-    .. note:: Supports only ISO 14229-1:2020 DIDs.
-
-    :param did_count: Number of DIDs that are part of the record that contains DIDs.
-    :param record_number: Order number of the record that contains DIDs.
-        None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
-    :param optional: False if the Data Record presence is mandatory, True otherwise.
-
-    :return: DIDs related Data Records that are part of the record.
-    """
-    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
-    for did_number in range(1, did_count + 1):
-        name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
-        data_records.append(get_did_2020(name=name, optional=optional))
-        data_records.append(get_did_data_2020(name=f"{name} data"))
-    return tuple(data_records)
-
-
-def get_dids_2013(did_count: int,
-                  record_number: Optional[int],
-                  optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
-    """
-    Get DIDs related Data Records for given record (e.g. Snapshot or Stored Data).
-
-    .. note:: Supports only ISO 14229-1:2013 DIDs.
-
-    :param did_count: Number of DIDs that are part of the record that contains DIDs.
-    :param record_number: Order number of the record that contains DIDs.
-        None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
-    :param optional: False if the Data Record presence is mandatory, True otherwise.
-
-    :return: DIDs related Data Records that are part of the record.
-    """
-    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
-    for did_number in range(1, did_count + 1):
-        name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
-        data_records.append(get_did_2013(name=name, optional=optional))
-        data_records.append(get_did_data_2013(name=f"{name} data"))
-    return tuple(data_records)
 
 
 def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
     """
-    Get Conditional Data Record for DID data that is compatible with ISO 14229-1:2020 version.
+    Get Conditional Data Record (compatible with ISO 14229-1:2020) with DID data.
 
     :param name: Name for the Data Record that contains whole DID data.
 
@@ -289,7 +243,7 @@ def get_did_data_2020(name: str = "DID data") -> ConditionalFormulaDataRecord:
 
 def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
     """
-    Get Conditional Data Record for DID data that is compatible with ISO 14229-1:2013 version.
+    Get Conditional Data Record (compatible with ISO 14229-1:2013) with DID data.
 
     :param name: Name for the Data Record that contains whole DID data.
 
@@ -320,12 +274,58 @@ def get_did_data_2013(name: str = "DID data") -> ConditionalFormulaDataRecord:
                                         default_message_continuation=[default_did_data])
 
 
+def get_did_record_2020(did_count: int,
+                        record_number: Optional[int],
+                        optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
+    """
+    Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
+
+    .. note:: Supports only ISO 14229-1:2020 DIDs.
+
+    :param did_count: Number of DIDs that are part of the record.
+    :param record_number: Order number of the record.
+        None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+    :return: Data Records that are part of the DID record.
+    """
+    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
+    for did_number in range(1, did_count + 1):
+        name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
+        data_records.append(get_did_2020(name=name, optional=optional))
+        data_records.append(get_did_data_2020(name=f"{name} data"))
+    return tuple(data_records)
+
+
+def get_did_record_2013(did_count: int,
+                        record_number: Optional[int],
+                        optional: bool = False) -> Tuple[Union[MappingDataRecord, ConditionalFormulaDataRecord], ...]:
+    """
+    Get DID record (e.g. for DTC Snapshot or DTC Stored Data) with DID numbers and data.
+
+    .. note:: Supports only ISO 14229-1:2013 DIDs.
+
+    :param did_count: Number of DIDs that are part of the record.
+    :param record_number: Order number of the record.
+        None if this is the only DIDs group (e.g. part of ReadDataByIdentifier).
+    :param optional: False if the Data Record presence is mandatory, True otherwise.
+
+    :return: Data Records that are part of the DID record.
+    """
+    data_records: List[Union[MappingDataRecord, ConditionalFormulaDataRecord]] = []
+    for did_number in range(1, did_count + 1):
+        name = f"DID#{did_number}" if record_number is None else f"DID#{record_number}_{did_number}"
+        data_records.append(get_did_2013(name=name, optional=optional))
+        data_records.append(get_did_data_2013(name=f"{name} data"))
+    return tuple(data_records)
+
+
 def get_memory_size_and_memory_address(address_and_length_format_identifier: int
                                        ) -> Tuple[RawDataRecord, RawDataRecord]:
     """
     Get `memoryAddress` and `memorySize` Data Records for given `addressAndLengthFormatIdentifier` value.
 
-    :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
+    :param address_and_length_format_identifier: Preceding `addressAndLengthFormatIdentifier` value.
 
     :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
         (`memoryAddressLength` or `memorySizeLength`) equals 0.
@@ -351,7 +351,7 @@ def get_max_number_of_block_length(length_format_identifier: int) -> Tuple[RawDa
         :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` service as it contains
         `lengthFormatIdentifier` in different format.
 
-    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
+    :param length_format_identifier: Preceding `lengthFormatIdentifier` value.
 
     :raise ValueError: The high nibble of `lengthFormatIdentifier` (`maxNumberOfBlockLengthBytesNumber`) equals 0.
 
@@ -379,8 +379,8 @@ def get_did_records_formula_2020(record_number: Optional[int]) -> Callable[[int]
 
     :return: Formula for given record (e.g. Snapshot or Stored Data).
     """
-    return lambda did_count: get_dids_2020(did_count=did_count,
-                                           record_number=record_number)
+    return lambda did_count: get_did_record_2020(did_count=did_count,
+                                                 record_number=record_number)
 
 
 def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int], AliasMessageStructure]:
@@ -394,12 +394,14 @@ def get_did_records_formula_2013(record_number: Optional[int]) -> Callable[[int]
 
     :return: Formula for given record (e.g. Snapshot or Stored Data).
     """
-    return lambda did_count: get_dids_2013(did_count=did_count,
-                                           record_number=record_number)
+    return lambda did_count: get_did_record_2013(did_count=did_count,
+                                                 record_number=record_number)
 
 
 # SID 0x24
 
+
+# TODO: continue
 
 def get_scaling_byte_extension(scaling_byte: int,
                                scaling_byte_number: int
@@ -407,7 +409,7 @@ def get_scaling_byte_extension(scaling_byte: int,
     """
     Get scalingByteExtension Data Records for given scalingByte value.
 
-    :param scaling_byte: Proceeding `scalingByte` value.
+    :param scaling_byte: Preceding `scalingByte` value.
     :param scaling_byte_number: Order numbers of the scalingByte and scalingByteExtension Data Records.
 
     :raise InconsistencyError: Provided `scalingByte` equals 0x20.
@@ -530,7 +532,7 @@ def get_data_from_memory(address_and_length_format_identifier: int) -> Tuple[Raw
     """
     Get `Data from Memory` Data Record for given `addressAndLengthFormatIdentifier` value.
 
-    :param address_and_length_format_identifier: Proceeding `addressAndLengthFormatIdentifier` value.
+    :param address_and_length_format_identifier: Preceding `addressAndLengthFormatIdentifier` value.
 
     :raise ValueError: At least one of the `addressAndLengthFormatIdentifier` nibbles
         (`memoryAddressLength` or `memorySizeLength`) equals 0.
@@ -732,7 +734,7 @@ def get_max_number_of_block_length_file_transfer(length_format_identifier: int) 
     .. warning:: This method is specific for :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>`
         service as it contains `lengthFormatIdentifier` in slightly different format.
 
-    :param length_format_identifier: Proceeding `lengthFormatIdentifier` value.
+    :param length_format_identifier: Preceding `lengthFormatIdentifier` value.
 
     :raise ValueError: Provided `lengthFormatIdentifier` equals 0.
 
@@ -750,7 +752,7 @@ def get_data(memory_size_length: int) -> Tuple[RawDataRecord]:
     """
     Get `data` Data Record for given `memorySizeLength` value.
 
-    :param memory_size_length: Proceeding `memorySizeLength` value.
+    :param memory_size_length: Preceding `memorySizeLength` value.
 
     :raise ValueError: Provided `memorySizeLength` equals 0.
 

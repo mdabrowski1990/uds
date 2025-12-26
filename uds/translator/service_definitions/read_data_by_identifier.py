@@ -6,13 +6,13 @@ from uds.message import RequestSID
 from uds.utilities import REPEATED_DATA_RECORDS_NUMBER
 
 from ..data_record_definitions import MULTIPLE_DID_2013, MULTIPLE_DID_2020
-from ..data_record_definitions.formula import get_dids_2013, get_dids_2020
+from ..data_record_definitions.formula import get_did_record_2013, get_did_record_2020
 from ..service import Service
 
-DIDS_2013 = (*get_dids_2013(did_count=1, record_number=None, optional=False),
-             *get_dids_2013(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:])
-DIDS_2020 = (*get_dids_2020(did_count=1, record_number=None, optional=False),
-             *get_dids_2020(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:])
+DIDS_2013 = (*get_did_record_2013(did_count=1, record_number=None, optional=False),
+             *get_did_record_2013(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:])
+DIDS_2020 = (*get_did_record_2020(did_count=1, record_number=None, optional=False),
+             *get_did_record_2020(did_count=REPEATED_DATA_RECORDS_NUMBER, record_number=None, optional=True)[2:])
 
 READ_DATA_BY_IDENTIFIER_2020 = Service(request_sid=RequestSID.ReadDataByIdentifier,
                                        request_structure=(MULTIPLE_DID_2020,),
