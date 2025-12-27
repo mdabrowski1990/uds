@@ -1,4 +1,4 @@
-"""Translation for DiagnosticSessionControl (SID 0x10) service."""
+""":ref:`DiagnosticSessionControl (SID 0x10) <knowledge-base-service-diagnostic-session-control>` translation."""
 
 __all__ = ["DIAGNOSTIC_SESSION_CONTROL"]
 

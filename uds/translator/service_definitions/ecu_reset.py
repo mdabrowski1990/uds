@@ -1,4 +1,4 @@
-"""Translation for ECUReset (SID 0x11) service."""
+""":ref:`ECUReset (SID 0x11) <knowledge-base-service-ecu-reset>` translation."""
 
 __all__ = ["ECU_RESET"]
 

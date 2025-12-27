@@ -1,4 +1,4 @@
-"""Translation for ReadMemoryByAddress (SID 0x23) service."""
+""":ref:`ReadMemoryByAddress (SID 0x23) <knowledge-base-service-read-memory-by-address>` translation."""
 
 __all__ = ["READ_MEMORY_BY_ADDRESS"]
 

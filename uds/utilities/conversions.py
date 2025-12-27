@@ -3,10 +3,11 @@
 __all__ = [
     "int_to_obd_dtc", "obd_dtc_to_int",
     "bytes_to_hex", "bytes_to_int", "int_to_bytes",
+    "get_signed_value_decoding_formula", "get_signed_value_encoding_formula",
 ]
 
 import re
-from typing import Optional
+from typing import Callable, Optional
 
 from .common_types import RawBytesAlias, validate_raw_bytes
 from .constants import BITS_TO_DTC_CHARACTER_MAPPING, DTC_CHARACTERS_MAPPING, MAX_DTC_VALUE, MIN_DTC_VALUE
@@ -120,3 +121,56 @@ def int_to_obd_dtc(dtc: int) -> str:
     if not MIN_DTC_VALUE <= dtc <= MAX_DTC_VALUE:
         raise ValueError("Provided value is not a DTC in UDS format.")
     return f"{BITS_TO_DTC_CHARACTER_MAPPING[dtc >> 22]}{(dtc & 0x3FFF00) >> 8:04X}-{dtc & 0xFF:02X}"
+
+
+def get_signed_value_decoding_formula(bit_length: int) -> Callable[[int], int]:
+    """
+    Get formula for decoding signed integer value.
+
+    :param bit_length: Number of bits used for signed integer value.
+
+    :raise TypeError: Provided value is not int type.
+    :raise ValueError: Provided value is out of range.
+
+    :return: Formula for decoding singed integer value from unsigned integer value.
+    """
+    if not isinstance(bit_length, int):
+        raise TypeError("Provided `bit_length` value is not int type.")
+    if bit_length < 2:
+        raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
+
+    def decode_signed_value(value: int) -> int:
+        max_value = (1 << bit_length) - 1
+        msb_value = 1 << (bit_length - 1)
+        if not 0 <= value <= max_value:
+            raise ValueError(f"Provided value is out of range (0 <= value <= {max_value}): {value}.")
+        return (- (value & msb_value)) + (value & (max_value ^ msb_value))
+    return decode_signed_value
+
+
+def get_signed_value_encoding_formula(bit_length: int) -> Callable[[int], int]:
+    """
+    Get formula for encoding signed integer value.
+
+    :param bit_length: Number of bits used for signed integer value.
+
+    :raise TypeError: Provided value is not int type.
+    :raise ValueError: Provided value is out of range.
+
+    :return: Formula for encoding singed integer value into unsinged integer value.
+    """
+    if not isinstance(bit_length, int):
+        raise TypeError("Provided `bit_length` value is not int type.")
+    if bit_length < 2:
+        raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
+
+    def encode_signed_value(value: int) -> int:
+        msb_value = 1 << (bit_length - 1)
+        min_value = - msb_value
+        max_value = msb_value - 1
+        if not min_value <= value <= max_value:
+            raise ValueError(f"Provided value is out of range ({min_value} <= value <= {max_value}): {value}.")
+        if value >= 0:
+            return value
+        return 2 * msb_value + value
+    return encode_signed_value

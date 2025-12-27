@@ -8,6 +8,8 @@ from uds.utilities.conversions import (
     InconsistencyError,
     bytes_to_hex,
     bytes_to_int,
+    get_signed_value_decoding_formula,
+    get_signed_value_encoding_formula,
     int_to_bytes,
     int_to_obd_dtc,
     obd_dtc_to_int,
@@ -169,6 +171,72 @@ class TestFunctions:
     ])
     def test_int_to_obd_dtc__valid(self, obd_dtc, uds_dtc):
         assert int_to_obd_dtc(uds_dtc) == obd_dtc
+
+    # get_signed_value_decoding_formula
+
+    @pytest.mark.parametrize("bit_length", [Mock(), "something"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_decode_signed_value_formula__type_error(self, mock_isinstance, bit_length):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            get_signed_value_decoding_formula(bit_length)
+        mock_isinstance.assert_called_once_with(bit_length, int)
+
+    @pytest.mark.parametrize("bit_length", [1, -5])
+    def test_get_decode_signed_value_formula__value_error(self, bit_length):
+        with pytest.raises(ValueError):
+            get_signed_value_decoding_formula(bit_length)
+
+    @pytest.mark.parametrize("bit_length, value_out_of_range", [
+        (4, -1),
+        (12, 4096),
+    ])
+    def test_get_decode_signed_value_formula__formula_value_error(self, bit_length, value_out_of_range):
+        formula = get_signed_value_decoding_formula(bit_length)
+        with pytest.raises(ValueError):
+            formula(value_out_of_range)
+
+    @pytest.mark.parametrize("bit_length, encoding_mapping", [
+        (4, {0x0: 0, 0x7: 7, 0x8: -8, 0xF: -1}),
+        (12, {0x000: 0, 0x7FF: 2047, 0x800: -2048, 0xFFF: -1}),
+    ])
+    def test_get_decode_signed_value_formula(self, bit_length, encoding_mapping):
+        formula = get_signed_value_decoding_formula(bit_length)
+        assert all(formula(unsigned_value) == signed_value
+                   for unsigned_value, signed_value in encoding_mapping.items())
+
+    # get_signed_value_encoding_formula
+
+    @pytest.mark.parametrize("bit_length", [Mock(), "something"])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_get_encode_signed_value_formula__type_error(self, mock_isinstance, bit_length):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            get_signed_value_encoding_formula(bit_length)
+        mock_isinstance.assert_called_once_with(bit_length, int)
+
+    @pytest.mark.parametrize("bit_length", [1, -5])
+    def test_get_encode_signed_value_formula__value_error(self, bit_length):
+        with pytest.raises(ValueError):
+            get_signed_value_encoding_formula(bit_length)
+
+    @pytest.mark.parametrize("bit_length, value_out_of_range", [
+        (4, -9),
+        (12, 2048),
+    ])
+    def test_get_encode_signed_value_formula__formula_value_error(self, bit_length, value_out_of_range):
+        formula = get_signed_value_encoding_formula(bit_length)
+        with pytest.raises(ValueError):
+            formula(value_out_of_range)
+
+    @pytest.mark.parametrize("bit_length, encoding_mapping", [
+        (4, {0x0: 0, 0x7: 7, 0x8: -8, 0xF: -1}),
+        (12, {0x000: 0, 0x7FF: 2047, 0x800: -2048, 0xFFF: -1}),
+    ])
+    def test_get_encode_signed_value_formula(self, bit_length, encoding_mapping):
+        formula = get_signed_value_encoding_formula(bit_length)
+        assert all(formula(signed_value) == unsigned_value
+                   for unsigned_value, signed_value in encoding_mapping.items())
 
 
 @pytest.mark.integration

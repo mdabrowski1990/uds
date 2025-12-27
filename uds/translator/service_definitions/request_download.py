@@ -1,4 +1,4 @@
-"""Translation for RequestDownload (SID 0x34) service."""
+""":ref:`RequestDownload (SID 0x34) <knowledge-base-service-request-download>` translation."""
 
 __all__ = ["REQUEST_DOWNLOAD"]
 

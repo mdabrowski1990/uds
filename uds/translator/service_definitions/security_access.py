@@ -1,4 +1,4 @@
-"""Translation for SecurityAccess (SID 0x27) service."""
+""":ref:`SecurityAccess (SID 0x27) <knowledge-base-service-security-access>` translation."""
 
 __all__ = ["SECURITY_ACCESS"]
 
@@ -14,4 +14,4 @@ from ..service import Service
 SECURITY_ACCESS = Service(request_sid=RequestSID.SecurityAccess,
                           request_structure=(SECURITY_ACCESS_SUB_FUNCTION, CONDITIONAL_SECURITY_ACCESS_REQUEST),
                           response_structure=(SECURITY_ACCESS_SUB_FUNCTION, CONDITIONAL_SECURITY_ACCESS_RESPONSE))
-"""Default translator for :ref:`SECURITY_ACCESS <knowledge-base-service-security-access>` service."""
+"""Default translator for :ref:`SecurityAccess <knowledge-base-service-security-access>` service."""

@@ -1,4 +1,4 @@
-"""Definition of Data Records structure and API."""
+"""Implementation of Data Records structure and API."""
 
 __all__ = ["AbstractDataRecord",
            "SingleOccurrenceInfo", "MultipleOccurrencesInfo", "DataRecordInfoAlias",

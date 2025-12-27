@@ -1,4 +1,4 @@
-"""Definition of diagnostic services data encoding and decoding."""
+"""Implementation of diagnostic services data encoding and decoding."""
 
 __all__ = ["Service", "DecodedMessageAlias", "DataRecordsValuesAlias",
            "DataRecordValueAlias", "MultipleDataRecordValueAlias", "SingleDataRecordValueAlias"]

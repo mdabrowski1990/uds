@@ -1,4 +1,4 @@
-"""Base definitions of translators for diagnostic services."""
+"""Translators for :ref:`diagnostic services <knowledge-base-service>`."""
 
 from .access_timing_parameter import ACCESS_TIMING_PARAMETER_2013
 from .authentication import AUTHENTICATION
