@@ -3,6 +3,7 @@
 __all__ = ["TESTER_PRESENT"]
 
 from uds.message import RequestSID
+
 from ..data_record_definitions import TESTER_PRESENT_SUB_FUNCTION
 from ..service import Service
 
