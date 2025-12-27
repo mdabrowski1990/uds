@@ -865,7 +865,7 @@ CONDITIONAL_ACCESS_TIMING_PARAMETER_RESPONSE_2013 = ConditionalMappingDataRecord
 CONDITIONAL_SECURED_DATA_TRANSMISSION_REQUEST = ConditionalFormulaDataRecord(
     formula=get_secured_data_transmission_request)
 """Definition of conditional continuation of
-:ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>`request message."""
+:ref:`SecuredDataTransmission <knowledge-base-service-secured-data-transmission>` request message."""
 
 CONDITIONAL_SECURED_DATA_TRANSMISSION_RESPONSE = ConditionalFormulaDataRecord(
     formula=get_secured_data_transmission_response)

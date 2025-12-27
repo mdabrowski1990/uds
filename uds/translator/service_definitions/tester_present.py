@@ -3,8 +3,8 @@
 __all__ = ["TESTER_PRESENT"]
 
 from uds.message import RequestSID
-from uds.translator.data_record_definitions import TESTER_PRESENT_SUB_FUNCTION
-from uds.translator.service import Service
+from ..data_record_definitions import TESTER_PRESENT_SUB_FUNCTION
+from ..service import Service
 
 TESTER_PRESENT = Service(request_sid=RequestSID.TesterPresent,
                          request_structure=[TESTER_PRESENT_SUB_FUNCTION],
