@@ -10,8 +10,8 @@ from uds.translator.data_record_definitions.conditional import (
 
 SCRIPT_LOCATION = "uds.translator.data_record_definitions.conditional"
 
-class TestInputOutputControlByIdentifier:
-    """Unit tests for `InputOutputControlByIdentifier` service."""
+class TestFunctions:
+    """Unit tests for module functions."""
 
     def setup_method(self):
         self._patcher_conditional_mapping_data_record = patch(f"{SCRIPT_LOCATION}.ConditionalMappingDataRecord")

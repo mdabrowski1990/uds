@@ -12,15 +12,311 @@ class TestReadScalingDataByIdentifier:
     """Unit tests for `ReadScalingDataByIdentifier` service."""
 
     def test_request_sid(self):
-        assert READ_SCALING_DATA_BY_IDENTIFIER_2013.request_sid == RequestSID.ReadScalingDataByIdentifier
         assert READ_SCALING_DATA_BY_IDENTIFIER_2020.request_sid == RequestSID.ReadScalingDataByIdentifier
+        assert READ_SCALING_DATA_BY_IDENTIFIER_2013.request_sid == RequestSID.ReadScalingDataByIdentifier
 
     def test_response_sid(self):
-        assert READ_SCALING_DATA_BY_IDENTIFIER_2013.response_sid == ResponseSID.ReadScalingDataByIdentifier
         assert READ_SCALING_DATA_BY_IDENTIFIER_2020.response_sid == ResponseSID.ReadScalingDataByIdentifier
+        assert READ_SCALING_DATA_BY_IDENTIFIER_2013.response_sid == ResponseSID.ReadScalingDataByIdentifier
 
     def test_default_translator(self):
         assert READ_SCALING_DATA_BY_IDENTIFIER is READ_SCALING_DATA_BY_IDENTIFIER_2020
+
+
+@pytest.mark.integration
+class TestReadScalingDataByIdentifier2020Integration:
+    """Integration tests for `ReadScalingDataByIdentifier` service version 2020."""
+
+    @pytest.mark.parametrize("payload, decoded_message", [
+        (
+            [0x24, 0xFF, 0x01],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'ReadScalingDataByIdentifier',
+                    'raw_value': 0x24,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 16,
+                    'name': 'DID',
+                    'physical_value': "ReservedForISO15765-5",
+                    'raw_value': 0xFF01,
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0x64, 0x01, 0x00,
+             0xA0, 0x4A,
+             0xA0, 0x0E,
+             0x92, 0x00, 0x00, 0x02, 0x10, 0x05],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'ReadScalingDataByIdentifier',
+                    'raw_value': 0x64,
+                    'unit': None
+                },
+                {
+                    'children': (),
+                    'length': 16,
+                    'name': 'DID',
+                    'physical_value': 0x0100,
+                    'raw_value': 0x0100,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'type',
+                            'physical_value': 'unit/format',
+                            'raw_value': 0xA,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'numberOfBytesOfParameter',
+                            'physical_value': 0,
+                            'raw_value': 0x0,
+                            'unit': "bytes",
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'scalingByte#1',
+                    'physical_value': 0xA0,
+                    'raw_value': 0xA0,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 8,
+                            'name': 'unit/format',
+                            'physical_value': "Milli (prefix) [m] - 10^-3",
+                            'raw_value': 0x4A,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'scalingByteExtension#1',
+                    'physical_value': 0x4A,
+                    'raw_value': 0x4A,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'type',
+                            'physical_value': 'unit/format',
+                            'raw_value': 0xA,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'numberOfBytesOfParameter',
+                            'physical_value': 0,
+                            'raw_value': 0x0,
+                            'unit': "bytes",
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'scalingByte#2',
+                    'physical_value': 0xA0,
+                    'raw_value': 0xA0,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 8,
+                            'name': 'unit/format',
+                            'physical_value': "Volt [V] - voltage",
+                            'raw_value': 0x0E,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'scalingByteExtension#2',
+                    'physical_value': 0x0E,
+                    'raw_value': 0x0E,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'type',
+                            'physical_value': 'formula',
+                            'raw_value': 0x9,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'numberOfBytesOfParameter',
+                            'physical_value': 2,
+                            'raw_value': 0x2,
+                            'unit': "bytes",
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'scalingByte#3',
+                    'physical_value': 0x92,
+                    'raw_value': 0x92,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 8,
+                            'name': 'formulaIdentifier',
+                            'physical_value': "y = C0 * x + C1",
+                            'raw_value': 0x00,
+                            'unit': None
+                        },
+                    ),
+                    'length': 8,
+                    'name': 'scalingByteExtension#3',
+                    'physical_value': 0x00,
+                    'raw_value': 0x00,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'Exponent',
+                            'physical_value': 0,
+                            'raw_value': 0x0,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 12,
+                            'name': 'Mantissa',
+                            'physical_value': 2,
+                            'raw_value': 0x002,
+                            'unit': None
+                        },
+                    ),
+                    'length': 16,
+                    'name': 'C0#3',
+                    'physical_value': 2,
+                    'raw_value': 0x0002,
+                    'unit': None
+                },
+                {
+                    'children': (
+                        {
+                            'children': (),
+                            'length': 4,
+                            'name': 'Exponent',
+                            'physical_value': 1,
+                            'raw_value': 0x1,
+                            'unit': None
+                        },
+                        {
+                            'children': (),
+                            'length': 12,
+                            'name': 'Mantissa',
+                            'physical_value': 5,
+                            'raw_value': 0x005,
+                            'unit': None
+                        },
+                    ),
+                    'length': 16,
+                    'name': 'C1#3',
+                    'physical_value': 50,
+                    'raw_value': 0x1005,
+                    'unit': None
+                },
+            )
+        ),
+    ])
+    def test_decode(self, payload, decoded_message):
+        assert READ_SCALING_DATA_BY_IDENTIFIER_2020.decode(payload) == decoded_message
+
+    @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
+        (
+            {
+                "DID": 0xB6E9,
+            },
+            RequestSID.ReadScalingDataByIdentifier,
+            None,
+            bytearray([0x24, 0xB6, 0xE9])
+        ),
+        (
+            {
+                "DID": 0x306F,
+                "scalingByte#1": 0xB1,
+                "scalingByteExtension#1": {
+                    "stateAndConnectionType": {
+                        "type": 0x1,
+                        "direction": 0x1,
+                        "level": 0x2,
+                        "state": 0x0,
+                    },
+                },
+                "scalingByte#2": 0xA3,
+                "scalingByteExtension#2": {
+                    "unit/format": 0x55,
+                },
+                "scalingByte#3": 0x91,
+                "scalingByteExtension#3": {
+                    "formulaIdentifier": 0x06,
+                },
+                "C0#3": 0xF1E3,
+                "scalingByte#4": 0x8B,
+                "scalingByte#5": 0x74,
+                "scalingByte#6": 0x6F,
+                "scalingByte#7": 0x51,
+                "scalingByte#8": 0x42,
+                "scalingByte#9": 0x31,
+                "scalingByte#10": 0x22,
+                "scalingByteExtension#10": {
+                    "validityMask": 0x2FFF,
+                },
+                "scalingByte#11": 0x11,
+                "scalingByte#12": 0x02,
+            },
+            None,
+            ResponseSID.ReadScalingDataByIdentifier,
+            bytearray([0x64, 0x30, 0x6F,
+                       0xB1, 0x70,
+                       0xA3, 0x55,
+                       0x91, 0x06, 0xF1, 0xE3,
+                       0x8B,
+                       0x74,
+                       0x6F,
+                       0x51,
+                       0x42,
+                       0x31,
+                       0x22, 0x2F, 0xFF,
+                       0x11,
+                       0x02])
+        ),
+    ])
+    def test_encode(self, data_records_values, sid, rsid, payload):
+        assert READ_SCALING_DATA_BY_IDENTIFIER_2020.encode(data_records_values=data_records_values,
+                                                           sid=sid,
+                                                           rsid=rsid) == payload
 
 
 @pytest.mark.integration
@@ -575,301 +871,5 @@ class TestReadScalingDataByIdentifier2013Integration:
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
         assert READ_SCALING_DATA_BY_IDENTIFIER_2013.encode(data_records_values=data_records_values,
-                                                           sid=sid,
-                                                           rsid=rsid) == payload
-
-
-@pytest.mark.integration
-class TestReadScalingDataByIdentifier2020Integration:
-    """Integration tests for `ReadScalingDataByIdentifier` service version 2020."""
-
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            [0x24, 0xFF, 0x01],
-            (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'SID',
-                    'physical_value': 'ReadScalingDataByIdentifier',
-                    'raw_value': 0x24,
-                    'unit': None
-                },
-                {
-                    'children': (),
-                    'length': 16,
-                    'name': 'DID',
-                    'physical_value': "ReservedForISO15765-5",
-                    'raw_value': 0xFF01,
-                    'unit': None
-                },
-            )
-        ),
-        (
-            [0x64, 0x01, 0x00,
-             0xA0, 0x4A,
-             0xA0, 0x0E,
-             0x92, 0x00, 0x00, 0x02, 0x10, 0x05],
-            (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'RSID',
-                    'physical_value': 'ReadScalingDataByIdentifier',
-                    'raw_value': 0x64,
-                    'unit': None
-                },
-                {
-                    'children': (),
-                    'length': 16,
-                    'name': 'DID',
-                    'physical_value': 0x0100,
-                    'raw_value': 0x0100,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'type',
-                            'physical_value': 'unit/format',
-                            'raw_value': 0xA,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'numberOfBytesOfParameter',
-                            'physical_value': 0,
-                            'raw_value': 0x0,
-                            'unit': "bytes",
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'scalingByte#1',
-                    'physical_value': 0xA0,
-                    'raw_value': 0xA0,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 8,
-                            'name': 'unit/format',
-                            'physical_value': "Milli (prefix) [m] - 10^-3",
-                            'raw_value': 0x4A,
-                            'unit': None
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'scalingByteExtension#1',
-                    'physical_value': 0x4A,
-                    'raw_value': 0x4A,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'type',
-                            'physical_value': 'unit/format',
-                            'raw_value': 0xA,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'numberOfBytesOfParameter',
-                            'physical_value': 0,
-                            'raw_value': 0x0,
-                            'unit': "bytes",
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'scalingByte#2',
-                    'physical_value': 0xA0,
-                    'raw_value': 0xA0,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 8,
-                            'name': 'unit/format',
-                            'physical_value': "Volt [V] - voltage",
-                            'raw_value': 0x0E,
-                            'unit': None
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'scalingByteExtension#2',
-                    'physical_value': 0x0E,
-                    'raw_value': 0x0E,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'type',
-                            'physical_value': 'formula',
-                            'raw_value': 0x9,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'numberOfBytesOfParameter',
-                            'physical_value': 2,
-                            'raw_value': 0x2,
-                            'unit': "bytes",
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'scalingByte#3',
-                    'physical_value': 0x92,
-                    'raw_value': 0x92,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 8,
-                            'name': 'formulaIdentifier',
-                            'physical_value': "y = C0 * x + C1",
-                            'raw_value': 0x00,
-                            'unit': None
-                        },
-                    ),
-                    'length': 8,
-                    'name': 'scalingByteExtension#3',
-                    'physical_value': 0x00,
-                    'raw_value': 0x00,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'Exponent',
-                            'physical_value': 0,
-                            'raw_value': 0x0,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 12,
-                            'name': 'Mantissa',
-                            'physical_value': 2,
-                            'raw_value': 0x002,
-                            'unit': None
-                        },
-                    ),
-                    'length': 16,
-                    'name': 'C0#3',
-                    'physical_value': 2,
-                    'raw_value': 0x0002,
-                    'unit': None
-                },
-                {
-                    'children': (
-                        {
-                            'children': (),
-                            'length': 4,
-                            'name': 'Exponent',
-                            'physical_value': 1,
-                            'raw_value': 0x1,
-                            'unit': None
-                        },
-                        {
-                            'children': (),
-                            'length': 12,
-                            'name': 'Mantissa',
-                            'physical_value': 5,
-                            'raw_value': 0x005,
-                            'unit': None
-                        },
-                    ),
-                    'length': 16,
-                    'name': 'C1#3',
-                    'physical_value': 50,
-                    'raw_value': 0x1005,
-                    'unit': None
-                },
-            )
-        ),
-    ])
-    def test_decode(self, payload, decoded_message):
-        assert READ_SCALING_DATA_BY_IDENTIFIER_2020.decode(payload) == decoded_message
-
-    @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
-        (
-            {
-                "DID": 0xB6E9,
-            },
-            RequestSID.ReadScalingDataByIdentifier,
-            None,
-            bytearray([0x24, 0xB6, 0xE9])
-        ),
-        (
-            {
-                "DID": 0x306F,
-                "scalingByte#1": 0xB1,
-                "scalingByteExtension#1": {
-                    "stateAndConnectionType": {
-                        "type": 0x1,
-                        "direction": 0x1,
-                        "level": 0x2,
-                        "state": 0x0,
-                    },
-                },
-                "scalingByte#2": 0xA3,
-                "scalingByteExtension#2": {
-                    "unit/format": 0x55,
-                },
-                "scalingByte#3": 0x91,
-                "scalingByteExtension#3": {
-                    "formulaIdentifier": 0x06,
-                },
-                "C0#3": 0xF1E3,
-                "scalingByte#4": 0x8B,
-                "scalingByte#5": 0x74,
-                "scalingByte#6": 0x6F,
-                "scalingByte#7": 0x51,
-                "scalingByte#8": 0x42,
-                "scalingByte#9": 0x31,
-                "scalingByte#10": 0x22,
-                "scalingByteExtension#10": {
-                    "validityMask": 0x2FFF,
-                },
-                "scalingByte#11": 0x11,
-                "scalingByte#12": 0x02,
-            },
-            None,
-            ResponseSID.ReadScalingDataByIdentifier,
-            bytearray([0x64, 0x30, 0x6F,
-                       0xB1, 0x70,
-                       0xA3, 0x55,
-                       0x91, 0x06, 0xF1, 0xE3,
-                       0x8B,
-                       0x74,
-                       0x6F,
-                       0x51,
-                       0x42,
-                       0x31,
-                       0x22, 0x2F, 0xFF,
-                       0x11,
-                       0x02])
-        ),
-    ])
-    def test_encode(self, data_records_values, sid, rsid, payload):
-        assert READ_SCALING_DATA_BY_IDENTIFIER_2020.encode(data_records_values=data_records_values,
                                                            sid=sid,
                                                            rsid=rsid) == payload

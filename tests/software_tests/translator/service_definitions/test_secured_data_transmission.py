@@ -12,136 +12,15 @@ class TestSecuredDataTransmission:
     """Unit tests for `SecuredDataTransmission` service."""
 
     def test_request_sid(self):
-        assert SECURED_DATA_TRANSMISSION_2013.request_sid == RequestSID.SecuredDataTransmission
         assert SECURED_DATA_TRANSMISSION_2020.request_sid == RequestSID.SecuredDataTransmission
+        assert SECURED_DATA_TRANSMISSION_2013.request_sid == RequestSID.SecuredDataTransmission
 
     def test_response_sid(self):
-        assert SECURED_DATA_TRANSMISSION_2013.response_sid == ResponseSID.SecuredDataTransmission
         assert SECURED_DATA_TRANSMISSION_2020.response_sid == ResponseSID.SecuredDataTransmission
+        assert SECURED_DATA_TRANSMISSION_2013.response_sid == ResponseSID.SecuredDataTransmission
 
     def test_default_translator(self):
         assert SECURED_DATA_TRANSMISSION is SECURED_DATA_TRANSMISSION_2020
-
-
-@pytest.mark.integration
-class TestSecuredDataTransmission2013Integration:
-    """Integration tests for `SecuredDataTransmission` service version 2013."""
-
-    @pytest.mark.parametrize("payload, decoded_message", [
-        (
-            [0x84, 0x8B],
-            (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'SID',
-                    'physical_value': 'SecuredDataTransmission',
-                    'raw_value': 0x84,
-                    'unit': None
-                },
-                {
-                    'children': ((), ),
-                    'length': 8,
-                    'name': 'securityDataRequestRecord',
-                    'physical_value': (0x8B,),
-                    'raw_value': (0x8B,),
-                    'unit': None
-                },
-            )
-        ),
-        (
-            [0x84, 0xB6, 0x80, 0x02, 0x91, 0x7C, 0x91, 0xD6, 0xAD, 0x18, 0x26, 0x12, 0xE8, 0x6E, 0xFF, 0xF6, 0x78, 0x77, 0x69],
-            (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'SID',
-                    'physical_value': 'SecuredDataTransmission',
-                    'raw_value': 0x84,
-                    'unit': None
-                },
-                {
-                    'children': ((), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), ()),
-                    'length': 8,
-                    'name': 'securityDataRequestRecord',
-                    'physical_value': (0xB6, 0x80, 0x02, 0x91, 0x7C, 0x91, 0xD6, 0xAD, 0x18, 0x26, 0x12, 0xE8, 0x6E,
-                                       0xFF, 0xF6, 0x78, 0x77, 0x69),
-                    'raw_value': (0xB6, 0x80, 0x02, 0x91, 0x7C, 0x91, 0xD6, 0xAD, 0x18, 0x26, 0x12, 0xE8, 0x6E,
-                                  0xFF, 0xF6, 0x78, 0x77, 0x69),
-                    'unit': None
-                },
-            )
-        ),
-        (
-            [0xC4, 0x00],
-            (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'RSID',
-                    'physical_value': 'SecuredDataTransmission',
-                    'raw_value': 0xC4,
-                    'unit': None
-                },
-                {
-                    'children': ((),),
-                    'length': 8,
-                    'name': 'securityDataResponseRecord',
-                    'physical_value': (0x00,),
-                    'raw_value': (0x00,),
-                    'unit': None
-                },
-            )
-        ),
-        (
-            [0xC4, 0x8C, 0x02, 0x27, 0x70, 0xD8, 0xF9, 0xA4, 0x99, 0xC8, 0xC3, 0x1F, 0xE2, 0xF3, 0xEC, 0x07, 0x18, 0x5C],
-            (
-                {
-                    'children': (),
-                    'length': 8,
-                    'name': 'RSID',
-                    'physical_value': 'SecuredDataTransmission',
-                    'raw_value': 0xC4,
-                    'unit': None
-                },
-                {
-                    'children': ((), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), ()),
-                    'length': 8,
-                    'name': 'securityDataResponseRecord',
-                    'physical_value': (0x8C, 0x02, 0x27, 0x70, 0xD8, 0xF9, 0xA4, 0x99, 0xC8, 0xC3, 0x1F, 0xE2, 0xF3,
-                                       0xEC, 0x07, 0x18, 0x5C),
-                    'raw_value': (0x8C, 0x02, 0x27, 0x70, 0xD8, 0xF9, 0xA4, 0x99, 0xC8, 0xC3, 0x1F, 0xE2, 0xF3,
-                                  0xEC, 0x07, 0x18, 0x5C),
-                    'unit': None
-                },
-            )
-        ),
-    ])
-    def test_decode(self, payload, decoded_message):
-        assert SECURED_DATA_TRANSMISSION_2013.decode(payload) == decoded_message
-
-    @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
-        (
-            {
-                "securityDataRequestRecord": (0xFF,),
-            },
-            RequestSID.SecuredDataTransmission,
-            None,
-            bytearray([0x84, 0xFF])
-        ),
-        (
-            {
-                "securityDataResponseRecord": (0xCB, 0x12, 0xDC, 0xFF, 0x8D, 0x69, 0x69, 0x1E, 0xC7, 0x34, 0x61, 0x0B),
-            },
-            None,
-            ResponseSID.SecuredDataTransmission,
-            bytearray([0xC4, 0xCB, 0x12, 0xDC, 0xFF, 0x8D, 0x69, 0x69, 0x1E, 0xC7, 0x34, 0x61, 0x0B])
-        ),
-    ])
-    def test_encode(self, data_records_values, sid, rsid, payload):
-        assert SECURED_DATA_TRANSMISSION_2013.encode(data_records_values=data_records_values,
-                                                sid=sid,
-                                                rsid=rsid) == payload
 
 
 @pytest.mark.integration
@@ -719,5 +598,126 @@ class TestSecuredDataTransmission2020Integration:
     ])
     def test_encode(self, data_records_values, sid, rsid, payload):
         assert SECURED_DATA_TRANSMISSION_2020.encode(data_records_values=data_records_values,
+                                                sid=sid,
+                                                rsid=rsid) == payload
+
+
+@pytest.mark.integration
+class TestSecuredDataTransmission2013Integration:
+    """Integration tests for `SecuredDataTransmission` service version 2013."""
+
+    @pytest.mark.parametrize("payload, decoded_message", [
+        (
+            [0x84, 0x8B],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'SecuredDataTransmission',
+                    'raw_value': 0x84,
+                    'unit': None
+                },
+                {
+                    'children': ((), ),
+                    'length': 8,
+                    'name': 'securityDataRequestRecord',
+                    'physical_value': (0x8B,),
+                    'raw_value': (0x8B,),
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0x84, 0xB6, 0x80, 0x02, 0x91, 0x7C, 0x91, 0xD6, 0xAD, 0x18, 0x26, 0x12, 0xE8, 0x6E, 0xFF, 0xF6, 0x78, 0x77, 0x69],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'SID',
+                    'physical_value': 'SecuredDataTransmission',
+                    'raw_value': 0x84,
+                    'unit': None
+                },
+                {
+                    'children': ((), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), ()),
+                    'length': 8,
+                    'name': 'securityDataRequestRecord',
+                    'physical_value': (0xB6, 0x80, 0x02, 0x91, 0x7C, 0x91, 0xD6, 0xAD, 0x18, 0x26, 0x12, 0xE8, 0x6E,
+                                       0xFF, 0xF6, 0x78, 0x77, 0x69),
+                    'raw_value': (0xB6, 0x80, 0x02, 0x91, 0x7C, 0x91, 0xD6, 0xAD, 0x18, 0x26, 0x12, 0xE8, 0x6E,
+                                  0xFF, 0xF6, 0x78, 0x77, 0x69),
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0xC4, 0x00],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'SecuredDataTransmission',
+                    'raw_value': 0xC4,
+                    'unit': None
+                },
+                {
+                    'children': ((),),
+                    'length': 8,
+                    'name': 'securityDataResponseRecord',
+                    'physical_value': (0x00,),
+                    'raw_value': (0x00,),
+                    'unit': None
+                },
+            )
+        ),
+        (
+            [0xC4, 0x8C, 0x02, 0x27, 0x70, 0xD8, 0xF9, 0xA4, 0x99, 0xC8, 0xC3, 0x1F, 0xE2, 0xF3, 0xEC, 0x07, 0x18, 0x5C],
+            (
+                {
+                    'children': (),
+                    'length': 8,
+                    'name': 'RSID',
+                    'physical_value': 'SecuredDataTransmission',
+                    'raw_value': 0xC4,
+                    'unit': None
+                },
+                {
+                    'children': ((), (), (), (), (), (), (), (), (), (), (), (), (), (), (), (), ()),
+                    'length': 8,
+                    'name': 'securityDataResponseRecord',
+                    'physical_value': (0x8C, 0x02, 0x27, 0x70, 0xD8, 0xF9, 0xA4, 0x99, 0xC8, 0xC3, 0x1F, 0xE2, 0xF3,
+                                       0xEC, 0x07, 0x18, 0x5C),
+                    'raw_value': (0x8C, 0x02, 0x27, 0x70, 0xD8, 0xF9, 0xA4, 0x99, 0xC8, 0xC3, 0x1F, 0xE2, 0xF3,
+                                  0xEC, 0x07, 0x18, 0x5C),
+                    'unit': None
+                },
+            )
+        ),
+    ])
+    def test_decode(self, payload, decoded_message):
+        assert SECURED_DATA_TRANSMISSION_2013.decode(payload) == decoded_message
+
+    @pytest.mark.parametrize("data_records_values, sid, rsid, payload", [
+        (
+            {
+                "securityDataRequestRecord": (0xFF,),
+            },
+            RequestSID.SecuredDataTransmission,
+            None,
+            bytearray([0x84, 0xFF])
+        ),
+        (
+            {
+                "securityDataResponseRecord": (0xCB, 0x12, 0xDC, 0xFF, 0x8D, 0x69, 0x69, 0x1E, 0xC7, 0x34, 0x61, 0x0B),
+            },
+            None,
+            ResponseSID.SecuredDataTransmission,
+            bytearray([0xC4, 0xCB, 0x12, 0xDC, 0xFF, 0x8D, 0x69, 0x69, 0x1E, 0xC7, 0x34, 0x61, 0x0B])
+        ),
+    ])
+    def test_encode(self, data_records_values, sid, rsid, payload):
+        assert SECURED_DATA_TRANSMISSION_2013.encode(data_records_values=data_records_values,
                                                 sid=sid,
                                                 rsid=rsid) == payload
