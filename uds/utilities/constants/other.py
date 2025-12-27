@@ -38,7 +38,8 @@ __all__ = [
 from typing import Dict
 
 # Shared
-REPEATED_DATA_RECORDS_NUMBER: int = 100  # TODO: remove if possible
+
+REPEATED_DATA_RECORDS_NUMBER: int = 100
 
 NO_YES_MAPPING: Dict[int, str] = {0: "no", 1: "yes"}
 """Generic `no` and `yes` values mapping."""
@@ -52,6 +53,7 @@ ENCRYPTION_METHOD_MAPPING: Dict[int, str] = ({0: "no encryption"}
 """Values mapping for encryptingMethod Data Record that is part of messages for multiple services."""
 
 # SID 0x11
+
 POWER_DOWN_TIME_MAPPING: Dict[int, str] = {
     0xFF: "failure or time unavailable"
 }
@@ -59,6 +61,7 @@ POWER_DOWN_TIME_MAPPING: Dict[int, str] = {
 :ref:`ECUReset <knowledge-base-service-ecu-reset>` message."""
 
 # SID 0x24
+
 EXPONENT_BIT_LENGTH: int = 4
 """Number of bits used for constant's exponent value by
 :ref:`ReadScalingDataByIdentifier service <knowledge-base-service-read-scaling-data-by-identifier>`"""
@@ -230,6 +233,7 @@ STATE_AND_CONNECTION_TYPE_STATE_MAPPING: Dict[int, str] = {
 :ref:`ReadScalingDataByIdentifier <knowledge-base-service-read-scaling-data-by-identifier>` message."""
 
 # SID 0x28
+
 MESSAGE_TYPE_MAPPING: Dict[int, str] = {
     0: "reserved",
     1: "normalCommunicationMessages",
@@ -252,6 +256,7 @@ NODE_IDENTIFICATION_NUMBER_MAPPING: Dict[int, str] = {
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` message."""
 
 # SID 0x29
+
 AUTHENTICATION_RETURN_PARAMETER_MAPPING: Dict[int, str] = {
     0x00: "RequestAccepted",
     0x01: "GeneralReject",
@@ -267,6 +272,7 @@ AUTHENTICATION_RETURN_PARAMETER_MAPPING: Dict[int, str] = {
 :ref:`Authentication <knowledge-base-service-authentication>` message."""
 
 # SID 0x2A
+
 TRANSMISSION_MODE_MAPPING: Dict[int, str] = {
     0x01: "sendAtSlowRate",
     0x02: "sendAtMediumRate",
@@ -277,6 +283,7 @@ TRANSMISSION_MODE_MAPPING: Dict[int, str] = {
 :ref:`ReadDataByPeriodicIdentifier <knowledge-base-service-read-data-by-periodic-identifier>` message."""
 
 # SID 0x2F
+
 INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING: Dict[int, str] = {
     0x00: "returnControlToECU",
     0x01: "resetToDefault",
@@ -287,6 +294,7 @@ INPUT_OUTPUT_CONTROL_PARAMETER_MAPPING: Dict[int, str] = {
 :ref:`InputOutputControlByIdentifier <knowledge-base-service-input-output-control-by-identifier>` message."""
 
 # SID 0x38
+
 MODE_OF_OPERATION_MAPPING_2020: Dict[int, str] = {
     0x01: "AddFile",
     0x02: "DeleteFile",
@@ -308,6 +316,7 @@ MODE_OF_OPERATION_MAPPING_2013: Dict[int, str] = {
 :ref:`RequestFileTransfer <knowledge-base-service-request-file-transfer>` message."""
 
 # SID 0x86
+
 EVENT_WINDOW_TIME_MAPPING_2020: Dict[int, str] = {
     0x02: "infiniteTimeToResponse",
     0x03: "shortEventWindowTime",
@@ -350,6 +359,7 @@ TIMER_SCHEDULE_MAPPING_2013: Dict[int, str] = {
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` message."""
 
 # SID 0x87
+
 LINK_CONTROL_MODE_IDENTIFIER_MAPPING: Dict[int, str] = {
     0x01: "PC9600Baud",
     0x02: "PC19200Baud",

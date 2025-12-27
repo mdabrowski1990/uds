@@ -19,6 +19,7 @@ __all__ = [
 from typing import Dict
 
 # SID 0x10
+
 DIAGNOSTIC_SESSION_TYPE_MAPPING: Dict[int, str] = {
     0x01: "defaultSession",
     0x02: "programmingSession",
@@ -29,6 +30,7 @@ DIAGNOSTIC_SESSION_TYPE_MAPPING: Dict[int, str] = {
 :ref:`DiagnosticSessionControl <knowledge-base-service-diagnostic-session-control>` SubFunction."""
 
 # SID 0x11
+
 RESET_TYPE_MAPPING: Dict[int, str] = {
     0x01: "hardReset",
     0x02: "keyOffOnReset",
@@ -40,6 +42,7 @@ RESET_TYPE_MAPPING: Dict[int, str] = {
 :ref:`ECUReset <knowledge-base-service-ecu-reset>` SubFunction."""
 
 # SID 0x19
+
 REPORT_TYPE_MAPPING_2020: Dict[int, str] = {
     0x01: "reportNumberOfDTCByStatusMask",
     0x02: "reportDTCByStatusMask",
@@ -101,6 +104,7 @@ REPORT_TYPE_MAPPING_2013: Dict[int, str] = {
 :ref:`ReadDTCInformation <knowledge-base-service-read-dtc-information>` SubFunction."""
 
 # SID 0x27
+
 SECURITY_ACCESS_TYPE_MAPPING = {
     sub_function_value: sub_function_description
     for i in range(1, 0x42, 2)
@@ -123,6 +127,7 @@ SECURITY_ACCESS_TYPE_MAPPING = {
 :ref:`SecurityAccess <knowledge-base-service-security-access>` SubFunction."""
 
 # SID 0x28
+
 CONTROL_TYPE_MAPPING: Dict[int, str] = {
     0x00: "enableRxAndTx",
     0x01: "enableRxAndDisableTx",
@@ -135,6 +140,7 @@ CONTROL_TYPE_MAPPING: Dict[int, str] = {
 :ref:`CommunicationControl <knowledge-base-service-communication-control>` SubFunction."""
 
 # SID 0x29
+
 AUTHENTICATION_TASK_MAPPING: Dict[int, str] = {
     0x00: "deAuthenticate",
     0x01: "verifyCertificateUnidirectional",
@@ -150,6 +156,7 @@ AUTHENTICATION_TASK_MAPPING: Dict[int, str] = {
 :ref:`Authentication <knowledge-base-service-authentication>` SubFunction."""
 
 # SID 0x2C
+
 DEFINITION_TYPE_MAPPING: Dict[int, str] = {
     0x01: "defineByIdentifier",
     0x02: "defineByMemoryAddress",
@@ -159,6 +166,7 @@ DEFINITION_TYPE_MAPPING: Dict[int, str] = {
 :ref:`DynamicallyDefineDataIdentifier <knowledge-base-service-dynamically-define-data-identifier>` SubFunction."""
 
 # SID 0x31
+
 ROUTINE_CONTROL_TYPE_MAPPING: Dict[int, str] = {
     0x01: "startRoutine",
     0x02: "stopRoutine",
@@ -168,6 +176,7 @@ ROUTINE_CONTROL_TYPE_MAPPING: Dict[int, str] = {
 :ref:`RoutineControl <knowledge-base-service-routine-control>` SubFunction."""
 
 # SID 0x3E
+
 ZERO_SUB_FUNCTION_MAPPING: Dict[int, str] = {
     0x00: "zeroSubFunction",
 }
@@ -175,6 +184,7 @@ ZERO_SUB_FUNCTION_MAPPING: Dict[int, str] = {
 :ref:`TesterPresent <knowledge-base-service-tester-present>` SubFunction."""
 
 # SID 0x83
+
 TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013: Dict[int, str] = {
     0x01: "readExtendedTimingParameterSet",
     0x02: "setTimingParametersToDefaultValues",
@@ -185,6 +195,7 @@ TIMING_PARAMETER_ACCESS_TYPE_MAPPING_2013: Dict[int, str] = {
 :ref:`AccessTimingParameter <knowledge-base-service-access-timing-parameter>` SubFunction."""
 
 # SID 0x85
+
 DTC_SETTING_TYPE_MAPPING: Dict[int, str] = {
     0x01: "on",
     0x02: "off",
@@ -193,6 +204,7 @@ DTC_SETTING_TYPE_MAPPING: Dict[int, str] = {
 :ref:`ControlDTCSetting <knowledge-base-service-control-dtc-setting>` SubFunction."""
 
 # SID 0x86
+
 EVENT_MAPPING_2020: Dict[int, str] = {
     0x00: "stopResponseOnEvent",
     0x01: "onDTCStatusChange",
@@ -227,6 +239,7 @@ STORAGE_STATE_MAPPING: Dict[int, str] = {
 :ref:`ResponseOnEvent <knowledge-base-service-response-on-event>` SubFunction."""
 
 # SID 0x87
+
 LINK_CONTROL_TYPE_MAPPING: Dict[int, str] = {
     0x01: "verifyModeTransitionWithFixedParameter",
     0x02: "verifyModeTransitionWithSpecificParameter",
