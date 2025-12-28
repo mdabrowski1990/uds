@@ -1,4 +1,4 @@
-"""ReadDataByPeriodicIdentifier (SID 0x2A) translation."""
+""":ref:`ReadDataByPeriodicIdentifier (SID 0x2A) <knowledge-base-service-read-data-by-periodic-identifier>` translation."""
 
 __all__ = ["READ_DATA_BY_PERIODIC_IDENTIFIER"]
 

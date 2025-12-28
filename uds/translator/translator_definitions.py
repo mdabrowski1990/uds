@@ -7,6 +7,7 @@ from .service_definitions import (
     AUTHENTICATION,
     CLEAR_DIAGNOSTIC_INFORMATION_2013,
     CLEAR_DIAGNOSTIC_INFORMATION_2020,
+    COMMUNICATION_CONTROL,
     CONTROL_DTC_SETTING,
     DIAGNOSTIC_SESSION_CONTROL,
     DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2013,
@@ -14,6 +15,7 @@ from .service_definitions import (
     ECU_RESET,
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013,
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020,
+    LINK_CONTROL,
     READ_DATA_BY_IDENTIFIER_2013,
     READ_DATA_BY_IDENTIFIER_2020,
     READ_DATA_BY_PERIODIC_IDENTIFIER,
@@ -39,8 +41,6 @@ from .service_definitions import (
     WRITE_DATA_BY_IDENTIFIER_2020,
     WRITE_MEMORY_BY_ADDRESS,
 )
-from .service_definitions.communication_control import COMMUNICATION_CONTROL
-from .service_definitions.link_control import LINK_CONTROL
 from .translator import Translator
 
 BASE_TRANSLATOR_2013 = Translator(services={

@@ -7,6 +7,7 @@ from .clear_diagnostic_information import (
     CLEAR_DIAGNOSTIC_INFORMATION_2013,
     CLEAR_DIAGNOSTIC_INFORMATION_2020,
 )
+from .communication_control import COMMUNICATION_CONTROL
 from .control_dtc_setting import CONTROL_DTC_SETTING
 from .diagnostic_session_control import DIAGNOSTIC_SESSION_CONTROL
 from .dynamically_define_data_identifier import (
@@ -20,6 +21,7 @@ from .input_output_control_by_identifier import (
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013,
     INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020,
 )
+from .link_control import LINK_CONTROL
 from .read_data_by_identifier import READ_DATA_BY_IDENTIFIER, READ_DATA_BY_IDENTIFIER_2013, READ_DATA_BY_IDENTIFIER_2020
 from .read_data_by_periodic_identifier import READ_DATA_BY_PERIODIC_IDENTIFIER
 from .read_dtc_information import READ_DTC_INFORMATION, READ_DTC_INFORMATION_2013, READ_DTC_INFORMATION_2020

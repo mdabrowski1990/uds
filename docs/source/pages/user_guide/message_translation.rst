@@ -84,6 +84,15 @@ Translator
     decoded_message_record_information = my_translator.decode(some_message_record)
 
 
+Translator Definitions
+----------------------
+Package defines following standard (compatible with ISO 14229-1) translators:
+
+- :obj:`~uds.translator.translator_definitions.BASE_TRANSLATOR` - bases on the newest ISO 14229-1 version
+- :obj:`~uds.translator.translator_definitions.BASE_TRANSLATOR_2020` - bases on ISO 14229-1:2020
+- :obj:`~uds.translator.translator_definitions.BASE_TRANSLATOR_2013` - bases on ISO 14229-1:2013
+
+
 Service
 -------
 Each object of :class:`~uds.translator.service.service.Service` class defines a translation logic for one specific
@@ -203,6 +212,391 @@ Each object of :class:`~uds.translator.service.service.Service` class defines a 
     # decode negative response messages
     decoded_negative_response_message_information = diagnostic_session_control.decode_negative_response(diagnostic_session_control_message)
     decoded_negative_response_message_record_information = diagnostic_session_control.decode_negative_response(diagnostic_session_control_message_record)
+
+
+Service Definitions
+-------------------
+Package defines following standard (compatible with ISO 14229-1) diagnostic services translators:
+
+
+DiagnosticSessionControl
+````````````````````````
+Translators for
+:ref:`DiagnosticSessionControl (SID 0x10) <knowledge-base-service-diagnostic-session-control>` service:
+
+- :obj:`~uds.translator.service_definitions.diagnostic_session_control.DIAGNOSTIC_SESSION_CONTROL`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_diagnostic_session_control.py
+
+
+ECUReset
+````````
+Translators for
+:ref:`ECUReset (SID 0x11) <knowledge-base-service-ecu-reset>` service:
+
+- :obj:`~uds.translator.service_definitions.ecu_reset.ECU_RESET`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_ecu_reset.py
+
+
+ClearDiagnosticInformation
+``````````````````````````
+Translators for
+:ref:`ClearDiagnosticInformation (SID 0x14) <knowledge-base-service-clear-diagnostic-information>` service:
+
+- :obj:`~uds.translator.service_definitions.clear_diagnostic_information.CLEAR_DIAGNOSTIC_INFORMATION`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.clear_diagnostic_information.CLEAR_DIAGNOSTIC_INFORMATION_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.clear_diagnostic_information.CLEAR_DIAGNOSTIC_INFORMATION_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_clear_dtc_information.py
+
+
+ReadDTCInformation
+``````````````````
+Translators for
+:ref:`ReadDTCInformation (SID 0x19) <knowledge-base-service-read-dtc-information>` service:
+
+- :obj:`~uds.translator.service_definitions.read_dtc_information.READ_DTC_INFORMATION`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.read_dtc_information.READ_DTC_INFORMATION_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.read_dtc_information.READ_DTC_INFORMATION_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_dtc_information.py
+
+
+ReadDataByIdentifier
+````````````````````
+Translators for
+:ref:`ReadDataByIdentifier (SID 0x22) <knowledge-base-service-read-data-by-identifier>` service:
+
+- :obj:`~uds.translator.service_definitions.read_data_by_identifier.READ_DATA_BY_IDENTIFIER`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.read_data_by_identifier.READ_DATA_BY_IDENTIFIER_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.read_data_by_identifier.READ_DATA_BY_IDENTIFIER_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_data_by_identifier.py
+
+
+ReadMemoryByAddress
+```````````````````
+Translators for
+:ref:`ReadMemoryByAddress (SID 0x23) <knowledge-base-service-read-memory-by-address>` service:
+
+- obj:`~uds.translator.service_definitions.read_memory_by_address.READ_MEMORY_BY_ADDRESS`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_memory_by_address.py
+
+
+ReadScalingDataByIdentifier
+```````````````````````````
+Translators for
+:ref:`ReadScalingDataByIdentifier (SID 0x24) <knowledge-base-service-read-scaling-data-by-identifier>` service:
+
+- :obj:`~uds.translator.service_definitions.read_scaling_data_by_identifier.READ_SCALING_DATA_BY_IDENTIFIER`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.read_scaling_data_by_identifier.READ_SCALING_DATA_BY_IDENTIFIER_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.read_scaling_data_by_identifier.READ_SCALING_DATA_BY_IDENTIFIER_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_scaling_data_by_identifier.py
+
+
+SecurityAccess
+``````````````
+Translators for
+:ref:`SecurityAccess (SID 0x27) <knowledge-base-service-security-access>` service:
+
+- :obj:`~uds.translator.service_definitions.security_access.SECURITY_ACCESS`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_security_access.py
+
+
+CommunicationControl
+````````````````````
+Translators for
+:ref:`CommunicationControl (SID 0x28) <knowledge-base-service-communication-control>` service:
+
+- :obj:`~uds.translator.service_definitions.communication_control.COMMUNICATION_CONTROL`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_communication_control.py
+
+
+Authentication
+``````````````
+Translators for
+:ref:`Authentication (0x29) <knowledge-base-service-authentication>` service:
+
+- :obj:`~uds.translator.service_definitions.authentication.AUTHENTICATION`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_authentication.py
+
+
+ReadDataByPeriodicIdentifier
+````````````````````````````
+Translators for
+:ref:`ReadDataByPeriodicIdentifier (SID 0x2A) <knowledge-base-service-read-data-by-periodic-identifier>` service:
+
+- :obj:`~uds.translator.service_definitions.read_data_by_periodic_identifier.READ_DATA_BY_PERIODIC_IDENTIFIER`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_data_by_periodic_identifier.py
+
+
+WriteDataByIdentifier
+`````````````````````
+Translators for
+:ref:`WriteDataByIdentifier (SID 0x2E) <knowledge-base-service-write-data-by-identifier>` service:
+
+- :obj:`~uds.translator.service_definitions.write_data_by_identifier.WRITE_DATA_BY_IDENTIFIER`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.write_data_by_identifier.WRITE_DATA_BY_IDENTIFIER_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.write_data_by_identifier.WRITE_DATA_BY_IDENTIFIER_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_write_data_by_identifier.py
+
+
+InputOutputControlByIdentifier
+``````````````````````````````
+Translators for
+:ref:`InputOutputControlByIdentifier (SID 0x2F) <knowledge-base-service-input-output-control-by-identifier>` service:
+
+- :obj:`~uds.translator.service_definitions.input_output_control_by_identifier.INPUT_OUTPUT_CONTROL_BY_IDENTIFIER`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.input_output_control_by_identifier.INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.input_output_control_by_identifier.INPUT_OUTPUT_CONTROL_BY_IDENTIFIER_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_input_output_control_by_identifier.py
+
+
+RoutineControl
+``````````````
+Translators for
+:ref:`RoutineControl (SID 0x31) <knowledge-base-service-routine-control>` service:
+
+- :obj:`~uds.translator.service_definitions.routine_control.ROUTINE_CONTROL`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_routine_control.py
+
+
+
+RequestDownload
+```````````````
+Translators for
+:ref:`RequestDownload (SID 0x34) <knowledge-base-service-request-download>` service:
+
+- :obj:`~uds.translator.service_definitions.request_download.REQUEST_DOWNLOAD`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_download.py
+
+
+
+RequestUpload
+`````````````
+Translators for
+:ref:`RequestUpload (SID 0x35) <knowledge-base-service-request-upload>` service:
+
+- :obj:`~uds.translator.service_definitions.request_upload.REQUEST_UPLOAD`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_upload.py
+
+
+
+TransferData
+````````````
+Translators for
+:ref:`TransferData (SID 0x36) <knowledge-base-service-transfer-data>` service:
+
+- :obj:`~uds.translator.service_definitions.transfer_data.TRANSFER_DATA`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_transfer_data.py
+
+
+RequestTransferExit
+```````````````````
+Translators for
+:ref:`RequestTransferExit (SID 0x37) <knowledge-base-service-request-transfer-exit>` service:
+
+- :obj:`~uds.translator.service_definitions.request_transfer_exit.REQUEST_TRANSFER_EXIT`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_transfer_exit.py
+
+
+RequestFileTransfer
+```````````````````
+Translators for
+:ref:`RequestFileTransfer (SID 0x38) <knowledge-base-service-request-file-transfer>` service:
+
+- :obj:`~uds.translator.service_definitions.request_file_transfer.REQUEST_FILE_TRANSFER`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.request_file_transfer.REQUEST_FILE_TRANSFER_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.request_file_transfer.REQUEST_FILE_TRANSFER_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_request_file_transfer.py
+
+
+WriteMemoryByAddress
+````````````````````
+Translators for
+:ref:`WriteMemoryByAddress (SID 0x3D) <knowledge-base-service-write-memory-by-address>` service:
+
+- :obj:`~uds.translator.service_definitions.write_memory_by_address.WRITE_MEMORY_BY_ADDRESS`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_write_memory_by_address.py
+
+
+TesterPresent
+`````````````
+Translators for
+:ref:`TesterPresent (SID 0x3E) <knowledge-base-service-tester-present>` service:
+
+- :obj:`~uds.translator.service_definitions.tester_present.TESTER_PRESENT`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_tester_present.py
+
+
+AccessTimingParameter
+`````````````````````
+Translators for
+:ref:`AccessTimingParameter (SID 0x83) <knowledge-base-service-access-timing-parameter>` service:
+
+- :obj:`~uds.translator.service_definitions.access_timing_parameter.ACCESS_TIMING_PARAMETER_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_access_timing_parameter.py
+
+
+SecuredDataTransmission
+```````````````````````
+Translators for
+:ref:`SecuredDataTransmission (SID 0x84) <knowledge-base-service-secured-data-transmission>` service:
+
+- :obj:`~uds.translator.service_definitions.secured_data_transmission.SECURED_DATA_TRANSMISSION`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.secured_data_transmission.SECURED_DATA_TRANSMISSION_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.secured_data_transmission.SECURED_DATA_TRANSMISSION_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_secured_data_transmission.py
+
+
+ControlDTCSetting
+`````````````````
+Translators for
+:ref:`ControlDTCSetting (SID 0x85) <knowledge-base-service-control-dtc-setting>` service:
+
+- :obj:`~uds.translator.service_definitions.control_dtc_setting.CONTROL_DTC_SETTING`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_control_dtc_setting.py
+
+
+ResponseOnEvent
+```````````````
+Translators for
+  :ref:`ResponseOnEvent (SID 0x86) <knowledge-base-service-response-on-event>` service:
+
+- :obj:`~uds.translator.service_definitions.response_on_event.RESPONSE_ON_EVENT`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.response_on_event.RESPONSE_ON_EVENT_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.response_on_event.RESPONSE_ON_EVENT_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_response_on_event.py
+
+
+LinkControl
+```````````
+Translators for
+:ref:`LinkControl (SID 0x87) <knowledge-base-service-link-control>` service:
+
+- :obj:`~uds.translator.service_definitions.link_control.LINK_CONTROL`
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_link_control.py
+
 
 
 Data Records
