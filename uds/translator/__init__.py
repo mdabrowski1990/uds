@@ -25,3 +25,4 @@ from .service_definitions import (
     TESTER_PRESENT,
 )
 from .translator import Translator
+from .translator_definitions import BASE_TRANSLATOR, BASE_TRANSLATOR_2013, BASE_TRANSLATOR_2020
