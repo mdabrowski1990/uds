@@ -1,4 +1,4 @@
-""":ref:`ReadDataByPeriodicIdentifier (SID 0x2A) <knowledge-base-service-read-data-by-periodic-identifier>` translation."""
+""":ref:`ReadDataByPeriodicIdentifier (SID 0x2A) <knowledge-base-service-read-data-by-periodic-identifier>` translation."""  # pylint: disable=line-too-long
 
 __all__ = ["READ_DATA_BY_PERIODIC_IDENTIFIER"]
 
