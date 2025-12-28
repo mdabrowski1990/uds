@@ -379,6 +379,25 @@ Translators for
   https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_read_data_by_periodic_identifier.py
 
 
+DynamicallyDefineDataIdentifier
+```````````````````````````````
+Translators for
+:ref:`DynamicallyDefineDataIdentifier (SID 0x2C) <knowledge-base-service-dynamically-define-data-identifier>` service:
+
+- :obj:`~uds.translator.service_definitions.dynamically_define_data_identifier.DYNAMICALLY_DEFINE_DATA_IDENTIFIER`
+  - compatible with the newest ISO 14229-1 version
+
+- :obj:`~uds.translator.service_definitions.dynamically_define_data_identifier.DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2020`
+  - compatible with ISO 14229-1:2020
+
+- :obj:`~uds.translator.service_definitions.dynamically_define_data_identifier.DYNAMICALLY_DEFINE_DATA_IDENTIFIER_2013`
+  - compatible with ISO 14229-1:2013
+
+.. seealso:: Use case examples are available as integration tests:
+
+  https://github.com/mdabrowski1990/uds/blob/main/tests/software_tests/translator/service_definitions/test_dynamically_define_data_identifier.py
+
+
 WriteDataByIdentifier
 `````````````````````
 Translators for
