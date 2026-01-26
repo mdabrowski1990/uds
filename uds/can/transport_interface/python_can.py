@@ -156,8 +156,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def __setup_sync_listening(self) -> None:
         """Configure CAN frame notifier for synchronous communication."""
         self.__teardown_async_listening()
-        self.__rx_frames_buffer.is_stopped = False
-        self.__tx_frames_buffer.is_stopped = False
+        self.__rx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__tx_frames_buffer.is_stopped = False  # noqa: vulture
         if self.notifier is None or self.notifier.stopped:
             self.notifier = Notifier(bus=self.network_manager,
                                      listeners=[self.__rx_frames_buffer,
@@ -177,8 +177,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param loop: An :mod:`asyncio` event loop to use.
         """
         self.__teardown_sync_listening()
-        self.__async_rx_frames_buffer.is_stopped = False
-        self.__async_tx_frames_buffer.is_stopped = False
+        self.__async_rx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__async_tx_frames_buffer.is_stopped = False  # noqa: vulture
         if self.async_notifier is None or self.async_notifier.stopped:
             self.async_notifier = Notifier(bus=self.network_manager,
                                            listeners=[self.__async_rx_frames_buffer,
@@ -355,11 +355,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
-        return CanPacketRecord(frame=received_frame,
+        return CanPacketRecord(frame=received_frame,  # type: ignore
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
 
     async def _async_wait_for_packet(self,
                                      buffer: AsyncBufferedReader,
@@ -389,11 +389,11 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
-        return CanPacketRecord(frame=received_frame,
+        return CanPacketRecord(frame=received_frame,  # type: ignore
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
 
     def _receive_cf_packets_block(self,
                                   sequence_number: int,
