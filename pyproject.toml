@@ -93,7 +93,7 @@ docs = [
     "tomli",
 ]
 docs-checks = [
-    "doc8 == 2.0.0",
+    "doc8 == 1.1.1",
 ]
 
 
