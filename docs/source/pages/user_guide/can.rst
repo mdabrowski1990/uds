@@ -882,8 +882,14 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
 - Configuration of the transport interface:
 
   The configuration takes place during :meth:`uds.can.transport_interface.python_can.PyCanTransportInterface.__init__`
-  call. From the user perspective it does not provide any additional features to common implementation defined by
+  call.
+
+  User can provide `notifier` and `async_notifier` objects on top of implementation defined in
   :meth:`uds.can.transport_interface.common.AbstractCanTransportInterface.__init__`.
+
+  .. warning:: There shall be exactly one notifier active at any time.
+    Either for synchronous (with `BufferedReader` listeners)
+    or asynchronous (with `AsyncBufferedReader` listeners and `loop` attribute set).
 
   **Example code:**
 

@@ -3,13 +3,12 @@ from can import Bus
 from .python_can import (
     AbstractCanPacketTests,
     AbstractErrorGuessingTests,
-    AbstractUnsegmentedMessageTests,
-    AbstractSegmentedMessageTests,
     AbstractFullDuplexTests,
     AbstractPythonCanTests,
+    AbstractSegmentedMessageTests,
+    AbstractUnsegmentedMessageTests,
     AbstractUseCaseTests,
 )
-
 
 # Config
 
@@ -38,8 +37,10 @@ class TestKvaserUnsegmentedMessage(AbstractUnsegmentedMessageTests, KvaserConfig
     """Unsegmented UDS message related system tests for python-can Transport Interface."""
 
 
-class TestKvaserSegmentedMessage(AbstractSegmentedMessageTests, KvaserConfig):  # TODO: test_async_receive_message__multi_packets__end_timeout failing
+class TestKvaserSegmentedMessage(AbstractSegmentedMessageTests, KvaserConfig):
     """Segmented UDS message related system tests for python-can Transport Interface."""
+    # TODO: test_async_receive_message__multi_packets__end_timeout failing due to
+    #  https://github.com/mdabrowski1990/uds/issues/228
 
 
 # Full Duplex
