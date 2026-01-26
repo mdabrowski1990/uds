@@ -884,7 +884,7 @@ Following functionalities are provided by :class:`~uds.can.transport_interface.p
   The configuration takes place during :meth:`uds.can.transport_interface.python_can.PyCanTransportInterface.__init__`
   call.
 
-  User can provide `notifier` and `async_notifier` objects on top of implementation defined in
+  User can provide `notifier` and `async_notifier` objects on top of other arguments defined in
   :meth:`uds.can.transport_interface.common.AbstractCanTransportInterface.__init__`.
 
   .. warning:: There shall be exactly one notifier active at any time.
