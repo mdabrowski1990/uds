@@ -608,8 +608,8 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
                     < timeout + self.TASK_TIMING_TOLERANCE)
 
 
-class AbstractMessageTests(AbstractPythonCanTests, ABC):
-    """Common implementation of system tests related to sending and receiving UDS (DoCAN) messages."""
+class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
+    """Common implementation of system tests related to sending and receiving unsegmented UDS (DoCAN) messages."""
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
@@ -911,6 +911,10 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             assert (start_timeout
                     <= receiving_time_ms
                     < send_after + self.TASK_TIMING_TOLERANCE)
+
+
+class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
+    """Common implementation of system tests related to sending and receiving segmented UDS (DoCAN) messages."""
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
@@ -1474,6 +1478,10 @@ class AbstractMessageTests(AbstractPythonCanTests, ABC):
             assert (end_timeout
                     < receiving_time_ms
                     < end_timeout + self.TASK_TIMING_TOLERANCE)
+
+
+class AbstractFullDuplexTests(AbstractPythonCanTests, ABC):
+    """Common implementation of system tests related to DoCAN Full-Duplex transmission."""
 
     @pytest.mark.parametrize("tx_message, rx_message, tx_block_size, tx_st_min, rx_block_size, rx_st_min", [
         (

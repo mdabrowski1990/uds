@@ -88,8 +88,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         self.notifier = notifier
         self.async_notifier = async_notifier
         self.__rx_frames_buffer = BufferedReader()
-        self.__async_rx_frames_buffer = AsyncBufferedReader()
         self.__tx_frames_buffer = BufferedReader()
+        self.__async_rx_frames_buffer = AsyncBufferedReader()
         self.__async_tx_frames_buffer = AsyncBufferedReader()
 
     def __del__(self) -> None:
@@ -156,14 +156,14 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def __setup_sync_listening(self) -> None:
         """Configure CAN frame notifier for synchronous communication."""
         self.__teardown_async_listening()
-        self.__rx_frames_buffer.is_stopped = False  # noqa: vulture
-        self.__tx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__rx_frames_buffer.is_stopped = False
+        self.__tx_frames_buffer.is_stopped = False
         if self.notifier is None or self.notifier.stopped:
             self.notifier = Notifier(bus=self.network_manager,
-                                     listeners=[self.__async_rx_frames_buffer,
-                                                self.__async_tx_frames_buffer],
+                                     listeners=[self.__rx_frames_buffer,
+                                                self.__tx_frames_buffer],
                                      timeout=self._MIN_NOTIFIER_TIMEOUT)
-        if self.network_manager not in self.notifier._bus_list:  # pylint: disable=protected-access
+        if self.network_manager != self.notifier.bus and self.network_manager not in self.notifier.bus:
             self.notifier.add_bus(self.network_manager)
         if self.__rx_frames_buffer not in self.notifier.listeners:
             self.notifier.add_listener(self.__rx_frames_buffer)
@@ -176,16 +176,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :param loop: An :mod:`asyncio` event loop to use.
         """
-        self.__teardown_async_listening()
-        self.__async_rx_frames_buffer.is_stopped = False  # noqa: vulture
-        self.__async_tx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__teardown_sync_listening()
+        self.__async_rx_frames_buffer.is_stopped = False
+        self.__async_tx_frames_buffer.is_stopped = False
         if self.async_notifier is None or self.async_notifier.stopped:
             self.async_notifier = Notifier(bus=self.network_manager,
                                            listeners=[self.__async_rx_frames_buffer,
                                                       self.__async_tx_frames_buffer],
                                            timeout=self._MIN_NOTIFIER_TIMEOUT,
                                            loop=loop)
-        if self.network_manager not in self.async_notifier._bus_list:  # pylint: disable=protected-access
+        if self.network_manager != self.async_notifier.bus and self.network_manager not in self.async_notifier.bus:
             self.async_notifier.add_bus(self.network_manager)
         if self.__async_rx_frames_buffer not in self.async_notifier.listeners:
             self.async_notifier.add_listener(self.__async_rx_frames_buffer)
@@ -341,27 +341,25 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        if timeout is not None:
-            timestamp_timeout = perf_counter() + timeout / 1000.
-        else:
-            timeout_left_s = self._MAX_LISTENER_TIMEOUT
+        timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timeout / 1000.
+        timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
+        received_frame = None
         while packet_addressing_type is None:
-            if timeout is not None:
-                timestamp_now = perf_counter()
-                timeout_left_s = timestamp_timeout - timestamp_now
-                if timeout_left_s <= 0:
-                    raise TimeoutError("Timeout was reached before a CAN packet was received.")
+            timestamp_now = perf_counter()
+            timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
+            if timeout_left_s <= 0:
+                raise TimeoutError("Timeout was reached before a CAN packet was received.")
             received_frame = buffer.get_message(timeout=timeout_left_s)
             if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
-        return CanPacketRecord(frame=received_frame,  # type: ignore
+        return CanPacketRecord(frame=received_frame,
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))
 
     async def _async_wait_for_packet(self,
                                      buffer: AsyncBufferedReader,
@@ -377,23 +375,17 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        if timeout is not None:
-            timeout_left_s = timeout / 1000.
-            timestamp_timeout = perf_counter() + timeout_left_s
-        else:
-            timeout_left_s = None
+        timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timeout / 1000.
+        timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
+        received_frame = None
         while packet_addressing_type is None:
-            if timeout is not None:
-                timestamp_now = perf_counter()
-                timeout_left_s = timestamp_timeout - timestamp_now
-                if timeout_left_s <= 0:
-                    raise TimeoutError("Timeout was reached before a CAN packet was received.")
-            try:
-                received_frame = await wait_for(buffer.get_message(), timeout=timeout_left_s)
-            except (TimeoutError, AsyncioTimeoutError):
-                pass
-            else:
+            timestamp_now = perf_counter()
+            timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
+            if timeout_left_s <= 0:
+                raise TimeoutError("Timeout was reached before a CAN packet was received.")
+            received_frame = await wait_for(buffer.get_message(), timeout=timeout_left_s)
+            if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
