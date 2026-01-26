@@ -1,4 +1,4 @@
-"""Formulas used by Conditional Data Records."""  # pylint: disable=too-many-lines
+"""Formulas used by Conditional Data Records."""
 
 __all__ = [
     # Shared

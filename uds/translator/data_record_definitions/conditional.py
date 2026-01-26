@@ -1,4 +1,4 @@
-"""Definitions for Conditional Data Records."""  # pylint: disable=too-many-lines
+"""Definitions for Conditional Data Records."""
 
 __all__ = [
     # Shared
