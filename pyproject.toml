@@ -49,7 +49,7 @@ maintainers = [
 ]
 dependencies = [
     "aenum >= 3.0.0",
-    "python-can >= 4.6.1"
+    "python-can >= 4.6.0"
 ]
 dynamic = ["version"]
 
