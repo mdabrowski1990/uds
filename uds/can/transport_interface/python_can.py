@@ -12,7 +12,7 @@ from typing import Any, List, Optional, Tuple, Union
 from warnings import warn
 
 from can import AsyncBufferedReader, BufferedReader, BusABC
-from can import Message as PythonCanMessage
+from can import Message as PythonCanFrame
 from can import Notifier
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.message import UdsMessage, UdsMessageRecord
@@ -46,6 +46,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def __init__(self,
                  network_manager: BusABC,
                  addressing_information: AbstractCanAddressingInformation,
+                 notifier: Optional[Notifier] = None,
+                 async_notifier: Optional[Notifier] = None,
                  **configuration_params: Any) -> None:
         """
         Create Transport Interface that uses python-can package to control CAN bus.
@@ -53,6 +55,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param network_manager: Python-can bus object for handling CAN network.
         :param addressing_information: Addressing Information configuration of a simulated node that is taking part in
             DoCAN communication.
+        :param notifier: Python-can notifier object for reporting received and sent CAN Frames to listeners.
+            Leave None to create new notifier when needed.
+
+            .. warning:: Only one notifier object shall be active at any time.
+
+        :param async_notifier: Python-can notifier object for reporting received and sent CAN Frames to async listeners.
+            Leave None to create new notifier when needed.
+
+            .. warning:: Only one notifier object shall be active at any time.
+
         :param configuration_params: Additional configuration parameters.
 
             - :parameter n_as_timeout: Timeout value for :ref:`N_As <knowledge-base-can-n-as>` time parameter.
@@ -73,78 +85,146 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         super().__init__(network_manager=network_manager,
                          addressing_information=addressing_information,
                          **configuration_params)
-        self.__notifier: Optional[Notifier] = None
-        self.__async_notifier: Optional[Notifier] = None
-        # listeners for receiving packets
+        self.notifier = notifier
+        self.async_notifier = async_notifier
         self.__rx_frames_buffer = BufferedReader()
-        self.__async_rx_frames_buffer = AsyncBufferedReader()
-        # listeners for receiving FC packets when sending messages
         self.__tx_frames_buffer = BufferedReader()
+        self.__async_rx_frames_buffer = AsyncBufferedReader()
         self.__async_tx_frames_buffer = AsyncBufferedReader()
 
     def __del__(self) -> None:
         """Safely close all threads opened by this object."""
-        self.__teardown_notifier(suppress_warning=True)
-        self.__teardown_async_notifier(suppress_warning=True)
+        self.__teardown_sync_listening(suppress_warning=True)
+        self.__teardown_async_listening(suppress_warning=True)
         self.__rx_frames_buffer.stop()
         self.__async_rx_frames_buffer.stop()
         self.__tx_frames_buffer.stop()
         self.__async_tx_frames_buffer.stop()
 
-    def __teardown_notifier(self, suppress_warning: bool = False) -> None:
-        """
-        Stop and remove CAN frame notifier for synchronous communication.
+    @property
+    def notifier(self) -> Optional[Notifier]:
+        """Notifier used by python-can for reporting received and sent CAN Frames to listeners."""
+        return self.__notifier
 
-        :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
+    @notifier.setter
+    def notifier(self, value: Optional[Notifier]) -> None:
         """
-        if self.__notifier is not None:
-            self.__notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+        Set notifier for reporting received and sent CAN Frames to listeners.
+
+        :param value: Value of notifier to set.
+
+        :raise TypeError: Value is not None neither Notifier type.
+        """
+        if value is None:
             self.__notifier = None
-            if not suppress_warning:
-                warn(message="Asynchronous (`PyCanTransportInterface.async_send_packet`, "
-                             "`PyCanTransportInterface.async_receive_packet methods`) "
-                             "and synchronous (`PyCanTransportInterface.send_packet`, "
-                             "`PyCanTransportInterface.receive_packet methods`) shall not be used together.",
+        elif isinstance(value, Notifier):
+            self.__notifier = value
+            if self.__notifier.timeout > self._MIN_NOTIFIER_TIMEOUT:
+                self.__notifier.timeout = self._MIN_NOTIFIER_TIMEOUT
+                warn(message=f"Notifier's timeout value was changed to {self._MIN_NOTIFIER_TIMEOUT}[s] "
+                             f"due to performance reasons.",
                      category=UserWarning)
+        else:
+            raise TypeError(f"Provided value is not None neither Notifier type. Actual type: {type(value)}.")
 
-    def __teardown_async_notifier(self, suppress_warning: bool = False) -> None:
-        """
-        Stop and remove CAN frame notifier for asynchronous communication.
+    @property
+    def async_notifier(self) -> Optional[Notifier]:
+        """Notifier used by python-can for reporting received and sent CAN Frames to async listeners."""
+        return self.__async_notifier
 
-        :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
+    @async_notifier.setter
+    def async_notifier(self, value: Optional[Notifier]) -> None:
         """
-        if self.__async_notifier is not None:
-            self.__async_notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+        Set notifier for reporting received and sent CAN Frames to async listeners.
+
+        :param value: Value of notifier to set.
+
+        :raise TypeError: Value is not None neither Notifier type.
+        """
+        if value is None:
             self.__async_notifier = None
-            if not suppress_warning:
-                warn(message="Asynchronous (`PyCanTransportInterface.async_send_packet`, "
-                             "`PyCanTransportInterface.async_receive_packet methods`) "
-                             "and synchronous (`PyCanTransportInterface.send_packet`, "
-                             "`PyCanTransportInterface.receive_packet methods`) shall not be used together.",
+        elif isinstance(value, Notifier):
+            self.__async_notifier = value
+            if self.__async_notifier.timeout > self._MIN_NOTIFIER_TIMEOUT:
+                self.__async_notifier.timeout = self._MIN_NOTIFIER_TIMEOUT
+                warn(message=f"Asynchronous Notifier's timeout value was changed to {self._MIN_NOTIFIER_TIMEOUT}[s] "
+                             f"due to performance reasons.",
                      category=UserWarning)
+        else:
+            raise TypeError(f"Provided value is not None neither Notifier type. Actual type: {type(value)}.")
 
-    def __setup_notifier(self) -> None:
+    def __setup_sync_listening(self) -> None:
         """Configure CAN frame notifier for synchronous communication."""
-        self.__teardown_async_notifier()
-        if self.__notifier is None:
-            self.__notifier = Notifier(bus=self.network_manager,
-                                       listeners=[self.__rx_frames_buffer,
-                                                  self.__tx_frames_buffer],
-                                       timeout=self._MIN_NOTIFIER_TIMEOUT)
+        self.__teardown_async_listening()
+        self.__rx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__tx_frames_buffer.is_stopped = False  # noqa: vulture
+        if self.notifier is None or self.notifier.stopped:
+            self.notifier = Notifier(bus=self.network_manager,
+                                     listeners=[self.__rx_frames_buffer,
+                                                self.__tx_frames_buffer],
+                                     timeout=self._MIN_NOTIFIER_TIMEOUT)
+        if self.network_manager != self.notifier.bus and self.network_manager not in self.notifier.bus:
+            self.notifier.add_bus(self.network_manager)
+        if self.__rx_frames_buffer not in self.notifier.listeners:
+            self.notifier.add_listener(self.__rx_frames_buffer)
+        if self.__tx_frames_buffer not in self.notifier.listeners:
+            self.notifier.add_listener(self.__tx_frames_buffer)
 
-    def __setup_async_notifier(self, loop: AbstractEventLoop) -> None:
+    def __setup_async_listening(self, loop: AbstractEventLoop) -> None:
         """
         Configure CAN frame notifier for asynchronous communication.
 
         :param loop: An :mod:`asyncio` event loop to use.
         """
-        self.__teardown_notifier()
-        if self.__async_notifier is None:
-            self.__async_notifier = Notifier(bus=self.network_manager,
-                                             listeners=[self.__async_rx_frames_buffer,
-                                                        self.__async_tx_frames_buffer],
-                                             timeout=self._MIN_NOTIFIER_TIMEOUT,
-                                             loop=loop)
+        self.__teardown_sync_listening()
+        self.__async_rx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__async_tx_frames_buffer.is_stopped = False  # noqa: vulture
+        if self.async_notifier is None or self.async_notifier.stopped:
+            self.async_notifier = Notifier(bus=self.network_manager,
+                                           listeners=[self.__async_rx_frames_buffer,
+                                                      self.__async_tx_frames_buffer],
+                                           timeout=self._MIN_NOTIFIER_TIMEOUT,
+                                           loop=loop)
+        if self.network_manager != self.async_notifier.bus and self.network_manager not in self.async_notifier.bus:
+            self.async_notifier.add_bus(self.network_manager)
+        if self.__async_rx_frames_buffer not in self.async_notifier.listeners:
+            self.async_notifier.add_listener(self.__async_rx_frames_buffer)
+        if self.__async_tx_frames_buffer not in self.async_notifier.listeners:
+            self.async_notifier.add_listener(self.__async_tx_frames_buffer)
+
+    def __teardown_sync_listening(self, suppress_warning: bool = False) -> None:
+        """
+        Stop and remove CAN frame notifier for synchronous communication.
+
+        :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
+        """
+        if self.notifier is not None:
+            self.notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+            self.notifier = None
+            if not suppress_warning:
+                warn(message="Notifier (python-can) was stopped. "
+                             "Asynchronous (`PyCanTransportInterface.async_send_packet`, "
+                             "`PyCanTransportInterface.async_receive_packet methods`) "
+                             "and synchronous (`PyCanTransportInterface.send_packet`, "
+                             "`PyCanTransportInterface.receive_packet methods`) calls shall not be used together.",
+                     category=UserWarning)
+
+    def __teardown_async_listening(self, suppress_warning: bool = False) -> None:
+        """
+        Stop and remove CAN frame notifier for asynchronous communication.
+
+        :param suppress_warning: Do not warn about mixing Synchronous and Asynchronous implementation.
+        """
+        if self.async_notifier is not None:
+            self.async_notifier.stop(self._MIN_NOTIFIER_TIMEOUT)
+            self.async_notifier = None
+            if not suppress_warning:
+                warn(message="Async notifier (python-can) was stopped. "
+                             "Asynchronous (`PyCanTransportInterface.async_send_packet`, "
+                             "`PyCanTransportInterface.async_receive_packet methods`) "
+                             "and synchronous (`PyCanTransportInterface.send_packet`, "
+                             "`PyCanTransportInterface.receive_packet methods`) calls shall not be used together.",
+                     category=UserWarning)
 
     @staticmethod
     def __validate_timeout(value: Optional[TimeMillisecondsAlias]) -> None:
@@ -261,17 +341,15 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        if timeout is not None:
-            timestamp_timeout = perf_counter() + timeout / 1000.
-        else:
-            timeout_left_s = self._MAX_LISTENER_TIMEOUT
+        timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timeout / 1000.
+        timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
+        received_frame = None
         while packet_addressing_type is None:
-            if timeout is not None:
-                timestamp_now = perf_counter()
-                timeout_left_s = timestamp_timeout - timestamp_now
-                if timeout_left_s <= 0:
-                    raise TimeoutError("Timeout was reached before a CAN packet was received.")
+            timestamp_now = perf_counter()
+            timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
+            if timeout_left_s <= 0:
+                raise TimeoutError("Timeout was reached before a CAN packet was received.")
             received_frame = buffer.get_message(timeout=timeout_left_s)
             if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
@@ -297,31 +375,25 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about received CAN packet.
         """
-        if timeout is not None:
-            timeout_left_s = timeout / 1000.
-            timestamp_timeout = perf_counter() + timeout_left_s
-        else:
-            timeout_left_s = None
+        timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timeout / 1000.
+        timestamp_timeout = perf_counter() + timeout_left_s
         packet_addressing_type = None
+        received_frame = None
         while packet_addressing_type is None:
-            if timeout is not None:
-                timestamp_now = perf_counter()
-                timeout_left_s = timestamp_timeout - timestamp_now
-                if timeout_left_s <= 0:
-                    raise TimeoutError("Timeout was reached before a CAN packet was received.")
-            try:
-                received_frame = await wait_for(buffer.get_message(), timeout=timeout_left_s)
-            except (TimeoutError, AsyncioTimeoutError):
-                pass
-            else:
+            timestamp_now = perf_counter()
+            timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
+            if timeout_left_s <= 0:
+                raise TimeoutError("Timeout was reached before a CAN packet was received.")
+            received_frame = await wait_for(buffer.get_message(), timeout=timeout_left_s)
+            if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
-        return CanPacketRecord(frame=received_frame,
+        return CanPacketRecord(frame=received_frame,  # type: ignore
                                direction=TransmissionDirection.RECEIVED,
                                addressing_type=packet_addressing_type,
                                addressing_format=self.segmenter.addressing_format,
-                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))
+                               transmission_time=datetime.fromtimestamp(received_frame.timestamp))  # type: ignore
 
     def _receive_cf_packets_block(self,
                                   sequence_number: int,
@@ -654,24 +726,24 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         is_flow_control_packet = packet.packet_type == CanPacketType.FLOW_CONTROL
         timeout_ms = self.n_ar_timeout if is_flow_control_packet else self.n_as_timeout
         fd = self.can_version == CanVersion.CAN_FD or CanDlcHandler.is_can_fd_specific_dlc(packet.dlc)
-        can_frame = PythonCanMessage(arbitration_id=packet.can_id,
-                                     is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
-                                     data=packet.raw_frame_data,
-                                     is_fd=fd,
-                                     is_rx=False,
-                                     is_error_frame=False,
-                                     is_remote_frame=False)
+        can_frame = PythonCanFrame(arbitration_id=packet.can_id,
+                                   is_extended_id=CanIdHandler.is_extended_can_id(packet.can_id),
+                                   data=packet.raw_frame_data,
+                                   is_fd=fd,
+                                   is_rx=False,
+                                   is_error_frame=False,
+                                   is_remote_frame=False)
         timestamp_start = time()
         self.network_manager.send(msg=can_frame, timeout=timeout_ms / 1000.)
         timestamp_sent = time()
-        sent_frame = PythonCanMessage(arbitration_id=can_frame.arbitration_id,
-                                      is_extended_id=can_frame.is_extended_id,
-                                      data=can_frame.data,
-                                      is_fd=can_frame.is_fd,
-                                      is_rx=False,
-                                      is_error_frame=False,
-                                      is_remote_frame=False,
-                                      timestamp=timestamp_sent)
+        sent_frame = PythonCanFrame(arbitration_id=can_frame.arbitration_id,
+                                    is_extended_id=can_frame.is_extended_id,
+                                    data=can_frame.data,
+                                    is_fd=can_frame.is_fd,
+                                    is_rx=False,
+                                    is_error_frame=False,
+                                    is_remote_frame=False,
+                                    timestamp=timestamp_sent)
         transmission_time = datetime.fromtimestamp(sent_frame.timestamp)
         if is_flow_control_packet:
             self._update_n_ar_measured((timestamp_sent - timestamp_start) * 1000.)
@@ -708,7 +780,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about received CAN packet.
         """
         self.__validate_timeout(timeout)
-        self.__setup_notifier()
+        self.__setup_sync_listening()
         return self._wait_for_packet(buffer=self.__rx_frames_buffer, timeout=timeout)
 
     async def async_receive_packet(self,
@@ -725,7 +797,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         """
         self.__validate_timeout(timeout)
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
-        self.__setup_async_notifier(loop=loop)
+        self.__setup_async_listening(loop=loop)
         return await self._async_wait_for_packet(buffer=self.__async_rx_frames_buffer, timeout=timeout)
 
     def send_message(self, message: UdsMessage) -> UdsMessageRecord:
@@ -742,7 +814,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
 
         :return: Record with historic information about transmitted UDS message.
         """
-        self.__setup_notifier()
+        self.__setup_sync_listening()
         self.clear_tx_frames_buffers()
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [self.send_packet(packets_to_send.pop(0))]
@@ -787,7 +859,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :return: Record with historic information about transmitted UDS message.
         """
         loop = loop if isinstance(loop, AbstractEventLoop) else get_running_loop()
-        self.__setup_async_notifier(loop)
+        self.__setup_async_listening(loop)
         self.clear_tx_frames_buffers()
         packets_to_send = list(self.segmenter.segmentation(message))
         packet_records = [await self.async_send_packet(packets_to_send.pop(0), loop=loop)]
@@ -846,7 +918,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
             timestamp_end_timeout = timestamp_now + end_timeout / 1000.
         else:
             timestamp_end_timeout = None
-        self.__setup_notifier()
+        self.__setup_sync_listening()
         while True:
             # calculate remaining timeout
             if start_timeout is not None:
@@ -900,7 +972,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         else:
             timestamp_end_timeout = None
         loop = get_running_loop() if loop is None else loop
-        self.__setup_async_notifier(loop=loop)
+        self.__setup_async_listening(loop=loop)
         while True:
             # calculate remaining timeout
             if start_timeout is not None:

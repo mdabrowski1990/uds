@@ -15,6 +15,7 @@ pep8:
 
 pylint:
   options:
+    max-module-lines: 2000
     max-line-length: 120
     max-args: 12
     max-positional-arguments: 12
