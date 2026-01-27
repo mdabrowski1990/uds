@@ -268,7 +268,7 @@ class TestUdsMessageRecord:
     ])
     def test_transmission_start__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.transmission_start.fget(self.mock_uds_message_record) \
+        assert UdsMessageRecord.transmission_start_time.fget(self.mock_uds_message_record) \
                == packets_records[0].transmission_time
 
     # transmission_end
@@ -281,5 +281,5 @@ class TestUdsMessageRecord:
     ])
     def test_transmission_end__get(self, packets_records):
         self.mock_uds_message_record.packets_records = packets_records
-        assert UdsMessageRecord.transmission_end.fget(self.mock_uds_message_record) \
+        assert UdsMessageRecord.transmission_end_time.fget(self.mock_uds_message_record) \
                == packets_records[-1].transmission_time

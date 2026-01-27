@@ -61,7 +61,8 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
     def __init__(self,
                  frame: Any,
                  direction: TransmissionDirection,
-                 transmission_time: datetime) -> None:
+                 transmission_time: datetime,
+                 transmission_timestamp: float) -> None:
         """
         Create a record of historic information about a packet.
 
@@ -72,6 +73,7 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         self.frame = frame
         self.direction = direction
         self.transmission_time = transmission_time
+        self.transmission_timestamp = transmission_timestamp
         self._validate_attributes()
 
     def __str__(self) -> str:
@@ -123,13 +125,13 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
 
     @property
     def transmission_time(self) -> datetime:
-        """Time when this packet was fully transmitted on a bus/network."""
+        """Time when this packet was transmitted on a bus/network."""
         return self.__transmission_time
 
     @transmission_time.setter
     def transmission_time(self, value: datetime) -> None:
         """
-        Set value when this packet was transmitted on a bus/network.
+        Set time value when this packet was transmitted on a bus/network.
 
         :param value: Value of transmission time to set.
 
@@ -141,6 +143,27 @@ class AbstractPacketRecord(AbstractPacketContainer, ABC):
         if hasattr(self, "_AbstractPacketRecord__transmission_time"):
             raise ReassignmentError("Value of 'transmission_time' attribute cannot be changed once assigned.")
         self.__transmission_time = value
+
+    @property
+    def transmission_timestamp(self) -> float:
+        """Timestamp when this packet was transmitted on a bus/network."""
+        return self.__transmission_timestamp
+
+    @transmission_timestamp.setter
+    def transmission_timestamp(self, value: float) -> None:
+        """
+        Set timestamp value when this packet was transmitted on a bus/network.
+
+        :param value: Value of transmission timestamp to set.
+
+        :raise TypeError: Provided value is not float type.
+        :raise ReassignmentError: An attempt to change the value after object creation.
+        """
+        if not isinstance(value, float):
+            raise TypeError(f"Provided value is not float type. Actual type: {type(value)}.")
+        if hasattr(self, "_AbstractPacketRecord__transmission_timestamp"):
+            raise ReassignmentError("Value of 'transmission_timestamp' attribute cannot be changed once assigned.")
+        self.__transmission_timestamp = value
 
     @staticmethod
     @abstractmethod

@@ -379,7 +379,7 @@ class Client:
         :param request_record: Record of the last transmitted request message.
         :param response_records: Records of received responses to provided message.
         """
-        p2_measured = response_records[0].transmission_start - request_record.transmission_end
+        p2_measured = response_records[0].transmission_start_time - request_record.transmission_end_time
         if p2_measured.total_seconds() > 0:
             self._update_p2_client_measured(p2_measured.total_seconds() * 1000.)
         else:
@@ -388,13 +388,13 @@ class Client:
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
-                _p2_ext_measured = response_record.transmission_end - response_records[i].transmission_end
+                _p2_ext_measured = response_record.transmission_end_time - response_records[i].transmission_end_time
                 p2_ext_measured_list.append(_p2_ext_measured.total_seconds() * 1000.)
-            p6_ext_measured = response_records[-1].transmission_end - request_record.transmission_end
+            p6_ext_measured = response_records[-1].transmission_end_time - request_record.transmission_end_time
             self._update_p2_ext_client_measured(*p2_ext_measured_list)
             self._update_p6_ext_client_measured(p6_ext_measured.total_seconds() * 1000.)
         else:
-            p6_measured = response_records[-1].transmission_end - request_record.transmission_end
+            p6_measured = response_records[-1].transmission_end_time - request_record.transmission_end_time
             if p6_measured.total_seconds() > 0:
                 self._update_p6_client_measured(p6_measured.total_seconds() * 1000.)
             else:
@@ -631,7 +631,7 @@ class Client:
         if not isinstance(request, UdsMessage):
             raise TypeError("Provided request value is not an instance of UdsMessage class.")
         request_record = self.transport_interface.send_message(request)
-        time_request_sent = request_record.transmission_end.timestamp()
+        time_request_sent = request_record.transmission_end_time.timestamp()
         sid = RequestSID(request_record.payload[0])
         response_records: List[UdsMessageRecord] = []
         time_elapsed_ms = (time() - time_request_sent) * 1000.
@@ -648,7 +648,7 @@ class Client:
         timestamp_p6_ext_timeout = time_request_sent + self.p6_ext_client_timeout / 1000.
         while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
             timestamp_now = time()
-            timestamp_p2_ext_timeout = (response_records[-1].transmission_end.timestamp()
+            timestamp_p2_ext_timeout = (response_records[-1].transmission_end_time.timestamp()
                                         + self.p2_ext_client_timeout / 1000.)
             remaining_p2_ext_timeout = (timestamp_p2_ext_timeout - timestamp_now) * 1000.
             remaining_p6_ext_timeout = (timestamp_p6_ext_timeout - timestamp_now) * 1000.

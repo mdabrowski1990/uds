@@ -638,7 +638,7 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # timing parameters
@@ -646,8 +646,8 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
+                    <= message_record.transmission_start_time
+                    == message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("message", [
@@ -678,7 +678,7 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # timing parameters
@@ -686,8 +686,8 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
+                    <= message_record.transmission_start_time
+                    == message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("message", [
@@ -735,14 +735,14 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
+                    <= message_record.transmission_start_time
+                    == message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("message", [
@@ -793,14 +793,14 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
+                    <= message_record.transmission_start_time
+                    == message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("message", [
@@ -963,7 +963,7 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         assert len(message_record.packets_records) > 1
         assert message_record.packets_records[0].packet_type == CanPacketType.FIRST_FRAME
         assert message_record.packets_records[0].direction == TransmissionDirection.TRANSMITTED
@@ -978,8 +978,8 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
+                    <= message_record.transmission_start_time)
+            assert (message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
             assert (send_after - self.TASK_TIMING_TOLERANCE
                     <= can_transport_interface.n_bs_measured[0]
@@ -1035,7 +1035,7 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         assert len(message_record.packets_records) > 1
         assert message_record.packets_records[0].packet_type == CanPacketType.FIRST_FRAME
         assert message_record.packets_records[0].direction == TransmissionDirection.TRANSMITTED
@@ -1050,8 +1050,8 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
+                    <= message_record.transmission_start_time)
+            assert (message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
             assert (send_after - self.TASK_TIMING_TOLERANCE
                     <= can_transport_interface.n_bs_measured[0]
@@ -1207,12 +1207,12 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
+                    <= message_record.transmission_start_time)
+            assert (message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("message", [
@@ -1271,12 +1271,12 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
+                    <= message_record.transmission_start_time)
+            assert (message_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("message", [
