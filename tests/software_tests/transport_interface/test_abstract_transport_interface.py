@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock
+from mock import Mock, patch
 
 from uds.transport_interface.abstract_transport_interface import AbstractTransportInterface, ReassignmentError
 
@@ -11,6 +11,12 @@ class TestAbstractTransportInterface:
 
     def setup_method(self):
         self.mock_transport_interface = Mock(spec=AbstractTransportInterface)
+        # patching
+        self._patcher_time_sync = patch(f"{SCRIPT_LOCATION}.TimeSync")
+        self.mock_time_sync = self._patcher_time_sync.start()
+
+    def teardown_method(self):
+        self._patcher_time_sync.stop()
 
     # __init__
 
@@ -22,6 +28,14 @@ class TestAbstractTransportInterface:
         assert AbstractTransportInterface.__init__(self.mock_transport_interface,
                                                    network_manager=network_manager) is None
         assert self.mock_transport_interface.network_manager == network_manager
+        assert self.mock_transport_interface._AbstractTransportInterface__time_sync == self.mock_time_sync.return_value
+
+    # time_sync
+
+    def test_time_sync__get(self):
+        self.mock_transport_interface._AbstractTransportInterface__time_sync = Mock()
+        assert (AbstractTransportInterface.time_sync.fget(self.mock_transport_interface)
+                == self.mock_transport_interface._AbstractTransportInterface__time_sync)
 
     # addressing_information
 

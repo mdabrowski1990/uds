@@ -5,7 +5,7 @@ __all__ = ["CanPacketRecord", "CanFrameAlias"]
 from datetime import datetime
 from typing import Any, Union
 
-from can import Message as PythonCanMessage
+from can import Message as PythonCanFrame
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.packet import AbstractPacketRecord
 from uds.utilities import ReassignmentError, bytes_to_hex
@@ -14,7 +14,7 @@ from ..addressing import CanAddressingFormat, CanAddressingInformation
 from .abstract_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
-CanFrameAlias = Union[PythonCanMessage]
+CanFrameAlias = Union[PythonCanFrame]
 """Alias of supported CAN frames objects."""
 
 
@@ -69,7 +69,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :raise NotImplementedError: There is missing implementation for the stored CAN Frame object type.
         """
-        if isinstance(self.frame, PythonCanMessage):
+        if isinstance(self.frame, PythonCanFrame):
             return self.frame.arbitration_id
         raise NotImplementedError("Missing implementation for the currently stored CAN frame type: "
                                   f"{type(self.frame)}.")
@@ -81,7 +81,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :raise NotImplementedError: There is missing implementation for the stored CAN Frame object type.
         """
-        if isinstance(self.frame, PythonCanMessage):
+        if isinstance(self.frame, PythonCanFrame):
             return bytes(self.frame.data)
         raise NotImplementedError("Missing implementation for the currently stored CAN frame type: "
                                   f"{type(self.frame)}.")
@@ -129,7 +129,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :raise TypeError: Provided frame object has unsupported type.
         """
-        if isinstance(value, PythonCanMessage):
+        if isinstance(value, PythonCanFrame):
             return None
         raise TypeError(f"Unsupported CAN Frame type was provided. Actual type: {type(value)}")
 

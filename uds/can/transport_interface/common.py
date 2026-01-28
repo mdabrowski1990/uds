@@ -523,8 +523,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             n_bs_measured = []
             for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.FLOW_CONTROL:
-                    n_bs = packet_record.transmission_time - message_record.packets_records[i].transmission_time
-                    n_bs_measured.append(round(n_bs.total_seconds() * 1000, 3))
+                    n_bs = (packet_record.transmission_timestamp
+                            - message_record.packets_records[i].transmission_timestamp)
+                    n_bs_measured.append(round(n_bs * 1000, 3))
             self.__n_bs_measured = tuple(n_bs_measured)
 
     def _update_n_cr_measured(self, message_record: UdsMessageRecord) -> None:
@@ -546,8 +547,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
             n_cr_measured = []
             for i, packet_record in enumerate(message_record.packets_records[1:]):
                 if packet_record.packet_type == CanPacketType.CONSECUTIVE_FRAME:
-                    n_cr = packet_record.transmission_time - message_record.packets_records[i].transmission_time
-                    n_cr_measured.append(round(n_cr.total_seconds() * 1000, 3))
+                    n_cr = (packet_record.transmission_timestamp
+                            - message_record.packets_records[i].transmission_timestamp)
+                    n_cr_measured.append(round(n_cr * 1000, 3))
             self.__n_cr_measured = tuple(n_cr_measured)
 
     def clear_measurements(self) -> None:

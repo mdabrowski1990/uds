@@ -5,7 +5,7 @@ __all__ = ["Client"]
 from functools import wraps
 from queue import Empty, SimpleQueue
 from threading import Event, Thread
-from time import perf_counter, time
+from time import perf_counter
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
@@ -379,27 +379,21 @@ class Client:
         :param request_record: Record of the last transmitted request message.
         :param response_records: Records of received responses to provided message.
         """
-        p2_measured = response_records[0].transmission_start_time - request_record.transmission_end_time
-        if p2_measured.total_seconds() > 0:
-            self._update_p2_client_measured(p2_measured.total_seconds() * 1000.)
-        else:
-            warn("Measured P2Client value is negative. Check Transport Interface accuracy.",
-                 category=RuntimeWarning)
+        p2_measured = response_records[0].transmission_start_timestamp - request_record.transmission_end_timestamp
+        self._update_p2_client_measured(round(p2_measured * 1000., 3))
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
-                _p2_ext_measured = response_record.transmission_end_time - response_records[i].transmission_end_time
-                p2_ext_measured_list.append(_p2_ext_measured.total_seconds() * 1000.)
-            p6_ext_measured = response_records[-1].transmission_end_time - request_record.transmission_end_time
+                _p2_ext_measured = (response_record.transmission_end_timestamp
+                                    - response_records[i].transmission_end_timestamp)
+                p2_ext_measured_list.append(round(_p2_ext_measured * 1000., 3))
+            p6_ext_measured = (response_records[-1].transmission_end_timestamp
+                               - request_record.transmission_end_timestamp)
             self._update_p2_ext_client_measured(*p2_ext_measured_list)
-            self._update_p6_ext_client_measured(p6_ext_measured.total_seconds() * 1000.)
+            self._update_p6_ext_client_measured(round(p6_ext_measured * 1000., 3))
         else:
-            p6_measured = response_records[-1].transmission_end_time - request_record.transmission_end_time
-            if p6_measured.total_seconds() > 0:
-                self._update_p6_client_measured(p6_measured.total_seconds() * 1000.)
-            else:
-                warn("Measured P6Client value is negative. Check Transport Interface accuracy.",
-                     category=RuntimeWarning)
+            p6_measured = response_records[-1].transmission_end_timestamp - request_record.transmission_end_timestamp
+            self._update_p6_client_measured(round(p6_measured * 1000., 3))
 
     def _receive_response(self,
                           sid: RequestSID,
@@ -631,10 +625,10 @@ class Client:
         if not isinstance(request, UdsMessage):
             raise TypeError("Provided request value is not an instance of UdsMessage class.")
         request_record = self.transport_interface.send_message(request)
-        time_request_sent = request_record.transmission_end_time.timestamp()
+        timestamp_request_sent = request_record.transmission_end_timestamp
         sid = RequestSID(request_record.payload[0])
         response_records: List[UdsMessageRecord] = []
-        time_elapsed_ms = (time() - time_request_sent) * 1000.
+        time_elapsed_ms = (perf_counter() - timestamp_request_sent) * 1000.
         # get the first response (either final response or negative response with response pending nrc)
         try:
             response_record = self._receive_response(sid=sid,
@@ -645,10 +639,10 @@ class Client:
         if response_record is None:  # timeout achieved - no response
             return request_record, tuple()
         response_records.append(response_record)
-        timestamp_p6_ext_timeout = time_request_sent + self.p6_ext_client_timeout / 1000.
+        timestamp_p6_ext_timeout = timestamp_request_sent + self.p6_ext_client_timeout / 1000.
         while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
-            timestamp_now = time()
-            timestamp_p2_ext_timeout = (response_records[-1].transmission_end_time.timestamp()
+            timestamp_now = perf_counter()
+            timestamp_p2_ext_timeout = (response_records[-1].transmission_end_timestamp
                                         + self.p2_ext_client_timeout / 1000.)
             remaining_p2_ext_timeout = (timestamp_p2_ext_timeout - timestamp_now) * 1000.
             remaining_p6_ext_timeout = (timestamp_p6_ext_timeout - timestamp_now) * 1000.

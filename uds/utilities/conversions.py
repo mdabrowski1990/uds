@@ -8,7 +8,6 @@ __all__ = [
 ]
 
 import re
-from threading import Lock
 from time import perf_counter, time
 from typing import Any, Callable, Optional, Union
 
@@ -203,19 +202,18 @@ class TimeSync:
         if not hasattr(self, "_TimeSync__sync_expiration"):
             self.sync_expiration = self.DEFAULT_SYNC_EXPIRATION
         if not hasattr(self, "_TimeSync__last_sync_timestamp"):
-            self.__last_sync_timestamp = None
+            self.__last_sync_timestamp: Optional[float] = None
         if not hasattr(self, "_TimeSync__offset"):
-            self.__offset = None
+            self.__offset: Optional[float] = None
         if samples_number is not None:
             self.samples_number = samples_number
         if sync_expiration is not None:
             self.sync_expiration = sync_expiration
 
-    def __new__(cls, *args: Any, **kwargs: Any):
+    def __new__(cls, *args: Any, **kwargs: Any) -> "TimeSync":
         """Return existing instance if one exists, otherwise create one."""
-        with Lock():
-            if cls._instance is None:
-                cls._instance = super(TimeSync, cls).__new__(cls)
+        if cls._instance is None:
+            cls._instance = super(TimeSync, cls).__new__(cls)
         return cls._instance
 
     @property
@@ -291,7 +289,7 @@ class TimeSync:
                 best_offset = time_value - mid_perf
         self.__offset = best_offset
         self.__last_sync_timestamp = perf_counter()
-        return self.offset
+        return self.offset  # type: ignore
 
     def time_to_perf_counter(self,
                              time_value: float,
@@ -308,7 +306,7 @@ class TimeSync:
         """
         if self.is_sync_outdated:
             self.sync()
-        converted_value = time_value - self.offset
+        converted_value = time_value - self.offset  # type: ignore
         if min_value is not None and min_value > converted_value:
             return min_value
         if max_value is not None and max_value < converted_value:
@@ -330,7 +328,7 @@ class TimeSync:
         """
         if self.is_sync_outdated:
             self.sync()
-        converted_value = perf_counter_value + self.offset
+        converted_value = perf_counter_value + self.offset  # type: ignore
         if min_value is not None and min_value > converted_value:
             return min_value
         if max_value is not None and max_value < converted_value:
