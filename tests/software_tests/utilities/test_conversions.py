@@ -1,20 +1,21 @@
-import pytest
-from mock import Mock, patch, MagicMock
-
 from time import perf_counter, time
+
+import pytest
+from mock import MagicMock, Mock, patch
 
 from uds.utilities.conversions import (
     MAX_DTC_VALUE,
     MIN_DTC_VALUE,
     Endianness,
     InconsistencyError,
+    TimeSync,
     bytes_to_hex,
     bytes_to_int,
     get_signed_value_decoding_formula,
     get_signed_value_encoding_formula,
     int_to_bytes,
     int_to_obd_dtc,
-    obd_dtc_to_int, TimeSync
+    obd_dtc_to_int,
 )
 
 SCRIPT_LOCATION = "uds.utilities.conversions"

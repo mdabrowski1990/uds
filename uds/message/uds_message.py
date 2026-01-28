@@ -144,8 +144,10 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
                 f"payload={bytes_to_hex(self.payload)}, "
                 f"addressing_type={self.addressing_type}, "
                 f"direction={self.direction}, "
-                f"transmission_start={self.transmission_start_time}, "
-                f"transmission_end={self.transmission_end_time})")
+                f"transmission_start_time={self.transmission_start_time}, "
+                f"transmission_start_timestamp={self.transmission_start_timestamp}, "
+                f"transmission_end_time={self.transmission_end_time}, "
+                f"transmission_end_timestamp={self.transmission_end_timestamp})")
 
     @staticmethod
     def __validate_packets_records(value: PacketsRecordsSequence) -> None:
@@ -215,34 +217,34 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
     @property
     def transmission_start_time(self) -> datetime:
         """
-        Get time when message initiated.
+        Get time when message was initiated.
 
         :return: Time when transmission of this message was initiated.
         """
         return self.packets_records[0].transmission_time
 
     @property
-    def transmission_end_time(self) -> datetime:
-        """
-        Get time when message sent.
-
-        :return: Time when transmission of this message was completed.
-        """
-        return self.packets_records[-1].transmission_time
-
-    @property
     def transmission_start_timestamp(self) -> float:
         """
-        Get timestamp when message initiated.
+        Get timestamp when message was initiated.
 
         :return: Timestamp when transmission of this message was initiated.
         """
         return self.packets_records[0].transmission_timestamp
 
     @property
+    def transmission_end_time(self) -> datetime:
+        """
+        Get time when message was sent.
+
+        :return: Time when transmission of this message was completed.
+        """
+        return self.packets_records[-1].transmission_time
+
+    @property
     def transmission_end_timestamp(self) -> float:
         """
-        Get timestamp when message sent.
+        Get timestamp when message was sent.
 
         :return: Timestamp when transmission of this message was completed.
         """

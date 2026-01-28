@@ -10,7 +10,7 @@ __all__ = [
 import re
 from threading import Lock
 from time import perf_counter, time
-from typing import Callable, Optional, Union, Any
+from typing import Any, Callable, Optional, Union
 
 from .common_types import RawBytesAlias, validate_raw_bytes
 from .constants import BITS_TO_DTC_CHARACTER_MAPPING, DTC_CHARACTERS_MAPPING, MAX_DTC_VALUE, MIN_DTC_VALUE
