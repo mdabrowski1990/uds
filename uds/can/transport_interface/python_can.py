@@ -364,7 +364,7 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
                                transmission_time=frame_datetime,
                                transmission_timestamp=frame_timestamp)
 
-    async def _async_wait_for_packet(self,  # TODO: optimize
+    async def _async_wait_for_packet(self,
                                      buffer: AsyncBufferedReader,
                                      timeout: Optional[TimeMillisecondsAlias] = None) -> CanPacketRecord:
         """

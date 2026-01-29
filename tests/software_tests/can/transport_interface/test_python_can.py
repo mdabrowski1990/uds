@@ -714,10 +714,9 @@ class TestPyCanTransportInterface:
                                                         __mul__=lambda this, other: this,
                                                         __le__=mock_is_timeout_reached)
         self.mock_can_transport_interface.addressing_information.is_input_packet.return_value = None
-        mock_frames_buffer = Mock()
         with pytest.raises(TimeoutError):
             await PyCanTransportInterface._async_wait_for_packet(self.mock_can_transport_interface,
-                                                                 buffer=mock_frames_buffer,
+                                                                 buffer=Mock(),
                                                                  timeout=timeout)
         self.mock_can_transport_interface.addressing_information.is_input_packet.assert_has_calls(
             [
@@ -738,20 +737,19 @@ class TestPyCanTransportInterface:
             __add__=lambda this, other: this,
             __mul__=lambda this, other: this,
             __le__=mock_is_timeout_reached)
-        mock_get_message = Mock()
-        mock_frames_buffer = Mock(get_message=mock_get_message)
         assert (await PyCanTransportInterface._async_wait_for_packet(self.mock_can_transport_interface,
-                                                                     buffer=mock_frames_buffer,
+                                                                     buffer=Mock(),
                                                                      timeout=timeout)
                 == self.mock_can_packet_record.return_value)
-        self.mock_datetime.fromtimestamp.assert_called_once_with(mock_get_message.return_value.timestamp)
+        mock_frame = self.mock_create_task.return_value.result.return_value
+        self.mock_datetime.fromtimestamp.assert_called_once_with(mock_frame.timestamp)
         self.mock_can_transport_interface.time_sync.time_to_perf_counter.assert_called_once_with(
-            mock_get_message.return_value.timestamp)
+            mock_frame.timestamp)
         self.mock_can_transport_interface.addressing_information.is_input_packet.assert_called_once_with(
-            can_id=mock_get_message.return_value.arbitration_id,
-            raw_frame_data=mock_get_message.return_value.data)
+            can_id=mock_frame.arbitration_id,
+            raw_frame_data=mock_frame.data)
         self.mock_can_packet_record.assert_called_once_with(
-            frame=mock_get_message.return_value,
+            frame=mock_frame,
             direction=TransmissionDirection.RECEIVED,
             addressing_type=self.mock_can_transport_interface.addressing_information.is_input_packet.return_value,
             addressing_format=self.mock_can_transport_interface.segmenter.addressing_format,
