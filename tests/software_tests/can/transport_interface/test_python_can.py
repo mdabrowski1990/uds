@@ -79,9 +79,10 @@ class TestPyCanTransportInterface:
         self.mock_sleep = self._patcher_sleep.start()
         self._patcher_async_sleep = patch(f"{SCRIPT_LOCATION}.async_sleep")
         self.mock_async_sleep = self._patcher_async_sleep.start()
-        self._patcher_wait_for = patch(f"{SCRIPT_LOCATION}.wait_for",
-                                       AsyncMock(side_effect=lambda *args, **kwargs: args[0]))
-        self.mock_wait_for = self._patcher_wait_for.start()
+        self._patcher_wait = patch(f"{SCRIPT_LOCATION}.wait")
+        self.mock_wait = self._patcher_wait.start()
+        self._patcher_create_task = patch(f"{SCRIPT_LOCATION}.create_task")
+        self.mock_create_task = self._patcher_create_task.start()
         self._patcher_get_running_loop = patch(f"{SCRIPT_LOCATION}.get_running_loop")
         self.mock_get_running_loop = self._patcher_get_running_loop.start()
 
@@ -104,7 +105,8 @@ class TestPyCanTransportInterface:
         self._patcher_datetime.stop()
         self._patcher_sleep.stop()
         self._patcher_async_sleep.stop()
-        self._patcher_wait_for.stop()
+        self._patcher_wait.stop()
+        self._patcher_create_task.stop()
         self._patcher_get_running_loop.stop()
 
     # __init__
@@ -711,13 +713,20 @@ class TestPyCanTransportInterface:
                                                         __add__=lambda this, other: this,
                                                         __mul__=lambda this, other: this,
                                                         __le__=mock_is_timeout_reached)
-        mock_get_message = Mock(return_value=None)
-        mock_frames_buffer = Mock(get_message=mock_get_message)
+        self.mock_can_transport_interface.addressing_information.is_input_packet.return_value = None
+        mock_frames_buffer = Mock()
         with pytest.raises(TimeoutError):
             await PyCanTransportInterface._async_wait_for_packet(self.mock_can_transport_interface,
                                                                  buffer=mock_frames_buffer,
                                                                  timeout=timeout)
-        mock_get_message.assert_called_once_with()
+        self.mock_can_transport_interface.addressing_information.is_input_packet.assert_has_calls(
+            [
+                call(
+                    can_id=self.mock_create_task.return_value.result.return_value.arbitration_id,
+                    raw_frame_data=self.mock_create_task.return_value.result.return_value.data)
+            ] * 2,
+            any_order=True
+        )
         assert mock_is_timeout_reached.call_count == 2
 
     @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])
