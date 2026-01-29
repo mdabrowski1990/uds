@@ -156,8 +156,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def __setup_sync_listening(self) -> None:
         """Configure CAN frame notifier for synchronous communication."""
         self.__teardown_async_listening()
-        self.__rx_frames_buffer.is_stopped = False  # noqa: vulture
-        self.__tx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__rx_frames_buffer = BufferedReader()
+        self.__tx_frames_buffer = BufferedReader()
         if self.notifier is None or self.notifier.stopped:
             self.notifier = Notifier(bus=self.network_manager,
                                      listeners=[self.__rx_frames_buffer,
@@ -177,8 +177,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param loop: An :mod:`asyncio` event loop to use.
         """
         self.__teardown_sync_listening()
-        self.__async_rx_frames_buffer.is_stopped = False  # noqa: vulture
-        self.__async_tx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__async_rx_frames_buffer = AsyncBufferedReader(loop=loop)
+        self.__async_tx_frames_buffer = AsyncBufferedReader(loop=loop)
         if self.async_notifier is None or self.async_notifier.stopped:
             self.async_notifier = Notifier(bus=self.network_manager,
                                            listeners=[self.__async_rx_frames_buffer,
@@ -386,15 +386,21 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while packet_addressing_type is None or received_frame is None:
             if receive_frame_task.done():
                 received_frame = receive_frame_task.result()
-                receive_frame_task = create_task(buffer.get_message())
+                if self.time_sync.time_to_perf_counter(time_value=received_frame.timestamp,
+                                                       max_value=perf_counter()) >= timestamp_timeout:
+                    raise TimeoutError("Timeout was reached before a CAN packet was received.")
             if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
+            if packet_addressing_type is not None:
+                break
             timestamp_now = perf_counter()
             timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
             if timeout_left_s <= 0:
                 raise TimeoutError("Timeout was reached before a CAN packet was received.")
+            if receive_frame_task.done():
+                receive_frame_task = create_task(buffer.get_message())
             await wait([receive_frame_task], timeout=timeout_left_s)
         receive_frame_task.cancel()
         frame_datetime = datetime.fromtimestamp(received_frame.timestamp)

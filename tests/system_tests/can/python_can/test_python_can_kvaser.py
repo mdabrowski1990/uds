@@ -31,32 +31,39 @@ class KvaserConfig(AbstractPythonCanTests):
 
 class TestKvaserCanPacket(AbstractCanPacketTests, KvaserConfig):
     """CAN packets related system tests for python-can Transport Interface."""
+    # TODO: remove - passing
 
 
 # Messages Transmission and Reception
 
 class TestKvaserUnsegmentedMessage(AbstractUnsegmentedMessageTests, KvaserConfig):
     """Unsegmented UDS message related system tests for python-can Transport Interface."""
+    # TODO: remove - passing
+
 
 
 class TestKvaserSegmentedMessage(AbstractSegmentedMessageTests, KvaserConfig):
     """Segmented UDS message related system tests for python-can Transport Interface."""
-    # TODO: test_async_receive_message__multi_packets__end_timeout failing
+    # TODO: remove - passing
 
 
 # Full Duplex
 
 class TestKvaserFullDuplex(AbstractFullDuplexTests, KvaserConfig):
     """Full-Duplex related system tests for python-can Transport Interface."""
+    # TODO: failing
 
 
 # Use-Cases
 
 class TestKvaserUseCase(AbstractUseCaseTests, KvaserConfig):
     """Use case based system tests for python-can Transport Interface."""
+    # TODO: test_async_send_message_on_one_receive_on_other_interface failing
+
 
 
 # Error Guessing
 
 class TestKvaserErrorGuessing(AbstractErrorGuessingTests, KvaserConfig):
     """Error guessing system tests for python-can Transport Interface."""
+    # TODO: remove - passing
