@@ -756,18 +756,13 @@ class TestPyCanTransportInterface:
                                                         __mul__=lambda this, other: this,
                                                         __le__=mock_is_timeout_reached)
         self.mock_can_transport_interface.addressing_information.is_input_packet.return_value = None
+        self.mock_create_task.return_value.done.return_value = False
         with pytest.raises(TimeoutError):
             await PyCanTransportInterface._async_wait_for_packet(self.mock_can_transport_interface,
                                                                  buffer=Mock(),
                                                                  timeout=timeout)
-        self.mock_can_transport_interface.addressing_information.is_input_packet.assert_has_calls(
-            [
-                call(
-                    can_id=self.mock_create_task.return_value.result.return_value.arbitration_id,
-                    raw_frame_data=self.mock_create_task.return_value.result.return_value.data)
-            ] * 2,
-            any_order=True
-        )
+        self.mock_can_transport_interface.addressing_information.is_input_packet.assert_not_called()
+        self.mock_create_task.return_value.cancel.assert_called_once_with()
         assert mock_is_timeout_reached.call_count == 2
 
     @pytest.mark.parametrize("timeout", [None, 0.001, 123.456])

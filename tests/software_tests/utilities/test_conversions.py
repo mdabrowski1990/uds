@@ -397,12 +397,16 @@ class TestTimeSync:
     # sync
 
     def test_sync(self):
-        self.mock_time_sync.samples_number = 3
+        self.mock_time_sync.samples_number = 4
         mock_time_sub = Mock(side_effect=lambda other: self.mock_time.return_value)
         self.mock_time.return_value = MagicMock(__sub__=mock_time_sub)
         mock_perf_counter_sub = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
-        mock_perf_counter_lt = Mock(return_value=True)
+        mock_perf_counter_add = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
+        mock_perf_counter_div = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
+        mock_perf_counter_lt = Mock(side_effect=[True, False, False, True])
         self.mock_perf_counter.return_value = MagicMock(__sub__=mock_perf_counter_sub,
+                                                        __add__=mock_perf_counter_add,
+                                                        __div__=mock_perf_counter_div,
                                                         __lt__=mock_perf_counter_lt)
         assert TimeSync.sync(self.mock_time_sync) is self.mock_time_sync.offset
         assert self.mock_time_sync._TimeSync__last_sync_timestamp == self.mock_perf_counter.return_value
