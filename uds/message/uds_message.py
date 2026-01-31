@@ -224,15 +224,6 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         return self.packets_records[0].transmission_time
 
     @property
-    def transmission_start_timestamp(self) -> float:
-        """
-        Get timestamp when message was initiated.
-
-        :return: Timestamp when transmission of this message was initiated.
-        """
-        return self.packets_records[0].transmission_timestamp
-
-    @property
     def transmission_end_time(self) -> datetime:
         """
         Get time when message was sent.
@@ -240,6 +231,15 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :return: Time when transmission of this message was completed.
         """
         return self.packets_records[-1].transmission_time
+
+    @property
+    def transmission_start_timestamp(self) -> float:
+        """
+        Get timestamp when message was initiated.
+
+        :return: Timestamp when transmission of this message was initiated.
+        """
+        return self.packets_records[0].transmission_timestamp
 
     @property
     def transmission_end_timestamp(self) -> float:

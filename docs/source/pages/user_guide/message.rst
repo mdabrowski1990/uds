@@ -71,8 +71,10 @@ Attributes:
 - :attr:`~uds.message.uds_message.UdsMessageRecord.addressing_type`
 - :attr:`~uds.message.uds_message.UdsMessageRecord.packets_records`
 - :attr:`~uds.message.uds_message.UdsMessageRecord.direction`
-- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start`
-- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start_time`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end_time`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_start_timestamp`
+- :attr:`~uds.message.uds_message.UdsMessageRecord.transmission_end_timestamp`
 
 Methods:
 
