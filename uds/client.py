@@ -51,13 +51,15 @@ class Client:
 
     DEFAULT_P2_CLIENT_TIMEOUT: TimeMillisecondsAlias = 100  # P2Client_max > P2Server_max (default: 50 ms)
     """Default value of :ref:`P2Client <knowledge-base-p2-client>` timeout."""
-    DEFAULT_P6_CLIENT_TIMEOUT: TimeMillisecondsAlias = 10000  # P6Client_max > P2Client_max
-    """Default value of :ref:`P6Client <knowledge-base-p6-client>` timeout."""
     DEFAULT_P2_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 5050  # P2*Client_max > P2*Server_max (default: 5000 ms)
     """Default value of :ref:`P2*Client <knowledge-base-p2*-client>` timeout."""
+    DEFAULT_P3_CLIENT: TimeMillisecondsAlias = DEFAULT_P2_CLIENT_TIMEOUT  # P3Client_Phys, P3Client_Func >= P2Client_max
+    """Default value of :ref:`P3Client <knowledge-base-p3-client>` time parameters."""
+    DEFAULT_P6_CLIENT_TIMEOUT: TimeMillisecondsAlias = 10000  # P6Client_max > P2Client_max
+    """Default value of :ref:`P6Client <knowledge-base-p6-client>` timeout."""
     DEFAULT_P6_EXT_CLIENT_TIMEOUT: TimeMillisecondsAlias = 50000  # P6*Client_max > P2*Client_max
     """Default value of :ref:`P6*Client <knowledge-base-p6*-client>` timeout."""
-    DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000
+    DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000  # S3Client >= P3Client_Phys, P3Client_Func
     """Default value of :ref:`S3Client <knowledge-base-s3-client>` time parameter."""
     DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 20
     """Default value of receiving task cycle."""
@@ -66,6 +68,8 @@ class Client:
                  transport_interface: AbstractTransportInterface,
                  p2_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_CLIENT_TIMEOUT,
                  p2_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P2_EXT_CLIENT_TIMEOUT,
+                 p3_client_physical: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
+                 p3_client_functional: TimeMillisecondsAlias = DEFAULT_P3_CLIENT,
                  p6_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_CLIENT_TIMEOUT,
                  p6_ext_client_timeout: TimeMillisecondsAlias = DEFAULT_P6_EXT_CLIENT_TIMEOUT,
                  s3_client: TimeMillisecondsAlias = DEFAULT_S3_CLIENT) -> None:
@@ -75,10 +79,13 @@ class Client:
         :param transport_interface: Transport Interface object for managing UDS communication.
         :param p2_client_timeout: Timeout value for P2Client parameter.
         :param p2_ext_client_timeout: Timeout value for P2*Client parameter.
+        :param p3_client_physical: Value of P3Client_Phys time parameter.
+        :param p3_client_physical: Value of P3Client_Func time parameter.
         :param p6_client_timeout: Timeout value for P6Client parameter.
         :param p6_ext_client_timeout: Timeout value for P*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
+        # set initial values
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
@@ -94,9 +101,20 @@ class Client:
         self.__receiving_break_event.clear()
         self.__receiving_not_in_progress.set()
         self.__tester_present_stop_event.set()
+        # set default values to avoid errors on values assignment
+        self.__p2_client_timeout = self.DEFAULT_P2_CLIENT_TIMEOUT
+        self.__p2_ext_client_timeout = self.DEFAULT_P2_EXT_CLIENT_TIMEOUT
+        self.__p3_client_physical = self.DEFAULT_P3_CLIENT
+        self.__p3_client_functional = self.DEFAULT_P3_CLIENT
+        self.__p6_client_timeout = self.DEFAULT_P6_CLIENT_TIMEOUT
+        self.__p6_ext_client_timeout = self.DEFAULT_P6_EXT_CLIENT_TIMEOUT
+        self.__s3_client = self.DEFAULT_S3_CLIENT
+        # values assignment
         self.transport_interface = transport_interface
         self.p2_client_timeout = p2_client_timeout
         self.p2_ext_client_timeout = p2_ext_client_timeout
+        self.p3_client_physical = p3_client_physical
+        self.p3_client_functional = p3_client_functional
         self.p6_client_timeout = p6_client_timeout
         self.p6_ext_client_timeout = p6_ext_client_timeout
         self.s3_client = s3_client
@@ -149,6 +167,18 @@ class Client:
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         self.__p2_client_timeout = value
+        if self.__p2_client_timeout > self.p3_client_physical:
+            warn(message="P3Client_Phys had to be updated as its values become less than P2Client timeout.",
+                 category=UserWarning)
+            self.p3_client_physical = value
+        if self.__p2_client_timeout > self.p3_client_functional:
+            warn(message="P3Client_Func had to be updated as its values become less than P2Client timeout.",
+                 category=UserWarning)
+            self.p3_client_functional = value
+        if self.__p2_client_timeout > self.p6_client_timeout:
+            warn(message="P6Client timeout had to be updated as its values become less than P2Client timeout.",
+                 category=UserWarning)
+            self.p6_client_timeout = value
 
     @property  # noqa: vulture
     def p2_client_measured(self) -> Optional[TimeMillisecondsAlias]:
@@ -179,6 +209,10 @@ class Client:
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
         self.__p2_ext_client_timeout = value
+        if self.__p2_ext_client_timeout > self.p6_ext_client_timeout:
+            warn(message="P6*Client timeout had to be updated as its values become less than P2*Client timeout.",
+                 category=UserWarning)
+            self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
     def p2_ext_client_measured(self) -> Optional[Tuple[TimeMillisecondsAlias, ...]]:
@@ -188,6 +222,64 @@ class Client:
         :return: The last measured values or None if measurement was not performed.
         """
         return self.__p2_ext_client_measured
+
+    @property
+    def p3_client_physical(self) -> TimeMillisecondsAlias:
+        """Get value of :ref:`P3Client_Phys <knowledge-base-p3-client-phys>` parameter."""
+        return self.__p3_client_physical
+
+    @p3_client_physical.setter
+    def p3_client_physical(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Set value of P3Client_Phys parameter.
+
+        :param value: value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided time value must be a positive number.
+        :raise InconsistencyError: P3Client timeout value must be greater or equal than P2Client timeout.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided timeout parameter value must be greater than 0.")
+        if value < self.p2_client_timeout:
+            raise InconsistencyError("P3Client timeout value must be greater or equal than "
+                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
+        self.__p3_client_physical = value
+        if self.__p3_client_physical > self.s3_client:
+            warn(message="S3Client had to be updated as its values become less than P3Client_Phys.",
+                 category=UserWarning)
+            self.s3_client = value
+        
+    @property
+    def p3_client_functional(self) -> TimeMillisecondsAlias:
+        """Get value of :ref:`P3Client_Func <knowledge-base-p3-client-func>` parameter."""
+        return self.__p3_client_functional
+
+    @p3_client_functional.setter
+    def p3_client_functional(self, value: TimeMillisecondsAlias) -> None:
+        """
+        Set value of P3Client_Func parameter.
+
+        :param value: value to set.
+
+        :raise TypeError: Provided value is not int or float type.
+        :raise ValueError: Provided time value must be a positive number.
+        :raise InconsistencyError: P3Client timeout value must be greater or equal than P2Client timeout.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Provided time parameter value must be int or float type.")
+        if value <= 0:
+            raise ValueError("Provided timeout parameter value must be greater than 0.")
+        if value < self.p2_client_timeout:
+            raise InconsistencyError("P3Client timeout value must be greater or equal than "
+                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
+        self.__p3_client_functional = value
+        if self.__p3_client_functional > self.s3_client:
+            warn(message="S3Client had to be updated as its values become less than P3Client_Func.",
+                 category=UserWarning)
+            self.s3_client = value
 
     @property
     def p6_client_timeout(self) -> TimeMillisecondsAlias:
@@ -213,6 +305,10 @@ class Client:
             raise InconsistencyError("P6Client timeout value must be greater or equal than "
                                      f"P2Client timeout ({self.p2_client_timeout} ms).")
         self.__p6_client_timeout = value
+        if self.__p6_client_timeout > self.p6_ext_client_timeout:
+            warn(message="P6*Client timeout had to be updated as its values become less than P6Client timeout.",
+                 category=UserWarning)
+            self.p6_ext_client_timeout = value
 
     @property  # noqa: vulture
     def p6_client_measured(self) -> Optional[TimeMillisecondsAlias]:
@@ -279,9 +375,12 @@ class Client:
             raise TypeError("Provided time parameter value must be int or float type.")
         if value <= 0:
             raise ValueError("Provided timeout parameter value must be greater than 0.")
-        if value < self.p2_client_timeout:
+        if value < self.p3_client_physical:
             raise InconsistencyError("S3Client value must be greater or equal than "
-                                     f"P2Client timeout ({self.p2_client_timeout} ms).")
+                                     f"P3Client_Phys ({self.p2_client_timeout} ms).")
+        if value < self.p3_client_functional:
+            raise InconsistencyError("S3Client value must be greater or equal than "
+                                     f"P3Client_Func ({self.p2_client_timeout} ms).")
         self.__s3_client = value
 
     @property
