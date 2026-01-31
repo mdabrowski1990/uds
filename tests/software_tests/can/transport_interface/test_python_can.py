@@ -5,7 +5,7 @@ from random import randint
 from time import perf_counter, sleep
 
 import pytest
-from mock import AsyncMock, MagicMock, Mock, call, patch
+from mock import MagicMock, Mock, call, patch
 
 from can import Bus
 from uds.addressing import AddressingType
@@ -392,10 +392,11 @@ class TestPyCanTransportInterface:
             spec=Notifier,
             bus=self.mock_can_transport_interface.network_manager,
             listeners=[
-                self.mock_can_transport_interface._PyCanTransportInterface__async_rx_frames_buffer,
-                self.mock_can_transport_interface._PyCanTransportInterface__async_tx_frames_buffer],
+                self.mock_async_buffered_reader.return_value,
+                self.mock_async_buffered_reader.return_value,
+            ],
             timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
-            loop=self.mock_get_running_loop.return_value
+            _loop=mock_loop,
         )
         self.mock_can_transport_interface.async_notifier = None
         assert PyCanTransportInterface._PyCanTransportInterface__setup_async_listening(
@@ -418,9 +419,11 @@ class TestPyCanTransportInterface:
             spec=Notifier,
             bus=self.mock_can_transport_interface.network_manager,
             listeners=[
-                self.mock_can_transport_interface._PyCanTransportInterface__async_rx_frames_buffer,
-                self.mock_can_transport_interface._PyCanTransportInterface__async_tx_frames_buffer],
-            timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT
+                self.mock_async_buffered_reader.return_value,
+                self.mock_async_buffered_reader.return_value,
+            ],
+            timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
+            loop=self.mock_get_running_loop.return_value
         )
         self.mock_can_transport_interface.async_notifier = Mock(
             spec=Notifier,
@@ -429,7 +432,44 @@ class TestPyCanTransportInterface:
                 self.mock_can_transport_interface._PyCanTransportInterface__async_rx_frames_buffer,
                 self.mock_can_transport_interface._PyCanTransportInterface__async_tx_frames_buffer],
             timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
-            stopped=True
+            stopped=True,
+            _loop=mock_loop,
+        )
+        assert PyCanTransportInterface._PyCanTransportInterface__setup_async_listening(
+            self.mock_can_transport_interface,
+            loop=mock_loop) is None
+        assert self.mock_can_transport_interface.async_notifier == self.mock_notifier.return_value
+        self.mock_notifier.assert_called_once_with(
+            bus=self.mock_can_transport_interface.network_manager,
+            listeners=[self.mock_can_transport_interface._PyCanTransportInterface__async_rx_frames_buffer,
+                       self.mock_can_transport_interface._PyCanTransportInterface__async_tx_frames_buffer],
+            timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
+            loop=mock_loop)
+        self.mock_can_transport_interface._PyCanTransportInterface__teardown_sync_listening.assert_called_once_with()
+        self.mock_can_transport_interface.async_notifier.add_bus.assert_not_called()
+        self.mock_can_transport_interface.async_notifier.add_listener.assert_not_called()
+
+    def test_setup_async_listening__another_loop_in_notifier(self):
+        mock_loop = Mock()
+        self.mock_notifier.return_value = Mock(
+            spec=Notifier,
+            bus=self.mock_can_transport_interface.network_manager,
+            listeners=[
+                self.mock_async_buffered_reader.return_value,
+                self.mock_async_buffered_reader.return_value,
+            ],
+            timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
+            loop=self.mock_get_running_loop.return_value
+        )
+        self.mock_can_transport_interface.async_notifier = Mock(
+            spec=Notifier,
+            bus=self.mock_can_transport_interface.network_manager,
+            listeners=[
+                self.mock_can_transport_interface._PyCanTransportInterface__async_rx_frames_buffer,
+                self.mock_can_transport_interface._PyCanTransportInterface__async_tx_frames_buffer],
+            timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
+            stopped=False,
+            _loop=Mock(),
         )
         assert PyCanTransportInterface._PyCanTransportInterface__setup_async_listening(
             self.mock_can_transport_interface,
@@ -452,7 +492,8 @@ class TestPyCanTransportInterface:
             bus=self.mock_can_transport_interface.network_manager,
             listeners=[],
             timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
-            stopped=False
+            stopped=False,
+            _loop=mock_loop,
         )
         self.mock_can_transport_interface.async_notifier = mock_notifier
         assert PyCanTransportInterface._PyCanTransportInterface__setup_async_listening(
@@ -476,7 +517,8 @@ class TestPyCanTransportInterface:
                 self.mock_can_transport_interface._PyCanTransportInterface__async_tx_frames_buffer
             ],
             timeout=self.mock_can_transport_interface._MIN_NOTIFIER_TIMEOUT,
-            stopped=False
+            stopped=False,
+            _loop=mock_loop,
         )
         self.mock_can_transport_interface.async_notifier = mock_notifier
         assert PyCanTransportInterface._PyCanTransportInterface__setup_async_listening(

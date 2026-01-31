@@ -2,9 +2,9 @@
 
 __all__ = ["PyCanTransportInterface"]
 
-from asyncio import AbstractEventLoop, get_running_loop
+from asyncio import AbstractEventLoop, create_task, get_running_loop
 from asyncio import sleep as async_sleep
-from asyncio import  create_task, wait
+from asyncio import wait
 from asyncio.exceptions import TimeoutError as AsyncioTimeoutError
 from datetime import datetime
 from time import perf_counter, sleep
@@ -156,8 +156,8 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
     def __setup_sync_listening(self) -> None:
         """Configure CAN frame notifier for synchronous communication."""
         self.__teardown_async_listening()
-        self.__rx_frames_buffer = BufferedReader()
-        self.__tx_frames_buffer = BufferedReader()
+        self.__rx_frames_buffer.is_stopped = False  # noqa: vulture
+        self.__tx_frames_buffer.is_stopped = False  # noqa: vulture
         if self.notifier is None or self.notifier.stopped:
             self.notifier = Notifier(bus=self.network_manager,
                                      listeners=[self.__rx_frames_buffer,
@@ -177,14 +177,19 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         :param loop: An :mod:`asyncio` event loop to use.
         """
         self.__teardown_sync_listening()
-        self.__async_rx_frames_buffer = AsyncBufferedReader(loop=loop)
-        self.__async_tx_frames_buffer = AsyncBufferedReader(loop=loop)
-        if self.async_notifier is None or self.async_notifier.stopped:
+        if (self.async_notifier is None
+                or self.async_notifier.stopped
+                or self.async_notifier._loop != loop):  # pylint: disable= protected-access
+            self.__async_rx_frames_buffer = AsyncBufferedReader(loop=loop)
+            self.__async_tx_frames_buffer = AsyncBufferedReader(loop=loop)
             self.async_notifier = Notifier(bus=self.network_manager,
                                            listeners=[self.__async_rx_frames_buffer,
                                                       self.__async_tx_frames_buffer],
                                            timeout=self._MIN_NOTIFIER_TIMEOUT,
                                            loop=loop)
+        else:
+            self.__async_rx_frames_buffer.is_stopped = False  # noqa: vulture
+            self.__async_tx_frames_buffer.is_stopped = False  # noqa: vulture
         if self.network_manager != self.async_notifier.bus and self.network_manager not in self.async_notifier.bus:
             self.async_notifier.add_bus(self.network_manager)
         if self.__async_rx_frames_buffer not in self.async_notifier.listeners:
@@ -386,23 +391,16 @@ class PyCanTransportInterface(AbstractCanTransportInterface):
         while packet_addressing_type is None or received_frame is None:
             if receive_frame_task.done():
                 received_frame = receive_frame_task.result()
-                if self.time_sync.time_to_perf_counter(time_value=received_frame.timestamp,
-                                                       max_value=perf_counter()) >= timestamp_timeout:
-                    raise TimeoutError("Timeout was reached before a CAN packet was received.")
             if received_frame is not None:
                 packet_addressing_type = self.addressing_information.is_input_packet(
                     can_id=received_frame.arbitration_id,
                     raw_frame_data=received_frame.data)
-            if packet_addressing_type is not None:
-                break
             timestamp_now = perf_counter()
             timeout_left_s = self._MAX_LISTENER_TIMEOUT if timeout is None else timestamp_timeout - timestamp_now
             if timeout_left_s <= 0:
+                receive_frame_task.cancel()
                 raise TimeoutError("Timeout was reached before a CAN packet was received.")
-            if receive_frame_task.done():
-                receive_frame_task = create_task(buffer.get_message())
             await wait([receive_frame_task], timeout=timeout_left_s)
-        receive_frame_task.cancel()
         frame_datetime = datetime.fromtimestamp(received_frame.timestamp)
         frame_timestamp = self.time_sync.time_to_perf_counter(received_frame.timestamp)
         return CanPacketRecord(frame=received_frame,

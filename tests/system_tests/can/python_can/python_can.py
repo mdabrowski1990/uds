@@ -575,6 +575,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
+        asyncio_loop = asyncio.get_running_loop()
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
@@ -593,10 +594,12 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
                                                                     delay=send_after))
         timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
-            await can_transport_interface.async_receive_packet(timeout=timeout)
+            await can_transport_interface.async_receive_packet(timeout=timeout,
+                                                               loop=asyncio_loop)
         timestamp_after_receive = perf_counter()
         # receive packet later
-        packet_record = await can_transport_interface.async_receive_packet(timeout=(send_after - timeout) * 10)
+        packet_record = await can_transport_interface.async_receive_packet(timeout=(send_after - timeout) * 10,
+                                                                           loop=asyncio_loop)
         await send_frame_task
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
@@ -2378,7 +2381,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         (1000, 50),  # ms
-        (50, 0),
+        (50, 10),
     ])
     def test_overflow_during_message_sending(self, example_can_addressing_information,
                                              message, timeout, send_after):
@@ -2415,7 +2418,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         (1000, 50),  # ms
-        (50, 0),
+        (50, 10),
     ])
     @pytest.mark.asyncio
     async def test_overflow_during_async_message_sending(self, example_can_addressing_information,
