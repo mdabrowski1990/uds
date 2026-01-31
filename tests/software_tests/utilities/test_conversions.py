@@ -267,7 +267,7 @@ class TestTimeSync:
         mock_hasattr.return_value = False
         assert TimeSync.__init__(self.mock_time_sync) is None
         assert self.mock_time_sync.samples_number == self.mock_time_sync.DEFAULT_SAMPLES_NUMBER
-        assert self.mock_time_sync.sync_expiration == self.mock_time_sync.DEFAULT_SYNC_EXPIRATION
+        assert self.mock_time_sync.sync_expiration == self.mock_time_sync.DEFAULT_SYNC_EXPIRATION_S
         assert self.mock_time_sync._TimeSync__last_sync_timestamp is None
         assert self.mock_time_sync._TimeSync__offset is None
 
@@ -276,7 +276,7 @@ class TestTimeSync:
         mock_hasattr.return_value = True
         assert TimeSync.__init__(self.mock_time_sync) is None
         assert self.mock_time_sync.samples_number != self.mock_time_sync.DEFAULT_SAMPLES_NUMBER
-        assert self.mock_time_sync.sync_expiration != self.mock_time_sync.DEFAULT_SYNC_EXPIRATION
+        assert self.mock_time_sync.sync_expiration != self.mock_time_sync.DEFAULT_SYNC_EXPIRATION_S
         assert self.mock_time_sync._TimeSync__last_sync_timestamp is not None
         assert self.mock_time_sync._TimeSync__offset is not None
 
