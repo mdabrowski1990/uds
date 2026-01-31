@@ -182,9 +182,12 @@ class TimeSync:
     """Synchronization between wall clock (`time.time()`) and performance counter (`time.perf_counter()`) values."""
 
     _instance = None
+    """Instance of this Singleton."""
 
     DEFAULT_SAMPLES_NUMBER = 20
-    DEFAULT_SYNC_EXPIRATION = 10  # s
+    """Default number of samples collected during synchronization."""
+    DEFAULT_SYNC_EXPIRATION_S = 10
+    """Default expiration time (in seconds) of the offset calculated during last synchronization."""
 
     def __init__(self,
                  samples_number: Optional[int] = None,
@@ -200,7 +203,7 @@ class TimeSync:
         if not hasattr(self, "_TimeSync__samples_number"):
             self.samples_number = self.DEFAULT_SAMPLES_NUMBER
         if not hasattr(self, "_TimeSync__sync_expiration"):
-            self.sync_expiration = self.DEFAULT_SYNC_EXPIRATION
+            self.sync_expiration = self.DEFAULT_SYNC_EXPIRATION_S
         if not hasattr(self, "_TimeSync__last_sync_timestamp"):
             self.__last_sync_timestamp: Optional[float] = None
         if not hasattr(self, "_TimeSync__offset"):
