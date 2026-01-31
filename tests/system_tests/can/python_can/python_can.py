@@ -2,7 +2,7 @@ import asyncio
 from abc import ABC, abstractmethod
 from datetime import datetime
 from threading import Timer
-from time import perf_counter, sleep, time
+from time import perf_counter, sleep
 from typing import Optional
 
 import pytest
@@ -150,9 +150,9 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         packet = CanPacket(packet_type=packet_type,
                            **addressing_params,
                            **packet_type_specific_kwargs)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         packet_record = can_transport_interface.send_packet(packet)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
@@ -165,7 +165,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # timing parameters
-        transmission_time_ms = (time_after_send - time_before_send) * 1000.
+        transmission_time_ms = (timestamp_after_send - timestamp_before_send) * 1000.
         if packet_type == CanPacketType.FLOW_CONTROL:
             assert can_transport_interface.n_as_measured is None
             if self.MAKE_TIMING_CHECKS:
@@ -176,9 +176,9 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
                 assert 0 <= can_transport_interface.n_as_measured <= transmission_time_ms + self.TIMESTAMP_TOLERANCE / 1000.
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_send)
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -230,9 +230,9 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         packet = CanPacket(packet_type=packet_type,
                            **addressing_params,
                            **packet_type_specific_kwargs)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         packet_record = await can_transport_interface.async_send_packet(packet)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
@@ -245,7 +245,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # timing parameters
-        transmission_time_ms = (time_after_send - time_before_send) * 1000.
+        transmission_time_ms = (timestamp_after_send - timestamp_before_send) * 1000.
         if packet_type == CanPacketType.FLOW_CONTROL:
             assert can_transport_interface.n_as_measured is None
             if self.MAKE_TIMING_CHECKS:
@@ -260,9 +260,9 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
                         <= transmission_time_ms + self.TIMESTAMP_TOLERANCE / 1000.)
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_send)
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -288,9 +288,8 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
          {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950),  # ms
-        (50, 20),
+        (1000, 980),  # ms
+        (50, 30),
     ])
     def test_receive_packet(self, packet_type, addressing_type, addressing_format, packet_type_specific_kwargs,
                             timeout, send_after,
@@ -329,9 +328,9 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         self.send_frame(can_interface=self.can_interface_2,
                         frame=can_frame,
                         delay=send_after)
-        time_before_receive = time()
+        timestamp_before_receive = perf_counter()
         packet_record = can_transport_interface.receive_packet(timeout=timeout)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
         assert packet_record.raw_frame_data == packet.raw_frame_data == bytes(can_frame.data)
@@ -344,12 +343,14 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
-        receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+        receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
         if self.MAKE_TIMING_CHECKS:
-            assert send_after <= receiving_time_ms < timeout
-            assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (send_after
+                    <= receiving_time_ms
+                    < timeout)
+            assert (timestamp_before_receive
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -375,9 +376,8 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
          {"dlc": 0xF, "filler_byte": 0x00, "payload": [0x22, 0x12, 0x34, 0x12, 0x56, 0x12, 0x78, 0x12, 0x9A]}),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950),  # ms
-        (50, 20),
+        (1000, 980),  # ms
+        (50, 30),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_packet(self, packet_type, addressing_type, addressing_format,
@@ -418,9 +418,9 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         send_frame_task = asyncio.create_task(self.async_send_frame(can_interface=self.can_interface_2,
                                                                     frame=can_frame,
                                                                     delay=send_after))
-        time_before_receive = time()
+        timestamp_before_receive = perf_counter()
         packet_record = await can_transport_interface.async_receive_packet(timeout=timeout)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         await send_frame_task
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
@@ -434,12 +434,14 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert packet_record.source_address == packet.source_address == addressing_params["source_address"]
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
-        receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+        receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
         if self.MAKE_TIMING_CHECKS:
-            assert send_after <= receiving_time_ms < timeout
-            assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (send_after
+                    <= receiving_time_ms
+                    < timeout)
+            assert (timestamp_before_receive
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -505,10 +507,10 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         self.send_frame(can_interface=self.can_interface_2,
                         frame=can_frame,
                         delay=send_after)
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_packet(timeout=timeout)
-        time_after_receive = perf_counter()
+        timestamp_after_receive = perf_counter()
         # receive packet later
         packet_record = can_transport_interface.receive_packet(timeout=(send_after - timeout) * 10)
         assert isinstance(packet_record, CanPacketRecord)
@@ -517,7 +519,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert packet_record.can_id == can_frame.arbitration_id
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
             assert (timeout
                     <= receiving_time_ms
                     < timeout + self.TASK_TIMING_TOLERANCE)
@@ -573,6 +575,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         :param timeout: Timeout to pass to receive method [ms].
         :param send_after: Time when to send CAN frame after call of receive method [ms].
         """
+        asyncio_loop = asyncio.get_running_loop()
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=parametrized_can_addressing_information)
@@ -589,12 +592,14 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         send_frame_task = asyncio.create_task(self.async_send_frame(can_interface=self.can_interface_2,
                                                                     frame=can_frame,
                                                                     delay=send_after))
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
-            await can_transport_interface.async_receive_packet(timeout=timeout)
-        time_after_receive = perf_counter()
+            await can_transport_interface.async_receive_packet(timeout=timeout,
+                                                               loop=asyncio_loop)
+        timestamp_after_receive = perf_counter()
         # receive packet later
-        packet_record = await can_transport_interface.async_receive_packet(timeout=(send_after - timeout) * 10)
+        packet_record = await can_transport_interface.async_receive_packet(timeout=(send_after - timeout) * 10,
+                                                                           loop=asyncio_loop)
         await send_frame_task
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
@@ -602,7 +607,7 @@ class AbstractCanPacketTests(AbstractPythonCanTests, ABC):
         assert packet_record.can_id == can_frame.arbitration_id
         # performance
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
             assert (timeout
                     <= receiving_time_ms
                     < timeout + self.TASK_TIMING_TOLERANCE)
@@ -631,24 +636,24 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=example_can_addressing_information)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         message_record = can_transport_interface.send_message(message)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # timing parameters
         assert can_transport_interface.n_bs_measured is None
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= message_record.transmission_start_timestamp
+                    == message_record.transmission_end_timestamp
+                    <= timestamp_after_send)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
@@ -671,33 +676,32 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         can_transport_interface = PyCanTransportInterface(
             network_manager=self.can_interface_1,
             addressing_information=example_can_addressing_information)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         message_record = await can_transport_interface.async_send_message(message)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # timing parameters
         assert can_transport_interface.n_bs_measured is None
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= message_record.transmission_start_timestamp
+                    == message_record.transmission_end_timestamp
+                    <= timestamp_after_send)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950),  # ms
-        (50, 20),
+        (1000, 980),  # ms
+        (50, 30),
     ])
     def test_receive_message__sf(self, example_can_addressing_information,
                                  message, timeout, send_after):
@@ -727,32 +731,31 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         self.send_message(transport_interface=can_transport_interface_2nd_node,
                           message=message,
                           delay=send_after)
-        time_before_receive = time()
+        timestamp_before_receive = perf_counter()
         message_record = can_transport_interface.receive_message(start_timeout=timeout,
                                                                  end_timeout=timeout)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_receive
+                    <= message_record.transmission_start_timestamp
+                    == message_record.transmission_end_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x54], addressing_type=AddressingType.FUNCTIONAL),
     ])
     @pytest.mark.parametrize("timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950),  # ms
-        (50, 20),
+        (1000, 980),  # ms
+        (50, 30),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__sf(self, example_can_addressing_information,
@@ -784,24 +787,24 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
             self.async_send_message(transport_interface=can_transport_interface_2nd_node,
                                     message=message,
                                     delay=send_after))
-        time_before_receive = time()
+        timestamp_before_receive = perf_counter()
         message_record = await can_transport_interface.async_receive_message(start_timeout=timeout,
                                                                              end_timeout=timeout)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         await send_message_task
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start == message_record.transmission_end
+        assert message_record.transmission_start_time == message_record.transmission_end_time
         assert len(message_record.packets_records) == 1
         assert message_record.packets_records[0].packet_type == CanPacketType.SINGLE_FRAME
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start
-                    == message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_receive
+                    <= message_record.transmission_start_timestamp
+                    == message_record.transmission_end_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, 0x12, 0x34, 0x56, 0x78], addressing_type=AddressingType.PHYSICAL),
@@ -838,10 +841,10 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         self.send_message(transport_interface=can_transport_interface_2nd_node,
                           message=message,
                           delay=send_after)
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_message(start_timeout=start_timeout)
-        time_after_receive = perf_counter()
+        timestamp_after_receive = perf_counter()
         # receive message later
         message_record = can_transport_interface.receive_message(
             start_timeout=(send_after - start_timeout) * 10)
@@ -851,7 +854,7 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.addressing_type == message.addressing_type
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
             assert (start_timeout
                     <= receiving_time_ms
                     < send_after + self.TASK_TIMING_TOLERANCE)
@@ -893,10 +896,10 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
             transport_interface=can_transport_interface_2nd_node,
             message=message,
             delay=send_after))
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
             await can_transport_interface.async_receive_message(start_timeout=start_timeout)
-        time_after_receive = perf_counter()
+        timestamp_after_receive = perf_counter()
         # receive message later
         message_record = await can_transport_interface.async_receive_message(
             start_timeout=(send_after - start_timeout) * 10)
@@ -907,7 +910,7 @@ class AbstractUnsegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.addressing_type == message.addressing_type
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
             assert (start_timeout
                     <= receiving_time_ms
                     < send_after + self.TASK_TIMING_TOLERANCE)
@@ -921,9 +924,8 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("n_bs_timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950),  # ms
-        (50, 20),
+        (1000, 980),  # ms
+        (50, 30),
     ])
     def test_send_message__multi_packets(self, example_can_addressing_information,
                                          message, n_bs_timeout, send_after):
@@ -956,14 +958,14 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         self.send_packet(transport_interface=can_transport_interface_2nd_node,
                          packet=flow_control_packet,
                          delay=send_after)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         message_record = can_transport_interface.send_message(message)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         assert len(message_record.packets_records) > 1
         assert message_record.packets_records[0].packet_type == CanPacketType.FIRST_FRAME
         assert message_record.packets_records[0].direction == TransmissionDirection.TRANSMITTED
@@ -977,10 +979,10 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert len(can_transport_interface.n_bs_measured) == 1
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= message_record.transmission_start_timestamp
+                    < message_record.transmission_end_timestamp
+                    <= timestamp_after_send)
             assert (send_after - self.TASK_TIMING_TOLERANCE
                     <= can_transport_interface.n_bs_measured[0]
                     <= send_after + self.TASK_TIMING_TOLERANCE)
@@ -990,9 +992,8 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("n_bs_timeout, send_after", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 950),  # ms
-        (50, 20),
+        (1000, 980),  # ms
+        (50, 30),
     ])
     @pytest.mark.asyncio
     async def test_async_send_message__multi_packets(self, example_can_addressing_information,
@@ -1027,15 +1028,15 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
             transport_interface=can_transport_interface_2nd_node,
             packet=flow_control_packet,
             delay=send_after))
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         message_record = await can_transport_interface.async_send_message(message)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         await send_packet_task
         assert isinstance(message_record, UdsMessageRecord)
         assert message_record.direction == TransmissionDirection.TRANSMITTED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         assert len(message_record.packets_records) > 1
         assert message_record.packets_records[0].packet_type == CanPacketType.FIRST_FRAME
         assert message_record.packets_records[0].direction == TransmissionDirection.TRANSMITTED
@@ -1049,10 +1050,10 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert len(can_transport_interface.n_bs_measured) == 1
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= message_record.transmission_start_timestamp
+                    < message_record.transmission_end_timestamp
+                    <= timestamp_after_send)
             assert (send_after - self.TASK_TIMING_TOLERANCE
                     <= can_transport_interface.n_bs_measured[0]
                     <= send_after + self.TASK_TIMING_TOLERANCE)
@@ -1094,14 +1095,14 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         self.send_packet(transport_interface=can_transport_interface_2nd_node,
                          packet=flow_control_packet,
                          delay=send_after)
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
             can_transport_interface.send_message(message)
-        time_after_receive = perf_counter()
+        timestamp_after_receive = perf_counter()
         # timing parameters
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
-            assert (can_transport_interface.n_bs_timeout - self.TIMESTAMP_TOLERANCE
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
+            assert (can_transport_interface.n_bs_timeout
                     < receiving_time_ms
                     < can_transport_interface.n_bs_timeout + self.TASK_TIMING_TOLERANCE)
 
@@ -1144,15 +1145,15 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
             transport_interface=can_transport_interface_2nd_node,
             packet=flow_control_packet,
             delay=send_after))
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
             await can_transport_interface.async_send_message(message)
-        time_after_receive = perf_counter()
+        timestamp_after_receive = perf_counter()
         await send_packet_task
         # timing parameters
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
-            assert (can_transport_interface.n_bs_timeout - self.TIMESTAMP_TOLERANCE
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
+            assert (can_transport_interface.n_bs_timeout
                     < receiving_time_ms
                     < can_transport_interface.n_bs_timeout + self.TASK_TIMING_TOLERANCE)
 
@@ -1161,9 +1162,8 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("start_timeout, end_timeout, send_after, delay", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 2000, 950, 20),  # ms
-        (50, 1500, 20, 50),
+        (1000, 2000, 980, 20),  # ms
+        (50, 1500, 30, 50),
     ])
     def test_receive_message__multi_packets(self, example_can_addressing_information,
                                             message, start_timeout, end_timeout, send_after, delay):
@@ -1197,32 +1197,31 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
             self.send_packet(transport_interface=can_transport_interface_2nd_node,
                              packet=packet,
                              delay=send_after + i * delay)
-        time_before_receive = time()
+        timestamp_before_receive = perf_counter()
         message_record = can_transport_interface.receive_message(start_timeout=start_timeout,
                                                                  end_timeout=end_timeout)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         assert isinstance(message_record, UdsMessageRecord)
         assert len(message_record.packets_records) == len(packets) + 1, \
             "All packets (including Flow Control) are stored"
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_receive
+                    <= message_record.transmission_start_timestamp
+                    < message_record.transmission_end_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
         UdsMessage(payload=[0x62, 0x12, 0x34, *range(100, 250)], addressing_type=AddressingType.PHYSICAL),
     ])
     @pytest.mark.parametrize("start_timeout, end_timeout, send_after, delay", [
-        # TODO: adjust values to be closer to boundary when https://github.com/mdabrowski1990/uds/issues/228 resolved
-        (1000, 2000, 950, 20),  # ms
-        (50, 2000, 20, 50),
+        (1000, 2000, 980, 20),  # ms
+        (50, 2000, 30, 50),
     ])
     @pytest.mark.asyncio
     async def test_async_receive_message__multi_packets(self, example_can_addressing_information,
@@ -1260,10 +1259,10 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
                                              delay=send_after if packet == packets[0] else delay)
 
         send_message_task = asyncio.create_task(_send_message())
-        time_before_receive = time()
+        timestamp_before_receive = perf_counter()
         message_record = await can_transport_interface.async_receive_message(start_timeout=start_timeout,
                                                                              end_timeout=end_timeout)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         await send_message_task
         assert isinstance(message_record, UdsMessageRecord)
         assert len(message_record.packets_records) == len(packets) + 1, \
@@ -1271,13 +1270,13 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
         assert message_record.direction == TransmissionDirection.RECEIVED
         assert message_record.payload == message.payload
         assert message_record.addressing_type == message.addressing_type
-        assert message_record.transmission_start < message_record.transmission_end
+        assert message_record.transmission_start_time < message_record.transmission_end_time
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_receive - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= message_record.transmission_start)
-            assert (message_record.transmission_end
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_receive
+                    <= message_record.transmission_start_timestamp
+                    < message_record.transmission_end_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
@@ -1406,14 +1405,14 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
             self.send_packet(transport_interface=can_transport_interface_2nd_node,
                              packet=packet,
                              delay=send_after + i * delay)
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_message(start_timeout=2 * send_after + 50,
                                                     end_timeout=end_timeout)
-        time_after_receive = perf_counter()
+        timestamp_after_receive = perf_counter()
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
             assert (end_timeout
                     < receiving_time_ms
                     < end_timeout + self.TASK_TIMING_TOLERANCE)
@@ -1462,11 +1461,11 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
 
         send_message_task = asyncio.create_task(_send_message())
 
-        time_before_receive = perf_counter()
+        timestamp_before_receive = perf_counter()
         with pytest.raises(TimeoutError):
             await can_transport_interface.async_receive_message(start_timeout=2 * send_after + 50,
                                                                 end_timeout=end_timeout)
-        time_after_receive = perf_counter()
+        timestamp_after_receive = perf_counter()
         send_message_task.cancel()
         try:
             await send_message_task
@@ -1474,7 +1473,7 @@ class AbstractSegmentedMessageTests(AbstractPythonCanTests, ABC):
             ...
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after_receive - time_before_receive) * 1000.
+            receiving_time_ms = (timestamp_after_receive - timestamp_before_receive) * 1000.
             assert (end_timeout
                     < receiving_time_ms
                     < end_timeout + self.TASK_TIMING_TOLERANCE)
@@ -1536,7 +1535,7 @@ class AbstractFullDuplexTests(AbstractPythonCanTests, ABC):
         timer_1 = self.receive_message(transport_interface=can_transport_interface_2nd_node,
                                        delay=0,
                                        start_timeout=50,
-                                       end_timeout=None)
+                                       end_timeout=2000)
         timer_2 = self.send_message(transport_interface=can_transport_interface_2nd_node,
                                     message=rx_message,
                                     delay=10)
@@ -2121,10 +2120,10 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
                             is_fd=packet.dlc > 8)
         with pytest.raises(TimeoutError):
             can_transport_interface.receive_packet(timeout=100)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         self.can_interface_2.send(can_frame)
         packet_record = can_transport_interface.receive_packet(timeout=100)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
         assert packet_record.raw_frame_data == packet.raw_frame_data == bytes(can_frame.data)
@@ -2138,9 +2137,9 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -2201,10 +2200,10 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
                             is_fd=packet.dlc > 8)
         with pytest.raises((TimeoutError, asyncio.TimeoutError)):
             await can_transport_interface.async_receive_packet(timeout=100)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         self.can_interface_2.send(can_frame)
         packet_record = await can_transport_interface.async_receive_packet(timeout=100)
-        time_after_receive = time()
+        timestamp_after_receive = perf_counter()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.RECEIVED
         assert packet_record.raw_frame_data == packet.raw_frame_data == bytes(can_frame.data)
@@ -2218,9 +2217,9 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_receive + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_receive)
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -2278,9 +2277,9 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
                             is_fd=packet.dlc > 8)
         self.can_interface_1.send(can_frame)
         sleep(0.1)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         packet_record = can_transport_interface.send_packet(packet)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
@@ -2294,9 +2293,9 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_send)
 
     @pytest.mark.parametrize("packet_type, addressing_type, addressing_format, packet_type_specific_kwargs", [
         (CanPacketType.SINGLE_FRAME,
@@ -2356,9 +2355,9 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
                             is_fd=packet.dlc > 8)
         self.can_interface_1.send(can_frame)
         sleep(0.1)
-        time_before_send = time()
+        timestamp_before_send = perf_counter()
         packet_record = await can_transport_interface.async_send_packet(packet)
-        time_after_send = time()
+        timestamp_after_send = perf_counter()
         assert isinstance(packet_record, CanPacketRecord)
         assert packet_record.direction == TransmissionDirection.TRANSMITTED
         assert packet_record.raw_frame_data == packet.raw_frame_data
@@ -2372,9 +2371,9 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
         assert packet_record.address_extension == packet.address_extension == addressing_params["address_extension"]
         # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before_send - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= packet_record.transmission_time
-                    <= datetime.fromtimestamp(time_after_send + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before_send
+                    <= packet_record.transmission_timestamp
+                    <= timestamp_after_send)
 
     @pytest.mark.parametrize("message", [
         UdsMessage(payload=[0x22, *range(62)], addressing_type=AddressingType.PHYSICAL),
@@ -2382,7 +2381,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         (1000, 50),  # ms
-        (50, 0),
+        (50, 10),
     ])
     def test_overflow_during_message_sending(self, example_can_addressing_information,
                                              message, timeout, send_after):
@@ -2419,7 +2418,7 @@ class AbstractErrorGuessingTests(AbstractPythonCanTests, ABC):
     ])
     @pytest.mark.parametrize("timeout, send_after", [
         (1000, 50),  # ms
-        (50, 0),
+        (50, 10),
     ])
     @pytest.mark.asyncio
     async def test_overflow_during_async_message_sending(self, example_can_addressing_information,

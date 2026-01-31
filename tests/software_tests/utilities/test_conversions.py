@@ -1,11 +1,14 @@
+from time import perf_counter, time
+
 import pytest
-from mock import Mock, patch
+from mock import MagicMock, Mock, patch
 
 from uds.utilities.conversions import (
     MAX_DTC_VALUE,
     MIN_DTC_VALUE,
     Endianness,
     InconsistencyError,
+    TimeSync,
     bytes_to_hex,
     bytes_to_int,
     get_signed_value_decoding_formula,
@@ -239,8 +242,250 @@ class TestFunctions:
                    for unsigned_value, signed_value in encoding_mapping.items())
 
 
+class TestTimeSync:
+    """Unit tests for `TimeSync` class."""
+
+    def setup_method(self):
+        self.mock_time_sync = Mock(spec=TimeSync,
+                                   samples_number=Mock(),
+                                   sync_expiration=Mock(),
+                                   _TimeSync__last_sync_timestamp=Mock(),
+                                   _TimeSync__offset=Mock())
+        self._patcher_perf_counter = patch(f"{SCRIPT_LOCATION}.perf_counter")
+        self.mock_perf_counter = self._patcher_perf_counter.start()
+        self._patcher_time = patch(f"{SCRIPT_LOCATION}.time")
+        self.mock_time = self._patcher_time.start()
+
+    def teardown_method(self):
+        self._patcher_perf_counter.stop()
+        self._patcher_time.stop()
+
+    # __init__
+
+    @patch(f"{SCRIPT_LOCATION}.hasattr")
+    def test_init__initial(self, mock_hasattr):
+        mock_hasattr.return_value = False
+        assert TimeSync.__init__(self.mock_time_sync) is None
+        assert self.mock_time_sync.samples_number == self.mock_time_sync.DEFAULT_SAMPLES_NUMBER
+        assert self.mock_time_sync.sync_expiration == self.mock_time_sync.DEFAULT_SYNC_EXPIRATION_S
+        assert self.mock_time_sync._TimeSync__last_sync_timestamp is None
+        assert self.mock_time_sync._TimeSync__offset is None
+
+    @patch(f"{SCRIPT_LOCATION}.hasattr")
+    def test_init__following(self, mock_hasattr):
+        mock_hasattr.return_value = True
+        assert TimeSync.__init__(self.mock_time_sync) is None
+        assert self.mock_time_sync.samples_number != self.mock_time_sync.DEFAULT_SAMPLES_NUMBER
+        assert self.mock_time_sync.sync_expiration != self.mock_time_sync.DEFAULT_SYNC_EXPIRATION_S
+        assert self.mock_time_sync._TimeSync__last_sync_timestamp is not None
+        assert self.mock_time_sync._TimeSync__offset is not None
+
+    @pytest.mark.parametrize("initial, samples_number, sync_expiration", [
+        (True, 1, 10),
+        (False, 15, 3.69),
+    ])
+    @patch(f"{SCRIPT_LOCATION}.hasattr")
+    def test_init__update(self, mock_hasattr, initial, samples_number, sync_expiration):
+        mock_hasattr.return_value = not initial
+        assert TimeSync.__init__(self.mock_time_sync,
+                                 samples_number=samples_number,
+                                 sync_expiration=sync_expiration) is None
+        assert self.mock_time_sync.samples_number == samples_number
+        assert self.mock_time_sync.sync_expiration == sync_expiration
+
+    # __new__
+
+    def test_new__no_instance(self):
+        TimeSync._instance = None
+        instance = TimeSync.__new__(TimeSync)
+        assert TimeSync._instance is instance
+        assert isinstance(instance, TimeSync)
+
+    def test_new__instance_exists(self):
+        mock_instance = Mock(spec=TimeSync)
+        TimeSync._instance = mock_instance
+        assert TimeSync.__new__(TimeSync) is mock_instance
+        assert TimeSync._instance is mock_instance
+
+    # samples_number
+
+    def test_samples_number__get(self):
+        self.mock_time_sync._TimeSync__samples_number = Mock()
+        assert TimeSync.samples_number.fget(self.mock_time_sync) == self.mock_time_sync._TimeSync__samples_number
+
+    @pytest.mark.parametrize("value", [Mock(), None])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_samples_number__set__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            TimeSync.samples_number.fset(self.mock_time_sync, value)
+        mock_isinstance.assert_called_once_with(value, int)
+
+    @pytest.mark.parametrize("value", [0, -5])
+    def test_samples_number__set__value_error(self, value):
+        with pytest.raises(ValueError):
+            TimeSync.samples_number.fset(self.mock_time_sync, value)
+
+    @pytest.mark.parametrize("value", [1, 12])
+    def test_samples_number__set__valid(self, value):
+        assert TimeSync.samples_number.fset(self.mock_time_sync, value) is None
+        assert self.mock_time_sync._TimeSync__samples_number == value
+        
+    # sync_expiration
+
+    def test_sync_expiration__get(self):
+        self.mock_time_sync._TimeSync__sync_expiration = Mock()
+        assert TimeSync.sync_expiration.fget(self.mock_time_sync) == self.mock_time_sync._TimeSync__sync_expiration
+
+    @pytest.mark.parametrize("value", [Mock(), None])
+    @patch(f"{SCRIPT_LOCATION}.isinstance")
+    def test_sync_expiration__set__type_error(self, mock_isinstance, value):
+        mock_isinstance.return_value = False
+        with pytest.raises(TypeError):
+            TimeSync.sync_expiration.fset(self.mock_time_sync, value)
+        mock_isinstance.assert_called_once_with(value, (int, float))
+
+    @pytest.mark.parametrize("value", [0, -0.1])
+    def test_sync_expiration__set__value_error(self, value):
+        with pytest.raises(ValueError):
+            TimeSync.sync_expiration.fset(self.mock_time_sync, value)
+
+    @pytest.mark.parametrize("value", [0.0001, 1])
+    def test_sync_expiration__set__valid(self, value):
+        assert TimeSync.sync_expiration.fset(self.mock_time_sync, value) is None
+        assert self.mock_time_sync._TimeSync__sync_expiration == value
+
+    # last_sync_timestamp
+
+    def test_last_sync_timestamp__get(self):
+        self.mock_time_sync._TimeSync__last_sync_timestamp = Mock()
+        assert (TimeSync.last_sync_timestamp.fget(self.mock_time_sync)
+                == self.mock_time_sync._TimeSync__last_sync_timestamp)
+
+    # is_sync_outdated
+
+    def test_is_sync_outdated__get__never_synced(self):
+        self.mock_time_sync.last_sync_timestamp = None
+        assert TimeSync.is_sync_outdated.fget(self.mock_time_sync) is True
+
+    def test_is_sync_outdated__get__true(self):
+        self.mock_time_sync.last_sync_timestamp = Mock()
+        mock_is_outdated = Mock(return_value=True)
+        mock_sub = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
+        self.mock_perf_counter.return_value = MagicMock(__gt__=mock_is_outdated,
+                                                        __sub__=mock_sub)
+        assert TimeSync.is_sync_outdated.fget(self.mock_time_sync) is True
+        mock_is_outdated.assert_called_once_with(self.mock_time_sync.sync_expiration)
+        mock_sub.assert_called_once_with(self.mock_time_sync.last_sync_timestamp)
+
+    def test_is_sync_outdated__get__false(self):
+        self.mock_time_sync.last_sync_timestamp = Mock()
+        mock_is_outdated = Mock(return_value=False)
+        mock_sub = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
+        self.mock_perf_counter.return_value = MagicMock(__gt__=mock_is_outdated,
+                                                        __sub__=mock_sub)
+        assert TimeSync.is_sync_outdated.fget(self.mock_time_sync) is False
+        mock_is_outdated.assert_called_once_with(self.mock_time_sync.sync_expiration)
+        mock_sub.assert_called_once_with(self.mock_time_sync.last_sync_timestamp)
+
+    # offset
+
+    def test_offset__get(self):
+        self.mock_time_sync._TimeSync__offset = Mock()
+        assert TimeSync.offset.fget(self.mock_time_sync) == self.mock_time_sync._TimeSync__offset
+
+    # sync
+
+    def test_sync(self):
+        self.mock_time_sync.samples_number = 4
+        mock_time_sub = Mock(side_effect=lambda other: self.mock_time.return_value)
+        self.mock_time.return_value = MagicMock(__sub__=mock_time_sub)
+        mock_perf_counter_sub = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
+        mock_perf_counter_add = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
+        mock_perf_counter_div = Mock(side_effect=lambda other: self.mock_perf_counter.return_value)
+        mock_perf_counter_lt = Mock(side_effect=[True, False, False, True])
+        self.mock_perf_counter.return_value = MagicMock(__sub__=mock_perf_counter_sub,
+                                                        __add__=mock_perf_counter_add,
+                                                        __div__=mock_perf_counter_div,
+                                                        __lt__=mock_perf_counter_lt)
+        assert TimeSync.sync(self.mock_time_sync) is self.mock_time_sync.offset
+        assert self.mock_time_sync._TimeSync__last_sync_timestamp == self.mock_perf_counter.return_value
+        assert mock_perf_counter_lt.call_count == self.mock_time_sync.samples_number
+
+    # time_to_perf_counter
+
+    @pytest.mark.parametrize("is_sync_outdated, time_value, offset", [
+        (True, 123.456, 789.012),
+        (False, 81, -5),
+    ])
+    def test_time_to_perf_counter(self, is_sync_outdated, time_value, offset):
+        self.mock_time_sync.is_sync_outdated = is_sync_outdated
+        self.mock_time_sync.offset = offset
+        assert TimeSync.time_to_perf_counter(self.mock_time_sync, time_value=time_value) == time_value - offset
+        self.mock_time.sync.call_count == int(is_sync_outdated)
+
+    @pytest.mark.parametrize("is_sync_outdated, time_value, min_value, offset", [
+        (True, 123.456, 0, 789.012),
+        (False, 81, 86.001, -5),
+    ])
+    def test_time_to_perf_counter__min_value(self, is_sync_outdated, time_value, min_value, offset):
+        self.mock_time_sync.is_sync_outdated = is_sync_outdated
+        self.mock_time_sync.offset = offset
+        assert (TimeSync.time_to_perf_counter(self.mock_time_sync, time_value=time_value, min_value=min_value)
+                == min_value)
+        self.mock_time.sync.call_count == int(is_sync_outdated)
+
+    @pytest.mark.parametrize("is_sync_outdated, time_value, max_value, offset", [
+        (True, 789.012, 654.321, 123.456),
+        (False, 81, 85.999, -5),
+    ])
+    def test_time_to_perf_counter__max_value(self, is_sync_outdated, time_value, max_value, offset):
+        self.mock_time_sync.is_sync_outdated = is_sync_outdated
+        self.mock_time_sync.offset = offset
+        assert (TimeSync.time_to_perf_counter(self.mock_time_sync, time_value=time_value, max_value=max_value)
+                == max_value)
+        self.mock_time.sync.call_count == int(is_sync_outdated)
+
+    # perf_counter_to_time
+
+    @pytest.mark.parametrize("is_sync_outdated, perf_counter_value, offset", [
+        (True, 123.456, 789.012),
+        (False, 81, -5),
+    ])
+    def test_perf_counter_to_time(self, is_sync_outdated, perf_counter_value, offset):
+        self.mock_time_sync.is_sync_outdated = is_sync_outdated
+        self.mock_time_sync.offset = offset
+        assert (TimeSync.perf_counter_to_time(self.mock_time_sync,
+                                              perf_counter_value=perf_counter_value) == perf_counter_value + offset)
+        self.mock_time.sync.call_count == int(is_sync_outdated)
+
+    @pytest.mark.parametrize("is_sync_outdated, perf_counter_value, min_value, offset", [
+        (True, 123.456, 1000, 789.012),
+        (False, 81, 76.001, -5),
+    ])
+    def test_perf_counter_to_time__min_value(self, is_sync_outdated, perf_counter_value, min_value, offset):
+        self.mock_time_sync.is_sync_outdated = is_sync_outdated
+        self.mock_time_sync.offset = offset
+        assert (TimeSync.perf_counter_to_time(self.mock_time_sync,
+                                              perf_counter_value=perf_counter_value,
+                                              min_value=min_value) == min_value)
+        self.mock_time.sync.call_count == int(is_sync_outdated)
+
+    @pytest.mark.parametrize("is_sync_outdated, perf_counter_value, max_value, offset", [
+        (True, 789.012, 854.321, 123.456),
+        (False, 81, 75.999, -5),
+    ])
+    def test_perf_counter_to_time__max_value(self, is_sync_outdated, perf_counter_value, max_value, offset):
+        self.mock_time_sync.is_sync_outdated = is_sync_outdated
+        self.mock_time_sync.offset = offset
+        assert (TimeSync.perf_counter_to_time(self.mock_time_sync,
+                                              perf_counter_value=perf_counter_value,
+                                              max_value=max_value) == max_value)
+        self.mock_time.sync.call_count == int(is_sync_outdated)
+
+
 @pytest.mark.integration
-class TestIntegration:
+class TestFunctionsIntegration:
     """Integration tests for functions."""
 
     @pytest.mark.parametrize("int_value", [0, 0x43, 0xFF, 0x0123456789ABCDEF, 0x7B0000440000])
@@ -249,3 +494,26 @@ class TestIntegration:
     def test_int_to_bytes_to_int(self, int_value, endianness, size):
         bytes_list = int_to_bytes(int_value, size=size, endianness=endianness)
         assert bytes_to_int(bytes_list, endianness=endianness) == int_value
+
+
+@pytest.mark.integration
+class TestTimeSyncIntegration:
+    """Integration tests for `TimeSync` class."""
+
+    ACCURACY = 0.00001
+
+    def test_time_to_perf_counter(self):
+        ts = TimeSync()
+        ts.sync()
+        perf_now = perf_counter()
+        time_now = time()
+        converted_perf = ts.time_to_perf_counter(time_value=time_now)
+        assert perf_now - self.ACCURACY <= converted_perf <= perf_now + self.ACCURACY
+
+    def test_perf_counter_to_time(self):
+        ts = TimeSync()
+        ts.sync()
+        perf_now = perf_counter()
+        time_now = time()
+        converted_time = ts.perf_counter_to_time(perf_counter_value=perf_now)
+        assert time_now - self.ACCURACY <= converted_time <= time_now + self.ACCURACY

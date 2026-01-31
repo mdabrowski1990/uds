@@ -446,8 +446,9 @@ Attributes:
 
 - :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.can_id`
 - :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.raw_frame_data`
-- :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.dlc`
 - :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.addressing_format`
+- :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.addressing_type`
+- :attr:`~uds.can.packet.can_packet_record.AbstractCanPacketContainer.dlc`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.target_address`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.source_address`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.address_extension`
@@ -457,13 +458,14 @@ Attributes:
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.flow_status`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.block_size`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.st_min`
-- :attr:`~uds.can.packet.can_packet_record.CanPacketRecord.addressing_type`
 - :attr:`~uds.can.packet.abstract_container.AbstractCanPacketContainer.payload`
+- :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.frame`
+- :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.direction`
+- :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.transmission_time`
+- :attr:`~uds.packet.abstract_packet.AbstractPacketRecord.transmission_timestamp`
 
 Methods:
 
-- :meth:`~uds.can.packet.can_packet_record.CanPacketRecord._validate_frame`
-- :meth:`~uds.can.packet.can_packet_record.CanPacketRecord._validate_attributes`
 - :meth:`~uds.can.packet.can_packet_record.CanPacketRecord.__init__`
 - :meth:`~uds.can.packet.can_packet_record.CanPacketRecord.__str__`
 

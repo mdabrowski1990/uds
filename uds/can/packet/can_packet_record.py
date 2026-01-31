@@ -5,7 +5,7 @@ __all__ = ["CanPacketRecord", "CanFrameAlias"]
 from datetime import datetime
 from typing import Any, Union
 
-from can import Message as PythonCanMessage
+from can import Message as PythonCanFrame
 from uds.addressing import AddressingType, TransmissionDirection
 from uds.packet import AbstractPacketRecord
 from uds.utilities import ReassignmentError, bytes_to_hex
@@ -14,7 +14,7 @@ from ..addressing import CanAddressingFormat, CanAddressingInformation
 from .abstract_container import AbstractCanPacketContainer
 from .can_packet_type import CanPacketType
 
-CanFrameAlias = Union[PythonCanMessage]
+CanFrameAlias = Union[PythonCanFrame]
 """Alias of supported CAN frames objects."""
 
 
@@ -31,7 +31,8 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
                  addressing_format: CanAddressingFormat,
                  addressing_type: AddressingType,
                  direction: TransmissionDirection,
-                 transmission_time: datetime) -> None:
+                 transmission_time: datetime,
+                 transmission_timestamp: float) -> None:
         """
         Create a record of historic information about a CAN packet that was either received or transmitted.
 
@@ -43,19 +44,23 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
         """
         self.addressing_format = addressing_format
         self.addressing_type = addressing_type
-        super().__init__(frame=frame, direction=direction, transmission_time=transmission_time)
+        super().__init__(frame=frame,
+                         direction=direction,
+                         transmission_time=transmission_time,
+                         transmission_timestamp=transmission_timestamp)
 
     def __str__(self) -> str:
         """Present object in string format."""
         return (f"{self.__class__.__name__}("
-                f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
-                f"addressing_type={self.addressing_type}, "
-                f"addressing_format={self.addressing_format}, "
-                f"packet_type={self.packet_type}, "
                 f"raw_frame_data={bytes_to_hex(self.raw_frame_data)}, "
                 f"can_id={self.can_id}, "
+                f"addressing_format={self.addressing_format}, "
+                f"addressing_type={self.addressing_type}, "
                 f"direction={self.direction}, "
-                f"transmission_time={self.transmission_time})")
+                f"packet_type={self.packet_type}, "
+                f"payload={None if self.payload is None else bytes_to_hex(self.payload)},"
+                f"transmission_time={self.transmission_time}, "
+                f"transmission_timestamp={self.transmission_timestamp})")
 
     @property
     def can_id(self) -> int:
@@ -64,7 +69,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :raise NotImplementedError: There is missing implementation for the stored CAN Frame object type.
         """
-        if isinstance(self.frame, PythonCanMessage):
+        if isinstance(self.frame, PythonCanFrame):
             return self.frame.arbitration_id
         raise NotImplementedError("Missing implementation for the currently stored CAN frame type: "
                                   f"{type(self.frame)}.")
@@ -76,7 +81,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :raise NotImplementedError: There is missing implementation for the stored CAN Frame object type.
         """
-        if isinstance(self.frame, PythonCanMessage):
+        if isinstance(self.frame, PythonCanFrame):
             return bytes(self.frame.data)
         raise NotImplementedError("Missing implementation for the currently stored CAN frame type: "
                                   f"{type(self.frame)}.")
@@ -124,7 +129,7 @@ class CanPacketRecord(AbstractCanPacketContainer, AbstractPacketRecord):
 
         :raise TypeError: Provided frame object has unsupported type.
         """
-        if isinstance(value, PythonCanMessage):
+        if isinstance(value, PythonCanFrame):
             return None
         raise TypeError(f"Unsupported CAN Frame type was provided. Actual type: {type(value)}")
 

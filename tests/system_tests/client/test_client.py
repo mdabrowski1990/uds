@@ -118,18 +118,18 @@ class AbstractClientTests(BaseSystemTests, ABC):
         assert response_record.addressing_type == response_message.addressing_type
         # measured time parameters
         assert (client.p2_client_measured
-                == (response_record.transmission_start - request_record.transmission_end).total_seconds() * 1000.)
+                == (response_record.transmission_start_time - request_record.transmission_end_time).total_seconds() * 1000.)
         assert (client.p6_client_measured
-                == (response_record.transmission_end - request_record.transmission_end).total_seconds() * 1000.)
+                == (response_record.transmission_end_time - request_record.transmission_end_time).total_seconds() * 1000.)
         assert client.p2_ext_client_measured is None
         assert client.p6_ext_client_measured is None
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= request_record.transmission_start
-                    <= request_record.transmission_end
-                    < response_record.transmission_start
-                    <= response_record.transmission_end
+                    <= request_record.transmission_start_time
+                    <= request_record.transmission_end_time
+                    < response_record.transmission_start_time
+                    <= response_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("request_message, response_messages", [
@@ -220,25 +220,25 @@ class AbstractClientTests(BaseSystemTests, ABC):
             assert response_record.addressing_type == response_messages[i].addressing_type
         # measured time parameters
         assert (client.p2_client_measured
-                == (response_records[0].transmission_start - request_record.transmission_end).total_seconds() * 1000.)
+                == (response_records[0].transmission_start_time - request_record.transmission_end_time).total_seconds() * 1000.)
         assert isinstance(client.p2_ext_client_measured, tuple)
         assert len(client.p2_ext_client_measured) == len(response_records) - 1
         for i, response_record in enumerate(response_records[1:]):
             assert (client.p2_ext_client_measured[i]
-                    == (response_record.transmission_end - response_records[
-                        i].transmission_end).total_seconds() * 1000.)
+                    == (response_record.transmission_end_time - response_records[
+                        i].transmission_end_time).total_seconds() * 1000.)
         assert (client.p6_ext_client_measured
-                == (response_records[-1].transmission_end - request_record.transmission_end).total_seconds() * 1000.)
+                == (response_records[-1].transmission_end_time - request_record.transmission_end_time).total_seconds() * 1000.)
         assert client.p6_client_measured is None
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= request_record.transmission_start
-                    <= request_record.transmission_end
-                    < response_records[0].transmission_start
-                    <= response_records[0].transmission_end
-                    < response_records[-1].transmission_start
-                    <= response_records[-1].transmission_end
+                    <= request_record.transmission_start_time
+                    <= request_record.transmission_end_time
+                    < response_records[0].transmission_start_time
+                    <= response_records[0].transmission_end_time
+                    < response_records[-1].transmission_start_time
+                    <= response_records[-1].transmission_end_time
                     <= datetime.fromtimestamp(time_after + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("request_message, response_message", [
@@ -312,10 +312,10 @@ class AbstractClientTests(BaseSystemTests, ABC):
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             assert (datetime.fromtimestamp(time_before - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= request_record.transmission_start
-                    <= request_record.transmission_end
-                    < other_response_record.transmission_start
-                    <= other_response_record.transmission_end
+                    <= request_record.transmission_start_time
+                    <= request_record.transmission_end_time
+                    < other_response_record.transmission_start_time
+                    <= other_response_record.transmission_end_time
                     <= datetime.fromtimestamp(time_after + self.TIMESTAMP_TOLERANCE / 1000.))
 
     @pytest.mark.parametrize("request_message, response_message", [
@@ -650,8 +650,8 @@ class AbstractClientTests(BaseSystemTests, ABC):
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             for i, tp_record in enumerate(tester_present_records[1:]):
-                s3_client_measured = (tp_record.transmission_start.timestamp()
-                                      - tester_present_records[i].transmission_start.timestamp())
+                s3_client_measured = (tp_record.transmission_start_time.timestamp()
+                                      - tester_present_records[i].transmission_start_time.timestamp())
                 assert (s3_client - self.TASK_TIMING_TOLERANCE
                         <=  s3_client_measured * 1000.
                         <= s3_client + self.TASK_TIMING_TOLERANCE)

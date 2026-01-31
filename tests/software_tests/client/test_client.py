@@ -1,4 +1,3 @@
-from datetime import datetime
 from time import perf_counter, sleep
 
 import pytest
@@ -41,8 +40,6 @@ class TestClient:
         self.mock_warn = self._patcher_warn.start()
         self._patcher_perf_counter = patch(f"{SCRIPT_LOCATION}.perf_counter")
         self.mock_perf_counter = self._patcher_perf_counter.start()
-        self._patcher_time = patch(f"{SCRIPT_LOCATION}.time")
-        self.mock_time = self._patcher_time.start()
         self._patcher_thread = patch(f"{SCRIPT_LOCATION}.Thread")
         self.mock_thread = self._patcher_thread.start()
         self._patcher_event = patch(f"{SCRIPT_LOCATION}.Event")
@@ -58,7 +55,6 @@ class TestClient:
         self._patcher_min.stop()
         self._patcher_warn.stop()
         self._patcher_perf_counter.stop()
-        self._patcher_time.stop()
         self._patcher_thread.stop()
         self._patcher_event.stop()
         self._patcher_tester_present.stop()
@@ -531,19 +527,19 @@ class TestClient:
 
     @pytest.mark.parametrize("request_message, response_messages, p2_client, p6_client", [
         (Mock(spec=UdsMessageRecord,
-              transmission_start=datetime(2020, 1, 1, 12, 0, 0),
-              transmission_end=datetime(2020, 1, 1, 12, 0, 0, 500)),
+              transmission_start_timestamp=0,
+              transmission_end_timestamp=0.000500),
          (Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 14000),
-               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 15500)), ),
+               transmission_start_timestamp=0.014000,
+               transmission_end_timestamp=0.015500), ),
          13.5,
          15),
         (Mock(spec=UdsMessageRecord,
-              transmission_start=datetime(2025, 8, 24, 19, 21, 17, 917304),
-              transmission_end=datetime(2025, 8, 24, 19, 21, 17, 919054)),
+              transmission_start_timestamp=17.917304,
+              transmission_end_timestamp=17.919054),
          (Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2025, 8, 24, 19, 21, 18, 17804),
-               transmission_end=datetime(2025, 8, 24, 19, 21, 18, 19054)),),
+               transmission_start_timestamp=18.017804,
+               transmission_end_timestamp=18.019054),),
          98.75,
          100),
     ])
@@ -558,66 +554,31 @@ class TestClient:
         self.mock_client._update_p6_ext_client_measured.assert_not_called()
         self.mock_client.assert_not_called()
 
-    @pytest.mark.parametrize("request_message, response_messages, p2_client, p6_client", [
-        (Mock(spec=UdsMessageRecord,
-              transmission_start=datetime(2020, 1, 1, 12, 0, 0),
-              transmission_end=datetime(2020, 1, 1, 12, 0, 0, 500)),
-         (Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 499),
-               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 15500)), ),
-         -0.001,
-         15),
-        (Mock(spec=UdsMessageRecord,
-              transmission_start=datetime(2025, 8, 24, 19, 21, 17, 917304),
-              transmission_end=datetime(2025, 8, 24, 19, 21, 17, 917304)),
-         (Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2025, 8, 24, 19, 21, 17, 916304),
-               transmission_end=datetime(2025, 8, 24, 19, 21, 17, 916304)),),
-         -1,
-         -1),
-    ])
-    def test_update_measured_client_values__direct_response__negative(self, request_message, response_messages,
-                                                                      p2_client, p6_client):
-        assert Client._update_measured_client_values(self.mock_client,
-                                                     request_record=request_message,
-                                                     response_records=response_messages) is None
-        if p2_client < 0:
-            self.mock_client._update_p2_client_measured.assert_not_called()
-        else:
-            self.mock_client._update_p2_client_measured.assert_called_once_with(p2_client)
-        if p6_client < 0:
-            self.mock_client._update_p6_client_measured.assert_not_called()
-        else:
-            self.mock_client._update_p6_client_measured.assert_called_once_with(p6_client)
-        self.mock_client._update_p2_ext_client_measured.assert_not_called()
-        self.mock_client._update_p6_ext_client_measured.assert_not_called()
-        self.mock_warn.assert_called()
-
     @pytest.mark.parametrize("request_message, response_messages, p2_client, p2_ext_client, p6_ext_client", [
         (Mock(spec=UdsMessageRecord,
-              transmission_start=datetime(2020, 1, 1, 12, 0, 0),
-              transmission_end=datetime(2020, 1, 1, 12, 0, 0, 500)),
+              transmission_start_timestamp=0,
+              transmission_end_timestamp=0.000500),
          (Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 14000),
-               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 15500)),
+               transmission_start_timestamp=0.014000,
+               transmission_end_timestamp=0.015500),
           Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2020, 1, 1, 12, 0, 0, 514000),
-               transmission_end=datetime(2020, 1, 1, 12, 0, 0, 989000))),
+               transmission_start_timestamp=0.514000,
+               transmission_end_timestamp=0.989000)),
          13.5,
          [973.5],
          988.5),
         (Mock(spec=UdsMessageRecord,
-              transmission_start=datetime(2025, 8, 24, 19, 21, 17, 917304),
-              transmission_end=datetime(2025, 8, 24, 19, 21, 17, 919054)),
+              transmission_start_timestamp=17.917304,
+              transmission_end_timestamp=17.919054),
          (Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2025, 8, 24, 19, 21, 18, 17804),
-               transmission_end=datetime(2025, 8, 24, 19, 21, 18, 19054)),
+               transmission_start_timestamp=18.017804,
+               transmission_end_timestamp=18.019054),
           Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2025, 8, 24, 19, 21, 18, 698454),
-               transmission_end=datetime(2025, 8, 24, 19, 21, 18, 701304)),
+               transmission_start_timestamp=18.698454,
+               transmission_end_timestamp=18.701304),
           Mock(spec=UdsMessageRecord,
-               transmission_start=datetime(2025, 8, 24, 19, 21, 19, 17804),
-               transmission_end=datetime(2025, 8, 24, 19, 21, 19, 19054))),
+               transmission_start_timestamp=19.017804,
+               transmission_end_timestamp=19.019054)),
          98.75,
          [682.25, 317.75],
          1100),

@@ -10,7 +10,7 @@ from uds.addressing import AbstractAddressingInformation
 from uds.message import UdsMessage, UdsMessageRecord
 from uds.packet import AbstractPacket, AbstractPacketRecord
 from uds.segmentation import AbstractSegmenter
-from uds.utilities import ReassignmentError, TimeMillisecondsAlias
+from uds.utilities import ReassignmentError, TimeMillisecondsAlias, TimeSync
 
 
 class AbstractTransportInterface(ABC):
@@ -28,6 +28,12 @@ class AbstractTransportInterface(ABC):
         :param network_manager: An object that handles the network (Physical and Data layers of OSI Model).
         """
         self.network_manager = network_manager
+        self.__time_sync: TimeSync = TimeSync()
+
+    @property
+    def time_sync(self) -> TimeSync:
+        """Get time and timestamp synchronizer."""
+        return self.__time_sync
 
     @property
     @abstractmethod

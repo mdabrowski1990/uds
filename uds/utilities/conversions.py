@@ -4,10 +4,12 @@ __all__ = [
     "int_to_obd_dtc", "obd_dtc_to_int",
     "bytes_to_hex", "bytes_to_int", "int_to_bytes",
     "get_signed_value_decoding_formula", "get_signed_value_encoding_formula",
+    "TimeSync",
 ]
 
 import re
-from typing import Callable, Optional
+from time import perf_counter, time
+from typing import Any, Callable, Optional, Union
 
 from .common_types import RawBytesAlias, validate_raw_bytes
 from .constants import BITS_TO_DTC_CHARACTER_MAPPING, DTC_CHARACTERS_MAPPING, MAX_DTC_VALUE, MIN_DTC_VALUE
@@ -174,3 +176,164 @@ def get_signed_value_encoding_formula(bit_length: int) -> Callable[[int], int]:
             return value
         return 2 * msb_value + value
     return encode_signed_value
+
+
+class TimeSync:
+    """Synchronization between wall clock (`time.time()`) and performance counter (`time.perf_counter()`) values."""
+
+    _instance = None
+    """Instance of this Singleton."""
+
+    DEFAULT_SAMPLES_NUMBER = 20
+    """Default number of samples collected during synchronization."""
+    DEFAULT_SYNC_EXPIRATION_S = 10
+    """Default expiration time (in seconds) of the offset calculated during last synchronization."""
+
+    def __init__(self,
+                 samples_number: Optional[int] = None,
+                 sync_expiration: Optional[Union[int, float]] = None) -> None:
+        """
+        Get time synchronization object.
+
+        :param samples_number: Number of samples to use for synchronization.
+        :param sync_expiration: Time in seconds after which synchronization is considered no longer up to date.
+
+        .. warning:: Objects of this class are Singletons.
+        """
+        if not hasattr(self, "_TimeSync__samples_number"):
+            self.samples_number = self.DEFAULT_SAMPLES_NUMBER
+        if not hasattr(self, "_TimeSync__sync_expiration"):
+            self.sync_expiration = self.DEFAULT_SYNC_EXPIRATION_S
+        if not hasattr(self, "_TimeSync__last_sync_timestamp"):
+            self.__last_sync_timestamp: Optional[float] = None
+        if not hasattr(self, "_TimeSync__offset"):
+            self.__offset: Optional[float] = None
+        if samples_number is not None:
+            self.samples_number = samples_number
+        if sync_expiration is not None:
+            self.sync_expiration = sync_expiration
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> "TimeSync":
+        """Return existing instance if one exists, otherwise create one."""
+        if cls._instance is None:
+            cls._instance = super(TimeSync, cls).__new__(cls)
+        return cls._instance
+
+    @property
+    def samples_number(self) -> int:
+        """Get number of samples to take during synchronization."""
+        return self.__samples_number
+
+    @samples_number.setter
+    def samples_number(self, value: int) -> None:
+        """
+        Set number of samples to take during synchronization.
+
+        :param value: Value to set.
+
+        :raise TypeError: Value is not int type.
+        :raise ValueError: Value is not a positive number.
+        """
+        if not isinstance(value, int):
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+        if value < 1:
+            raise ValueError(f"Provided value is not a positive number. Actual value: {value}")
+        self.__samples_number = value
+
+    @property
+    def sync_expiration(self) -> float:
+        """Get time in seconds after which synchronization value is considered outdated."""
+        return self.__sync_expiration
+
+    @sync_expiration.setter
+    def sync_expiration(self, value: Union[int, float]) -> None:
+        """
+        Set time in seconds after which synchronization value is considered outdated.
+
+        :param value: Value to set.
+
+        :raise TypeError: Value is not int type.
+        :raise ValueError: Value is not a positive number.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+        if value <= 0:
+            raise ValueError(f"Provided value is not a positive number. Actual value: {value}")
+        self.__sync_expiration = float(value)
+
+    @property
+    def last_sync_timestamp(self) -> Optional[float]:
+        """Value of performance counter for the last synchronization point."""
+        return self.__last_sync_timestamp
+
+    @property
+    def is_sync_outdated(self) -> bool:
+        """Get flag whether the current sync value is outdated."""
+        if self.last_sync_timestamp is None:
+            return True
+        return perf_counter() - self.last_sync_timestamp > self.sync_expiration
+
+    @property
+    def offset(self) -> Optional[float]:
+        """Difference between wall clock and performance counter."""
+        return self.__offset
+
+    def sync(self) -> float:
+        """Perform synchronization."""
+        best_offset = None
+        best_latency = float("inf")
+        for _ in range(self.samples_number):
+            perf_value_start = perf_counter()
+            time_value = time()
+            perf_value_end = perf_counter()
+            latency = perf_value_end - perf_value_start
+            if latency < best_latency:
+                mid_perf = (perf_value_end + perf_value_start) / 2
+                best_offset = time_value - mid_perf
+        self.__offset = best_offset
+        self.__last_sync_timestamp = perf_counter()
+        return self.offset  # type: ignore
+
+    def time_to_perf_counter(self,
+                             time_value: float,
+                             min_value: Optional[float] = None,
+                             max_value: Optional[float] = None) -> float:
+        """
+        Convert wall clock time to performance counter.
+
+        :param time_value: Wall clock time value to convert.
+        :param min_value: The lowest possible result (an earlier value of performance counter).
+        :param max_value: The highest possible result (a later value of performance counter).
+
+        :return: An approximation of performance counter for given wall clock time value.
+        """
+        if self.is_sync_outdated:
+            self.sync()
+        converted_value = time_value - self.offset  # type: ignore
+        if min_value is not None and min_value > converted_value:
+            return min_value
+        if max_value is not None and max_value < converted_value:
+            return max_value
+        return converted_value
+
+    def perf_counter_to_time(self,
+                             perf_counter_value: float,
+                             min_value: Optional[float] = None,
+                             max_value: Optional[float] = None) -> float:
+        """
+        Convert performance counter to wall clock time.
+
+        :param perf_counter_value: Performance counter value to convert.
+        :param min_value: The lowest possible result (an earlier value of wall clock time).
+        :param max_value: The highest possible result (a later value of wall clock time).
+
+        :return: An approximation of wall clock time for given performance counter value.
+        """
+        if self.is_sync_outdated:
+            self.sync()
+        converted_value = perf_counter_value + self.offset  # type: ignore
+        if min_value is not None and min_value > converted_value:
+            return min_value
+        if max_value is not None and max_value < converted_value:
+            return max_value
+        return converted_value

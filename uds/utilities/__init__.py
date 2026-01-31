@@ -75,6 +75,7 @@ from .constants import (
     ZERO_SUB_FUNCTION_MAPPING,
 )
 from .conversions import (
+    TimeSync,
     bytes_to_hex,
     bytes_to_int,
     get_signed_value_decoding_formula,

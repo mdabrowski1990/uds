@@ -15,6 +15,8 @@ from .python_can import (
 class KvaserConfig(AbstractPythonCanTests):
     """Configuration for python-can Transport Interface tests with Kvaser CAN interfaces."""
 
+    MAKE_TIMING_CHECKS = True
+
     def _define_interfaces(self):
         """Configure CAN bus objects that manage CAN interfaces."""
         self.can_interface_1 = Bus(interface="kvaser",
@@ -39,8 +41,6 @@ class TestKvaserUnsegmentedMessage(AbstractUnsegmentedMessageTests, KvaserConfig
 
 class TestKvaserSegmentedMessage(AbstractSegmentedMessageTests, KvaserConfig):
     """Segmented UDS message related system tests for python-can Transport Interface."""
-    # TODO: test_async_receive_message__multi_packets__end_timeout failing due to
-    #  https://github.com/mdabrowski1990/uds/issues/228
 
 
 # Full Duplex
