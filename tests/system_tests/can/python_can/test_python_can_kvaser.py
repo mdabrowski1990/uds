@@ -37,7 +37,6 @@ class TestKvaserCanPacket(AbstractCanPacketTests, KvaserConfig):
 
 class TestKvaserUnsegmentedMessage(AbstractUnsegmentedMessageTests, KvaserConfig):
     """Unsegmented UDS message related system tests for python-can Transport Interface."""
-    # TODO: passing
 
 
 class TestKvaserSegmentedMessage(AbstractSegmentedMessageTests, KvaserConfig):
