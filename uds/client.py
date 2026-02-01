@@ -4,7 +4,7 @@ __all__ = ["Client"]
 
 from functools import wraps
 from queue import Empty, SimpleQueue
-from threading import Event, Thread
+from threading import Event, Thread, Lock
 from time import perf_counter
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 from warnings import warn
@@ -85,6 +85,7 @@ class Client:
         :param p6_ext_client_timeout: Timeout value for P*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
+        # TODO: rework locks and events
         # set initial values
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
@@ -393,6 +394,26 @@ class Client:
         """Get flag whether Tester Present thread is running periodic sending."""
         return self.__tester_present_thread is not None
 
+    @property
+    def is_ready_for_physical_transmission(self) -> bool:
+        """
+        Get flag whether Client is ready for request message transmission.
+
+        :return: True if response to the last physically addressed request was received
+            or timeout (either P2, P3 or P7) achieved, False otherwise.
+        """
+        # TODO
+
+    @property
+    def is_ready_for_functional_transmission(self) -> bool:
+        """
+        Get flag whether Client is ready for request message transmission.
+
+        :return: True if response to the last physically addressed request was received
+            or timeout (either P2, P3 or P7) achieved, False otherwise.
+        """
+        # TODO
+
     def _update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P2Client parameter.
@@ -494,7 +515,16 @@ class Client:
             p6_measured = response_records[-1].transmission_end_timestamp - request_record.transmission_end_timestamp
             self._update_p6_client_measured(round(p6_measured * 1000., 3))
 
-    def _receive_response(self,
+    def _send_message(self, message: UdsMessage) -> UdsMessageRecord:
+        # TODO: use locks and events
+        if message.addressing_type == AddressingType.PHYSICAL:
+            ...
+        elif message.addressing_type == AddressingType.FUNCTIONAL:
+            ...
+        else:
+            raise ValueError("Unsupported addressing type.")
+
+    def _receive_response(self,  # TODO: review and update (set when ready for transmission)
                           sid: RequestSID,
                           start_timeout: TimeMillisecondsAlias,
                           end_timeout: TimeMillisecondsAlias) -> Optional[UdsMessageRecord]:
@@ -532,7 +562,7 @@ class Client:
             remaining_end_timeout_ms = end_timeout - time_elapsed_ms
         return None
 
-    def _receive_task(self, cycle: TimeMillisecondsAlias) -> None:
+    def _receive_task(self, cycle: TimeMillisecondsAlias) -> None:  # TODO: review and update (set when ready for transmission)
         """
         Schedule reception of a UDS message for a cyclic response collecting.
 
@@ -551,7 +581,7 @@ class Client:
                 self.__response_queue.put_nowait(response)
             self.__receiving_not_in_progress.set()
 
-    def _send_tester_present_task(self, tester_present_message: UdsMessage) -> None:
+    def _send_tester_present_task(self, tester_present_message: UdsMessage) -> None:  # TODO: review and update (use )
         """
         Schedule a single Tester Present message transmission for a cyclic sending.
 
