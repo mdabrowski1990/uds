@@ -92,16 +92,16 @@ class Client:
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
-        self.__receiving_thread: Optional[Thread] = None
-        self.__receiving_stop_event: Event = Event()
-        self.__receiving_break_event: Event = Event()
-        self.__receiving_not_in_progress: Event = Event()
-        self.__tester_present_thread: Optional[Thread] = None
-        self.__tester_present_stop_event: Event = Event()
-        self.__receiving_stop_event.set()
-        self.__receiving_break_event.clear()
-        self.__receiving_not_in_progress.set()
-        self.__tester_present_stop_event.set()
+        # self.__receiving_thread: Optional[Thread] = None
+        # self.__receiving_stop_event: Event = Event()
+        # self.__receiving_break_event: Event = Event()
+        # self.__receiving_not_in_progress: Event = Event()
+        # self.__tester_present_thread: Optional[Thread] = None
+        # self.__tester_present_stop_event: Event = Event()
+        # self.__receiving_stop_event.set()
+        # self.__receiving_break_event.clear()
+        # self.__receiving_not_in_progress.set()
+        # self.__tester_present_stop_event.set()
         # set default values to avoid errors on values assignment
         self.__p2_client_timeout = self.DEFAULT_P2_CLIENT_TIMEOUT
         self.__p2_ext_client_timeout = self.DEFAULT_P2_EXT_CLIENT_TIMEOUT
@@ -414,7 +414,7 @@ class Client:
         """
         # TODO
 
-    def _update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
+    def __update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P2Client parameter.
 
@@ -432,7 +432,7 @@ class Client:
                  category=ValueWarning)
         self.__p2_client_measured = value
 
-    def _update_p2_ext_client_measured(self, *values: TimeMillisecondsAlias) -> None:
+    def __update_p2_ext_client_measured(self, *values: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P2*Client parameter.
 
@@ -454,7 +454,7 @@ class Client:
                      category=ValueWarning)
         self.__p2_ext_client_measured = tuple(values)
 
-    def _update_p6_client_measured(self, value: TimeMillisecondsAlias) -> None:
+    def __update_p6_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P6Client parameter.
 
@@ -472,7 +472,7 @@ class Client:
                  category=ValueWarning)
         self.__p6_client_measured = value
 
-    def _update_p6_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
+    def __update_p6_ext_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
         Update measured values of P6*Client parameter.
 
@@ -500,7 +500,7 @@ class Client:
         :param response_records: Records of received responses to provided message.
         """
         p2_measured = response_records[0].transmission_start_timestamp - request_record.transmission_end_timestamp
-        self._update_p2_client_measured(round(p2_measured * 1000., 3))
+        self.__update_p2_client_measured(round(p2_measured * 1000., 3))
         if len(response_records) > 1:
             p2_ext_measured_list = []
             for i, response_record in enumerate(response_records[1:]):
@@ -509,16 +509,16 @@ class Client:
                 p2_ext_measured_list.append(round(_p2_ext_measured * 1000., 3))
             p6_ext_measured = (response_records[-1].transmission_end_timestamp
                                - request_record.transmission_end_timestamp)
-            self._update_p2_ext_client_measured(*p2_ext_measured_list)
-            self._update_p6_ext_client_measured(round(p6_ext_measured * 1000., 3))
+            self.__update_p2_ext_client_measured(*p2_ext_measured_list)
+            self.__update_p6_ext_client_measured(round(p6_ext_measured * 1000., 3))
         else:
             p6_measured = response_records[-1].transmission_end_timestamp - request_record.transmission_end_timestamp
-            self._update_p6_client_measured(round(p6_measured * 1000., 3))
+            self.__update_p6_client_measured(round(p6_measured * 1000., 3))
 
     def _send_message(self, message: UdsMessage) -> UdsMessageRecord:
         # TODO: use locks and events
         if message.addressing_type == AddressingType.PHYSICAL:
-            ...
+            self.__
         elif message.addressing_type == AddressingType.FUNCTIONAL:
             ...
         else:
