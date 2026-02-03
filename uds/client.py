@@ -4,7 +4,7 @@ __all__ = ["Client"]
 
 from functools import wraps
 from queue import Empty, SimpleQueue
-from threading import Event, Thread, Lock
+from threading import Event, Thread
 from time import perf_counter
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 from warnings import warn
@@ -85,23 +85,11 @@ class Client:
         :param p6_ext_client_timeout: Timeout value for P*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
-        # TODO: rework locks and events
-        # set initial values
+        ## TIMING PARAMETERS
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p6_ext_client_measured: Optional[TimeMillisecondsAlias] = None
-        self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
-        # self.__receiving_thread: Optional[Thread] = None
-        # self.__receiving_stop_event: Event = Event()
-        # self.__receiving_break_event: Event = Event()
-        # self.__receiving_not_in_progress: Event = Event()
-        # self.__tester_present_thread: Optional[Thread] = None
-        # self.__tester_present_stop_event: Event = Event()
-        # self.__receiving_stop_event.set()
-        # self.__receiving_break_event.clear()
-        # self.__receiving_not_in_progress.set()
-        # self.__tester_present_stop_event.set()
         # set default values to avoid errors on values assignment
         self.__p2_client_timeout = self.DEFAULT_P2_CLIENT_TIMEOUT
         self.__p2_ext_client_timeout = self.DEFAULT_P2_EXT_CLIENT_TIMEOUT
@@ -119,6 +107,28 @@ class Client:
         self.p6_client_timeout = p6_client_timeout
         self.p6_ext_client_timeout = p6_ext_client_timeout
         self.s3_client = s3_client
+        ## OTHER
+        self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
+        self.__last_physical_request: Optional[UdsMessageRecord] = None
+        self.__last_physical_response: Optional[UdsMessageRecord] = None
+        self.__last_functional_request: Optional[UdsMessageRecord] = None
+        self.__last_functional_response: Optional[UdsMessageRecord] = None
+        self.__transmission_not_in_progress: Event = Event()
+        self.__transmission_not_in_progress.set()
+        self.__receiving_not_in_progress: Event = Event()
+        self.__receiving_not_in_progress.set()
+        # self.__receiving_thread: Optional[Thread] = None
+        # self.__receiving_stop_event: Event = Event()
+        # self.__receiving_break_event: Event = Event()
+        # self.__receiving_not_in_progress: Event = Event()
+        # self.__tester_present_thread: Optional[Thread] = None
+        # self.__tester_present_stop_event: Event = Event()
+        # self.__receiving_stop_event.set()
+        # self.__receiving_break_event.clear()
+        # self.__receiving_not_in_progress.set()
+        # self.__tester_present_stop_event.set()
+
+
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
@@ -397,22 +407,38 @@ class Client:
     @property
     def is_ready_for_physical_transmission(self) -> bool:
         """
-        Get flag whether Client is ready for request message transmission.
+        Get flag whether Client is ready for physically addressed request message transmission.
 
-        :return: True if response to the last physically addressed request was received
-            or timeout (either P2, P3 or P7) achieved, False otherwise.
+        :return: True if no message is currently transmitted or received and the last physically addressed request
+            was either received or timed-out (P2, P3 or P6), False otherwise.
         """
-        # TODO
+        return (
+                not self.__transmission_not_in_progress.is_set()
+                and not self.__receiving_not_in_progress.is_set()
+                and (
+                        self.__last_physical_request is None
+                        or self.__last_physical_response is not None
+                        or perf_counter() > self.__last_physical_request.transmission_end_timestamp
+                        + self.p3_client_physical
+                )
+        )
 
     @property
     def is_ready_for_functional_transmission(self) -> bool:
         """
-        Get flag whether Client is ready for request message transmission.
+        Get flag whether Client is ready for functionally addressed request message transmission.
 
-        :return: True if response to the last physically addressed request was received
-            or timeout (either P2, P3 or P7) achieved, False otherwise.
+        :return: True if no message is currently transmitted and
+            P3Client_Func timeout was reached for the last functionally addressed request.
         """
-        # TODO
+        return (
+                not self.__transmission_not_in_progress.is_set()
+                and (
+                        self.__last_functional_request is None
+                        or perf_counter() > self.__last_functional_request.transmission_end_timestamp
+                        + self.p3_client_functional
+                )
+        )
 
     def __update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
