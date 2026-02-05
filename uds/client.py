@@ -411,7 +411,7 @@ class Client:
             was either received or timed-out (P2, P3 or P6), False otherwise.
         """
         return (
-                not self.__transmission_not_in_progress_event.is_set()
+                self.__transmission_not_in_progress_event.is_set()
                 and not self.__transmission_lock.locked()
                 and not self.__receiving_not_in_progress_event.is_set()
                 and (
@@ -431,7 +431,7 @@ class Client:
             P3Client_Func timeout was reached for the last functionally addressed request.
         """
         return (
-                not self.__transmission_not_in_progress_event.is_set()
+                self.__transmission_not_in_progress_event.is_set()
                 and not self.__transmission_lock.locked()
                 and (
                         self.__last_functional_request is None
@@ -654,7 +654,7 @@ class Client:
                 timestamp_now = perf_counter()
                 timestamp_p3_timeout = (self.__last_physical_request.transmission_end_timestamp
                                         + self.p3_client_physical / 1000.)
-                if timestamp_p3_timeout < timestamp_now:
+                if timestamp_now < timestamp_p3_timeout:
                     sleep(timestamp_p3_timeout - timestamp_now)
 
     def wait_till_ready_for_functional_transmission(self) -> None:
@@ -664,7 +664,7 @@ class Client:
                 timestamp_now = perf_counter()
                 timestamp_p3_timeout = (self.__last_functional_request.transmission_end_timestamp
                                         + self.p3_client_functional / 1000.)
-                if timestamp_p3_timeout < timestamp_now:
+                if timestamp_now - timestamp_p3_timeout:
                     sleep(timestamp_p3_timeout - timestamp_now)
 
     def wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
@@ -812,7 +812,7 @@ class Client:
         """
         if not isinstance(request, UdsMessage):
             raise TypeError("Provided request value is not an instance of UdsMessage class.")
-        request_record = self.transport_interface.send_message(request)
+        request_record = self._send_request(request)
         timestamp_request_sent = request_record.transmission_end_timestamp
         sid = RequestSID(request_record.payload[0])
         response_records: List[UdsMessageRecord] = []
