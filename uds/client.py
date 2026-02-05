@@ -135,6 +135,8 @@ class Client:
         if self.is_receiving:
             self.stop_receiving()
 
+    # TODO: make it as a context manager
+
     @property
     def transport_interface(self) -> AbstractTransportInterface:
         """Get Transport Interface used."""
@@ -413,7 +415,7 @@ class Client:
         return (
                 self.__transmission_not_in_progress_event.is_set()
                 and not self.__transmission_lock.locked()
-                and not self.__receiving_not_in_progress_event.is_set()
+                and self.__receiving_not_in_progress_event.is_set()
                 and (
                         self.__last_physical_request is None
                         or self.__last_physical_response is not None
@@ -647,7 +649,7 @@ class Client:
                 and message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
 
     def wait_till_ready_for_physical_transmission(self) -> None:
-        while not self.is_ready_for_functional_transmission:
+        while not self.is_ready_for_physical_transmission:
             self.__transmission_not_in_progress_event.wait()
             self.__receiving_not_in_progress_event.wait()
             if self.__last_physical_request is not None:
@@ -664,7 +666,7 @@ class Client:
                 timestamp_now = perf_counter()
                 timestamp_p3_timeout = (self.__last_functional_request.transmission_end_timestamp
                                         + self.p3_client_functional / 1000.)
-                if timestamp_now - timestamp_p3_timeout:
+                if timestamp_now < timestamp_p3_timeout:
                     sleep(timestamp_p3_timeout - timestamp_now)
 
     def wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
