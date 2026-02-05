@@ -4,8 +4,8 @@ __all__ = ["Client"]
 
 from functools import wraps
 from queue import Empty, SimpleQueue
-from threading import Event, Thread
-from time import perf_counter
+from threading import Event, Thread, Lock
+from time import perf_counter, sleep
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
@@ -34,14 +34,14 @@ def decorator_block_receiving(method: Callable) -> Callable:  # type: ignore
     @wraps(method)
     def wrapper(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
         # pylint: disable=protected-access
-        self._Client__receiving_break_event.set()
+        self._Client__break_in_receiving_event.set()
         self._Client__receiving_not_in_progress.wait(timeout=self.p6_ext_client_timeout)
         try:
             return_value = method(self, *args, **kwargs)
         except Exception as error:
-            self._Client__receiving_break_event.clear()
+            self._Client__break_in_receiving_event.clear()
             raise error
-        self._Client__receiving_break_event.clear()
+        self._Client__break_in_receiving_event.clear()
         return return_value
     return wrapper
 
@@ -107,28 +107,26 @@ class Client:
         self.p6_client_timeout = p6_client_timeout
         self.p6_ext_client_timeout = p6_ext_client_timeout
         self.s3_client = s3_client
+        # tasks and threads
+        self.__tester_present_task_event: Event = Event()
+        self.__tester_present_task_event.clear()
+        self.__tester_present_thread: Optional[Thread] = None
+        self.__receiving_task_event: Event = Event()
+        self.__receiving_task_event.clear()
+        self.__break_in_receiving_event: Event = Event()
+        self.__break_in_receiving_event.clear()
+        self.__receiving_thread: Optional[Thread] = None
+        self.__receiving_not_in_progress_event: Event = Event()
+        self.__receiving_not_in_progress_event.set()
+        self.__transmission_not_in_progress_event: Event = Event()
+        self.__transmission_not_in_progress_event.set()
+        self.__transmission_lock: Lock = Lock()
         ## OTHER
         self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
         self.__last_physical_request: Optional[UdsMessageRecord] = None
         self.__last_physical_response: Optional[UdsMessageRecord] = None
         self.__last_functional_request: Optional[UdsMessageRecord] = None
         self.__last_functional_response: Optional[UdsMessageRecord] = None
-        self.__transmission_not_in_progress: Event = Event()
-        self.__transmission_not_in_progress.set()
-        self.__receiving_not_in_progress: Event = Event()
-        self.__receiving_not_in_progress.set()
-        # self.__receiving_thread: Optional[Thread] = None
-        # self.__receiving_stop_event: Event = Event()
-        # self.__receiving_break_event: Event = Event()
-        # self.__receiving_not_in_progress: Event = Event()
-        # self.__tester_present_thread: Optional[Thread] = None
-        # self.__tester_present_stop_event: Event = Event()
-        # self.__receiving_stop_event.set()
-        # self.__receiving_break_event.clear()
-        # self.__receiving_not_in_progress.set()
-        # self.__tester_present_stop_event.set()
-
-
 
     def __del__(self) -> None:
         """Safely finish all tasks."""
@@ -397,12 +395,12 @@ class Client:
     @property
     def is_receiving(self) -> bool:
         """Get flag whether receiving thread is running."""
-        return self.__receiving_thread is not None
+        return self.__receiving_task_event.is_set()
 
     @property
     def is_tester_present_sent(self) -> bool:
         """Get flag whether Tester Present thread is running periodic sending."""
-        return self.__tester_present_thread is not None
+        return self.__tester_present_task_event.is_set()
 
     @property
     def is_ready_for_physical_transmission(self) -> bool:
@@ -413,8 +411,9 @@ class Client:
             was either received or timed-out (P2, P3 or P6), False otherwise.
         """
         return (
-                not self.__transmission_not_in_progress.is_set()
-                and not self.__receiving_not_in_progress.is_set()
+                not self.__transmission_not_in_progress_event.is_set()
+                and not self.__transmission_lock.locked()
+                and not self.__receiving_not_in_progress_event.is_set()
                 and (
                         self.__last_physical_request is None
                         or self.__last_physical_response is not None
@@ -432,7 +431,8 @@ class Client:
             P3Client_Func timeout was reached for the last functionally addressed request.
         """
         return (
-                not self.__transmission_not_in_progress.is_set()
+                not self.__transmission_not_in_progress_event.is_set()
+                and not self.__transmission_lock.locked()
                 and (
                         self.__last_functional_request is None
                         or perf_counter() > self.__last_functional_request.transmission_end_timestamp
@@ -541,16 +541,19 @@ class Client:
             p6_measured = response_records[-1].transmission_end_timestamp - request_record.transmission_end_timestamp
             self.__update_p6_client_measured(round(p6_measured * 1000., 3))
 
-    def _send_message(self, message: UdsMessage) -> UdsMessageRecord:
-        # TODO: use locks and events
-        if message.addressing_type == AddressingType.PHYSICAL:
-            self.__
-        elif message.addressing_type == AddressingType.FUNCTIONAL:
-            ...
-        else:
-            raise ValueError("Unsupported addressing type.")
+    def _send_request(self, request: UdsMessage) -> UdsMessageRecord:
+        self.wait_till_ready_for_transmission(request)
+        with self.__transmission_lock:
+            self.__transmission_not_in_progress_event.clear()
+            request_record = self.transport_interface.send_message(request)
+            self.__transmission_not_in_progress_event.set()
+        if request.addressing_type == AddressingType.PHYSICAL:
+            self.__last_physical_request = request_record
+        elif request.addressing_type == AddressingType.FUNCTIONAL:
+            self.__last_functional_request = request_record
+        return request_record
 
-    def _receive_response(self,  # TODO: review and update (set when ready for transmission)
+    def _receive_response(self,
                           sid: RequestSID,
                           start_timeout: TimeMillisecondsAlias,
                           end_timeout: TimeMillisecondsAlias) -> Optional[UdsMessageRecord]:
@@ -588,16 +591,16 @@ class Client:
             remaining_end_timeout_ms = end_timeout - time_elapsed_ms
         return None
 
-    def _receive_task(self, cycle: TimeMillisecondsAlias) -> None:  # TODO: review and update (set when ready for transmission)
+    def _receive_task(self, cycle: TimeMillisecondsAlias) -> None:
         """
         Schedule reception of a UDS message for a cyclic response collecting.
 
         :param cycle: Time (in milliseconds) used for this task cycle.
         """
-        while not self.__receiving_stop_event.is_set():
-            if self.__receiving_break_event.wait(cycle / 1000.):
+        while self.__receiving_task_event.is_set():
+            if self.__break_in_receiving_event.wait(cycle / 1000.):
                 continue
-            self.__receiving_not_in_progress.clear()
+            self.__receiving_not_in_progress_event.clear()
             try:
                 response = self.transport_interface.receive_message(start_timeout=cycle,
                                                                     end_timeout=self.p6_ext_client_timeout)
@@ -605,22 +608,21 @@ class Client:
                 pass
             else:
                 self.__response_queue.put_nowait(response)
-            self.__receiving_not_in_progress.set()
+            self.__receiving_not_in_progress_event.set()
 
-    def _send_tester_present_task(self, tester_present_message: UdsMessage) -> None:  # TODO: review and update (use )
+    def _send_tester_present_task(self, tester_present_request: UdsMessage) -> None:
         """
         Schedule a single Tester Present message transmission for a cyclic sending.
 
-        :param tester_present_message: Tester Present message to send.
+        :param tester_present_request: Tester Present request message to send.
         """
         period = self.s3_client / 1000.0
         next_call = perf_counter()
-        while not self.__tester_present_stop_event.is_set():
-            self.transport_interface.send_message(tester_present_message)
+        while self.__tester_present_task_event.is_set():
+            self._send_request(tester_present_request)
             next_call += period
-            remaining_wait = next_call - perf_counter()
-            if self.__tester_present_stop_event.wait(remaining_wait):
-                break
+            remaining_wait_s = next_call - perf_counter()
+            sleep(remaining_wait_s)
 
     @staticmethod
     def is_response_pending_message(message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
@@ -643,6 +645,35 @@ class Client:
         return (message.payload[0] == ResponseSID.NegativeResponse
                 and message.payload[1] == request_sid
                 and message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
+
+    def wait_till_ready_for_physical_transmission(self) -> None:
+        while not self.is_ready_for_functional_transmission:
+            self.__transmission_not_in_progress_event.wait()
+            self.__receiving_not_in_progress_event.wait()
+            if self.__last_physical_request is not None:
+                timestamp_now = perf_counter()
+                timestamp_p3_timeout = (self.__last_physical_request.transmission_end_timestamp
+                                        + self.p3_client_physical / 1000.)
+                if timestamp_p3_timeout < timestamp_now:
+                    sleep(timestamp_p3_timeout - timestamp_now)
+
+    def wait_till_ready_for_functional_transmission(self) -> None:
+        while not self.is_ready_for_functional_transmission:
+            self.__transmission_not_in_progress_event.wait()
+            if self.__last_functional_request is not None:
+                timestamp_now = perf_counter()
+                timestamp_p3_timeout = (self.__last_functional_request.transmission_end_timestamp
+                                        + self.p3_client_functional / 1000.)
+                if timestamp_p3_timeout < timestamp_now:
+                    sleep(timestamp_p3_timeout - timestamp_now)
+
+    def wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
+        if request.addressing_type == AddressingType.PHYSICAL:
+            return self.wait_till_ready_for_physical_transmission()
+        if request.addressing_type == AddressingType.FUNCTIONAL:
+            return self.wait_till_ready_for_functional_transmission()
+        raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
+                                  f"{request.addressing_type!r}")
 
     def get_response(self, timeout: Optional[TimeMillisecondsAlias] = None) -> Optional[UdsMessageRecord]:
         """
@@ -696,35 +727,6 @@ class Client:
         for _ in range(self.__response_queue.qsize()):
             self.__response_queue.get_nowait()
 
-    def start_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:
-        """
-        Start receiving task in the background.
-
-        All response messages sent to this Client while receiving is active, will be collected and accessible via
-        :meth:`~uds.client.Client.get_response` and :meth:`~uds.client.Client.get_response_no_wait` methods.
-
-        .. warning:: Cycle value would be overwritten with default value if request message is sent while receiving.
-        """
-        if self.is_receiving:
-            warn("Receiving is already active.",
-                 category=UserWarning)
-        else:
-            self.__receiving_stop_event.clear()
-            self.__receiving_thread = Thread(target=self._receive_task,
-                                             kwargs={"cycle": cycle},
-                                             daemon=True)
-            self.__receiving_thread.start()
-
-    def stop_receiving(self) -> None:
-        """Stop receiving task."""
-        if self.is_receiving:
-            self.__receiving_stop_event.set()
-            self.__receiving_thread.join()  # type: ignore
-            self.__receiving_thread = None
-        else:
-            warn("Receiving is already stopped.",
-                 category=UserWarning)
-
     def start_tester_present(self,
                              addressing_type: AddressingType = AddressingType.FUNCTIONAL,
                              sprmib: bool = True) -> None:
@@ -738,11 +740,11 @@ class Client:
             warn("Tester Present is already transmitted cyclically.",
                  category=UserWarning)
         else:
-            self.__tester_present_stop_event.clear()
+            self.__tester_present_task_event.set()
             payload = TESTER_PRESENT.encode_request({
                 "SubFunction": {
                     "suppressPosRspMsgIndicationBit": sprmib,
-                    "zeroSubFunction": 0}
+                    "zeroSubFunction": 0x00}
             })
             tester_present_message = UdsMessage(payload=payload,
                                                 addressing_type=AddressingType.validate_member(addressing_type))
@@ -754,11 +756,42 @@ class Client:
     def stop_tester_present(self) -> None:
         """Stop sending Tester Present cyclically."""
         if self.is_tester_present_sent:
-            self.__tester_present_stop_event.set()
-            self.__tester_present_thread.join(timeout=self.s3_client / 1000.)  # type: ignore
+            self.__tester_present_task_event.clear()
+            if self.__tester_present_thread is not None:
+                self.__tester_present_thread.join(timeout=self.s3_client / 1000.)
             self.__tester_present_thread = None
         else:
             warn("Cyclical sending of Tester Present is already stopped.",
+                 category=UserWarning)
+
+    def start_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:
+        """
+        Start receiving task in the background.
+
+        All response messages sent to this Client while receiving is active, will be collected and accessible via
+        :meth:`~uds.client.Client.get_response` and :meth:`~uds.client.Client.get_response_no_wait` methods.
+
+        .. warning:: Cycle value would be overwritten with default value if request message is sent while receiving.
+        """
+        if self.is_receiving:
+            warn("Receiving is already active.",
+                 category=UserWarning)
+        else:
+            self.__receiving_task_event.set()
+            self.__receiving_thread = Thread(target=self._receive_task,
+                                             kwargs={"cycle": cycle},
+                                             daemon=True)
+            self.__receiving_thread.start()
+
+    def stop_receiving(self) -> None:
+        """Stop receiving task."""
+        if self.is_receiving:
+            self.__receiving_task_event.clear()
+            if self.__receiving_thread is not None:
+                self.__receiving_thread.join()
+            self.__receiving_thread = None
+        else:
+            warn("Receiving is already stopped.",
                  category=UserWarning)
 
     @decorator_block_receiving

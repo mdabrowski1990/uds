@@ -924,7 +924,7 @@ class TestClient:
         mock_is_set = Mock(return_value=False)
         mock_wait = Mock(side_effect=[False, True])
         self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
-        assert Client._send_tester_present_task(self.mock_client, tester_present_message=mock_tp) is None
+        assert Client._send_tester_present_task(self.mock_client, tester_present_request=mock_tp) is None
         self.mock_client.transport_interface.send_message.assert_has_calls([call(mock_tp), call(mock_tp)])
         assert mock_is_set.call_count == 2
         assert mock_wait.call_count == 2
@@ -934,7 +934,7 @@ class TestClient:
         mock_is_set = Mock(return_value=True)
         mock_wait = Mock()
         self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
-        assert Client._send_tester_present_task(self.mock_client, tester_present_message=mock_tp) is None
+        assert Client._send_tester_present_task(self.mock_client, tester_present_request=mock_tp) is None
         self.mock_client.transport_interface.send_message.assert_not_called()
         mock_is_set.assert_called_once_with()
         mock_wait.assert_not_called()
