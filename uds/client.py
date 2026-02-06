@@ -2,6 +2,7 @@
 
 __all__ = ["Client"]
 
+import sys
 from functools import wraps
 from queue import Empty, SimpleQueue
 from threading import Event, Thread, Lock
@@ -121,7 +122,9 @@ class Client:
         self.__transmission_not_in_progress_event: Event = Event()
         self.__transmission_not_in_progress_event.set()
         self.__transmission_lock: Lock = Lock()
-        ## OTHER
+        self.__physical_transmission_lock: Lock = Lock()
+        self.__functional_transmission_lock: Lock = Lock()
+        # other
         self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
         self.__last_physical_request: Optional[UdsMessageRecord] = None
         self.__last_physical_response: Optional[UdsMessageRecord] = None
@@ -135,7 +138,11 @@ class Client:
         if self.is_receiving:
             self.stop_receiving()
 
-    # TODO: make it as a context manager
+    def __enter__(self) -> "Client":
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.__del__()
 
     @property
     def transport_interface(self) -> AbstractTransportInterface:
@@ -415,6 +422,7 @@ class Client:
         return (
                 self.__transmission_not_in_progress_event.is_set()
                 and not self.__transmission_lock.locked()
+                and not self.__physical_transmission_lock.locked()
                 and self.__receiving_not_in_progress_event.is_set()
                 and (
                         self.__last_physical_request is None
@@ -435,6 +443,7 @@ class Client:
         return (
                 self.__transmission_not_in_progress_event.is_set()
                 and not self.__transmission_lock.locked()
+                and not self.__functional_transmission_lock.locked()
                 and (
                         self.__last_functional_request is None
                         or perf_counter() > self.__last_functional_request.transmission_end_timestamp
@@ -518,6 +527,16 @@ class Client:
                  category=ValueWarning)
         self.__p6_ext_client_measured = value
 
+    def __wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
+        if request.addressing_type == AddressingType.PHYSICAL:
+            self.__physical_transmission_lock.acquire_lock(blocking=True)
+            return self.wait_till_ready_for_physical_transmission()
+        if request.addressing_type == AddressingType.FUNCTIONAL:
+            self.__functional_transmission_lock.acquire_lock(blocking=True)
+            return self.wait_till_ready_for_functional_transmission()
+        raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
+                                  f"{request.addressing_type!r}")
+
     def _update_measured_client_values(self,
                                        request_record: UdsMessageRecord,
                                        response_records: Sequence[UdsMessageRecord]) -> None:
@@ -544,14 +563,16 @@ class Client:
             self.__update_p6_client_measured(round(p6_measured * 1000., 3))
 
     def _send_request(self, request: UdsMessage) -> UdsMessageRecord:
-        self.wait_till_ready_for_transmission(request)
+        self.__wait_till_ready_for_transmission(request)
         with self.__transmission_lock:
             self.__transmission_not_in_progress_event.clear()
             request_record = self.transport_interface.send_message(request)
             self.__transmission_not_in_progress_event.set()
         if request.addressing_type == AddressingType.PHYSICAL:
+            self.__physical_transmission_lock.release()
             self.__last_physical_request = request_record
         elif request.addressing_type == AddressingType.FUNCTIONAL:
+            self.__functional_transmission_lock.release()
             self.__last_functional_request = request_record
         return request_record
 
@@ -668,14 +689,6 @@ class Client:
                                         + self.p3_client_functional / 1000.)
                 if timestamp_now < timestamp_p3_timeout:
                     sleep(timestamp_p3_timeout - timestamp_now)
-
-    def wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
-        if request.addressing_type == AddressingType.PHYSICAL:
-            return self.wait_till_ready_for_physical_transmission()
-        if request.addressing_type == AddressingType.FUNCTIONAL:
-            return self.wait_till_ready_for_functional_transmission()
-        raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
-                                  f"{request.addressing_type!r}")
 
     def get_response(self, timeout: Optional[TimeMillisecondsAlias] = None) -> Optional[UdsMessageRecord]:
         """
