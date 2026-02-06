@@ -880,7 +880,7 @@ class TestClient:
     def test_receive_task__stopped(self):
         mock_is_set = Mock(return_value=True)
         self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
-        assert Client._receive_task(self.mock_client, cycle=Mock()) is None
+        assert Client.__receiving_task(self.mock_client, cycle=Mock()) is None
         self.mock_client.transport_interface.receive_message.assert_not_called()
 
     @pytest.mark.parametrize("cycle", [10, 321])
@@ -889,7 +889,7 @@ class TestClient:
         self.mock_client._Client__receiving_stop_event = Mock(spec=Event, is_set=mock_is_set)
         mock_is_waiting = Mock(return_value=True)
         self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
-        assert Client._receive_task(self.mock_client, cycle=cycle) is None
+        assert Client.__receiving_task(self.mock_client, cycle=cycle) is None
         self.mock_client.transport_interface.receive_message.assert_not_called()
 
     @pytest.mark.parametrize("cycle", [10, 321])
@@ -899,7 +899,7 @@ class TestClient:
         mock_is_waiting = Mock(return_value=False)
         self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
         self.mock_client.transport_interface.receive_message.side_effect = TimeoutError
-        assert Client._receive_task(self.mock_client, cycle=cycle) is None
+        assert Client.__receiving_task(self.mock_client, cycle=cycle) is None
         self.mock_client.transport_interface.receive_message.assert_called_once_with(
             start_timeout=cycle,
             end_timeout=self.mock_client.p6_ext_client_timeout)
@@ -913,7 +913,7 @@ class TestClient:
         mock_is_waiting = Mock(return_value=False)
         self.mock_client._Client__receiving_break_event = Mock(spec=Event, wait=mock_is_waiting)
         self.mock_client.transport_interface.receive_message.side_effect = [TimeoutError, mock_message, TimeoutError]
-        assert Client._receive_task(self.mock_client, cycle=cycle) is None
+        assert Client.__receiving_task(self.mock_client, cycle=cycle) is None
         assert self.mock_client.transport_interface.receive_message.call_count == 3
         self.mock_client._Client__response_queue.put_nowait.assert_called_once_with(mock_message)
 
@@ -924,7 +924,7 @@ class TestClient:
         mock_is_set = Mock(return_value=False)
         mock_wait = Mock(side_effect=[False, True])
         self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
-        assert Client._send_tester_present_task(self.mock_client, tester_present_request=mock_tp) is None
+        assert Client.__send_tester_present_task(self.mock_client, tester_present_request=mock_tp) is None
         self.mock_client.transport_interface.send_message.assert_has_calls([call(mock_tp), call(mock_tp)])
         assert mock_is_set.call_count == 2
         assert mock_wait.call_count == 2
@@ -934,7 +934,7 @@ class TestClient:
         mock_is_set = Mock(return_value=True)
         mock_wait = Mock()
         self.mock_client._Client__tester_present_stop_event = Mock(spec=Event, is_set=mock_is_set, wait=mock_wait)
-        assert Client._send_tester_present_task(self.mock_client, tester_present_request=mock_tp) is None
+        assert Client.__send_tester_present_task(self.mock_client, tester_present_request=mock_tp) is None
         self.mock_client.transport_interface.send_message.assert_not_called()
         mock_is_set.assert_called_once_with()
         mock_wait.assert_not_called()
@@ -948,7 +948,7 @@ class TestClient:
     def test_is_response_pending_message__type_error(self, mock_isinstance, message, sid):
         mock_isinstance.return_value = False
         with pytest.raises(TypeError):
-            Client.is_response_pending_message(message=message, request_sid=sid)
+            Client.is_response_pending_message(response_message=message, request_sid=sid)
         mock_isinstance.assert_called_once_with(message, (UdsMessage, UdsMessageRecord))
 
     @pytest.mark.parametrize("message, sid", [
@@ -960,7 +960,7 @@ class TestClient:
     ])
     def test_is_response_pending_message__true(self, message, sid):
         self.mock_validate_request_sid.return_value = sid
-        assert Client.is_response_pending_message(message=message, request_sid=sid) is True
+        assert Client.is_response_pending_message(response_message=message, request_sid=sid) is True
         self.mock_validate_request_sid.assert_called_once_with(sid)
 
     @pytest.mark.parametrize("message, sid", [
@@ -973,7 +973,7 @@ class TestClient:
     ])
     def test_is_response_pending_message__false(self, message, sid):
         self.mock_validate_request_sid.return_value = sid
-        assert Client.is_response_pending_message(message=message, request_sid=sid) is False
+        assert Client.is_response_pending_message(response_message=message, request_sid=sid) is False
         self.mock_validate_request_sid.assert_called_once_with(sid)
 
     # get_response

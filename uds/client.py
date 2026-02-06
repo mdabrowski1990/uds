@@ -2,25 +2,24 @@
 
 __all__ = ["Client"]
 
-import sys
 from functools import wraps
 from queue import Empty, SimpleQueue
-from threading import Event, Thread, Lock
+from threading import Event, Lock, Thread
 from time import perf_counter, sleep
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 from uds.addressing import AddressingType
-from uds.message import NRC, RESPONSE_REQUEST_SID_DIFF, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
+from uds.message import NRC, SERVICES_WITH_SUBFUNCTION, RequestSID, ResponseSID, UdsMessage, UdsMessageRecord
 from uds.translator import TESTER_PRESENT
 from uds.transport_interface import AbstractTransportInterface
 from uds.utilities import (
+    SPRMIB_MASK,
     InconsistencyError,
     MessageTransmissionNotStartedError,
     ReassignmentError,
     TimeMillisecondsAlias,
     ValueWarning,
-    bytes_to_hex,
 )
 
 
@@ -121,6 +120,7 @@ class Client:
         self.__receiving_not_in_progress_event.set()
         self.__transmission_not_in_progress_event: Event = Event()
         self.__transmission_not_in_progress_event.set()
+        self.__receiving_lock: Lock = Lock()
         self.__transmission_lock: Lock = Lock()
         self.__physical_transmission_lock: Lock = Lock()
         self.__functional_transmission_lock: Lock = Lock()
@@ -137,12 +137,6 @@ class Client:
             self.stop_tester_present()
         if self.is_receiving:
             self.stop_receiving()
-
-    def __enter__(self) -> "Client":
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.__del__()
 
     @property
     def transport_interface(self) -> AbstractTransportInterface:
@@ -527,15 +521,39 @@ class Client:
                  category=ValueWarning)
         self.__p6_ext_client_measured = value
 
-    def __wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
-        if request.addressing_type == AddressingType.PHYSICAL:
-            self.__physical_transmission_lock.acquire_lock(blocking=True)
-            return self.wait_till_ready_for_physical_transmission()
-        if request.addressing_type == AddressingType.FUNCTIONAL:
-            self.__functional_transmission_lock.acquire_lock(blocking=True)
-            return self.wait_till_ready_for_functional_transmission()
-        raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
-                                  f"{request.addressing_type!r}")
+    def __receiving_task(self, cycle: TimeMillisecondsAlias) -> None:
+        """
+        Schedule reception of a UDS message for a cyclic response collecting.
+
+        :param cycle: Time (in milliseconds) used for this task cycle.
+        """
+        while self.__receiving_task_event.is_set():
+            sleep(cycle / 1000.)
+            if self.__break_in_receiving_event.is_set():
+                continue
+            try:
+                response_record = self._receive_response(start_timeout=cycle,
+                                                         end_timeout=self.p6_ext_client_timeout)
+            except TimeoutError:
+                pass
+            else:
+                self.__response_queue.put_nowait(response_record)
+
+    def __send_tester_present_task(self, tester_present_request: UdsMessage) -> None:
+        """
+        Schedule a single Tester Present message transmission for a cyclic sending.
+
+        :param tester_present_request: Tester Present request message to send.
+        """
+        period = self.s3_client / 1000.0
+        next_call = perf_counter()
+        while self.__tester_present_task_event.is_set():
+            next_call += period
+            remaining_wait_s = next_call - perf_counter()
+            if remaining_wait_s < 0:
+                continue
+            sleep(remaining_wait_s)
+            self._send_request(tester_present_request)
 
     def _update_measured_client_values(self,
                                        request_record: UdsMessageRecord,
@@ -563,96 +581,122 @@ class Client:
             self.__update_p6_client_measured(round(p6_measured * 1000., 3))
 
     def _send_request(self, request: UdsMessage) -> UdsMessageRecord:
-        self.__wait_till_ready_for_transmission(request)
-        with self.__transmission_lock:
-            self.__transmission_not_in_progress_event.clear()
-            request_record = self.transport_interface.send_message(request)
-            self.__transmission_not_in_progress_event.set()
         if request.addressing_type == AddressingType.PHYSICAL:
-            self.__physical_transmission_lock.release()
+            addressing_lock = self.__physical_transmission_lock
+        elif request.addressing_type == AddressingType.FUNCTIONAL:
+            addressing_lock = self.__functional_transmission_lock
+        else:
+            raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
+                                      f"{request.addressing_type!r}")
+        with addressing_lock:  # avoid queueing two request of the same addressing straight after each other
+            self.wait_till_ready_for_transmission(request)
+            with self.__transmission_lock:  # avoid two requests being transmitted at the same time
+                self.__transmission_not_in_progress_event.clear()
+                try:
+                    request_record = self.transport_interface.send_message(request)
+                finally:
+                    self.__transmission_not_in_progress_event.set()
+        if request.addressing_type == AddressingType.PHYSICAL:
             self.__last_physical_request = request_record
         elif request.addressing_type == AddressingType.FUNCTIONAL:
-            self.__functional_transmission_lock.release()
             self.__last_functional_request = request_record
         return request_record
 
     def _receive_response(self,
-                          sid: RequestSID,
                           start_timeout: TimeMillisecondsAlias,
-                          end_timeout: TimeMillisecondsAlias) -> Optional[UdsMessageRecord]:
+                          end_timeout: TimeMillisecondsAlias) -> UdsMessageRecord:
         """
         Receive UDS response message to previously sent request.
 
-        :param sid: SID of the last sent request message.
-        :param start_timeout: Maximal time (in milliseconds) to wait.
+        :param start_timeout: Maximal time (in milliseconds) to wait for the start of the message reception.
+        :param end_timeout: Maximal time (in milliseconds) to wait for the end of the message reception.
 
         :return: Record with response message received to the last UDS request message sent.
-            None if a timeout was reached.
         """
-        timestamp_start = perf_counter()
         remaining_start_timeout_ms = start_timeout  # either P2Client or P2*Client
         remaining_end_timeout_ms = end_timeout  # either P6Client or P6*Client
-        while remaining_start_timeout_ms > 0 and remaining_end_timeout_ms > 0:
-            # try to receive a message
+        with self.__receiving_lock:
+            self.__receiving_not_in_progress_event.clear()
             try:
                 response_record = self.transport_interface.receive_message(
                     start_timeout=min(remaining_start_timeout_ms, remaining_end_timeout_ms),
                     end_timeout=remaining_end_timeout_ms)
-            except MessageTransmissionNotStartedError:
-                return None
-            # positive response message received
-            if response_record.payload[0] == sid + RESPONSE_REQUEST_SID_DIFF:
-                return response_record
-            # negative response message received
-            if response_record.payload[0] == ResponseSID.NegativeResponse and response_record.payload[1] == sid:
-                return response_record
-            # other response message received
-            self.__response_queue.put_nowait(response_record)
-            # update time parameters
-            time_elapsed_ms = (perf_counter() - timestamp_start) * 1000.
-            remaining_start_timeout_ms = start_timeout - time_elapsed_ms
-            remaining_end_timeout_ms = end_timeout - time_elapsed_ms
-        return None
+            finally:
+                self.__receiving_not_in_progress_event.set()
+        return response_record
 
-    def _receive_task(self, cycle: TimeMillisecondsAlias) -> None:
-        """
-        Schedule reception of a UDS message for a cyclic response collecting.
-
-        :param cycle: Time (in milliseconds) used for this task cycle.
-        """
-        while self.__receiving_task_event.is_set():
-            if self.__break_in_receiving_event.wait(cycle / 1000.):
-                continue
-            self.__receiving_not_in_progress_event.clear()
+    def _receive_initial_response(self, request_record: UdsMessageRecord) -> Optional[UdsMessageRecord]:
+        sid = RequestSID(request_record.payload[0])
+        timestamp_start_timeout = request_record.transmission_end_timestamp + self.p2_client_timeout / 1000.
+        timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_client_timeout / 1000.
+        timestamp_now = perf_counter()
+        while timestamp_now < timestamp_start_timeout and timestamp_now < timestamp_end_timeout:
+            start_timeout = min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now
+            end_timeout = timestamp_end_timeout - timestamp_now
             try:
-                response = self.transport_interface.receive_message(start_timeout=cycle,
-                                                                    end_timeout=self.p6_ext_client_timeout)
-            except TimeoutError:
-                pass
-            else:
-                self.__response_queue.put_nowait(response)
-            self.__receiving_not_in_progress_event.set()
+                response_record = self._receive_response(start_timeout=start_timeout,
+                                                         end_timeout=end_timeout)
+            except MessageTransmissionNotStartedError as exception:
+                if request_record.addressing_type == AddressingType.FUNCTIONAL:
+                    return None
+                if sid in SERVICES_WITH_SUBFUNCTION and request_record.payload[1] & SPRMIB_MASK:
+                    return None
+                raise TimeoutError("P2Client timeout reached.") from exception
+            except TimeoutError as exception:
+                raise TimeoutError("P6Client timeout reached.") from exception
+            if self.is_response_to_request(response_message=response_record, request_sid=sid):
+                return response_record
+            self.__response_queue.put_nowait(response_record)
 
-    def _send_tester_present_task(self, tester_present_request: UdsMessage) -> None:
-        """
-        Schedule a single Tester Present message transmission for a cyclic sending.
-
-        :param tester_present_request: Tester Present request message to send.
-        """
-        period = self.s3_client / 1000.0
-        next_call = perf_counter()
-        while self.__tester_present_task_event.is_set():
-            self._send_request(tester_present_request)
-            next_call += period
-            remaining_wait_s = next_call - perf_counter()
-            sleep(remaining_wait_s)
+    def _receive_following_response(self,
+                                    request_record: UdsMessageRecord,
+                                    previous_response_record: UdsMessageRecord) -> UdsMessageRecord:
+        sid = RequestSID(request_record.payload[0])
+        timestamp_start_timeout = previous_response_record.transmission_end_timestamp + self.p2_ext_client_timeout / 1000.
+        timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_ext_client_timeout / 1000.
+        timestamp_now = perf_counter()
+        while timestamp_now < timestamp_start_timeout and timestamp_now < timestamp_end_timeout:
+            start_timeout = min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now
+            end_timeout = timestamp_end_timeout - timestamp_now
+            try:
+                response_record = self._receive_response(start_timeout=start_timeout,
+                                                         end_timeout=end_timeout)
+            except MessageTransmissionNotStartedError as exception:
+                raise TimeoutError("P2*Client timeout reached.") from exception
+            except TimeoutError as exception:
+                raise TimeoutError("P6*Client timeout reached.") from exception
+            if self.is_response_to_request(response_message=response_record, request_sid=sid):
+                return response_record
+            self.__response_queue.put_nowait(response_record)
 
     @staticmethod
-    def is_response_pending_message(message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
-        """
-        Check if provided UDS message record contains Negative Response with Response Pending NRC.
+    def is_response_pending_message(response_message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
+        """TODO: update
+        Check if provided UDS message contains Negative Response with Response Pending NRC.
 
-        :param message: UDS Message Record to check.
+        :param response_message: UDS Message Record to check.
+        :param request_sid: Request SID value sent in the proceeding UDS request message.
+
+        :raise TypeError: Provided message value is not an instance of UdsMessageRecord class.
+
+        :return: True if provided UDS message contains Negative Response with Response Pending NRC,
+            False otherwise.
+        """
+        if not isinstance(response_message, (UdsMessage, UdsMessageRecord)):
+            raise TypeError("Provided message value is not an instance of UdsMessageRecord class.")
+        request_sid = RequestSID.validate_member(request_sid)
+        if len(response_message.payload) != 3:
+            return False
+        return (response_message.payload[0] == ResponseSID.NegativeResponse
+                and response_message.payload[1] == request_sid
+                and response_message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
+
+    @staticmethod
+    def is_response_to_request(response_message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
+        """TODO: update
+        Check if provided UDS message contains Negative Response with Response Pending NRC.
+
+        :param response_message: UDS Message Record to check.
         :param request_sid: Request SID value sent in the proceeding UDS request message.
 
         :raise TypeError: Provided message value is not an instance of UdsMessageRecord class.
@@ -660,14 +704,15 @@ class Client:
         :return: True if provided UDS message record contains Negative Response with Response Pending NRC,
             False otherwise.
         """
-        if not isinstance(message, (UdsMessage, UdsMessageRecord)):
+        if not isinstance(response_message, (UdsMessage, UdsMessageRecord)):
             raise TypeError("Provided message value is not an instance of UdsMessageRecord class.")
         request_sid = RequestSID.validate_member(request_sid)
-        if len(message.payload) != 3:
-            return False
-        return (message.payload[0] == ResponseSID.NegativeResponse
-                and message.payload[1] == request_sid
-                and message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
+        response_sid = ResponseSID(response_message.payload[0])
+        if request_sid.name == response_sid.name:
+            return True  # Positive Response
+        return (len(response_message.payload) == 3
+                and response_sid == ResponseSID.NegativeResponse
+                and response_message.payload[1] == request_sid)  # True if Negative Response, False otherwise
 
     def wait_till_ready_for_physical_transmission(self) -> None:
         while not self.is_ready_for_physical_transmission:
@@ -689,6 +734,14 @@ class Client:
                                         + self.p3_client_functional / 1000.)
                 if timestamp_now < timestamp_p3_timeout:
                     sleep(timestamp_p3_timeout - timestamp_now)
+
+    def wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
+        if request.addressing_type == AddressingType.PHYSICAL:
+            return self.wait_till_ready_for_physical_transmission()
+        if request.addressing_type == AddressingType.FUNCTIONAL:
+            return self.wait_till_ready_for_functional_transmission()
+        raise NotImplementedError("Request message with unexpected `addressing_type` attribute value was provided: "
+                                  f"{request.addressing_type!r}")
 
     def get_response(self, timeout: Optional[TimeMillisecondsAlias] = None) -> Optional[UdsMessageRecord]:
         """
@@ -738,8 +791,8 @@ class Client:
             return None
 
     def clear_response_queue(self) -> None:
-        """Clear all response messages that are currently stored in the queue."""
-        for _ in range(self.__response_queue.qsize()):
+        """Clear all response messages that are currently stored in the queue."""\
+        while not self.__response_queue.empty():
             self.__response_queue.get_nowait()
 
     def start_tester_present(self,
@@ -763,7 +816,7 @@ class Client:
             })
             tester_present_message = UdsMessage(payload=payload,
                                                 addressing_type=AddressingType.validate_member(addressing_type))
-            self.__tester_present_thread = Thread(target=self._send_tester_present_task,
+            self.__tester_present_thread = Thread(target=self.__send_tester_present_task,
                                                   args=(tester_present_message, ),
                                                   daemon=True)
             self.__tester_present_thread.start()
@@ -781,25 +834,24 @@ class Client:
 
     def start_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:
         """
-        Start receiving task in the background.
+        Start background receiving task.
 
-        All response messages sent to this Client while receiving is active, will be collected and accessible via
-        :meth:`~uds.client.Client.get_response` and :meth:`~uds.client.Client.get_response_no_wait` methods.
-
-        .. warning:: Cycle value would be overwritten with default value if request message is sent while receiving.
+        ..note:: All response messages sent to this Client while receiving is active,
+            will be collected and accessible via :meth:`~uds.client.Client.get_response`
+            and :meth:`~uds.client.Client.get_response_no_wait` methods.
         """
         if self.is_receiving:
             warn("Receiving is already active.",
                  category=UserWarning)
         else:
             self.__receiving_task_event.set()
-            self.__receiving_thread = Thread(target=self._receive_task,
+            self.__receiving_thread = Thread(target=self.__receiving_task,
                                              kwargs={"cycle": cycle},
                                              daemon=True)
             self.__receiving_thread.start()
 
     def stop_receiving(self) -> None:
-        """Stop receiving task."""
+        """Stop background receiving task."""
         if self.is_receiving:
             self.__receiving_task_event.clear()
             if self.__receiving_thread is not None:
@@ -827,38 +879,16 @@ class Client:
         """
         if not isinstance(request, UdsMessage):
             raise TypeError("Provided request value is not an instance of UdsMessage class.")
+        sid = RequestSID(request.payload[0])
         request_record = self._send_request(request)
-        timestamp_request_sent = request_record.transmission_end_timestamp
-        sid = RequestSID(request_record.payload[0])
         response_records: List[UdsMessageRecord] = []
-        time_elapsed_ms = (perf_counter() - timestamp_request_sent) * 1000.
-        # get the first response (either final response or negative response with response pending nrc)
-        try:
-            response_record = self._receive_response(sid=sid,
-                                                     start_timeout=self.p2_client_timeout - time_elapsed_ms,
-                                                     end_timeout=self.p6_client_timeout - time_elapsed_ms)
-        except TimeoutError as exception:
-            raise TimeoutError("P6Client timeout reached.") from exception
-        if response_record is None:  # timeout achieved - no response
+        initial_response = self._receive_initial_response(request_record)
+        if initial_response is None:
             return request_record, tuple()
-        response_records.append(response_record)
-        timestamp_p6_ext_timeout = timestamp_request_sent + self.p6_ext_client_timeout / 1000.
-        while self.is_response_pending_message(message=response_records[-1], request_sid=sid):
-            timestamp_now = perf_counter()
-            timestamp_p2_ext_timeout = (response_records[-1].transmission_end_timestamp
-                                        + self.p2_ext_client_timeout / 1000.)
-            remaining_p2_ext_timeout = (timestamp_p2_ext_timeout - timestamp_now) * 1000.
-            remaining_p6_ext_timeout = (timestamp_p6_ext_timeout - timestamp_now) * 1000.
-            try:
-                response_record = self._receive_response(sid=sid,
-                                                         start_timeout=remaining_p2_ext_timeout,
-                                                         end_timeout=remaining_p6_ext_timeout)
-            except TimeoutError as exception:
-                raise TimeoutError("P6*Client timeout reached.") from exception
-            if response_record is None:  # timeout achieved - no following response
-                raise TimeoutError(f"P2*Client timeout ({self.p2_ext_client_timeout} ms) reached after receiving "
-                                   f"{len(response_records)} response pending messages "
-                                   f"({bytes_to_hex(response_records[-1].payload)}).")
-            response_records.append(response_record)
+        response_records.append(initial_response)
+        while self.is_response_pending_message(response_message=response_records[-1], request_sid=sid):
+            following_response = self._receive_following_response(request_record=request_record,
+                                                                  previous_response_record=response_records[-1])
+            response_records.append(following_response)
         self._update_measured_client_values(request_record=request_record, response_records=response_records)
         return request_record, tuple(response_records)
