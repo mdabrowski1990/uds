@@ -85,7 +85,7 @@ class Client:
         :param p6_ext_client_timeout: Timeout value for P*Client parameter.
         :param s3_client: Value of S3Client time parameter.
         """
-        ## TIMING PARAMETERS
+        # TIMING PARAMETERS
         self.__p2_client_measured: Optional[TimeMillisecondsAlias] = None
         self.__p2_ext_client_measured: Optional[Tuple[TimeMillisecondsAlias, ...]] = None
         self.__p6_client_measured: Optional[TimeMillisecondsAlias] = None
@@ -263,7 +263,7 @@ class Client:
             warn(message="S3Client had to be updated as its values become less than P3Client_Phys.",
                  category=UserWarning)
             self.s3_client = value
-        
+
     @property
     def p3_client_functional(self) -> TimeMillisecondsAlias:
         """Get value of :ref:`P3Client_Func <knowledge-base-p3-client-func>` parameter."""
@@ -413,18 +413,12 @@ class Client:
         :return: True if no message is currently transmitted or received and the last physically addressed request
             was either received or timed-out (P2, P3 or P6), False otherwise.
         """
-        return (
-                self.__transmission_not_in_progress_event.is_set()
-                and not self.__transmission_lock.locked()
-                and not self.__physical_transmission_lock.locked()
+        return (self.__transmission_not_in_progress_event.is_set()
                 and self.__receiving_not_in_progress_event.is_set()
-                and (
-                        self.__last_physical_request is None
-                        or self.__last_physical_response is not None
-                        or perf_counter() > self.__last_physical_request.transmission_end_timestamp
-                        + self.p3_client_physical
-                )
-        )
+                and (self.__last_physical_request is None
+                     or self.__last_physical_response is not None
+                     or perf_counter() > self.__last_physical_request.transmission_end_timestamp
+                     + self.p3_client_physical / 1000.))
 
     @property
     def is_ready_for_functional_transmission(self) -> bool:
@@ -432,18 +426,12 @@ class Client:
         Get flag whether Client is ready for functionally addressed request message transmission.
 
         :return: True if no message is currently transmitted and
-            P3Client_Func timeout was reached for the last functionally addressed request.
+            P3Client_Func timeout was exceeded for the last functionally addressed request.
         """
-        return (
-                self.__transmission_not_in_progress_event.is_set()
-                and not self.__transmission_lock.locked()
-                and not self.__functional_transmission_lock.locked()
-                and (
-                        self.__last_functional_request is None
-                        or perf_counter() > self.__last_functional_request.transmission_end_timestamp
-                        + self.p3_client_functional
-                )
-        )
+        return (self.__transmission_not_in_progress_event.is_set()
+                and (self.__last_functional_request is None
+                     or perf_counter() > self.__last_functional_request.transmission_end_timestamp
+                     + self.p3_client_functional / 1000.))
 
     def __update_p2_client_measured(self, value: TimeMillisecondsAlias) -> None:
         """
@@ -581,6 +569,13 @@ class Client:
             self.__update_p6_client_measured(round(p6_measured * 1000., 3))
 
     def _send_request(self, request: UdsMessage) -> UdsMessageRecord:
+        """
+        Send UDS Request Message in a threadsafe way.
+
+        :param request: Request message to send.
+
+        :return: Record of the request message that was sent.
+        """
         if request.addressing_type == AddressingType.PHYSICAL:
             addressing_lock = self.__physical_transmission_lock
         elif request.addressing_type == AddressingType.FUNCTIONAL:
@@ -598,8 +593,10 @@ class Client:
                     self.__transmission_not_in_progress_event.set()
         if request.addressing_type == AddressingType.PHYSICAL:
             self.__last_physical_request = request_record
+            self.__last_physical_response = None
         elif request.addressing_type == AddressingType.FUNCTIONAL:
             self.__last_functional_request = request_record
+            self.__last_functional_response = None
         return request_record
 
     def _receive_response(self,
@@ -623,9 +620,33 @@ class Client:
                     end_timeout=remaining_end_timeout_ms)
             finally:
                 self.__receiving_not_in_progress_event.set()
+            if self.__last_physical_request is not None and self.__last_physical_response is None:
+                sid = RequestSID(self.__last_physical_request.payload[0])
+                if (self.is_response_to_request(response_message=response_record,
+                                                request_message=self.__last_physical_request)
+                        and not self.is_response_pending_message(response_message=response_record,
+                                                                 request_sid=sid)):
+                    self.__last_physical_response = response_record
+            if self.__last_functional_request is not None and self.__last_functional_response is None:
+                sid = RequestSID(self.__last_functional_request.payload[0])
+                if (self.is_response_to_request(response_message=response_record,
+                                                request_message=self.__last_functional_request)
+                        and not self.is_response_pending_message(response_message=response_record,
+                                                                 request_sid=sid)):
+                    self.__last_functional_response = response_record
         return response_record
 
     def _receive_initial_response(self, request_record: UdsMessageRecord) -> Optional[UdsMessageRecord]:
+        """
+        Receive the first UDS response to a request message.
+
+        :param request_record: Request message to which response is collected.
+
+        :raise TimeoutError: Either P2Client or P6Client timeout was exceeded.
+
+        :return: Received UDS Response Message.
+            None if legitimately (either Functionally addressed request or with SPRMIB set) no response was received.
+        """
         sid = RequestSID(request_record.payload[0])
         timestamp_start_timeout = request_record.transmission_end_timestamp + self.p2_client_timeout / 1000.
         timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_client_timeout / 1000.
@@ -641,18 +662,30 @@ class Client:
                     return None
                 if sid in SERVICES_WITH_SUBFUNCTION and request_record.payload[1] & SPRMIB_MASK:
                     return None
-                raise TimeoutError("P2Client timeout reached.") from exception
+                raise TimeoutError("P2Client timeout exceeded.") from exception
             except TimeoutError as exception:
-                raise TimeoutError("P6Client timeout reached.") from exception
-            if self.is_response_to_request(response_message=response_record, request_sid=sid):
+                raise TimeoutError("P6Client timeout exceeded.") from exception
+            if self.is_response_to_request(response_message=response_record,
+                                           request_message=request_record):
                 return response_record
             self.__response_queue.put_nowait(response_record)
+        raise TimeoutError("P2Client timeout exceeded.")
 
     def _receive_following_response(self,
                                     request_record: UdsMessageRecord,
                                     previous_response_record: UdsMessageRecord) -> UdsMessageRecord:
-        sid = RequestSID(request_record.payload[0])
-        timestamp_start_timeout = previous_response_record.transmission_end_timestamp + self.p2_ext_client_timeout / 1000.
+        """
+        Receive the following (not the first one) UDS response to a request message.
+
+        :param request_record: Request message to which response is collected.
+        :param previous_response_record: Record of the proceeding UDS response.
+
+        :raise TimeoutError: Either P2*Client or P6*Client timeout was exceeded.
+
+        :return: Received UDS Response Message.
+        """
+        timestamp_start_timeout = (previous_response_record.transmission_end_timestamp
+                                   + self.p2_ext_client_timeout / 1000.)
         timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_ext_client_timeout / 1000.
         timestamp_now = perf_counter()
         while timestamp_now < timestamp_start_timeout and timestamp_now < timestamp_end_timeout:
@@ -662,24 +695,28 @@ class Client:
                 response_record = self._receive_response(start_timeout=start_timeout,
                                                          end_timeout=end_timeout)
             except MessageTransmissionNotStartedError as exception:
-                raise TimeoutError("P2*Client timeout reached.") from exception
+                raise TimeoutError("P2*Client timeout exceeded.") from exception
             except TimeoutError as exception:
-                raise TimeoutError("P6*Client timeout reached.") from exception
-            if self.is_response_to_request(response_message=response_record, request_sid=sid):
+                raise TimeoutError("P6*Client timeout exceeded.") from exception
+            if self.is_response_to_request(response_message=response_record,
+                                           request_message=request_record):
                 return response_record
             self.__response_queue.put_nowait(response_record)
+        raise TimeoutError("P2*Client timeout exceeded.")
 
     @staticmethod
-    def is_response_pending_message(response_message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
-        """TODO: update
-        Check if provided UDS message contains Negative Response with Response Pending NRC.
+    def is_response_pending_message(response_message: Union[UdsMessage, UdsMessageRecord],
+                                    request_sid: RequestSID) -> bool:
+        """
+        Check if provided UDS message is Response Pending Message to a diagnostic service of given SID.
 
-        :param response_message: UDS Message Record to check.
-        :param request_sid: Request SID value sent in the proceeding UDS request message.
+        :param response_message: UDS Message to check.
+        :param request_sid: SID value of the proceeding UDS request message.
 
-        :raise TypeError: Provided message value is not an instance of UdsMessageRecord class.
+        :raise TypeError: Provided value is neither instance of UdsMessage nor UdsMessageRecord class.
 
-        :return: True if provided UDS message contains Negative Response with Response Pending NRC,
+        :return: True if provided UDS message is a Negative Response Message (with Response Pending NRC)
+            to a diagnostic service of given SID,
             False otherwise.
         """
         if not isinstance(response_message, (UdsMessage, UdsMessageRecord)):
@@ -691,22 +728,33 @@ class Client:
                 and response_message.payload[1] == request_sid
                 and response_message.payload[2] == NRC.RequestCorrectlyReceived_ResponsePending)
 
-    @staticmethod
-    def is_response_to_request(response_message: Union[UdsMessage, UdsMessageRecord], request_sid: RequestSID) -> bool:
-        """TODO: update
-        Check if provided UDS message contains Negative Response with Response Pending NRC.
+    def is_response_to_request(self,
+                               response_message: Union[UdsMessage, UdsMessageRecord],
+                               request_message: Union[UdsMessage, UdsMessageRecord]) -> bool:
+        """
+        Check if provided UDS message is a response message to a diagnostic service of given SID.
 
-        :param response_message: UDS Message Record to check.
-        :param request_sid: Request SID value sent in the proceeding UDS request message.
+        :param response_message: UDS Message to check.
+        :param request_message: UDS Request Message.
 
-        :raise TypeError: Provided message value is not an instance of UdsMessageRecord class.
+        :raise TypeError: Provided value is neither instance of UdsMessage nor UdsMessageRecord class.
 
-        :return: True if provided UDS message record contains Negative Response with Response Pending NRC,
+        :return: True if provided UDS message is a response message to a diagnostic service of given SID,
             False otherwise.
         """
         if not isinstance(response_message, (UdsMessage, UdsMessageRecord)):
             raise TypeError("Provided message value is not an instance of UdsMessageRecord class.")
-        request_sid = RequestSID.validate_member(request_sid)
+        if isinstance(request_message, UdsMessageRecord) and isinstance(response_message, UdsMessageRecord):
+            if response_message.transmission_start_timestamp < request_message.transmission_end_timestamp:
+                return False
+        if request_message.addressing_type != response_message.addressing_type:
+            rx_physical_params = dict(self.transport_interface.addressing_information.rx_physical_params)
+            rx_physical_params.pop("addressing_type")
+            rx_functional_params = dict(self.transport_interface.addressing_information.rx_functional_params)
+            rx_functional_params.pop("addressing_type")
+            if rx_physical_params != rx_functional_params:
+                return False
+        request_sid = RequestSID.validate_member(request_message.payload[0])
         response_sid = ResponseSID(response_message.payload[0])
         if request_sid.name == response_sid.name:
             return True  # Positive Response
@@ -715,6 +763,7 @@ class Client:
                 and response_message.payload[1] == request_sid)  # True if Negative Response, False otherwise
 
     def wait_till_ready_for_physical_transmission(self) -> None:
+        """Wait till the client is ready to transmit physically addressed request message."""
         while not self.is_ready_for_physical_transmission:
             self.__transmission_not_in_progress_event.wait()
             self.__receiving_not_in_progress_event.wait()
@@ -726,6 +775,7 @@ class Client:
                     sleep(timestamp_p3_timeout - timestamp_now)
 
     def wait_till_ready_for_functional_transmission(self) -> None:
+        """Wait till the client is ready to transmit functionally addressed request message."""
         while not self.is_ready_for_functional_transmission:
             self.__transmission_not_in_progress_event.wait()
             if self.__last_functional_request is not None:
@@ -736,6 +786,11 @@ class Client:
                     sleep(timestamp_p3_timeout - timestamp_now)
 
     def wait_till_ready_for_transmission(self, request: UdsMessage) -> None:
+        """
+        Wait till the client is ready for transmitting given request message.
+
+        :param request: Request message to send.
+        """
         if request.addressing_type == AddressingType.PHYSICAL:
             return self.wait_till_ready_for_physical_transmission()
         if request.addressing_type == AddressingType.FUNCTIONAL:
@@ -791,7 +846,7 @@ class Client:
             return None
 
     def clear_response_queue(self) -> None:
-        """Clear all response messages that are currently stored in the queue."""\
+        """Clear all response messages that are currently stored in the queue."""
         while not self.__response_queue.empty():
             self.__response_queue.get_nowait()
 
