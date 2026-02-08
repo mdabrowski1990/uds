@@ -645,7 +645,15 @@ class Client:
                 raise TimeoutError("P6Client timeout exceeded.") from exception
             if self.is_response_to_request(response_message=response_record,
                                            request_message=request_record):
-                return response_record
+                p2_client = (response_record.transmission_start_timestamp
+                             - request_record.transmission_end_timestamp) * 1000.
+                if p2_client < self.p2_client_timeout:
+                    return response_record
+                else:
+                    warn(message="Response message was received just after P2Client timeout was exceeded. "
+                                  "It was put into response_queue.",
+                         category=RuntimeWarning)
+                    break
             self.__response_queue.put_nowait(response_record)
         raise TimeoutError("P2Client timeout exceeded.")
 
