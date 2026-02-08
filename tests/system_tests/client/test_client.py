@@ -77,6 +77,7 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
             - Check that each message contains Tester Present request.
             - Check that addressing information of Tester Present packet matches the Client's addressing information.
             - Check that message transmission time is in line with S3Client parameter.
+            - Check that direction attribute indicates that message was received..
 
         :param s3client: Cycle time for Tester Present message sending.
         :param addressing_type: Addressing Type to use for Tester Present messages transmission.
@@ -120,6 +121,7 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         for i, tp_message_record in enumerate(tp_messages_records, start=1):
             desired_timestamp = timestamp_start + i * s3client / 1000.
             assert tp_message_record.payload == tp_payload
+            assert tp_message_record.direction == TransmissionDirection.RECEIVED
             for attribute_name, attribute_value in addressing_params.items():
                 assert getattr(tp_message_record.packets_records[0], attribute_name) == attribute_value
             assert (desired_timestamp - self.TASK_TIMING_TOLERANCE / 1000.
@@ -160,6 +162,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         10. Stop background receiving in the Client.
         11. Check that background receiving is not set in the Client.
         12. Validate received messages.
+            - Check that received response messages matches the payload of transmitted messages.
+            - Check that direction attribute indicates that message was received.
 
         :param delay_1: Time after which the first response message to be sent.
         :param message_1: The first response message.
@@ -197,13 +201,9 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert client.is_background_receiving is False
         # Validate received messages.
         assert message_record_1.payload == message_1.payload
+        assert message_record_1.direction == TransmissionDirection.RECEIVED
         assert message_record_2.payload == message_2.payload
-
-    # TODO: send message, receive response
-
-
-class TODO:
-# TODO: divide tests
+        assert message_record_2.direction == TransmissionDirection.RECEIVED
 
     @pytest.mark.parametrize("request_message, response_message", [
         (UdsMessage(payload=[0x3E, 0x00],
@@ -232,13 +232,17 @@ class TODO:
         1. Configure Client.
         2. Schedule response message sending by the second Transport Interface.
         3. Schedule request message reception by the second Transport Interface.
-        4. Send UDS request message and received UDS response by the Client.
-        5. Validate attributes of request and response records.
-            Expected: Attributes values of returned records match values of request and response messages that
-                were scheduled for transmission.
-        6. Validate timing parameters.
-            Expected: Measured values of P2Client and P6Client time parameters are updated and stored by Client.
-                Measured values of P2*Client and P6*Client time parameters are equal to None (not measured).
+        4. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        5. Send UDS request message and receive UDS response by the Client.
+        6. Validate request and response records.
+            - Check that messages' payload matches the payload of transmitted messages.
+            - Check that direction attribute of request message indicates that the message was transmitted.
+            - Check that direction attribute of response message indicates that the message was received.
+            - Check that addressing type attribute in the message records is correctly set.
+        7. Validate timing parameters.
+            - Check that timestamps of record messages matches the transmission schedule.
+            - Check that measured P2Client and P6Client attributes were correctly updated in the Client.
+            - Check that measured P2*Client and P6*Client attributes were not updated in the Client.
 
         :param request_message: Request message to send by Client.
         :param response_message: Response message to receive by Client.
@@ -246,55 +250,68 @@ class TODO:
         :param p6_client_timeout: P6Client timeout value to configure in Client.
         :param send_after: Time after which response message would be sent.
         """
+        # Configure Client.
         client = Client(transport_interface=self.transport_interface_1,
                         p2_client_timeout=p2_client_timeout,
-                        p6_client_timeout=p6_client_timeout)
+                        p6_client_timeout=p6_client_timeout,
+                        p3_client_physical=2*p2_client_timeout,
+                        p3_client_functional=2*p2_client_timeout)
+        # Schedule response message sending by the second Transport Interface.
         self.send_message(transport_interface=self.transport_interface_2,
                           message=response_message,
                           delay=send_after)
+        # Schedule request message reception by the second Transport Interface.
         self.receive_message(transport_interface=self.transport_interface_2,
                              delay=0,
                              start_timeout=1000,
                              end_timeout=None)
-        time_before = time()
+        # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        assert client.p2_client_measured is None
+        assert client.p2_ext_client_measured is None
+        assert client.p6_client_measured is None
+        assert client.p6_ext_client_measured is None
+        # Send UDS request message and receive UDS response by the Client.
+        timestamp_before = perf_counter()
         request_record, response_records = client.send_request_receive_responses(request=request_message)
-        time_after = time()
-        # check sent message
+        timestamp_after = perf_counter()
+        # Validate request and response records.
         assert isinstance(request_record, UdsMessageRecord)
         assert request_record.direction == TransmissionDirection.TRANSMITTED
         assert request_record.payload == request_message.payload
         assert request_record.addressing_type == request_message.addressing_type
-        # check received response
         assert isinstance(response_records, tuple)
         assert len(response_records) == 1
         response_record = response_records[0]
         assert response_record.direction == TransmissionDirection.RECEIVED
         assert response_record.payload == response_message.payload
         assert response_record.addressing_type == response_message.addressing_type
-        # measured time parameters
+        # Validate timing parameters.
         assert (client.p2_client_measured
-                == (response_record.transmission_start_time - request_record.transmission_end_time).total_seconds() * 1000.)
+                == round((response_record.transmission_start_timestamp
+                          - request_record.transmission_end_timestamp) * 1000., 3))
         assert (client.p6_client_measured
-                == (response_record.transmission_end_time - request_record.transmission_end_time).total_seconds() * 1000.)
+                == round((response_record.transmission_end_timestamp
+                          - request_record.transmission_end_timestamp) * 1000., 3))
         assert client.p2_ext_client_measured is None
         assert client.p6_ext_client_measured is None
-        # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= request_record.transmission_start_time
-                    <= request_record.transmission_end_time
-                    < response_record.transmission_start_time
-                    <= response_record.transmission_end_time
-                    <= datetime.fromtimestamp(time_after + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before
+                    <= request_record.transmission_start_timestamp
+                    <= request_record.transmission_end_timestamp
+                    < response_record.transmission_start_timestamp
+                    <= response_record.transmission_end_timestamp
+                    <= timestamp_after)
 
     @pytest.mark.parametrize("request_message, response_messages", [
         (UdsMessage(payload=[0x22, 0x10, 0x00],
                     addressing_type=AddressingType.PHYSICAL),
          (UdsMessage(payload=[0x7F, 0x22, 0x78],
                      addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x22, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
           UdsMessage(payload=[0x62, 0x10, 0x00, *range(255)],
                      addressing_type=AddressingType.PHYSICAL))),
-        (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(0, 255, 2), *(1, 255, 2)],
+        (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(70)],
                     addressing_type=AddressingType.PHYSICAL),
          (UdsMessage(payload=[0x7F, 0x2E, 0x78],
                      addressing_type=AddressingType.PHYSICAL),
@@ -302,48 +319,54 @@ class TODO:
                      addressing_type=AddressingType.PHYSICAL),
           UdsMessage(payload=[0x7F, 0x2E, 0x78],
                      addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x6E, 0x23, 0x45],
+          UdsMessage(payload=[0x7F, 0x2E, 0x72],
                      addressing_type=AddressingType.PHYSICAL))),
     ])
     @pytest.mark.parametrize("p2_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout, "
-                             "start_after, delay, send_after", [
-        (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT,
-         20, 1000, 500),
-        (100, 1000, 5000,
-         50, 750, 80),
+                             "start_after, delay, send_last_after", [
+        (250, 1000, 2000, 200, 200, 1200),
+        (100, 3000, 4000, 50, 1200, 3950),
     ])
     def test_send_request_receive_responses__delayed(self, request_message, response_messages,
                                                      p2_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout,
-                                                     start_after, delay, send_after):
+                                                     start_after, delay, send_last_after):
         """
         Check Client for sending UDS request and receiving delayed UDS response.
 
         Procedure:
         1. Configure Client.
-        2. Schedule response messages (Response Pending and Final Response) sending by the second Transport Interface.
+        2. Schedule response messages sending by the second Transport Interface.
         3. Schedule request message reception by the second Transport Interface.
-        4. Send UDS request messages and received UDS response by the Client.
-        5. Validate attributes of request and response records.
-            Expected: Attributes values of returned records match values of request and response messages that
-                were scheduled for transmission.
-        6. Validate timing parameters.
-            Expected: Measured values of P2Client, P2*Client and P6*Client time parameters are updated and stored by
-                Client. Measured value of P6Client is equal to None (not measured).
+        4. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        5. Send UDS request message and receive UDS responses by the Client.
+        6. Validate request and response records.
+            - Check that messages' payload matches the payload of transmitted messages.
+            - Check that direction attribute of request message indicates that the message was transmitted.
+            - Check that direction attribute of response messages indicates that the messages were received.
+            - Check that addressing type attribute in the message records is correctly set.
+        7. Validate timing parameters.
+            - Check that timestamps of record messages matches the transmission schedule.
+            - Check that measured P2Client, P2*Client and P6*Client attributes were correctly updated in the Client.
+            - Check that measured P6Client attribute was not updated in the Client.
 
         :param request_message: Request message to send by Client.
-        :param response_messages: Response message to receive by Client.
+        :param response_messages: Response messages to receive by Client.
         :param p2_client_timeout: P2Client timeout value to configure in Client.
         :param p2_ext_client_timeout: P2*Client timeout value to configure in Client.
         :param p6_ext_client_timeout: P6*Client timeout value to configure in Client.
         :param start_after: Time after which the first Response Pending message would be sent.
         :param delay: Time after which following Response Pending messages are sent.
-        :param send_after: Time after which the final response message would be sent.
+        :param send_last_after: Time after which the final response message would be sent.
         """
+        # Configure Client.
         client = Client(transport_interface=self.transport_interface_1,
                         p2_client_timeout=p2_client_timeout,
-                        p6_client_timeout=p2_client_timeout,
                         p2_ext_client_timeout=p2_ext_client_timeout,
-                        p6_ext_client_timeout=p6_ext_client_timeout)
+                        p6_client_timeout=p6_ext_client_timeout,
+                        p6_ext_client_timeout=p6_ext_client_timeout,
+                        p3_client_physical=2*p2_client_timeout,
+                        p3_client_functional=2*p2_client_timeout)
+        # Schedule response messages sending by the second Transport Interface.
         self.send_message(transport_interface=self.transport_interface_2,
                           message=response_messages[0],
                           delay=start_after)
@@ -353,48 +376,63 @@ class TODO:
                               delay=start_after + delay * i)
         self.send_message(transport_interface=self.transport_interface_2,
                           message=response_messages[-1],
-                          delay=start_after + delay * len(response_messages[1:-1]) + send_after)
+                          delay=send_last_after)
+        # Schedule request message reception by the second Transport Interface.
         self.receive_message(transport_interface=self.transport_interface_2,
                              delay=0,
-                             start_timeout=10000,
+                             start_timeout=100,
                              end_timeout=None)
-        time_before = time()
+        # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        assert client.p2_client_measured is None
+        assert client.p2_ext_client_measured is None
+        assert client.p6_client_measured is None
+        assert client.p6_ext_client_measured is None
+        # Send UDS request message and receive UDS responses by the Client.
+        timestamp_before = perf_counter()
         request_record, response_records = client.send_request_receive_responses(request=request_message)
-        time_after = time()
-        # check sent message
+        timestamp_after = perf_counter()
+        # Validate request and response records.
         assert isinstance(request_record, UdsMessageRecord)
         assert request_record.direction == TransmissionDirection.TRANSMITTED
         assert request_record.payload == request_message.payload
         assert request_record.addressing_type == request_message.addressing_type
-        # check received response
         assert isinstance(response_records, tuple)
         assert len(response_records) == len(response_messages)
         for i, response_record in enumerate(response_records):
             assert response_record.direction == TransmissionDirection.RECEIVED
             assert response_record.payload == response_messages[i].payload
             assert response_record.addressing_type == response_messages[i].addressing_type
-        # measured time parameters
+        # Validate timing parameters.
         assert (client.p2_client_measured
-                == (response_records[0].transmission_start_time - request_record.transmission_end_time).total_seconds() * 1000.)
+                == round((response_records[0].transmission_start_timestamp
+                          - request_record.transmission_end_timestamp) * 1000., 3))
         assert isinstance(client.p2_ext_client_measured, tuple)
         assert len(client.p2_ext_client_measured) == len(response_records) - 1
         for i, response_record in enumerate(response_records[1:]):
             assert (client.p2_ext_client_measured[i]
-                    == (response_record.transmission_end_time - response_records[
-                        i].transmission_end_time).total_seconds() * 1000.)
+                    == round((response_record.transmission_end_timestamp
+                              - response_records[i].transmission_end_timestamp) * 1000., 3))
         assert (client.p6_ext_client_measured
-                == (response_records[-1].transmission_end_time - request_record.transmission_end_time).total_seconds() * 1000.)
+                == round((response_records[-1].transmission_end_timestamp
+                          - request_record.transmission_end_timestamp) * 1000., 3))
         assert client.p6_client_measured is None
-        # performance checks
         if self.MAKE_TIMING_CHECKS:
-            assert (datetime.fromtimestamp(time_before - self.TIMESTAMP_TOLERANCE / 1000.)
-                    <= request_record.transmission_start_time
-                    <= request_record.transmission_end_time
-                    < response_records[0].transmission_start_time
-                    <= response_records[0].transmission_end_time
-                    < response_records[-1].transmission_start_time
-                    <= response_records[-1].transmission_end_time
-                    <= datetime.fromtimestamp(time_after + self.TIMESTAMP_TOLERANCE / 1000.))
+            assert (timestamp_before
+                    <= request_record.transmission_start_timestamp
+                    <= request_record.transmission_end_timestamp
+                    < response_records[0].transmission_start_timestamp
+                    <= response_records[0].transmission_end_timestamp
+                    < response_records[-1].transmission_start_timestamp
+                    <= response_records[-1].transmission_end_timestamp
+                    <= timestamp_after)
+
+
+class TODO:
+# TODO: divide tests
+
+
+
+
 
     @pytest.mark.parametrize("request_message, response_message", [
         (UdsMessage(payload=[0x3E, 0x00],

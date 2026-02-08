@@ -630,11 +630,11 @@ class Client:
         timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_client_timeout / 1000.
         timestamp_now = perf_counter()
         while timestamp_now < timestamp_start_timeout and timestamp_now < timestamp_end_timeout:
-            start_timeout = min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now
-            end_timeout = timestamp_end_timeout - timestamp_now
+            start_timeout_ms = (min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now) * 1000.
+            end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.
             try:
-                response_record = self._receive_response(start_timeout=start_timeout,
-                                                         end_timeout=end_timeout)
+                response_record = self._receive_response(start_timeout=start_timeout_ms,
+                                                         end_timeout=end_timeout_ms)
             except MessageTransmissionNotStartedError as exception:
                 if request_record.addressing_type == AddressingType.FUNCTIONAL:
                     return None
@@ -667,11 +667,11 @@ class Client:
         timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_ext_client_timeout / 1000.
         timestamp_now = perf_counter()
         while timestamp_now < timestamp_start_timeout and timestamp_now < timestamp_end_timeout:
-            start_timeout = min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now
-            end_timeout = timestamp_end_timeout - timestamp_now
+            start_timeout_ms = (min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now) * 1000.
+            end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.
             try:
-                response_record = self._receive_response(start_timeout=start_timeout,
-                                                         end_timeout=end_timeout)
+                response_record = self._receive_response(start_timeout=start_timeout_ms,
+                                                         end_timeout=end_timeout_ms)
             except MessageTransmissionNotStartedError as exception:
                 raise TimeoutError("P2*Client timeout exceeded.") from exception
             except TimeoutError as exception:

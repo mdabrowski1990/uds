@@ -132,7 +132,6 @@ class BaseSystemTests(ABC):
 
         :return: Timer object with scheduled task.
         """
-
         def _send_message():
             self.sent_message = transport_interface.send_message(message)
 
