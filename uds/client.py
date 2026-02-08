@@ -23,29 +23,6 @@ from uds.utilities import (
 )
 
 
-def decorator_block_receiving(method: Callable) -> Callable:  # type: ignore
-    """
-    Decorate a method that blocks receiving task.
-
-    :param method: Method to decorate.
-
-    :return: Decorated method.
-    """
-    @wraps(method)
-    def wrapper(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
-        # pylint: disable=protected-access
-        self._Client__break_in_receiving_event.set()
-        self._Client__receiving_not_in_progress.wait(timeout=self.p6_ext_client_timeout)
-        try:
-            return_value = method(self, *args, **kwargs)
-        except Exception as error:
-            self._Client__break_in_receiving_event.clear()
-            raise error
-        self._Client__break_in_receiving_event.clear()
-        return return_value
-    return wrapper
-
-
 class Client:
     """Simulation for UDS Client entity."""
 
@@ -111,11 +88,11 @@ class Client:
         self.__tester_present_task_event: Event = Event()
         self.__tester_present_task_event.clear()
         self.__tester_present_thread: Optional[Thread] = None
-        self.__receiving_task_event: Event = Event()
-        self.__receiving_task_event.clear()
+        self.__background_receiving_task_event: Event = Event()
+        self.__background_receiving_task_event.clear()
         self.__break_in_receiving_event: Event = Event()
         self.__break_in_receiving_event.clear()
-        self.__receiving_thread: Optional[Thread] = None
+        self.__background_receiving_thread: Optional[Thread] = None
         self.__receiving_not_in_progress_event: Event = Event()
         self.__receiving_not_in_progress_event.set()
         self.__transmission_not_in_progress_event: Event = Event()
@@ -135,8 +112,8 @@ class Client:
         """Safely finish all tasks."""
         if self.is_tester_present_sent:
             self.stop_tester_present()
-        if self.is_receiving:
-            self.stop_receiving()
+        if self.is_background_receiving:
+            self.stop_background_receiving()
 
     @property
     def transport_interface(self) -> AbstractTransportInterface:
@@ -396,9 +373,9 @@ class Client:
         self.__s3_client = value
 
     @property
-    def is_receiving(self) -> bool:
-        """Get flag whether receiving thread is running."""
-        return self.__receiving_task_event.is_set()
+    def is_background_receiving(self) -> bool:
+        """Get flag whether background receiving thread is running."""
+        return self.__background_receiving_task_event.is_set()
 
     @property
     def is_tester_present_sent(self) -> bool:
@@ -515,7 +492,7 @@ class Client:
 
         :param cycle: Time (in milliseconds) used for this task cycle.
         """
-        while self.__receiving_task_event.is_set():
+        while self.__background_receiving_task_event.is_set():
             sleep(cycle / 1000.)
             if self.__break_in_receiving_event.is_set():
                 continue
@@ -533,15 +510,16 @@ class Client:
 
         :param tester_present_request: Tester Present request message to send.
         """
-        period = self.s3_client / 1000.0
-        next_call = perf_counter()
-        while self.__tester_present_task_event.is_set():
-            next_call += period
+        period_s = self.s3_client / 1000.0
+        next_call = perf_counter() + period_s
+        sleep(period_s)
+        while self.is_tester_present_sent:
+            self._send_request(tester_present_request)
+            next_call += period_s
             remaining_wait_s = next_call - perf_counter()
             if remaining_wait_s < 0:
                 continue
             sleep(remaining_wait_s)
-            self._send_request(tester_present_request)
 
     def _update_measured_client_values(self,
                                        request_record: UdsMessageRecord,
@@ -703,6 +681,29 @@ class Client:
                 return response_record
             self.__response_queue.put_nowait(response_record)
         raise TimeoutError("P2*Client timeout exceeded.")
+
+    @staticmethod
+    def decorator_block_receiving(method: Callable) -> Callable:  # type: ignore
+        """
+        Decorate a method that blocks receiving task.
+
+        :param method: Method to decorate.
+
+        :return: Decorated method.
+        """
+
+        @wraps(method)
+        def wrapper(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
+            # pylint: disable=protected-access
+            self._Client__break_in_receiving_event.set()
+            self._Client__receiving_not_in_progress_event.wait(timeout=self.p6_ext_client_timeout)
+            try:
+                return_value = method(self, *args, **kwargs)
+            finally:
+                self._Client__break_in_receiving_event.clear()
+            return return_value
+
+        return wrapper
 
     @staticmethod
     def is_response_pending_message(response_message: Union[UdsMessage, UdsMessageRecord],
@@ -887,7 +888,7 @@ class Client:
             warn("Cyclical sending of Tester Present is already stopped.",
                  category=UserWarning)
 
-    def start_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:
+    def start_background_receiving(self, cycle: TimeMillisecondsAlias = DEFAULT_RECEIVING_TASK_CYCLE) -> None:
         """
         Start background receiving task.
 
@@ -895,23 +896,23 @@ class Client:
             will be collected and accessible via :meth:`~uds.client.Client.get_response`
             and :meth:`~uds.client.Client.get_response_no_wait` methods.
         """
-        if self.is_receiving:
-            warn("Receiving is already active.",
+        if self.is_background_receiving:
+            warn("Background receiving is already active.",
                  category=UserWarning)
         else:
-            self.__receiving_task_event.set()
-            self.__receiving_thread = Thread(target=self.__receiving_task,
-                                             kwargs={"cycle": cycle},
-                                             daemon=True)
-            self.__receiving_thread.start()
+            self.__background_receiving_task_event.set()
+            self.__background_receiving_thread = Thread(target=self.__receiving_task,
+                                                        kwargs={"cycle": cycle},
+                                                        daemon=True)
+            self.__background_receiving_thread.start()
 
-    def stop_receiving(self) -> None:
+    def stop_background_receiving(self) -> None:
         """Stop background receiving task."""
-        if self.is_receiving:
-            self.__receiving_task_event.clear()
-            if self.__receiving_thread is not None:
-                self.__receiving_thread.join()
-            self.__receiving_thread = None
+        if self.is_background_receiving:
+            self.__background_receiving_task_event.clear()
+            if self.__background_receiving_thread is not None:
+                self.__background_receiving_thread.join()
+            self.__background_receiving_thread = None
         else:
             warn("Receiving is already stopped.",
                  category=UserWarning)

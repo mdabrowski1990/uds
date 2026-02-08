@@ -14,7 +14,7 @@ def main():
     client = Client(transport_interface=transport_interface)
 
     # start collecting all response messages sent to the client
-    client.start_receiving()
+    client.start_background_receiving()
 
     # try to get a response immediately
     response_message_record = client.get_response_no_wait()
@@ -31,7 +31,7 @@ def main():
         print("Received response:", response_message_record)
 
     # stop collecting response messages
-    client.stop_receiving()
+    client.stop_background_receiving()
 
 
 if __name__ == "__main__":

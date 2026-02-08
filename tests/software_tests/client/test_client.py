@@ -528,11 +528,11 @@ class TestClient:
 
     def test_is_receiving__true(self):
         self.mock_client._Client__receiving_thread = Mock()
-        assert Client.is_receiving.fget(self.mock_client) is True
+        assert Client.is_background_receiving.fget(self.mock_client) is True
 
     def test_is_receiving__false(self):
         self.mock_client._Client__receiving_thread = None
-        assert Client.is_receiving.fget(self.mock_client) is False
+        assert Client.is_background_receiving.fget(self.mock_client) is False
 
     # is_tester_present_sent
 
@@ -1028,7 +1028,7 @@ class TestClient:
     @pytest.mark.parametrize("cycle", [Mock(), 234])
     def test_start_receiving__not_running(self, cycle):
         self.mock_client.is_receiving = False
-        assert Client.start_receiving(self.mock_client, cycle=cycle) is None
+        assert Client.start_background_receiving(self.mock_client, cycle=cycle) is None
         assert self.mock_client._Client__receiving_thread == self.mock_thread.return_value
         self.mock_thread.return_value.start.assert_called_once_with()
         self.mock_client._Client__receiving_stop_event.clear.assert_called_once_with()
@@ -1037,7 +1037,7 @@ class TestClient:
     @pytest.mark.parametrize("cycle", [Mock(), 234])
     def test_start_receiving__running(self, cycle):
         self.mock_client.is_receiving = True
-        assert Client.start_receiving(self.mock_client, cycle=cycle) is None
+        assert Client.start_background_receiving(self.mock_client, cycle=cycle) is None
         self.mock_thread.return_value.start.assert_not_called()
         self.mock_warn.assert_called_once()
 
@@ -1047,7 +1047,7 @@ class TestClient:
         self.mock_client.is_receiving = True
         mock_thread = Mock(spec=Thread)
         self.mock_client._Client__receiving_thread = mock_thread
-        assert Client.stop_receiving(self.mock_client) is None
+        assert Client.stop_background_receiving(self.mock_client) is None
         assert self.mock_client._Client__receiving_thread is None
         self.mock_client._Client__receiving_stop_event.set.assert_called_once_with()
         mock_thread.join.assert_called_once_with()
@@ -1055,7 +1055,7 @@ class TestClient:
 
     def test_stop_receiving__not_running(self):
         self.mock_client.is_receiving = False
-        assert Client.stop_receiving(self.mock_client) is None
+        assert Client.stop_background_receiving(self.mock_client) is None
         self.mock_warn.assert_called_once()
 
     # start_tester_present
