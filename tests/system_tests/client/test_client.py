@@ -65,7 +65,7 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         (AddressingType.PHYSICAL, False),
         (AddressingType.FUNCTIONAL, True),
     ])
-    @pytest.mark.parametrize("s3client", [500, 2000])
+    @pytest.mark.parametrize("s3client", [250, 1000])
     def test_cyclic_tester_present(self, s3client, addressing_type, sprmib):
         """
         Check Client for cyclic sending of Tester Present messages.
@@ -103,6 +103,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         addressing_params.pop("addressing_type")  # in case Physical and Functional parameters were the same
         # Configure Client.
         client = Client(transport_interface=self.transport_interface_1,
+                        p2_client_timeout=100,
+                        p6_client_timeout=200,
                         s3_client=s3client)
         # Check that cyclic sending of Tester Present messages is not set in the Client.
         assert client.is_tester_present_sent is False
@@ -591,10 +593,209 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         # wait till timeout occurs on server side
         sleep(1)
 
+    @pytest.mark.parametrize("request_message, response_messages", [
+        (UdsMessage(payload=[0x22, 0x10, 0x00],
+                    addressing_type=AddressingType.PHYSICAL),
+         (UdsMessage(payload=[0x7F, 0x22, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x22, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x62, 0x10, 0x00, *range(255)],
+                     addressing_type=AddressingType.PHYSICAL))),
+        (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(70)],
+                    addressing_type=AddressingType.PHYSICAL),
+         (UdsMessage(payload=[0x7F, 0x2E, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x2E, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x2E, 0x72],
+                     addressing_type=AddressingType.PHYSICAL))),
+    ])
+    @pytest.mark.parametrize("p2_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout, "
+                             "start_after, delay, send_last_after", [
+        (250, 1000, 2000, 200, 200, 1500),
+        (100, 1500, 3000, 50, 1750, 2500),
+    ])
+    def test_send_request_receive_responses__p2_ext_timeout(self, request_message, response_messages,
+                                                            p2_client_timeout, p2_ext_client_timeout,
+                                                            p6_ext_client_timeout,
+                                                            start_after, delay, send_last_after):
+        """
+        Check Client for P2*Client timeout reporting.
+
+        Procedure:
+        1. Configure Client.
+        2. Schedule response messages sending by the second Transport Interface with one of the messages scheduled
+            after P2*Client timeout expired.
+        3. Schedule request message reception by the second Transport Interface.
+        4. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        5. Send UDS request message and receive UDS responses by the Client.
+            Expected: Exception for P2*Client timeout raised.
+        6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        7. Validate timing parameters.
+            - Check that timeout was raised after P2*Client timeout expired.
+
+        :param request_message: Request message to send by Client.
+        :param response_messages: Response message to receive by Client.
+        :param p2_client_timeout: P2Client timeout value to configure in Client.
+        :param p2_ext_client_timeout: P2*Client timeout value to configure in Client.
+        :param p6_ext_client_timeout: P6*Client timeout value to configure in Client.
+        :param start_after: Time after which the first Response Pending message would be sent.
+        :param delay: Time after which following Response Pending messages are sent.
+        :param send_last_after: Time after which the final response message would be sent.
+        """
+        # Configure Client.
+        client = Client(transport_interface=self.transport_interface_1,
+                        p2_client_timeout=p2_client_timeout,
+                        p2_ext_client_timeout=p2_ext_client_timeout,
+                        p6_client_timeout=2*p2_client_timeout,
+                        p6_ext_client_timeout=p6_ext_client_timeout,
+                        p3_client_physical=2*p2_client_timeout,
+                        p3_client_functional=2*p2_client_timeout)
+        # Schedule response messages sending by the second Transport Interface with one of the messages scheduled
+        # after P2*Client timeout expired.
+        self.send_message(transport_interface=self.transport_interface_2,
+                          message=response_messages[0],
+                          delay=start_after)
+        for i, response_message in enumerate(response_messages[1:-1], start=1):
+            self.send_message(transport_interface=self.transport_interface_2,
+                              message=response_message,
+                              delay=start_after + delay * i)
+        self.send_message(transport_interface=self.transport_interface_2,
+                          message=response_messages[-1],
+                          delay=send_last_after)
+        # Schedule request message reception by the second Transport Interface.
+        self.receive_message(transport_interface=self.transport_interface_2,
+                             delay=0,
+                             start_timeout=100,
+                             end_timeout=None)
+        # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        assert client.p2_client_measured is None
+        assert client.p2_ext_client_measured is None
+        assert client.p6_client_measured is None
+        assert client.p6_ext_client_measured is None
+        # Send UDS request message and receive UDS responses by the Client.
+        timestamp_before = perf_counter()
+        with pytest.raises(TimeoutError, match="P2\*Client timeout"):
+            client.send_request_receive_responses(request=request_message)
+        timestamp_after = perf_counter()
+        # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        assert client.p2_client_measured is None
+        assert client.p2_ext_client_measured is None
+        assert client.p6_client_measured is None
+        assert client.p6_ext_client_measured is None
+        # Validate timing parameters.
+        if self.MAKE_TIMING_CHECKS:
+            receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
+            assert (start_after + p2_ext_client_timeout
+                    <= receiving_time_ms
+                    < p6_ext_client_timeout)
+        # wait till message arrives
+        sleep(2 * p2_ext_client_timeout / 1000.)
+
+    @pytest.mark.parametrize("request_message, response_messages", [
+        (UdsMessage(payload=[0x22, 0x10, 0x00],
+                    addressing_type=AddressingType.PHYSICAL),
+         (UdsMessage(payload=[0x7F, 0x22, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x22, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x62, 0x10, 0x00, *range(255)],
+                     addressing_type=AddressingType.PHYSICAL))),
+        (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(70)],
+                    addressing_type=AddressingType.PHYSICAL),
+         (UdsMessage(payload=[0x7F, 0x2E, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x2E, 0x78],
+                     addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x2E, 0x72],
+                     addressing_type=AddressingType.PHYSICAL))),
+    ])
+    @pytest.mark.parametrize("p2_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout, "
+                             "start_after, delay, send_last_after", [
+        (250, 1500, 2000, 200, 1000, 2100),
+        (100, 2000, 3000, 50, 1750, 3100),
+    ])
+    def test_send_request_receive_responses__p6_ext_timeout(self, request_message, response_messages,
+                                                            p2_client_timeout, p2_ext_client_timeout,
+                                                            p6_ext_client_timeout,
+                                                            start_after, delay, send_last_after):
+        """
+        Check Client for P6*Client timeout reporting.
+
+        Procedure:
+        1. Configure Client.
+        2. Schedule response messages sending by the second Transport Interface with the last message scheduled
+            after P6*Client timeout expired.
+        3. Schedule request message reception by the second Transport Interface.
+        4. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        5. Send UDS request message and receive UDS responses by the Client.
+            Expected: Exception for P6*Client timeout raised.
+        6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        7. Validate timing parameters.
+            - Check that timeout was raised after P6*Client timeout expired.
+
+        :param request_message: Request message to send by Client.
+        :param response_messages: Response message to receive by Client.
+        :param p2_client_timeout: P2Client timeout value to configure in Client.
+        :param p2_ext_client_timeout: P2*Client timeout value to configure in Client.
+        :param p6_ext_client_timeout: P6*Client timeout value to configure in Client.
+        :param start_after: Time after which the first Response Pending message would be sent.
+        :param delay: Time after which following Response Pending messages are sent.
+        :param send_last_after: Time after which the final response message would be sent.
+        """
+        # Configure Client.
+        client = Client(transport_interface=self.transport_interface_1,
+                        p2_client_timeout=p2_client_timeout,
+                        p2_ext_client_timeout=p2_ext_client_timeout,
+                        p6_client_timeout=2*p2_client_timeout,
+                        p6_ext_client_timeout=p6_ext_client_timeout,
+                        p3_client_physical=2*p2_client_timeout,
+                        p3_client_functional=2*p2_client_timeout)
+        # Schedule response messages sending by the second Transport Interface with the last message scheduled
+        # after P6*Client timeout expired.
+        self.send_message(transport_interface=self.transport_interface_2,
+                          message=response_messages[0],
+                          delay=start_after)
+        for i, response_message in enumerate(response_messages[1:-1], start=1):
+            self.send_message(transport_interface=self.transport_interface_2,
+                              message=response_message,
+                              delay=start_after + delay * i)
+        self.send_message(transport_interface=self.transport_interface_2,
+                          message=response_messages[-1],
+                          delay=send_last_after)
+        # Schedule request message reception by the second Transport Interface.
+        self.receive_message(transport_interface=self.transport_interface_2,
+                             delay=0,
+                             start_timeout=100,
+                             end_timeout=None)
+        # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        assert client.p2_client_measured is None
+        assert client.p2_ext_client_measured is None
+        assert client.p6_client_measured is None
+        assert client.p6_ext_client_measured is None
+        # Send UDS request message and receive UDS responses by the Client.
+        timestamp_before = perf_counter()
+        with pytest.raises(TimeoutError, match="P6\*Client timeout"):
+            client.send_request_receive_responses(request=request_message)
+        timestamp_after = perf_counter()
+        # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        assert client.p2_client_measured is None
+        assert client.p2_ext_client_measured is None
+        assert client.p6_client_measured is None
+        assert client.p6_ext_client_measured is None
+        # Validate timing parameters.
+        if self.MAKE_TIMING_CHECKS:
+            receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
+            assert (p6_ext_client_timeout
+                    <= receiving_time_ms
+                    < p6_ext_client_timeout + self.TASK_TIMING_TOLERANCE)
+        # wait till message arrives
+        sleep(2 * (send_last_after - p6_ext_client_timeout) / 1000.)
+
 
 class TODO:
 # TODO: divide tests
-
 
 
 
@@ -680,175 +881,9 @@ class TODO:
 
 
 
-    @pytest.mark.parametrize("request_message, response_messages", [
-        (UdsMessage(payload=[0x22, 0x10, 0x00],
-                    addressing_type=AddressingType.PHYSICAL),
-         (UdsMessage(payload=[0x7F, 0x22, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x62, 0x10, 0x00, *range(255)],
-                     addressing_type=AddressingType.PHYSICAL))),
-        (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(0, 255, 2), *(1, 255, 2)],
-                    addressing_type=AddressingType.PHYSICAL),
-         (UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x6E, 0x23, 0x45],
-                     addressing_type=AddressingType.PHYSICAL))),
-    ])
-    @pytest.mark.parametrize("p2_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout, "
-                             "start_after, delay, send_after", [
-        (Client.DEFAULT_P2_CLIENT_TIMEOUT, Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT, Client.DEFAULT_P6_EXT_CLIENT_TIMEOUT,
-         20, 1000, Client.DEFAULT_P2_EXT_CLIENT_TIMEOUT + 50),
-        (100, 1000, 5000,
-         50, 750, 1050),
-    ])
-    def test_send_request_receive_responses__p2_ext_timeout(self, request_message, response_messages,
-                                                            p2_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout,
-                                                            start_after, delay, send_after):
-        """
-        Check Client for sending UDS request and receiving delayed UDS response.
 
-        Procedure:
-        1. Configure Client.
-        2. Schedule response messages (Response Pending and Final Response) sending by the second Transport Interface.
-        3. Schedule request message reception by the second Transport Interface.
-        4. Send UDS request messages and received UDS response by the Client.
-        5. Validate attributes of request and response records.
-            Expected: Attributes values of returned records match values of request and response messages that
-                were scheduled for transmission.
-        6. Validate timing parameters.
-            Expected: Measured values of P2Client, P2*Client and P6*Client time parameters are updated and stored by
-                Client. Measured value of P6Client is equal to None (not measured).
 
-        :param request_message: Request message to send by Client.
-        :param response_messages: Response message to receive by Client.
-        :param p2_client_timeout: P2Client timeout value to configure in Client.
-        :param p2_ext_client_timeout: P2*Client timeout value to configure in Client.
-        :param p6_ext_client_timeout: P6*Client timeout value to configure in Client.
-        :param start_after: Time after which the first Response Pending message would be sent.
-        :param delay: Time after which following Response Pending messages are sent.
-        :param send_after: Time after which the final response message would be sent.
-        """
-        client = Client(transport_interface=self.transport_interface_1,
-                        p2_client_timeout=p2_client_timeout,
-                        p6_client_timeout=p2_client_timeout,
-                        p2_ext_client_timeout=p2_ext_client_timeout,
-                        p6_ext_client_timeout=p6_ext_client_timeout)
-        self.send_message(transport_interface=self.transport_interface_2,
-                          message=response_messages[0],
-                          delay=start_after)
-        for i, response_message in enumerate(response_messages[1:-1], start=1):
-            self.send_message(transport_interface=self.transport_interface_2,
-                              message=response_message,
-                              delay=start_after + delay * i)
-        self.send_message(transport_interface=self.transport_interface_2,
-                          message=response_messages[-1],
-                          delay=start_after + delay * len(response_messages[1:-1]) + send_after)
-        self.receive_message(transport_interface=self.transport_interface_2,
-                             delay=0,
-                             start_timeout=10000,
-                             end_timeout=None)
-        with pytest.raises(TimeoutError):
-            client.send_request_receive_responses(request=request_message)
 
-    @pytest.mark.parametrize("request_message, response_messages", [
-        (UdsMessage(payload=[0x22, 0x10, 0x00],
-                    addressing_type=AddressingType.PHYSICAL),
-         (UdsMessage(payload=[0x7F, 0x22, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x22, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x22, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x62, 0x10, 0x00] + [*range(255)] * 50,
-                     addressing_type=AddressingType.PHYSICAL))),
-        (UdsMessage(payload=[0x2E, 0x23, 0x45, *range(0, 255, 2), *(1, 255, 2)],
-                    addressing_type=AddressingType.PHYSICAL),
-         (UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x7F, 0x2E, 0x78],
-                     addressing_type=AddressingType.PHYSICAL),
-          UdsMessage(payload=[0x6E, 0x23, 0x45],
-                     addressing_type=AddressingType.PHYSICAL))),
-    ])
-    @pytest.mark.parametrize("p2_client_timeout, p2_ext_client_timeout, p6_ext_client_timeout, "
-                             "start_after, delay, send_after", [
-                                 (50, 1000, 2250,
-                                  20, 500, 750),
-                                 (100, 500, 750,
-                                  50, 250, 350),
-                             ])
-    def test_send_request_receive_responses__p6_ext_timeout(self, request_message, response_messages,
-                                                            p2_client_timeout, p2_ext_client_timeout,
-                                                            p6_ext_client_timeout,
-                                                            start_after, delay, send_after):
-        """
-        Check Client for sending UDS request and receiving delayed UDS response.
-
-        Procedure:
-        1. Configure Client.
-        2. Schedule response messages (Response Pending and Final Response) sending by the second Transport Interface.
-        3. Schedule request message reception by the second Transport Interface.
-        4. Send UDS request messages and received UDS response by the Client.
-        5. Validate attributes of request and response records.
-            Expected: Attributes values of returned records match values of request and response messages that
-                were scheduled for transmission.
-        6. Validate timing parameters.
-            Expected: Measured values of P2Client, P2*Client and P6*Client time parameters are updated and stored by
-                Client. Measured value of P6Client is equal to None (not measured).
-
-        :param request_message: Request message to send by Client.
-        :param response_messages: Response message to receive by Client.
-        :param p2_client_timeout: P2Client timeout value to configure in Client.
-        :param p2_ext_client_timeout: P2*Client timeout value to configure in Client.
-        :param p6_ext_client_timeout: P6*Client timeout value to configure in Client.
-        :param start_after: Time after which the first Response Pending message would be sent.
-        :param delay: Time after which following Response Pending messages are sent.
-        :param send_after: Time after which the final response message would be sent.
-        """
-        self.configure_slow_message_reception()
-        client = Client(transport_interface=self.transport_interface_1,
-                        p2_client_timeout=p2_client_timeout,
-                        p6_client_timeout=p2_client_timeout,
-                        p2_ext_client_timeout=p2_ext_client_timeout,
-                        p6_ext_client_timeout=p6_ext_client_timeout)
-        self.send_message(transport_interface=self.transport_interface_2,
-                          message=response_messages[0],
-                          delay=start_after)
-        for i, response_message in enumerate(response_messages[1:-1], start=1):
-            self.send_message(transport_interface=self.transport_interface_2,
-                              message=response_message,
-                              delay=start_after + delay * i)
-        self.send_message(transport_interface=self.transport_interface_2,
-                          message=response_messages[-1],
-                          delay=start_after + delay * len(response_messages[1:-1]) + send_after)
-        self.receive_message(transport_interface=self.transport_interface_2,
-                             delay=0,
-                             start_timeout=10000,
-                             end_timeout=None)
-        time_before = perf_counter()
-        with pytest.raises(TimeoutError):
-            client.send_request_receive_responses(request=request_message)
-        time_after = perf_counter()
-        # performance checks
-        if self.MAKE_TIMING_CHECKS:
-            receiving_time_ms = (time_after - time_before) * 1000.
-            assert (p6_ext_client_timeout
-                    <= receiving_time_ms
-                    <= p6_ext_client_timeout + send_after + self.TASK_TIMING_TOLERANCE)
 
     # Tester Present
 

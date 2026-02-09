@@ -674,21 +674,21 @@ class Client:
                                    + self.p2_ext_client_timeout / 1000.)
         timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_ext_client_timeout / 1000.
         timestamp_now = perf_counter()
-        while timestamp_now < timestamp_start_timeout and timestamp_now < timestamp_end_timeout:
-            start_timeout_ms = (min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now) * 1000.
+        while timestamp_now < timestamp_end_timeout:
+            start_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
             end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.
             try:
                 response_record = self._receive_response(start_timeout=start_timeout_ms,
                                                          end_timeout=end_timeout_ms)
-            except MessageTransmissionNotStartedError as exception:
-                raise TimeoutError("P2*Client timeout exceeded.") from exception
             except TimeoutError as exception:
-                raise TimeoutError("P6*Client timeout exceeded.") from exception
+                if timestamp_end_timeout <= timestamp_start_timeout:
+                    raise TimeoutError("P6*Client timeout exceeded.") from exception
+                raise TimeoutError("P2*Client timeout exceeded.") from exception
             if self.is_response_to_request(response_message=response_record,
                                            request_message=request_record):
                 return response_record
             self.__response_queue.put_nowait(response_record)
-        raise TimeoutError("P2*Client timeout exceeded.")
+        raise TimeoutError("P6*Client timeout exceeded.")
 
     @staticmethod
     def decorator_block_receiving(method: Callable) -> Callable:  # type: ignore
