@@ -83,11 +83,11 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
             - Check that each message contains Tester Present request.
             - Check that addressing information of Tester Present packet matches the Client's addressing information.
             - Check that message transmission time is in line with S3Client parameter.
-            - Check that direction attribute indicates that message was received..
+            - Check that direction attribute indicates that message was received.
 
         :param s3client: Cycle time for Tester Present message sending.
         :param addressing_type: Addressing Type to use for Tester Present messages transmission.
-        :param sprmib: Whether to set suppressPosRspMsgIndicationBit in the Tester Present messages.
+        :param sprmib: Suppress Positive Response Message Indication Bit value to set in Tester Present messages.
         """
         tp_payload = BASE_TRANSLATOR.encode(sid=RequestSID.TesterPresent,
                                             data_records_values={
@@ -1079,8 +1079,112 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
                     <= response_record.transmission_end_timestamp
                     <= timestamp_after)
 
-    def test_background_receiving_and_tester_present(self):
-        ... #TODO
+    @pytest.mark.parametrize("addressing_type, sprmib, messages, s3_client, delay", [
+        (AddressingType.PHYSICAL,
+         False,
+         [
+             UdsMessage(payload=[0x7E, 0x00],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x6A, 0x00, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x7E, 0x00],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x6A, 0x01, *range(60,180)],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x7E, 0x00],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x6A, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x7E, 0x00],
+                        addressing_type=AddressingType.PHYSICAL),
+         ],
+         500,
+         250),
+        (AddressingType.FUNCTIONAL,
+         True,
+         [
+             UdsMessage(payload=[0x7E, 0x00],
+                        addressing_type=AddressingType.FUNCTIONAL),
+             UdsMessage(payload=[0x6A, 0x00, 0xF0, 0xE1, 0xD2, 0xC3, 0xB4, 0xA5, 0x96, 0x87],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x6A, 0x01, *range(60, 180)],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x6A, 0x00, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0],
+                        addressing_type=AddressingType.PHYSICAL),
+             UdsMessage(payload=[0x7E, 0x80],
+                        addressing_type=AddressingType.FUNCTIONAL),
+         ],
+         1000,
+         300),
+    ])
+    def test_background_receiving_and_tester_present(self, addressing_type, sprmib, messages,
+                                                     s3_client, delay):
+        """
+        Check Client for receiving messages in the background and send Tester Present cyclically at the same time.
+
+        Procedure:
+        1. Configure Client.
+        2. Schedule response messages sending by the second Transport Interface.
+        3. Start background receiving in the Client.
+        4. Start cyclic sending of Tester Present messages.
+        5. Get records of sent and received messages.
+            - Check that record of the last received message is stored in `last_response_received` attribute.
+            - Get records of the last sent request message from `last_request_sent` attribute
+        6. Stop background receiving in the Client.
+        7. Stop cyclic sending of Tester Present messages.
+        8. Validate collected messages records.
+            - Check that messages timing matches the schedule.
+            - Check messages payload and other attributes that were set.
+
+        :param addressing_type: Addressing Type to use for Tester Present messages transmission.
+        :param sprmib: Suppress Positive Response Message Indication Bit value to set in Tester Present messages.
+        :param messages: Response message to receive by Client.
+        :param s3_client: S3Client value to configure in Client.
+        :param delay: Time between following response message transmission.
+        """
+        # Configure Client.
+        client = Client(transport_interface=self.transport_interface_1,
+                        s3_client=s3_client)
+        # Schedule response messages sending by the second Transport Interface.
+        for i, message in enumerate(messages, start=1):
+            self.send_message(transport_interface=self.transport_interface_2,
+                              message=message,
+                              delay=i * delay)
+        # Start background receiving in the Client.
+        client.start_background_receiving()
+        # Start cyclic sending of Tester Present messages.
+        client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
+        # Get records of sent and received messages.
+        received_records = []
+        sent_records = []
+        for _ in messages:
+            received_records.append(client.get_response(timeout=2 * delay))
+            assert client.last_response_received == received_records[-1]
+            if client.last_request_sent is not None and client.last_request_sent not in sent_records:
+                sent_records.append(client.last_request_sent)
+        # Start background receiving in the Client.
+        client.stop_tester_present()
+        # Stop cyclic sending of Tester Present messages.
+        client.stop_background_receiving()
+        # Validate collected messages records.
+        for i, record in enumerate(sent_records):
+            assert isinstance(record, UdsMessageRecord)
+            assert record.addressing_type == addressing_type
+            assert len(record.payload) == 2
+            assert record.payload[0] == 0x3E
+            assert record.payload[1] == (0x80 if sprmib else 0x00)
+            if i != 0:
+                delay_between_tp_ms = (record.transmission_end_timestamp
+                                       - sent_records[i-i].transmission_end_timestamp) * 1000.
+                assert (s3_client - self.TASK_TIMING_TOLERANCE
+                        <= delay_between_tp_ms
+                        <= s3_client + self.TASK_TIMING_TOLERANCE)
+        assert len(received_records) == len(messages)
+        for i, record in enumerate(received_records):
+            message = messages[i]
+            assert isinstance(record, UdsMessageRecord)
+            assert record.addressing_type == message.addressing_type
+            assert record.payload == bytes(message.payload)
 
     def test_background_receiving_and_send_request_receive_responses(self):
         ... #TODO

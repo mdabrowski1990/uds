@@ -373,6 +373,30 @@ class Client:
         self.__s3_client = value
 
     @property
+    def last_request_sent(self) -> Optional[UdsMessageRecord]:
+        """Get record with the last request message sent."""
+        records = []
+        if self.__last_physical_request is not None:
+            records.append(self.__last_physical_request)
+        if self.__last_functional_request is not None:
+            records.append(self.__last_functional_request)
+        if len(records) == 0:
+            return None
+        return max(records, key=lambda record: record.transmission_end_timestamp)
+
+    @property
+    def last_response_received(self) -> Optional[UdsMessageRecord]:
+        """Get record with the last response message sent."""
+        records = []
+        if self.__last_physical_response is not None:
+            records.append(self.__last_physical_response)
+        if self.__last_functional_response is not None:
+            records.append(self.__last_functional_response)
+        if len(records) == 0:
+            return None
+        return max(records, key=lambda record: record.transmission_end_timestamp)
+
+    @property
     def is_background_receiving(self) -> bool:
         """Get flag whether background receiving thread is running."""
         return self.__background_receiving_task_event.is_set()
@@ -503,6 +527,12 @@ class Client:
                 pass
             else:
                 self.__response_queue.put_nowait(response_record)
+                if response_record.addressing_type == AddressingType.PHYSICAL:
+                    self.__last_physical_response = response_record
+                elif response_record.addressing_type == AddressingType.FUNCTIONAL:
+                    self.__last_functional_response = response_record
+                else:
+                    raise NotImplementedError(f"Unhandled Addressing Type found: {response_record.addressing_type!r}")
 
     def __send_tester_present_task(self, tester_present_request: UdsMessage) -> None:
         """
