@@ -15,10 +15,10 @@ from uds.client import (
     ReassignmentError,
     RequestSID,
     ResponseSID,
+    SimpleQueue,
     Thread,
     UdsMessage,
     UdsMessageRecord,
-SimpleQueue
 )
 
 SCRIPT_LOCATION = "uds.client"

@@ -6,7 +6,12 @@ from can import Bus
 from uds.can import CanAddressingFormat, DefaultFlowControlParametersGenerator, PyCanTransportInterface
 from uds.utilities import TimeMillisecondsAlias
 
-from ..test_client import AbstractClientTests, AbstractBaseClientFunctionalityTests, AbstractClientTimeoutsTests
+from ..test_client import (
+    AbstractBaseClientFunctionalityTests,
+    AbstractClientErrorGuessing,
+    AbstractClientTests,
+    AbstractClientTimeoutsTests,
+)
 
 
 class PythonCanKvaserConfig(AbstractClientTests):
@@ -54,4 +59,8 @@ class TestBaseClientFunctionalityTests(AbstractBaseClientFunctionalityTests, Pyt
 
 
 class TestClientTimeoutsTests(AbstractClientTimeoutsTests, PythonCanKvaserConfig):
-    """Base Client tests related to timeout for python-can Transport Interface with Kvaser interface."""
+    """Client tests related to timeout for python-can Transport Interface with Kvaser interface."""
+
+
+class TestClientErrorGuessing(AbstractClientErrorGuessing, PythonCanKvaserConfig):
+    """Error-guessing tests for Client."""
