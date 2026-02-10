@@ -1271,8 +1271,117 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
             assert record.addressing_type == message.addressing_type
             assert record.payload == bytes(message.payload)
 
-    def test_background_receiving_and_send_request_receive_responses(self):
-        ... #TODO
+    @pytest.mark.parametrize("request_message, response_delays, response_messages, other_delays, other_messages", [
+        (UdsMessage(payload=[0x22, *range(250, 0, -7)], addressing_type=AddressingType.PHYSICAL),
+         [40, 940, 1840],
+         (UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x62, *range(255), *range(255, 0, -1)], addressing_type=AddressingType.PHYSICAL)),
+         [20, 100, 900, 960, 2000],
+         (UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+          UdsMessage(payload=[0x6A, 0x0F, 0x1E, 0x2D, 0x3C, 0x4B, 0x5A, 0x69], addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+          UdsMessage(payload=[0x6A, *range(255), *range(255, 0, -3)], addressing_type=AddressingType.PHYSICAL),)),
+        (UdsMessage(payload=[0x11, 0x81], addressing_type=AddressingType.FUNCTIONAL),
+         [30, 500],
+         (UdsMessage(payload=[0x7F, 0x11, 0x78], addressing_type=AddressingType.FUNCTIONAL),
+          UdsMessage(payload=[0x51, 0x81], addressing_type=AddressingType.FUNCTIONAL)),
+         [20, 50, 495, 505],
+         (UdsMessage(payload=[0x50, 0x01], addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x6A, *range(0, 255, 2)], addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
+          UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL))),
+    ])
+    @pytest.mark.parametrize("receiving_cycle", [10, 20])
+    def test_background_receiving_and_send_request_receive_responses(self, request_message,
+                                                                     response_delays, response_messages,
+                                                                     other_delays, other_messages,
+                                                                     receiving_cycle):
+        """
+        Check Client for receiving messages in the background while sending request and receiving responses.
+
+        Procedure:
+        1. Configure Client.
+        2. Schedule request messages reception by the second Transport Interface.
+        3. Schedule response messages sending by the second Transport Interface.
+            - Schedule sending response messages to the request.
+            - Schedule sending other response messages.
+        4. Schedule other response message sending by the second Transport Interface.
+        5. Start background receiving in the Client.
+        6. Send UDS request message and receive UDS responses by the Client.
+        7. Wait 1s so other messages are transmitted.
+        8. Stop background receiving in the Client.
+        9. Get other response messages from response queue.
+        10. Validate request and response records.
+            - Check record of request message.
+            - Check records of response messages.
+            - Check records of other response messages.
+
+        :param request_message: Request message to send by Client.
+        :param response_delays: Times after which response messages would be sent.
+        :param response_messages: Response messages (to the request message) to receive by Client.
+        :param other_delays: Times after which other response messages would be sent.
+        :param other_messages: Other response messages to receive by Client.
+        :param receiving_cycle: Cycle for background receiving task.
+        """
+        # Configure Client.
+        client = Client(transport_interface=self.transport_interface_1)
+        # Schedule request messages reception by the second Transport Interface.
+        self.receive_message(transport_interface=self.transport_interface_2,
+                             delay=0,
+                             start_timeout=1000,
+                             end_timeout=None)
+        self.receive_message(transport_interface=self.transport_interface_2,
+                             delay=800,
+                             start_timeout=1000,
+                             end_timeout=None)
+        self.receive_message(transport_interface=self.transport_interface_2,
+                             delay=1500,
+                             start_timeout=1000,
+                             end_timeout=None)
+        # Schedule response messages sending by the second Transport Interface.
+        for i, response_message in enumerate(response_messages):
+            self.send_message(transport_interface=self.transport_interface_2,
+                              message=response_message,
+                              delay=response_delays[i])
+        # Schedule other response message sending by the second Transport Interface.
+        for i, other_message in enumerate(other_messages):
+            self.send_message(transport_interface=self.transport_interface_2,
+                              message=other_message,
+                              delay=other_delays[i])
+        # Start background receiving in the Client.
+        client.start_background_receiving(cycle=receiving_cycle)
+        # Send UDS request message and receive UDS responses by the Client.
+        request_record, response_records = client.send_request_receive_responses(request=request_message)
+        # Wait 1s so other messages are transmitted.
+        sleep(1)
+        # Stop background receiving in the Client.
+        client.stop_background_receiving()
+        # Get other response messages from response queue.
+        other_records = [client.get_response_no_wait() for _ in other_messages]
+        assert client.get_response_no_wait() is None
+        # Validate request and response records.
+        assert isinstance(request_record, UdsMessageRecord)
+        assert request_record.direction == TransmissionDirection.TRANSMITTED
+        assert request_record.payload == request_message.payload
+        assert request_record.addressing_type == request_message.addressing_type
+        assert isinstance(response_records, tuple)
+        assert len(response_records) == len(response_messages)
+        assert client.last_request_sent is request_record
+        for i, response_record in enumerate(response_records):
+            response_message = response_messages[i]
+            assert isinstance(response_record, UdsMessageRecord)
+            assert response_record.direction == TransmissionDirection.RECEIVED
+            assert response_record.payload == bytes(response_message.payload)
+            assert response_record.addressing_type == response_message.addressing_type
+        assert all(isinstance(other_record, UdsMessageRecord) for other_record in other_records)
+        for i, other_record in enumerate(other_records):
+            other_message = other_messages[i]
+            assert isinstance(other_record, UdsMessageRecord)
+            assert other_record.direction == TransmissionDirection.RECEIVED
+            assert other_record.payload == bytes(other_message.payload)
+            assert other_record.addressing_type == other_message.addressing_type
 
     def test_tester_present_and_send_request_receive_responses(self):
         ... #TODO

@@ -37,7 +37,7 @@ class Client:
     """Default value of :ref:`P6*Client <knowledge-base-p6*-client>` timeout."""
     DEFAULT_S3_CLIENT: TimeMillisecondsAlias = 2000  # S3Client >= P3Client_Phys, P3Client_Func
     """Default value of :ref:`S3Client <knowledge-base-s3-client>` time parameter."""
-    DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 20
+    DEFAULT_RECEIVING_TASK_CYCLE: TimeMillisecondsAlias = 10
     """Default value of receiving task cycle."""
 
     def __init__(self,
@@ -521,9 +521,9 @@ class Client:
 
         :param cycle: Time (in milliseconds) used for this task cycle.
         """
-        while self.__background_receiving_task_event.is_set():
+        while self.is_background_receiving:
             sleep(cycle / 1000.)
-            if self.__send_and_receive_not_in_progress_event.is_set():
+            if not self.__send_and_receive_not_in_progress_event.is_set():
                 self.__break_in_background_receiving_event.set()
                 self.__send_and_receive_not_in_progress_event.wait()
                 self.__break_in_background_receiving_event.clear()
