@@ -2,11 +2,10 @@
 
 __all__ = ["Client"]
 
-from functools import wraps
-from queue import Empty, SimpleQueue
+from queue import Empty, Queue
 from threading import Event, Lock, Thread
 from time import perf_counter, sleep
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 from uds.addressing import AddressingType
@@ -90,9 +89,11 @@ class Client:
         self.__tester_present_thread: Optional[Thread] = None
         self.__background_receiving_task_event: Event = Event()
         self.__background_receiving_task_event.clear()
-        self.__break_in_receiving_event: Event = Event()
-        self.__break_in_receiving_event.clear()
+        self.__break_in_background_receiving_event: Event = Event()
+        self.__break_in_background_receiving_event.clear()
         self.__background_receiving_thread: Optional[Thread] = None
+        self.__send_and_receive_not_in_progress_event: Event = Event()
+        self.__send_and_receive_not_in_progress_event.set()
         self.__receiving_not_in_progress_event: Event = Event()
         self.__receiving_not_in_progress_event.set()
         self.__transmission_not_in_progress_event: Event = Event()
@@ -102,7 +103,7 @@ class Client:
         self.__physical_transmission_lock: Lock = Lock()
         self.__functional_transmission_lock: Lock = Lock()
         # other
-        self.__response_queue: SimpleQueue[UdsMessageRecord] = SimpleQueue()
+        self.__response_queue: Queue[UdsMessageRecord] = Queue(maxsize=100)
         self.__last_physical_request: Optional[UdsMessageRecord] = None
         self.__last_physical_response: Optional[UdsMessageRecord] = None
         self.__last_functional_request: Optional[UdsMessageRecord] = None
@@ -386,7 +387,11 @@ class Client:
 
     @property
     def last_response_received(self) -> Optional[UdsMessageRecord]:
-        """Get record with the last response message sent."""
+        """
+        Get record with the last response message sent.
+
+        .. note:: Only final responses can be found here (no Negative Responses with Response Pending NRC).
+        """
         records = []
         if self.__last_physical_response is not None:
             records.append(self.__last_physical_response)
@@ -518,8 +523,10 @@ class Client:
         """
         while self.__background_receiving_task_event.is_set():
             sleep(cycle / 1000.)
-            if self.__break_in_receiving_event.is_set():
-                continue
+            if self.__send_and_receive_not_in_progress_event.is_set():
+                self.__break_in_background_receiving_event.set()
+                self.__send_and_receive_not_in_progress_event.wait()
+                self.__break_in_background_receiving_event.clear()
             try:
                 response_record = self._receive_response(start_timeout=cycle,
                                                          end_timeout=self.p6_ext_client_timeout)
@@ -544,7 +551,10 @@ class Client:
         next_call = perf_counter() + period_s
         sleep(period_s)
         while self.is_tester_present_sent:
-            self._send_request(tester_present_request)
+            if (self.__send_and_receive_not_in_progress_event.is_set()
+                    or self.last_request_sent.addressing_type != tester_present_request.addressing_type):
+                # avoid collision of message with the same addressing type
+                self._send_request(tester_present_request)
             next_call += period_s
             remaining_wait_s = next_call - perf_counter()
             if remaining_wait_s < 0:
@@ -659,8 +669,8 @@ class Client:
         timestamp_start_timeout = request_record.transmission_end_timestamp + self.p2_client_timeout / 1000.
         timestamp_end_timeout = request_record.transmission_end_timestamp + self.p6_client_timeout / 1000.
         timestamp_now = perf_counter()
-        while timestamp_now < timestamp_start_timeout and timestamp_now < timestamp_end_timeout:
-            start_timeout_ms = (min(timestamp_start_timeout, timestamp_end_timeout) - timestamp_now) * 1000.
+        while timestamp_now < timestamp_start_timeout:
+            start_timeout_ms = (timestamp_start_timeout - timestamp_now) * 1000.
             end_timeout_ms = (timestamp_end_timeout - timestamp_now) * 1000.
             try:
                 response_record = self._receive_response(start_timeout=start_timeout_ms,
@@ -719,29 +729,6 @@ class Client:
                 return response_record
             self.__response_queue.put_nowait(response_record)
         raise TimeoutError("P6*Client timeout exceeded.")
-
-    @staticmethod
-    def decorator_block_receiving(method: Callable) -> Callable:  # type: ignore
-        """
-        Decorate a method that blocks receiving task.
-
-        :param method: Method to decorate.
-
-        :return: Decorated method.
-        """
-
-        @wraps(method)
-        def wrapper(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore
-            # pylint: disable=protected-access
-            self._Client__break_in_receiving_event.set()
-            self._Client__receiving_not_in_progress_event.wait(timeout=self.p6_ext_client_timeout)
-            try:
-                return_value = method(self, *args, **kwargs)
-            finally:
-                self._Client__break_in_receiving_event.clear()
-            return return_value
-
-        return wrapper
 
     @staticmethod
     def is_response_pending_message(response_message: Union[UdsMessage, UdsMessageRecord],
@@ -955,7 +942,6 @@ class Client:
             warn("Receiving is already stopped.",
                  category=UserWarning)
 
-    @decorator_block_receiving
     def send_request_receive_responses(self,
                                        request: UdsMessage) -> Tuple[UdsMessageRecord, Tuple[UdsMessageRecord, ...]]:
         """
@@ -974,15 +960,22 @@ class Client:
         if not isinstance(request, UdsMessage):
             raise TypeError("Provided request value is not an instance of UdsMessage class.")
         sid = RequestSID(request.payload[0])
-        request_record = self._send_request(request)
         response_records: List[UdsMessageRecord] = []
-        initial_response = self._receive_initial_response(request_record)
-        if initial_response is None:
-            return request_record, tuple()
-        response_records.append(initial_response)
-        while self.is_response_pending_message(response_message=response_records[-1], request_sid=sid):
-            following_response = self._receive_following_response(request_record=request_record,
-                                                                  previous_response_record=response_records[-1])
-            response_records.append(following_response)
-        self._update_measured_client_values(request_record=request_record, response_records=response_records)
+        self.__send_and_receive_not_in_progress_event.clear()
+        if self.is_background_receiving:
+            self.__receiving_not_in_progress_event.wait(timeout=self.p6_ext_client_timeout)
+            self.__break_in_background_receiving_event.wait(timeout=self.p6_ext_client_timeout)
+        request_record = self._send_request(request)
+        try:
+            initial_response = self._receive_initial_response(request_record)
+            if initial_response is None:
+                return request_record, tuple()
+            response_records.append(initial_response)
+            while self.is_response_pending_message(response_message=response_records[-1], request_sid=sid):
+                following_response = self._receive_following_response(request_record=request_record,
+                                                                      previous_response_record=response_records[-1])
+                response_records.append(following_response)
+            self._update_measured_client_values(request_record=request_record, response_records=response_records)
+        finally:
+            self.__send_and_receive_not_in_progress_event.set()
         return request_record, tuple(response_records)

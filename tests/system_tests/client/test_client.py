@@ -585,7 +585,9 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         5. Send UDS request message and receive UDS response by the Client.
             Expected: Exception for P2Client timeout raised.
         6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        7. Validate timing parameters.
+        7. Check that last request sent by the Client is updated.
+        8. Check that last response received by the Client remains unassigned.
+        9. Validate timing parameters.
             - Check that timeout was raised after P2Client timeout expired.
 
         :param request_message: Request message to send by Client.
@@ -623,6 +625,12 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p2_ext_client_measured is None
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
+        # Check that last request sent by the Client is updated.
+        assert isinstance(client.last_request_sent, UdsMessageRecord)
+        assert client.last_request_sent.payload == request_message.payload
+        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        # Check that last response received by the Client remains unassigned.
+        assert client.last_response_received is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -659,7 +667,9 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         5. Send UDS request message and receive UDS response by the Client.
             Expected: Exception for P6Client timeout raised.
         6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        7. Validate timing parameters.
+        7. Check that last request sent by the Client is updated.
+        8. Check that last response received by the Client remains unassigned.
+        9. Validate timing parameters.
             - Check that timeout was raised after P6Client timeout expired.
 
         :param request_message: Request message to send by Client.
@@ -699,6 +709,12 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p2_ext_client_measured is None
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
+        # Check that last request sent by the Client is updated.
+        assert isinstance(client.last_request_sent, UdsMessageRecord)
+        assert client.last_request_sent.payload == request_message.payload
+        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        # Check that last response received by the Client remains unassigned.
+        assert client.last_response_received is None
         # performance checks
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -747,7 +763,9 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         5. Send UDS request message and receive UDS responses by the Client.
             Expected: Exception for P2*Client timeout raised.
         6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        7. Validate timing parameters.
+        7. Check that last request sent by the Client is updated.
+        8. Check that last response received by the Client remains unassigned.
+        9. Validate timing parameters.
             - Check that timeout was raised after P2*Client timeout expired.
 
         :param request_message: Request message to send by Client.
@@ -799,6 +817,12 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p2_ext_client_measured is None
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
+        # Check that last request sent by the Client is updated.
+        assert isinstance(client.last_request_sent, UdsMessageRecord)
+        assert client.last_request_sent.payload == request_message.payload
+        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        # Check that last response received by the Client remains unassigned.
+        assert client.last_response_received is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -847,7 +871,9 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         5. Send UDS request message and receive UDS responses by the Client.
             Expected: Exception for P6*Client timeout raised.
         6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        7. Validate timing parameters.
+        7. Check that last request sent by the Client is updated.
+        8. Check that last response received by the Client remains unassigned.
+        9. Validate timing parameters.
             - Check that timeout was raised after P6*Client timeout expired.
 
         :param request_message: Request message to send by Client.
@@ -899,6 +925,12 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert client.p2_ext_client_measured is None
         assert client.p6_client_measured is None
         assert client.p6_ext_client_measured is None
+        # Check that last request sent by the Client is updated.
+        assert isinstance(client.last_request_sent, UdsMessageRecord)
+        assert client.last_request_sent.payload == request_message.payload
+        assert client.last_request_sent.addressing_type == request_message.addressing_type
+        # Check that last response received by the Client remains unassigned.
+        assert client.last_response_received is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             receiving_time_ms = (timestamp_after - timestamp_before) * 1000.
@@ -934,12 +966,14 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         3. Send UDS request message 1 and receive UDS response by the Client.
         4. Schedule request message reception by the second Transport Interface.
         5. Send UDS request message 2 and receive UDS response by the Client.
-        3. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        6. Validate request and response records.
+        6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        7. Validate request and response records.
             - Check that request messages' payload matches the payload of transmitted messages.
             - Check that direction attribute of request messages indicates that the messages were transmitted.
             - Check that addressing type attribute in the message records are correctly set.
             - Check that no response message was received.
+            - Check that last request sent by the Client is the second request message.
+            - Check that last response received by the Client remains unassigned.
         7. Validate timing parameters.
             - Time between transmission of request message 1 and request message 2 equals P3Client.
 
@@ -995,6 +1029,8 @@ class AbstractClientTimeoutsTests(AbstractClientTests, ABC):
         assert request_record_2.addressing_type == request_message_2.addressing_type
         assert isinstance(response_records_2, tuple)
         assert len(response_records_2) == 0
+        assert client.last_request_sent is request_record_2
+        assert client.last_response_received is None
         # Validate timing parameters.
         transmission_diff_ms = (request_record_2.transmission_start_timestamp
                                 - request_record_1.transmission_end_timestamp) * 1000.
@@ -1050,6 +1086,8 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
             - Check that direction attribute of request message indicates that the message was transmitted.
             - Check that direction attribute of response message indicates that the message was received.
             - Check that addressing type attribute in the message records is correctly set.
+            - Check the last request sent by the client.
+            - Check the last response received by the client.
         8. Check that other response message is put in background receiving queue.
         9. Validate timing parameters.
             - Check that timestamps of record messages matches the transmission schedule.
@@ -1101,6 +1139,8 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         assert response_record.direction == TransmissionDirection.RECEIVED
         assert response_record.payload == response_message.payload
         assert response_record.addressing_type == response_message.addressing_type
+        assert client.last_request_sent is request_record
+        assert client.last_response_received is response_records[-1]
         # Check that other response message is put in background receiving queue.
         other_response_record = client.get_response_no_wait()
         assert isinstance(other_response_record, UdsMessageRecord)
