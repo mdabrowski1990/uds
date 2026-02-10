@@ -160,18 +160,22 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         Procedure:
         1. Configure Client.
         2. Check that background receiving is not set in the Client.
-        3. Start background receiving in the Client.
-        4. Check that background receiving is set in the Client.
-        5. Check that Client has not received any messages yet.
-        6. Schedule transmission of two response messages to the Client.
-        7. Wait till the two messages are received by the client.
-        8. Check that Client has not received more messages.
-        9. Check that background receiving is set in the Client.
-        10. Stop background receiving in the Client.
-        11. Check that background receiving is not set in the Client.
+        3. Check that there were no requests sent by the Client.
+        4. Check that there were no responses received by the Client.
+        5. Start background receiving in the Client.
+        6. Check that background receiving is set in the Client.
+        7. Check that Client has not received any messages yet.
+        8. Schedule transmission of two response messages to the Client.
+        9. Wait till the two messages are received by the client.
+        10. Check that Client has not received more messages.
+        11. Check that background receiving is set in the Client.
+        12. Stop background receiving in the Client.
+        13. Check that background receiving is not set in the Client.
+        14. Check that there were no requests sent by the Client.
         12. Validate received messages.
             - Check that received response messages matches the payload of transmitted messages.
             - Check that direction attribute indicates that message was received.
+            - Check that the record of the last received message by the Client matches the second received message.
 
         :param delay_1: Time after which the first response message to be sent.
         :param message_1: The first response message.
@@ -183,6 +187,11 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         client = Client(transport_interface=self.transport_interface_1)
         # Check that background receiving is not set in the Client.
         assert client.is_background_receiving is False
+        # Check that there were no requests sent by the Client.
+        assert client.last_request_sent is None
+        # Check that there were no responses received by the Client.
+        assert client.last_response_received is None
+        assert client.get_response_no_wait() is None
         # Start background receiving in the Client.
         client.start_background_receiving()
         # Check that background receiving is set in the Client.
@@ -207,11 +216,14 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         client.stop_background_receiving()
         # Check that background receiving is not set in the Client.
         assert client.is_background_receiving is False
+        # Check that there were no requests sent by the Client.
+        assert client.last_request_sent is None
         # Validate received messages.
         assert message_record_1.payload == message_1.payload
         assert message_record_1.direction == TransmissionDirection.RECEIVED
         assert message_record_2.payload == message_2.payload
         assert message_record_2.direction == TransmissionDirection.RECEIVED
+        assert client.last_response_received is message_record_2
 
     @pytest.mark.parametrize("request_message", [
         UdsMessage(payload=[0x3E, 0x00],
@@ -229,15 +241,19 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         Procedure:
         1. Configure Client.
         2. Schedule request message reception by the second Transport Interface.
-        3. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        4. Send UDS request message and receive UDS response by the Client.
+        3. Check that there were no requests sent by the Client.
+        4. Check that there were no responses received by the Client.
         5. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        6. Validate request and response records.
+        6. Send UDS request message and receive UDS response by the Client.
+        7. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        8. Validate request and response records.
             - Check that request message payload matches the payload of transmitted message.
             - Check that direction attribute of request message indicates that the message was transmitted.
             - Check that addressing type attribute in the message record is correctly set.
             - Check that no response message was received.
-        7. Validate timing parameters.
+            - Check the last request sent by the client.
+            - Check the last response received by the client.
+        9. Validate timing parameters.
             - Check that waiting for response message lasted P2Client timeout.
 
         :param request_message: Request message to send by Client.
@@ -253,6 +269,11 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                              delay=0,
                              start_timeout=1000,
                              end_timeout=None)
+        # Check that there were no requests sent by the Client.
+        assert client.last_request_sent is None
+        # Check that there were no responses received by the Client.
+        assert client.last_response_received is None
+        assert client.get_response_no_wait() is None
         # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
         assert client.p2_client_measured is None
         assert client.p2_ext_client_measured is None
@@ -274,6 +295,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert request_record.addressing_type == request_message.addressing_type
         assert isinstance(response_records, tuple)
         assert len(response_records) == 0
+        assert client.last_request_sent is request_record
+        assert client.last_response_received is None
         # Validate timing parameters.
         if self.MAKE_TIMING_CHECKS:
             desired_timeout = request_record.transmission_end_timestamp + p2_client_timeout / 1000.
@@ -311,14 +334,18 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         1. Configure Client.
         2. Schedule response message sending by the second Transport Interface.
         3. Schedule request message reception by the second Transport Interface.
-        4. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        5. Send UDS request message and receive UDS response by the Client.
-        6. Validate request and response records.
+        4. Check that there were no requests sent by the Client.
+        5. Check that there were no responses received by the Client.
+        6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        7. Send UDS request message and receive UDS response by the Client.
+        8. Validate request and response records.
             - Check that messages' payload matches the payload of transmitted messages.
             - Check that direction attribute of request message indicates that the message was transmitted.
             - Check that direction attribute of response message indicates that the message was received.
             - Check that addressing type attribute in the message records is correctly set.
-        7. Validate timing parameters.
+            - Check the last request sent by the client.
+            - Check the last response received by the client.
+        9. Validate timing parameters.
             - Check that timestamps of record messages matches the transmission schedule.
             - Check that measured P2Client and P6Client attributes were correctly updated in the Client.
             - Check that measured P2*Client and P6*Client attributes were not updated in the Client.
@@ -344,6 +371,11 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                              delay=0,
                              start_timeout=1000,
                              end_timeout=None)
+        # Check that there were no requests sent by the Client.
+        assert client.last_request_sent is None
+        # Check that there were no responses received by the Client.
+        assert client.last_response_received is None
+        assert client.get_response_no_wait() is None
         # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
         assert client.p2_client_measured is None
         assert client.p2_ext_client_measured is None
@@ -364,6 +396,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert response_record.direction == TransmissionDirection.RECEIVED
         assert response_record.payload == response_message.payload
         assert response_record.addressing_type == response_message.addressing_type
+        assert client.last_request_sent is request_record
+        assert client.last_response_received is response_records[-1]
         # Validate timing parameters.
         assert (client.p2_client_measured
                 == round((response_record.transmission_start_timestamp
@@ -416,14 +450,18 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         1. Configure Client.
         2. Schedule response messages sending by the second Transport Interface.
         3. Schedule request message reception by the second Transport Interface.
-        4. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
-        5. Send UDS request message and receive UDS responses by the Client.
-        6. Validate request and response records.
+        4. Check that there were no requests sent by the Client.
+        5. Check that there were no responses received by the Client.
+        6. Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
+        7. Send UDS request message and receive UDS responses by the Client.
+        8. Validate request and response records.
             - Check that messages' payload matches the payload of transmitted messages.
             - Check that direction attribute of request message indicates that the message was transmitted.
             - Check that direction attribute of response messages indicates that the messages were received.
             - Check that addressing type attribute in the message records is correctly set.
-        7. Validate timing parameters.
+            - Check the last request sent by the client.
+            - Check the last response received by the client.
+        9. Validate timing parameters.
             - Check that timestamps of record messages matches the transmission schedule.
             - Check that measured P2Client, P2*Client and P6*Client attributes were correctly updated in the Client.
             - Check that measured P6Client attribute was not updated in the Client.
@@ -461,6 +499,11 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                              delay=0,
                              start_timeout=100,
                              end_timeout=None)
+        # Check that there were no requests sent by the Client.
+        assert client.last_request_sent is None
+        # Check that there were no responses received by the Client.
+        assert client.last_response_received is None
+        assert client.get_response_no_wait() is None
         # Check that measured values of P2Client, P2*Client, P6Client and P6*Client are not set in the Client.
         assert client.p2_client_measured is None
         assert client.p2_ext_client_measured is None
@@ -481,6 +524,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
             assert response_record.direction == TransmissionDirection.RECEIVED
             assert response_record.payload == response_messages[i].payload
             assert response_record.addressing_type == response_messages[i].addressing_type
+        assert client.last_request_sent is request_record
+        assert client.last_response_received is response_records[-1]
         # Validate timing parameters.
         assert (client.p2_client_measured
                 == round((response_records[0].transmission_start_timestamp
