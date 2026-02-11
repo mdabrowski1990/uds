@@ -60,11 +60,12 @@ class AbstractClientTests(BaseSystemTests, ABC):
 class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
     """Common implementation of basic system tests related to Client Functionalities."""
 
-    @pytest.mark.parametrize("addressing_type, sprmib", [
-        (AddressingType.PHYSICAL, False),
-        (AddressingType.FUNCTIONAL, True),
+    @pytest.mark.parametrize("addressing_type, sprmib, s3_client", [
+        (AddressingType.PHYSICAL, False, 250),
+        (AddressingType.PHYSICAL, True, 500),
+        (AddressingType.FUNCTIONAL, False, 100),
+        (AddressingType.FUNCTIONAL, True, 1000),
     ])
-    @pytest.mark.parametrize("s3_client", [250, 1000])
     def test_cyclic_tester_present(self, s3_client, addressing_type, sprmib):
         """
         Check Client for cyclic sending of Tester Present messages.
@@ -102,8 +103,10 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         addressing_params.pop("addressing_type")  # in case Physical and Functional parameters were the same
         # Configure Client.
         client = Client(transport_interface=self.transport_interface_1,
-                        p2_client_timeout=100,
-                        p6_client_timeout=200,
+                        p2_client_timeout=50,
+                        p6_client_timeout=100,
+                        p3_client_functional=100,
+                        p3_client_physical=100,
                         s3_client=s3_client)
         # Check that cyclic sending of Tester Present messages is not set in the Client.
         assert client.is_tester_present_sent is False
@@ -215,14 +218,16 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         for tp_record in tp_messages_records_1 + tp_messages_records_2:
             assert tp_record.payload == tp_payload
         for i, tp_record in enumerate(tp_messages_records_1[1:]):
-            tp_delay = tp_record.transmission_end_timestamp - tp_messages_records_1[i].transmission_end_timestamp
+            tp_delay_ms = (tp_record.transmission_end_timestamp
+                        - tp_messages_records_1[i].transmission_end_timestamp) * 1000
             assert (s3_client - self.TASK_TIMING_TOLERANCE
-                    <= tp_delay
+                    <= tp_delay_ms
                     <= s3_client + self.TASK_TIMING_TOLERANCE)
         for i, tp_record in enumerate(tp_messages_records_2[1:]):
-            tp_delay = tp_record.transmission_end_timestamp - tp_messages_records_2[i].transmission_end_timestamp
+            tp_delay_ms = (tp_record.transmission_end_timestamp
+                        - tp_messages_records_2[i].transmission_end_timestamp) * 1000
             assert (s3_client - self.TASK_TIMING_TOLERANCE
-                    <= tp_delay
+                    <= tp_delay_ms
                     <= s3_client + self.TASK_TIMING_TOLERANCE)
 
     @pytest.mark.parametrize("delay_1, message_1, delay_2, message_2, timeout", [
