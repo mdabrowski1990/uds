@@ -1471,5 +1471,20 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
             assert other_record.payload == bytes(other_message.payload)
             assert other_record.addressing_type == other_message.addressing_type
 
+    @pytest.mark.parametrize("request_message, response_messages, addressing_type, sprmib, s3_client", [
+        (UdsMessage(payload=[0x11, 0x81], addressing_type=AddressingType.FUNCTIONAL),
+         (UdsMessage(payload=[0x7F, 0x11, 0x78], addressing_type=AddressingType.FUNCTIONAL),
+          UdsMessage(payload=[0x7F, 0x11, 0x78], addressing_type=AddressingType.FUNCTIONAL),
+          UdsMessage(payload=[0x51, 0x81], addressing_type=AddressingType.FUNCTIONAL)),
+         AddressingType.FUNCTIONAL,
+         False,
+         200),
+        (UdsMessage(payload=[0x22] + 2 * list(range(255)), addressing_type=AddressingType.PHYSICAL),
+         (UdsMessage(payload=[0x7F, 0x22, 0x78], addressing_type=AddressingType.PHYSICAL),
+          UdsMessage(payload=[0x62] + 10 * list(range(255)), addressing_type=AddressingType.PHYSICAL)),
+         AddressingType.PHYSICAL,
+         True,
+         500),
+    ])
     def test_tester_present_and_send_request_receive_responses(self):
-        ... #TODO
+        ... #TODO: manual verification needed?
