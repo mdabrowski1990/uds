@@ -64,8 +64,8 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         (AddressingType.PHYSICAL, False),
         (AddressingType.FUNCTIONAL, True),
     ])
-    @pytest.mark.parametrize("s3client", [250, 1000])
-    def test_cyclic_tester_present(self, s3client, addressing_type, sprmib):
+    @pytest.mark.parametrize("s3_client", [250, 1000])
+    def test_cyclic_tester_present(self, s3_client, addressing_type, sprmib):
         """
         Check Client for cyclic sending of Tester Present messages.
 
@@ -74,7 +74,7 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         2. Check that cyclic sending of Tester Present messages is not set in the Client.
         3. Start cyclic sending of Tester Present messages.
         4. Check that cyclic sending of Tester Present messages is set in the Client.
-        5. Receive 10 messages on second Transport Interface.
+        5. Receive 10 Tester Present messages on second Transport Interface.
         6. Check that cyclic sending of Tester Present messages is set in the Client.
         7. Stop cyclic sending of Tester Present messages.
         8. Check that cyclic sending of Tester Present messages is not set in the Client.
@@ -82,10 +82,10 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         10. Validate received messages.
             - Check that each message contains Tester Present request.
             - Check that addressing information of Tester Present packet matches the Client's addressing information.
-            - Check that message transmission time is in line with S3Client parameter.
+            - Check that message transmission time is in line with s3_client parameter.
             - Check that direction attribute indicates that message was received.
 
-        :param s3client: Cycle time for Tester Present message sending.
+        :param s3_client: Cycle time for Tester Present message sending.
         :param addressing_type: Addressing Type to use for Tester Present messages transmission.
         :param sprmib: Suppress Positive Response Message Indication Bit value to set in Tester Present messages.
         """
@@ -104,18 +104,18 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         client = Client(transport_interface=self.transport_interface_1,
                         p2_client_timeout=100,
                         p6_client_timeout=200,
-                        s3_client=s3client)
+                        s3_client=s3_client)
         # Check that cyclic sending of Tester Present messages is not set in the Client.
         assert client.is_tester_present_sent is False
-        timestamp_start = perf_counter()
         # Start cyclic sending of Tester Present messages.
+        timestamp_start = perf_counter()
         client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
         # Check that cyclic sending of Tester Present messages is set in the Client.
         assert client.is_tester_present_sent is True
-        # Receive 10 messages on second Transport Interface.
+        # Receive 10 Tester Present messages on second Transport Interface.
         tp_messages_records = []
         for _ in range(10):
-            tp_messages_records.append(self.transport_interface_2.receive_message(start_timeout=2 * s3client))
+            tp_messages_records.append(self.transport_interface_2.receive_message(start_timeout=2 * s3_client))
         # Check that cyclic sending of Tester Present messages is set in the Client.
         assert client.is_tester_present_sent is True
         # Stop cyclic sending of Tester Present messages.
@@ -124,10 +124,10 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
         assert client.is_tester_present_sent is False
         # Check that no more messages are sent by Client.
         with pytest.raises(TimeoutError):
-            self.transport_interface_2.receive_message(start_timeout=2 * s3client)
+            self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
         # Validate received messages.
         for i, tp_message_record in enumerate(tp_messages_records, start=1):
-            desired_timestamp = timestamp_start + i * s3client / 1000.
+            desired_timestamp = timestamp_start + i * s3_client / 1000.
             assert tp_message_record.payload == tp_payload
             assert tp_message_record.direction == TransmissionDirection.RECEIVED
             for attribute_name, attribute_value in addressing_params.items():
@@ -136,6 +136,94 @@ class AbstractBaseClientFunctionalityTests(AbstractClientTests, ABC):
                     <= tp_message_record.transmission_start_timestamp
                     == tp_message_record.transmission_end_timestamp
                     <= desired_timestamp + self.TASK_TIMING_TOLERANCE / 1000.)
+
+    @pytest.mark.parametrize("addressing_type, sprmib, s3_client", [
+        (AddressingType.FUNCTIONAL, True, 1000),
+        (AddressingType.PHYSICAL, False, 500),
+    ])
+    def test_restart_tester_present(self, addressing_type, sprmib, s3_client):
+        """
+        Check Client for restarting cyclical Tester Present sending.
+
+        Procedure:
+        1. Configure Client.
+        2. Check that cyclic sending of Tester Present messages is not set in the Client.
+        3. Start cyclic sending of Tester Present messages.
+        4. Check that cyclic sending of Tester Present messages is set in the Client.
+        5. Receive 2 Tester Present messages on second Transport Interface.
+        6. Stop cyclical Tester Present transmission.
+        7. Check that cyclic sending of Tester Present messages is not set in the Client.
+        8. Check that no more messages are sent by Client.
+        9. Start cyclic sending of Tester Present messages.
+        10. Check that cyclic sending of Tester Present messages is set in the Client.
+        11. Receive 2 Tester Present messages on second Transport Interface.
+        12. Stop cyclical Tester Present transmission.
+        13. Check that cyclic sending of Tester Present messages is not set in the Client.
+        14. Check that no more messages are sent by Client.
+        15. Validate received Tester Present records.
+            Expected: Received Tester Present records attributes matches preconfigured values.
+
+        :param s3_client: Cycle time for Tester Present message sending.
+        :param addressing_type: Addressing Type to use for Tester Present messages transmission.
+        :param sprmib: Suppress Positive Response Message Indication Bit value to set in Tester Present messages.
+        """
+        tp_payload = bytes(BASE_TRANSLATOR.encode(sid=RequestSID.TesterPresent,
+                                                  data_records_values={
+                                                      "SubFunction": {
+                                                          "suppressPosRspMsgIndicationBit": sprmib,
+                                                          "zeroSubFunction": 0x00
+                                                      }
+                                                  }))
+        # Configure Client.
+        client = Client(transport_interface=self.transport_interface_1,
+                        p2_client_timeout=100,
+                        p6_client_timeout=200,
+                        s3_client=s3_client)
+        # Check that cyclic sending of Tester Present messages is not set in the Client.
+        assert client.is_tester_present_sent is False
+        # Start cyclic sending of Tester Present messages.
+        client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
+        # Check that cyclic sending of Tester Present messages is set in the Client.
+        assert client.is_tester_present_sent is True
+        # Receive 2 Tester Present messages on second Transport Interface.
+        tp_messages_records_1 = []
+        for _ in range(2):
+            tp_messages_records_1.append(self.transport_interface_2.receive_message(start_timeout=2 * s3_client))
+        # Stop cyclical Tester Present transmission.
+        client.stop_tester_present()
+        # Check that cyclic sending of Tester Present messages is not set in the Client.
+        assert client.is_tester_present_sent is False
+        # Check that no more messages are sent by Client.
+        with pytest.raises(TimeoutError):
+            self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
+        # Start cyclic sending of Tester Present messages.
+        client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
+        # Check that cyclic sending of Tester Present messages is set in the Client.
+        assert client.is_tester_present_sent is True
+        # Receive 2 Tester Present messages on second Transport Interface.
+        tp_messages_records_2 = []
+        for _ in range(2):
+            tp_messages_records_2.append(self.transport_interface_2.receive_message(start_timeout=2 * s3_client))
+        # Stop cyclical Tester Present transmission.
+        client.stop_tester_present()
+        # Check that cyclic sending of Tester Present messages is not set in the Client.
+        assert client.is_tester_present_sent is False
+        # Check that no more messages are sent by Client.
+        with pytest.raises(TimeoutError):
+            self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
+        # Validate received Tester Present records.
+        for tp_record in tp_messages_records_1 + tp_messages_records_2:
+            assert tp_record.payload == tp_payload
+        for i, tp_record in enumerate(tp_messages_records_1[1:]):
+            tp_delay = tp_record.transmission_end_timestamp - tp_messages_records_1[i].transmission_end_timestamp
+            assert (s3_client - self.TASK_TIMING_TOLERANCE
+                    <= tp_delay
+                    <= s3_client + self.TASK_TIMING_TOLERANCE)
+        for i, tp_record in enumerate(tp_messages_records_2[1:]):
+            tp_delay = tp_record.transmission_end_timestamp - tp_messages_records_2[i].transmission_end_timestamp
+            assert (s3_client - self.TASK_TIMING_TOLERANCE
+                    <= tp_delay
+                    <= s3_client + self.TASK_TIMING_TOLERANCE)
 
     @pytest.mark.parametrize("delay_1, message_1, delay_2, message_2, timeout", [
         (
@@ -1224,7 +1312,7 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
         :param addressing_type: Addressing Type to use for Tester Present messages transmission.
         :param sprmib: Suppress Positive Response Message Indication Bit value to set in Tester Present messages.
         :param messages: Response message to receive by Client.
-        :param s3_client: S3Client value to configure in Client.
+        :param s3_client: s3_client value to configure in Client.
         :param delay: Time between following response message transmission.
         """
         # Configure Client.
@@ -1385,219 +1473,3 @@ class AbstractClientErrorGuessing(AbstractClientTests, ABC):
 
     def test_tester_present_and_send_request_receive_responses(self):
         ... #TODO
-
-
-    # # Tester Present
-    #
-    # @pytest.mark.parametrize("addressing_type, sprmib, s3_client", [
-    #     (AddressingType.FUNCTIONAL, True, 1000),
-    #     (AddressingType.PHYSICAL, False, 500),
-    # ])
-    # def test_start_stop_tester_present(self, addressing_type, sprmib, s3_client):
-    #     """
-    #     Check for starting and stopping cyclical Tester Present sending.
-    #
-    #     Procedure:
-    #     1. Configure Client.
-    #     2. Start cyclical Tester Present transmission.
-    #     3. Receive 5 Tester Present messages.
-    #     4. Stop cyclical Tester Present transmission.
-    #     5. Check Tester Present message reception.
-    #         Expected: No message received.
-    #     6. Validate received Tester Present records.
-    #         Expected: Received Tester Present records period and attributes matches preconfigured values.
-    #
-    #     :param addressing_type: Addressing Type to use for Tester Present transmission.
-    #     :param sprmib: Whether Tester Present message have suppressPosRspMsgIndicationBit set.
-    #     :param s3_client: S3Client value to configure in Client.
-    #     """
-    #     client = Client(transport_interface=self.transport_interface_1,
-    #                     p6_client_timeout=s3_client,
-    #                     s3_client=s3_client)
-    #     tester_present_records: List[UdsMessageRecord] = []
-    #     client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
-    #     for i in range(5):
-    #         tester_present_records.append(self.transport_interface_2.receive_message(start_timeout=2 * s3_client))
-    #     client.stop_tester_present()
-    #     with pytest.raises(TimeoutError):
-    #         self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
-    #     # check sent messages
-    #     payload = b"\x3E\x80" if sprmib else b"\x3E\x00"
-    #     assert all([tp_record.payload == payload for tp_record in tester_present_records])
-    #     rx_physical_params = dict(self.transport_interface_2.addressing_information.rx_physical_params)
-    #     rx_functional_params = dict(self.transport_interface_2.addressing_information.rx_functional_params)
-    #     rx_physical_params.pop("addressing_type")
-    #     rx_functional_params.pop("addressing_type")
-    #     if rx_physical_params != rx_functional_params:  # make sure addressing parameters differ
-    #         assert all([tp_record.addressing_type == addressing_type for tp_record in tester_present_records])
-    #     # performance checks
-    #     if self.MAKE_TIMING_CHECKS:
-    #         for i, tp_record in enumerate(tester_present_records[1:]):
-    #             s3_client_measured = (tp_record.transmission_start_time.timestamp()
-    #                                   - tester_present_records[i].transmission_start_time.timestamp())
-    #             assert (s3_client - self.TASK_TIMING_TOLERANCE
-    #                     <=  s3_client_measured * 1000.
-    #                     <= s3_client + self.TASK_TIMING_TOLERANCE)
-    #
-    # @pytest.mark.parametrize("addressing_type, sprmib, s3_client", [
-    #     (AddressingType.FUNCTIONAL, True, 1000),
-    #     (AddressingType.PHYSICAL, False, 500),
-    # ])
-    # def test_restart_tester_present(self, addressing_type, sprmib, s3_client):
-    #     """
-    #     Check for restarting cyclical Tester Present sending.
-    #
-    #     Procedure:
-    #     1. Configure Client.
-    #     2. Start cyclical Tester Present transmission.
-    #     3. Receive 1 Tester Present message.
-    #     4. Stop cyclical Tester Present transmission.
-    #     5. Check Tester Present message reception.
-    #         Expected: No message received.
-    #     6. Restart cyclical Tester Present transmission.
-    #     7. Receive 1 Tester Present message.
-    #     8. Check Tester Present message reception.
-    #         Expected: No message received.
-    #     6. Validate received Tester Present records.
-    #         Expected: Received Tester Present records attributes matches preconfigured values.
-    #
-    #     :param addressing_type: Addressing Type to use for Tester Present transmission.
-    #     :param sprmib: Whether Tester Present message have suppressPosRspMsgIndicationBit set.
-    #     """
-    #     client = Client(transport_interface=self.transport_interface_1,
-    #                     p6_client_timeout=s3_client,
-    #                     s3_client=s3_client)
-    #     client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
-    #     tester_present_record_1 = self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
-    #     client.stop_tester_present()
-    #     with pytest.raises(TimeoutError):
-    #         self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
-    #     client.start_tester_present(addressing_type=addressing_type, sprmib=sprmib)
-    #     tester_present_record_2 = self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
-    #     client.stop_tester_present()
-    #     with pytest.raises(TimeoutError):
-    #         self.transport_interface_2.receive_message(start_timeout=2 * s3_client)
-    #     # check sent messages
-    #     payload = b"\x3E\x80" if sprmib else b"\x3E\x00"
-    #     assert tester_present_record_1.payload == tester_present_record_2.payload == payload
-    #     assert tester_present_record_1.addressing_type == tester_present_record_2.addressing_type  # do not compare with addressing_type in case the same rx and tx AI parameters
-    #
-    # # background receiving
-    #
-    # @pytest.mark.parametrize("message", [
-    #     UdsMessage(payload=[0x7E, 0x00], addressing_type=AddressingType.FUNCTIONAL),
-    #     UdsMessage(payload=[*range(255)], addressing_type=AddressingType.PHYSICAL),
-    # ])
-    # @pytest.mark.parametrize("cycle", [10, 500])
-    # def test_receive_message_without_request(self, message, cycle):
-    #     """
-    #     Check for receiving messages in the background.
-    #
-    #     Procedure:
-    #     1. Configure Client.
-    #     2. Check that messages stored.
-    #         Expected: No message is stored.
-    #     3. Start receiving.
-    #     4. Check that messages stored.
-    #         Expected: No message is stored.
-    #     5. Send a message to the client.
-    #     6. Wait for message transmission.
-    #     7. Stop receiving.
-    #     8. Check received messages.
-    #         Expected: 1 message stored.
-    #
-    #     :param message: Message to be received.
-    #     :param cycle: Receiving message cycle.
-    #     """
-    #     client = Client(transport_interface=self.transport_interface_1)
-    #     assert client.get_response_no_wait() is None
-    #     client.start_background_receiving(cycle=cycle)
-    #     assert client.get_response(timeout=1000) is None
-    #     self.transport_interface_2.send_message(message)
-    #     sleep(1)
-    #     client.stop_background_receiving()
-    #     record = client.get_response_no_wait()
-    #     assert isinstance(record, UdsMessageRecord)
-    #     assert record.payload == message.payload
-    #     assert record.addressing_type == message.addressing_type
-    #     assert record.direction == TransmissionDirection.RECEIVED
-    #     assert client.get_response_no_wait() is None
-    #
-    # @pytest.mark.parametrize("request_message, response_message, other_message", [
-    #     (
-    #         UdsMessage(payload=[0x19, 0x02, 0xFF],
-    #                    addressing_type=AddressingType.FUNCTIONAL),
-    #         UdsMessage(payload=[0x59, 0x02, 0xFF],
-    #                    addressing_type=AddressingType.FUNCTIONAL),
-    #         UdsMessage(payload=[0x7E, 0x00],
-    #                    addressing_type=AddressingType.FUNCTIONAL),
-    #     ),
-    #     (
-    #         UdsMessage(payload=[0x22, 0x10, 0x00],
-    #                    addressing_type=AddressingType.PHYSICAL),
-    #         UdsMessage(payload=[0x62, 0x10, 0x00, *range(255)],
-    #                    addressing_type=AddressingType.PHYSICAL),
-    #         UdsMessage(payload=[0x7E, 0x00],
-    #                    addressing_type=AddressingType.PHYSICAL),
-    #     ),
-    # ])
-    # @pytest.mark.parametrize("send_after, period, pause", [
-    #     (450, 10, 2200),
-    #     (250, 15, 2000),
-    # ])
-    # def test_send_request_while_receiving(self, request_message, response_message, other_message,
-    #                                       send_after, period, pause):
-    #     """
-    #     Check for receiving messages in the background.
-    #
-    #     Procedure:
-    #     1. Configure Client.
-    #     2. Start receiving.
-    #     3. Schedule message to be received by Client (1 answer to the request and 20 other messages).
-    #     4. Send message by client and received response.
-    #         Expected: Request sent and response received.
-    #     5. Wait for all messages delivery.
-    #     6. Check sent and received messages.
-    #         Expected: All received messages received by Client (both before and after request sending).
-    #
-    #     :param request_message: Request message to send by Client.
-    #     :param response_message: Response message to receive by Client.
-    #     :param other_message: Other message to received by Client.
-    #     :param send_after: Time in milliseconds to send response after.
-    #     :param period: Period used for sending other messages.
-    #     """
-    #     client = Client(transport_interface=self.transport_interface_1,
-    #                     p2_client_timeout=1000)
-    #     client.start_background_receiving()
-    #     self.send_message(transport_interface=self.transport_interface_2,
-    #                       message=response_message,
-    #                       delay=send_after)
-    #     for i in range(1, 21):
-    #         delay = i*period
-    #         if i > 2:
-    #             delay += pause
-    #         self.send_message(transport_interface=self.transport_interface_2,
-    #                           message=other_message,
-    #                           delay=delay)
-    #     request_record, response_records = client.send_request_receive_responses(request=request_message)
-    #     sleep(3)  # wait for all messages to be received
-    #     client.stop_background_receiving()
-    #     # check sent message
-    #     assert isinstance(request_record, UdsMessageRecord)
-    #     assert request_record.direction == TransmissionDirection.TRANSMITTED
-    #     assert request_record.payload == request_message.payload
-    #     assert request_record.addressing_type == request_message.addressing_type
-    #     # check received response
-    #     assert isinstance(response_records, tuple)
-    #     assert len(response_records) == 1
-    #     response_record = response_records[0]
-    #     assert response_record.direction == TransmissionDirection.RECEIVED
-    #     assert response_record.payload == response_message.payload
-    #     assert response_record.addressing_type == response_message.addressing_type
-    #     # check other messages
-    #     for _ in range(20):
-    #         other_message_record = client.get_response_no_wait()
-    #         assert isinstance(other_message_record, UdsMessageRecord)
-    #         assert other_message_record.direction == TransmissionDirection.RECEIVED
-    #         assert other_message_record.payload == other_message_record.payload
-    #         assert other_message_record.addressing_type == other_message_record.addressing_type
