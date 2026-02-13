@@ -65,12 +65,12 @@ def int_to_bytes(int_value: int,
     :return: The value of bytes list that represents the provided integer value.
     """
     if not isinstance(int_value, int):
-        raise TypeError(f"Provided `int_value` is not int type. Actual type: {type(int_value)}")
+        raise TypeError(f"Provided `int_value` is not int type. Actual type: {type(int_value)}.")
     if int_value < 0:
         raise ValueError(f"Provided `int_value` is negative and it cannot be converted. Actual value: {int_value}")
     if size is not None:
         if not isinstance(size, int):
-            raise TypeError(f"Provided `size` is not int type. Actual type: {type(size)}")
+            raise TypeError(f"Provided `size` is not int type. Actual type: {type(size)}.")
         if size < 0:
             raise ValueError(f"Provided `size` is smaller than zero. Actual value: {size}")
     endianness = Endianness.validate_member(endianness)
@@ -96,7 +96,7 @@ def obd_dtc_to_int(obd_dtc: str) -> int:
     :return: Integer value representation of this DTC in UDS format.
     """
     if not isinstance(obd_dtc, str):
-        raise TypeError("Provided value is not str type.")
+        raise TypeError(f"Provided value is not str type. Actual type: {type(obd_dtc)}")
     match = OBD_DTC_RE.fullmatch(obd_dtc.upper())
     if not match:
         raise ValueError(f"Provided value is not a DTC in OBD format. Example: 'U0F1E-2D'. Actual value: {obd_dtc!r}")
@@ -119,9 +119,9 @@ def int_to_obd_dtc(dtc: int) -> str:
     :return: Text value representation of this DTC in OBD format.
     """
     if not isinstance(dtc, int):
-        raise TypeError("Provided value is not int type.")
+        raise TypeError(f"Provided value is not int type. Actual type: {type(dtc)}")
     if not MIN_DTC_VALUE <= dtc <= MAX_DTC_VALUE:
-        raise ValueError("Provided value is not a DTC in UDS format.")
+        raise ValueError(f"Provided value is not a DTC in UDS format. Actual value: {dtc}")
     return f"{BITS_TO_DTC_CHARACTER_MAPPING[dtc >> 22]}{(dtc & 0x3FFF00) >> 8:04X}-{dtc & 0xFF:02X}"
 
 
@@ -137,7 +137,7 @@ def get_signed_value_decoding_formula(bit_length: int) -> Callable[[int], int]:
     :return: Formula for decoding singed integer value from unsigned integer value.
     """
     if not isinstance(bit_length, int):
-        raise TypeError("Provided `bit_length` value is not int type.")
+        raise TypeError(f"Provided `bit_length` value is not int type. Actual type: {type(bit_length)}")
     if bit_length < 2:
         raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
 
@@ -162,7 +162,7 @@ def get_signed_value_encoding_formula(bit_length: int) -> Callable[[int], int]:
     :return: Formula for encoding singed integer value into unsinged integer value.
     """
     if not isinstance(bit_length, int):
-        raise TypeError("Provided `bit_length` value is not int type.")
+        raise TypeError(f"Provided `bit_length` value is not int type. Actual type: {type(bit_length)}")
     if bit_length < 2:
         raise ValueError(f"Provided `bit_length` is too small for store signed integer value: {bit_length}.")
 
@@ -235,7 +235,7 @@ class TimeSync:
         :raise ValueError: Value is not a positive number.
         """
         if not isinstance(value, int):
-            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if value < 1:
             raise ValueError(f"Provided value is not a positive number. Actual value: {value}")
         self.__samples_number = value
@@ -256,7 +256,7 @@ class TimeSync:
         :raise ValueError: Value is not a positive number.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}")
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
         if value <= 0:
             raise ValueError(f"Provided value is not a positive number. Actual value: {value}")
         self.__sync_expiration = float(value)

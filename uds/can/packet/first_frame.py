@@ -212,7 +212,7 @@ def get_first_frame_payload_size(addressing_format: CanAddressingFormat,
     :return: The number of payload bytes that shall be carried in a First Frame.
     """
     if dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
-        raise ValueError(f"First Frame must use DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+        raise ValueError(f"First Frame must use DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: {dlc}")
     data_bytes_number = CanDlcHandler.decode_dlc(dlc)
     ai_data_bytes_number = CanAddressingInformation.get_ai_data_bytes_number(addressing_format)
     ff_dl_data_bytes_number = LONG_FF_DL_BYTES_USED if long_ff_dl_format else SHORT_FF_DL_BYTES_USED
@@ -271,10 +271,10 @@ def generate_ff_dl_bytes(ff_dl: int, long_ff_dl_format: bool) -> bytearray:
     """
     if long_ff_dl_format and ff_dl > MAX_LONG_FF_DL_VALUE:
         raise ValueError(f"Value of First Frame Data Length must be not be greater than {MAX_LONG_FF_DL_VALUE} "
-                         "to fit into long FF_DL format.")
+                         f"to fit into long FF_DL format. Actual value: {ff_dl}")
     if not long_ff_dl_format and ff_dl > MAX_SHORT_FF_DL_VALUE:
         raise ValueError(f"Value of First Frame Data Length must be not be greater than {MAX_SHORT_FF_DL_VALUE} "
-                         "to fit into short FF_DL format.")
+                         f"to fit into short FF_DL format. Actual value: {ff_dl}")
     ff_dl_bytes_number = LONG_FF_DL_BYTES_USED if long_ff_dl_format else SHORT_FF_DL_BYTES_USED
     ff_dl_bytes = bytearray(int_to_bytes(int_value=ff_dl, size=ff_dl_bytes_number))
     ff_dl_bytes[0] ^= (FIRST_FRAME_N_PCI << 4)
@@ -307,14 +307,14 @@ def validate_ff_dl(ff_dl: int,
         number of payload bytes represented by FF_DL value.
     """
     if not isinstance(ff_dl, int):
-        raise TypeError("Provided value of First Frame Data Length is not int type.")
+        raise TypeError(f"Provided value of First Frame Data Length is not int type. Actual type: {type(ff_dl)}.")
     if not 0 <= ff_dl <= MAX_LONG_FF_DL_VALUE:
         raise ValueError("Provided value of First Frame Data Length is out of range. "
-                         f"Expected: 0 <= ff_dl <= {MAX_LONG_FF_DL_VALUE}.")
+                         f"Expected: 0 <= ff_dl <= {MAX_LONG_FF_DL_VALUE}. Actual value: {ff_dl}")
     if dlc is not None and addressing_format is not None:
         if dlc < CanDlcHandler.MIN_BASE_UDS_DLC:
             raise ValueError("Provided value of DLC cannot be used with First Frame. "
-                             f"Expected: dlc >= {CanDlcHandler.MIN_BASE_UDS_DLC}.")
+                             f"Expected: DLC >= {CanDlcHandler.MIN_BASE_UDS_DLC}. Actual value: {dlc}")
         max_sf_dl = get_max_sf_dl(addressing_format=addressing_format, dlc=dlc)
         if ff_dl <= max_sf_dl:
             raise InconsistencyError("Single Frame shall be used instead of First Frame to carry this.")
@@ -326,4 +326,4 @@ def validate_ff_dl(ff_dl: int,
             raise InconsistencyError("Long format of First Frame Data Length shall be used.")
     elif ff_dl_bytes_number is not None:
         raise ValueError("Incorrect value of ff_dl_bytes was provided. It should be equal to either "
-                         f"{SHORT_FF_DL_BYTES_USED} or {LONG_FF_DL_BYTES_USED}.")
+                         f"{SHORT_FF_DL_BYTES_USED} or {LONG_FF_DL_BYTES_USED}. Actual value: {ff_dl_bytes_number}")

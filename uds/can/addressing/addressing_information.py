@@ -217,7 +217,8 @@ class CanAddressingInformation:
                                                                     target_address=target_address,
                                                                     source_address=source_address,
                                                                     priority=priority)
-        raise ValueError("Provided CAN Addressing Format does not offer utility of CAN ID encoding.")
+        raise ValueError("Provided CAN Addressing Format does not offer utility of CAN ID encoding. "
+                         f"Actual value: {addressing_format}")
 
     @classmethod
     def encode_ai_data_bytes(cls,

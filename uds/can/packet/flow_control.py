@@ -544,9 +544,9 @@ class DefaultFlowControlParametersGenerator(AbstractFlowControlParametersGenerat
         :param value: Value to set.
         """
         if not isinstance(value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(value)}.")
         if value < 0:
-            raise ValueError("Provided value is les than 0.")
+            raise ValueError(f"Provided value is les than 0. Actual value: {value}")
         self.__wait_count = value
 
     @property

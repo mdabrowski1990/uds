@@ -97,7 +97,7 @@ class AbstractConditionalDataRecord(ABC):
         :raise InconsistencyError: Contained Data Records cannot be used together.
         """
         if not isinstance(value, Sequence):
-            raise TypeError("Provided value is not a sequence")
+            raise TypeError(f"Provided value is not a sequence. Actual type: {type(value)}.")
         names = set()
         min_total_length = 0
         max_total_length = 0
@@ -175,9 +175,9 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         :return: Diagnostic message continuation assessed based on mapping only.
         """
         if not isinstance(raw_value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(raw_value)}.")
         if raw_value < 0:
-            raise ValueError("Provided value is not a raw value as it is lower than 0.")
+            raise ValueError(f"Provided value is not a raw value as it is less than 0. Actual value: {raw_value}")
         return self.mapping[raw_value if self.value_mask is None else raw_value & self.value_mask]
 
     @property
@@ -197,10 +197,10 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         :raise ValueError: Keys in the provided mapping are not raw values only.
         """
         if not isinstance(mapping, Mapping):
-            raise TypeError("Provided value is not a mapping type.")
+            raise TypeError(f"Provided value is not a mapping type. Actual type: {type(mapping)}.")
         keys = set(mapping.keys())
         if not all(isinstance(key, int) and key >= 0 for key in keys):
-            raise ValueError("At least one key in the provided mapping is not a raw value.")
+            raise ValueError(f"At least one key in the provided mapping is not a raw value. Actual value: {keys}")
         for value in mapping.values():
             self.validate_message_continuation(value)
         self.__mapping = MappingProxyType(mapping)
@@ -220,9 +220,9 @@ class ConditionalMappingDataRecord(AbstractConditionalDataRecord):
         """
         if value is not None:
             if not isinstance(value, int):
-                raise TypeError("Provided time parameter value must be None or int type.")
+                raise TypeError(f"Provided time parameter value must be None or int type. Actual type: {type(value)}.")
             if value <= 0:
-                raise ValueError("Mask must be a positive value")
+                raise ValueError(f"Mask must be a positive value. Actual value: {value}")
         self.__value_mask = value
 
 
@@ -259,9 +259,9 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         :return: Diagnostic message continuation assessed based on formula only.
         """
         if not isinstance(raw_value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(raw_value)}.")
         if raw_value < 0:
-            raise ValueError("Provided value is not a raw value as it is lower than 0.")
+            raise ValueError(f"Provided value is not a raw value as it is lower than 0. Actual value: {raw_value}")
         return self.formula(raw_value)
 
     @property
@@ -280,7 +280,7 @@ class ConditionalFormulaDataRecord(AbstractConditionalDataRecord):
         :raise ValueError: Provided formula's signature or annotation does not match the required format.
         """
         if not callable(formula):
-            raise TypeError("Provided value is not callable.")
+            raise TypeError(f"Provided value is not callable. Actual type: {type(formula)}.")
         formula_signature = signature(formula)
         if len(formula_signature.parameters) != 1:
             raise ValueError("Provided formula does not take exactly one parameter.")

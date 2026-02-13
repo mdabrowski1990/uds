@@ -230,7 +230,8 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :param value: Value to set.
         """
         if not isinstance(value, AbstractFlowControlParametersGenerator):
-            raise TypeError("Provided Flow Control parameters generator value has incorrect type.")
+            raise TypeError("Provided Flow Control parameters generator value has incorrect type. "
+                            f"Actual type: {type(value)}.")
         self.__flow_control_parameters_generator = value
 
     # Time parameter - CAN Network Layer
@@ -251,9 +252,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Provided time parameter value must be int or float type.")
+            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
         if value <= 0:
-            raise ValueError("Provided time parameter value must be greater than 0.")
+            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
         if value != self.N_AS_TIMEOUT:
             warn(message="Non-default value of N_As timeout was set.",
                  category=ValueWarning)
@@ -288,9 +289,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Provided time parameter value must be int or float type.")
+            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
         if value <= 0:
-            raise ValueError("Provided time parameter value must be greater than 0.")
+            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
         if value != self.N_AR_TIMEOUT:
             warn(message="Non-default value of N_Ar timeout was set.",
                  category=ValueWarning)
@@ -325,9 +326,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Provided time parameter value must be int or float type.")
+            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
         if value <= 0:
-            raise ValueError("Provided time parameter value must be greater than 0.")
+            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
         if value != self.N_BS_TIMEOUT:
             warn(message="Non-default value of N_Bs timeout was set.",
                  category=ValueWarning)
@@ -367,10 +368,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided value is out of range (0 <= value < MAX N_Br).
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Provided time parameter value must be int or float type.")
+            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
         if not 0 <= value < self.n_br_max:
             raise ValueError("Provided time parameter value is out of range. "
-                             f"Expected: 0 <= value < {self.n_br_max}. Provided value: {value}.")
+                             f"Expected: 0 <= value < {self.n_br_max}. Actual value: {value}.")
         self.__n_br = value
 
     @property
@@ -412,10 +413,10 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         """
         if value is not None:
             if not isinstance(value, (int, float)):
-                raise TypeError("Provided time parameter value must be int or float type.")
+                raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
             if not 0 <= value < self.n_cs_max:
                 raise ValueError("Provided time parameter value is out of range. "
-                                 f"Expected: 0 <= value < {self.n_cs_max}. Provided value: {value}.")
+                                 f"Expected: 0 <= value < {self.n_cs_max}. Actual value: {value}.")
         self.__n_cs = value
 
     @property
@@ -447,9 +448,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided value is less or equal to 0.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Provided time parameter value must be int or float type.")
+            raise TypeError(f"Provided time parameter value must be int or float type. Actual type: {type(value)}.")
         if value <= 0:
-            raise ValueError("Provided time parameter value must be greater than 0.")
+            raise ValueError(f"Provided time parameter value must be greater than 0. Actual value: {value}")
         if value != self.N_CR_TIMEOUT:
             warn(message="Non-default value of N_Cr timeout was set.",
                  category=ValueWarning)
@@ -478,9 +479,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided value is out of range.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Provided value is not int or float type.")
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
         if value < 0:
-            raise ValueError("Provided time parameter cannot be a negative number.")
+            raise ValueError(f"Provided time parameter cannot be a negative number. Actual value: {value}")
         if value > self.n_ar_timeout:
             warn("Measured value of N_Ar was greater than N_Ar timeout.",
                  category=ValueWarning)
@@ -496,9 +497,9 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided value is out of range.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Provided value is not int or float type.")
+            raise TypeError(f"Provided value is not int or float type. Actual type: {type(value)}.")
         if value < 0:
-            raise ValueError("Provided time parameter cannot be a negative number.")
+            raise ValueError(f"Provided time parameter cannot be a negative number. Actual value: {value}")
         if value > self.n_as_timeout:
             warn("Measured value of N_As was greater than N_As timeout.",
                  category=ValueWarning)
@@ -514,7 +515,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided UDS message record was not transmitted.
         """
         if not isinstance(message_record, UdsMessageRecord):
-            raise TypeError("Provided value is not UDS Message Record type.")
+            raise TypeError(f"Provided value is not UDS Message Record type. Actual type: {type(message_record)}.")
         if message_record.direction != TransmissionDirection.TRANSMITTED:
             raise ValueError("Provided UDS Message Record was not transmitted.")
         if len(message_record.packets_records) == 1:
@@ -538,7 +539,7 @@ class AbstractCanTransportInterface(AbstractTransportInterface, ABC):
         :raise ValueError: Provided UDS message record was not received.
         """
         if not isinstance(message_record, UdsMessageRecord):
-            raise TypeError("Provided value is not UDS Message Record type.")
+            raise TypeError(f"Provided value is not UDS Message Record type. Actual type: {type(message_record)}.")
         if message_record.direction != TransmissionDirection.RECEIVED:
             raise ValueError("Provided UDS Message Record was not received.")
         if len(message_record.packets_records) == 1:

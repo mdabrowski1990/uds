@@ -77,7 +77,8 @@ class UdsMessage(AbstractUdsMessageContainer):
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
-            raise TypeError("UDS Message addressing only be compared with another UDS Message.")
+            raise TypeError("UDS Message addressing only be compared with another UDS Message. "
+                            f"Actual type: {type(other)}.")
         return self.addressing_type == other.addressing_type and self.payload == other.payload
 
     @property
@@ -133,7 +134,8 @@ class UdsMessageRecord(AbstractUdsMessageContainer):
         :return: True if other object has the same type and carries the same diagnostic message, otherwise False.
         """
         if not isinstance(other, self.__class__):
-            raise TypeError("UDS Message Record addressing only be compared with another UDS Message Record")
+            raise TypeError("UDS Message Record addressing only be compared with another UDS Message Record. "
+                            f"Actual type: {type(other)}.")
         return self.addressing_type == other.addressing_type \
             and self.payload == other.payload \
             and self.direction == other.direction

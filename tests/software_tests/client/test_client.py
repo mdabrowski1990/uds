@@ -15,7 +15,6 @@ from uds.client import (
     ReassignmentError,
     RequestSID,
     ResponseSID,
-    SimpleQueue,
     Thread,
     UdsMessage,
     UdsMessageRecord,

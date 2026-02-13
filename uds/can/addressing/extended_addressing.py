@@ -59,7 +59,8 @@ class ExtendedCanAddressingInformation(AbstractCanAddressingInformation):
         :return: Normalized dictionary with the provided Addressing Information.
         """
         if addressing_format != cls.ADDRESSING_FORMAT:
-            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}. "
+                             f"Actual value: {addressing_format}")
         if (source_address, address_extension) != (None, None):
             raise UnusedArgumentError("Values of Source Address and Address Extension are not supported by "
                                       "Extended Addressing format and must be equal None.")

@@ -134,9 +134,9 @@ class AbstractDataRecord(ABC):
         :raise ValueError: Provided value is out of range (min_raw_value, max_raw_value).
         """
         if not isinstance(raw_value, int):
-            raise TypeError("Provided value is not int type.")
+            raise TypeError(f"Provided value is not int type. Actual type: {type(raw_value)}.")
         if not self.min_raw_value <= raw_value <= self.max_raw_value:
-            raise ValueError("Provided value is out of range.")
+            raise ValueError(f"Provided value is out of range. Actual value: {raw_value}")
 
     @property
     def name(self) -> str:
@@ -155,10 +155,10 @@ class AbstractDataRecord(ABC):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, str):
-            raise TypeError("Provided name is not str type.")
+            raise TypeError(f"Provided name is not str type. Actual type: {type(value)}.")
         stripped_names = value.strip()
         if stripped_names == "":
-            raise ValueError("Name must not be empty.")
+            raise ValueError(f"Name must not be empty. Actual value: {value!r}")
         if hasattr(self, "_AbstractDataRecord__name"):
             raise ReassignmentError("Value of 'name' attribute cannot be changed once assigned.")
         self.__name = stripped_names
@@ -180,9 +180,9 @@ class AbstractDataRecord(ABC):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, int):
-            raise TypeError("Length must be an integer.")
+            raise TypeError(f"Length must be an integer. Actual type: {type(value)}.")
         if value <= 0:
-            raise ValueError("Length must be a positive value.")
+            raise ValueError(f"Length must be a positive value. Actual value: {value}")
         if hasattr(self, "_AbstractDataRecord__length"):
             raise ReassignmentError("Value of 'length' attribute cannot be changed once assigned.")
         self.__length = value
@@ -204,7 +204,7 @@ class AbstractDataRecord(ABC):
         :raise InconsistencyError: Provided sequence of Data Records cannot be children for this Data Record.
         """
         if not isinstance(value, Sequence):
-            raise TypeError("Provided value is not a sequence.")
+            raise TypeError(f"Provided value is not a sequence. Actual type: {type(value)}.")
         children_length = 0
         children_names = set()
         for child in value:
@@ -237,9 +237,9 @@ class AbstractDataRecord(ABC):
         :raise ReassignmentError: An attempt to change the value after object creation.
         """
         if not isinstance(value, int):
-            raise TypeError("Minimal occurrence number must be an integer.")
+            raise TypeError(f"Minimal occurrence number must be int type. Actual type: {type(value)}.")
         if value < 0:
-            raise ValueError("Minimal occurrence number must be a non-negative value.")
+            raise ValueError(f"Minimal occurrence number must be a non-negative value. Actual value: {value}")
         if hasattr(self, "_AbstractDataRecord__min_occurrences"):
             raise ReassignmentError("Value of 'min_occurrences' attribute cannot be changed once assigned.")
         self.__min_occurrences = value
@@ -266,9 +266,10 @@ class AbstractDataRecord(ABC):
         """
         if value is not None:
             if not isinstance(value, int):
-                raise TypeError("Maximal occurrence number must be an integer or None.")
+                raise TypeError(f"Maximal occurrence number must be int type or None. Actual type: {type(value)}.")
             if value < max(self.min_occurrences, 1):
-                raise ValueError("Maximal occurrence number must be greater or equal minimal occurrences number.")
+                raise ValueError("Maximal occurrence number must be greater or equal minimal occurrences number. "
+                                 f"Actual value: {value}")
         if hasattr(self, "_AbstractDataRecord__max_occurrences"):
             raise ReassignmentError("Value of 'max_occurrences' attribute cannot be changed once assigned.")
         self.__max_occurrences = value
@@ -293,7 +294,7 @@ class AbstractDataRecord(ABC):
         elif isinstance(value, str):
             self.__unit = value
         else:
-            raise TypeError("Unit value must be a str type or equal None.")
+            raise TypeError(f"Unit value must be a str type or equal None. Actual type: {type(value)}.")
 
     @property
     def enforce_reoccurring(self) -> bool:
@@ -469,7 +470,7 @@ class AbstractDataRecord(ABC):
         if not self.children:
             raise RuntimeError("This Data Record has no children.")
         if not isinstance(children_values, Mapping):
-            raise TypeError("Provided value is not a mapping.")
+            raise TypeError(f"Provided value is not a mapping. Actual type: {type(children_values)}.")
         children_names = set(child.name for child in self.children)
         provided_names = set(children_values.keys())
         if provided_names != children_names:

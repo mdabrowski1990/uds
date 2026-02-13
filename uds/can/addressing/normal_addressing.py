@@ -60,7 +60,8 @@ class NormalCanAddressingInformation(AbstractCanAddressingInformation):
         :return: Normalized dictionary with the provided Addressing Information.
         """
         if addressing_format != cls.ADDRESSING_FORMAT:
-            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}. "
+                             f"Actual value: {addressing_format}")
         if (target_address, source_address, address_extension) != (None, None, None):
             raise UnusedArgumentError("Values of Target Address, Source Address and Address Extension are "
                                       "not supported by Normal Addressing format and must be equal None.")
@@ -178,7 +179,8 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         :return: Normalized dictionary with the provided Addressing Information.
         """
         if addressing_format != cls.ADDRESSING_FORMAT:
-            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}")
+            raise ValueError(f"This class handles only one CAN Addressing format: {cls.ADDRESSING_FORMAT}. "
+                             f"Actual value: {addressing_format}")
         if address_extension is not None:
             raise UnusedArgumentError("Values ofAddress Extension is not supported by "
                                       "Normal Fixed Addressing format and must be equal None.")
@@ -246,7 +248,7 @@ class NormalFixedCanAddressingInformation(AbstractCanAddressingInformation):
         """
         CanIdHandler.validate_can_id(can_id)
         if not cls.is_compatible_can_id(can_id):
-            raise ValueError("Provided CAN ID value is out of range.")
+            raise ValueError(f"Provided CAN ID value is out of range. CAN ID: 0x{can_id:X}")
         target_address = (can_id >> CanIdHandler.TARGET_ADDRESS_BIT_OFFSET) & 0xFF
         source_address = (can_id >> CanIdHandler.SOURCE_ADDRESS_BIT_OFFSET) & 0xFF
         can_id_masked_value = can_id & CanIdHandler.ADDRESSING_MASK

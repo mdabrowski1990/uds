@@ -88,7 +88,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         :raises ValueError: Factor value must be unequal 0.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Factor value must be int or float type.")
+            raise TypeError(f"Factor value must be int or float type. Actual type: {type(value)}.")
         if value == 0:
             raise ValueError("Factor cannot be equal 0.")
         self.__factor = value
@@ -108,7 +108,7 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         :raises TypeError: Provided value is not int or float type.
         """
         if not isinstance(value, (int, float)):
-            raise TypeError("Offset value must be int or float type.")
+            raise TypeError(f"Offset value must be int or float type. Actual type: {type(value)}.")
         self.__offset = value
 
     @property  # noqa: vulture
@@ -152,11 +152,11 @@ class LinearFormulaDataRecord(AbstractDataRecord):
         :return: Raw Value for this occurrence that was assessed using linear transformation.
         """
         if not isinstance(physical_value, (int, float)):
-            raise TypeError("Physical value must be int or float type.")
+            raise TypeError(f"Physical value must be int or float type. Actual type: {type(physical_value)}.")
         raw_value = int(round((physical_value - self.offset) / self.factor, 0))
         if self.min_raw_value <= raw_value <= self.max_raw_value:
             return raw_value
-        raise ValueError("Provided physical value is out of range.")
+        raise ValueError(f"Provided physical value is out of range. Actual value: {physical_value}")
 
 
 class CustomFormulaDataRecord(AbstractDataRecord):
@@ -231,7 +231,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         :raises TypeError: Provided value is not callable.
         """
         if not callable(value):
-            raise TypeError("Encoding formula must be callable.")
+            raise TypeError(f"Encoding formula must be callable. Actual type: {type(value)}.")
         self.__encoding_formula = value
 
     @property
@@ -249,7 +249,7 @@ class CustomFormulaDataRecord(AbstractDataRecord):
         :raises TypeError: Provided value is not callable.
         """
         if not callable(value):
-            raise TypeError("Decoding formula must be callable.")
+            raise TypeError(f"Decoding formula must be callable. Actual type: {type(value)}.")
         self.__decoding_formula = value
 
     def get_physical_value(self, raw_value: int) -> Union[float, int]:
